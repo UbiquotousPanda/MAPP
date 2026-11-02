@@ -19,6 +19,7 @@ export interface MeasuresEditorProps {
   source: DataSource;
   errorAt: (path: string) => string | undefined;
   onChange: (measures: Measure[], typing?: string) => void;
+  onRemove: (index: number) => void;
 }
 
 export function MeasuresEditor({
@@ -28,6 +29,7 @@ export function MeasuresEditor({
   source,
   errorAt,
   onChange,
+  onRemove,
 }: MeasuresEditorProps) {
   const fieldOptions = [
     { id: RECORDS, label: 'Count of records', active: true },
@@ -93,12 +95,7 @@ export function MeasuresEditor({
               onChange={(label) => update(index, { ...measure, label }, `${at}.label`)}
               error={errorAt(`${at}.label`)}
             />
-            <Button
-              variant="tertiary"
-              size="sm"
-              icon={<X />}
-              onClick={() => onChange(measures.filter((_, at) => at !== index))}
-            >
+            <Button variant="tertiary" size="sm" icon={<X />} onClick={() => onRemove(index)}>
               Remove measure {index + 1}
             </Button>
           </fieldset>

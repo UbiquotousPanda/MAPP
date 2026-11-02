@@ -8,7 +8,7 @@ import type { Need } from '../widget-types';
 import { FiltersEditor } from './FiltersEditor';
 import { MeasuresEditor } from './MeasuresEditor';
 import { NumberInput } from './NumberInput';
-import { changeSource, groupOf, withDimension } from './query-edits';
+import { changeSource, groupOf, withDimension, withoutMeasure } from './query-edits';
 import { Select } from './Select';
 import styles from './Inspector.module.css';
 
@@ -29,7 +29,7 @@ export interface DataTabProps {
   sources: DataSource[] | undefined;
   sourcesFailed: boolean;
   errorAt: (path: string) => string | undefined;
-  onQuery: (query: WidgetQuery, typing?: string) => void;
+  onQuery: (query: WidgetQuery, typing?: string, removedMeasure?: number) => void;
 }
 
 export function DataTab({ widget, query, sources, sourcesFailed, errorAt, onQuery }: DataTabProps) {
@@ -106,6 +106,7 @@ export function DataTab({ widget, query, sources, sourcesFailed, errorAt, onQuer
               source={source}
               errorAt={errorAt}
               onChange={(measures, typing) => onQuery({ ...query, measures }, typing)}
+              onRemove={(index) => onQuery(withoutMeasure(query, index), undefined, index)}
             />
           )}
           <FiltersEditor

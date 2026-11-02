@@ -90,6 +90,17 @@ export function changeSource(query: WidgetQuery, source: DataSource): SourceChan
   };
 }
 
+export function withoutMeasure(query: WidgetQuery, index: number): WidgetQuery {
+  const { sort } = query;
+  const shifted = sort.measureIndex > index ? sort.measureIndex - 1 : sort.measureIndex;
+  const measureIndex = sort.measureIndex === index ? 0 : shifted;
+  return {
+    ...query,
+    measures: query.measures.filter((_, at) => at !== index),
+    sort: sort.by === 'measure' ? { ...sort, measureIndex } : sort,
+  };
+}
+
 export function withDimension(
   type: WidgetType,
   query: WidgetQuery,

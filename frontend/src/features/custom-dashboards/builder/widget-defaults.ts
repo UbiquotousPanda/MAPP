@@ -78,10 +78,13 @@ export function tableColumnKeys(query: WidgetQuery | null): string[] {
   ];
 }
 
-export function fitDisplay(widget: Widget): Widget {
+export function fitDisplay(widget: Widget, removedMeasure?: number): Widget {
   const { display, query } = widget;
-  const styles = display.measureStyles;
-  const columns = display.table?.columns;
+  const styles = display.measureStyles?.filter((_, at) => at !== removedMeasure);
+  const columns =
+    removedMeasure === undefined
+      ? display.table?.columns
+      : display.table?.columns.flatMap((key) => renumbered(key, removedMeasure));
   const keys = tableColumnKeys(query);
   return {
     ...widget,
@@ -98,4 +101,12 @@ export function fitDisplay(widget: Widget): Widget {
         }),
     },
   };
+}
+
+function renumbered(key: string, removed: number): string[] {
+  const index = /^m(\d+)$/.exec(key)?.[1];
+  if (index === undefined || Number(index) < removed) {
+    return [key];
+  }
+  return Number(index) === removed ? [] : [`m${Number(index) - 1}`];
 }
