@@ -3,6 +3,7 @@ package revenue
 import (
 	"context"
 
+	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
@@ -17,10 +18,19 @@ func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Fi
 			return err
 		}
 		w := window{today: date.Today(s.now()), year: sc.Year}
-		out = revenueRanked(revenueRankedInput{views: views, nodes: nodesForRanking(sc, views), show: showLevel(f.Show), q: q, w: w})
+		out = revenueRanked(revenueRankedInput{views: views, nodes: nodesForRanking(sc, views), matched: sc.Matched,
+			attrs: attributesByID(sc.Attributes), show: showLevel(f.Show), q: q, w: w})
 		return nil
 	})
 	return out, err
+}
+
+func attributesByID(attributes []allwork.Attribute) map[string]allwork.Attribute {
+	out := make(map[string]allwork.Attribute, len(attributes))
+	for _, a := range attributes {
+		out[a.ID] = a
+	}
+	return out
 }
 
 func showLevel(show string) string {

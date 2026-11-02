@@ -2,6 +2,7 @@ package revenue
 
 import (
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -40,6 +41,11 @@ const (
 
 const msgChooseListed = "Choose one of the listed values."
 
+var (
+	groupPattern = regexp.MustCompile(`^(none|plan|owner|attr:[A-Z]+-[0-9]+)$`)
+	idPattern    = regexp.MustCompile(`^[A-Z]+-[0-9]+$`)
+)
+
 // categoryOf reads the category parameter: "" for all categories, "uncategorised", or a category id
 // (049-C10).
 func categoryOf(values url.Values) string {
@@ -63,6 +69,12 @@ func parseRanked(values url.Values, sorts []string, defaultSort string, problems
 	}
 	if q.Order != OrderDesc && q.Order != OrderAsc {
 		problems.Add(paramOrder, msgChooseListed)
+	}
+	if !groupPattern.MatchString(q.Group) {
+		problems.Add(paramGroup, msgChooseListed)
+	}
+	if q.Drill != "" && !idPattern.MatchString(q.Drill) {
+		problems.Add(paramDrill, msgChooseListed)
 	}
 	if len(q.Search) > 100 {
 		problems.Add(paramSearch, "Search is at most 100 characters.")

@@ -39,6 +39,10 @@ test('049 US1: the Revenue report shows cards, a chart and a ranked list against
   await expect(fleetCards).toContainText('$400,000.00');
   await expect(fleetCards).toContainText('%');
 
+  await ranked.getByRole('button', { name: 'Fleet cards' }).click();
+  await expect(ranked.getByRole('navigation', { name: 'Drill trail' })).toContainText('Fleet cards');
+  await expect(ranked.getByRole('button', { name: 'Back' })).toBeVisible();
+
   await expectNoAxeViolationsExceptOpenLinkTargetSize(page);
 });
 
@@ -63,6 +67,9 @@ test('049 US2: a funnel stage shows cards, a chart and conversion against goal',
 
   await stageSelect.selectOption({ label: 'MQL' });
   await expect(ranked.getByRole('row', { name: /Fleet cards/ })).toContainText('2,000');
+
+  await page.getByRole('combobox', { name: 'Group by' }).selectOption({ label: 'Plan' });
+  await expect(page.getByText('FY2026 Mobility China')).toBeVisible();
 
   await expectNoAxeViolationsExceptOpenLinkTargetSize(page);
 });

@@ -26,10 +26,20 @@ marks tasks that can run in parallel.
   `rollup.BudgetUsedPercent` rather than a float division of money (FR-023, 049-C16)
 - [X] T013 `periods.go`: months, and months summed into quarters with the same in-progress rule (FR-003,
   049-C4), via the shared `window`/`periodBounds` types the funnel report reuses
-- [ ] T014 `ranked_revenue.go`: two-level roll-up (Show level + children), sorted, searched and paged, with
-  the same figures 040 uses the shape of. **Partial**: `drill` and `group` (campaign/owner/attribute) are
-  not yet implemented — every ranked answer currently reports one group named "" and ignores `drill`.
-  Remaining: drill-down with a trail and Back, grouping with group totals (research R5, FR-005, FR-006)
+- [X] T014 `ranked_revenue.go`: two-level roll-up (Show level + children), sorted, searched and paged, with
+  the same figures 040 uses the shape of (research R5, FR-005, FR-006). Closed in a follow-up pass:
+  `drill` (with its trail and a Back step) and `group` (plan, owner, attribute — including a % split
+  that shares an entry's figures across its groups, D-270) now work exactly as 040's own ranked list
+  does, in a new shared `grouping.go` (groupsOf/attributeGroups/trailOf, reused by both reports since
+  group membership never depends on which figures a node carries) plus `revenueTops`/`revenueGroups`/
+  `revenuePage` and `funnelTops`/`funnelGroups`/`funnelPage`. Also fixed while rebuilding the sort
+  comparator: entries without the sort figure now sort last, as 049-C18 always required, instead of
+  sorting as if they were zero. `ranked_revenue.go`/`ranked_funnel.go` were each split to bring the
+  figures/sums arithmetic into their own file (`revenue_figures.go`/`funnel_figures.go`), keeping every
+  file within 300 lines. Six new tests cover grouping by plan and owner (with "No owner"), drill with its
+  trail, a lost drill falling back with `drillLost`, the % split summing back to the whole, and the
+  "no figure sorts last" rule; the e2e spec now drills into "Fleet cards" and groups the funnel ranked
+  list by plan against the real seeded database.
 - [X] T015 `actualCost`/`roi` always "—" with the attribution-not-configured reason (FR-013, 049-C6) — set
   unconditionally in `ranked_revenue.go`'s `revenueFiguresOfActivities`
 - [X] T016 `cards.go`: the fixed Revenue card set — goal, actual, projected, performance (FR-010, 049-C9)
@@ -129,8 +139,8 @@ marks tasks that can run in parallel.
   `TestRankedFunnel_EntryCarriesConversionFromThePreviousStage_FR017_T057`, a fixture with real INQ/MQL
   facts, matching the existing report-level conversion test exactly (2.5%).
 - [X] T055 Run `/speckit-converge`; record remaining or "clean". Converged: no gap found that isn't
-  already a traceable, open task (T014, T057 remain, both pre-existing and honestly disclosed). T057 closed
-  in a follow-up pass after the PR opened; only T014 (ranked-list drill/grouping) remains.
+  already a traceable, open task (T014, T057 remained at the time, both pre-existing and honestly
+  disclosed). Both closed in follow-up passes after the PR opened — tasks.md now has no open item.
 - [X] T056 Open the PR into `measure-module` (note: branch stacked on 047's; retarget once PRs #62/#75
   merge), with the feature-map status change and the asks from T051. Opened as PR #82 against
   `feature/047-projections` (047's own PR #75's base chain); retarget to `measure-module` once #62/#75
