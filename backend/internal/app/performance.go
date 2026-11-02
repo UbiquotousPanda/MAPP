@@ -48,7 +48,7 @@ func (r *heldRelease) activityApproved(ctx context.Context, a actor.Actor, activ
 	return err
 }
 
-// activityUnapproved is activityApproved's reverse: an activity recalled from Approved holds its facts again.
+// activityUnapproved is activityApproved's reverse, for an activity that a change sends back to Created.
 func (r *heldRelease) activityUnapproved(ctx context.Context, a actor.Actor, activityID string) error {
 	if r.service == nil {
 		return nil
