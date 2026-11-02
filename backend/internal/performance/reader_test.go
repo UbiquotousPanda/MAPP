@@ -15,14 +15,15 @@ func eloquaMappings() []performance.Mapping {
 		{ColumnName: "INQs", Meaning: performance.MeaningStage, Stage: "inq"},
 		{ColumnName: "Revenue", Meaning: performance.MeaningRevenue},
 		{ColumnName: "Currency", Meaning: performance.MeaningCurrency},
+		{ColumnName: "Journey", Meaning: performance.MeaningJourney},
 	}
 }
 
 func TestReadFile_PlacesEveryCellWhereItsMappingSays_046C23(t *testing.T) {
 	t.Parallel()
 
-	content := []byte("Row ref,Date,Campaign ID,Media code,INQs,Revenue,Currency,Comment\n" +
-		"r1,2026-02-01,A-1,9000001,5,1234.50,USD,hello\n")
+	content := []byte("Row ref,Date,Campaign ID,Media code,INQs,Revenue,Currency,Journey,Comment\n" +
+		"r1,2026-02-01,A-1,9000001,5,1234.50,USD,Awareness,hello\n")
 
 	file, err := performance.ReadFile(content, eloquaMappings())
 	if err != nil {
@@ -35,6 +36,10 @@ func TestReadFile_PlacesEveryCellWhereItsMappingSays_046C23(t *testing.T) {
 	if row.Reference.Value != "r1" || row.Date.Value != "2026-02-01" || row.Currency.Value != "USD" {
 		t.Errorf("reference/date/currency = %q %q %q, want r1 2026-02-01 USD",
 			row.Reference.Value, row.Date.Value, row.Currency.Value)
+	}
+	// 050 reads this straight from performance_facts; a journey column mapped but discarded leaves it unset.
+	if row.Journey.Value != "Awareness" {
+		t.Errorf("journey = %q, want Awareness kept, not discarded (050)", row.Journey.Value)
 	}
 	if row.Keys.ActivityID != "A-1" || row.Keys.MediaCode != "9000001" {
 		t.Errorf("keys = %+v, want the activity id and media code from their own typed columns", row.Keys)

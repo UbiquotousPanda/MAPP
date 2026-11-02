@@ -60,6 +60,7 @@ CREATE TABLE performance_facts (
     count_value      bigint      CHECK (count_value >= 0),
     amount_minor     bigint,
     currency         text        REFERENCES currencies (code) DEFERRABLE INITIALLY DEFERRED,
+    journey_ref      text        CHECK (char_length(journey_ref) <= 200),
     held             boolean     NOT NULL,
     replaced_by_id   text        REFERENCES performance_facts (id) DEFERRABLE INITIALLY DEFERRED,
     version          integer     NOT NULL CHECK (version >= 1),

@@ -85,6 +85,7 @@ type Fact struct {
 	WebMetric       WebMetric    `json:"webMetric"`
 	Count           *int64       `json:"count,omitempty"`
 	Amount          *money.Money `json:"amount,omitempty"`
+	JourneyRef      string       `json:"journeyRef,omitempty"`
 	Held            bool         `json:"held"`
 	ReplacedByID    string       `json:"replacedById"`
 	record.Meta
@@ -110,6 +111,7 @@ type Interpreted struct {
 	Reference string    `json:"reference"`
 	Date      string    `json:"date"`
 	Currency  string    `json:"currency"`
+	Journey   string    `json:"journey,omitempty"`
 	Keys      RowKeys   `json:"keys"`
 	Readings  []Reading `json:"readings"`
 	Corrected bool      `json:"corrected"`
@@ -122,6 +124,7 @@ func (i Interpreted) Row(raw map[string]string) Row {
 		Reference: Cell{Column: "reference", Value: i.Reference},
 		Date:      Cell{Column: "date", Value: i.Date},
 		Currency:  Cell{Column: "currency", Value: i.Currency},
+		Journey:   Cell{Column: "journey", Value: i.Journey},
 		Keys:      i.Keys,
 		Readings:  i.Readings,
 	}

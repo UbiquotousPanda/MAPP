@@ -36,6 +36,7 @@ type Row struct {
 	Reference Cell
 	Date      Cell
 	Currency  Cell
+	Journey   Cell
 	Keys      RowKeys
 	Readings  []Reading
 }

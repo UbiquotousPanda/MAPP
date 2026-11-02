@@ -197,9 +197,9 @@ RETURNING (performance_configuration.media_code_next - 1)::bigint AS code;
 -- name: PutPerformanceFact :exec
 INSERT INTO performance_facts (
     id, source_id, import_id, source_reference, activity_id, matched_on, matched_key, fact_date, stage, web_metric,
-    count_value, amount_minor, currency, held, replaced_by_id,
+    count_value, amount_minor, currency, journey_ref, held, replaced_by_id,
     version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
 ON CONFLICT (id) DO UPDATE SET
     activity_id = excluded.activity_id, matched_on = excluded.matched_on, held = excluded.held,
     replaced_by_id = excluded.replaced_by_id, version = excluded.version, updated_at = excluded.updated_at,

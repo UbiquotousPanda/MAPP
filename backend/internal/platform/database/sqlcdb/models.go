@@ -613,6 +613,7 @@ type PerformanceFact struct {
 	CountValue      *int64
 	AmountMinor     *int64
 	Currency        *string
+	JourneyRef      *string
 	Held            bool
 	ReplacedByID    *string
 	Version         int
