@@ -41,11 +41,12 @@ export function WidgetPalette({ onAdd }: WidgetPaletteProps) {
                   draggable
                   className={styles.typeButton}
                   aria-label={`Add ${info.label.toLowerCase()}`}
+                  title={info.label}
                   onClick={() => onAdd(info.type)}
                   onDragStart={(event) => handleDragStart(event, info.type)}
                 >
                   <info.icon size={16} aria-hidden="true" />
-                  {info.label}
+                  <span className={styles.typeLabel}>{info.label}</span>
                 </button>
               </li>
             ))}

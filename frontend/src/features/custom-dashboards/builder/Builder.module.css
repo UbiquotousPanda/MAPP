@@ -200,31 +200,33 @@
   display: none;
 }
 
-/* Beside the sidebar, a left palette would leave the canvas too narrow to read, so it moves above it. */
+/* Beside the sidebar, a full palette would leave the canvas too narrow to read: it shows its icons only. */
 @media (max-width: 1439.98px) {
   .editor {
-    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-columns: 64px minmax(0, 1fr) 320px;
   }
 
   .palette {
-    position: static;
-    grid-column: 1 / -1;
-    flex-flow: row wrap;
-    align-items: flex-start;
-    max-height: none;
-  }
-
-  .palette .panelTitle {
-    flex-basis: 100%;
+    padding: var(--space-2);
   }
 
   .palette .typeList {
-    display: flex;
-    flex-wrap: wrap;
+    grid-template-columns: 1fr;
   }
 
   .palette .typeButton {
-    width: auto;
+    justify-content: center;
+  }
+
+  .palette .panelTitle,
+  .palette .groupTitle,
+  .typeLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
