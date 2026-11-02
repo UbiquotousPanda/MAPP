@@ -6,6 +6,11 @@ Lane D. **Status: Checklist prepared 2026-11-02 before the features merge; nothi
 `backend/internal/measure/wavebqa`, all green on the demo fakes, three low findings and one checklist correction
 (Findings). 047 reached `measure-module` meanwhile (887311c8); the same eight pass there unchanged.
 
+**047 part ran 2026-11-02 against `measure-module` 9c1ce8b6** (PR #75, T062 merged): six API checks in the same
+package (`projection_test.go`, `restated_test.go`, `categories_test.go`), all green on the demo fakes, two low findings
+and one medium (Findings 5–7). No `TestWaveB_CategoriesSeeded_047_T062`: `seed/measure_categories_test.go` proves it
+through the same API on the same harness; `TestWaveB_CategoryRecords_047_FR018_FR022` adds the activity types' view.
+
 The same pass as wave A (#46, PR #87 `qa/wave-a-pass`: `docs/sdd/measure-wave-a-qa.md`,
 `backend/internal/measure/waveaqa/qa_test.go`), now for Performance data, Projections, Summary, Revenue, Funnel stages
 and Attribution: every screen on the demo data **with the Measure demo plan** under the demo roles (every scope, no
@@ -16,7 +21,7 @@ financial access), findings raised as issues on the owning feature, critical and
 | Section | Must be on `measure-module` first | State 2026-11-02 |
 |---|---|---|
 | Performance data (046) | PR #62; integrator's `/settings/performance-data` web route (046 `contracts/api.md`:107) and the approvals call to 046's release port (note 2) | Open. Upload, imports, undo and review queue have no web yet (046 T052, T094) |
-| Projections (047) | PR #75 (stacked on #62); `/settings/activity-categories` web route (047 T056); category seed (047 T062, lane D) | Open |
+| Projections (047) | PR #75 (stacked on #62); `/settings/activity-categories` web route (047 T056); category seed (047 T062, lane D) | Merged: #75 887311c8, T062 a23f382a; the route is in `settings-routes.tsx`:32, the T056 e2e still open |
 | Revenue, Funnel stages (049) | PR #82 (stacked on #75, retargeted); lane B's `ActivitySeries` follow-up with 048-C1's words (048-C10) | Open |
 | Summary (048) | 048 built (T001–T023 all open, no PR) after #82 and `ActivitySeries` | Spec, plan, contract, tasks only |
 | Attribution (050) | T001–T006 are on `measure-module` (Settings › Attribution, `RoiValue`); T007–T008 need #62 | Figures on 048/049 blocked (050-Q1) |
@@ -67,8 +72,11 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | `TestWaveB_CategoriesLoseNothing_049_FR020` | Sum over each category + `uncategorised` = all categories, on all three reports | `?category=` | 049 FR-019, FR-020, 048-C8 (needs 047 T062) |
 | `TestWaveB_MissingIsNeverZero_FR009` | Without facts: actual null with a reason, conversion null, no 0 where a figure is missing | the three reports, `/activities/{id}/performance` | 049 FR-008, FR-009, 048 FR-017, 047 FR-013 |
 | `TestWaveB_RoiNotConfigured_049_FR013` | Every `actualCost`, `roi` null with "Attribution is not configured yet" until 050 T007; then model and basis | `/reports/revenue/ranked`, `/reports/summary/league/roi` | 049 FR-013, 048 FR-015, 050 FR-008 |
-| `TestWaveB_ProjectionShape_047_FR008_FR010` | Approved Measure activities: no month past December, none negative, past months actual only, later projected only, current both; stamp with `modelChangedAt`; Retargeting test `noGoal` | `/activities/{id}/performance` | 047 FR-008, FR-010, FR-012, FR-013, SC-005 |
-| `TestWaveB_ProjectionsRestated_047_SC002` | Two reads identical; a velocity change by Alex moves `projected` with no other action | `/activities/{id}/performance`, `PATCH /models/{modelId}` | 047 FR-011, SC-002 |
+| `TestWaveB_ProjectionShape_047_FR008_FR010` | Helix … first half (with `loadFacts`), second half, Tellus webinar series: twelve months of 2026, none negative, January–February actual only, April on projected only, March both; `projected` = actual to February + projected from March (3,458 = 700 + 2,758 on Helix … first half INQ); stamp Lubricants 1.0 with the model's `updatedAt`; goal stages the model allows. Retargeting test, Tellus case studies `noGoal`, no months, no stamp; Fleet expo gated. Months without a source say 0 (finding 6), kept out | `/activities/{id}/performance`, `/models/{modelId}` | 047 FR-008, FR-010, FR-012, FR-013, SC-005 |
+| `TestWaveB_ProjectionsRestated_047_SC002` | Two reads, and one an hour later the same day, byte for byte the same; Alex's velocity 1 and 2 shifts Helix … second half's MQL one month and revenue three, drops what lands after December and moves the stamp; Helix … first half (typed) unmoved | `/activities/{id}/performance`, `PATCH /models/{modelId}` | 047 FR-008, FR-009, FR-011, FR-012, SC-002 |
+| `TestWaveB_StagesProjectTheirGoals_047_FR007_FR009` | Tellus webinar series' months add to its typed 1,500 INQ, 300 MQL, 120,000.00 USD; Helix … second half's INQ months to 4,000, each MQL month 2 % of its INQ, half-up. Revenue against the goal: finding 7, not asserted | `/activities/{id}/performance` | 047 FR-006, FR-007, FR-009, SC-003 |
+| `TestWaveB_ModelProjectionFields_047_FR001_FR003` | −1, 25 and no stage in one 400 naming all three; velocity 1 and 2 saved at version 2, one log entry, a stale save 409 naming Alex; unticking INQ names the plans first (contract check skipped: finding 5), saved, the plan keeps its INQ goal and Helix … second half projects | `PATCH /models/{modelId}`, `/models/{modelId}/impact`, `/activity-log`, `/plans/{planId}` | 047 FR-001–FR-003, FR-005, US1-1–4 |
+| `TestWaveB_CategoryRecords_047_FR018_FR022` | The seeded three, Digital the default, MOBILITY – Long-term contract in none, as the list and every activity type say; "dIGITAL" refused; a type moves with the default; the bin releases it, Undo brings both back | `/settings/activity-categories`, `/activity-types`, `/recycle-bin/{entryId}/undo` | 047 FR-018–FR-022, US3-1–4, T062 |
 | `TestWaveB_PerformanceScope_046_FR044` | Priya, Daniel, Mei, Sara: 404 with a missing activity's very body (not 403) on the Measure plan's and the other team's activities, export included; Daniel sees the Measure activities he approves (finding 4); Alex, Carlos, Lea 200 | `/activities/{id}/performance{,/facts,/facts/export,/sources}`, `/integration-ids`, `/external-name-aliases`, `/media-codes` | 046 FR-044, 047 US2-6 |
 | `TestWaveB_PerformanceRights_046_FR043` | Every change answers 403 to the six demo roles but Alex, who can make each in turn (delete of a source with facts 409, upload to a deactivated one 409); sources, mappings, template, configuration 200 for all seven | `/performance/...`, `/activities/{id}/integration-ids/{sourceId}`, `/activities/{id}/media-codes`, `/media-codes/{id}` | 046 FR-002, FR-004, FR-043, contract |
 | `TestWaveB_UndoNeedsSettingsManage_046_FR043` | Mei with a custom role (`plans.view`, `performance.import`) loads and reads her load; undo of hers or Alex's 403, integration ID 403 | uploads, `/performance/imports/{id}{,/undo}`, `/roles`, `/people/{id}/roles` | 046 FR-043, 046-C16, open question 8 |
@@ -76,7 +84,7 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | `TestWaveB_HeldFactsCountNowhere_046_SC002` | Fleet expo (Submitted), Workshop roadshow (Declined), Dealer summit (Created) rows held, listed as held, their panels gated with no figure; Helix's actual only its own; Daniel's approval releases Fleet expo's. The report half waits for 049 | upload, `/activities/{id}/performance{,/facts}`, `/activities/{id}/approval/approve`; `/reports/funnel` after 049 | 046 FR-020, FR-027, FR-028, SC-002, 049 FR-021 |
 | `TestWaveB_PersonalDataRefused_046_FR012` | `E-mail` and `Phone` columns: 409 `not_allowed` naming both; no import, no row to review, no figure | uploads, `/performance/imports`, `/performance/review-rows` | 046 FR-012, SC-007, 046-C17 |
 | `TestWaveB_ReviewQueue_046_FR023` | Unknown key, keys disagree (both candidates named) and a two-fault row listed with reasons; findable by reason, key, source, status, date; no POST; dismiss without comment refused (contract 422, served 400: finding 1); dismiss, reopen, correct → *Resolved* and counted; Mei with `performance.import` sees no candidate (046-C15) | `/performance/review-rows{,/{rowId}{,/dismiss,/reopen,/correct}}` | 046 FR-011, FR-019, FR-023, FR-024, SC-003 |
-| `TestWaveB_SettingsRights_047_050` | Categories, model edit, attribution PUT: Alex 2xx, others 403; GET 200 for all; stale attribution save 409 | `/settings/activity-categories`, `/models/{modelId}`, `/settings/attribution` | 047 FR-023, 050 FR-002, US1-4 |
+| `TestWaveB_SettingsRights_047_050` | Category create, edit, delete, model edit and impact, attribution PUT: Alex 2xx in turn, the six others 403; categories, models, attribution and activity types 200 for all seven; stale attribution save 409. 050's PUT is on 9c1ce8b6, so its half runs too | `/settings/activity-categories{,/{categoryId}}`, `/models{,/{modelId}{,/impact}}`, `/settings/attribution`, `/activity-types` | 047 FR-023, 050 FR-002, US1-4 |
 | `TestWaveB_ModelChangeRestates_050_SC002` | After 050 T007: a new model names itself on every ROI; facts without a journey credit the same revenue under every model | `/settings/attribution`, `/reports/revenue/ranked`, `/reports/summary/league/roi` | 050 FR-004, FR-008, FR-009, SC-002 |
 
 ## Per screen checklist
@@ -122,19 +130,19 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 
 | Check | Source | Role(s) | Pass/fail | Notes |
 |---|---|---|---|---|
-| Velocity 1 and 2 saved, audited; stale save names who saved last | US1-1, FR-001, FR-003 | Alex | | |
-| −1, 25 and 1.5 all reported at once | US1-2, FR-001 | Alex | | |
-| Unticking a stage with a goal names the goals first; the goal stays and projects | US1-3, FR-003, FR-005 | Alex | | |
-| Every stage unticked: refused | US1-4, FR-002 | Alex | | |
-| Live waterfall example shows the lag | FR-004 | Alex | | |
-| Projected column; months split at today; current month carries both | US2-1, US2-2, FR-010, FR-016 | Alex | | Helix search and social, second half |
-| Typed later stages project their own goals | US2-3, FR-009 | Alex | | Tellus webinar series |
-| No goal: projected "—" with *no goal*, never 0 | US2-4, FR-013 | Alex | | Retargeting test, Tellus case studies |
-| Model name and its last change beside every projected figure | US2-5, FR-012 | Alex | | |
-| Nothing after December; shifted conversions dropped | FR-008, edge cases | Alex | | velocity 2 on a late activity |
-| Category CRUD: duplicate ignoring case refused; a type moves; one default; delete to bin, Undo restores assignments | US3-1–4, FR-018–FR-021 | Alex | | needs the route (T056) |
-| Without `settings.manage`: categories and models read-only with the view-only notice | US3-5, FR-023 | Carlos, Priya, Lea | | |
-| Each activity type shows its category on Activity types | FR-022 | Alex | | 047 T060 missing |
+| Velocity 1 and 2 saved, audited; stale save names who saved last | US1-1, FR-001, FR-003 | Alex | Pass (API) | Version 2, one log entry ("1 month", "2 months"); a version-1 save 409 `version_conflict` naming Alex Morgan |
+| −1, 25 and 1.5 all reported at once | US1-2, FR-001 | Alex | Pass (API, −1 and 25) | One 400 names both velocities and the empty stage set. 1.5 is no contract value (integer): `bad_request` before validation; the form's field takes no decimals (`ModelForm.tsx`:232), browser pass |
+| Unticking a stage with a goal names the goals first; the goal stays and projects | US1-3, FR-003, FR-005 | Alex | Pass (API) | Unticking INQ names 3 plans; saved, the Measure plan keeps INQ 12,000 and Helix … second half still projects 4,000. The warning's `kind` breaks the contract (finding 5). No demo plan sets its goal at MQL |
+| Every stage unticked: refused | US1-4, FR-002 | Alex | Pass (API) | In the same 400 |
+| Live waterfall example shows the lag | FR-004 | Alex | | web; 047's e2e (T055) |
+| Projected column; months split at today; current month carries both | US2-1, US2-2, FR-010, FR-016 | Alex | Pass (API) | 12 Mar: January, February actual only, March both and in progress, April on projected only, every stage and revenue; Helix … first half INQ 700 + 2,758 = 3,458. Months without a source say 0 (finding 6). The column is web |
+| Typed later stages project their own goals | US2-3, FR-009 | Alex | Pass (API) | Tellus webinar series' months: 1,500 INQ, 300 MQL, 120,000.00 USD; velocity 1 and 2 leave Helix … first half as it was |
+| No goal: projected "—" with *no goal*, never 0 | US2-4, FR-013 | Alex | Pass (API) | Retargeting test, Tellus case studies: `projected` null, `projectedReason` `noGoal`, no months, no stamp; the "—" is web |
+| Model name and its last change beside every projected figure | US2-5, FR-012 | Alex | Pass (API) | `projection`: Lubricants 1.0 and the model's `updatedAt`, moving with Alex's save; one stamp per panel |
+| Nothing after December; shifted conversions dropped | FR-008, edge cases | Alex | Pass (API) | Velocity 1 and 2: Helix … second half MQL 78 → 65 (December's 13 dropped), revenue 60,000 → 30,000; twelve months to 2026-12. The 60,000 against a 40,000 goal: finding 7 |
+| Category CRUD: duplicate ignoring case refused; a type moves; one default; delete to bin, Undo restores assignments | US3-1–4, FR-018–FR-021 | Alex | Pass (API) | "dIGITAL" 400 on `name`; Promotion with Event takes Event and the default; in the bin, Event is uncategorised and no default is left; Undo restores both. The route exists now: browser pass |
+| Without `settings.manage`: categories and models read-only with the view-only notice | US3-5, FR-023 | Carlos, Priya, Lea | Pass (API) | All six non-administrators: category create, edit, delete, model edit and impact 403, Settings reads 200. The notice is web |
+| Each activity type shows its category on Activity types | FR-022 | Alex | Pass (API) | `/activity-types` names each type's category as the list groups it, after every change; the page is 047 T060, still open |
 
 ### Shared frame checks (039) — run on Summary, Revenue and Funnel stages
 
@@ -260,7 +268,7 @@ The e2e seed (`frontend/playwright.config.ts`:32) and compose (`compose.yaml`:27
 | Goal coverage, INQ | the plan's 12,000 against its activities' 4,000 + 4,000 + 600 + 1,500 = 10,100 → 84 % | — | 048-C2; `measure.json`:29, 66, 86, 134, 224 |
 | Performance gate | Fleet expo Rotterdam (Submitted), Workshop roadshow Benelux (Declined), Dealer summit, Tellus trade press (Created) | not found; Daniel sees those he approves (finding 4) | 046 FR-027, FR-044 |
 | Projection kinds | typed: Helix … first half, Tellus webinar series; model: Helix … second half, Fleet expo; no goal: Retargeting test, Tellus case studies | not found | 047 FR-007, FR-009, FR-013 |
-| Categories | Digital media, Event, Content production need categories | same | 049 US3; 047 T062 |
+| Categories | Digital (default): Digital media; Events and sponsorship: Event, Sponsorship; Content and creative: Content production, Agency fees – Creative; MOBILITY – Long-term contract in none | same | 049 US3; 047 T062 (`measure.json`:269-273) |
 
 E2e literals on the wave B branches (049's e2e ran on `seed -reset`, without `-measure`: its `playwright.config.ts`:32):
 
@@ -281,10 +289,15 @@ E2e literals on the wave B branches (049's e2e ran on `seed -reset`, without `-m
 | 2 | 046 Performance data | Low | `POST /performance/sources/{id}/pull` on a simulated source with no mappings answers **500** `internal_error` ("read the feed of PS-1002: performance: the file can't be read as UTF-8 CSV", `pull.go`:26-28), where an upload of an unreadable file answers 400 `validation_failed` "This file can't be read…". FR-010 (the same path as an upload) and 046-C17 (a file refused before any row is read is refused with its reason). Nothing is stored. | Open, #100; kept out of the committed tests |
 | 3 | 046 Performance data | Low | `PATCH /performance/sources/{id}` answers `factCount: 0`, `lastLoadedAt: null`, `dataThrough: null` and the freshness of a source that never loaded, for a source holding 10 facts; `GET` answers 10. `handler.go`:172 builds the answer from the bare source. Contract `PerformanceSource.factCount`: "it may not be deleted while above zero", so a client keeping the save's answer offers Delete (FR-002) until it reloads. | Open, #100; kept out of the committed tests |
 | 4 | Checklist | — | Daniel sees the Measure activities he approves: the activity and its Performance answer 200 (`authz` `SeesActivity` counts approvers); Dealer summit, with no round, is not found for him. 046 follows the activity read (FR-044); this checklist's Roles table and *Performance gate* row said not found. | Corrected here; `TestWaveB_PerformanceScope_046_FR044` checks both |
+| 5 | 047 Projections | Low | `POST /models/MOD-1001/impact` with `{"allowedGoalStages": ["mql", "revenue"], "version": 1}` answers 200 `{"warnings": [{"kind": "goalStageRemoved", "message": "3 plans set their goal at a stage this model would no longer allow. …", "count": 3}]}`; `openapi.yaml`:14848 (`ImpactWarning.kind`) has no `goalStageRemoved`, so the answer breaks the served contract (apitest: "value must be one of 'goalsRecalculated', …") and the web's generated types lack the kind. 047 `contracts/api.md`:12-13 adds the stranded goals to the impact answer (FR-003). | Open, #102; `TestWaveB_ModelProjectionFields_047_FR001_FR003` skips that answer's contract check |
+| 6 | 047 Projections | Low | `GET /activities/{id}/performance` on an approved activity with a goal and no source (Helix … second half, as seeded): each stage `actual: null`, `reason: noSource`, yet `months` January–March carry `actual: 0` and revenue `"0.00"` USD. `measure-metrics.md`:7 ("never 0"), 047 `spec.md`:211 ("no facts at all: actual months are empty"), FR-013. No screen draws these months yet (the panel shows only web metrics' months); a chart of them would show zeros. | Open, #102; kept out of the committed tests |
+| 7 | 047 Projections | Medium | Per-month rounding of deals over-projects revenue. Helix … second half: 4,000 INQ July–December, Lubricants 1.0 at 2 %, 5 %, 10,000 USD, velocity 0, no facts. Its revenue goal is 40,000 USD (80 MQL, 4 deals, `settings.Waterfall`), but the panel's `revenue.projected` is 60,000.00 USD: each month's 13 MQL × 5 % = 0.65 deals rounds up to 1, six times. 049's `GET /reports/revenue/ranked?year=2026&show=activity` shows it at performance 150 with no data loaded. FR-007 and 047-C4 (`spec.md`:37-43, 234-236) round half-up per month, and SC-003 (`spec.md`:305-308) allows "less than one unit per month"; here one unit is 10,000 USD. A rule for 047 to decide (e.g. carry the remainder, as FR-006's phasing does) before 048 and 049 show it. | Open, #102 (rule decision): 047-C4, FR-007; not asserted either way |
 
 ## How to run
 
 **API harness**: `cd backend; go test -race ./internal/measure/wavebqa/` — fakes, `apitest.New(t, apitest.WithMeasureDemo())`.
+On the fakes 049's reports read their own store (`storestest.go`:72, `revenuetest`), not the facts a test uploads, so
+cross-report checks 5 and 6 need PostgreSQL.
 
 **Browser**: `docker compose up -d postgres`; `cd backend; go run ./cmd/seed -reset -measure; go run ./cmd/api`
 (127.0.0.1:8080); `cd frontend; pnpm run dev` (127.0.0.1:5173). Password `mapp`. Sign in as **Alex** (every screen and
@@ -300,6 +313,7 @@ create a source with mappings, and either upload a CSV keyed by activity ID or r
    exists; the build guide gives the facts to 046 (`measure-module-build.md`:107). Every actual, conversion, held-fact
    and ROI check needs them. Lane B or lane D?
 2. **No activity categories seeded** (047 `tasks.md`:112, T062, lane D): category checks of 048 and 049 need them.
+   Resolved by T062 (a23f382a): three categories, MOBILITY – Long-term contract left out (Measure demo data).
 3. **Lea and the Measure plan.** `demo-users-and-data.md`:94 says only Alex and Carlos see it; `seed/access.go`:56
    gives Lea All markets, and `seed/measure_test.go`:118 tests only Carlos and Priya.
 4. **Revenue without `finance.view`.** 039 FR-004 (`039 spec.md`:225) hides money; 048 shows revenue (`048
@@ -320,7 +334,8 @@ create a source with mappings, and either upload a CSV keyed by activity ID or r
 10. **048 not built**; it waits for `ActivitySeries` (048 `spec.md`:70, `tasks.md`:9). Until then 049 says "No goal
     set." where 048-C1 says **No goal**.
 11. **047 open items**: is a zero goal a goal (`tasks.md`:107, T059) — decides "No goal" against 0; currency mismatch
-    in `SplitAmounts` (`tasks.md`:105, T058) — check Revenue in EUR.
+    in `SplitAmounts` (`tasks.md`:105, T058) — check Revenue in EUR. Both still open on 9c1ce8b6; the 047 part could
+    not reach them: no demo activity has a zero goal or a revenue goal in another currency than USD.
 12. **Lane D's own data**: `measure.json`:87 gives Helix search and social, second half MQL 800 without a revenue,
     but `seed/activities.go`:193 keeps typed stages only with a typed revenue, so that MQL goal is dropped. Intended?
 13. **axe**: 049's e2e excludes RankedList's "Open …" links for target size (`measure-revenue.spec.ts`:15, 049
