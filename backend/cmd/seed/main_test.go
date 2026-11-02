@@ -61,7 +61,7 @@ func TestRun_RefusesUnexpectedArguments(t *testing.T) {
 		args []string
 		want string
 	}{
-		{args: []string{"-reset", "mapp2"}, want: "Unexpected argument 'mapp2' — the options are -reset, -if-empty and -showcase."},
+		{args: []string{"-reset", "mapp2"}, want: "Unexpected argument 'mapp2' — the options are -reset, -if-empty, -showcase and -measure."},
 		{args: []string{"-reset", "-if-empty"}, want: "Choose -reset or -if-empty, not both."},
 	}
 	for _, tt := range tests {
@@ -70,6 +70,17 @@ func TestRun_RefusesUnexpectedArguments(t *testing.T) {
 		if err == nil || err.Error() != tt.want {
 			t.Errorf("run(%q) = %v, want %q", tt.args, err, tt.want)
 		}
+	}
+}
+
+func TestParseArgs_ShowcaseAndMeasureAreOptIn(t *testing.T) {
+	plain, err := parseArgs([]string{"-reset"})
+	if err != nil || plain.showcase || plain.measure {
+		t.Errorf("parseArgs(-reset) = %+v, %v; want neither the showcase nor the Measure demo", plain, err)
+	}
+	both, err := parseArgs([]string{"-reset", "-showcase", "-measure"})
+	if err != nil || !both.showcase || !both.measure {
+		t.Errorf("parseArgs(-reset -showcase -measure) = %+v, %v; want both", both, err)
 	}
 }
 

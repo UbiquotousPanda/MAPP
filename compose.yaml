@@ -24,7 +24,7 @@ services:
   seed:
     build: ./backend
     image: mapp-api:local
-    entrypoint: ["/usr/local/bin/seed", "-if-empty"]
+    entrypoint: ["/usr/local/bin/seed", "-if-empty", "-measure"]
     environment:
       DATABASE_URL: postgres://mapp@postgres:5432/mapp?sslmode=disable
     depends_on:
