@@ -19618,14 +19618,6 @@ export interface operations {
                 approver?: components["parameters"]["ApprovalsApprover"];
                 /** @description Grid filter by status; repeat for several. */
                 outcome?: components["parameters"]["ApprovalsOutcome"];
-                /** @description Vendor name as entered, or none for no vendor; repeat for several. A value that matches nothing gives empty figures. */
-                vendor?: components["parameters"]["PrReportVendor"];
-                /** @description Person ID of the purchase request's owner; repeat for several. */
-                requestOwner?: components["parameters"]["PrReportRequestOwner"];
-                /** @description Purchase request status; repeat for several. */
-                status?: components["parameters"]["PrReportStatus"];
-                /** @description The grid's columns, comma-separated, in order. */
-                columns?: components["parameters"]["PrReportColumns"];
             };
             header?: never;
             path: {

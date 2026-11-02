@@ -7891,10 +7891,6 @@ paths:
         - $ref: "#/components/parameters/ApprovalsRecordType"
         - $ref: "#/components/parameters/ApprovalsApprover"
         - $ref: "#/components/parameters/ApprovalsOutcome"
-        - $ref: "#/components/parameters/PrReportVendor"
-        - $ref: "#/components/parameters/PrReportRequestOwner"
-        - $ref: "#/components/parameters/PrReportStatus"
-        - $ref: "#/components/parameters/PrReportColumns"
       responses:
         "200":
           description: The file, named "SP&A One – <report> [– <widget>] – <year> – <date>".

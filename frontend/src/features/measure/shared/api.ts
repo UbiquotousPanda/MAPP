@@ -54,15 +54,8 @@ export function useReportFrame(report: ReportKey, address: ReportAddress) {
 
 type ExportQuery = NonNullable<operations['exportReport']['parameters']['query']>;
 
-const OWN_VALUES = ['sort', 'tab', 'group', 'q', 'drill', 'statusType', 'columns'] as const;
-const OWN_LISTS = [
-  'recordType',
-  'approver',
-  'outcome',
-  'vendor',
-  'requestOwner',
-  'status',
-] as const;
+const OWN_VALUES = ['sort', 'tab', 'group', 'q', 'drill', 'statusType'] as const;
+const OWN_LISTS = ['recordType', 'approver', 'outcome'] as const;
 
 /** The report's own parameters on screen (sort, tab, search, a ranked list's group and drill, a grid's filters). */
 function ownQuery(params?: URLSearchParams): Partial<ExportQuery> {
@@ -75,8 +68,7 @@ function ownQuery(params?: URLSearchParams): Partial<ExportQuery> {
     const values = params?.getAll(name) ?? [];
     if (values.length > 0) query[name] = values;
   }
-  const order = params?.get('order');
-  if (order === 'asc' || order === 'desc') query.order = order;
+  if (params?.get('order') === 'asc') query.order = 'asc';
   return query;
 }
 
