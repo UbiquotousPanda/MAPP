@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"mapp/internal/platform/money"
 )
@@ -26,6 +27,7 @@ type Cell struct {
 func Validate(row Row, today time.Time, currencies map[string]bool) []Fault {
 	faults := referenceFaults(row.Reference)
 	faults = append(faults, dateFaults(row.Date, today)...)
+	faults = append(faults, journeyFaults(row.Journey)...)
 	return append(faults, readingFaults(row, currencies)...)
 }
 
@@ -36,6 +38,13 @@ func referenceFaults(c Cell) []Fault {
 		return []Fault{{Column: c.Column, Code: faultMissingReference, Message: msgReferenceNeeded}}
 	case len(raw) > maxReferenceLength:
 		return []Fault{{Column: c.Column, Code: faultReferenceTooLong, Message: msgReferenceTooLong}}
+	}
+	return nil
+}
+
+func journeyFaults(c Cell) []Fault {
+	if utf8.RuneCountInString(strings.TrimSpace(c.Value)) > maxReferenceLength {
+		return []Fault{{Column: c.Column, Code: faultJourneyTooLong, Message: msgJourneyTooLong}}
 	}
 	return nil
 }
