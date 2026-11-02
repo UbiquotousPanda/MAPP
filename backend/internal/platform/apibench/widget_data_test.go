@@ -8,7 +8,7 @@ import (
 	"mapp/internal/widgetdata"
 )
 
-// BenchmarkWidgetData measures feature 051's SC-004 on the demo data and on the volume: each of the twelve
+// BenchmarkWidgetData measures the dashboard response times on the demo data and on the volume: each of the twelve
 // widgets of a dashboard answered on its own, together within 3 seconds and one preview within 1 second.
 func BenchmarkWidgetData(b *testing.B) {
 	for _, data := range []apibench.Data{apibench.Demo, apibench.Volume} {

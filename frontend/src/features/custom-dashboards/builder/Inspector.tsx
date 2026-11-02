@@ -95,6 +95,7 @@ function WidgetInspector({ draft, widget, problems, onAction }: WidgetInspectorP
         )}
         {tab === 'layout' && (
           <LayoutTab
+            key={widget.id}
             widget={widget}
             widgets={draft.widgets}
             onPlace={(layout) => onAction({ type: 'place', id, layout })}

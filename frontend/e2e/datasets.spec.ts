@@ -3,7 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
 import { expect, test } from './support/no-csp-violations';
 
-// Feature 051 US3 against the real API: Priya uploads the agency's event leads, corrects a column, charts
+// Uploaded datasets against the real API: Priya uploads the agency's event leads, corrects a column, charts
 // the dataset beside SP&A One data and deletes it with Undo; files that break the rules store nothing.
 
 const PRIYA = 'priya.raman@shell.com';

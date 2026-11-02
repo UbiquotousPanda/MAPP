@@ -16,7 +16,7 @@ func Validate(d Dashboard) error {
 	return validate(normalised(d)).Err()
 }
 
-// validate returns every problem of a dashboard at once (FR-033); fields are checked against the data
+// validate returns every problem of a dashboard at once; fields are checked against the data
 // catalogue only when a widget's data is asked for.
 func validate(d Dashboard) errs.Problems {
 	var p errs.Problems
