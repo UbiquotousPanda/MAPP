@@ -44,9 +44,10 @@ function groupsText(data: WidgetData): string {
   return `showing ${shown} of ${all}${rest}`;
 }
 
+// SP&A One says itself how many groups it shows, except when the rest are grouped as Other.
 export function shownGroupsNote(data: WidgetData): string | null {
   const text = groupsText(data);
-  return text.startsWith('showing') ? `S${text.slice(1)}` : null;
+  return text.endsWith('as Other') ? `S${text.slice(1)}` : null;
 }
 
 export function rowKey(row: WidgetData['rows'][number]): string {
