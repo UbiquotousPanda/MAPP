@@ -52,6 +52,18 @@ describe('051 FR-040, FR-044: a dataset’s page (US3 scenario 5)', () => {
     await expectNoAxeViolations();
   });
 
+  it('writes each cell as its column’s type: dates in the person’s format, amounts with their currency', async () => {
+    renderPage();
+
+    const rows = await screen.findByRole('table', { name: 'Rows of the dataset' });
+    const second = within(rows).getAllByRole('row')[2];
+    expect(
+      within(second as HTMLElement)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent),
+    ).toEqual(['Event 2', '04 Mar 2026', '11', '1,200.00 EUR']);
+  });
+
   it('pages through the rows', async () => {
     const { user, api } = renderPage();
 
