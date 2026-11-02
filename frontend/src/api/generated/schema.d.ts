@@ -11222,6 +11222,14 @@ export interface components {
         ReportOwnSort: string;
         /** @description The report's own tab, which the report validates (044). */
         ReportOwnTab: string;
+        /** @description A grid's vendor filter, which the report validates (042); repeat for several. */
+        ReportOwnVendor: string[];
+        /** @description A grid's purchase request owner filter, which the report validates (042); repeat for several. */
+        ReportOwnRequestOwner: string[];
+        /** @description The report's own status filter, which the report validates (042 several statuses, 045 one); repeat for several. */
+        ReportOwnStatus: string[];
+        /** @description A grid's chosen columns, comma-separated in order, which the report validates (042). */
+        ReportOwnColumns: string;
         RankedSort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
         RankedOrder: "desc" | "asc";
         /** @description none, plan, owner or attr:<attribute ID>. */
@@ -19618,6 +19626,14 @@ export interface operations {
                 approver?: components["parameters"]["ApprovalsApprover"];
                 /** @description Grid filter by status; repeat for several. */
                 outcome?: components["parameters"]["ApprovalsOutcome"];
+                /** @description A grid's vendor filter, which the report validates (042); repeat for several. */
+                vendor?: components["parameters"]["ReportOwnVendor"];
+                /** @description A grid's purchase request owner filter, which the report validates (042); repeat for several. */
+                requestOwner?: components["parameters"]["ReportOwnRequestOwner"];
+                /** @description The report's own status filter, which the report validates (042 several statuses, 045 one); repeat for several. */
+                status?: components["parameters"]["ReportOwnStatus"];
+                /** @description A grid's chosen columns, comma-separated in order, which the report validates (042). */
+                columns?: components["parameters"]["ReportOwnColumns"];
             };
             header?: never;
             path: {

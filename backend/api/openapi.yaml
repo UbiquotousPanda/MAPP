@@ -7891,6 +7891,10 @@ paths:
         - $ref: "#/components/parameters/ApprovalsRecordType"
         - $ref: "#/components/parameters/ApprovalsApprover"
         - $ref: "#/components/parameters/ApprovalsOutcome"
+        - $ref: "#/components/parameters/ReportOwnVendor"
+        - $ref: "#/components/parameters/ReportOwnRequestOwner"
+        - $ref: "#/components/parameters/ReportOwnStatus"
+        - $ref: "#/components/parameters/ReportOwnColumns"
       responses:
         "200":
           description: The file, named "SP&A One – <report> [– <widget>] – <year> – <date>".
@@ -8375,6 +8379,49 @@ components:
       schema:
         type: string
         pattern: ^[a-z][A-Za-z]{0,39}$
+    ReportOwnVendor:
+      name: vendor
+      in: query
+      description: A grid's vendor filter, which the report validates (042); repeat for several.
+      style: form
+      explode: true
+      schema:
+        type: array
+        maxItems: 100
+        items:
+          type: string
+          maxLength: 200
+    ReportOwnRequestOwner:
+      name: requestOwner
+      in: query
+      description: A grid's purchase request owner filter, which the report validates (042); repeat for several.
+      style: form
+      explode: true
+      schema:
+        type: array
+        maxItems: 100
+        items:
+          type: string
+          pattern: ^[A-Z]+-[0-9]+$
+    ReportOwnStatus:
+      name: status
+      in: query
+      description: The report's own status filter, which the report validates (042 several statuses, 045 one); repeat for several.
+      style: form
+      explode: true
+      schema:
+        type: array
+        maxItems: 20
+        items:
+          type: string
+          pattern: ^[a-z][A-Za-z]{0,39}$
+    ReportOwnColumns:
+      name: columns
+      in: query
+      description: A grid's chosen columns, comma-separated in order, which the report validates (042).
+      schema:
+        type: string
+        maxLength: 200
     RankedSort:
       name: sort
       in: query
