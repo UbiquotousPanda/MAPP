@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-01
 
-**Status**: Draft
+**Status**: Built
 
 **Input**: User description: "Purchase request report of the Measure module (wave A, lane C, issue #35): counts
 and amounts of purchase requests by status, commitment by vendor and by owner per delivery month (Approved and

@@ -52,7 +52,7 @@ CommitmentChart:
   allSeries: Series[]                         # every vendor or owner, largest first (table view, export)
   totals: (Money|null)[]                      # per month
   committed: Money|null                       # the sum; equals the card
-Series: { key: string, name: string, values: (Money|null)[] }   # one value per month
+Series: { key: string, name: string, values: (Money|null)[], total: Money|null }   # one value per month
 
 PurchaseRequestGrid:
   vendors: VendorNode[]                       # one page of vendors, each with everything below it

@@ -69,14 +69,10 @@ func chartSheet(name, first string, c Chart) sheet.Sheet {
 	rows := [][]sheet.Cell{heads(append(head, "Total")...)}
 	for _, s := range c.AllSeries {
 		row := []sheet.Cell{sheet.Text(s.Name)}
-		var total money.Amount
 		for _, v := range s.Values {
 			row = append(row, moneyCell(v))
-			if v != nil {
-				total = total.Add(v.Amount)
-			}
 		}
-		rows = append(rows, append(row, sheet.Money(total)))
+		rows = append(rows, append(row, moneyCell(s.Total)))
 	}
 	totals := []sheet.Cell{sheet.Bold("Total")}
 	for _, t := range c.Totals {

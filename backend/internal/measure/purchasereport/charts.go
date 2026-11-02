@@ -114,7 +114,7 @@ func (d data) render(list []*seriesTally, axis []string) []Series {
 		for _, m := range axis {
 			values = append(values, d.cell(s.cells[m]))
 		}
-		out = append(out, Series{Key: s.key, Name: s.name, Values: values})
+		out = append(out, Series{Key: s.key, Name: s.name, Values: values, Total: s.total.money(d.shown)})
 	}
 	return out
 }

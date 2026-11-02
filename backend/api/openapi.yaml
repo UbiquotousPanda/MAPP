@@ -10174,7 +10174,7 @@ components:
     PrReportSeries:
       type: object
       additionalProperties: false
-      required: [key, name, values]
+      required: [key, name, values, total]
       properties:
         key:
           type: string
@@ -10185,6 +10185,8 @@ components:
           description: One value per month of the chart.
           items:
             $ref: "#/components/schemas/PrReportMoney"
+        total:
+          $ref: "#/components/schemas/PrReportMoney"
     PrReportChart:
       type: object
       additionalProperties: false

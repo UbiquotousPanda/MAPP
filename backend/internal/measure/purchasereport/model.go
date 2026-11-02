@@ -63,6 +63,7 @@ type Series struct {
 	Key    string         `json:"key"`
 	Name   string         `json:"name"`
 	Values []*money.Money `json:"values"`
+	Total  *money.Money   `json:"total"`
 }
 
 type PersonRef struct {

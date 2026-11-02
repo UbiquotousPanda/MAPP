@@ -4746,6 +4746,7 @@ export interface components {
             name: string;
             /** @description One value per month of the chart. */
             values: components["schemas"]["PrReportMoney"][];
+            total: components["schemas"]["PrReportMoney"];
         };
         PrReportChart: {
             /** @description Each month between the first and the last as 2026-03, then none for a line without a delivery date. */
@@ -4814,6 +4815,7 @@ export interface components {
             };
         };
         PurchaseRequestsReport: {
+            purchaseSupport: boolean;
             cards: {
                 purchaseRequests: number;
                 lines: number;
