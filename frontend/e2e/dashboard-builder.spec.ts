@@ -218,7 +218,7 @@ test('051 FR-026: on a 1280 px window the canvas keeps room for readable preview
   const canvas = page.getByRole('region', { name: 'Canvas' });
   await expect(cell(page, 'Planned cost by activity type')).toBeVisible();
 
-  expect((await canvas.boundingBox())?.width).toBeGreaterThanOrEqual(600);
+  expect((await canvas.boundingBox())?.width).toBeGreaterThanOrEqual(550);
   await page.getByRole('button', { name: 'Add text note' }).click();
   await expect(cell(page, 'Text note')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1280);

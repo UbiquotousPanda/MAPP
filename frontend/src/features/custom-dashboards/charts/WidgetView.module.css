@@ -126,7 +126,7 @@
   overflow-wrap: anywhere;
   color: var(--ink);
   font-family: var(--font-heading);
-  font-size: clamp(var(--text-md), 13cqi, var(--text-2xl));
+  font-size: clamp(var(--text-sm), 12cqi, var(--text-2xl));
   font-weight: var(--weight-heading);
   font-variant-numeric: tabular-nums;
 }
