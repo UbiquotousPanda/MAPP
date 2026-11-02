@@ -67,7 +67,10 @@ test('051 US2: Daniel opens Dashboards, the built-ins and the dashboard shared w
   await expect(page).toHaveURL(/\/dashboards\/DB-\d+$/);
   await expect(page.getByText('By Priya Raman')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Edit' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'More' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Make a copy' })).toBeVisible();
+  const amount = widget(page, 'Campaigns').getByRole('cell', { name: /^\$[\d,]+\.\d{2}$/ });
+  await expect(amount.first()).toHaveCSS('text-align', 'right');
   await expect(
     widget(page, 'Event leads by month').getByText("You don't have access to this data"),
   ).toBeVisible();
