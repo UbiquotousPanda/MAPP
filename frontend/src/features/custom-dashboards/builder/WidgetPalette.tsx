@@ -1,4 +1,5 @@
 import type { DragEvent } from 'react';
+import { cx } from '@/ui/cx';
 import type { WidgetType } from '../model';
 import { WIDGET_TYPES } from '../widget-types';
 import type { WidgetTypeInfo } from '../widget-types';
@@ -23,7 +24,7 @@ export function WidgetPalette({ onAdd }: WidgetPaletteProps) {
   }
 
   return (
-    <section aria-labelledby="palette-title" className={styles.panel}>
+    <section aria-labelledby="palette-title" className={cx(styles.panel, styles.palette)}>
       <h2 id="palette-title" className={styles.panelTitle}>
         Widgets
       </h2>

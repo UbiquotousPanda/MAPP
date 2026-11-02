@@ -208,3 +208,18 @@ test('051 FR-035: the view-only builder shows each chart whole inside its widget
   );
   await expectNoAxeViolations(page);
 });
+
+test('051 FR-026: on a 1280 px window the canvas keeps room for readable previews', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await signInAs(page, PRIYA);
+  await page.goto('/builder/DB-1001');
+  const canvas = page.getByRole('region', { name: 'Canvas' });
+  await expect(cell(page, 'Planned cost by activity type')).toBeVisible();
+
+  expect((await canvas.boundingBox())?.width).toBeGreaterThanOrEqual(600);
+  await page.getByRole('button', { name: 'Add text note' }).click();
+  await expect(cell(page, 'Text note')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1280);
+});
