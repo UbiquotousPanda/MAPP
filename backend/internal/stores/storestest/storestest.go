@@ -6,6 +6,7 @@ import (
 	"context"
 	"strings"
 
+	"mapp/internal/measure/revenue/revenuetest"
 	"mapp/internal/performance"
 	"mapp/internal/performance/performancetest"
 
@@ -68,6 +69,7 @@ func finance(db *fake.DB) stores.Finance {
 		Budgets: budgettest.NewStore(db), Financials: financialstest.NewStore(db), SwbsRuns: swbstest.NewStore(db),
 		Performance:      performanceStore(db),
 		PurchaseRequests: purchaserequesttest.NewStore(db), GsapLink: gsaplinktest.NewStore(db),
+		Revenue: revenuetest.NewStore(),
 	}
 }
 
