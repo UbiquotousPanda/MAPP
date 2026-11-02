@@ -136,6 +136,10 @@ func TestReadCSV_BOMDelimiterQuotes_012FR028(t *testing.T) {
 		{name: "semicolons, an empty row skipped", data: "Name;Cost\n;\n Launch ;12,50\n",
 			want: []Row{{Number: 1, Cells: []string{"Name", "Cost"}}, {Number: 3, Cells: []string{"Launch", "12,50"}}}},
 		{name: "tabs", data: "Name\tCost\n", want: []Row{{Number: 1, Cells: []string{"Name", "Cost"}}}},
+		{name: "a blank line is a row of the sheet", data: "Name\n\nLaunch\n",
+			want: []Row{{Number: 1, Cells: []string{"Name"}}, {Number: 3, Cells: []string{"Launch"}}}},
+		{name: "a cell over two lines is one row", data: "Name\n\"Trade\nfair\"\nLaunch\n",
+			want: []Row{{Number: 1, Cells: []string{"Name"}}, {Number: 2, Cells: []string{"Trade\nfair"}}, {Number: 3, Cells: []string{"Launch"}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
