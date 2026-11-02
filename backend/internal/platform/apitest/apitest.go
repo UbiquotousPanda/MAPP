@@ -45,6 +45,7 @@ type settings struct {
 	db             *fake.DB
 	withoutSeed    bool
 	withoutHistory bool
+	measure        bool
 	storageDown    bool
 }
 
@@ -68,6 +69,11 @@ func WithoutSeed() Option {
 
 func WithoutDemoHistory() Option {
 	return func(s *settings) { s.withoutHistory = true }
+}
+
+// WithMeasureDemo starts from the demo data with the Measure demo plan (seed.WithMeasure), as the demo does.
+func WithMeasureDemo() Option {
+	return func(s *settings) { s.measure = true }
 }
 
 func New(t testing.TB, opts ...Option) *Server {
@@ -101,6 +107,8 @@ func (s settings) dataOf(tb testing.TB) *fake.DB {
 		return s.db
 	case s.withoutSeed:
 		return fake.NewDB()
+	case s.measure:
+		return MeasureDemoDB(tb)
 	}
 	return DemoDB(tb, s.withoutHistory)
 }

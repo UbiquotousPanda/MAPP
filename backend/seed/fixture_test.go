@@ -70,7 +70,11 @@ type demoData struct {
 // loadDemo reads back everything the seed stored.
 func loadDemo(t *testing.T) demoData {
 	t.Helper()
-	db := loadedStore(t)
+	return demoIn(t, loadedStore(t))
+}
+
+func demoIn(t *testing.T, db *fake.DB) demoData {
+	t.Helper()
 	var d demoData
 	read(t, db, func(ctx context.Context) error {
 		peopleRepo, settingsRepo, approvalsRepo := peopletest.NewStore(db), settingstest.NewStore(db), approvaltest.NewStore(db)
