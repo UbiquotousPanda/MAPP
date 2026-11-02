@@ -66,6 +66,49 @@ func TestReport_MatchesTheHandCalculatedTable_SC001(t *testing.T) {
 	}
 }
 
+// A real defect: the cards always labelled their amount USD, and the ranked list was never converted at
+// all. Both must show EUR, the frame's own display currency (FR-024).
+func TestReport_ShowsAmountsInTheDisplayCurrencyNotAlwaysUSD_FR024(t *testing.T) {
+	t.Parallel()
+	start, end := date.MustParse("2026-01-01"), date.MustParse("2026-12-31")
+	node := allwork.Node{Level: allwork.LevelActivity, ID: "A-1", PlanID: "P-1", Name: "Launch film",
+		INQ: inqGoal(365_000), StartDate: &start, EndDate: &end}
+	rate, err := money.ParseRate("0.5")
+	if err != nil {
+		t.Fatalf("ParseRate: %v", err)
+	}
+	sc := measure.Scope{Year: 2026, Nodes: []allwork.Node{node}, Matched: allwork.Matched{Activities: []string{"A-1"}},
+		Currency: allwork.Currency{Code: "EUR", Rate: rate}}
+	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}
+	s := newFixtureWith(sc, goals, nil)
+
+	report, err := s.Report(t.Context(), priya, measure.Filter{})
+	if err != nil {
+		t.Fatalf("Report: %v", err)
+	}
+	if report.Cards.Goal.Value == nil || report.Cards.Goal.Value.Currency != "EUR" {
+		t.Fatalf("goal card = %+v, want its currency EUR, not USD", report.Cards.Goal.Value)
+	}
+	const wantCents = 273_000_000 / 2 // 273,000,000 USD cents converted at 0.5
+	if report.Cards.Goal.Value.Amount.Cents() != wantCents {
+		t.Errorf("goal = %s, want %d cents (273,000,000 USD cents at 0.5)", report.Cards.Goal.Value.Amount, wantCents)
+	}
+
+	ranked, err := s.RankedRevenue(t.Context(), priya, measure.Filter{Show: "activity"},
+		revenue.RankedQuery{Sort: revenue.SortProjectedRevenue, Order: revenue.OrderDesc, Size: 10, Page: 1})
+	if err != nil {
+		t.Fatalf("RankedRevenue: %v", err)
+	}
+	entry := ranked.Groups[0].Entries[0]
+	if entry.Figures.Goal == nil || entry.Figures.Goal.Currency != "EUR" {
+		t.Fatalf("ranked entry goal = %+v, want its currency EUR", entry.Figures.Goal)
+	}
+	if entry.Figures.Goal.Amount.Cents() != report.Cards.Goal.Value.Amount.Cents() {
+		t.Errorf("ranked entry goal = %s, want the same converted amount as the report's own card %s",
+			entry.Figures.Goal.Amount, report.Cards.Goal.Value.Amount)
+	}
+}
+
 func TestReport_ProjectsEachActivitySeparatelyThenSums_FR022_049C3(t *testing.T) {
 	t.Parallel()
 	start, end := date.MustParse("2026-01-01"), date.MustParse("2026-12-31")
@@ -87,8 +130,7 @@ func TestReport_ProjectsEachActivitySeparatelyThenSums_FR022_049C3(t *testing.T)
 	if err != nil {
 		t.Fatalf("Report: %v", err)
 	}
-	// Each activity projects to 273 deals x 10,000 USD = 2,730,000.00 USD on its own (SC-001); summing the
-	// two activities' own projections, rather than their INQ first, must double that exactly.
+	// Each activity projects to 2,730,000.00 USD on its own (SC-001); summing their projections must double it.
 	wantGoal := money.USD(money.FromCents(546_000_000))
 	if got.Cards.Goal.Value == nil || got.Cards.Goal.Value.Amount.Cents() != wantGoal.Amount.Cents() {
 		t.Errorf("goal = %v, want %s (two activities projected separately, then summed)", got.Cards.Goal.Value, wantGoal.Amount)
@@ -181,5 +223,35 @@ func TestReport_ActualIsCountedFactsByFactDate_FR021(t *testing.T) {
 	}
 	if got.Cards.Actual.Value == nil || got.Cards.Actual.Value.Amount.Cents() != 500_000 {
 		t.Errorf("actual card = %v, want the one counted fact", got.Cards.Actual.Value)
+	}
+}
+
+// A real defect: July (the fixed clock's month) carries both an Actual and a Projected figure, and the
+// cards summed both into the total, double-counting it. A fact landing in July must move Actual, never the
+// total: July's own Projected figure already stands for that month (FR-010).
+func TestReport_TotalDoesNotCountTheMonthInProgressTwice_FR010(t *testing.T) {
+	t.Parallel()
+	sc := oneActivityScope()
+	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}
+	before := newFixtureWith(sc, goals, nil)
+	beforeReport, err := before.Report(t.Context(), priya, measure.Filter{})
+	if err != nil {
+		t.Fatalf("Report (no July fact): %v", err)
+	}
+
+	facts := []revenue.FactTotal{{ActivityID: "A-1", Stage: "revenue", Month: "2026-07", Currency: "USD", AmountMinor: 5_000_000, FactCount: 1}}
+	after := newFixtureWith(sc, goals, facts)
+	afterReport, err := after.Report(t.Context(), priya, measure.Filter{})
+	if err != nil {
+		t.Fatalf("Report (with a July fact): %v", err)
+	}
+
+	if afterReport.Cards.Actual.Value == nil ||
+		afterReport.Cards.Actual.Value.Amount.Cents()-beforeReport.Cards.Actual.Value.Amount.Cents() != 5_000_000 {
+		t.Fatalf("actual card moved by %v, want exactly the 50,000.00 USD July fact", afterReport.Cards.Actual.Value)
+	}
+	if afterReport.Cards.Projected.Value.Amount.Cents() != beforeReport.Cards.Projected.Value.Amount.Cents() {
+		t.Errorf("total = %s after a July fact, want it unchanged from %s: July's model figure already covers July",
+			afterReport.Cards.Projected.Value.Amount, beforeReport.Cards.Projected.Value.Amount)
 	}
 }

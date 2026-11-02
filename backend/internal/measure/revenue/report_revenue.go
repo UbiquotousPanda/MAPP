@@ -34,7 +34,7 @@ func (s *Service) buildRevenueReport(views []activityView, period string, sc mea
 			break
 		}
 	}
-	out := RevenueReport{Cards: revenueCards(periods, anyGoal), Period: periodShown(period), Periods: periods}
+	out := RevenueReport{Cards: revenueCards(periods, anyGoal, display.Currency()), Period: periodShown(period), Periods: periods}
 	if stamp := stampOf(views); stamp != nil {
 		out.Projection = stamp
 	}

@@ -34,9 +34,11 @@ func projectionSplit(v activityView, w window) projection.SplitMoney {
 	return projection.SplitAmounts(v.facts.revenue, v.projection.Revenue, w.today, w.year)
 }
 
-// withPerformance derives Performance from Projected ÷ Goal (049-C15, 049-C16), the same formula the
-// cards use, so it stays correct whether f is one activity's own figures or a rolled-up total.
-func withPerformance(f RevenueFigures) RevenueFigures {
+// withPerformance converts f into the display currency (FR-024, every figure the ranked list shows, not
+// only the report's own cards) and derives Performance from Projected ÷ Goal (049-C15, 049-C16) — a ratio,
+// so it is the same whichever currency the conversion already happened in.
+func withPerformance(f RevenueFigures, display money.Display) RevenueFigures {
+	f.Goal, f.Actual, f.Projected = display.Optional(f.Goal), display.Optional(f.Actual), display.Optional(f.Projected)
 	if f.Goal == nil {
 		return f
 	}

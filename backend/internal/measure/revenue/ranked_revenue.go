@@ -18,22 +18,25 @@ type revenueRankedInput struct {
 	show    string
 	q       RankedQuery
 	w       window
+	display money.Display
 }
 
 // revenueIndex is every node and figure revenueRanked needs, kept together as one value.
 type revenueIndex struct {
-	nodes  []allwork.Node
-	byID   map[string]allwork.Node
-	below  map[string][]string
-	totals map[string]RevenueFigures
-	attrs  map[string]allwork.Attribute
+	nodes   []allwork.Node
+	byID    map[string]allwork.Node
+	below   map[string][]string
+	totals  map[string]RevenueFigures
+	attrs   map[string]allwork.Attribute
+	display money.Display
 }
 
 // revenueRanked builds one page of entries across their groups, with drill, 040's own rules exactly (049-C18).
 func revenueRanked(in revenueRankedInput) RevenueRanked {
 	byID, below := nodeIndex(in.nodes)
 	own := revenueFiguresOfActivities(in.views, in.w)
-	idx := revenueIndex{nodes: in.nodes, byID: byID, below: below, totals: rollUpRevenue(in.nodes, below, own), attrs: in.attrs}
+	idx := revenueIndex{nodes: in.nodes, byID: byID, below: below, totals: rollUpRevenue(in.nodes, below, own),
+		attrs: in.attrs, display: in.display}
 
 	tops, trail, drillLost := revenueTops(idx, in.matched, in.show, in.q.Drill)
 	tops = searchByName(tops, byID, in.q.Search)
@@ -43,7 +46,7 @@ func revenueRanked(in revenueRankedInput) RevenueRanked {
 	for _, g := range groups {
 		total += len(g.items)
 	}
-	pages := revenuePage(groups, in.q)
+	pages := revenuePage(idx, groups, in.q)
 	return RevenueRanked{Level: in.show, Sort: in.q.Sort, Order: in.q.Order, Group: in.q.Group, Page: in.q.Page, Size: in.q.Size,
 		Total: total, Trail: trail, Groups: pages, DrillLost: drillLost}
 }
@@ -93,19 +96,19 @@ func revenueGroups(idx revenueIndex, ids []string, q RankedQuery) []*revenueGrou
 		slices.SortStableFunc(g.items, func(x, y revenuePlaced) int { return compareRevenue(x.entry, y.entry, q) })
 	}
 	slices.SortStableFunc(groups, func(x, y *revenueGroupAcc) int {
-		return compareRevenue(RevenueEntry{Name: x.label, Figures: withPerformance(x.total)},
-			RevenueEntry{Name: y.label, Figures: withPerformance(y.total)}, q)
+		return compareRevenue(RevenueEntry{Name: x.label, Figures: withPerformance(x.total, idx.display)},
+			RevenueEntry{Name: y.label, Figures: withPerformance(y.total, idx.display)}, q)
 	})
 	return groups
 }
 
 // revenuePage keeps one page of top entries across the groups; a group's totals stay those of the whole group.
-func revenuePage(groups []*revenueGroupAcc, q RankedQuery) []RevenueGroup {
+func revenuePage(idx revenueIndex, groups []*revenueGroupAcc, q RankedQuery) []RevenueGroup {
 	first, last := (q.Page-1)*q.Size, q.Page*q.Size
 	out := []RevenueGroup{}
 	seen := 0
 	for _, g := range groups {
-		group := RevenueGroup{Key: g.key, Label: g.label, Totals: withPerformance(g.total), Entries: []RevenueEntry{}}
+		group := RevenueGroup{Key: g.key, Label: g.label, Totals: withPerformance(g.total, idx.display), Entries: []RevenueEntry{}}
 		for _, p := range g.items {
 			if seen >= first && seen < last {
 				group.Entries = append(group.Entries, p.entry)
@@ -160,12 +163,12 @@ func searchByName(ids []string, byID map[string]allwork.Node, search string) []s
 // revenueEntryOf builds one entry, with its children one level below scaled by the same share (049-C18).
 func revenueEntryOf(idx revenueIndex, id string, figures RevenueFigures, part *money.Percent) RevenueEntry {
 	n := idx.byID[id]
-	entry := RevenueEntry{ID: n.ID, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID, Figures: withPerformance(figures)}
+	entry := RevenueEntry{ID: n.ID, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID, Figures: withPerformance(figures, idx.display)}
 	for _, childID := range idx.below[id] {
 		child := idx.byID[childID]
 		entry.Children = append(entry.Children, RevenueEntry{
 			ID: child.ID, Level: string(child.Level), Name: child.Name, PlanID: child.PlanID,
-			Figures: withPerformance(revenueTimes(idx.totals[childID], part)),
+			Figures: withPerformance(revenueTimes(idx.totals[childID], part), idx.display),
 		})
 	}
 	return entry

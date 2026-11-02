@@ -87,6 +87,16 @@ describe('RevenueReport (049 US1)', () => {
     ).toBeGreaterThan(0);
   });
 
+  it('sorts the ranked list by Actual, not silently by Projected (review of 049)', async () => {
+    const { user, api } = renderPage();
+
+    await screen.findByText('Helix launch');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Sort by' }), 'Actual');
+
+    const requests = api.requests.filter((r) => r.path === '/api/v1/reports/revenue/ranked');
+    expect(requests.at(-1)?.search).toContain('sort=actualRevenue');
+  });
+
   it('fails on its own: the ranked list stays when the figures fail', async () => {
     renderPage({ status: 500, body: apiError('internal_error', 'Something went wrong.') });
 

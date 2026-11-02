@@ -33,9 +33,13 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
   const show = address.show ?? 'campaign';
   const columns: RankedColumn<RevenueFigures>[] = [
     { key: 'goal', label: 'Goal', value: (f) => (f.goal ? money(f.goal) : '—') },
-    { key: 'actual', label: 'Actual', value: (f) => (f.actual ? money(f.actual) : '—') },
     {
-      key: 'projected',
+      key: 'actualRevenue',
+      label: 'Actual',
+      value: (f) => (f.actual ? money(f.actual) : '—'),
+    },
+    {
+      key: 'projectedRevenue',
       label: 'Projected',
       value: (f) => (f.projected ? money(f.projected) : '—'),
     },
