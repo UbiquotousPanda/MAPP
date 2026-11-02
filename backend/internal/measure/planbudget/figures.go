@@ -1,59 +1,39 @@
 package planbudget
 
 import (
-	"cmp"
 	"slices"
 	"strconv"
 
 	"mapp/internal/allwork"
 	"mapp/internal/financials"
 	"mapp/internal/measure"
+	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/money"
 	"mapp/internal/rollup"
 )
 
 // records indexes one year's records in view with what the report adds up (data-model).
 type records struct {
-	year       int
-	byID       map[string]allwork.Node
-	below      map[string][]string
-	inView     map[string]bool
-	matched    allwork.Matched
-	financed   map[string]bool
-	spend      map[string]map[string]financials.Facts
-	planned    map[string]allwork.Months
-	display    money.Display
-	attributes map[string]allwork.Attribute
-	memo       map[string]sums
+	*ranking.Index
+	year     int
+	financed map[string]bool
+	spend    map[string]map[string]financials.Facts
+	planned  map[string]allwork.Months
+	display  money.Display
+	memo     map[string]sums
 }
 
 type sums struct {
 	budget                     *money.Amount
 	planned, committed, actual money.Amount
 	financed                   bool
+	finBudget                  *money.Amount // the budget and planned cost of plans whose finance the person sees
+	finPlanned                 money.Amount
 }
 
 func newRecords(sc measure.Scope) *records {
-	r := &records{year: sc.Year, byID: map[string]allwork.Node{}, below: map[string][]string{}, inView: map[string]bool{},
-		matched: sc.Matched, financed: map[string]bool{}, attributes: map[string]allwork.Attribute{}, memo: map[string]sums{}}
-	for _, a := range sc.Attributes {
-		r.attributes[a.ID] = a
-	}
-	nodes := slices.Clone(sc.Nodes)
-	slices.SortStableFunc(nodes, func(x, y allwork.Node) int { return cmp.Compare(x.Order, y.Order) })
-	for _, n := range nodes {
-		r.byID[n.ID] = n
-		if n.ParentID != "" {
-			r.below[n.ParentID] = append(r.below[n.ParentID], n.ID)
-		}
-	}
-	m := sc.Matched
-	for _, ids := range [][]string{m.Plans, m.Campaigns, m.Initiatives, m.Activities, m.LineItems} {
-		for _, id := range ids {
-			r.inView[id] = true
-		}
-	}
-	for _, id := range m.Plans {
+	r := &records{Index: ranking.NewIndex(sc), year: sc.Year, financed: map[string]bool{}, memo: map[string]sums{}}
+	for _, id := range sc.Matched.Plans {
 		r.financed[id] = sc.Choices.SeesFinance && (sc.Choices.FinancePlans == nil || slices.Contains(sc.Choices.FinancePlans, id))
 	}
 	return r
@@ -62,16 +42,12 @@ func newRecords(sc measure.Scope) *records {
 // financedLineItems are the line items in view whose financial data the person may see.
 func (r *records) financedLineItems() []string {
 	var ids []string
-	for _, id := range r.matched.LineItems {
-		if r.financed[r.byID[id].PlanID] {
+	for _, id := range r.Matched().LineItems {
+		if r.financed[r.Node(id).PlanID] {
 			ids = append(ids, id)
 		}
 	}
 	return ids
-}
-
-func (r *records) childrenInView(id string) []string {
-	return slices.DeleteFunc(slices.Clone(r.below[id]), func(child string) bool { return !r.inView[child] })
 }
 
 // sumsOf adds up a record in view: its own budget, and the planned cost, committed and actual of what is in view below.
@@ -80,12 +56,15 @@ func (r *records) sumsOf(id string) sums {
 		return s
 	}
 	s := r.addUp(id)
+	if r.financed[r.Node(id).PlanID] {
+		s.finBudget, s.finPlanned = s.budget, s.planned
+	}
 	r.memo[id] = s
 	return s
 }
 
 func (r *records) addUp(id string) sums {
-	n := r.byID[id]
+	n := r.Node(id)
 	var s sums
 	if n.Level == allwork.LevelLineItem {
 		s.planned = orZero(n.PlannedCost)
@@ -100,7 +79,7 @@ func (r *records) addUp(id string) sums {
 	} else {
 		s.budget = n.Budget
 	}
-	for _, child := range r.childrenInView(id) {
+	for _, child := range r.ChildrenInView(id) {
 		c := r.sumsOf(child)
 		if n.Level != allwork.LevelActivity {
 			s.planned = s.planned.Add(c.planned)
@@ -127,14 +106,14 @@ func (r *records) spendOf(lineItemID string) (committed, actual, otherYears mone
 // counted are the containers whose budget counts, once per branch (040-C2, research R3).
 func (r *records) counted() []allwork.Node {
 	var out []allwork.Node
-	for _, id := range r.matched.Plans {
+	for _, id := range r.Matched().Plans {
 		out = append(out, r.budgetBranch(id)...)
 	}
 	return out
 }
 
 func (r *records) budgetBranch(id string) []allwork.Node {
-	n := r.byID[id]
+	n := r.Node(id)
 	if n.Level == allwork.LevelInitiative || (n.Budget != nil && r.whole(id)) {
 		if n.Budget == nil {
 			return nil
@@ -143,7 +122,7 @@ func (r *records) budgetBranch(id string) []allwork.Node {
 	}
 	var out []allwork.Node
 	for _, child := range r.containersBelow(id) {
-		if r.inView[child] {
+		if r.InView(child) {
 			out = append(out, r.budgetBranch(child)...)
 		}
 	}
@@ -152,15 +131,15 @@ func (r *records) budgetBranch(id string) []allwork.Node {
 
 // whole holds when a container and every container below it are in view.
 func (r *records) whole(id string) bool {
-	if !r.inView[id] {
+	if !r.InView(id) {
 		return false
 	}
 	return !slices.ContainsFunc(r.containersBelow(id), func(child string) bool { return !r.whole(child) })
 }
 
 func (r *records) containersBelow(id string) []string {
-	return slices.DeleteFunc(slices.Clone(r.below[id]), func(child string) bool {
-		level := r.byID[child].Level
+	return slices.DeleteFunc(r.Below(id), func(child string) bool {
+		level := r.Node(child).Level
 		return level != allwork.LevelCampaign && level != allwork.LevelInitiative
 	})
 }
@@ -175,12 +154,20 @@ func (r *records) figures(s sums) Figures {
 	if s.financed {
 		committed, actual := money.USD(s.committed), money.USD(s.actual)
 		f.Committed, f.Actual = d.Optional(&committed), d.Optional(&actual)
-		if budget != nil {
-			unspent := money.USD(budget.Amount.Sub(s.actual))
+		if s.finBudget != nil {
+			unspent := money.USD(s.finBudget.Sub(s.actual))
 			f.Unspent = d.Optional(&unspent)
 		}
 	}
 	return f
+}
+
+func addAmount(a, b *money.Amount) *money.Amount {
+	if b == nil {
+		return a
+	}
+	sum := orZero(a).Add(*b)
+	return &sum
 }
 
 func usdOf(a *money.Amount) *money.Money {

@@ -66,6 +66,18 @@ func TestGsapLink_Contract(t *testing.T) {
 	get(t, carlosSees, report+"&tab=orders&sort=-waiting", http.StatusBadRequest)
 }
 
+// TestGsapLink_MeasureDemoFillsEveryWaitBand: the Measure demo's line items wait in every band for their SWBS codes.
+func TestGsapLink_MeasureDemoFillsEveryWaitBand(t *testing.T) {
+	t.Parallel()
+	r := reportOf(t, apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, carlos), report+"&tab=swbs")
+
+	for _, b := range r.Swbs.Bands {
+		if b.Count == 0 {
+			t.Errorf("SWBS band %q has no line item, want the Measure demo in every band: %+v", b.Label, r.Swbs.Bands)
+		}
+	}
+}
+
 func TestGsapLink_OrdersInReportCurrency_Contract(t *testing.T) {
 	t.Parallel()
 	r := reportOf(t, apitest.New(t).SignIn(t, carlos), report+"&tab=orders&sort=-poAmount&currency=EUR&page=1&pageSize=5")
@@ -100,19 +112,15 @@ func TestGsapLink_NoReportsView_FR003(t *testing.T) {
 }
 
 // TestGsapLinkExport_OwnParameters_FR019: the export reads the report's tab and sort and refuses one of another tab.
-// The request skips validation: the contract's exportReport lists 040's sort values and no tab yet (asked of lane A).
 func TestGsapLinkExport_OwnParameters_FR019(t *testing.T) {
 	t.Parallel()
 	carlosSees := apitest.New(t).SignIn(t, carlos)
 	export := "/api/v1/reports/gsap-link/export?year=2026&format=csv&widget=swbs"
 
-	skip := apitest.SkipRequestValidation()
-	if r := carlosSees.Do(t, http.MethodGet, export+"&tab=swbs&sort=lineItem", nil, skip); r.Status != http.StatusOK {
+	if r := carlosSees.Do(t, http.MethodGet, export+"&tab=swbs&sort=lineItem", nil); r.Status != http.StatusOK {
 		t.Errorf("export sorted by line item = %d %s, want 200", r.Status, r.Body)
 	}
-	if r := carlosSees.Do(t, http.MethodGet, export+"&sort=vendor", nil, skip); r.Status != http.StatusBadRequest {
-		t.Errorf("export sorted by vendor on the SWBS tab = %d, want 400", r.Status)
-	}
+	get(t, carlosSees, export+"&sort=vendor", http.StatusBadRequest)
 }
 
 func TestGsapLinkExport_NeedsDataExport(t *testing.T) {

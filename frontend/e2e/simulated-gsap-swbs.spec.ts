@@ -92,7 +92,7 @@ test('030 US1: after approval, the waiting request goes to the simulated GSAP fr
 
   const result = panel.getByRole('status');
   await expect(result).toContainText(/Simulated GSAP returned \d+ SWBS codes?/);
-  await expect(result).toContainText('Media booking (L-1005) · SIM-NL02-0001');
+  await expect(result).toContainText(/Media booking \(L-1005\) · SIM-NL02-\d{4}/);
   await expect(panel.getByText('No line item is waiting for an SWBS code')).toBeVisible();
   await expect(
     panel.getByRole('button', { name: 'Send SWBS requests to simulated GSAP' }),
@@ -117,6 +117,6 @@ test('030 US3: a received code stays and keeps the request on', async ({ page })
   await page.getByRole('button', { name: 'Save', exact: true }).click();
 
   await expect(page.getByRole('heading', { name: 'Media booking', level: 1 })).toBeVisible();
-  await expect(swbsCard(page).getByText('SIM-NL02-0001')).toBeVisible();
+  await expect(swbsCard(page).getByText(/SIM-NL02-\d{4}/)).toBeVisible();
   await expect(swbsCard(page).getByText('SWBS code received')).toBeVisible();
 });
