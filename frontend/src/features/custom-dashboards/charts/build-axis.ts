@@ -1,5 +1,16 @@
 import type { WidgetDisplay } from '../model';
-import { axisLook, axisTitles, baseOption, gridOption, itemOf, labelOption } from './build-common';
+import {
+  axisLook,
+  axisTitles,
+  baseOption,
+  gridOption,
+  itemOf,
+  LABEL_WIDTH,
+  labelOption,
+  shortened,
+  zoomLook,
+  zoomPlace,
+} from './build-common';
 import { hasSeries, measureColumn, shareCell, toGrid } from './chart-data';
 import type { ChartContext, ChartSeries } from './chart-data';
 import { formatAmount, formatTick } from './format';
@@ -32,14 +43,15 @@ export function axisChartOption(ctx: ChartContext) {
     stack: stack === 'none' ? undefined : 'total',
     smooth: display.smooth ?? false,
     areaStyle: widget.type === 'area' ? { opacity: 0.35 } : undefined,
-    label: labelOption(ctx, false),
+    label: { ...labelOption(ctx, false), ...barLabel(ctx, isHorizontal, stack) },
+    labelLayout: { hideOverlap: true },
     emphasis: { focus: 'series' },
     markLine: index === 0 ? referenceLine(ctx, isHorizontal) : undefined,
   }));
   const zoomEdge = isHorizontal ? 'right' : 'bottom';
   return {
     ...baseOption(ctx, 'axis', 'categorical'),
-    grid: gridOption(ctx, display.zoom ? zoomEdge : null),
+    grid: gridOption(ctx, display.zoom ? zoomEdge : null, { bottom: titles.x, left: titles.y }),
     xAxis: isHorizontal ? value : category,
     yAxis: isHorizontal ? { ...category, inverse: true } : value,
     series,
@@ -72,14 +84,19 @@ export function comboOption(ctx: ChartContext) {
       yAxisIndex: style.axis === 'right' && rightMeasure >= 0 ? 1 : 0,
       data: s.cells.map((cell) => itemOf(cell)),
       smooth: ctx.display.smooth ?? false,
-      label: labelOption(ctx, false),
+      label: { ...labelOption(ctx, false), position: 'top' },
+      labelLayout: { hideOverlap: true },
       emphasis: { focus: 'series' },
       markLine: index === 0 ? referenceLine(ctx, false) : undefined,
     };
   });
   return {
     ...baseOption(ctx, 'axis', 'categorical'),
-    grid: gridOption(ctx, ctx.display.zoom ? 'bottom' : null),
+    grid: gridOption(ctx, ctx.display.zoom ? 'bottom' : null, {
+      bottom: titles.x,
+      left: titles.y,
+      right: titles.y2,
+    }),
     xAxis: categoryAxis(ctx, grid.categories, titles.x),
     yAxis,
     series,
@@ -102,12 +119,25 @@ export function valueAxis(ctx: ChartContext, measure: number, title: string) {
 }
 
 export function categoryAxis(ctx: ChartContext, categories: string[], title: string) {
+  const look = axisLook(ctx, title);
   return {
     type: 'category',
     data: categories,
-    ...axisLook(ctx, title),
+    ...look,
+    axisLabel: { ...look.axisLabel, ...shortened(LABEL_WIDTH) },
     splitLine: { show: false },
   };
+}
+
+// Inside a bar the label is drawn on the palette colour, so only the background colour reads there.
+function barLabel(ctx: ChartContext, isHorizontal: boolean, stack: Stack) {
+  if (ctx.widget.type !== 'bar') {
+    return {};
+  }
+  if (stack !== 'none') {
+    return { position: 'inside', color: ctx.theme.surface };
+  }
+  return { position: isHorizontal ? 'right' : 'top' };
 }
 
 function stackOf(ctx: ChartContext): Stack {
@@ -134,15 +164,17 @@ function referenceLine(ctx: ChartContext, isHorizontal: boolean) {
     silent: true,
     symbol: 'none',
     lineStyle: { color: ctx.theme.ink, type: 'dashed' },
-    label: { formatter: () => text, color: ctx.theme.ink },
+    label: { formatter: () => text, color: ctx.theme.ink, position: 'insideEndTop' },
     data: [isHorizontal ? { xAxis: at } : { yAxis: at }],
   };
 }
 
-function zoomOption(ctx: ChartContext, isHorizontal: boolean) {
+export function zoomOption(ctx: ChartContext, isHorizontal: boolean) {
   if (!ctx.display.zoom) {
     return undefined;
   }
-  const axis = isHorizontal ? { yAxisIndex: 0, orient: 'vertical', right: 8 } : { xAxisIndex: 0 };
-  return [{ type: 'slider', ...axis, textStyle: { color: ctx.theme.ink2 } }];
+  const axis = isHorizontal
+    ? { yAxisIndex: 0, orient: 'vertical', ...zoomPlace(ctx, 'right') }
+    : { xAxisIndex: 0, ...zoomPlace(ctx, 'bottom') };
+  return [{ type: 'slider', ...axis, ...zoomLook(ctx) }];
 }
