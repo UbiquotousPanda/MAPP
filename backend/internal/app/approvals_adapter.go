@@ -31,6 +31,10 @@ type approvalsActivities struct {
 	rates      func(context.Context) (money.Rates, error)
 	check      submitCheck
 	now        clock.Clock
+	// approved runs inside the same transaction once a status lands on approved; nil before feature 046.
+	approved func(ctx context.Context, a actor.Actor, activityID string) error
+	// unapproved is approved's reverse, run when a status leaves approved; nil before feature 046.
+	unapproved func(ctx context.Context, a actor.Actor, activityID string) error
 }
 
 var _ approval.Activities = (*approvalsActivities)(nil)
@@ -87,19 +91,36 @@ func (p *approvalsActivities) SetStatus(ctx context.Context, a actor.Actor, id, 
 	if !found {
 		return approval.ActivityFacts{}, fmt.Errorf("app: activity %s is not stored", id)
 	}
+	was := act.Status
 	act.Status = activity.Status(status)
 	act.Touch(a, p.now())
 	if err := p.activities.Put(ctx, act); err != nil {
 		return approval.ActivityFacts{}, err
 	}
+	if hook := p.heldHook(was, act.Status); hook != nil {
+		if err := hook(ctx, a, act.ID); err != nil {
+			return approval.ActivityFacts{}, err
+		}
+	}
 	return p.facts(ctx, act)
+}
+
+// heldHook answers 046's release or re-hold hook for a status change touching Approved, or nil otherwise.
+func (p *approvalsActivities) heldHook(was, now activity.Status) func(context.Context, actor.Actor, string) error {
+	switch {
+	case now == activity.StatusApproved:
+		return p.approved
+	case was == activity.StatusApproved:
+		return p.unapproved
+	default:
+		return nil
+	}
 }
 
 // neededToSubmit ends the message of an empty needed-to-submit field: "Owner — needed to submit".
 const neededToSubmit = " — needed to submit"
 
-// ReadyCheck adds a positive unassigned planned cost as the confirmation's note; a line item's problem is
-// keyed lineItems.<id>.<field>.
+// ReadyCheck adds a positive unassigned planned cost as the confirmation's note, keyed lineItems.<id>.<field>.
 func (p *approvalsActivities) ReadyCheck(ctx context.Context, a actor.Actor, id string) (approval.ReadyCheck, error) {
 	check, err := p.check(ctx, a, id)
 	if err != nil {
@@ -191,8 +212,7 @@ func (p *approvalsActivities) facts(ctx context.Context, act activity.Activity) 
 	return facts, nil
 }
 
-// displayStatus is the status shown (006 FR-021): an approved activity is Complete after its end date (never
-// when ongoing), In progress from its start date, otherwise its stored status.
+// displayStatus is the status shown (006 FR-021): Complete past its end date, In progress from its start.
 func displayStatus(act activity.Activity, today date.Date) string {
 	switch {
 	case act.Status != activity.StatusApproved || act.StartDate == nil:
