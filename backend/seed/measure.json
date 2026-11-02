@@ -84,7 +84,6 @@
                   "workflow": "Lubricants EU approval",
                   "preset": "helix",
                   "inq": 4000,
-                  "mql": 800,
                   "lineItems": [
                     {"name": "Search media, second half", "currency": "EUR", "plannedCost": "60000.00", "spread": "evenly",
                       "spendType": "ATL - Digital", "glCode": "7250080 - Advertising - Digital", "budget": "2026 Lubricants Budget", "item": "Europe – Digital"},

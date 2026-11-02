@@ -14,8 +14,9 @@ $failures = [System.Collections.Generic.List[string]]::new()
 
 function Invoke-Check([string]$Name, [string]$Dir, [scriptblock]$Command) {
   Push-Location $Dir
+  $global:LASTEXITCODE = 1
   $output = & $Command 2>&1 | Out-String
-  $ok = $LASTEXITCODE -eq 0
+  $ok = $global:LASTEXITCODE -eq 0
   Pop-Location
   if (-not $ok) { $failures.Add("== $Name ==`n$($output.Trim())") }
 }
@@ -49,8 +50,12 @@ if ($goFiles.Count -gt 0) {
     Sort-Object -Unique)
   $lint = (Get-Command golangci-lint -ErrorAction SilentlyContinue).Source
   if (-not $lint) { $lint = Join-Path (go env GOPATH) 'bin/golangci-lint.exe' }
-  Invoke-Check 'Go format' "$root/backend" { & $lint fmt --diff @packages }
-  Invoke-Check 'Go lint' "$root/backend" { & $lint run --concurrency 2 --new-from-rev $Base @packages }
+  if (Test-Path $lint) {
+    Invoke-Check 'Go format' "$root/backend" { & $lint fmt --diff @packages }
+    Invoke-Check 'Go lint' "$root/backend" { & $lint run --concurrency 2 --new-from-rev $Base @packages }
+  } else {
+    $failures.Add('== Go format and Go lint == golangci-lint is not installed: install golangci-lint v2.15.0')
+  }
   Invoke-Check 'Go tests' "$root/backend" { go test -short -p 1 @packages }
 }
 
