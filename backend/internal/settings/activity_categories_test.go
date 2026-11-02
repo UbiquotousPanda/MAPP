@@ -61,7 +61,7 @@ func TestCreateActivityCategory_AuditAndTypes_FR018(t *testing.T) {
 	want := ActivityCategoryView{
 		ID: "CAT-1001", Name: "Digital", ActivityTypes: []SettingRef{{ID: event.ID, Name: "Event", Active: true}},
 		Active: true,
-		Usage: Usage{InUse: true, Summary: "Groups 1 activity type", Records: []history.RecordRef{},
+		Usage: Usage{Summary: "Groups 1 activity type", Records: []history.RecordRef{},
 			Parts: []UsagePart{{Kind: "activityType", Text: "Groups 1 activity type", Count: 1}}},
 		Meta: record.NewMeta(alex, f.clock.now),
 	}
@@ -182,8 +182,8 @@ func TestDeleteActivityCategory_UndoRestoresTypes_FR021(t *testing.T) {
 	f := newTestService(t)
 	event := f.addType(t, "Event", true)
 	digital := f.createCategory(t, categoryInput("Digital", true, event.ID))
-	if !digital.Usage.InUse || digital.Usage.Summary != "Groups 1 activity type" {
-		t.Errorf("Digital usage = %+v, want the warning before it is deleted", digital.Usage)
+	if digital.Usage.InUse || digital.Usage.Summary != "Groups 1 activity type" {
+		t.Errorf("Digital usage = %+v, want the warning, but not in use: a category can always be deleted", digital.Usage)
 	}
 
 	entry, err := f.service.DeleteActivityCategory(t.Context(), alex, digital.ID)
@@ -230,5 +230,32 @@ func TestActivityTypes_EachTypeNamesItsCategory_FR022(t *testing.T) {
 	if byID[webinar.ID].Category != nil {
 		t.Errorf("Webinar's category = %+v, want none: a type in no category is Uncategorised",
 			byID[webinar.ID].Category)
+	}
+}
+
+func TestRestoreActivityCategory_DropsTypesDeletedSince_FR021(t *testing.T) {
+	t.Parallel()
+	f := newTestService(t)
+	event := f.addType(t, "Event", true)
+	webinar := f.addType(t, "Webinar", true)
+	digital := f.createCategory(t, categoryInput("Digital", false, event.ID, webinar.ID))
+	entry, err := f.service.DeleteActivityCategory(t.Context(), alex, digital.ID)
+	if err != nil {
+		t.Fatalf("DeleteActivityCategory: %v", err)
+	}
+	if _, err = f.service.DeleteActivityType(t.Context(), alex, event.ID); err != nil {
+		t.Fatalf("DeleteActivityType(Event) with its category in the bin: %v", err)
+	}
+
+	result, err := f.history.Undo(t.Context(), alex, entry.ID)
+	if err != nil {
+		t.Fatalf("Undo: %v", err)
+	}
+	back, _, err := f.service.repo.GetActivityCategory(t.Context(), digital.ID)
+	if err != nil || !reflect.DeepEqual(back.ActivityTypeIDs, []string{webinar.ID}) {
+		t.Errorf("Digital's types after Undo = %v, %v, want only Webinar: Event no longer exists", back.ActivityTypeIDs, err)
+	}
+	if result.Details != typesGoneNote {
+		t.Errorf("Undo details = %q, want %q", result.Details, typesGoneNote)
 	}
 }

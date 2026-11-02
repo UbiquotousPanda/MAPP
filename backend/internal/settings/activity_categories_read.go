@@ -80,15 +80,15 @@ func (s *Service) activityCategoryViews(ctx context.Context, categories []Activi
 	return views, nil
 }
 
-// categoryUsage counts the activity types a category groups, so the page warns before it is deleted
-// (FR-021). Nothing else refers to a category, and deleting one is never refused.
+// categoryUsage counts the activity types a category groups, so the page warns before it is deleted. It is
+// never in use: deleting a category only releases its types.
 func categoryUsage(types int) Usage {
 	if types == 0 {
 		return Usage{Summary: notUsedYet, Parts: []UsagePart{}, Records: []history.RecordRef{}}
 	}
 	text := "Groups " + plural(types, "activity type", "activity types")
 	return Usage{
-		InUse: true, Summary: text, Records: []history.RecordRef{},
+		Summary: text, Records: []history.RecordRef{},
 		Parts: []UsagePart{{Kind: usedByActivityType, Text: text, Count: types}},
 	}
 }

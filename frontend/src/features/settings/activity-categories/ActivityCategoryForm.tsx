@@ -24,16 +24,10 @@ const DEFAULT_HINT =
   'The reports open on this category. Marking a new default unmarks the category that had it.';
 
 export interface ActivityCategoryFormProps {
-  /** The activity category to change; without one, the form adds a new category. */
   category?: ActivityCategory;
   onClose: () => void;
 }
 
-/**
- * New activity category and Edit activity category (FR-018 to FR-020) in a side panel: the name,
- * whether it is the default the reports open on, and the activity types it groups. Every problem
- * shows at once; a conflict keeps what was typed and names who saved first.
- */
 export function ActivityCategoryForm({ category, onClose }: ActivityCategoryFormProps) {
   const { show } = useToast();
   const { dateFormat } = useFormatters();

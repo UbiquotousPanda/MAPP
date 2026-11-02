@@ -5,7 +5,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Project runs the model forward from the goal stage only, never past the plan year (FR-006 - FR-009).
+// Project runs the model forward from the goal stage only, never past the plan year.
 func Project(in Inputs) Projection {
 	start, end, covered := window(in)
 	out := Projection{Stamp: Stamp{ModelName: in.Model.Name, ModelChangedAt: in.Model.ModelChangedAt}}
@@ -29,7 +29,7 @@ func hasGoal(g Goals) bool {
 	return g.INQ != nil
 }
 
-// typed phases each stage's own goal: the override means the rates and velocity change nothing (FR-009).
+// typed phases each stage's own goal: the override means the rates and velocity change nothing.
 func typed(out Projection, in Inputs, start, end date.Date) Projection {
 	for _, stage := range []struct {
 		name string
@@ -63,7 +63,7 @@ func atRate(months []MonthFigure, rate money.Percent) []MonthFigure {
 	return converted
 }
 
-// shift drops what lands past the plan year: bunching it into December would invent a month (FR-008).
+// shift drops what lands past the plan year: bunching it into December would invent a month.
 func shift(months []MonthFigure, by int) []MonthFigure {
 	shifted := make([]MonthFigure, len(months))
 	for i, m := range months {

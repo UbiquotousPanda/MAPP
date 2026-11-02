@@ -56,52 +56,6 @@ func NewStore(db *fake.DB) *Store {
 	}
 }
 
-func (s *Store) ListSources(_ context.Context, id string) ([]performance.SourceView, error) {
-	all, err := s.sources.List()
-	if err != nil {
-		return nil, err
-	}
-	views := make([]performance.SourceView, 0, len(all))
-	for _, src := range all {
-		if id != "" && src.ID != id {
-			continue
-		}
-		views = append(views, performance.SourceView{Source: src, FactCount: s.factsOf(src.ID)})
-	}
-	slices.SortFunc(views, func(a, b performance.SourceView) int {
-		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
-	})
-	return views, nil
-}
-
-func (s *Store) factsOf(sourceID string) int {
-	all, err := s.facts.List()
-	if err != nil {
-		return 0
-	}
-	count := 0
-	for _, f := range all {
-		if f.SourceID == sourceID {
-			count++
-		}
-	}
-	return count
-}
-
-func (s *Store) PutSource(ctx context.Context, src performance.Source) error {
-	return s.sources.Put(ctx, src)
-}
-
-func (s *Store) DeleteSource(ctx context.Context, id string) (bool, error) {
-	if s.factsOf(id) > 0 {
-		return false, nil
-	}
-	if _, found, err := s.sources.Get(id); err != nil || !found {
-		return false, err
-	}
-	return true, s.sources.Delete(ctx, id)
-}
-
 func (s *Store) ListMappings(_ context.Context, sourceIDs []string) ([]performance.Mapping, error) {
 	all, err := s.mappings.List()
 	if err != nil {

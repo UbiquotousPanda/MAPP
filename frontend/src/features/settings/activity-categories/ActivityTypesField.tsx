@@ -11,7 +11,7 @@ export interface ActivityTypesFieldProps extends FieldBinding<string[]> {
   category?: ActivityCategory;
 }
 
-/** Activity types: the active types, plus those already in this category (FR-019). */
+/** Activity types: the active types, plus those already in this category. */
 export function ActivityTypesField({
   category,
   name,

@@ -2,7 +2,7 @@
 -- Feature 046: each load of performance data, the facts it produced, and the rows a person must fix.
 CREATE TABLE performance_imports (
     id              text        PRIMARY KEY CHECK (id ~ '^PIM-[0-9]+$'),
-    source_id       text        NOT NULL REFERENCES performance_sources (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    source_id       text        NOT NULL REFERENCES performance_sources (id) DEFERRABLE INITIALLY DEFERRED,
     file_name       text        NOT NULL CHECK (char_length(file_name) <= 260),
     origin          text        NOT NULL CHECK (origin IN ('upload', 'simulated')),
     status          text        NOT NULL CHECK (status IN ('completed', 'failed', 'undone')),
@@ -30,7 +30,7 @@ CREATE INDEX performance_imports_status_idx ON performance_imports (status);
 
 -- The five counts per measure; a row carrying two measures counts in both, so groups do not add up.
 CREATE TABLE performance_import_breakdown (
-    import_id         text    NOT NULL REFERENCES performance_imports (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    import_id         text    NOT NULL REFERENCES performance_imports (id) DEFERRABLE INITIALLY DEFERRED,
     stage             text    NOT NULL CHECK (stage IN ('', 'inq', 'mql', 'revenue')),
     web_metric        text    NOT NULL CHECK (web_metric IN ('', 'sessions', 'visits', 'engagementTouches')),
     rows_read         integer NOT NULL CHECK (rows_read >= 0),
@@ -80,8 +80,7 @@ CREATE TABLE performance_facts (
     CHECK (NOT held OR activity_id IS NOT NULL)
 );
 
--- 046-C21 (correcting research R3): the measure joins the identity because one file row holding an INQ column and an MQL
--- column produces one fact for each, under the same source reference.
+-- The measure joins the identity: a file row with an INQ and an MQL column makes one fact for each, under one reference.
 CREATE UNIQUE INDEX performance_facts_identity_idx
     ON performance_facts (source_id, source_reference, stage, web_metric) WHERE replaced_by_id IS NULL;
 CREATE INDEX performance_facts_activity_idx ON performance_facts (activity_id, held, fact_date);
@@ -89,8 +88,8 @@ CREATE INDEX performance_facts_import_idx ON performance_facts (import_id);
 
 CREATE TABLE performance_review_rows (
     id              text        PRIMARY KEY CHECK (id ~ '^PRV-[0-9]+$'),
-    import_id       text        NOT NULL REFERENCES performance_imports (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-    source_id       text        NOT NULL REFERENCES performance_sources (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    import_id       text        NOT NULL REFERENCES performance_imports (id) DEFERRABLE INITIALLY DEFERRED,
+    source_id       text        NOT NULL REFERENCES performance_sources (id) DEFERRABLE INITIALLY DEFERRED,
     raw             json        NOT NULL CHECK (json_typeof(raw) = 'object'),
     parsed          json        NOT NULL CHECK (json_typeof(parsed) = 'object'),
     reason          text        NOT NULL CHECK (char_length(reason) BETWEEN 1 AND 200),

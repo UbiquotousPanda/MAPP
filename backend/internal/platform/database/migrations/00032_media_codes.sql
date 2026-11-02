@@ -1,7 +1,5 @@
 -- +goose Up
--- Feature 046: the three matching keys an activity carries, and the configuration behind media codes.
--- Media-code configuration lives with this feature (046-C12), not on the activity type: activity types
--- belong to feature 002, which this lane does not edit.
+-- Media-code configuration lives here, not on the activity type, which feature 002 owns.
 CREATE TABLE media_codes (
     id              text        PRIMARY KEY CHECK (id ~ '^MC-[0-9]+$'),
     code            bigint      NOT NULL UNIQUE CHECK (code > 0),
@@ -20,9 +18,7 @@ CREATE TABLE media_codes (
 
 CREATE INDEX media_codes_activity_idx ON media_codes (activity_id);
 
--- The activity's current external name stays activities.external_name, which feature 006 owns and a person
--- edits (field catalogue "Edit External Name"). This feature keeps only the superseded names, so rows already
--- in flight still match after a rename (046-C14).
+-- Only superseded names: the current one stays activities.external_name, and rows in flight still match after a rename.
 CREATE TABLE activity_external_name_aliases (
     id              text        PRIMARY KEY CHECK (id ~ '^XN-[0-9]+$'),
     activity_id     text        NOT NULL REFERENCES activities (id) DEFERRABLE INITIALLY DEFERRED,
@@ -44,7 +40,7 @@ CREATE INDEX activity_external_name_aliases_activity_idx
 CREATE TABLE activity_integration_ids (
     id              text        PRIMARY KEY CHECK (id ~ '^IID-[0-9]+$'),
     activity_id     text        NOT NULL REFERENCES activities (id) DEFERRABLE INITIALLY DEFERRED,
-    source_id       text        NOT NULL REFERENCES performance_sources (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    source_id       text        NOT NULL REFERENCES performance_sources (id) DEFERRABLE INITIALLY DEFERRED,
     value           text        NOT NULL CHECK (char_length(value) BETWEEN 1 AND 200),
     version         integer     NOT NULL CHECK (version >= 1),
     created_at      timestamptz NOT NULL,
@@ -55,7 +51,6 @@ CREATE TABLE activity_integration_ids (
     updated_by_name text        NOT NULL
 );
 
--- FR-037: at most one integration id per source per activity, and unique within the source.
 CREATE UNIQUE INDEX activity_integration_ids_one_per_source_idx
     ON activity_integration_ids (activity_id, source_id);
 CREATE UNIQUE INDEX activity_integration_ids_value_idx
@@ -75,7 +70,6 @@ CREATE TABLE performance_configuration (
     updated_by_name       text        NOT NULL
 );
 
--- Which activity types require media codes (FR-038, FR-040).
 CREATE TABLE performance_code_activity_types (
     activity_type_id text NOT NULL REFERENCES activity_types (id) DEFERRABLE INITIALLY DEFERRED,
     PRIMARY KEY (activity_type_id)

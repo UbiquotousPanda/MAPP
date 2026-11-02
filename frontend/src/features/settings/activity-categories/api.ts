@@ -1,9 +1,3 @@
-/**
- * What the Activity categories page asks the API (feature 047, US3). The list comes from
- * useActivityCategories() (api/settingsQueries.ts); every change refreshes the lists that show
- * categories — activity types carry the category they are in — and the activity log, recycle bin
- * and Settings counts.
- */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { QueryKey } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
@@ -14,7 +8,7 @@ export type ActivityCategory = components['schemas']['ActivityCategory'];
 export type ActivityCategoryCreate = components['schemas']['ActivityCategoryCreate'];
 export type ActivityCategoryUpdate = components['schemas']['ActivityCategoryUpdate'];
 
-/** The lists a change to an activity category shows in. */
+/** The lists a change to a category shows in: activity types carry their category too. */
 export const ACTIVITY_CATEGORY_LISTS: QueryKey[] = [
   SETTINGS_KEYS.activityCategories,
   SETTINGS_KEYS.activityTypes,
@@ -41,7 +35,6 @@ function patchCategory(id: string, body: ActivityCategoryUpdate): Promise<Activi
   );
 }
 
-/** Sets an activity category inactive or reactivates it (FR-018): the record's own PATCH. */
 export function setActivityCategoryStatus(id: string, body: { active: boolean; version: number }) {
   return patchCategory(id, body);
 }
@@ -55,7 +48,6 @@ export function useCreateActivityCategory() {
   });
 }
 
-/** Changes a category: only the fields sent, with the version the form started from (D-203). */
 export function useUpdateActivityCategory() {
   const refresh = useRefreshActivityCategoryLists();
   return useMutation({
@@ -65,7 +57,6 @@ export function useUpdateActivityCategory() {
   });
 }
 
-/** Deletes a category (to the recycle bin); its activity types become Uncategorised (FR-021). */
 export function useDeleteActivityCategory() {
   const refresh = useRefreshActivityCategoryLists();
   return useMutation({

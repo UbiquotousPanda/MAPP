@@ -168,19 +168,18 @@ func (w *wiring) approvalsArea(release *heldRelease) error {
 	w.approvals = approval.NewService(tools, s.Approvals, s.People, &approvalsActivities{
 		activities: s.Activities, lineItems: s.LineItems, campaigns: s.Campaigns, plans: s.Plans, settings: s.Settings,
 		rates: w.settings.Rates, check: w.activities.SubmitCheck, now: w.now, approved: release.activityApproved,
-		unapproved: release.activityUnapproved,
 	})
 	if err := w.register(w.approvals.Kinds()); err != nil {
 		return err
 	}
-	w.connectApprovals()
+	w.connectApprovals(release)
 	w.accessTargets()
 	mount(w.signedIn, approval.NewHandler(w.approvals))
 	return nil
 }
 
-func (w *wiring) connectApprovals() {
-	w.activities.UseApprovalHooks(activityApprovalHooks{svc: w.approvals})
+func (w *wiring) connectApprovals(release *heldRelease) {
+	w.activities.UseApprovalHooks(activityApprovalHooks{svc: w.approvals, unapproved: release.activityUnapproved})
 	w.approvals.UseDisplayRates(w.people)
 	w.approvals.UseAccess(approvalsAccess{access: w.access})
 	w.approvals.UseRuleChoices(approvalRuleChoices{settings: w.settings})

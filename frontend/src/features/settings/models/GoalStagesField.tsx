@@ -8,7 +8,7 @@ const OPTIONS = [
   { id: 'revenue', label: 'Revenue', active: true },
 ];
 
-/** The stages a goal may be set against; a projection runs forward from there (047 FR-002). */
+/** The stages a goal may be set against; a projection runs forward from there. */
 export function GoalStagesField({ name, value, onChange, error }: FieldBinding<GoalStage[]>) {
   return (
     <ChoiceField

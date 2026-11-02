@@ -32,10 +32,10 @@ type approvalsActivities struct {
 	check      submitCheck
 	now        clock.Clock
 	// approved runs inside the same transaction once a status lands on approved; nil before feature 046.
-	approved func(ctx context.Context, a actor.Actor, activityID string) error
-	// unapproved is approved's reverse, run when a status leaves approved; nil before feature 046.
-	unapproved func(ctx context.Context, a actor.Actor, activityID string) error
+	approved heldHook
 }
+
+type heldHook func(ctx context.Context, a actor.Actor, activityID string) error
 
 var _ approval.Activities = (*approvalsActivities)(nil)
 
@@ -91,30 +91,17 @@ func (p *approvalsActivities) SetStatus(ctx context.Context, a actor.Actor, id, 
 	if !found {
 		return approval.ActivityFacts{}, fmt.Errorf("app: activity %s is not stored", id)
 	}
-	was := act.Status
 	act.Status = activity.Status(status)
 	act.Touch(a, p.now())
 	if err := p.activities.Put(ctx, act); err != nil {
 		return approval.ActivityFacts{}, err
 	}
-	if hook := p.heldHook(was, act.Status); hook != nil {
-		if err := hook(ctx, a, act.ID); err != nil {
+	if act.Status == activity.StatusApproved && p.approved != nil {
+		if err := p.approved(ctx, a, act.ID); err != nil {
 			return approval.ActivityFacts{}, err
 		}
 	}
 	return p.facts(ctx, act)
-}
-
-// heldHook answers 046's release or re-hold hook for a status change touching Approved, or nil otherwise.
-func (p *approvalsActivities) heldHook(was, now activity.Status) func(context.Context, actor.Actor, string) error {
-	switch {
-	case now == activity.StatusApproved:
-		return p.approved
-	case was == activity.StatusApproved:
-		return p.unapproved
-	default:
-		return nil
-	}
 }
 
 // neededToSubmit ends the message of an empty needed-to-submit field: "Owner — needed to submit".
@@ -259,12 +246,20 @@ func (p *approvalsActivities) path(ctx context.Context, initiativeID string) ([]
 // at the delete, inside the activities Write that caused it.
 type activityApprovalHooks struct {
 	svc *approval.Service
+	// unapproved holds the facts of an activity leaving Approved again, which only an edit or a split does.
+	unapproved heldHook
 }
 
 var _ activity.ApprovalHooks = activityApprovalHooks{}
 
 func (h activityApprovalHooks) ApprovalRestarted(ctx context.Context, a actor.Actor, before, after activity.Activity, changes []history.Change) error { //nolint:revive // argument-limit 5: the signature of activity.ApprovalHooks
-	return h.svc.ApprovalRestarted(ctx, a, after.ID, string(before.Status), changes)
+	if err := h.svc.ApprovalRestarted(ctx, a, after.ID, string(before.Status), changes); err != nil {
+		return err
+	}
+	if before.Status != activity.StatusApproved || h.unapproved == nil {
+		return nil
+	}
+	return h.unapproved(ctx, a, after.ID)
 }
 
 // ActivityDeleting changes nothing: the open round stays stored so that Undo brings the activity back exactly,

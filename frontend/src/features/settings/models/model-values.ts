@@ -40,7 +40,7 @@ export function startValues(mode: ModelFormMode): ModelValues {
   };
 }
 
-/** The stages a goal may be set against, in funnel order (047 FR-002). */
+/** The stages a goal may be set against, in funnel order. */
 export const ALL_GOAL_STAGES = ['inq', 'mql', 'revenue'] as const;
 
 /** A typed velocity as the API takes it: whole months, or NaN left for the API to refuse. */

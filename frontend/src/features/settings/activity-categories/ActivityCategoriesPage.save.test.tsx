@@ -18,7 +18,7 @@ describe('ActivityCategoriesPage: create and edit (US3, FR-018 to FR-020)', () =
     const { user, api } = renderActivityCategoriesPage([
       reply('POST /api/v1/settings/activity-categories', {
         status: 201,
-        body: { ...PROMOTION, id: 'ACAT-1004', name: 'Sponsorship' },
+        body: { ...PROMOTION, id: 'CAT-1004', name: 'Sponsorship' },
       }),
     ]);
 
@@ -80,7 +80,7 @@ describe('ActivityCategoriesPage: create and edit (US3, FR-018 to FR-020)', () =
       reply(
         'PATCH /api/v1/settings/activity-categories/{categoryId}',
         { body: { ...PROMOTION, activityTypes: ASSET.activityTypes } },
-        { categoryId: 'ACAT-1002' },
+        { categoryId: 'CAT-1002' },
       ),
     ]);
 
@@ -95,7 +95,7 @@ describe('ActivityCategoriesPage: create and edit (US3, FR-018 to FR-020)', () =
     await user.click(within(form).getByRole('button', { name: 'Save' }));
 
     expect(await findMessages()).toHaveTextContent("Activity category 'Promotion' saved");
-    expect(api.bodiesOf('PATCH /api/v1/settings/activity-categories/ACAT-1002')).toEqual([
+    expect(api.bodiesOf('PATCH /api/v1/settings/activity-categories/CAT-1002')).toEqual([
       { activityTypeIds: ['AT-1002'], version: 1 },
     ]);
   });
@@ -105,7 +105,7 @@ describe('ActivityCategoriesPage: create and edit (US3, FR-018 to FR-020)', () =
       reply(
         'PATCH /api/v1/settings/activity-categories/{categoryId}',
         { body: { ...PROMOTION, isDefault: true } },
-        { categoryId: 'ACAT-1002' },
+        { categoryId: 'CAT-1002' },
       ),
     ]);
 
@@ -118,7 +118,7 @@ describe('ActivityCategoriesPage: create and edit (US3, FR-018 to FR-020)', () =
     await user.click(within(form).getByRole('button', { name: 'Save' }));
 
     expect(await findMessages()).toHaveTextContent("Activity category 'Promotion' saved");
-    expect(api.bodiesOf('PATCH /api/v1/settings/activity-categories/ACAT-1002')).toEqual([
+    expect(api.bodiesOf('PATCH /api/v1/settings/activity-categories/CAT-1002')).toEqual([
       { isDefault: true, version: 1 },
     ]);
   });
@@ -134,12 +134,12 @@ describe('ActivityCategoriesPage: create and edit (US3, FR-018 to FR-020)', () =
             ? { status: 409, body: versionConflict() }
             : { body: { ...PROMOTION, name: 'Promotions' } };
         },
-        { categoryId: 'ACAT-1002' },
+        { categoryId: 'CAT-1002' },
       ),
       reply(
         'GET /api/v1/settings/activity-categories/{categoryId}',
         { body: { ...PROMOTION, version: 4 } },
-        { categoryId: 'ACAT-1002' },
+        { categoryId: 'CAT-1002' },
       ),
     ]);
 
@@ -159,14 +159,14 @@ describe('ActivityCategoriesPage: create and edit (US3, FR-018 to FR-020)', () =
         api.requests.some(
           (request) =>
             request.method === 'GET' &&
-            request.path === '/api/v1/settings/activity-categories/ACAT-1002',
+            request.path === '/api/v1/settings/activity-categories/CAT-1002',
         ),
       ).toBe(true),
     );
     await user.click(within(form).getByRole('button', { name: 'Save' }));
 
     expect(await findMessages()).toHaveTextContent("Activity category 'Promotions' saved");
-    expect(api.bodiesOf('PATCH /api/v1/settings/activity-categories/ACAT-1002')).toEqual([
+    expect(api.bodiesOf('PATCH /api/v1/settings/activity-categories/CAT-1002')).toEqual([
       { name: 'Promotions', version: 1 },
       { name: 'Promotions', version: 4 },
     ]);

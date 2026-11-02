@@ -8,7 +8,7 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// A type counts its activities and models, those in the recycle bin too (US5-2, FR-003).
+// A type counts its activities and models, those in the recycle bin too.
 func TestActivityTypeUsage_ActivitiesAndModels_FR003(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -50,7 +50,7 @@ func TestDeleteActivityType_RefusedWhenGroupedByACategory(t *testing.T) {
 	assertError(t, err, errs.InUse("'Event' is in use (grouped by 1 category) — set it inactive instead."))
 }
 
-// A type in use cannot be deleted: the answer says where, and to set it inactive instead (FR-004, SC-004).
+// A type in use cannot be deleted: the answer says where, and to set it inactive instead.
 func TestDeleteActivityType_InUseRefused_FR004(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)

@@ -148,7 +148,7 @@ function RevenueRow({ revenue }: { revenue: RevenueFigure }) {
   );
 }
 
-/** Every projected figure names the model behind it and when its parameters last changed (047 FR-012). */
+/** Every projected figure names the model behind it and when its parameters last changed. */
 function ProjectionNote({ stamp }: { stamp: NonNullable<Panel['projection']> }) {
   const { date } = useFormatters();
   return (

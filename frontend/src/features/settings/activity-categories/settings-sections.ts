@@ -1,7 +1,3 @@
-/**
- * Feature 047's card on the Settings page (listed by app/settings-sections.ts after feature 002's
- * own cards): Activity categories, with the number of active categories.
- */
 import { Tags } from 'lucide-react';
 import type { SettingsSection } from '../sections';
 import { ActivityCategoryCount } from './ActivityCategoryCount';

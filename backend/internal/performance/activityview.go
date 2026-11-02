@@ -27,11 +27,9 @@ type StageFigure struct {
 	Projected  *int64   `json:"projected"`
 	Conversion *float64 `json:"conversion"`
 	Reason     string   `json:"reason"`
-	// ProjectedReason says why the projection is absent, which the stage's own reason cannot: a figure can
-	// have an actual and still no goal to project from (047 FR-013).
+	// ProjectedReason says why the projection is absent: a figure can have an actual and still no goal.
 	ProjectedReason string `json:"projectedReason"`
-	// Months splits the plan year at today: actual behind it, projected from it, both in the month in
-	// progress (047 FR-010).
+	// Months splits the plan year at today: actual behind it, projected from it, both in the month in progress.
 	Months []projection.SplitMonth `json:"months"`
 }
 
@@ -62,8 +60,8 @@ type PanelSource struct {
 	DataThrough *string   `json:"dataThrough"`
 }
 
-// Panel is the activity's Performance area (FR-029). The revenue model's name is 050's and arrives with it
-// (Assumptions); Projection names the model behind the projected figures (047 FR-012).
+// Panel is the activity's Performance area. The revenue model's name is 050's and arrives with it
+// (Assumptions); Projection names the model behind the projected figures.
 type Panel struct {
 	State      string            `json:"state"`
 	Stages     []StageFigure     `json:"stages"`

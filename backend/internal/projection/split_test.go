@@ -69,7 +69,7 @@ func TestSplitCounts_BeforeAndAfterThePlanYear_FR010(t *testing.T) {
 
 // FuzzProject_SeriesStayInsideTheYearAndReconcile proves what every consumer relies on, whatever the goal,
 // the dates and the velocities: no negative month, twelve months exactly, and the goal stage adding up to
-// the goal itself whenever the activity covers any of the plan year (SC-003, SC-005).
+// the goal itself whenever the activity covers any of the plan year.
 func FuzzProject_SeriesStayInsideTheYearAndReconcile_SC003(f *testing.F) {
 	f.Add(int64(365_000), 1, 12, 1, 2)
 	f.Add(int64(1), 6, 6, 0, 0)

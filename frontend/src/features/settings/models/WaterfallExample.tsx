@@ -6,21 +6,18 @@ import { plural } from '@/format/text';
 import { waterfall } from './waterfall';
 import styles from './WaterfallExample.module.css';
 
-/** The most inquiries the example takes. */
 const MAX_INQUIRIES = 1_000_000_000n;
 
 export interface WaterfallExampleProps {
   /** The INQ→MQL rate as a percentage ("2", "2.00"); null when it is not filled in or not a rate. */
   inqToMqlRate: string | null;
   mqlToDealRate: string | null;
-  /** The average deal size in USD ("10000.00"); null when it is not filled in or not an amount. */
   averageDealSize: string | null;
-  /** The velocities as typed, in whole months; null when not a whole number (047 FR-004). */
+  /** The velocities as typed, in whole months; null when not a whole number. */
   inqToMqlVelocityMonths: number | null;
   mqlToDealVelocityMonths: number | null;
 }
 
-/** Where the lag places a stage, in the example's own words (047 FR-004, 047-C1). */
 function placement(months: number | null): string {
   if (months === null || months === 0) {
     return '';
@@ -28,11 +25,7 @@ function placement(months: number | null): string {
   return ` ${plural(months, 'month')} later`;
 }
 
-/**
- * The model's worked example (FR-010, SC-006): for an example number of inquiries (250,000 at
- * first; changing it saves nothing) "250,000 INQ → 5,000 MQL → 250 deals → 2,500,000.00 USD
- * revenue", worked out as goals are (waterfall.ts) and updated as soon as any value changes.
- */
+/** Worked out as goals are (waterfall.ts); changing the example number of inquiries saves nothing. */
 export function WaterfallExample({
   inqToMqlRate,
   mqlToDealRate,

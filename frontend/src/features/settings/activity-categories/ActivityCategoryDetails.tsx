@@ -19,11 +19,6 @@ export interface ActivityCategoryDetailsProps {
   onClose: () => void;
 }
 
-/**
- * An activity category's details in a side panel (US3): whether the reports open on it, the
- * activity types it groups, where it is used and who created and last changed it; **Edit** and ⋯
- * (Set inactive or Reactivate, Delete).
- */
 export function ActivityCategoryDetails({
   category,
   actions,

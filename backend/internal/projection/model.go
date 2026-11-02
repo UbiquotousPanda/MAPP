@@ -1,5 +1,5 @@
 // Package projection works out, month by month, the volumes and revenue a goal is expected to reach
-// through its plan's model (feature 047). It is pure: inputs in, series out.
+// through its plan's model. It is pure: inputs in, series out.
 package projection
 
 import (
@@ -35,7 +35,7 @@ type Goals struct {
 	SetLaterStagesMyself bool
 }
 
-// Inputs is everything a projection needs; Today comes from the caller's clock, never from here (047-C9).
+// Inputs is everything a projection needs; Today comes from the caller's clock, never from here.
 type Inputs struct {
 	Goals     Goals
 	Model     Model

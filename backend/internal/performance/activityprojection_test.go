@@ -21,7 +21,7 @@ func projectingModel() projection.Model {
 }
 
 // projectingFixture is the panel fixture with a goal the model can project from: 365,000 INQ across the
-// whole of the plan year, the SC-001 table's own numbers.
+// whole of the plan year, the hand-calculated table's own numbers.
 func projectingFixture(t *testing.T) (*fixture, performance.Source) {
 	t.Helper()
 	f, src := panelFixture(t)
@@ -63,7 +63,7 @@ func TestActivityPanel_ProjectsEachStageAndStampsTheModel_FR012_FR016(t *testing
 }
 
 // assertSplitAtToday checks the one rule the months carry: actual behind today, projected ahead of it, both
-// in the month in progress (FR-010).
+// in the month in progress.
 func assertSplitAtToday(t *testing.T, figure performance.StageFigure) {
 	t.Helper()
 	if march := figure.Months[2]; !march.InProgress || march.Actual == nil || march.Projected == nil {

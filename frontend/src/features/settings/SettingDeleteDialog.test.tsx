@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/api/errors';
 import { findMessages, renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
-import { NOT_USED, USED_BY_TWO_PLANS } from '@/testing/fixtures/settings';
+import { NOT_USED } from '@/testing/fixtures/settings';
 import { SettingDeleteDialog } from './SettingDeleteDialog';
 import type { SettingDeleteDialogProps } from './SettingDeleteDialog';
 
@@ -36,16 +36,6 @@ function Page({ onClose, ...props }: Partial<SettingDeleteDialogProps>) {
 }
 
 describe('SettingDeleteDialog (FR-003, FR-004)', () => {
-  it('neverRefuses skips the in-use gate (activity categories, 047-C12)', async () => {
-    renderDialog({ usage: USED_BY_TWO_PLANS, neverRefuses: true });
-
-    expect(
-      await screen.findByRole('alertdialog', { name: "Delete currency 'Japanese yen'?" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete currency' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Set inactive' })).not.toBeInTheDocument();
-  });
-
   it('closes and says why when the delete fails otherwise, with Try again', async () => {
     const { user, onClose } = renderDialog({
       remove: vi.fn(async () => {

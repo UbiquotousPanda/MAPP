@@ -109,8 +109,17 @@ func (s *PostgresStore) PutSource(ctx context.Context, src Source) error {
 	return nil
 }
 
-// DeleteSource reports false when the source still holds facts, which the query refuses in one statement
-// rather than reading and then deciding (FR-002).
+func (s *PostgresStore) SourceUse(ctx context.Context, id string) (SourceUse, error) {
+	row, err := s.db.Queries(ctx).PerformanceSourceUse(ctx, id)
+	if err != nil {
+		return SourceUse{}, fmt.Errorf("count what uses performance source %s: %w", id, err)
+	}
+	return SourceUse{Facts: row.Facts, Imports: row.Imports, ReviewRows: row.ReviewRows,
+		IntegrationIDs: row.IntegrationIds}, nil
+}
+
+// DeleteSource reports false while anything SourceUse counts still refers to the source, which the query
+// refuses in one statement rather than reading and then deciding.
 func (s *PostgresStore) DeleteSource(ctx context.Context, id string) (bool, error) {
 	deleted, err := s.db.Queries(ctx).DeletePerformanceSource(ctx, id)
 	if err != nil {
