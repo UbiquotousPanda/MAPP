@@ -22,7 +22,7 @@ func WithMeasure() Option {
 }
 
 const MeasureLoaded = "1 team, 1 plan, 2 campaigns, 3 initiatives, 9 activities, 13 line items (4 with SWBS codes), " +
-	"1 approval workflow, 13 approval rounds, 7 purchase requests, 6 financial transactions"
+	"1 approval workflow, 13 approval rounds, 7 purchase requests, 6 financial transactions, 3 activity categories"
 
 // addMeasure adds the Measure demo data (#48) after the demo story: new records only, never a change (D-354).
 func (d *demo) addMeasure(ctx context.Context) error {
@@ -44,6 +44,7 @@ func (d *demo) addMeasure(ctx context.Context) error {
 		func(ctx context.Context) error { return d.putLineItems(ctx, lists.lineItems) },
 		func(ctx context.Context) error { return d.putRounds(ctx, measureRounds(file.Plans[0].Name)) },
 		func(ctx context.Context) error { return d.addMeasurePurchases(ctx, file) },
+		func(ctx context.Context) error { return d.addMeasureCategories(ctx, file.Categories) },
 	}
 	for _, step := range steps {
 		if err := step(ctx); err != nil {
