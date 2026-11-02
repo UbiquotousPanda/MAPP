@@ -5,12 +5,19 @@ import { expectNoAxeViolations } from '@/testing/axe';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
-import type { Widget, WidgetQuery, WidgetType } from '../model';
-import { BAR_WIDGET, SOURCES } from './builder-fixtures';
+import type { DataSource, Widget, WidgetQuery, WidgetType } from '../model';
+import { BAR_QUERY, BAR_WIDGET, EVENT_LEADS, SOURCES } from './builder-fixtures';
 import { DataTab } from './DataTab';
 import { newWidget } from './widget-defaults';
 
 let latest: WidgetQuery | null = null;
+
+const AGENCY_SPEND: DataSource = {
+  ...EVENT_LEADS,
+  key: 'DS-1002',
+  label: 'Agency spend',
+  fields: EVENT_LEADS.fields.map((field) => ({ ...field, label: `Agency ${field.label}` })),
+};
 
 function Harness({ start }: { start: Widget }) {
   const [query, setQuery] = useState(start.query);
@@ -21,7 +28,7 @@ function Harness({ start }: { start: Widget }) {
     <DataTab
       widget={{ ...start, query }}
       query={query}
-      sources={SOURCES}
+      sources={[...SOURCES, AGENCY_SPEND]}
       sourcesFailed={false}
       errorAt={() => undefined}
       onQuery={(next) => {
@@ -105,6 +112,34 @@ describe('051 FR-031: changing the source keeps what fits and says what was clea
       "Cleared what doesn't fit Event leads 2026: Group by, 1 measure.",
     );
     expect(latest).toMatchObject({ source: 'DS-1001', dimension: null, measures: [] });
+  });
+
+  it("keeps none of another dataset's columns: c1 of one dataset is not c1 of the next", async () => {
+    const leads: Widget = {
+      ...BAR_WIDGET,
+      query: {
+        ...BAR_QUERY,
+        source: 'DS-1001',
+        dimension: { field: 'c1', dateGroup: null },
+        measures: [
+          { aggregation: 'sum', field: 'c3', label: '' },
+          { aggregation: 'count', field: null, label: '' },
+        ],
+        filters: [{ field: 'c1', operator: 'eq', values: ['Paris'] }],
+      },
+    };
+    const { user } = renderTab(leads);
+    await user.selectOptions(screen.getByLabelText(/Source/), 'Agency spend');
+
+    expect(latest).toMatchObject({
+      source: 'DS-1002',
+      dimension: null,
+      measures: [{ aggregation: 'count', field: null, label: '' }],
+      filters: [],
+    });
+    expect(screen.getByRole('status')).toHaveTextContent(
+      "Cleared what doesn't fit Agency spend: Group by, 1 measure, 1 filter.",
+    );
   });
 });
 
