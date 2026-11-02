@@ -57,8 +57,7 @@ type Report struct {
 }
 
 type (
-	Entry     = ranking.Entry[Figures]
-	Group     = ranking.Group[Figures]
-	TrailStep = ranking.TrailStep
-	Ranked    = ranking.List[Figures]
+	Entry  = ranking.Entry[Figures]
+	Group  = ranking.Group[Figures]
+	Ranked = ranking.List[Figures]
 )
