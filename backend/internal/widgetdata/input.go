@@ -122,7 +122,7 @@ func (p *compiled) notes(fromReader []string, out outcome) []string {
 		notes = append(notes, noteSeveralTeams)
 	}
 	if out.limited && !p.groupRest {
-		notes = append(notes, fmt.Sprintf(noteShowing, min(p.limit, out.groupCount), out.groupCount))
+		notes = append(notes, fmt.Sprintf(noteShowing, min(p.groupLimit(), out.groupCount), out.groupCount))
 	}
 	return notes
 }
