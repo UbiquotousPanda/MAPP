@@ -11,7 +11,7 @@ import type { CustomDashboardFilters, Widget, WidgetData } from '../model';
 import { widgetTypeInfo } from '../widget-types';
 import { useWidgetData, widgetDataRequest } from './api';
 import { buildOption } from './build-option';
-import { describeWidget, shownGroupsNote } from './describe';
+import { defaultTitle, describeWidget, shownGroupsNote } from './describe';
 import { EChart } from './EChart';
 import type { ChartHandle } from './EChart';
 import { KeyFigure } from './KeyFigure';
@@ -65,6 +65,7 @@ export function WidgetView({
   const notes = data && !result.isError ? notesOf(data) : [];
   const height = chartHeight(widget, notes.length, mode);
   const hasFigures = data !== undefined && !isEmpty(widget, data);
+  const title = widget.title || (data && !result.isError ? defaultTitle(data) : '');
 
   function handleDownload() {
     if (!handle) {
@@ -72,7 +73,7 @@ export function WidgetView({
     }
     handle
       .toPng()
-      .then((blob) => saveBlob(blob, pngFileName(dashboardName, widget.title)))
+      .then((blob) => saveBlob(blob, pngFileName(dashboardName, title)))
       .catch(() =>
         show({ message: "The chart couldn't be saved as a picture. Please try again." }),
       );
@@ -85,18 +86,18 @@ export function WidgetView({
   const showsMenu = mode === 'view' && isChart && hasFigures && !result.isError;
 
   return (
-    <section className={styles.widget} aria-labelledby={widget.title ? titleId : undefined}>
-      {(widget.title || widget.subtitle || showsMenu) && (
+    <section className={styles.widget} aria-labelledby={title ? titleId : undefined}>
+      {(title || widget.subtitle || showsMenu) && (
         <header className={styles.header}>
           <div className={styles.heading}>
-            {widget.title && (
+            {title && (
               <h2 id={titleId} className={styles.title}>
-                {widget.title}
+                {title}
               </h2>
             )}
             {widget.subtitle && <p className={styles.subtitle}>{widget.subtitle}</p>}
           </div>
-          {showsMenu && <ActionsMenu label={widget.title || 'this chart'} items={items} />}
+          {showsMenu && <ActionsMenu label={title || 'this chart'} items={items} />}
         </header>
       )}
       <div

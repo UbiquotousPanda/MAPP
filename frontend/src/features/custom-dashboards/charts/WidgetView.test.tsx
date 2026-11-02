@@ -139,6 +139,17 @@ describe('051 FR-039: every state of a widget', () => {
     await expectNoAxeViolations();
   });
 
+  it('titles a widget without a title by its measure and group, as the Style tab promises', async () => {
+    answer(widgetData());
+    show(widget('bar', {}, { title: '' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Sum of Planned cost by Activity type' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: 'Sum of Planned cost by Activity type' }),
+    ).toBeInTheDocument();
+  });
+
   it('shows a key figure with its comparison in words', async () => {
     answer(
       widgetData({

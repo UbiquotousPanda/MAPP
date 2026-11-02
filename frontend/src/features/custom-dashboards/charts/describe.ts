@@ -25,6 +25,14 @@ export function describeWidget(widget: Widget, data: WidgetData): string {
   return `${named} ${by}${brokenDown}; ${groupsText(data)}.`;
 }
 
+/** What a widget without a title is called, e.g. "Sum of Planned cost by Activity type". */
+export function defaultTitle(data: WidgetData): string {
+  const measures = data.columns.filter((column) => /^m\d+$/.test(column.key));
+  const measureNames = joinWithAnd(measures.map((column) => column.label));
+  const dimension = columnOf(data, 'dimension');
+  return dimension ? `${measureNames} by ${dimension.label}` : measureNames;
+}
+
 function kindOf(widget: Widget): string {
   const info = widgetTypeInfo(widget.type);
   return info.group === 'charts' ? `${info.label} chart` : info.label;
