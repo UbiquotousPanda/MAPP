@@ -74,10 +74,10 @@ exist on `measure-module`.
 
 ## Phase 2b: Wave A contract (integrator; when lanes C and D hand over their `contracts/api.md`)
 
-- [ ] T013 Add the report operations of 040–045 to `backend/api/openapi.yaml` from their
+- [X] T013 Add the report operations of 040–045 to `backend/api/openapi.yaml` from their
   `specs/04x-*/contracts/api.md`, their rules to `backend/internal/access/routes_measure.go`, and each feature's
   operations to `notYetServed` under its own comment line in `contract_routes_test.go`; run `pnpm run api:types`
-- [ ] T014 Pull request of the wave A contract into `measure-module`; tell the lanes to rebase (build guide §4.3)
+- [X] T014 Pull request of the wave A contract into `measure-module`; tell the lanes to rebase (build guide §4.3)
 
 ## Phase 3: User Story 1 — Open a report and narrow it (P1) 🎯 MVP
 
@@ -138,7 +138,7 @@ compare "In view" with All work's counts.
   button (design system §2.8), every file within 300 lines
 - [X] T030 [US1] Stub pages `frontend/src/features/measure/<report>/<Name>Report.tsx` render `ReportFrame` with
   "Coming soon — this report arrives with feature 0NN"
-- [ ] T031 [US1] `frontend/e2e/measure.spec.ts` US1 with axe: Reports after Dashboards; the Reports page; a report
+- [X] T031 [US1] `frontend/e2e/measure.spec.ts` US1 with axe: Reports after Dashboards; the Reports page; a report
   opens on the defaults with "In view" equal to All work's counts; tick a value, "Changes not applied yet",
   Apply; copy the address into a new page; an out-of-scope plan in the address gives the left-out note; chips,
   Reset filters; Period and Currency at once
@@ -184,7 +184,7 @@ views as one person; another person never sees them.
 - [X] T038 [US2] Handler operations for views; remove them from `notYetServed`
 - [X] T039 [US2] `frontend/src/features/measure/shared/api.ts` view hooks and mutations;
   `shared/SavedViewsMenu.tsx`; `ReportFrame` applies the default view when the address has no filters
-- [ ] T040 [US2] `frontend/e2e/measure.spec.ts` US2: save, star, reopen on the default, modify and update,
+- [X] T040 [US2] `frontend/e2e/measure.spec.ts` US2: save, star, reopen on the default, modify and update,
   rename, delete and Undo; a second persona sees none of them
 
 **Checkpoint**: commit "feat(039): personal saved views per report (US2, FR-024–FR-029)".
@@ -219,7 +219,7 @@ a widget to its table, export it, export the report, compare every value with th
   the plan year and today) and the labelled **Today** marker every time chart of 040–050 draws (FR-019)
 - [X] T047 [P] [US3] Gallery entries for `ReportWidget` and `ReportTable` in
   `frontend/src/features/dev/ComponentGalleryPage.tsx` (a sample bar chart with its table)
-- [ ] T048 [US3] `frontend/e2e/measure.spec.ts` US3: Export from a report page downloads an `.xlsx` whose sheets
+- [X] T048 [US3] `frontend/e2e/measure.spec.ts` US3: Export from a report page downloads an `.xlsx` whose sheets
   include In view and About this export
 
 **Checkpoint**: commit "feat(039): table view and export of every widget and report (US3, FR-020–FR-023)".
@@ -236,13 +236,13 @@ a widget to its table, export it, export the report, compare every value with th
 
 ## Phase 7: Polish and cross-cutting
 
-- [ ] T051 `BenchmarkReportsFrame` in `backend/internal/platform/apibench/reports_test.go` (demo data and the 028
+- [X] T051 `BenchmarkReportsFrame` in `backend/internal/platform/apibench/reports_test.go` (demo data and the 028
   volume); record the results in `plan.md` (SC-003, research R9)
 - [X] T052 Comment budget and file length of **every file this feature touched**, including the hub and Plan
   files (`routes.go`, `catalogue.go`, `ids.go`, `seed/access.go`, `navigation.ts`, `pages.tsx`, `router.tsx`,
   `contract_routes_test.go`): whole-file 5% budget (CLAUDE.md 3), at most 300 non-blank lines
-- [ ] T053 Run `specs/039-measure-foundation/quickstart.md` by hand on the demo data; fix what differs
-- [ ] T054 `/speckit-converge`; spec status Built; pull request into `measure-module` with the feature-map status
+- [X] T053 Run `specs/039-measure-foundation/quickstart.md` by hand on the demo data; fix what differs
+- [X] T054 `/speckit-converge`; spec status Built; pull request into `measure-module` with the feature-map status
   change "039 Built" in its description (build guide §4.5)
 
 ## Dependencies
@@ -292,3 +292,18 @@ commit at each checkpoint.
 | SC-004, SC-005 | T020, T031, T040 |
 | SC-006 | T041, T048 |
 | SC-007 | T021, T035, T043, T031 |
+
+## Phase 8: Converge (2026-11-02)
+
+Found by `/speckit-converge` and the quickstart walkthrough; each fixed test first.
+
+- [X] T055 Owners and teams of other markets, unknown attributes, options and currencies are left out, counted and
+  never named, in the frame, its chips and the export (FR-015, SC-002; converge F1, F2)
+- [X] T056 About this export words plan types and activity statuses as the screen does (FR-022; F3)
+- [X] T057 `LevelTabs.test.tsx`: tab order, Activity first, inactive values, Select all and Clear all per tab, axe
+  (FR-008, FR-010; F4)
+- [X] T058 Year choices are the years of the reports.view scope plus the current year (FR-008; F5)
+- [X] T059 Spec aligned with the build: 039-C4 no-access page, 039-C5 no-finance words, 039-C6 views in the
+  address (FR-004, FR-025; F6, F7, F9)
+- [X] T060 `ReportWidget` takes an `empty` message instead of a chart of zeros (FR-031; F8)
+- [X] T061 Walkthrough: the level tabs wrap instead of hiding Activity; the browser test checks every tab is visible
