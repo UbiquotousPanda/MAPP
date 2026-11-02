@@ -150,6 +150,19 @@ describe('051 FR-039: every state of a widget', () => {
     ).toBeInTheDocument();
   });
 
+  it('says once how many groups it shows when SP&A One says so too', async () => {
+    answer(
+      widgetData({
+        rows: [row(key('Event'), [money('3.00')])],
+        groupCount: 37,
+        notes: ['Showing 1 of 37'],
+      }),
+    );
+    show(widget('bar'));
+    await screen.findByRole('img', { name: CHART_NAME });
+    expect(screen.getAllByText(/^Showing 1 of 37/)).toHaveLength(1);
+  });
+
   it('shows a key figure with its comparison in words', async () => {
     answer(
       widgetData({

@@ -221,7 +221,8 @@ function isEmpty(widget: Widget, data: WidgetData): boolean {
 
 function notesOf(data: WidgetData): string[] {
   const shown = shownGroupsNote(data);
-  return shown ? [shown, ...data.notes] : data.notes;
+  const saidAlready = data.notes.some((note) => note.startsWith('Showing '));
+  return shown && !saidAlready ? [shown, ...data.notes] : data.notes;
 }
 
 // The builder's handle row and padding sit inside the same cell, so its previews get less room.
