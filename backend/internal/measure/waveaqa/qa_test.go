@@ -104,10 +104,8 @@ func TestWaveA_CatalogueMatchesAccess_FR001(t *testing.T) {
 	}
 }
 
-func TestWaveA_NoFinancialAccess_FR004(t *testing.T) {
+func TestWaveA_NoFinancialAccess_Approvals_FR004(t *testing.T) {
 	t.Parallel()
-	c := apitest.New(t).SignIn(t, lea)
-
 	var approvals struct {
 		FinanceCovers struct{ Plans, Of int } `json:"financeCovers"`
 		Grid          struct {
@@ -116,6 +114,20 @@ func TestWaveA_NoFinancialAccess_FR004(t *testing.T) {
 			} `json:"items"`
 		} `json:"grid"`
 	}
+	getJSON(t, apitest.New(t).SignIn(t, lea), "/api/v1/reports/approvals?year=2026&pageSize=100", &approvals)
+
+	if approvals.FinanceCovers.Plans != 0 || approvals.FinanceCovers.Of == 0 {
+		t.Errorf("approvals covers = %+v, want no plan with amounts and some with rounds", approvals.FinanceCovers)
+	}
+	for i, row := range approvals.Grid.Items {
+		if row.Amount != nil {
+			t.Errorf("approval row %d shows an amount %s without finance.view", i, *row.Amount)
+		}
+	}
+}
+
+func TestWaveA_NoFinancialAccess_PurchaseRequests_FR004(t *testing.T) {
+	t.Parallel()
 	var requests struct {
 		FinanceCovers struct{ Plans, Of int } `json:"financeCovers"`
 		Cards         struct {
@@ -123,17 +135,8 @@ func TestWaveA_NoFinancialAccess_FR004(t *testing.T) {
 			Invoiced  *json.RawMessage `json:"invoiced"`
 		} `json:"cards"`
 	}
-	getJSON(t, c, "/api/v1/reports/approvals?year=2026&pageSize=100", &approvals)
-	getJSON(t, c, "/api/v1/reports/purchase-requests?year=2027", &requests)
+	getJSON(t, apitest.New(t).SignIn(t, lea), "/api/v1/reports/purchase-requests?year=2027", &requests)
 
-	if approvals.FinanceCovers.Plans != 0 || approvals.FinanceCovers.Of == 0 {
-		t.Errorf("approvals covers = %+v, want no plan with amounts and some with rounds", approvals.FinanceCovers)
-	}
-	for i, row := range approvals.Grid.Items {
-		if row.Amount != nil && string(*row.Amount) != "null" {
-			t.Errorf("approval row %d shows an amount %s without finance.view", i, *row.Amount)
-		}
-	}
 	if requests.FinanceCovers.Plans != 0 || requests.FinanceCovers.Of == 0 {
 		t.Errorf("purchase requests covers = %+v, want none covered of some", requests.FinanceCovers)
 	}
