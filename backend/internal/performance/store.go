@@ -105,7 +105,6 @@ type Imports interface {
 	CurrencyCodes(ctx context.Context) (map[string]bool, error)
 }
 
-// FactQuery is the findability on one activity's facts.
 type FactQuery struct {
 	ActivityID  string
 	Search      string
