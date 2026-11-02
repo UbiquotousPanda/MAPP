@@ -3,7 +3,7 @@ import { expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixt
 import { createPlanningRecords } from './planning';
 import { expect, test } from './support/no-csp-violations';
 
-// Feature 051 US1 against the real API: Priya builds, checks and saves a dashboard; a widget's figure equals
+// The dashboard builder against the real API: Priya builds, checks and saves a dashboard; a widget's figure equals
 // the activity page; leaving with unsaved changes asks first; a Viewer gets no builder.
 
 const PRIYA = 'priya.raman@shell.com';

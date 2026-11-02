@@ -3,7 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expectNoAxeViolations, signInAs } from './fixtures';
 import { expect, test } from './support/no-csp-violations';
 
-// Feature 051 US2 against the real API: Daniel reads the demo dashboard Priya shared with Lubricants
+// Shared dashboards against the real API: Daniel reads the demo dashboard Priya shared with Lubricants
 // Europe (DB-1001, seed); Mei, outside that team, is told it does not exist.
 
 const DANIEL = 'daniel.okoro@shell.com';
