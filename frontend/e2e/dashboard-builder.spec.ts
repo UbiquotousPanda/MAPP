@@ -191,3 +191,20 @@ test('051 US1-12, FR-002: a Viewer has no Dashboard builder and is refused /buil
   await expect(page.getByRole('heading', { level: 1, name: 'No access' })).toBeVisible();
   await expectNoAxeViolations(page);
 });
+
+test('051 FR-035: the view-only builder shows each chart whole inside its widget', async ({
+  page,
+}) => {
+  await signInAs(page, 'daniel.okoro@shell.com');
+  await page.goto('/builder/DB-1001');
+  await expect(page.getByText('Only Priya Raman can edit this dashboard.')).toBeVisible();
+  const widget = page.getByRole('region', { name: 'Planned cost by activity type' });
+  const chart = widget.getByRole('img', { name: /^Bar chart/ });
+  await expect(chart).toBeVisible();
+
+  const [cellBox, chartBox] = [await widget.boundingBox(), await chart.boundingBox()];
+  expect(chartBox && cellBox && chartBox.y + chartBox.height).toBeLessThanOrEqual(
+    (cellBox?.y ?? 0) + (cellBox?.height ?? 0),
+  );
+  await expectNoAxeViolations(page);
+});
