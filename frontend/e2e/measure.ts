@@ -1,5 +1,5 @@
 // The Measure demo plan the end-to-end seed loads (go run ./cmd/seed -measure, #48), by the names the reports show.
-// Only Alex Morgan and Carlos Mendes see it (All markets); every other persona sees the demo story as before.
+// Alex Morgan, Carlos Mendes and Lea Santos see it (All markets); Priya, Daniel, Mei and Sara see the demo story only.
 
 export const MEASURE_PLAN = 'FY2026 Measure demo – Lubricants Benelux';
 
