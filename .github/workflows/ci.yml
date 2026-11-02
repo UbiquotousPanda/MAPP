@@ -1,8 +1,9 @@
 name: CI
 
 on:
+  # Feature branches too, so a pull request stacked on another feature's branch is checked before it is retargeted.
   pull_request:
-    branches: [main, release, develop, measure-module]
+    branches: [main, release, develop, measure-module, 'feature/**']
   push:
     branches: [main, release, develop, measure-module]
 
@@ -60,6 +61,23 @@ jobs:
           echo "backend=$backend" >> "$GITHUB_OUTPUT"
           echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
           echo "backend: $backend, frontend: $frontend"
+
+  # Comment budget, file length, forward-only migrations and requirement IDs in comments, on the files the pull request
+  # changes (scripts/check-rules.ps1). The description is passed so a 301-400 line file it justifies by name passes.
+  rules:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Rules
+        shell: pwsh
+        env:
+          BASE: origin/${{ github.base_ref }}
+          DESCRIPTION: ${{ github.event.pull_request.body }}
+        run: ./scripts/check-rules.ps1 -Base $env:BASE -Justified "$env:DESCRIPTION"
 
   backend-checks:
     needs: changes
@@ -193,7 +211,7 @@ jobs:
           if-no-files-found: ignore
 
   backend:
-    needs: [changes, backend-checks, backend-lint, backend-test]
+    needs: [changes, rules, backend-checks, backend-lint, backend-test]
     if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
     steps:
@@ -272,7 +290,7 @@ jobs:
 
   # Also merges the shards' results into one test report and one coverage report.
   frontend:
-    needs: [changes, frontend-checks, frontend-test]
+    needs: [changes, rules, frontend-checks, frontend-test]
     if: ${{ !cancelled() && needs.changes.outputs.frontend != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10

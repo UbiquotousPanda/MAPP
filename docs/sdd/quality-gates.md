@@ -25,12 +25,20 @@ Nobody pushes directly to `main`, `release` or `develop`. Open a pull request fr
 A pull request needs one approval from someone other than its last pusher, and the three checks
 green.
 
-## What the reviewer checks
+## What CI checks for the reviewer
+
+`scripts/check-rules.ps1` runs on every pull request, on the files it changes, and fails the backend and frontend
+checks; run it locally with `pwsh ./scripts/check-rules.ps1` (or `check-changed.ps1`, which runs it).
 
 - **Comment budget** (constitution VIII): at most 5% of a file's non-blank lines hold a comment,
-  rounded up; tool directives do not count.
-- **File length** (constitution V): at most 300 non-blank lines; 301–400 needs a reason in the pull
-  request; 401 or more is never merged.
+  rounded up, trailing comments included; tool directives do not count.
+- **File length** (constitution V): at most 300 non-blank lines; 301–400 passes when the pull request
+  description names the file with its reason; 401 or more is never merged.
+- **Forward-only migrations** (B5): no `-- +goose Down` block.
+- **Requirement IDs** (constitution VIII): no `FR-`, `NFR-` or `SC-` in a comment the change adds.
+
+## What the reviewer checks
+
 - **Release age of Go modules** (constitution VII): a module version added or upgraded was published
   more than 24 hours ago — see `https://proxy.golang.org/<module>/@v/<version>.info`. pnpm enforces
   this itself (`minimumReleaseAge` in `frontend/pnpm-workspace.yaml`).
@@ -41,4 +49,11 @@ Apply the branch rules once, and switch on secret scanning (Settings → Code se
 
 ```sh
 gh api --method POST repos/anup-zensar/MAPP/rulesets --input .github/rulesets/protected-branches.json
+```
+
+While the Measure module is built, its branch needs the three checks green too (no review rule: the lanes'
+integrator reviews):
+
+```sh
+gh api --method POST repos/anup-zensar/NorthStar/rulesets --input .github/rulesets/measure-module.json
 ```
