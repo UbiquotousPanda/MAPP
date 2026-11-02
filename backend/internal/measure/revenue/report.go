@@ -3,42 +3,10 @@ package revenue
 import (
 	"context"
 
-	"mapp/internal/allwork"
 	"mapp/internal/measure"
+	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/money"
 )
-
-// RankedRevenue is the ranked list of entries sorted by actual or projected revenue.
-func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Filter, q RankedQuery) (RevenueRanked, error) {
-	var out RevenueRanked
-	err := s.tx.Read(ctx, func(ctx context.Context) error {
-		sc, series, err := s.series(ctx, a, f, categoryOf(f.Own))
-		if err != nil {
-			return err
-		}
-		display := money.DisplayIn(sc.Currency.Code, sc.Currency.Rate.String())
-		out = revenueRanked(revenueRankedInput{series: series, nodes: nodesForRanking(sc, series), matched: sc.Matched,
-			attrs: attributesByID(sc.Attributes), show: showLevel(f.Show), q: q, display: display})
-		return nil
-	})
-	return out, err
-}
-
-func attributesByID(attributes []allwork.Attribute) map[string]allwork.Attribute {
-	out := make(map[string]allwork.Attribute, len(attributes))
-	for _, a := range attributes {
-		out[a.ID] = a
-	}
-	return out
-}
-
-func showLevel(show string) string {
-	if show == "" {
-		return measure.ShowCampaign
-	}
-	return show
-}
 
 // revenueReport is Revenue in 039's registry.
 type revenueReport struct {
@@ -53,7 +21,7 @@ func (revenueReport) Key() string     { return measure.KeyRevenue }
 func (revenueReport) Available() bool { return true }
 
 func (revenueReport) Params() []string {
-	return []string{paramCategory, paramSort, paramOrder, paramGroup, paramSize, paramSearch, paramDrill}
+	return append([]string{paramCategory}, ranking.Params()...)
 }
 
 func (r revenueReport) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
@@ -73,7 +41,7 @@ func (funnelReport) Key() string     { return measure.KeyFunnel }
 func (funnelReport) Available() bool { return true }
 
 func (funnelReport) Params() []string {
-	return []string{paramCategory, paramStage, paramSort, paramOrder, paramGroup, paramSize, paramSearch, paramDrill}
+	return append([]string{paramCategory, paramStage}, ranking.Params()...)
 }
 
 func (r funnelReport) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {

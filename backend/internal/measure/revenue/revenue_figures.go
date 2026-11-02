@@ -1,7 +1,6 @@
 package revenue
 
 import (
-	"mapp/internal/allwork"
 	"mapp/internal/platform/money"
 )
 
@@ -31,33 +30,6 @@ func withPerformance(f RevenueFigures, display money.Display) RevenueFigures {
 	return f
 }
 
-// rollUpRevenue gives every node its activity descendants' totals; a leaf activity keeps its own.
-func rollUpRevenue(nodes []allwork.Node, below map[string][]string, ownActivity map[string]RevenueFigures) map[string]RevenueFigures {
-	totals := make(map[string]RevenueFigures, len(nodes))
-	var sum func(id string) RevenueFigures
-	sum = func(id string) RevenueFigures {
-		if f, done := totals[id]; done {
-			return f
-		}
-		children, hasChildren := below[id]
-		if !hasChildren {
-			f := ownActivity[id]
-			totals[id] = f
-			return f
-		}
-		var f RevenueFigures
-		for _, childID := range children {
-			f = addRevenueFigures(f, sum(childID))
-		}
-		totals[id] = f
-		return f
-	}
-	for _, n := range nodes {
-		sum(n.ID)
-	}
-	return totals
-}
-
 func addRevenueFigures(a, b RevenueFigures) RevenueFigures {
 	a.Goal = addMoneyPtr(a.Goal, b.Goal)
 	a.Actual = addMoneyPtr(a.Actual, b.Actual)
@@ -68,11 +40,8 @@ func addRevenueFigures(a, b RevenueFigures) RevenueFigures {
 	return a
 }
 
-// revenueTimes is the share of f a % split gives, each amount rounded half up to the cent; nil keeps f whole.
-func revenueTimes(f RevenueFigures, part *money.Percent) RevenueFigures {
-	if part == nil {
-		return f
-	}
+// revenueTimes is the share of f a % split gives, each amount rounded half up to the cent.
+func revenueTimes(f RevenueFigures, part money.Percent) RevenueFigures {
 	scale := func(m *money.Money) *money.Money {
 		if m == nil {
 			return nil

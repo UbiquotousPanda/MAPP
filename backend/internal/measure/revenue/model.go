@@ -1,6 +1,9 @@
 package revenue
 
-import "mapp/internal/platform/money"
+import (
+	"mapp/internal/measure/ranking"
+	"mapp/internal/platform/money"
+)
 
 const (
 	StatePast       = "actual"
@@ -71,41 +74,6 @@ type RevenueFigures struct {
 	ROIReason        string       `json:"roiReason"`
 }
 
-type RevenueEntry struct {
-	ID       string         `json:"id"`
-	Level    string         `json:"level"`
-	Name     string         `json:"name"`
-	PlanID   string         `json:"planId"`
-	Figures  RevenueFigures `json:"figures"`
-	Children []RevenueEntry `json:"children,omitempty"`
-}
-
-type RevenueGroup struct {
-	Key     string         `json:"key"`
-	Label   string         `json:"label"`
-	Totals  RevenueFigures `json:"totals"`
-	Entries []RevenueEntry `json:"entries"`
-}
-
-type RevenueRanked struct {
-	Level     string         `json:"level"`
-	Sort      string         `json:"sort"`
-	Order     string         `json:"order"`
-	Group     string         `json:"group"`
-	Page      int            `json:"page"`
-	Size      int            `json:"size"`
-	Total     int            `json:"total"`
-	Trail     []TrailStep    `json:"trail"`
-	Groups    []RevenueGroup `json:"groups"`
-	DrillLost bool           `json:"drillLost"`
-}
-
-type TrailStep struct {
-	ID    string `json:"id"`
-	Level string `json:"level"`
-	Name  string `json:"name"`
-}
-
 // FunnelCards mirrors RevenueCards, plus the conversion from the previous stage.
 type FunnelCards struct {
 	Goal        NumberCard `json:"goal"`
@@ -143,31 +111,12 @@ type FunnelFigures struct {
 	Conversion  *float64 `json:"conversion"`
 }
 
-type FunnelEntry struct {
-	ID       string        `json:"id"`
-	Level    string        `json:"level"`
-	Name     string        `json:"name"`
-	PlanID   string        `json:"planId"`
-	Figures  FunnelFigures `json:"figures"`
-	Children []FunnelEntry `json:"children,omitempty"`
-}
-
-type FunnelGroup struct {
-	Key     string        `json:"key"`
-	Label   string        `json:"label"`
-	Totals  FunnelFigures `json:"totals"`
-	Entries []FunnelEntry `json:"entries"`
-}
-
-type FunnelRanked struct {
-	Level     string        `json:"level"`
-	Sort      string        `json:"sort"`
-	Order     string        `json:"order"`
-	Group     string        `json:"group"`
-	Page      int           `json:"page"`
-	Size      int           `json:"size"`
-	Total     int           `json:"total"`
-	Trail     []TrailStep   `json:"trail"`
-	Groups    []FunnelGroup `json:"groups"`
-	DrillLost bool          `json:"drillLost"`
-}
+type (
+	RevenueEntry  = ranking.Entry[RevenueFigures]
+	RevenueGroup  = ranking.Group[RevenueFigures]
+	RevenueRanked = ranking.List[RevenueFigures]
+	FunnelEntry   = ranking.Entry[FunnelFigures]
+	FunnelGroup   = ranking.Group[FunnelFigures]
+	FunnelRanked  = ranking.List[FunnelFigures]
+	TrailStep     = ranking.TrailStep
+)
