@@ -67,6 +67,14 @@ two with the same wording (049-C13, 049-C15).
   049-C10: default All categories, Uncategorised selectable, kept in the address and saved views.
 - **048-C9** — Q: Can people choose and reorder the summary cards? → A: **No: fixed cards** (measure-metrics §3,
   Q-029; 049-C8). Sharing by e-mail is out of scope as everywhere in Reports.
+- **048-C10** — Q: Where do the series and the variance word come from (lane B, 2 Nov)? → A: **From one shared read in
+  `measure/revenue`, `ActivitySeries(ctx, a, f, category)`**, which lane B exports in a follow-up pull request right
+  after #82 merges; Revenue and Funnel stages read through it too, so the three reports share one set of rules. The
+  variance word of 048-C1 is worked out once inside that read, and 049 moves from "No goal set." to 048-C1's words in
+  the same follow-up. 048 builds against #82 as fixed on 2 Nov (cards split the period in progress differently; Goal
+  is the activities' sum, 049-C16), not its earlier head.
+- **048-C11** — Q: Who adds 048's operations to the wave B contract? → A: **Lane C, with this feature**, as for 041
+  and 042, with lane B (UbiquotousPanda) tagged to review.
 
 ## User Scenarios & Testing *(mandatory)*
 

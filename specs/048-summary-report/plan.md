@@ -26,8 +26,7 @@ vitest-axe; Playwright for US1.
   per activity in view, its plan, type, owner, attribute values, and per month its actual, projected and goal per
   stage and revenue in USD; (b) **fallback** — 048 reuses 049's ports and adapters (`Facts`, `Goals`, `Categories`,
   `Rates`, the `projection` engine) and repeats the per-activity summing, as 049-C18 copied 040's ranked list, with
-  `TestSummary_EqualsRevenue_048_SC002` holding the two equal. (a) avoids two copies of the same rules; it waits for
-  lane B's answer. Either way the statements stay fixed: one facts read, one goals read, whatever the activities.
+  `TestSummary_EqualsRevenue_048_SC002` holding the two equal. (a) is taken (048-C10): lane B exports it after #82 merges. Either way the statements stay fixed: one facts read, one goals read, whatever the activities.
 - **R2 — Segments (048-C4).** The active Shell attributes at Plan, Campaign and Activity level come from the frame's
   scope (`measure.Scope.Attributes`), the same source 043 uses; a node's values are on `allwork.Node`. An activity
   takes a Plan or Campaign attribute's value from its ancestor. Several values share the activity's figures equally
@@ -88,8 +87,11 @@ its four ✔ · money exact decimal ✔ · Shell vocabulary (Reports, Summary, N
 tokens, SVG bars and lines, no chart library ✔ · files ≤ 300 lines, comments ≤ 5% ✔ · no new dependency ✔ ·
 read-only, no yellow primary button ✔.
 
-## Questions for others
+## Answers from others (2 Nov)
 
-1. **Lane B:** can `measure/revenue` export `ActivitySeries` (R1 a)? If not, 048 takes R1 b.
-2. **Lane B / lane A:** the wave B contract — does lane C add 048's two operations itself, as in wave A?
+1. **Lane B: R1 (a), confirmed (048-C10).** `ActivitySeries` comes in lane B's follow-up pull request right after
+   #82, together with 049's switch to `measure/ranking`; the variance word moves into that read. Implementing waits for
+   it, and builds against #82 after its 2 Nov fixes.
+2. **Lane B: lane C adds the two operations itself (048-C11)**, tagging lane B to review. Merge order announced:
+   #62 → #75 → #82 on 2 or 3 Nov, then the `ActivitySeries` pull request.
 3. **Integrator:** measure-metrics gains "On plan" and "No goal" (048-C1) and Goal coverage's definition (048-C2).

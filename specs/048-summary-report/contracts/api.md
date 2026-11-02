@@ -78,4 +78,4 @@ LeagueTable:
 ## Not changed by this feature
 
 `measure/revenue` (lane B's; the export of R1 is asked of them), `app/measure.go`, the shared hub files. The two
-operations, their rules and `notYetServed` lines are added with the feature if lane A agrees, as in wave A.
+operations, their rules and `notYetServed` lines are added with the feature by lane C, with lane B reviewing (048-C11).
