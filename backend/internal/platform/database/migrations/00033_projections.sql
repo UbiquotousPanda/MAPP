@@ -35,16 +35,8 @@ CREATE UNIQUE INDEX activity_categories_default_key ON activity_categories (is_d
 
 -- The primary key IS the rule: an activity type belongs to at most one category (047-C7).
 CREATE TABLE activity_category_types (
-    activity_type_id text PRIMARY KEY REFERENCES activity_types (id),
+    activity_type_id text PRIMARY KEY REFERENCES activity_types (id) ON DELETE CASCADE,
     category_id      text NOT NULL REFERENCES activity_categories (id) ON DELETE CASCADE
 );
 
 CREATE INDEX activity_category_types_category_idx ON activity_category_types (category_id);
-
--- +goose Down
-DROP TABLE activity_category_types;
-DROP TABLE activity_categories;
-ALTER TABLE models
-    DROP COLUMN inq_to_mql_velocity_months,
-    DROP COLUMN mql_to_deal_velocity_months,
-    DROP COLUMN allowed_goal_stages;

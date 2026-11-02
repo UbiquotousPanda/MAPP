@@ -103,6 +103,7 @@ func place(row *Row, mapping Mapping, cell Cell) {
 	case MeaningWebMetric:
 		row.Readings = append(row.Readings, Reading{Measure: Measure{WebMetric: mapping.WebMetric}, Cell: cell})
 	case MeaningJourney:
+		row.Journey = cell
 	}
 }
 

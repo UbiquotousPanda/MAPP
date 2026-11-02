@@ -28,8 +28,8 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
-      // Migrate the database and reload the demo data, then start the API on 127.0.0.1 only.
-      command: 'go run ./cmd/seed -reset && go run ./cmd/api',
+      // Migrate the database and reload the demo data with the Measure demo plan, then start the API on 127.0.0.1 only.
+      command: 'go run ./cmd/seed -reset -measure && go run ./cmd/api',
       cwd: '../backend',
       env: { ...process.env, DATABASE_URL: databaseURL, APP_PORT: apiPort, APP_ENV: 'local' },
       url: `http://127.0.0.1:${apiPort}/healthz`,

@@ -25,6 +25,8 @@ export interface SettingDeleteDialogProps {
   remove: () => Promise<DeleteResult>;
   /** Sets it inactive (with its own message); answers whether that worked. */
   setInactive: () => Promise<boolean>;
+  /** Activity categories (047-C12): grouping types is never a reason to refuse, unlike every other kind. */
+  neverRefuses?: boolean;
   /** The lists to refresh after Undo. */
   invalidate: QueryKey[];
   /** After the record moved to the recycle bin. */
@@ -46,6 +48,7 @@ export function SettingDeleteDialog({
   deleteText = 'It moves to the recycle bin; you can restore it.',
   remove,
   setInactive,
+  neverRefuses = false,
   invalidate,
   onDeleted,
   onClose,
@@ -57,7 +60,7 @@ export function SettingDeleteDialog({
   const afterDelete = useUndoableDelete({ invalidate });
   const showFailure = useFailureToast();
   const focusBeforeOpen = useRef<HTMLElement | null>(null);
-  const inUse = usage.inUse || refusal !== null;
+  const inUse = !neverRefuses && (usage.inUse || refusal !== null);
 
   async function removeAndTell() {
     try {

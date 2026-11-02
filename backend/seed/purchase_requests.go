@@ -19,6 +19,8 @@ const (
 	seedPurchaseRequestOn    = "Agency fee (Ireland)"
 	seedPurchaseRequestOwner = "Priya Raman"
 	seedVendor               = "Brightside Media BV"
+	seedVendorCode           = "V-100104"
+	seedEmailGroup           = "G_GB_RETAIL"
 )
 
 // addPurchaseRequests adds 032's demo data after the financial transactions (D-306): the Purchase Request
@@ -79,7 +81,8 @@ func (d *demo) seedPurchaseRequest(ctx context.Context, approvalID, changeID str
 	var r resolver
 	owner, moa := r.id(d.people, "person", seedPurchaseRequestOwner), r.id(d.people, "person", "Daniel Okoro")
 	planID := r.id(d.plans, "plan", ukPlan)
-	attributes := d.prAttributes(&r)
+	attributes := d.prAttributes(&r, prVendor{shortText: "Ireland agency fee, 2027 launch", name: seedVendor, code: seedVendorCode,
+		emailGroup: seedEmailGroup})
 	if r.err != nil {
 		return purchaserequest.PurchaseRequest{}, r.err
 	}
@@ -103,7 +106,12 @@ func (d *demo) seedPurchaseRequest(ctx context.Context, approvalID, changeID str
 	}, nil
 }
 
-func (d *demo) prAttributes(r *resolver) settings.AttributeValues {
+// prVendor is what a purchase request's attributes say about the purchase: its short text, vendor and Email group.
+type prVendor struct {
+	shortText, name, code, emailGroup string
+}
+
+func (d *demo) prAttributes(r *resolver, v prVendor) settings.AttributeValues {
 	attribute := func(label string) string {
 		return r.id(d.settings.Attributes, "Shell attribute", attributeKey(settings.LevelPurchaseRequest, label))
 	}
@@ -113,9 +121,9 @@ func (d *demo) prAttributes(r *resolver) settings.AttributeValues {
 	return settings.AttributeValues{
 		attribute("Material or service"): value([]string{option("Material or service", "Service")}),
 		attribute("PR type"):             value([]string{option("PR type", "Standard PR/PO")}),
-		attribute("Short text"):          value("Ireland agency fee, 2027 launch"),
-		attribute("Vendor"):              value(seedVendor),
-		attribute("Vendor code"):         value("V-100104"),
-		attribute("Email group"):         value(option("Email group", "G_GB_RETAIL")),
+		attribute("Short text"):          value(v.shortText),
+		attribute("Vendor"):              value(v.name),
+		attribute("Vendor code"):         value(v.code),
+		attribute("Email group"):         value(option("Email group", v.emailGroup)),
 	}
 }

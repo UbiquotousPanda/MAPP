@@ -30,9 +30,11 @@ WHERE performance_sources.id = sqlc.arg(source_id)
     AND NOT EXISTS (SELECT 1 FROM performance_facts f WHERE f.source_id = performance_sources.id);
 
 -- name: ListPerformanceMappings :many
+-- An empty or null source_ids means every source's mappings (performance.go: ListMappings(ctx, nil)).
 SELECT sqlc.embed(performance_source_mappings)
 FROM performance_source_mappings
-WHERE source_id = ANY (sqlc.arg(source_ids)::text[])
+WHERE sqlc.arg(source_ids)::text[] IS NULL OR cardinality(sqlc.arg(source_ids)::text[]) = 0
+    OR source_id = ANY (sqlc.arg(source_ids)::text[])
 ORDER BY source_id COLLATE "C", lower(column_name COLLATE "C");
 
 -- name: ActiveSuppliersForModel :many
@@ -119,6 +121,13 @@ SET held = false, version = version + 1, updated_at = sqlc.arg(updated_at),
     updated_by_id = sqlc.arg(updated_by_id), updated_by_name = sqlc.arg(updated_by_name)
 WHERE activity_id = sqlc.arg(activity_id) AND held;
 
+-- name: HoldFactsForActivity :execrows
+-- A replaced fact is never shown, so it never comes back held (FR-020, FR-021).
+UPDATE performance_facts
+SET held = true, version = version + 1, updated_at = sqlc.arg(updated_at),
+    updated_by_id = sqlc.arg(updated_by_id), updated_by_name = sqlc.arg(updated_by_name)
+WHERE activity_id = sqlc.arg(activity_id) AND NOT held AND replaced_by_id IS NULL;
+
 -- name: ListPerformanceImports :many
 SELECT sqlc.embed(performance_imports)
 FROM performance_imports
@@ -188,9 +197,9 @@ RETURNING (performance_configuration.media_code_next - 1)::bigint AS code;
 -- name: PutPerformanceFact :exec
 INSERT INTO performance_facts (
     id, source_id, import_id, source_reference, activity_id, matched_on, matched_key, fact_date, stage, web_metric,
-    count_value, amount_minor, currency, held, replaced_by_id,
+    count_value, amount_minor, currency, journey_ref, held, replaced_by_id,
     version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
 ON CONFLICT (id) DO UPDATE SET
     activity_id = excluded.activity_id, matched_on = excluded.matched_on, held = excluded.held,
     replaced_by_id = excluded.replaced_by_id, version = excluded.version, updated_at = excluded.updated_at,

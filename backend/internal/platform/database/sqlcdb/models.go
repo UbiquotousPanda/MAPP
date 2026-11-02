@@ -635,6 +635,7 @@ type PerformanceFact struct {
 	CountValue      *int64
 	AmountMinor     *int64
 	Currency        *string
+	JourneyRef      *string
 	Held            bool
 	ReplacedByID    *string
 	Version         int
@@ -1096,6 +1097,16 @@ type ShellOptionParent struct {
 	OptionID       string
 	Position       int
 	ParentOptionID string
+}
+
+type SignIn struct {
+	PersonID       string
+	LastSignedInAt time.Time
+}
+
+type SignInRecording struct {
+	ID    bool
+	Since time.Time
 }
 
 type SwbsRun struct {

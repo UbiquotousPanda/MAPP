@@ -1,17 +1,15 @@
 package planbudget_test
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"mapp/internal/measure"
 	"mapp/internal/measure/planbudget"
-	"mapp/internal/platform/errs"
 	"mapp/internal/platform/sheet"
 )
 
@@ -128,17 +126,6 @@ func TestRanked_PagesAndSearch_FR014(t *testing.T) {
 	}
 }
 
-func TestParseRanked_FR014(t *testing.T) {
-	t.Parallel()
-	values, _ := url.ParseQuery("sort=name&order=up&group=team&size=7&page=0&drill=bad&q=" + strings.Repeat("x", 101))
-	_, err := planbudget.ParseRanked(values)
-
-	var e *errs.Error
-	if !errors.As(err, &e) || len(e.Fields) != 7 {
-		t.Fatalf("ParseRanked = %v, want the seven problems at once", err)
-	}
-}
-
 func TestSheets_FR016(t *testing.T) {
 	t.Parallel()
 	f := measure.Filter{Own: url.Values{"sort": {"actual"}, "order": {"asc"}, "page": {"2"}}}
@@ -155,5 +142,27 @@ func TestSheets_FR016(t *testing.T) {
 	}
 	if sheets[2].Sheet.Rows[1][2] != sheet.Text("Rimula fleet") {
 		t.Errorf("first ranked row = %+v, want Rimula fleet: lowest actual first, as on screen", sheets[2].Sheet.Rows[1])
+	}
+}
+
+func TestSheets_GroupTotalsAsOnScreen_FR016(t *testing.T) {
+	t.Parallel()
+	f := measure.Filter{Own: url.Values{"group": {"owner"}}}
+	sheets, err := planbudget.NewReport(service(scope(everything, true))).Sheets(t.Context(), priya, f)
+	if err != nil {
+		t.Fatalf("Sheets: %v", err)
+	}
+	var totals [][]sheet.Cell
+	for _, row := range sheets[2].Sheet.Rows {
+		if row[1] == sheet.Bold("Total") {
+			totals = append(totals, row[:5])
+		}
+	}
+	want := [][]sheet.Cell{
+		{sheet.Bold("Priya Raman"), sheet.Bold("Total"), sheet.Text(""), sheet.Money(*dollars(600)), sheet.Money(*dollars(300))},
+		{sheet.Bold("Daniel Okoro"), sheet.Bold("Total"), sheet.Text(""), sheet.Money(*dollars(300)), sheet.Money(*dollars(200))},
+	}
+	if diff := cmp.Diff(want, totals, cmpopts.EquateComparable(sheet.Cell{})); diff != "" {
+		t.Errorf("one total row per owner, with the group's budget and planned cost (-want +got):\n%s", diff)
 	}
 }

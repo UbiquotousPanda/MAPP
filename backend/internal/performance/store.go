@@ -70,6 +70,7 @@ type Facts interface {
 	LatestImportStatuses(ctx context.Context, sourceIDs []string) (map[string]string, error)
 	HeldActivityIDs(ctx context.Context, sourceID string) ([]string, error)
 	ReleaseHeld(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error)
+	HoldFacts(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error)
 }
 
 // ImportFilter is FR-016's findability: by file and uploader (Search), source, status and date.

@@ -199,7 +199,7 @@ func (q *Queries) ClearCodeActivityTypes(ctx context.Context) error {
 }
 
 const currentFactsByReferences = `-- name: CurrentFactsByReferences :many
-SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name
+SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.journey_ref, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name
 FROM performance_facts
 WHERE source_id = $1 AND source_reference = ANY($2::text[])
     AND replaced_by_id IS NULL
@@ -238,6 +238,7 @@ func (q *Queries) CurrentFactsByReferences(ctx context.Context, arg CurrentFacts
 			&i.PerformanceFact.CountValue,
 			&i.PerformanceFact.AmountMinor,
 			&i.PerformanceFact.Currency,
+			&i.PerformanceFact.JourneyRef,
 			&i.PerformanceFact.Held,
 			&i.PerformanceFact.ReplacedByID,
 			&i.PerformanceFact.Version,
@@ -461,7 +462,7 @@ func (q *Queries) FactTotalsBySource(ctx context.Context, activityID string) ([]
 }
 
 const factsReplacedBy = `-- name: FactsReplacedBy :many
-SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name
+SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.journey_ref, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name
 FROM performance_facts
 WHERE replaced_by_id = ANY($1::text[])
 ORDER BY id COLLATE "C"
@@ -494,6 +495,7 @@ func (q *Queries) FactsReplacedBy(ctx context.Context, replacerIds []string) ([]
 			&i.PerformanceFact.CountValue,
 			&i.PerformanceFact.AmountMinor,
 			&i.PerformanceFact.Currency,
+			&i.PerformanceFact.JourneyRef,
 			&i.PerformanceFact.Held,
 			&i.PerformanceFact.ReplacedByID,
 			&i.PerformanceFact.Version,
@@ -619,7 +621,7 @@ func (q *Queries) GetPerformanceConfiguration(ctx context.Context) (PerformanceC
 }
 
 const getPerformanceFact = `-- name: GetPerformanceFact :one
-SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name FROM performance_facts WHERE id = $1
+SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.journey_ref, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name FROM performance_facts WHERE id = $1
 `
 
 type GetPerformanceFactRow struct {
@@ -643,6 +645,7 @@ func (q *Queries) GetPerformanceFact(ctx context.Context, id string) (GetPerform
 		&i.PerformanceFact.CountValue,
 		&i.PerformanceFact.AmountMinor,
 		&i.PerformanceFact.Currency,
+		&i.PerformanceFact.JourneyRef,
 		&i.PerformanceFact.Held,
 		&i.PerformanceFact.ReplacedByID,
 		&i.PerformanceFact.Version,
@@ -681,6 +684,34 @@ func (q *Queries) HeldActivityIDsOfSource(ctx context.Context, sourceID string) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const holdFactsForActivity = `-- name: HoldFactsForActivity :execrows
+UPDATE performance_facts
+SET held = true, version = version + 1, updated_at = $1,
+    updated_by_id = $2, updated_by_name = $3
+WHERE activity_id = $4 AND NOT held AND replaced_by_id IS NULL
+`
+
+type HoldFactsForActivityParams struct {
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+	ActivityID    *string
+}
+
+// A replaced fact is never shown, so it never comes back held (FR-020, FR-021).
+func (q *Queries) HoldFactsForActivity(ctx context.Context, arg HoldFactsForActivityParams) (int64, error) {
+	result, err := q.db.Exec(ctx, holdFactsForActivity,
+		arg.UpdatedAt,
+		arg.UpdatedByID,
+		arg.UpdatedByName,
+		arg.ActivityID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const integrationIDsOfActivities = `-- name: IntegrationIDsOfActivities :many
@@ -826,7 +857,7 @@ func (q *Queries) ListCurrencyCodes(ctx context.Context) ([]string, error) {
 }
 
 const listFactsForActivity = `-- name: ListFactsForActivity :many
-SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name, s.name AS source_name
+SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.journey_ref, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name, s.name AS source_name
 FROM performance_facts
 JOIN performance_sources s ON s.id = performance_facts.source_id
 WHERE performance_facts.activity_id = $1
@@ -893,6 +924,7 @@ func (q *Queries) ListFactsForActivity(ctx context.Context, arg ListFactsForActi
 			&i.PerformanceFact.CountValue,
 			&i.PerformanceFact.AmountMinor,
 			&i.PerformanceFact.Currency,
+			&i.PerformanceFact.JourneyRef,
 			&i.PerformanceFact.Held,
 			&i.PerformanceFact.ReplacedByID,
 			&i.PerformanceFact.Version,
@@ -915,7 +947,7 @@ func (q *Queries) ListFactsForActivity(ctx context.Context, arg ListFactsForActi
 }
 
 const listFactsOfImport = `-- name: ListFactsOfImport :many
-SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name
+SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.matched_key, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.journey_ref, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name
 FROM performance_facts
 WHERE import_id = $1
 ORDER BY id COLLATE "C"
@@ -948,6 +980,7 @@ func (q *Queries) ListFactsOfImport(ctx context.Context, importID string) ([]Lis
 			&i.PerformanceFact.CountValue,
 			&i.PerformanceFact.AmountMinor,
 			&i.PerformanceFact.Currency,
+			&i.PerformanceFact.JourneyRef,
 			&i.PerformanceFact.Held,
 			&i.PerformanceFact.ReplacedByID,
 			&i.PerformanceFact.Version,
@@ -1183,7 +1216,8 @@ func (q *Queries) ListPerformanceImports(ctx context.Context, arg ListPerformanc
 const listPerformanceMappings = `-- name: ListPerformanceMappings :many
 SELECT performance_source_mappings.id, performance_source_mappings.source_id, performance_source_mappings.column_name, performance_source_mappings.meaning, performance_source_mappings.key_type, performance_source_mappings.stage, performance_source_mappings.web_metric, performance_source_mappings.model_id, performance_source_mappings.version, performance_source_mappings.created_at, performance_source_mappings.created_by_id, performance_source_mappings.created_by_name, performance_source_mappings.updated_at, performance_source_mappings.updated_by_id, performance_source_mappings.updated_by_name
 FROM performance_source_mappings
-WHERE source_id = ANY ($1::text[])
+WHERE $1::text[] IS NULL OR cardinality($1::text[]) = 0
+    OR source_id = ANY ($1::text[])
 ORDER BY source_id COLLATE "C", lower(column_name COLLATE "C")
 `
 
@@ -1191,6 +1225,7 @@ type ListPerformanceMappingsRow struct {
 	PerformanceSourceMapping PerformanceSourceMapping
 }
 
+// An empty or null source_ids means every source's mappings (performance.go: ListMappings(ctx, nil)).
 func (q *Queries) ListPerformanceMappings(ctx context.Context, sourceIds []string) ([]ListPerformanceMappingsRow, error) {
 	rows, err := q.db.Query(ctx, listPerformanceMappings, sourceIds)
 	if err != nil {
@@ -1767,9 +1802,9 @@ func (q *Queries) PutPerformanceConfiguration(ctx context.Context, arg PutPerfor
 const putPerformanceFact = `-- name: PutPerformanceFact :exec
 INSERT INTO performance_facts (
     id, source_id, import_id, source_reference, activity_id, matched_on, matched_key, fact_date, stage, web_metric,
-    count_value, amount_minor, currency, held, replaced_by_id,
+    count_value, amount_minor, currency, journey_ref, held, replaced_by_id,
     version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
 ON CONFLICT (id) DO UPDATE SET
     activity_id = excluded.activity_id, matched_on = excluded.matched_on, held = excluded.held,
     replaced_by_id = excluded.replaced_by_id, version = excluded.version, updated_at = excluded.updated_at,
@@ -1790,6 +1825,7 @@ type PutPerformanceFactParams struct {
 	CountValue      *int64
 	AmountMinor     *int64
 	Currency        *string
+	JourneyRef      *string
 	Held            bool
 	ReplacedByID    *string
 	Version         int
@@ -1816,6 +1852,7 @@ func (q *Queries) PutPerformanceFact(ctx context.Context, arg PutPerformanceFact
 		arg.CountValue,
 		arg.AmountMinor,
 		arg.Currency,
+		arg.JourneyRef,
 		arg.Held,
 		arg.ReplacedByID,
 		arg.Version,

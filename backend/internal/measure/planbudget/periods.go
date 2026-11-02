@@ -39,7 +39,7 @@ func (r *records) budgetMonths(m *months) {
 }
 
 func (r *records) plannedMonths(m *months) {
-	for _, id := range r.matched.Activities {
+	for _, id := range r.Matched().Activities {
 		spread := r.planned[id]
 		for month, amount := range spread.ByMonth {
 			if i := r.monthIndex(month); i >= 0 {

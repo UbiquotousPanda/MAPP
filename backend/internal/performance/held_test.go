@@ -39,6 +39,38 @@ func TestRelease_ClearsOnlyTheApprovedActivitysHold_FR020(t *testing.T) {
 	}
 }
 
+// TestHold_ReHoldsAFactReleasedByAnEarlierApproval proves FR-020/FR-021's other half: an activity recalled
+// from Approved back to Submitted must hold its facts again, not leave them counting as if still approved.
+func TestHold_ReHoldsAFactReleasedByAnEarlierApproval_FR020_FR021(t *testing.T) {
+	t.Parallel()
+	f, src := newImportFixture(t)
+	f.store.Keys[performance.MatchedActivityID]["a-2"] = []string{"A-2"}
+	rows := importRows(map[string]string{"r2": "7"})
+	rows[0].Keys.ActivityID = "A-2"
+	if _, err := f.service.RunImport(t.Context(), alex, performance.ImportInput{
+		SourceID: src.ID, FileName: "held.csv", Origin: performance.OriginUpload,
+		Headings: []string{"ref", "date", "inqs"}, Rows: rows,
+	}); err != nil {
+		t.Fatalf("RunImport: %v", err)
+	}
+	if _, err := f.service.Release(t.Context(), alex, "A-2"); err != nil {
+		t.Fatalf("Release: %v", err)
+	}
+
+	held, err := f.service.Hold(t.Context(), alex, "A-2")
+	if err != nil || held != 1 {
+		t.Fatalf("Hold(A-2) = %d (%v), want the one released fact held again", held, err)
+	}
+	for _, fact := range f.currentFacts(t, src.ID, "r2") {
+		if !fact.Held {
+			t.Errorf("fact %s is not held after A-2 was recalled from Approved", fact.ID)
+		}
+		if fact.Counts() {
+			t.Errorf("fact %s still counts after being re-held (FR-020)", fact.ID)
+		}
+	}
+}
+
 func TestRelease_LeavesOtherActivitiesHeldFactsAlone_FR020(t *testing.T) {
 	t.Parallel()
 	f, src := newImportFixture(t)
