@@ -1,6 +1,6 @@
 // Command seed creates and migrates the database at DATABASE_URL and loads MAPP's demo data into it (FR-028):
 // go run ./cmd/seed, -reset to empty every table first, or -if-empty to leave a database with data alone;
-// -showcase adds two complete 2026 plans after the demo story.
+// -showcase adds two complete 2026 plans after the demo story, -measure the Measure demo plan after them.
 package main
 
 import (
@@ -31,6 +31,7 @@ type options struct {
 	reset    bool
 	ifEmpty  bool
 	showcase bool
+	measure  bool
 }
 
 func main() {
@@ -65,14 +66,15 @@ func parseArgs(args []string) (options, error) {
 	reset := flags.Bool("reset", false, "empty every table first (this deletes the current data)")
 	ifEmpty := flags.Bool("if-empty", false, "leave a database that already has data as it is, and succeed")
 	showcase := flags.Bool("showcase", false, "also load two complete 2026 plans, every level down to line items")
+	measure := flags.Bool("measure", false, "also load the Measure demo plan: every month, approval state and GSAP step")
 	_ = flags.Parse(args) // ExitOnError: a wrong option stops the program with a description of the options
 	if flags.NArg() > 0 {
-		return options{}, message(fmt.Sprintf("Unexpected argument '%s' — the options are -reset, -if-empty and -showcase.", flags.Arg(0)))
+		return options{}, message(fmt.Sprintf("Unexpected argument '%s' — the options are -reset, -if-empty, -showcase and -measure.", flags.Arg(0)))
 	}
 	if *reset && *ifEmpty {
 		return options{}, message("Choose -reset or -if-empty, not both.")
 	}
-	return options{reset: *reset, ifEmpty: *ifEmpty, showcase: *showcase}, nil
+	return options{reset: *reset, ifEmpty: *ifEmpty, showcase: *showcase, measure: *measure}, nil
 }
 
 func refuse(cfg app.Config) error {
@@ -95,6 +97,9 @@ func load(ctx context.Context, url string, opts options) (string, error) {
 	if opts.showcase {
 		with = append(with, seed.WithShowcase())
 	}
+	if opts.measure {
+		with = append(with, seed.WithMeasure())
+	}
 	err = seed.Load(ctx, stores.Postgres(db), clock.System, with...)
 	switch {
 	case errors.Is(err, seed.ErrNotEmpty) && opts.ifEmpty:
@@ -104,10 +109,14 @@ func load(ctx context.Context, url string, opts options) (string, error) {
 	case err != nil:
 		return "", err
 	}
+	loaded := "Loaded the demo data: " + seed.Loaded
 	if opts.showcase {
-		return fmt.Sprintf("Loaded the demo data: %s; and the showcase: %s.", seed.Loaded, seed.ShowcaseLoaded), nil
+		loaded += "; and the showcase: " + seed.ShowcaseLoaded
 	}
-	return fmt.Sprintf("Loaded the demo data: %s.", seed.Loaded), nil
+	if opts.measure {
+		loaded += "; and the Measure demo: " + seed.MeasureLoaded
+	}
+	return loaded + ".", nil
 }
 
 func prepare(ctx context.Context, url string, reset bool) (*database.DB, error) {

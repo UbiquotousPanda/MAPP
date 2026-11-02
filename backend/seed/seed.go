@@ -45,6 +45,7 @@ type Option func(*options)
 type options struct {
 	withoutHistory bool
 	showcase       bool
+	measure        bool
 }
 
 // WithoutHistory leaves the log, the bin and their IDs out, so tests of their rules do not depend on the demo story.
@@ -83,6 +84,9 @@ func Load(ctx context.Context, set stores.Set, now clock.Clock, opts ...Option) 
 		}
 		if o.showcase {
 			steps = append(steps, d.addShowcase)
+		}
+		if o.measure {
+			steps = append(steps, d.addMeasure)
 		}
 		for _, step := range steps {
 			if err := step(ctx); err != nil {

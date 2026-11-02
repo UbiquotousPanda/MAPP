@@ -88,6 +88,37 @@ func TestRunImport_AnIdenticalFileChangesNothing_FR013(t *testing.T) {
 	}
 }
 
+// A real gap: 050 reads each fact's journey straight from performance_facts, but a journey column was
+// mapped and then discarded, storing nothing (050).
+func TestRunImport_AJourneyColumnFillsTheFactsJourneyRef_050(t *testing.T) {
+	t.Parallel()
+	f, src := newImportFixture(t)
+
+	_, err := f.service.RunImport(t.Context(), alex, performance.ImportInput{
+		SourceID: src.ID, FileName: "load.csv", Origin: performance.OriginUpload,
+		Headings: []string{"ref", "date", "inqs", "journey"},
+		Rows: []performance.Row{{
+			Raw:       map[string]string{"ref": "r1", "inqs": "5", "journey": "Awareness"},
+			Reference: performance.Cell{Column: "ref", Value: "r1"},
+			Date:      performance.Cell{Column: "date", Value: "2026-02-01"},
+			Journey:   performance.Cell{Column: "journey", Value: "Awareness"},
+			Keys:      performance.RowKeys{ActivityID: "A-1"},
+			Readings: []performance.Reading{{
+				Measure: performance.Measure{Stage: "inq"},
+				Cell:    performance.Cell{Column: "inqs", Value: "5"},
+			}},
+		}},
+	})
+	if err != nil {
+		t.Fatalf("RunImport: %v", err)
+	}
+
+	facts := f.currentFacts(t, src.ID, "r1")
+	if len(facts) != 1 || facts[0].JourneyRef != "Awareness" {
+		t.Fatalf("facts = %+v, want one fact carrying JourneyRef Awareness", facts)
+	}
+}
+
 func TestRunImport_ARepeatedReferenceReplacesAndAuditsBothVersions_FR013(t *testing.T) {
 	t.Parallel()
 	f, src := newImportFixture(t)

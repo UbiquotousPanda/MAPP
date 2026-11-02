@@ -104,8 +104,7 @@ func TestAccessMatrix_EveryOperationRefusesWhomItsRuleExcludes_SC001(t *testing.
 	}
 }
 
-// permissionNoun falls back to the key exactly as authz does for a permission an area declares itself
-// rather than in Table A, which features 003 and 014 assert the exact shape of.
+// permissionNoun falls back to the key exactly as authz does for a permission an area declares itself.
 func permissionNoun(p authz.Permission) string {
 	if info, found := authz.Lookup(string(p)); found {
 		return info.Noun

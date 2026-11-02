@@ -20,3 +20,17 @@ func (s *Service) Release(ctx context.Context, a actor.Actor, activityID string)
 	}
 	return released, nil
 }
+
+// Hold re-sets the hold when an approved activity leaves Approved again (FR-020, FR-021).
+func (s *Service) Hold(ctx context.Context, a actor.Actor, activityID string) (int, error) {
+	held := 0
+	err := s.tx.Write(ctx, func(ctx context.Context) error {
+		var holdErr error
+		held, holdErr = s.repo.HoldFacts(ctx, activityID, a, s.now())
+		return holdErr
+	})
+	if err != nil {
+		return 0, fmt.Errorf("hold the facts of %s: %w", activityID, err)
+	}
+	return held, nil
+}

@@ -7,6 +7,7 @@ import (
 
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/ids"
+	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
 )
 
@@ -120,18 +121,24 @@ func factOfResult(run Import, result RowResult, measured Measured, meta record.M
 		FactDate: result.FactDate,
 		Stage:    measured.Stage, WebMetric: measured.WebMetric,
 		Count: measured.Count, Amount: measured.Amount,
-		Held: result.Outcome == OutcomeHeld, Meta: meta,
+		JourneyRef: strings.TrimSpace(result.Row.Journey.Value),
+		Held:       result.Outcome == OutcomeHeld, Meta: meta,
 	}
 }
 
 // unchanged compares the fields that make a fact, so re-uploading an identical file writes nothing (SC-004).
 func unchanged(stored, next Fact) bool {
-	sameAmount := (stored.Amount == nil) == (next.Amount == nil) &&
-		(stored.Amount == nil || *stored.Amount == *next.Amount)
-	sameCount := (stored.Count == nil) == (next.Count == nil) &&
-		(stored.Count == nil || *stored.Count == *next.Count)
 	return stored.ActivityID == next.ActivityID && stored.Held == next.Held &&
-		stored.FactDate.Equal(next.FactDate) && sameCount && sameAmount
+		stored.FactDate.Equal(next.FactDate) && stored.JourneyRef == next.JourneyRef &&
+		sameCount(stored.Count, next.Count) && sameAmount(stored.Amount, next.Amount)
+}
+
+func sameAmount(a, b *money.Money) bool {
+	return (a == nil) == (b == nil) && (a == nil || *a == *b)
+}
+
+func sameCount(a, b *int64) bool {
+	return (a == nil) == (b == nil) && (a == nil || *a == *b)
 }
 
 func (w factWriter) review(ctx context.Context, result RowResult) error {
@@ -161,7 +168,7 @@ func (w factWriter) review(ctx context.Context, result RowResult) error {
 func interpretedOf(row Row) Interpreted {
 	return Interpreted{
 		Reference: row.Reference.Value, Date: row.Date.Value, Currency: row.Currency.Value,
-		Keys: row.Keys, Readings: row.Readings,
+		Journey: row.Journey.Value, Keys: row.Keys, Readings: row.Readings,
 	}
 }
 

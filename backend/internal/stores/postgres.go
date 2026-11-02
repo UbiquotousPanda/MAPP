@@ -18,6 +18,7 @@ import (
 	"mapp/internal/lineitem"
 	"mapp/internal/measure"
 	"mapp/internal/measure/attribution"
+	"mapp/internal/measure/gsaplink"
 	"mapp/internal/overspend"
 	"mapp/internal/people"
 	"mapp/internal/plan"
@@ -67,6 +68,6 @@ func postgresFinance(db *database.DB) Finance {
 	return Finance{
 		Budgets: budget.NewPostgresStore(db), Financials: financials.NewPostgresStore(db), SwbsRuns: swbs.NewPostgresStore(db),
 		Performance:      performance.NewPostgresStore(db),
-		PurchaseRequests: purchaserequest.NewPostgresStore(db),
+		PurchaseRequests: purchaserequest.NewPostgresStore(db), GsapLink: gsaplink.NewPostgresStore(db),
 	}
 }

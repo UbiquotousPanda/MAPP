@@ -49,6 +49,15 @@ func (r *heldRelease) activityApproved(ctx context.Context, a actor.Actor, activ
 	return err
 }
 
+// activityUnapproved is activityApproved's reverse: an activity recalled from Approved holds its facts again.
+func (r *heldRelease) activityUnapproved(ctx context.Context, a actor.Actor, activityID string) error {
+	if r.service == nil {
+		return nil
+	}
+	_, err := r.service.Hold(ctx, a, activityID)
+	return err
+}
+
 // performanceArea builds feature 046 after the planning areas, whose activities its facts match to.
 func (w *wiring) performanceArea(release *heldRelease) error {
 	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
@@ -66,8 +75,7 @@ func (w *wiring) performanceArea(release *heldRelease) error {
 	return nil
 }
 
-// performanceFigures answers the panel's goal side: the goals as shown (typed, or the model's waterfall -
-// domain model 4.5), with the plan's model and year.
+// performanceFigures answers the panel's goal side: the goals as shown, with the plan's model and year.
 type performanceFigures struct {
 	activities stores.ActivityStore
 	campaigns  stores.CampaignStore
@@ -110,8 +118,7 @@ func (p performanceFigures) calculated(ctx context.Context, facts performance.Go
 	if err != nil || !found {
 		return facts, err == nil, err
 	}
-	// A waterfall too large for money keeps the goals empty rather than failing the panel, exactly as the
-	// activity's own Goals section shows them (goals.go).
+	// A waterfall too large for money keeps the goals empty rather than failing the panel (goals.go).
 	goals, waterfallErr := settings.Waterfall(*inq, model)
 	if waterfallErr != nil {
 		return facts, true, nil //nolint:nilerr // an overflowing goal is shown as absent, not as a failure

@@ -1,9 +1,11 @@
 import { screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { testUser } from '@/testing/fixtures/users';
 import { VIEWER } from '@/testing/fixtures/viewer';
+import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { reply } from '@/testing/replies';
 import { ReportWidget } from './ReportWidget';
 import type { ReportWidgetProps } from './ReportWidget';
 
@@ -36,6 +38,8 @@ function renderWidget(
 }
 
 describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it('shows its title, ⓘ tip and chart, and switches to the table kept in the address', async () => {
     const { user, router } = renderWidget();
 
@@ -89,6 +93,15 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
     expect(exportButton).toHaveAccessibleDescription(/Exporting/);
   });
 
+  it('says why it is empty instead of drawing zeros (FR-031)', () => {
+    renderWidget({ empty: 'No data yet: performance rows appear here once an upload is matched.' });
+
+    expect(
+      screen.getByText('No data yet: performance rows appear here once an upload is matched.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('The chart')).not.toBeInTheDocument();
+  });
+
   it('loads and fails on its own, with Try again (FR-023)', async () => {
     const onRetry = vi.fn();
     const { user } = renderWidget({ failed: true, onRetry, note: 'Covers 1 of 2 plans' });
@@ -100,4 +113,46 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(onRetry).toHaveBeenCalled();
   });
+  it('exports what the address shows: the report’s own sort, search and grid filters (FR-022)', async () => {
+    const sent = await exported(
+      '/reports/plan-details?sort=amount&order=asc&q=fleet&recordType=activity&recordType=purchaseRequest&outcome=approved',
+    );
+
+    expect([sent.get('widget'), sent.get('sort'), sent.get('order'), sent.get('q')]).toEqual([
+      'attr12Count',
+      'amount',
+      'asc',
+      'fleet',
+    ]);
+    expect(sent.getAll('recordType')).toEqual(['activity', 'purchaseRequest']);
+    expect(sent.getAll('outcome')).toEqual(['approved']);
+  });
+
+  it('exports Purchase requests’ and User access’s own filters and a descending order (FR-022)', async () => {
+    const sent = await exported(
+      '/reports/plan-details?order=desc&vendor=Acme&vendor=none&requestOwner=P-1002&status=approved&status=closed&columns=name,amount',
+    );
+
+    expect([sent.get('order'), sent.get('columns')]).toEqual(['desc', 'name,amount']);
+    expect(sent.getAll('vendor')).toEqual(['Acme', 'none']);
+    expect(sent.getAll('requestOwner')).toEqual(['P-1002']);
+    expect(sent.getAll('status')).toEqual(['approved', 'closed']);
+  });
 });
+
+/** The widget's export as requested from the API, from a page at route. */
+async function exported(route: string): Promise<URLSearchParams> {
+  URL.createObjectURL = () => 'blob:export';
+  URL.revokeObjectURL = () => {};
+  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+  const api = mockApi([reply('GET /api/v1/reports/{report}/export', () => new Response('file'))]);
+  const { user } = renderWidget({}, route);
+
+  await user.click(screen.getByRole('button', { name: 'Export' }));
+  await user.click(await screen.findByRole('menuitem', { name: 'CSV (.csv)' }));
+  await waitFor(() =>
+    expect(api.requests.some((r) => r.path === '/api/v1/reports/plan-details/export')).toBe(true),
+  );
+  const request = api.requests.find((r) => r.path === '/api/v1/reports/plan-details/export');
+  return new URLSearchParams(request?.search);
+}

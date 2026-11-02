@@ -16,7 +16,8 @@ func factOf(f sqlcdb.PerformanceFact) Fact {
 		ID: f.ID, SourceID: f.SourceID, ImportID: f.ImportID, SourceReference: f.SourceReference,
 		ActivityID: text(f.ActivityID), MatchedOn: MatchedOn(f.MatchedOn), MatchedKey: f.MatchedKey, FactDate: f.FactDate,
 		Stage: f.Stage, WebMetric: WebMetric(f.WebMetric), Count: f.CountValue,
-		Held: f.Held, ReplacedByID: text(f.ReplacedByID),
+		JourneyRef: text(f.JourneyRef),
+		Held:       f.Held, ReplacedByID: text(f.ReplacedByID),
 		Meta: metaOf(f.Version, metaRow{f.CreatedAt, f.CreatedByID, f.CreatedByName,
 			f.UpdatedAt, f.UpdatedByID, f.UpdatedByName}),
 	}
@@ -31,7 +32,8 @@ func factParams(f Fact) sqlcdb.PutPerformanceFactParams {
 		ID: f.ID, SourceID: f.SourceID, ImportID: f.ImportID, SourceReference: f.SourceReference,
 		ActivityID: optional(f.ActivityID), MatchedOn: string(f.MatchedOn), MatchedKey: f.MatchedKey, FactDate: f.FactDate,
 		Stage: f.Stage, WebMetric: string(f.WebMetric), CountValue: f.Count,
-		Held: f.Held, ReplacedByID: optional(f.ReplacedByID),
+		JourneyRef: optional(f.JourneyRef),
+		Held:       f.Held, ReplacedByID: optional(f.ReplacedByID),
 		Version: f.Version, CreatedAt: f.CreatedAt, CreatedByID: f.CreatedBy.ID,
 		CreatedByName: f.CreatedBy.Name, UpdatedAt: f.UpdatedAt, UpdatedByID: f.UpdatedBy.ID,
 		UpdatedByName: f.UpdatedBy.Name,
@@ -92,6 +94,17 @@ func (s *PostgresStore) ReleaseHeld(ctx context.Context, activityID string, by a
 		return 0, fmt.Errorf("release the held facts of activity %s: %w", activityID, err)
 	}
 	return int(released), nil
+}
+
+// HoldFacts re-sets the hold on an activity's facts, for when it leaves Approved again (FR-020, FR-021).
+func (s *PostgresStore) HoldFacts(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error) {
+	held, err := s.db.Queries(ctx).HoldFactsForActivity(ctx, sqlcdb.HoldFactsForActivityParams{
+		ActivityID: optional(activityID), UpdatedAt: at, UpdatedByID: by.ID, UpdatedByName: by.Name,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("hold the facts of activity %s: %w", activityID, err)
+	}
+	return int(held), nil
 }
 
 func (s *PostgresStore) ListFactsOfImport(ctx context.Context, importID string) ([]Fact, error) {
