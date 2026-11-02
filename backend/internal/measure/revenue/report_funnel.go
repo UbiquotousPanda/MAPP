@@ -9,7 +9,7 @@ import (
 	"mapp/internal/projection"
 )
 
-// FunnelReport is one funnel stage against goal (US2): the stage selector, its cards and period series.
+// FunnelReport is one funnel stage against goal: the stage selector, its cards and period series.
 func (s *Service) FunnelReport(ctx context.Context, a actor.Actor, f measure.Filter, stage string) (FunnelReport, error) {
 	var out FunnelReport
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -26,8 +26,7 @@ func (s *Service) FunnelReport(ctx context.Context, a actor.Actor, f measure.Fil
 	return out, err
 }
 
-// availableStages lists every stage any activity's model allows, in funnel order (049-C11); deals is never
-// offered (049-C12).
+// availableStages lists every stage any activity's model allows, in funnel order; deals is never offered.
 func availableStages(views []activityView) []string {
 	seen := map[string]bool{}
 	for _, v := range views {
@@ -79,7 +78,7 @@ func buildFunnelReport(in funnelReportInput) FunnelReport {
 	}
 	out := FunnelReport{Stage: in.stage, AvailableStages: in.available, UncoveredCount: uncovered,
 		Period: periodShown(in.period), Periods: periods}
-	out.Cards = funnelCards(periods, anyGoal, previousStageTotal(in.views, in.stage, in.w))
+	out.Cards = funnelCards(sums, in.w, anyGoal, previousStageTotal(in.views, in.stage, in.w))
 	if stamp := stampOf(in.views); stamp != nil {
 		out.Projection = stamp
 	}
@@ -93,11 +92,12 @@ func buildFunnelReport(in funnelReportInput) FunnelReport {
 
 // funnelMonthlySums is the twelve-month totals of the selected stage's volume: actual, projected and goal.
 type funnelMonthlySums struct {
-	actual, projected, goal [projection.Months]int64
+	actual, pastActual, projected, goal [projection.Months]int64
+	activityGoals                       int64
 }
 
 // funnelMonths sums the selected stage's actual, projected and goal volumes; uncovered counts the plans
-// whose model does not allow this stage at all (049-C11, FR-018).
+// whose model does not allow this stage at all.
 func funnelMonths(views []activityView, stage string, w window) (funnelMonthlySums, int) {
 	var sums funnelMonthlySums
 	coveredPlans, allPlans := map[string]bool{}, map[string]bool{}
@@ -109,6 +109,7 @@ func funnelMonths(views []activityView, stage string, w window) (funnelMonthlySu
 		}
 		coveredPlans[v.node.PlanID] = true
 		addFunnelMonths(&sums, v, series, w)
+		sums.activityGoals += int64Of(stageGoalOf(v.node, stage))
 	}
 	return sums, uncoveredCount(allPlans, coveredPlans)
 }
@@ -118,6 +119,9 @@ func addFunnelMonths(sums *funnelMonthlySums, v activityView, series projection.
 	for i, m := range split.Months {
 		if m.Actual != nil {
 			sums.actual[i] += *m.Actual
+		}
+		if m.Actual != nil && !m.InProgress {
+			sums.pastActual[i] += *m.Actual
 		}
 		if m.Projected != nil {
 			sums.projected[i] += *m.Projected
@@ -140,7 +144,7 @@ func uncoveredCount(allPlans, coveredPlans map[string]bool) int {
 	return uncovered
 }
 
-// previousStageTotal is the stage before the selected one's actual total, for conversion (049-C13).
+// previousStageTotal is the stage before the selected one's actual total, for conversion.
 func previousStageTotal(views []activityView, stage string, w window) *int64 {
 	previous, found := previousStage(stage)
 	if !found {
@@ -153,8 +157,7 @@ func previousStageTotal(views []activityView, stage string, w window) *int64 {
 		if !found {
 			continue
 		}
-		split := projection.SplitCounts(v.facts.counts[previous], series.Months, w.today, w.year)
-		total += split.Actual
+		total += actualToToday(projection.SplitCounts(v.facts.counts[previous], series.Months, w.today, w.year))
 		hasPrevious = true
 	}
 	if !hasPrevious {
@@ -170,8 +173,7 @@ func previousStage(stage string) (string, bool) {
 	return "", false
 }
 
-// funnelPeriods groups the twelve months by month or quarter, splitting at today's period (047 FR-010,
-// 049-C4).
+// funnelPeriods groups the twelve months by month or quarter, splitting at today's period.
 func funnelPeriods(sums funnelMonthlySums, period string, w window) []FunnelPeriod {
 	bounds := periodsOf(w, period)
 	out := make([]FunnelPeriod, 0, len(bounds))

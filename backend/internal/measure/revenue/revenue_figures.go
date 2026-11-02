@@ -7,15 +7,12 @@ import (
 )
 
 // revenueFiguresOfActivities is each activity's own figures: Goal is the full plan-year projection, Actual
-// every counted fact, Projected the same "actual or projected" total the cards show (FR-004, FR-012).
+// every counted fact, Projected the same "actual or projected" total the cards show.
 func revenueFiguresOfActivities(views []activityView, w window) map[string]RevenueFigures {
 	out := make(map[string]RevenueFigures, len(views))
 	for _, v := range views {
 		f := RevenueFigures{ActualCostReason: ReasonAttributionNotConfigured, ROIReason: ReasonAttributionNotConfigured}
-		if v.projection.Present {
-			goal := sumMoney(v.projection.Revenue)
-			f.Goal = &goal
-		}
+		f.Goal = revenueGoalOf(v.node)
 		if len(v.facts.revenue) > 0 {
 			actual := sumMoney(v.facts.revenue)
 			f.Actual = &actual
@@ -30,13 +27,21 @@ func revenueFiguresOfActivities(views []activityView, w window) map[string]Reven
 	return out
 }
 
+// revenueGoalOf is the activity's own goal as shown, typed or worked out with its plan's model; the
+// projected series only place it in time, and drop what lands after the plan year.
+func revenueGoalOf(n allwork.Node) *money.Money {
+	if n.Revenue == nil {
+		return nil
+	}
+	goal := money.USD(*n.Revenue)
+	return &goal
+}
+
 func projectionSplit(v activityView, w window) projection.SplitMoney {
 	return projection.SplitAmounts(v.facts.revenue, v.projection.Revenue, w.today, w.year)
 }
 
-// withPerformance converts f into the display currency (FR-024, every figure the ranked list shows, not
-// only the report's own cards) and derives Performance from Projected ÷ Goal (049-C15, 049-C16) — a ratio,
-// so it is the same whichever currency the conversion already happened in.
+// withPerformance converts f into the display currency, then derives Performance, a ratio, from Projected ÷ Goal.
 func withPerformance(f RevenueFigures, display money.Display) RevenueFigures {
 	f.Goal, f.Actual, f.Projected = display.Optional(f.Goal), display.Optional(f.Actual), display.Optional(f.Projected)
 	if f.Goal == nil {
@@ -50,8 +55,7 @@ func withPerformance(f RevenueFigures, display money.Display) RevenueFigures {
 	return f
 }
 
-// rollUpRevenue sums every node's figures from its activity descendants, so a plan or campaign row shows
-// its activities' totals (FR-063, SC-002); a leaf activity keeps its own.
+// rollUpRevenue gives every node its activity descendants' totals; a leaf activity keeps its own.
 func rollUpRevenue(nodes []allwork.Node, below map[string][]string, ownActivity map[string]RevenueFigures) map[string]RevenueFigures {
 	totals := make(map[string]RevenueFigures, len(nodes))
 	var sum func(id string) RevenueFigures

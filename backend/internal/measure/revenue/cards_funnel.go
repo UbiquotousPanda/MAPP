@@ -1,36 +1,37 @@
 package revenue
 
-import "math"
+import (
+	"math"
 
-// funnelCards builds the fixed Funnel card set (049-C9, 049-C13).
-func funnelCards(periods []FunnelPeriod, anyGoal bool, previousActual *int64) FunnelCards {
-	var goal, actual, projected int64
-	hasActual, hasProjected, hasGoal := false, false, false
-	for _, p := range periods {
-		if p.Goal != nil {
-			goal += *p.Goal
-			hasGoal = true
-		}
-		if p.Actual != nil {
-			actual += *p.Actual
-			hasActual = true
-		}
-		if p.Projected != nil {
-			projected += *p.Projected
-			hasProjected = true
-		}
+	"mapp/internal/projection"
+)
+
+// funnelCards sums the months before any grouping, as Revenue's cards do, counting the month in progress once.
+func funnelCards(sums funnelMonthlySums, w window, anyGoal bool, previousActual *int64) FunnelCards {
+	goal := sums.activityGoals
+	var actual, total int64
+	for i := range projection.Months {
+		actual += sums.actual[i]
+		total += sums.pastActual[i] + sums.projected[i]
 	}
 	cards := FunnelCards{}
-	cards.Goal = intCard(goal, hasGoal && anyGoal, ReasonNoGoal)
-	cards.Actual = intCard(actual, hasActual, ReasonNoData)
-	total := actual
-	if hasProjected {
-		total += projected
-	}
-	cards.Projected = intCard(total, hasActual || hasProjected, ReasonNoGoal)
+	cards.Goal = intCard(goal, goal != 0 && anyGoal, ReasonNoGoal)
+	cards.Actual = intCard(actual, todayMonthIndex(w.today, w.year) >= 0, ReasonNoData)
+	cards.Projected = intCard(total, true, ReasonNoGoal)
 	cards.Performance = ratioCard(total, goal, anyGoal)
 	cards.Conversion = conversionCard(actual, previousActual)
 	return cards
+}
+
+// actualToToday keeps the month in progress, which split.Actual leaves out so the total counts it once.
+func actualToToday(split projection.Split) int64 {
+	var total int64
+	for _, m := range split.Months {
+		if m.Actual != nil {
+			total += *m.Actual
+		}
+	}
+	return total
 }
 
 func intCard(value int64, present bool, reason string) NumberCard {
@@ -41,7 +42,6 @@ func intCard(value int64, present bool, reason string) NumberCard {
 	return NumberCard{Value: &v}
 }
 
-// ratioCard is (actual + projected) ÷ goal as a whole per cent (049-C15).
 func ratioCard(value, goal int64, anyGoal bool) NumberCard {
 	if !anyGoal || goal == 0 {
 		return NumberCard{Reason: ReasonNoGoal}
@@ -50,7 +50,7 @@ func ratioCard(value, goal int64, anyGoal bool) NumberCard {
 	return NumberCard{Value: &pct}
 }
 
-// conversionCard mirrors 046's conversionOf: one decimal, "—" on a zero denominator (FR-017).
+// conversionCard mirrors 046's conversionOf: one decimal, "—" on a zero denominator.
 func conversionCard(actual int64, previous *int64) NumberCard {
 	if previous == nil || *previous == 0 {
 		return NumberCard{Reason: ReasonNoPreviousStage}

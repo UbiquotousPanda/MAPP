@@ -6,8 +6,7 @@ import (
 	"mapp/internal/projection"
 )
 
-// previousActualsOfActivities is each activity's own actual count at the stage before the selected one, for
-// every ranked entry's conversion (FR-017), the same rule the report's own cards use.
+// previousActualsOfActivities is each activity's actual count at the previous stage, for each entry's conversion.
 func previousActualsOfActivities(views []activityView, stage string, w window) map[string]int64 {
 	previous, found := previousStage(stage)
 	out := make(map[string]int64, len(views))
@@ -19,8 +18,7 @@ func previousActualsOfActivities(views []activityView, stage string, w window) m
 		if !found {
 			continue
 		}
-		split := projection.SplitCounts(v.facts.counts[previous], series.Months, w.today, w.year)
-		out[v.node.ID] = split.Actual
+		out[v.node.ID] = actualToToday(projection.SplitCounts(v.facts.counts[previous], series.Months, w.today, w.year))
 	}
 	return out
 }
@@ -52,7 +50,7 @@ func rollUpInt64(nodes []allwork.Node, below map[string][]string, own map[string
 }
 
 // funnelFiguresOfActivities is each activity's own figures for the selected stage: Goal the stage's full
-// plan-year projection, Actual every counted fact, Projected the "actual or projected" total (FR-004, FR-017).
+// plan-year projection, Actual every counted fact, Projected the "actual or projected" total.
 func funnelFiguresOfActivities(views []activityView, stage string, w window) map[string]FunnelFigures {
 	out := make(map[string]FunnelFigures, len(views))
 	for _, v := range views {
@@ -63,17 +61,26 @@ func funnelFiguresOfActivities(views []activityView, stage string, w window) map
 		}
 		split := projection.SplitCounts(v.facts.counts[stage], series.Months, w.today, w.year)
 		f := FunnelFigures{}
-		if v.projection.Present {
-			goal := series.Total
-			f.Goal = &goal
-		}
-		actual := split.Actual
+		f.Goal = stageGoalOf(v.node, stage)
+		actual := actualToToday(split)
 		f.Actual = &actual
 		total := split.Actual + split.Projected
 		f.Projected = &total
 		out[v.node.ID] = f
 	}
 	return out
+}
+
+func stageGoalOf(n allwork.Node, stage string) *int64 {
+	goal := n.INQ
+	if stage == StageMQL {
+		goal = n.MQL
+	}
+	if goal == nil {
+		return nil
+	}
+	own := *goal
+	return &own
 }
 
 func rollUpFunnel(nodes []allwork.Node, below map[string][]string, ownActivity map[string]FunnelFigures) map[string]FunnelFigures {
@@ -102,9 +109,7 @@ func rollUpFunnel(nodes []allwork.Node, below map[string][]string, ownActivity m
 	return totals
 }
 
-// withFunnelDerived derives Performance from Projected ÷ Goal and Conversion from Actual over the previous
-// stage's actual (049-C15, 049-C16, FR-017) — the same formulas the cards use, so both stay correct whether
-// f is one activity's own figures or a rolled-up total.
+// withFunnelDerived uses the cards' own formulas, so it holds for one activity and for a rolled-up total.
 func withFunnelDerived(f FunnelFigures, previousActual int64) FunnelFigures {
 	if f.Goal != nil {
 		f.Performance = ratioCard(int64Of(f.Projected), *f.Goal, true).Value

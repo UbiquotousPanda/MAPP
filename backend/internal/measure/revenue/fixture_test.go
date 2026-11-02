@@ -79,8 +79,12 @@ func lubricantsModel() projection.Model {
 func inqGoal(n int64) *int64 { return &n }
 
 func newFixtureWith(sc measure.Scope, goals fakeGoals, facts []revenue.FactTotal) *revenue.Service {
+	return newFixtureAt(noon, sc, goals, facts)
+}
+
+func newFixtureAt(now time.Time, sc measure.Scope, goals fakeGoals, facts []revenue.FactTotal) *revenue.Service {
 	return revenue.NewService(fakeTx{}, revenue.Deps{
 		Scoper: fakeScoper{scope: sc}, Facts: fakeFacts{rows: facts}, Goals: goals,
 		Categories: fakeCategories{}, Rates: fakeRates{},
-	}, func() time.Time { return noon })
+	}, func() time.Time { return now })
 }

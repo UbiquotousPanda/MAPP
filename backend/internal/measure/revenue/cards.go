@@ -2,51 +2,33 @@ package revenue
 
 import (
 	"mapp/internal/platform/money"
+	"mapp/internal/projection"
 	"mapp/internal/rollup"
 )
 
-// revenueSums excludes the in-progress month from pastActual, so the total counts it once, via Projected (FR-010).
-type revenueSums struct {
-	goal, actual, pastActual, projected money.Amount
-	hasActual, hasProjected             bool
+// revenueTotals adds the twelve months before any grouping, so the cards are the same in month and
+// quarter view; the month in progress counts once in the total, through Projected.
+type revenueTotals struct {
+	goal, actual, total money.Amount
 }
 
-func sumRevenuePeriods(periods []RevenuePeriod) revenueSums {
-	var s revenueSums
-	for _, p := range periods {
-		if p.Goal != nil {
-			s.goal = s.goal.Add(p.Goal.Amount)
-		}
-		if p.Actual != nil {
-			s.actual, s.hasActual = s.actual.Add(p.Actual.Amount), true
-			if p.State == StatePast {
-				s.pastActual = s.pastActual.Add(p.Actual.Amount)
-			}
-		}
-		if p.Projected != nil {
-			s.projected, s.hasProjected = s.projected.Add(p.Projected.Amount), true
-		}
+func totalsOf(sums revenueMonthlySums) revenueTotals {
+	t := revenueTotals{goal: sums.activityGoals}
+	for i := range projection.Months {
+		t.actual = t.actual.Add(sums.actual[i])
+		t.total = t.total.Add(sums.pastActual[i]).Add(sums.projected[i])
 	}
-	return s
+	return t
 }
 
-// revenueCards builds the fixed card set from the period totals, in their display currency (FR-024); a
-// card with nothing behind it shows its reason rather than a zero (FR-009).
-func revenueCards(periods []RevenuePeriod, anyGoal bool, currency string) RevenueCards {
-	s := sumRevenuePeriods(periods)
-	cards := RevenueCards{Goal: moneyCardOf(s.goal, currency, anyGoal, ReasonNoGoal)}
-	cards.Actual = moneyCardOf(s.actual, currency, s.hasActual, ReasonNoData)
-	total := s.actual
-	switch {
-	case s.hasProjected:
-		total = s.pastActual.Add(s.projected)
-		cards.Projected = moneyCardOf(total, currency, true, "")
-	case s.hasActual:
-		cards.Projected = moneyCardOf(total, currency, true, "")
-	default:
-		cards.Projected = MoneyCard{Reason: ReasonNoGoal}
-	}
-	cards.Performance = performanceOf(total, s.goal, anyGoal)
+func revenueCards(sums revenueMonthlySums, w window, anyGoal bool, display money.Display) RevenueCards {
+	t := totalsOf(sums)
+	shown := func(a money.Amount) money.Amount { return display.Money(money.USD(a)).Amount }
+	goal, total, currency := shown(t.goal), shown(t.total), display.Currency()
+	cards := RevenueCards{Goal: moneyCardOf(goal, currency, anyGoal, ReasonNoGoal)}
+	cards.Actual = moneyCardOf(shown(t.actual), currency, todayMonthIndex(w.today, w.year) >= 0, ReasonNoData)
+	cards.Projected = moneyCardOf(total, currency, true, "")
+	cards.Performance = performanceOf(total, goal, anyGoal)
 	return cards
 }
 
@@ -58,7 +40,7 @@ func moneyCardOf(amount money.Amount, currency string, has bool, reason string) 
 	return MoneyCard{Value: &shown}
 }
 
-// performanceOf is (actual + projected) ÷ goal as a whole per cent, computed exactly on cents (049-C15, 049-C16).
+// performanceOf is (actual + projected) ÷ goal as a whole per cent, computed exactly on cents.
 func performanceOf(actualOrProjected, goal money.Amount, anyGoal bool) NumberCard {
 	if !anyGoal {
 		return NumberCard{Reason: ReasonNoGoal}

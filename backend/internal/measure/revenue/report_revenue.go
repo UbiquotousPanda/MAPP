@@ -9,7 +9,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Report is Revenue against goal (US1): the cards and the period series for the activities in view.
+// Report is Revenue against goal: the cards and the period series for the activities in view.
 func (s *Service) Report(ctx context.Context, a actor.Actor, f measure.Filter) (RevenueReport, error) {
 	var out RevenueReport
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -26,7 +26,8 @@ func (s *Service) Report(ctx context.Context, a actor.Actor, f measure.Filter) (
 func (s *Service) buildRevenueReport(views []activityView, period string, sc measure.Scope) RevenueReport {
 	w := window{today: date.Today(s.now()), year: sc.Year}
 	display := money.DisplayIn(sc.Currency.Code, sc.Currency.Rate.String())
-	periods := revenuePeriods(revenueMonths(views, w), period, w, display)
+	sums := revenueMonths(views, w)
+	periods := revenuePeriods(sums, period, w, display)
 	anyGoal := false
 	for _, v := range views {
 		if v.projection.Present {
@@ -34,7 +35,7 @@ func (s *Service) buildRevenueReport(views []activityView, period string, sc mea
 			break
 		}
 	}
-	out := RevenueReport{Cards: revenueCards(periods, anyGoal, display.Currency()), Period: periodShown(period), Periods: periods}
+	out := RevenueReport{Cards: revenueCards(sums, w, anyGoal, display), Period: periodShown(period), Periods: periods}
 	if stamp := stampOf(views); stamp != nil {
 		out.Projection = stamp
 	}
@@ -53,8 +54,8 @@ func periodShown(period string) string {
 	return measure.PeriodMonth
 }
 
-// stampOf names the first model behind a projected figure, so a reviewer can reproduce any of them
-// (047 FR-012). Reports mixing models name one; the ranked list's own entries carry the rest.
+// stampOf names the first model behind a projected figure, so a reviewer can reproduce it; reports
+// mixing models name one, and the ranked list's own entries carry the rest.
 func stampOf(views []activityView) *Stamp {
 	for _, v := range views {
 		if v.projection.Present && v.projection.Stamp.ModelName != "" {

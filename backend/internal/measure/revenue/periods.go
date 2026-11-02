@@ -9,39 +9,49 @@ import (
 	"mapp/internal/projection"
 )
 
-// window is today and the plan year together, since every month/period calculation needs both.
 type window struct {
 	today date.Date
 	year  int
 }
 
+// revenueMonthlySums keeps pastActual month by month, so a quarter in progress keeps its finished months.
 type revenueMonthlySums struct {
-	actual, projected, goal [projection.Months]money.Amount
+	actual, pastActual, projected, goal [projection.Months]money.Amount
+	activityGoals                       money.Amount
 }
 
-// revenueMonths sums every activity's revenue into one twelve-month set, in USD (046-C7).
 func revenueMonths(views []activityView, w window) revenueMonthlySums {
 	var sums revenueMonthlySums
 	for _, v := range views {
 		if !v.projection.Present {
 			continue
 		}
-		split := projection.SplitAmounts(v.facts.revenue, v.projection.Revenue, w.today, w.year)
-		for i, m := range split.Months {
-			if m.Actual != nil {
-				sums.actual[i] = sums.actual[i].Add(m.Actual.Amount)
-			}
-			if m.Projected != nil {
-				sums.projected[i] = sums.projected[i].Add(m.Projected.Amount)
-			}
-		}
-		for i, m := range v.projection.Revenue {
-			if i < len(sums.goal) {
-				sums.goal[i] = sums.goal[i].Add(m.Value.Amount)
-			}
+		addRevenueMonths(&sums, v, w)
+		if goal := revenueGoalOf(v.node); goal != nil {
+			sums.activityGoals = sums.activityGoals.Add(goal.Amount)
 		}
 	}
 	return sums
+}
+
+func addRevenueMonths(sums *revenueMonthlySums, v activityView, w window) {
+	split := projection.SplitAmounts(v.facts.revenue, v.projection.Revenue, w.today, w.year)
+	for i, m := range split.Months {
+		if m.Actual != nil {
+			sums.actual[i] = sums.actual[i].Add(m.Actual.Amount)
+		}
+		if m.Actual != nil && !m.InProgress {
+			sums.pastActual[i] = sums.pastActual[i].Add(m.Actual.Amount)
+		}
+		if m.Projected != nil {
+			sums.projected[i] = sums.projected[i].Add(m.Projected.Amount)
+		}
+	}
+	for i, m := range v.projection.Revenue {
+		if i < len(sums.goal) {
+			sums.goal[i] = sums.goal[i].Add(m.Value.Amount)
+		}
+	}
 }
 
 // periodBounds is one period's position in the year: its first month, its size, and where today falls.
@@ -63,7 +73,6 @@ func periodsOf(w window, period string) []periodBounds {
 	return out
 }
 
-// revenuePeriods groups the twelve months by month or quarter, split at today (047 FR-010, 049-C4).
 func revenuePeriods(sums revenueMonthlySums, period string, w window, display money.Display) []RevenuePeriod {
 	bounds := periodsOf(w, period)
 	out := make([]RevenuePeriod, 0, len(bounds))
