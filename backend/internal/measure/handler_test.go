@@ -80,6 +80,7 @@ func TestReportsExport_FR022(t *testing.T) {
 		"&statusType=activity&recordType=activity&recordType=purchaseRequest&approver=P-1002&outcome=approved", http.StatusOK)
 
 	admin := server.SignIn(t, alexEmail)
+	call(t, admin, "/api/v1/reports/user-access/export?format=csv&widget=people&status=inactive&q=priya", http.StatusOK)
 	var created struct{ ID string }
 	admin.Do(t, http.MethodPost, "/api/v1/roles", map[string]any{"name": "No export", "defaultScope": "myTeams",
 		"permissions": []string{"plans.view", "reports.view"}}).Decode(t, &created)
