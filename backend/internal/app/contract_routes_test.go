@@ -64,7 +64,10 @@ func TestEveryProtectedOperationRequiresSignIn_FR005(t *testing.T) {
 }
 
 // notYetServed: contract operations not built yet (D-192, D-298); each feature removes its own when it serves them.
-var notYetServed = []string{}
+var notYetServed = []string{
+	"GET /api/v1/reports/summary",
+	"GET /api/v1/reports/summary/league/{table}",
+}
 
 func TestNotYetServedIsAccurate(t *testing.T) {
 	t.Parallel()
