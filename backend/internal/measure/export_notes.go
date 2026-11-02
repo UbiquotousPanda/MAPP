@@ -14,10 +14,16 @@ import (
 // in words, the period, the currency, and who exported it and when; the rates used follow.
 func (s *Service) notes(a actor.Actor, report string, f Filter, sc Scope) [][2]string {
 	now := s.now().UTC()
-	return [][2]string{{"Report", report}, {"Year", strconv.Itoa(sc.Year)}, {"Filters", filterWords(f, sc)},
+	return [][2]string{{"Report", report}, {"Year", strconv.Itoa(sc.Year)}, {labelFilters, filterWords(sc)},
 		{"Period", map[string]string{PeriodMonth: "Months", PeriodQuarter: "Quarters"}[f.Period]},
 		{"Currency", sc.Currency.Code}, {"Exported by", a.Name},
 		{"Exported at", date.Format(date.Today(now)) + " " + now.Format("15:04") + " UTC"}}
+}
+
+// afterFilters puts a report's own parameters in words right after the frame's filters.
+func afterFilters(notes, own [][2]string) [][2]string {
+	at := slices.IndexFunc(notes, func(n [2]string) bool { return n[0] == labelFilters }) + 1
+	return slices.Insert(notes, at, own...)
 }
 
 func rateNotes(rates []string) [][2]string {
@@ -29,8 +35,8 @@ func rateNotes(rates []string) [][2]string {
 }
 
 // filterWords names every restricted filter with its values' names, never an ID left out (FR-015): "None" for none.
-func filterWords(f Filter, sc Scope) string {
-	q := f.Query
+func filterWords(sc Scope) string {
+	q := sc.Query
 	plans := map[string]string{}
 	for _, n := range sc.Nodes {
 		if n.Level == allwork.LevelPlan {
@@ -50,11 +56,11 @@ func filterWords(f Filter, sc Scope) string {
 		}
 	}
 	add("Plans", q.Plans, func(id string) (string, bool) { name, known := plans[id]; return name, known })
-	add("Plan type", q.PlanTypes, func(id string) (string, bool) { return id, true })
+	add("Plan type", q.PlanTypes, func(id string) (string, bool) { return allwork.PlanTypeWord(id), true })
 	add("Team", q.Teams, optionNamed(sc.Choices.Teams))
 	add("Owner", q.Owners, optionNamed(sc.Choices.People))
 	add("Activity type", q.ActivityTypes, optionNamed(sc.Choices.ActivityTypes))
-	add("Activity status", q.ActivityStatuses, func(id string) (string, bool) { return id, true })
+	add("Activity status", q.ActivityStatuses, func(id string) (string, bool) { return allwork.ActivityStatusWord(id), true })
 	for _, filter := range q.Attributes {
 		if i := slices.IndexFunc(sc.Attributes, func(a allwork.Attribute) bool { return a.ID == filter.AttributeID }); i >= 0 {
 			add(sc.Attributes[i].Label, filter.Values, valueNamed(sc.Attributes[i]))
