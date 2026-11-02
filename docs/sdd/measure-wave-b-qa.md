@@ -2,6 +2,10 @@
 
 Lane D. **Status: Checklist prepared 2026-11-02 before the features merge; nothing run yet.**
 
+**046 part ran 2026-11-02 against `measure-module` 27a1fa84** (PR #62 merged): eight API checks in
+`backend/internal/measure/wavebqa`, all green on the demo fakes, three low findings and one checklist correction
+(Findings). 047 reached `measure-module` meanwhile (887311c8); the same eight pass there unchanged.
+
 The same pass as wave A (#46, PR #87 `qa/wave-a-pass`: `docs/sdd/measure-wave-a-qa.md`,
 `backend/internal/measure/waveaqa/qa_test.go`), now for Performance data, Projections, Summary, Revenue, Funnel stages
 and Attribution: every screen on the demo data **with the Measure demo plan** under the demo roles (every scope, no
@@ -25,7 +29,7 @@ financial access), findings raised as issues on the owning feature, critical and
 |---|---|---|---|---|---|---|---|
 | Alex Morgan | Administrator, all markets | Lubricants, Mobility, **Measure demo** | all nine, User access too | yes | yes | change, keys, undo | change |
 | Carlos Mendes | Global planner, all markets | Lubricants, Mobility, **Measure demo** | eight | yes | yes | read | read only |
-| Priya Raman, Daniel Okoro | Planner (Daniel also Approver), my teams | Lubricants Europe | eight | yes | yes | read | read only |
+| Priya Raman, Daniel Okoro | Planner (Daniel also Approver), my teams | Lubricants Europe (Daniel also the Measure activities he approves, finding 4) | eight | yes | yes | read | read only |
 | Mei Lin | Planner, my teams | Mobility China | eight | yes | yes | read | read only |
 | Sara Novak | Viewer, my teams | both | eight | yes | yes | read | read only |
 | Lea Santos | Requisitioner, all markets | both, and **Measure demo by scope** (open question 3) | eight | **none** | **no** | read | read only |
@@ -55,7 +59,7 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | `TestWaveB_CatalogueMatchesAccess_FR001` | Summary, Revenue, Funnel stages listed and available; each opens 200 for all seven | `/reports`, `/reports/{summary,revenue,funnel}?year=2026` | 039 FR-001, FR-003 |
 | `TestWaveB_NoFinancialAccess_Summary_048_FR003` | Lea: cost and ROI league rows and totals null, `financeCovers` 0 of >0; revenue league and funnel not null | `/reports/summary`, `/reports/summary/league/{cost,roi,revenue}` | 048 FR-003, US2-5 |
 | `TestWaveB_NoFinancialAccess_Revenue_039_FR004` | Lea: ranked `actualCost` null; revenue cards' rule to confirm (open question 4) | `/reports/revenue`, `/reports/revenue/ranked` | 039 FR-004, 049 FR-013 |
-| `TestWaveB_ExportRights_FR022` | Alex 200, Lea 403 on every wave B export | `/reports/{summary,revenue,funnel}/export`, `/activities/{id}/performance/facts/export` | 039 FR-022, 048 FR-003, 046 contract |
+| `TestWaveB_ExportRights_FR022` | Alex 200, Lea 403 on every wave B export; the 046 part runs now (facts export: Alex's file holds Helix's five facts) | `/reports/{summary,revenue,funnel}/export`, `/activities/{id}/performance/facts/export` | 039 FR-022, 048 FR-003, 046 contract |
 | `TestWaveB_ExportsKeepOwnParams_FR022` | `category`, `stage=mql`, `revenueBy`, `sort=actualRevenue` each give 200 and a file different from the default | `/reports/{revenue,funnel}/export?widget=ranked`, `/reports/summary/export?widget=leagueRevenue` | 039 FR-022, 049 FR-019, 048 FR-004, FR-021 (open question 6) |
 | `TestWaveB_SummaryEqualsRevenueAndFunnel_048_SC002` | Same filters and category: Summary revenue = Revenue cards; Summary stages = Funnel cards per `stage` | `/reports/summary`, `/reports/revenue`, `/reports/funnel?stage=` | 048 FR-008, SC-002, 048-C3 |
 | `TestWaveB_RankedTotalsEqualSeries_049_SC002` | Ungrouped top-level totals equal the series totals, both reports | `/reports/{revenue,funnel}{,/ranked}` | 049 SC-002 |
@@ -65,12 +69,13 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | `TestWaveB_RoiNotConfigured_049_FR013` | Every `actualCost`, `roi` null with "Attribution is not configured yet" until 050 T007; then model and basis | `/reports/revenue/ranked`, `/reports/summary/league/roi` | 049 FR-013, 048 FR-015, 050 FR-008 |
 | `TestWaveB_ProjectionShape_047_FR008_FR010` | Approved Measure activities: no month past December, none negative, past months actual only, later projected only, current both; stamp with `modelChangedAt`; Retargeting test `noGoal` | `/activities/{id}/performance` | 047 FR-008, FR-010, FR-012, FR-013, SC-005 |
 | `TestWaveB_ProjectionsRestated_047_SC002` | Two reads identical; a velocity change by Alex moves `projected` with no other action | `/activities/{id}/performance`, `PATCH /models/{modelId}` | 047 FR-011, SC-002 |
-| `TestWaveB_PerformanceScope_046_FR044` | Priya, Mei: 404 (not 403) on the Measure plan's and the other team's activities; Alex, Carlos 200 | `/activities/{id}/performance{,/facts,/sources}` | 046 FR-044, 047 US2-6 |
-| `TestWaveB_PerformanceRights_046_FR043` | Only Alex may create sources and mappings, upload, pull, list imports and review rows, recheck, change configuration, write keys and codes; GET sources 200 for all | `/performance/...`, `/activities/{id}/integration-ids/{sourceId}`, `/activities/{id}/media-codes` | 046 FR-043, contract |
-| `TestWaveB_LoadReconciles_046_SC001` | Five counts add to rows read; same file again changes no figure; undo restores and lists *Undone* | `POST /performance/sources/{id}/uploads`, `/performance/imports/{id}{,/undo}`, `/reports/revenue` | 046 FR-013, FR-017, FR-022, SC-001, SC-004 |
-| `TestWaveB_HeldFactsCountNowhere_046_SC002` | Fleet expo Rotterdam's row is held; report actuals unchanged; its panel gated | upload, `/reports/funnel`, `/activities/{id}/performance` | 046 FR-020, FR-027, SC-002, 049 FR-021 |
-| `TestWaveB_PersonalDataRefused_046_FR012` | A personal-data column: 409 `not_allowed` naming it; no import listed | uploads, `/performance/imports` | 046 FR-012, SC-007, 046-C17 |
-| `TestWaveB_ReviewQueue_046_FR023` | Unknown key and keys-disagree rows listed with reasons; dismiss without comment 422 | `/performance/review-rows{,/{rowId}/dismiss}` | 046 FR-019, FR-023, FR-024, SC-003 |
+| `TestWaveB_PerformanceScope_046_FR044` | Priya, Daniel, Mei, Sara: 404 with a missing activity's very body (not 403) on the Measure plan's and the other team's activities, export included; Daniel sees the Measure activities he approves (finding 4); Alex, Carlos, Lea 200 | `/activities/{id}/performance{,/facts,/facts/export,/sources}`, `/integration-ids`, `/external-name-aliases`, `/media-codes` | 046 FR-044, 047 US2-6 |
+| `TestWaveB_PerformanceRights_046_FR043` | Every change answers 403 to the six demo roles but Alex, who can make each in turn (delete of a source with facts 409, upload to a deactivated one 409); sources, mappings, template, configuration 200 for all seven | `/performance/...`, `/activities/{id}/integration-ids/{sourceId}`, `/activities/{id}/media-codes`, `/media-codes/{id}` | 046 FR-002, FR-004, FR-043, contract |
+| `TestWaveB_UndoNeedsSettingsManage_046_FR043` | Mei with a custom role (`plans.view`, `performance.import`) loads and reads her load; undo of hers or Alex's 403, integration ID 403 | uploads, `/performance/imports/{id}{,/undo}`, `/roles`, `/people/{id}/roles` | 046 FR-043, 046-C16, open question 8 |
+| `TestWaveB_LoadReconciles_046_SC001` | One row in each of the five outcomes, adding to rows read, again under INQ and in the stored summary; same file again changes no figure; a repeated reference replaces; each undo restores the figure before it and the loads stay listed *Undone* | `POST /performance/sources/{id}/uploads`, `/performance/imports/{id}{,/undo}`, `/activities/{id}/performance` (`/reports/revenue` after 049) | 046 FR-013, FR-017, FR-022, SC-001, SC-004 |
+| `TestWaveB_HeldFactsCountNowhere_046_SC002` | Fleet expo (Submitted), Workshop roadshow (Declined), Dealer summit (Created) rows held, listed as held, their panels gated with no figure; Helix's actual only its own; Daniel's approval releases Fleet expo's. The report half waits for 049 | upload, `/activities/{id}/performance{,/facts}`, `/activities/{id}/approval/approve`; `/reports/funnel` after 049 | 046 FR-020, FR-027, FR-028, SC-002, 049 FR-021 |
+| `TestWaveB_PersonalDataRefused_046_FR012` | `E-mail` and `Phone` columns: 409 `not_allowed` naming both; no import, no row to review, no figure | uploads, `/performance/imports`, `/performance/review-rows` | 046 FR-012, SC-007, 046-C17 |
+| `TestWaveB_ReviewQueue_046_FR023` | Unknown key, keys disagree (both candidates named) and a two-fault row listed with reasons; findable by reason, key, source, status, date; no POST; dismiss without comment refused (contract 422, served 400: finding 1); dismiss, reopen, correct → *Resolved* and counted; Mei with `performance.import` sees no candidate (046-C15) | `/performance/review-rows{,/{rowId}{,/dismiss,/reopen,/correct}}` | 046 FR-011, FR-019, FR-023, FR-024, SC-003 |
 | `TestWaveB_SettingsRights_047_050` | Categories, model edit, attribution PUT: Alex 2xx, others 403; GET 200 for all; stale attribution save 409 | `/settings/activity-categories`, `/models/{modelId}`, `/settings/attribution` | 047 FR-023, 050 FR-002, US1-4 |
 | `TestWaveB_ModelChangeRestates_050_SC002` | After 050 T007: a new model names itself on every ROI; facts without a journey credit the same revenue under every model | `/settings/attribution`, `/reports/revenue/ranked`, `/reports/summary/league/roi` | 050 FR-004, FR-008, FR-009, SC-002 |
 
@@ -83,31 +88,31 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | New source listed with freshness *Stale* | US1-1, FR-001, FR-005 | Alex | | |
 | Mappings → template downloads with exactly those columns | US1-2, FR-008 | Alex | | |
 | Second active source for one model's MQL refused, naming the first | US1-3, FR-003 | Alex | | |
-| Delete only while a source holds no facts; else Deactivate with the reason | US1-4, FR-002 | Alex | | |
-| Deactivated: upload refused, *Is integrated* updates at once; reactivate works | US1-5, FR-004 | Alex | | |
+| Delete only while a source holds no facts; else Deactivate with the reason | US1-4, FR-002 | Alex | Pass (API) | Empty source 204; one with facts 409 `in_use` naming Deactivate (`PerformanceRights`). Save's answer: finding 3 |
+| Deactivated: upload refused, *Is integrated* updates at once; reactivate works | US1-5, FR-004 | Alex | Pass (API) | Upload 409 while inactive, reactivate 200; *Is integrated* not read |
 | Editing a mapping leaves earlier uploads unchanged | US1-6, FR-007 | Alex | | |
-| Others read sources; every change refused | FR-043 | Carlos, Sara, Lea | | |
-| All faults of one row reported together | US2-2, FR-011 | Alex | | API until T052 |
-| Keys disagree: unmatched, both candidates named, in the queue | US2-3, FR-019 | Alex | | API |
-| Held on a Submitted activity; released when Daniel approves | US2-4, FR-020 | Alex, Daniel | | |
-| Five counts add to rows read; per-measure breakdown below | US2-5, FR-022 | Alex | | API |
-| Same file twice changes nothing; a repeated reference replaces, both versions audited | US2-6, FR-013 | Alex | | |
-| Personal-data file refused whole, column named | US2-7, FR-012 | Alex | | |
-| Undo states counts first; upload stays *Undone* | US2-8, FR-017 | Alex | | |
-| Simulated pull only by an explicit action, same path as an upload | FR-010, 046-C13 | Alex | | |
-| Not approved: "Approve the activity to see performance data", no figures | US3-1, FR-027, FR-028 | all | | Fleet expo Rotterdam, Workshop roadshow Benelux, Dealer summit |
+| Others read sources; every change refused | FR-043 | Carlos, Sara, Lea | Pass (API) | All six non-administrators: 29 changes and gated reads (imports, review rows) 403, five Settings reads 200; undo also needs `settings.manage` (custom role) |
+| All faults of one row reported together | US2-2, FR-011 | Alex | Pass (API) | Future date and negative count on one row, both faults listed |
+| Keys disagree: unmatched, both candidates named, in the queue | US2-3, FR-019 | Alex | Pass (API) | Activity ID against an integration ID of the other Helix activity |
+| Held on a Submitted activity; released when Daniel approves | US2-4, FR-020 | Alex, Daniel | Pass (API) | Fleet expo's 100 INQ shows once Daniel approves |
+| Five counts add to rows read; per-measure breakdown below | US2-5, FR-022 | Alex | Pass (API) | One row per outcome; INQ breakdown and stored summary equal |
+| Same file twice changes nothing; a repeated reference replaces, both versions audited | US2-6, FR-013 | Alex | Pass (API, figures) | 710 → 710 → 760; the audit of both versions not read |
+| Personal-data file refused whole, column named | US2-7, FR-012 | Alex | Pass (API) | Both columns named; no import, row or figure |
+| Undo states counts first; upload stays *Undone* | US2-8, FR-017 | Alex | Pass (API) | Each undo restores the figure before its load; the confirmation is web (T052) |
+| Simulated pull only by an explicit action, same path as an upload | FR-010, 046-C13 | Alex | Fail (low) | Pull 201 for Alex, 403 for others; without mappings 500 where an upload answers 400 (finding 2) |
+| Not approved: "Approve the activity to see performance data", no figures | US3-1, FR-027, FR-028 | all | Pass (API) | Fleet expo Rotterdam, Workshop roadshow Benelux, Dealer summit: `notApproved`, no stage, no revenue; wording is web |
 | Approved: per stage goal, actual, projected, conversion; revenue names its model | US3-2, FR-029 | Alex | | |
 | No source for a stage: the reason, never a sample figure | US3-3, FR-032, SC-008 | Alex | | |
-| Facts list: date, source, measure, value, currency, key, upload; search; export | US3-4, FR-030 | Alex; Lea no export | | |
-| Stale source shows the date its data runs through | US3-5, FR-005 | Alex | | |
+| Facts list: date, source, measure, value, currency, key, upload; search; export | US3-4, FR-030 | Alex; Lea no export | Pass (export) | Alex's CSV has the columns and Helix's five facts; Lea 403. Search not run |
+| Stale source shows the date its data runs through | US3-5, FR-005 | Alex | Not run | The fakes never derive the last load or data-through date (`performancetest` `ListSources`); PostgreSQL does (`store_postgres.go`:89): browser pass |
 | Restored and re-approved: held facts released | US3-6, FR-021 | Alex | | |
 | Data sources area: name, aliases, code count, *Is integrated*, *Goal entered*, per-source ID, count, last date | FR-031 | Alex | | |
 | External name and old name (alias) match; alias clash refused | US4-1–3, FR-033–FR-035 | Alex | | |
 | Second integration ID per source refused; removal confirms its effect, logged | US4-4, US4-5, FR-037 | Alex | | |
 | A copied activity carries no keys, codes or facts | US4-6, FR-038 | Alex | | |
-| Queue: find by key, source, reason, upload, date, status; correct → *Resolved*; dismiss needs a comment; reopen | US5-1–5, FR-023–FR-026 | Alex | | API until T094 |
+| Queue: find by key, source, reason, upload, date, status; correct → *Resolved*; dismiss needs a comment; reopen | US5-1–5, FR-023–FR-026 | Alex | Pass (API) | API until T094. Dismiss without a comment is 400, not the contract's 422 (finding 1); with `performance.import` alone Mei sees the rows, no candidate |
 | Media codes only where the type needs them; all missing attributes at once; copy code and tagged link; Delete only unused | US6-1–5, FR-039–FR-042 | Alex | | |
-| Panel of another team's activity by address: not found, not "no access" | FR-044 | Priya, Mei | | |
+| Panel of another team's activity by address: not found, not "no access" | FR-044 | Priya, Mei | Pass (API) | Also Daniel, Sara; same body as a missing activity on six reads and the export. Daniel sees what he approves (finding 4) |
 | Every state: data, not approved, no source, no goal, no data yet, stale, failed | FR-032, SC-008 | Alex | | |
 | Keyboard only: source form, mappings, key and code dialogs; Escape returns focus | constitution IX, 039 FR-033 | Alex | | |
 | axe and dark theme, Settings page and panel | plan (VI), constitution X | Alex | | |
@@ -253,7 +258,7 @@ The e2e seed (`frontend/playwright.config.ts`:32) and compose (`compose.yaml`:27
 | In view | + 1 plan, 2 campaigns, 3 initiatives, 9 activities, 13 line items | unchanged | 039 FR-007; demo doc |
 | Ranked list, group by plan | a Measure demo group (Helix always-on 2026, Tellus industrial 2026) | no such group | 049 FR-002 |
 | Goal coverage, INQ | the plan's 12,000 against its activities' 4,000 + 4,000 + 600 + 1,500 = 10,100 → 84 % | — | 048-C2; `measure.json`:29, 66, 86, 134, 224 |
-| Performance gate | Fleet expo Rotterdam (Submitted), Workshop roadshow Benelux (Declined), Dealer summit, Tellus trade press (Created) | not found | 046 FR-027, FR-044 |
+| Performance gate | Fleet expo Rotterdam (Submitted), Workshop roadshow Benelux (Declined), Dealer summit, Tellus trade press (Created) | not found; Daniel sees those he approves (finding 4) | 046 FR-027, FR-044 |
 | Projection kinds | typed: Helix … first half, Tellus webinar series; model: Helix … second half, Fleet expo; no goal: Retargeting test, Tellus case studies | not found | 047 FR-007, FR-009, FR-013 |
 | Categories | Digital media, Event, Content production need categories | same | 049 US3; 047 T062 |
 
@@ -272,7 +277,10 @@ E2e literals on the wave B branches (049's e2e ran on `seed -reset`, without `-m
 
 | # | Report | Severity | Finding | State |
 |---|---|---|---|---|
-| | | | | |
+| 1 | 046 Performance data | Low | `POST /performance/review-rows/{rowId}/dismiss` with `{"comment": ""}` answers **400** `validation_failed` (`comment`: "Say why this row is being dismissed.") and the row stays open; 046 `contracts/api.md`:58 and this checklist say **422**. `openapi.yaml` (`dismissReviewRow`) declares 400, so the code and the served contract agree and the feature contract is the odd one out. | Open, #100: correct `contracts/api.md`:58 (or move code and `openapi.yaml` to 422). `TestWaveB_ReviewQueue_046_FR023` asserts the refusal, not the status |
+| 2 | 046 Performance data | Low | `POST /performance/sources/{id}/pull` on a simulated source with no mappings answers **500** `internal_error` ("read the feed of PS-1002: performance: the file can't be read as UTF-8 CSV", `pull.go`:26-28), where an upload of an unreadable file answers 400 `validation_failed` "This file can't be read…". FR-010 (the same path as an upload) and 046-C17 (a file refused before any row is read is refused with its reason). Nothing is stored. | Open, #100; kept out of the committed tests |
+| 3 | 046 Performance data | Low | `PATCH /performance/sources/{id}` answers `factCount: 0`, `lastLoadedAt: null`, `dataThrough: null` and the freshness of a source that never loaded, for a source holding 10 facts; `GET` answers 10. `handler.go`:172 builds the answer from the bare source. Contract `PerformanceSource.factCount`: "it may not be deleted while above zero", so a client keeping the save's answer offers Delete (FR-002) until it reloads. | Open, #100; kept out of the committed tests |
+| 4 | Checklist | — | Daniel sees the Measure activities he approves: the activity and its Performance answer 200 (`authz` `SeesActivity` counts approvers); Dealer summit, with no round, is not found for him. 046 follows the activity read (FR-044); this checklist's Roles table and *Performance gate* row said not found. | Corrected here; `TestWaveB_PerformanceScope_046_FR044` checks both |
 
 ## How to run
 
@@ -304,7 +312,8 @@ create a source with mappings, and either upload a CSV keyed by activity ID or r
    `/settings/performance-data` and `/settings/activity-categories` routes are absent from
    `frontend/src/app/settings-routes.tsx` (046 `contracts/api.md`:107, 047 `tasks.md`:100). Run those on the API.
 8. **Undo's narrower rule** (`performance.import` + `settings.manage`, 046 `contracts/api.md`:45): no demo role has
-   one without the other, so the harness needs a custom role.
+   one without the other, so the harness needs a custom role. Done: `TestWaveB_UndoNeedsSettingsManage_046_FR043`
+   gives Mei one through the access API.
 9. **050**: no `contracts/api.md`; *Use planned cost* has no parameter name (`spec.md`:142); *Unattributed*
    (`spec.md`:141) shows nowhere while the Attribution view is deferred (`spec.md`:29); T007–T008 wait on 050-Q1
    (`tasks.md`:28-29).
