@@ -61,7 +61,7 @@ func TestCreateActivityCategory_AuditAndTypes_FR018(t *testing.T) {
 	want := ActivityCategoryView{
 		ID: "CAT-1001", Name: "Digital", ActivityTypes: []SettingRef{{ID: event.ID, Name: "Event", Active: true}},
 		Active: true,
-		Usage: Usage{InUse: true, Summary: "Groups 1 activity type", Records: []history.RecordRef{},
+		Usage: Usage{Summary: "Groups 1 activity type", Records: []history.RecordRef{},
 			Parts: []UsagePart{{Kind: "activityType", Text: "Groups 1 activity type", Count: 1}}},
 		Meta: record.NewMeta(alex, f.clock.now),
 	}
@@ -182,8 +182,8 @@ func TestDeleteActivityCategory_UndoRestoresTypes_FR021(t *testing.T) {
 	f := newTestService(t)
 	event := f.addType(t, "Event", true)
 	digital := f.createCategory(t, categoryInput("Digital", true, event.ID))
-	if !digital.Usage.InUse || digital.Usage.Summary != "Groups 1 activity type" {
-		t.Errorf("Digital usage = %+v, want the warning before it is deleted", digital.Usage)
+	if digital.Usage.InUse || digital.Usage.Summary != "Groups 1 activity type" {
+		t.Errorf("Digital usage = %+v, want the warning, but not in use: a category can always be deleted", digital.Usage)
 	}
 
 	entry, err := f.service.DeleteActivityCategory(t.Context(), alex, digital.ID)

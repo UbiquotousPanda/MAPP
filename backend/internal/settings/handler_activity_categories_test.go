@@ -9,7 +9,7 @@ import (
 
 const (
 	categoryGoneBody = `{"error":{"code":"not_found","message":"This activity category no longer exists — someone may have deleted it.","fields":[]}}`
-	groupsOneType    = `{"inUse":true,"summary":"Groups 1 activity type","parts":` +
+	groupsOneType    = `{"inUse":false,"summary":"Groups 1 activity type","parts":` +
 		`[{"kind":"activityType","text":"Groups 1 activity type","count":1,"inRecycleBin":0}],"records":[]}`
 	eventRef = `{"id":"AT-1002","name":"Event","active":true}`
 )

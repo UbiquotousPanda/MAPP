@@ -105,10 +105,10 @@ describe('ActivityCategoriesPage: the list (FR-018)', () => {
     await user.click(await screen.findByRole('button', { name: 'Asset' }));
 
     const panel = await screen.findByRole('dialog', { name: 'Asset' });
-    expect(router.state.location.search).toBe('?id=ACAT-1001');
+    expect(router.state.location.search).toBe('?id=CAT-1001');
     expect(panel).toHaveTextContent('The reports open on this category.');
     expect(within(panel).getByText('Event')).toBeInTheDocument();
-    expect(panel).toHaveTextContent('Used by 4 activities · Groups 1 activity type');
+    expect(panel).toHaveTextContent('Groups 1 activity type');
     expect(panel).toHaveTextContent(
       'Created by Priya Raman on 12 Mar 2026, last changed by Daniel Okoro on 14 Mar 2026',
     );
@@ -120,8 +120,8 @@ describe('ActivityCategoriesPage: delete (FR-021)', () => {
     const { user } = renderActivityCategoriesPage([
       reply(
         'DELETE /api/v1/settings/activity-categories/{categoryId}',
-        { body: deleted('activity category', 'ACAT-1002', 'Promotion') },
-        { categoryId: 'ACAT-1002' },
+        { body: deleted('activity category', 'CAT-1002', 'Promotion') },
+        { categoryId: 'CAT-1002' },
       ),
     ]);
 
@@ -138,12 +138,12 @@ describe('ActivityCategoriesPage: delete (FR-021)', () => {
     expect(within(messages).getByRole('button', { name: 'Undo' })).toBeInTheDocument();
   });
 
-  it('deletes a category that groups a type, never refusing as in use (047-C12)', async () => {
+  it('deletes a category that groups a type, never refusing as in use (FR-021, 047-C12)', async () => {
     const { user } = renderActivityCategoriesPage([
       reply(
         'DELETE /api/v1/settings/activity-categories/{categoryId}',
-        { body: deleted('activity category', 'ACAT-1001', 'Asset') },
-        { categoryId: 'ACAT-1001' },
+        { body: deleted('activity category', 'CAT-1001', 'Asset') },
+        { categoryId: 'CAT-1001' },
       ),
     ]);
 
@@ -165,7 +165,7 @@ describe('ActivityCategoriesPage: delete (FR-021)', () => {
         reply(
           'PATCH /api/v1/settings/activity-categories/{categoryId}',
           { body: { ...LEGACY, active: true } },
-          { categoryId: 'ACAT-1003' },
+          { categoryId: 'CAT-1003' },
         ),
       ],
       `${CATEGORIES_PATH}?status=inactive`,
@@ -175,7 +175,7 @@ describe('ActivityCategoriesPage: delete (FR-021)', () => {
     await chooseAction('Legacy', 'Reactivate', user);
 
     expect(await findMessages()).toHaveTextContent("Activity category 'Legacy' reactivated");
-    expect(api.bodiesOf('PATCH /api/v1/settings/activity-categories/ACAT-1003')).toEqual([
+    expect(api.bodiesOf('PATCH /api/v1/settings/activity-categories/CAT-1003')).toEqual([
       { active: true, version: 1 },
     ]);
   });

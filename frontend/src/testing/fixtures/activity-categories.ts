@@ -17,22 +17,22 @@ function ref(type: { id: string; name: string; active: boolean }) {
   return { id: type.id, name: type.name, active: type.active };
 }
 
-/** Asset: the default category, groups Event, in use. */
+/** What the API says of a category that groups one type: never in use, as deleting it only releases the type. */
+const GROUPS_ONE_TYPE: ActivityCategory['usage'] = {
+  inUse: false,
+  summary: 'Groups 1 activity type',
+  parts: [{ kind: 'activityType', text: 'Groups 1 activity type', count: 1, inRecycleBin: 0 }],
+  records: [],
+};
+
+/** Asset: the default category, groups Event. */
 export const ASSET: ActivityCategory = {
-  id: 'ACAT-1001',
+  id: 'CAT-1001',
   name: 'Asset',
   isDefault: true,
   activityTypes: [ref(EVENT)],
   active: true,
-  usage: {
-    inUse: true,
-    summary: 'Used by 4 activities · Groups 1 activity type',
-    parts: [
-      { kind: 'activity', text: 'Used by 4 activities', count: 4, inRecycleBin: 0 },
-      { kind: 'activityType', text: 'Groups 1 activity type', count: 1, inRecycleBin: 0 },
-    ],
-    records: [],
-  },
+  usage: GROUPS_ONE_TYPE,
   version: 3,
   ...MADE,
 };
@@ -40,7 +40,7 @@ export const ASSET: ActivityCategory = {
 /** Promotion: not the default, groups nothing yet, unused. */
 export const PROMOTION: ActivityCategory = {
   ...ASSET,
-  id: 'ACAT-1002',
+  id: 'CAT-1002',
   name: 'Promotion',
   isDefault: false,
   activityTypes: [],
@@ -48,12 +48,13 @@ export const PROMOTION: ActivityCategory = {
   version: 1,
 };
 
-/** Legacy: inactive and unused, holding the inactive Print advert. */
+/** Legacy: inactive, holding the inactive Print advert. */
 export const LEGACY: ActivityCategory = {
   ...PROMOTION,
-  id: 'ACAT-1003',
+  id: 'CAT-1003',
   name: 'Legacy',
   activityTypes: [ref(PRINT)],
+  usage: GROUPS_ONE_TYPE,
   active: false,
 };
 
