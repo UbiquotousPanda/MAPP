@@ -21,6 +21,7 @@ const (
 	fileNameField      = "fileName"
 	zipSignature       = "PK\x03\x04"
 	csvSuffix          = ".csv"
+	byteOrderMark      = "\xEF\xBB\xBF"
 )
 
 // file is an upload read as text: its header (first row) and data rows, at most width columns wide.
@@ -75,6 +76,9 @@ func firstTable(name string, data []byte) (sheet.Table, error) {
 	}
 	if !strings.HasSuffix(strings.ToLower(name), csvSuffix) {
 		return sheet.Table{}, problem(contentField, msgFormat)
+	}
+	if !utf8.Valid(bytes.TrimPrefix(data, []byte(byteOrderMark))) {
+		return sheet.Table{}, problem(contentField, msgNotUTF8)
 	}
 	table, err := sheet.ReadCSV(data, maxRows+1)
 	return table, readProblem(err)

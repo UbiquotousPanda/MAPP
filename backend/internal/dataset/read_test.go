@@ -69,7 +69,7 @@ func TestPreview_FormatsAndLimits_FR041_FR043(t *testing.T) {
 			{sheet.Text("Expo"), sheet.Date(date.MustParse("2026-01-22"))}}), wantRows: [][]string{{"Expo", "2026-01-22"}}},
 		{name: "formulas by their saved value", up: formulaUpload(t), wantRows: [][]string{{"21", "42"}}},
 		{name: "header only", up: upload("a.csv", "Event,Leads\n"), wantRows: [][]string{}},
-		{name: "not UTF-8", up: upload("a.csv", "Event\nCaf\xe9\n"), wantErr: msgFormat},
+		{name: "not UTF-8", up: upload("a.csv", "Event\nCaf\xe9\n"), wantErr: msgNotUTF8},
 		{name: "neither CSV nor .xlsx", up: upload("a.txt", "Event\nExpo\n"), wantErr: msgFormat},
 		{name: "not base64", up: Upload{FileName: "a.csv", Content: "%%%"}, wantErr: msgUnreadable},
 		{name: "empty", up: upload("a.csv", ""), wantErr: msgEmptyFile},

@@ -6,6 +6,7 @@ const (
 	msgEmptyFile      = "The file is empty."
 	msgTooLarge       = "The file is larger than 5 MB."
 	msgFormat         = "SP&A One can read .xlsx and CSV (UTF-8) files."
+	msgNotUTF8        = "This file isn't UTF-8 text. Save the file as CSV UTF-8 and upload it again."
 	msgTooManyRows    = "The file has more than 10,000 rows."
 	msgTooManyColumns = "The file has more than 50 columns."
 	msgNoHeader       = "The first row must hold the column names."
