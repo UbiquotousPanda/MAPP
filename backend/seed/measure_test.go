@@ -1,13 +1,18 @@
 package seed_test
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
 	"slices"
 	"testing"
 
+	"mapp/internal/financials"
 	"mapp/internal/platform/apitest"
+	"mapp/internal/platform/fake"
+	"mapp/internal/stores/storestest"
 	"mapp/seed"
 )
 
@@ -16,7 +21,8 @@ const measurePlan = "FY2026 Measure demo – Lubricants Benelux"
 // With the Measure demo every demo record is still there as it was, ID included: it only adds (D-354).
 func TestLoad_MeasureOnlyAddsRecords_D354(t *testing.T) {
 	t.Parallel()
-	plain, measured := demoIn(t, apitest.DemoDB(t, false)), demoIn(t, apitest.MeasureDemoDB(t))
+	plainDB, measuredDB := apitest.DemoDB(t, false), apitest.MeasureDemoDB(t)
+	plain, measured := demoIn(t, plainDB), demoIn(t, measuredDB)
 
 	kept(t, "people", plain.people, measured.people)
 	kept(t, "teams", plain.teams, measured.teams)
@@ -48,6 +54,9 @@ func TestLoad_MeasureOnlyAddsRecords_D354(t *testing.T) {
 	if !reflect.DeepEqual(plain.accessRules, measured.accessRules) {
 		t.Error("the Measure demo changed the access rules")
 	}
+	plainGSAP, measuredGSAP := gsapIn(t, plainDB), gsapIn(t, measuredDB)
+	kept(t, "financial transactions", plainGSAP.transactions, measuredGSAP.transactions)
+	kept(t, "financial imports", plainGSAP.imports, measuredGSAP.imports)
 }
 
 func kept[T any](t *testing.T, kind string, plain, measured []T) {
@@ -62,16 +71,47 @@ func kept[T any](t *testing.T, kind string, plain, measured []T) {
 // seed.MeasureLoaded, which the seed command prints after -measure, says exactly what the Measure demo adds.
 func TestMeasureLoaded_SaysWhatIsAdded(t *testing.T) {
 	t.Parallel()
-	plain, measured := demoIn(t, apitest.DemoDB(t, false)), demoIn(t, apitest.MeasureDemoDB(t))
+	plainDB, measuredDB := apitest.DemoDB(t, false), apitest.MeasureDemoDB(t)
+	plain, measured := demoIn(t, plainDB), demoIn(t, measuredDB)
+	coded := func(d demoData) int {
+		n := 0
+		for _, li := range d.lineItems {
+			if li.SwbsCode != "" {
+				n++
+			}
+		}
+		return n
+	}
 
-	got := fmt.Sprintf("%d team, %d plan, %d campaigns, %d initiatives, %d activities, %d line items, %d approval rounds",
+	got := fmt.Sprintf("%d team, %d plan, %d campaigns, %d initiatives, %d activities, %d line items (%d with SWBS codes), "+
+		"%d approval workflow, %d approval rounds, %d purchase requests, %d financial transactions",
 		len(measured.teams)-len(plain.teams), len(measured.plans)-len(plain.plans),
 		len(measured.campaigns)-len(plain.campaigns), len(measured.initiatives)-len(plain.initiatives),
 		len(measured.activities)-len(plain.activities), len(measured.lineItems)-len(plain.lineItems),
-		len(measured.rounds)-len(plain.rounds))
+		coded(measured)-coded(plain), len(measured.workflows)-len(plain.workflows), len(measured.rounds)-len(plain.rounds),
+		len(measured.purchaseRequests)-len(plain.purchaseRequests),
+		len(gsapIn(t, measuredDB).transactions)-len(gsapIn(t, plainDB).transactions))
 	if got != seed.MeasureLoaded {
 		t.Errorf("added: %s\nseed.MeasureLoaded: %s", got, seed.MeasureLoaded)
 	}
+}
+
+type gsapData struct {
+	transactions []financials.Transaction
+	imports      []financials.Import
+}
+
+func gsapIn(t *testing.T, db *fake.DB) gsapData {
+	t.Helper()
+	var g gsapData
+	read(t, db, func(ctx context.Context) error {
+		set := storestest.New(db)
+		var listed, imported error
+		g.transactions, listed = set.Financials.ListTransactions(ctx)
+		g.imports, imported = set.Financials.ListImports(ctx)
+		return errors.Join(listed, imported)
+	})
+	return g
 }
 
 // The Measure plan's team has no members: who sees all markets sees it, and a marketer's plans stay as they are.
