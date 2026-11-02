@@ -3,42 +3,18 @@ package revenue
 import (
 	"mapp/internal/allwork"
 	"mapp/internal/platform/money"
-	"mapp/internal/projection"
 )
 
-// revenueFiguresOfActivities is each activity's own figures: Goal is the full plan-year projection, Actual
-// every counted fact, Projected the same "actual or projected" total the cards show.
-func revenueFiguresOfActivities(views []activityView, w window) map[string]RevenueFigures {
-	out := make(map[string]RevenueFigures, len(views))
-	for _, v := range views {
-		f := RevenueFigures{ActualCostReason: ReasonAttributionNotConfigured, ROIReason: ReasonAttributionNotConfigured}
-		f.Goal = revenueGoalOf(v.node)
-		if len(v.facts.revenue) > 0 {
-			actual := sumMoney(v.facts.revenue)
-			f.Actual = &actual
-		}
-		split := projectionSplit(v, w)
-		if f.Actual != nil || v.projection.Present {
-			total := money.USD(split.Actual.Amount.Add(split.Projected.Amount))
-			f.Projected = &total
-		}
-		out[v.node.ID] = f
+// revenueFiguresOfActivities is each activity's own figures: Goal its own goal, Actual what was counted to today,
+// Projected the same "actual or projected" total the cards show.
+func revenueFiguresOfActivities(series []ActivitySeries) map[string]RevenueFigures {
+	out := make(map[string]RevenueFigures, len(series))
+	for _, a := range series {
+		own := ownFigureOf(a, revenueMeasure())
+		out[a.ID] = RevenueFigures{Goal: usdOf(own.goal), Actual: usdOf(own.actual), Projected: usdOf(own.total),
+			ActualCostReason: ReasonAttributionNotConfigured, ROIReason: ReasonAttributionNotConfigured}
 	}
 	return out
-}
-
-// revenueGoalOf is the activity's own goal as shown, typed or worked out with its plan's model; the
-// projected series only place it in time, and drop what lands after the plan year.
-func revenueGoalOf(n allwork.Node) *money.Money {
-	if n.Revenue == nil {
-		return nil
-	}
-	goal := money.USD(*n.Revenue)
-	return &goal
-}
-
-func projectionSplit(v activityView, w window) projection.SplitMoney {
-	return projection.SplitAmounts(v.facts.revenue, v.projection.Revenue, w.today, w.year)
 }
 
 // withPerformance converts f into the display currency, then derives Performance, a ratio, from Projected ÷ Goal.
@@ -80,14 +56,6 @@ func rollUpRevenue(nodes []allwork.Node, below map[string][]string, ownActivity 
 		sum(n.ID)
 	}
 	return totals
-}
-
-func sumMoney(months []projection.MoneyFigure) money.Money {
-	var total money.Amount
-	for _, m := range months {
-		total = total.Add(m.Value.Amount)
-	}
-	return money.USD(total)
 }
 
 func addRevenueFigures(a, b RevenueFigures) RevenueFigures {

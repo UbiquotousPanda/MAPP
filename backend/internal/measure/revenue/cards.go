@@ -2,31 +2,15 @@ package revenue
 
 import (
 	"mapp/internal/platform/money"
-	"mapp/internal/projection"
 	"mapp/internal/rollup"
 )
 
-// revenueTotals adds the twelve months before any grouping, so the cards are the same in month and
-// quarter view; the month in progress counts once in the total, through Projected.
-type revenueTotals struct {
-	goal, actual, total money.Amount
-}
-
-func totalsOf(sums revenueMonthlySums) revenueTotals {
-	t := revenueTotals{goal: sums.activityGoals}
-	for i := range projection.Months {
-		t.actual = t.actual.Add(sums.actual[i])
-		t.total = t.total.Add(sums.pastActual[i]).Add(sums.projected[i])
-	}
-	return t
-}
-
-func revenueCards(sums revenueMonthlySums, w window, anyGoal bool, display money.Display) RevenueCards {
-	t := totalsOf(sums)
-	shown := func(a money.Amount) money.Amount { return display.Money(money.USD(a)).Amount }
-	goal, total, currency := shown(t.goal), shown(t.total), display.Currency()
+// revenueCards add the twelve months before any grouping, so the cards are the same in month and quarter view.
+func revenueCards(sums monthlySums, w window, anyGoal bool, display money.Display) RevenueCards {
+	shown := func(c int64) money.Amount { return display.Money(money.USD(money.FromCents(c))).Amount }
+	goal, total, currency := shown(sums.activityGoals), shown(sums.total()), display.Currency()
 	cards := RevenueCards{Goal: moneyCardOf(goal, currency, anyGoal, ReasonNoGoal)}
-	cards.Actual = moneyCardOf(shown(t.actual), currency, todayMonthIndex(w.today, w.year) >= 0, ReasonNoData)
+	cards.Actual = moneyCardOf(shown(sums.actualTotal()), currency, todayMonthIndex(w.today, w.year) >= 0, ReasonNoData)
 	cards.Projected = moneyCardOf(total, currency, true, "")
 	cards.Performance = performanceOf(total, goal, anyGoal)
 	return cards

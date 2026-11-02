@@ -6,7 +6,6 @@ import (
 	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 )
 
@@ -14,14 +13,13 @@ import (
 func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Filter, q RankedQuery) (RevenueRanked, error) {
 	var out RevenueRanked
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
-		sc, views, err := s.scopeAndActivities(ctx, a, f, categoryOf(f.Own))
+		sc, series, err := s.series(ctx, a, f, categoryOf(f.Own))
 		if err != nil {
 			return err
 		}
-		w := window{today: date.Today(s.now()), year: sc.Year}
 		display := money.DisplayIn(sc.Currency.Code, sc.Currency.Rate.String())
-		out = revenueRanked(revenueRankedInput{views: views, nodes: nodesForRanking(sc, views), matched: sc.Matched,
-			attrs: attributesByID(sc.Attributes), show: showLevel(f.Show), q: q, w: w, display: display})
+		out = revenueRanked(revenueRankedInput{series: series, nodes: nodesForRanking(sc, series), matched: sc.Matched,
+			attrs: attributesByID(sc.Attributes), show: showLevel(f.Show), q: q, display: display})
 		return nil
 	})
 	return out, err

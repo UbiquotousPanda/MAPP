@@ -184,3 +184,50 @@ func TestActivitySeries_CarriesWhatSummaryGroupsBy_048C4_048C10(t *testing.T) {
 		t.Errorf("series = %+v, want no projection: the activity has no goal", a)
 	}
 }
+
+func TestActivitySeries_SumsToTheRevenueCards_048C10_SC002(t *testing.T) {
+	t.Parallel()
+	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}, "A-2": revenue.ActivityGoals{Model: lubricantsModel()}}
+	facts := append(julyAndAugustFacts("revenue", 1_000_000, 500_000), revenue.FactTotal{ActivityID: "A-2",
+		Stage: "revenue", Month: "2026-03", Currency: "USD", AmountMinor: 250_000, FactCount: 1})
+	sc := twoPlanScope()
+	for i, n := range sc.Nodes {
+		if n.Level == allwork.LevelActivity {
+			sc.Nodes[i] = withGoalsAsShown(n)
+		}
+	}
+	s := newFixtureAt(midAugust, sc, goals, facts)
+	var goal, actual, total money.Amount
+	for _, a := range seriesOf(t, s, "") {
+		goal = goal.Add(*a.Goal.RevenueUSD)
+		for _, m := range a.Months {
+			actual, total = addSeriesMonth(m, actual, total)
+		}
+	}
+	for _, period := range bothPeriods {
+		report, err := s.Report(t.Context(), priya, measure.Filter{Period: period})
+		if err != nil {
+			t.Fatalf("%s: Report: %v", period, err)
+		}
+		cards := report.Cards
+		got := []int64{cards.Goal.Value.Amount.Cents(), cards.Actual.Value.Amount.Cents(), cards.Projected.Value.Amount.Cents()}
+		if diff := cmp.Diff([]int64{goal.Cents(), actual.Cents(), total.Cents()}, got); diff != "" {
+			t.Errorf("%s: cards goal, actual, projected vs the summed series (-want +got):\n%s", period, diff)
+		}
+	}
+}
+
+// addSeriesMonth adds a month's actual so far, and its actual or projected: actual once past, projected otherwise.
+func addSeriesMonth(m revenue.Month, actual, total money.Amount) (money.Amount, money.Amount) {
+	f := m.RevenueUSD
+	if f.Actual != nil {
+		actual = actual.Add(*f.Actual)
+	}
+	if m.State == revenue.StatePast && f.Actual != nil {
+		return actual, total.Add(*f.Actual)
+	}
+	if f.Projected != nil {
+		total = total.Add(*f.Projected)
+	}
+	return actual, total
+}

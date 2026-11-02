@@ -11,13 +11,12 @@ import (
 
 // revenueRankedInput groups revenueRanked's working parts so building it stays within the argument limit.
 type revenueRankedInput struct {
-	views   []activityView
+	series  []ActivitySeries
 	nodes   []allwork.Node
 	matched allwork.Matched
 	attrs   map[string]allwork.Attribute
 	show    string
 	q       RankedQuery
-	w       window
 	display money.Display
 }
 
@@ -34,7 +33,7 @@ type revenueIndex struct {
 // revenueRanked builds one page of entries across their groups, with drill, 040's own rules exactly.
 func revenueRanked(in revenueRankedInput) RevenueRanked {
 	byID, below := nodeIndex(in.nodes)
-	own := revenueFiguresOfActivities(in.views, in.w)
+	own := revenueFiguresOfActivities(in.series)
 	idx := revenueIndex{nodes: in.nodes, byID: byID, below: below, totals: rollUpRevenue(in.nodes, below, own),
 		attrs: in.attrs, display: in.display}
 

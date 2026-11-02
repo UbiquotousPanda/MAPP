@@ -9,7 +9,6 @@ import (
 	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 )
 
@@ -17,13 +16,13 @@ import (
 func (s *Service) RankedFunnel(ctx context.Context, a actor.Actor, f measure.Filter, q RankedQuery) (FunnelRanked, error) {
 	var out FunnelRanked
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
-		sc, views, err := s.scopeAndActivities(ctx, a, f, categoryOf(f.Own))
+		sc, series, err := s.series(ctx, a, f, categoryOf(f.Own))
 		if err != nil {
 			return err
 		}
-		in := funnelRankedInput{views: views, nodes: nodesForRanking(sc, views), matched: sc.Matched,
-			attrs: attributesByID(sc.Attributes), stage: stageOf(q.Stage, availableStages(views)),
-			show: showLevel(f.Show), w: window{today: date.Today(s.now()), year: sc.Year}, q: q}
+		in := funnelRankedInput{series: series, nodes: nodesForRanking(sc, series), matched: sc.Matched,
+			attrs: attributesByID(sc.Attributes), stage: stageOf(q.Stage, availableStages(series)),
+			show: showLevel(f.Show), q: q}
 		out = buildFunnelRanked(in)
 		return nil
 	})
@@ -31,12 +30,11 @@ func (s *Service) RankedFunnel(ctx context.Context, a actor.Actor, f measure.Fil
 }
 
 type funnelRankedInput struct {
-	views       []activityView
+	series      []ActivitySeries
 	nodes       []allwork.Node
 	matched     allwork.Matched
 	attrs       map[string]allwork.Attribute
 	stage, show string
-	w           window
 	q           RankedQuery
 }
 
@@ -53,8 +51,8 @@ type funnelIndex struct {
 // buildFunnelRanked builds one page of entries across their groups, with drill, 040's own rules exactly.
 func buildFunnelRanked(in funnelRankedInput) FunnelRanked {
 	byID, below := nodeIndex(in.nodes)
-	own := funnelFiguresOfActivities(in.views, in.stage, in.w)
-	prevOwn := previousActualsOfActivities(in.views, in.stage, in.w)
+	own := funnelFiguresOfActivities(in.series, in.stage)
+	prevOwn := previousActualsOfActivities(in.series, in.stage)
 	idx := funnelIndex{nodes: in.nodes, byID: byID, below: below, attrs: in.attrs,
 		figures: rollUpFunnel(in.nodes, below, own), previous: rollUpInt64(in.nodes, below, prevOwn)}
 

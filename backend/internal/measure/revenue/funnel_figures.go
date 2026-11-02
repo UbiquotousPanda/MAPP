@@ -3,22 +3,20 @@ package revenue
 import (
 	"mapp/internal/allwork"
 	"mapp/internal/platform/money"
-	"mapp/internal/projection"
 )
 
 // previousActualsOfActivities is each activity's actual count at the previous stage, for each entry's conversion.
-func previousActualsOfActivities(views []activityView, stage string, w window) map[string]int64 {
+func previousActualsOfActivities(series []ActivitySeries, stage string) map[string]int64 {
+	out := make(map[string]int64, len(series))
 	previous, found := previousStage(stage)
-	out := make(map[string]int64, len(views))
 	if !found {
 		return out
 	}
-	for _, v := range views {
-		series, found := v.projection.Find(previous)
-		if !found {
-			continue
+	m := stageMeasure(previous)
+	for _, a := range series {
+		if m.covers(a) {
+			out[a.ID] = int64Of(ownFigureOf(a, m).actual)
 		}
-		out[v.node.ID] = actualToToday(projection.SplitCounts(v.facts.counts[previous], series.Months, w.today, w.year))
 	}
 	return out
 }
@@ -49,38 +47,21 @@ func rollUpInt64(nodes []allwork.Node, below map[string][]string, own map[string
 	return totals
 }
 
-// funnelFiguresOfActivities is each activity's own figures for the selected stage: Goal the stage's full
-// plan-year projection, Actual every counted fact, Projected the "actual or projected" total.
-func funnelFiguresOfActivities(views []activityView, stage string, w window) map[string]FunnelFigures {
-	out := make(map[string]FunnelFigures, len(views))
-	for _, v := range views {
-		series, found := v.projection.Find(stage)
-		if !found {
-			out[v.node.ID] = FunnelFigures{}
+// funnelFiguresOfActivities is each activity's own figures for the selected stage: Goal its own goal, Actual what
+// was counted to today, Projected the "actual or projected" total.
+func funnelFiguresOfActivities(series []ActivitySeries, stage string) map[string]FunnelFigures {
+	m := stageMeasure(stage)
+	out := make(map[string]FunnelFigures, len(series))
+	for _, a := range series {
+		if !m.covers(a) {
+			out[a.ID] = FunnelFigures{}
 			continue
 		}
-		split := projection.SplitCounts(v.facts.counts[stage], series.Months, w.today, w.year)
-		f := FunnelFigures{}
-		f.Goal = stageGoalOf(v.node, stage)
-		actual := actualToToday(split)
-		f.Actual = &actual
-		total := split.Actual + split.Projected
-		f.Projected = &total
-		out[v.node.ID] = f
+		own := ownFigureOf(a, m)
+		actual := int64Of(own.actual)
+		out[a.ID] = FunnelFigures{Goal: own.goal, Actual: &actual, Projected: own.total}
 	}
 	return out
-}
-
-func stageGoalOf(n allwork.Node, stage string) *int64 {
-	goal := n.INQ
-	if stage == StageMQL {
-		goal = n.MQL
-	}
-	if goal == nil {
-		return nil
-	}
-	own := *goal
-	return &own
 }
 
 func rollUpFunnel(nodes []allwork.Node, below map[string][]string, ownActivity map[string]FunnelFigures) map[string]FunnelFigures {
