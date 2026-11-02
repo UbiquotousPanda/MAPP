@@ -26,7 +26,7 @@ the filters and columns on screen (`GridExportsKeepFilters`, `PurchaseRequestExp
 | # | Report | Severity | Finding | State |
 |---|---|---|---|---|
 | 1 | 042 Purchase requests | High | A person without financial access saw **Committed** and **Invoiced** as `0.00 USD` in the cards and in the commitment charts' total, because a plan's amounts were marked hidden only when one of its lines added to the figure. Spec FR-020 and FR-021: a dash, never a zero. | Fixed here, with `TestNoFinanceView_NothingCommitted_042_FR020_FR021` |
-| 2 | 042 Purchase requests | Medium | The grid export ignored the filters, columns and descending order on screen: the shared export declared and sent only 041's parameters. | Fixed here: `vendor`, `requestOwner`, `status` and `columns` on the export operation and in `downloadReport`, and `order` sent whichever way it points |
+| 2 | 042 Purchase requests | Medium | The grid export ignored the filters, columns and descending order on screen: the shared export declared and sent only 041's parameters. | Fixed by lane A in PR #86 (this branch carries it until it merges); kept by `TestWaveA_PurchaseRequestExportKeepsFilters_FR027` |
 | 3 | 041 Approvals | Medium | The grid export ignored the grid's filters. | Fixed by lane A (`29d8682f`) before this pass; kept by `TestWaveA_GridExportsKeepFilters_FR023` |
 | 4 | 043 to 045 | — | Their exports and amounts were not read beyond access and scope: no finding, none looked for. | Left to their lane's own pass |
 
