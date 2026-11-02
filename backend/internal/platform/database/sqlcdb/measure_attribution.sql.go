@@ -10,6 +10,118 @@ import (
 	"time"
 )
 
+const attributionConversions = `-- name: AttributionConversions :many
+SELECT activity_id::text AS activity_id, fact_date, amount_minor::bigint AS amount_minor,
+    coalesce(currency, '') AS currency, coalesce(journey_ref, '') AS journey_ref
+FROM performance_facts
+WHERE activity_id = ANY($1::text[]) AND stage = 'revenue' AND NOT held
+    AND replaced_by_id IS NULL
+    AND fact_date BETWEEN make_date($2::int, 1, 1) AND make_date($2::int, 12, 31)
+    AND activity_in_scope(activity_id, $3::boolean, $4::text,
+        $5::boolean, $6::text[])
+ORDER BY fact_date, id
+`
+
+type AttributionConversionsParams struct {
+	ActivityIds    []string
+	Year           int
+	SeesEverything bool
+	ViewerID       string
+	ViewsPlans     bool
+	ViewerTeamIds  []string
+}
+
+type AttributionConversionsRow struct {
+	ActivityID  string
+	FactDate    time.Time
+	AmountMinor int64
+	Currency    string
+	JourneyRef  string
+}
+
+func (q *Queries) AttributionConversions(ctx context.Context, arg AttributionConversionsParams) ([]AttributionConversionsRow, error) {
+	rows, err := q.db.Query(ctx, attributionConversions,
+		arg.ActivityIds,
+		arg.Year,
+		arg.SeesEverything,
+		arg.ViewerID,
+		arg.ViewsPlans,
+		arg.ViewerTeamIds,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AttributionConversionsRow{}
+	for rows.Next() {
+		var i AttributionConversionsRow
+		if err := rows.Scan(
+			&i.ActivityID,
+			&i.FactDate,
+			&i.AmountMinor,
+			&i.Currency,
+			&i.JourneyRef,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const attributionTouches = `-- name: AttributionTouches :many
+SELECT DISTINCT journey_ref::text AS journey_ref, activity_id::text AS activity_id, fact_date
+FROM performance_facts
+WHERE journey_ref = ANY($1::text[]) AND stage <> 'revenue' AND activity_id IS NOT NULL
+    AND NOT held AND replaced_by_id IS NULL
+    AND activity_in_scope(activity_id, $2::boolean, $3::text,
+        $4::boolean, $5::text[])
+ORDER BY journey_ref, fact_date, activity_id
+`
+
+type AttributionTouchesParams struct {
+	JourneyRefs    []string
+	SeesEverything bool
+	ViewerID       string
+	ViewsPlans     bool
+	ViewerTeamIds  []string
+}
+
+type AttributionTouchesRow struct {
+	JourneyRef string
+	ActivityID string
+	FactDate   time.Time
+}
+
+func (q *Queries) AttributionTouches(ctx context.Context, arg AttributionTouchesParams) ([]AttributionTouchesRow, error) {
+	rows, err := q.db.Query(ctx, attributionTouches,
+		arg.JourneyRefs,
+		arg.SeesEverything,
+		arg.ViewerID,
+		arg.ViewsPlans,
+		arg.ViewerTeamIds,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AttributionTouchesRow{}
+	for rows.Next() {
+		var i AttributionTouchesRow
+		if err := rows.Scan(&i.JourneyRef, &i.ActivityID, &i.FactDate); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAttributionSettings = `-- name: GetAttributionSettings :many
 SELECT id, model, version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name FROM attribution_settings WHERE id = 'attribution'
 `

@@ -13,3 +13,23 @@ ON CONFLICT (id) DO UPDATE SET
     updated_at = excluded.updated_at,
     updated_by_id = excluded.updated_by_id,
     updated_by_name = excluded.updated_by_name;
+
+-- name: AttributionConversions :many
+SELECT activity_id::text AS activity_id, fact_date, amount_minor::bigint AS amount_minor,
+    coalesce(currency, '') AS currency, coalesce(journey_ref, '') AS journey_ref
+FROM performance_facts
+WHERE activity_id = ANY(sqlc.arg(activity_ids)::text[]) AND stage = 'revenue' AND NOT held
+    AND replaced_by_id IS NULL
+    AND fact_date BETWEEN make_date(sqlc.arg(year)::int, 1, 1) AND make_date(sqlc.arg(year)::int, 12, 31)
+    AND activity_in_scope(activity_id, sqlc.arg(sees_everything)::boolean, sqlc.arg(viewer_id)::text,
+        sqlc.arg(views_plans)::boolean, sqlc.arg(viewer_team_ids)::text[])
+ORDER BY fact_date, id;
+
+-- name: AttributionTouches :many
+SELECT DISTINCT journey_ref::text AS journey_ref, activity_id::text AS activity_id, fact_date
+FROM performance_facts
+WHERE journey_ref = ANY(sqlc.arg(journey_refs)::text[]) AND stage <> 'revenue' AND activity_id IS NOT NULL
+    AND NOT held AND replaced_by_id IS NULL
+    AND activity_in_scope(activity_id, sqlc.arg(sees_everything)::boolean, sqlc.arg(viewer_id)::text,
+        sqlc.arg(views_plans)::boolean, sqlc.arg(viewer_team_ids)::text[])
+ORDER BY journey_ref, fact_date, activity_id;
