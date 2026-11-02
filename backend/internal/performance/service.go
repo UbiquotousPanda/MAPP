@@ -41,7 +41,7 @@ type SourceInput struct {
 	DeliveryRoute DeliveryRoute `json:"deliveryRoute"`
 	Cadence       Cadence       `json:"cadence"`
 	IntegrationID string        `json:"integrationId"`
-	// Version is the version the editor read; a save against an older one is refused (FR-045).
+	// Version is the version the editor read; a save against an older one is refused.
 	Version int `json:"version"`
 }
 
@@ -65,7 +65,7 @@ func (s *Service) Sources(ctx context.Context, _ actor.Actor) ([]SourceView, err
 }
 
 // markFailedLoads overlays each source's latest load, so a feed whose last file fell over shows Failed
-// everywhere, not only on the activity panel (FR-005).
+// everywhere, not only on the activity panel.
 func (s *Service) markFailedLoads(ctx context.Context, views []SourceView) ([]SourceView, error) {
 	sourceIDs := make([]string, 0, len(views))
 	for _, v := range views {
@@ -112,8 +112,8 @@ func (s *Service) CreateSource(ctx context.Context, a actor.Actor, in SourceInpu
 	return created, nil
 }
 
-// DeleteSource refuses while the source holds facts and says Deactivate instead, because deleting it would
-// silently restate every figure its data fed (FR-002).
+// DeleteSource refuses with in_use while anything still refers to the source (sourceInUse) and says Deactivate
+// instead, because deleting it would restate every figure its data fed or orphan what refers to it.
 func (s *Service) DeleteSource(ctx context.Context, a actor.Actor, id string) error {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return err
@@ -126,8 +126,8 @@ func (s *Service) DeleteSource(ctx context.Context, a actor.Actor, id string) er
 		if len(found) == 0 {
 			return errs.NotFound(msgSourceNotFound)
 		}
-		if found[0].FactCount > 0 {
-			return errs.InUse(fmt.Sprintf(msgHoldsFacts, found[0].Name))
+		if err = s.sourceInUse(ctx, found[0].Source); err != nil {
+			return err
 		}
 		// MoveToBin writes the ActionDeleted entry itself, so this must not log again (one entry per change).
 		_, err = s.history.MoveToBin(ctx, a, sourceKind, id)
@@ -224,7 +224,7 @@ func (s *Service) CheckSupplier(ctx context.Context, modelID string, meaning Mea
 }
 
 // CheckAliasFree refuses a name already held by an activity's external name or by another alias: they
-// share one namespace, so a duplicate would make the key resolve to two activities (FR-035).
+// share one namespace, so a duplicate would make the key resolve to two activities.
 func (s *Service) CheckAliasFree(ctx context.Context, activityID, name string) error {
 	holders, err := s.repo.ExternalNameHolders(ctx, strings.TrimSpace(name))
 	if err != nil {

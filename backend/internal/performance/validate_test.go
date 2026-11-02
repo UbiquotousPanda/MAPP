@@ -1,6 +1,7 @@
 package performance_test
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -14,8 +15,8 @@ var (
 
 type cells struct{ ref, date, inq, revenue, ccy string }
 
-// loadRow builds a row of a source mapping one INQ column and one revenue column, the wide shape FR-006
-// allows: the mapping names each measure and the cell carries only its figure.
+// loadRow builds a row of a source mapping one INQ column and one revenue column, the wide shape a
+// mapping allows: it names each measure and the cell carries only its figure.
 func loadRow(c cells) performance.Row {
 	return performance.Row{
 		Reference: performance.Cell{Column: "reference", Value: c.ref},
@@ -150,6 +151,23 @@ func TestValidate_AReferenceTooLongForItsColumn_FR011(t *testing.T) {
 
 	if !got["referenceTooLong"] {
 		t.Errorf("a 201-character reference reported %v, want referenceTooLong", got)
+	}
+}
+
+func TestValidate_AJourneyTooLongForItsColumnGoesToReview_FR011_FR012(t *testing.T) {
+	t.Parallel()
+	tooLong := loadRow(cells{ref: "r1", date: "2026-02-01", inq: "1"})
+	tooLong.Journey = performance.Cell{Column: "Journey", Value: strings.Repeat("j", 201)}
+	atLimit := loadRow(cells{ref: "r2", date: "2026-02-01", inq: "1"})
+	atLimit.Journey = performance.Cell{Column: "Journey", Value: strings.Repeat("é", 200)}
+
+	faults := performance.Validate(tooLong, today, knownCcy)
+
+	if len(faults) != 1 || faults[0].Code != "journeyTooLong" || faults[0].Column != "Journey" {
+		t.Errorf("a 201-character journey reported %+v, want one journeyTooLong fault on its column", faults)
+	}
+	if got := performance.Validate(atLimit, today, knownCcy); len(got) != 0 {
+		t.Errorf("a 200-character journey reported %+v, want none: the limit counts characters, not bytes", got)
 	}
 }
 
