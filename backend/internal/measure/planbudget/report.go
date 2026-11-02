@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"mapp/internal/measure"
+	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/actor"
 )
 
@@ -20,7 +21,7 @@ func (report) Key() string     { return measure.KeyPlanBudget }
 func (report) Available() bool { return true }
 
 func (report) Params() []string {
-	return []string{paramSort, paramOrder, paramGroup, paramSize, paramSearch, paramDrill}
+	return ranking.Params()
 }
 
 func (r report) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
