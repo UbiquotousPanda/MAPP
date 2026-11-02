@@ -122,8 +122,10 @@ func TestLoad_MeasurePlanOnlyInAllMarkets(t *testing.T) {
 	if got, want := planNames(t, measured, "priya.raman@shell.com"), planNames(t, plain, "priya.raman@shell.com"); !slices.Equal(got, want) {
 		t.Errorf("Priya's plans with the Measure demo = %v, want %v as without it", got, want)
 	}
-	if got := planNames(t, measured, "carlos.mendes@shell.com"); !slices.Contains(got, measurePlan) {
-		t.Errorf("Carlos (All markets) sees %v, want %q among them", got, measurePlan)
+	for _, email := range []string{"carlos.mendes@shell.com", "lea.santos@shell.com"} {
+		if got := planNames(t, measured, email); !slices.Contains(got, measurePlan) {
+			t.Errorf("%s (All markets) sees %v, want %q among them", email, got, measurePlan)
+		}
 	}
 }
 
