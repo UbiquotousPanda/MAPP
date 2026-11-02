@@ -56,6 +56,7 @@ Found by `/speckit-converge` and the quickstart walkthrough; each fixed test fir
 - [X] T019 The summary cards export on their own (FR-016; F6)
 - [X] T020 The chart's table labels the current period "in progress" (039 FR-019; F7)
 - [X] T021 Walkthrough: card amounts shortened with the full amount in the tooltip, as All work's cards
-- [ ] T022 When 049 starts, with its owner: ranking, grouping and paging as exported functions over entries whose
+- [X] T022 When 049 starts, with its owner: ranking, grouping and paging as exported functions over entries whose
   figures the caller supplies, so 049 ranks by revenue and stages (FR-017, research R7; F5). The web part
-  (`RankedList`) is already generic
+  (`RankedList`) is already generic. Done as `measure/ranking`: `Parse` with the report's sorts, `NewIndex`,
+  `Build` over a `Figures` the report implements; 040 uses it unchanged

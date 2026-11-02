@@ -8,7 +8,7 @@ import (
 // total adds up the plans in view, with the budget counted once per branch (FR-002, FR-003).
 func (r *records) total() sums {
 	var t sums
-	for _, id := range r.matched.Plans {
+	for _, id := range r.Matched().Plans {
 		p := r.sumsOf(id)
 		p.budget = nil
 		for _, n := range r.budgetBranch(id) {

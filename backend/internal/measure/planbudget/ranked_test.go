@@ -1,10 +1,8 @@
 package planbudget_test
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -12,7 +10,6 @@ import (
 
 	"mapp/internal/measure"
 	"mapp/internal/measure/planbudget"
-	"mapp/internal/platform/errs"
 	"mapp/internal/platform/sheet"
 )
 
@@ -126,17 +123,6 @@ func TestRanked_PagesAndSearch_FR014(t *testing.T) {
 	found := ranked(t, measure.Filter{}, "q=RIM")
 	if diff := cmp.Diff([]string{": Rimula fleet 200.00 [Fleet days]"}, lines(found)); diff != "" || found.Total != 1 {
 		t.Errorf("search ignores case (-want +got):\n%s", diff)
-	}
-}
-
-func TestParseRanked_FR014(t *testing.T) {
-	t.Parallel()
-	values, _ := url.ParseQuery("sort=name&order=up&group=team&size=7&page=0&drill=bad&q=" + strings.Repeat("x", 101))
-	_, err := planbudget.ParseRanked(values)
-
-	var e *errs.Error
-	if !errors.As(err, &e) || len(e.Fields) != 7 {
-		t.Fatalf("ParseRanked = %v, want the seven problems at once", err)
 	}
 }
 
