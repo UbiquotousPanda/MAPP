@@ -55,5 +55,5 @@ While the Measure module is built, its branch needs the three checks green too (
 integrator reviews):
 
 ```sh
-gh api --method POST repos/anup-zensar/NorthStar/rulesets --input .github/rulesets/measure-module.json
+gh api --method POST repos/anup-zensar/MAPP/rulesets --input .github/rulesets/measure-module.json
 ```
