@@ -75,14 +75,26 @@ export function gaugeOption(ctx: ChartContext) {
         splitLine: { length: 8, lineStyle: { color: theme.ink2 } },
         axisLabel: {
           color: theme.ink2,
-          formatter: (tick: number) => formatTick(tick, column, display),
+          formatter: (tick: number) =>
+            isEnd(tick, min, max) ? formatTick(tick, column, display) : '',
         },
         title: { color: theme.ink2, offsetCenter: [0, '70%'] },
-        detail: { color: theme.ink, formatter: () => cell?.text ?? '—', offsetCenter: [0, '30%'] },
+        detail: {
+          color: theme.ink,
+          fontSize: 24,
+          formatter: () => cell?.text ?? '—',
+          offsetCenter: [0, '0%'],
+        },
         data: [{ value: cell?.value ?? 0, name: column.label, text: cell?.text ?? '—' }],
       },
     ],
   };
+}
+
+// Labels inside the ring would run into the value written in its middle.
+function isEnd(tick: number, min: number, max: number): boolean {
+  const near = (max - min) / 1000;
+  return Math.abs(tick - min) <= near || Math.abs(tick - max) <= near;
 }
 
 function slices(ctx: ChartContext, withShare: boolean) {

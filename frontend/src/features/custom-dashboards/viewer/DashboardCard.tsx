@@ -12,21 +12,32 @@ import styles from './DashboardListPage.module.css';
 
 interface DashboardCardProps {
   dashboard: CustomDashboardSummary;
+  isMine: boolean;
   canBuild: boolean;
   onCopy: (id: string) => void;
   onDelete: (dashboard: CustomDashboardSummary) => void;
 }
 
-export function DashboardCard({ dashboard, canBuild, onCopy, onDelete }: DashboardCardProps) {
+export function DashboardCard({
+  dashboard,
+  isMine,
+  canBuild,
+  onCopy,
+  onDelete,
+}: DashboardCardProps) {
   const navigate = useNavigate();
   const { dateTime } = useFormatters();
   const href = `/dashboards/${encodeURIComponent(dashboard.id)}`;
-  const items = menuItems(dashboard, canBuild, {
-    open: () => void navigate(href),
-    edit: () => void navigate(`/builder/${encodeURIComponent(dashboard.id)}`),
-    copy: () => onCopy(dashboard.id),
-    remove: () => onDelete(dashboard),
-  });
+  const items = menuItems(
+    dashboard,
+    { isMine, canBuild },
+    {
+      open: () => void navigate(href),
+      edit: () => void navigate(`/builder/${encodeURIComponent(dashboard.id)}`),
+      copy: () => onCopy(dashboard.id),
+      remove: () => onDelete(dashboard),
+    },
+  );
 
   return (
     <li className={styles.card}>
@@ -56,19 +67,20 @@ interface MenuActions {
   remove: () => void;
 }
 
+// The API explains why a shared dashboard can't be changed; its viewers aren't offered the change at all.
 function menuItems(
   { access }: CustomDashboardSummary,
-  canBuild: boolean,
+  { isMine, canBuild }: { isMine: boolean; canBuild: boolean },
   actions: MenuActions,
 ): ActionsMenuItem[] {
   const items: ActionsMenuItem[] = [{ label: 'Open', onSelect: actions.open }];
-  if (isShown(access.edit)) {
+  if (isMine && isShown(access.edit)) {
     items.push({ label: 'Edit', onSelect: actions.edit, ...availability(access.edit) });
   }
   if (canBuild && isShown(access.copy)) {
     items.push({ label: 'Make a copy', onSelect: actions.copy, ...availability(access.copy) });
   }
-  if (isShown(access.delete)) {
+  if (isMine && isShown(access.delete)) {
     items.push({
       label: 'Delete',
       tone: 'danger',

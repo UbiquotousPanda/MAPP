@@ -21,7 +21,7 @@ func ReadCSV(data []byte, maxRows int) (Table, error) {
 	r.FieldsPerRecord = -1
 	r.LazyQuotes = true
 	table := Table{Rows: []Row{}}
-	number := 0
+	lines := lineCounter{}
 	for {
 		record, err := r.Read()
 		if errors.Is(err, io.EOF) {
@@ -30,7 +30,7 @@ func ReadCSV(data []byte, maxRows int) (Table, error) {
 		if err != nil {
 			return Table{}, ErrUnreadable
 		}
-		number++
+		number := lines.rowOf(r, record)
 		cells := make([]string, 0, min(len(record), maxColumns))
 		for _, field := range record[:min(len(record), maxColumns)] {
 			cells = append(cells, strings.TrimSpace(field))
@@ -54,4 +54,18 @@ func DelimiterOf(data []byte) rune {
 		}
 	}
 	return best
+}
+
+// lineCounter numbers records as a spreadsheet numbers rows: the reader skips blank lines, which are rows, while
+// a quoted cell over several lines is still one row.
+type lineCounter struct {
+	extraLines int
+}
+
+func (c *lineCounter) rowOf(r *csv.Reader, record []string) int {
+	first, _ := r.FieldPos(0)
+	lastLine, _ := r.FieldPos(len(record) - 1)
+	row := first - c.extraLines
+	c.extraLines += lastLine + strings.Count(record[len(record)-1], "\n") - first
+	return row
 }

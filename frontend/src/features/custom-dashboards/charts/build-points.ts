@@ -1,5 +1,5 @@
 import { axisTitles, baseOption, gridOption, labelOption } from './build-common';
-import { categoryAxis, valueAxis } from './build-axis';
+import { categoryAxis, valueAxis, zoomOption } from './build-axis';
 import { cellOf, columnOf, keyId, keyLabel, measureColumn, uniqueKeys } from './chart-data';
 import type { Cell, ChartContext } from './chart-data';
 import { formatTick } from './format';
@@ -30,11 +30,15 @@ export function scatterOption(ctx: ChartContext) {
   }));
   return {
     ...baseOption(ctx, 'item', 'categorical'),
-    grid: gridOption(ctx, ctx.display.zoom ? 'bottom' : null),
-    xAxis: { ...valueAxis(ctx, 0, titles.x || measureColumn(ctx.data, 0).label), scale: true },
+    grid: gridOption(ctx, ctx.display.zoom ? 'bottom' : null, { bottom: 'x', left: 'y' }),
+    xAxis: {
+      ...valueAxis(ctx, 0, titles.x || measureColumn(ctx.data, 0).label),
+      nameGap: 32,
+      scale: true,
+    },
     yAxis: { ...valueAxis(ctx, 1, titles.y || measureColumn(ctx.data, 1).label), scale: true },
     series,
-    dataZoom: ctx.display.zoom ? [{ type: 'slider', xAxisIndex: 0 }] : undefined,
+    dataZoom: zoomOption(ctx, false),
   };
 }
 
@@ -64,9 +68,9 @@ export function heatmapOption(ctx: ChartContext) {
   const base = baseOption(ctx, 'item', 'sequential');
   return {
     ...base,
-    grid: gridOption(ctx, null),
-    xAxis: { ...categoryAxis(ctx, xLabels, titles.x), splitArea: { show: true } },
-    yAxis: { ...categoryAxis(ctx, yLabels, titles.y), splitArea: { show: true } },
+    grid: gridOption(ctx, null, { bottom: titles.x, left: titles.y }),
+    xAxis: { ...categoryAxis(ctx, xLabels, titles.x), splitArea: bands(ctx) },
+    yAxis: { ...categoryAxis(ctx, yLabels, titles.y), splitArea: bands(ctx) },
     visualMap: {
       type: 'piecewise',
       show: base.legend.show,
@@ -137,6 +141,10 @@ function pointOf(ctx: ChartContext, row: Row, largest: number) {
     symbolSize: SMALLEST_POINT + POINT_GROWTH * grows,
     lines,
   };
+}
+
+function bands(ctx: ChartContext) {
+  return { show: true, areaStyle: { color: [ctx.theme.surface, ctx.theme.hairline] } };
 }
 
 function positionOf(legend: Record<string, unknown>) {

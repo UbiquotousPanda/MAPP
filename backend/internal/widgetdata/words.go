@@ -50,6 +50,7 @@ const (
 	msgComparisonKpi     = "Only a key figure compares."
 	msgComparisonKind    = "Compare with a target or the previous period."
 	msgEnterTarget       = "Enter the target."
+	msgTargetNeedsNumber = "Only a number or an amount can be compared with a target."
 	msgPeriodNeedsRange  = "Choose a date range to compare with the previous period."
 	msgPeriodNeedsDate   = "This data has no date to compare periods by."
 	msgTooLarge          = "The values are too large to add up."

@@ -39,8 +39,9 @@ type planningData struct {
 	notes   []string
 }
 
-// readPlanning reads the years the date range overlaps when dated, else every year with plans in scope.
-func (p widgetPlanning) read(ctx context.Context, a actor.Actor, f widgetdata.Prefilter, dated bool) (*planningData, error) {
+// read reads every year with plans in scope: a record's date may lie outside its plan's year, so the date range
+// is applied to the records, never to the years.
+func (p widgetPlanning) read(ctx context.Context, a actor.Actor, f widgetdata.Prefilter) (*planningData, error) {
 	visible, err := p.plans.ListInScope(ctx, authz.ScopeOf(ctx))
 	if err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func (p widgetPlanning) read(ctx context.Context, a actor.Actor, f widgetdata.Pr
 	d := &planningData{byID: map[string]*allwork.Node{}, years: map[int][]allwork.Node{}, finance: map[string]bool{},
 		sums: map[string]*sums{}}
 	keep := keeper(f, visible)
-	for _, year := range yearsOf(visible, f, dated) {
+	for _, year := range yearsOf(visible) {
 		nodes, readErr := p.year(ctx, year)
 		if readErr != nil {
 			return nil, readErr
@@ -183,11 +184,10 @@ func keeper(f widgetdata.Prefilter, visible []plan.Plan) func(n *allwork.Node) b
 	}
 }
 
-func yearsOf(visible []plan.Plan, f widgetdata.Prefilter, dated bool) []int {
+func yearsOf(visible []plan.Plan) []int {
 	var years []int
 	for _, p := range visible {
-		inRange := !dated || ((f.From == nil || p.Year >= f.From.Year()) && (f.To == nil || p.Year <= f.To.Year()))
-		if inRange && !slices.Contains(years, p.Year) {
+		if !slices.Contains(years, p.Year) {
 			years = append(years, p.Year)
 		}
 	}

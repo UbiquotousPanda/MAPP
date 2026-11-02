@@ -92,19 +92,25 @@ func (s *Service) changed(ctx context.Context, stored Dataset, in UpdateInput) (
 	return changed, nil
 }
 
-// relabelled gives the columns their new names; names stay unique ignoring case, kinds and currencies stay.
+// relabelled gives the columns their new names; names stay unique ignoring case, kinds and currencies stay. The
+// columns kept are checked first, so a name taken is said on the column renamed.
 func relabelled(columns []Column, inputs []LabelInput, problems *errs.Problems) []Column {
 	result := slices.Clone(columns)
+	renamed := map[int]bool{}
 	for _, in := range inputs {
 		if in.Position < 0 || in.Position >= len(result) {
 			problems.Add(columnsField, fmt.Sprintf(msgNoSuchColumn, in.Position+1))
 			continue
 		}
-		result[in.Position].Label = trimmed(in.Label)
+		result[in.Position].Label, renamed[in.Position] = trimmed(in.Label), true
 	}
 	taken := map[string]bool{}
-	for i, c := range result {
-		checkLabel(c.Label, i, taken, problems)
+	for _, kept := range []bool{true, false} {
+		for i, c := range result {
+			if renamed[i] != kept {
+				checkLabel(c.Label, i, taken, problems)
+			}
+		}
 	}
 	return result
 }

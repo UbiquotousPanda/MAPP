@@ -69,6 +69,14 @@ func TestComparison_TargetAndPreviousPeriod_FR023(t *testing.T) {
 			t.Errorf("Query without dates error = %v, want 400", err)
 		}
 	})
+	t.Run("a date has no target to reach", func(t *testing.T) {
+		t.Parallel()
+		r := kpiOf(&widgetdata.ComparisonRequest{Kind: "target", Target: ptr("5")}, filters)
+		r.Query.Measures = []widgetdata.Measure{{Aggregation: "min", Field: ptr("startDate")}}
+		if _, err := s.Query(ctx, viewer, r); status(err) != 400 {
+			t.Errorf("Query of the earliest start date against a target error = %v, want 400", err)
+		}
+	})
 }
 
 func comparisonTexts(c *widgetdata.Comparison) (value, change, period string) {

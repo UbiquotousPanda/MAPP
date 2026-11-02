@@ -16,7 +16,7 @@ export function tooltipContent(params: unknown): HTMLElement {
     box.append(element('p', styles.tooltipTitle, title));
   }
   const list = element('ul', styles.tooltipList);
-  for (const item of items) {
+  for (const item of items.filter((shown) => shown.data !== null)) {
     for (const [label, text] of linesOf(item)) {
       const row = element('li', styles.tooltipRow);
       const marker = element('span', styles.tooltipMarker);

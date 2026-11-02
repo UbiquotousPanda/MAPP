@@ -19,6 +19,7 @@ export type DataField = S['DataField'];
 export type Dataset = S['Dataset'];
 export type DatasetSummary = S['DatasetSummary'];
 export type DatasetPreview = S['DatasetPreview'];
+export type DatasetColumn = S['DatasetColumn'];
 export type TeamRef = S['TeamRef'];
 
 export const NO_FILTERS: CustomDashboardFilters = {

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiError, isSessionLost } from '@/api/errors';
 import { plural } from '@/format/text';
-import { isShown } from '@/session/access';
+import type { Availability } from '@/session/access';
 import { Button, LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
@@ -68,6 +68,7 @@ function DatasetDetails({ dataset }: { dataset: Dataset }) {
   const [open, setOpen] = useState<Open>(null);
   const [shareError, setShareError] = useState<string | null>(null);
   const { access } = dataset;
+  const owns = (action: Availability) => dataset.isOwner && action.available;
 
   async function saveSharing(teamIds: string[]) {
     setShareError(null);
@@ -91,18 +92,24 @@ function DatasetDetails({ dataset }: { dataset: Dataset }) {
         meta={<Facts dataset={dataset} />}
         description={dataset.description || undefined}
         moreActions={
-          isShown(access.delete)
-            ? [{ label: 'Delete', tone: 'danger', onSelect: () => setOpen('delete') }]
+          owns(access.delete)
+            ? [
+                {
+                  label: 'Delete',
+                  tone: 'danger',
+                  onSelect: () => setOpen('delete'),
+                },
+              ]
             : undefined
         }
         actions={
           <>
-            {isShown(access.share) && (
+            {owns(access.share) && (
               <Button icon={<Share2 />} onClick={() => setOpen('share')}>
                 Sharing
               </Button>
             )}
-            {isShown(access.edit) && (
+            {owns(access.edit) && (
               <Button variant="primary" icon={<Pencil />} onClick={() => setOpen('edit')}>
                 Edit
               </Button>

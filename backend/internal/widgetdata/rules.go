@@ -113,7 +113,11 @@ func checkSort(q Query, problems *errs.Problems) {
 }
 
 // checkMeasureKinds applies the type rules that depend on what a measure works out.
-func checkMeasureKinds(typ string, measures []measure, problems *errs.Problems) {
+func checkMeasureKinds(r Request, measures []measure, problems *errs.Problems) {
+	typ := r.Type
+	if isTargetOfDate(r.Comparison, measures) {
+		problems.Add("comparison.kind", msgTargetNeedsNumber)
+	}
 	for i, m := range measures {
 		switch {
 		case typ == typeScatter && m.kind() != KindNumber && m.kind() != KindMoney:
@@ -122,6 +126,13 @@ func checkMeasureKinds(typ string, measures []measure, problems *errs.Problems) 
 			problems.Add(fmt.Sprintf("query.measures[%d].aggregation", i), msgTreemapNeeds)
 		}
 	}
+}
+
+func isTargetOfDate(c *ComparisonRequest, measures []measure) bool {
+	if c == nil || c.Kind != compareTarget || len(measures) != 1 {
+		return false
+	}
+	return measures[0].kind() == KindDate
 }
 
 func sameGrouping(a, b *GroupBy) bool {
