@@ -6878,10 +6878,10 @@ export interface components {
         };
         UsagePart: {
             /**
-             * @description What uses the record (the purchase request levels since 032, activity types since 047).
+             * @description What uses the record (the purchase request levels since 032, activity types and categories since 047).
              * @enum {string}
              */
-            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption" | "activityType";
+            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption" | "activityType" | "activityCategory";
             /** @description The part as people read it, for example Used by 12 activities (1 in the recycle bin). */
             text: string;
             /** @description Records using it, those in the recycle bin included. */

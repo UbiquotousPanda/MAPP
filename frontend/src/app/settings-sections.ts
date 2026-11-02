@@ -10,16 +10,15 @@ export async function loadSettingsSections(): Promise<SettingsSection[]> {
     overspend,
     performance,
     attribution,
-  ] =
-    await Promise.all([
-      import('@/features/settings'),
-      import('@/features/people'),
-      import('@/features/approval-workflows'),
-      import('@/features/purchase-requests'),
-      import('@/features/overspend'),
-      import('@/features/performance'),
-      import('@/features/attribution'),
-    ]);
+  ] = await Promise.all([
+    import('@/features/settings'),
+    import('@/features/people'),
+    import('@/features/approval-workflows'),
+    import('@/features/purchase-requests'),
+    import('@/features/overspend'),
+    import('@/features/performance'),
+    import('@/features/attribution'),
+  ]);
   return [
     ...settings.SETTINGS_OWN_SECTIONS,
     ...settings.ACTIVITY_CATEGORY_SETTINGS_SECTIONS,

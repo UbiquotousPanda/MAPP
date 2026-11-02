@@ -4,13 +4,12 @@ import { expectNoAxeViolations } from '@/testing/axe';
 import { findMessages, renderWithProviders } from '@/testing/render';
 import { TYPES } from '@/testing/fixtures/activity-types';
 import {
-  ASSET,
   CATEGORIES,
   CATEGORIES_PATH,
   LEGACY,
   renderActivityCategoriesPage,
 } from '@/testing/fixtures/activity-categories';
-import { deleted, inUse } from '@/testing/fixtures/settings';
+import { deleted } from '@/testing/fixtures/settings';
 import { chooseAction, rowOf } from '@/testing/fixtures/settings-pages';
 import { VIEWER } from '@/testing/fixtures/viewer';
 import { mockApi } from '@/testing/mock-api';
@@ -139,11 +138,11 @@ describe('ActivityCategoriesPage: delete (FR-021)', () => {
     expect(within(messages).getByRole('button', { name: 'Undo' })).toBeInTheDocument();
   });
 
-  it('warns about a category in use and offers Set inactive instead (FR-021)', async () => {
-    const { user, api } = renderActivityCategoriesPage([
+  it('deletes a category that groups a type, never refusing as in use (047-C12)', async () => {
+    const { user } = renderActivityCategoriesPage([
       reply(
-        'PATCH /api/v1/settings/activity-categories/{categoryId}',
-        { body: { ...ASSET, active: false } },
+        'DELETE /api/v1/settings/activity-categories/{categoryId}',
+        { body: deleted('activity category', 'ACAT-1001', 'Asset') },
         { categoryId: 'ACAT-1001' },
       ),
     ]);
@@ -151,36 +150,13 @@ describe('ActivityCategoriesPage: delete (FR-021)', () => {
     await screen.findByRole('table');
     await chooseAction('Asset', 'Delete', user);
 
-    const dialog = await screen.findByRole('alertdialog', { name: "'Asset' is in use" });
-    expect(dialog).toHaveTextContent(
-      'Used by 4 activities · Groups 1 activity type — set it inactive instead.',
-    );
-    await user.click(within(dialog).getByRole('button', { name: 'Set inactive' }));
+    const dialog = await screen.findByRole('alertdialog', {
+      name: "Delete activity category 'Asset'?",
+    });
+    expect(dialog).toHaveTextContent('Its activity types become Uncategorised.');
+    await user.click(within(dialog).getByRole('button', { name: 'Delete activity category' }));
 
-    expect(await findMessages()).toHaveTextContent("Activity category 'Asset' set inactive");
-    expect(api.bodiesOf('PATCH /api/v1/settings/activity-categories/ACAT-1001')).toEqual([
-      { active: false, version: 3 },
-    ]);
-    expect(api.requests.some((request) => request.method === 'DELETE')).toBe(false);
-  });
-
-  it('switches to the in-use dialog when the API finds the category in use (FR-021)', async () => {
-    const message = "'Promotion' is in use (used by 1 activity) — set it inactive instead.";
-    const { user } = renderActivityCategoriesPage([
-      reply(
-        'DELETE /api/v1/settings/activity-categories/{categoryId}',
-        { status: 409, body: inUse(message) },
-        { categoryId: 'ACAT-1002' },
-      ),
-    ]);
-
-    await screen.findByRole('table');
-    await chooseAction('Promotion', 'Delete', user);
-    await user.click(await screen.findByRole('button', { name: 'Delete activity category' }));
-
-    expect(
-      await screen.findByRole('alertdialog', { name: "'Promotion' is in use" }),
-    ).toHaveTextContent(message);
+    expect(await findMessages()).toHaveTextContent("Activity category 'Asset' deleted");
   });
 
   it('reactivates an inactive category (FR-018)', async () => {

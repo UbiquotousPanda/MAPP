@@ -9,10 +9,8 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Reference is one record outside Settings and the Settings records it uses (data model §10, D-042):
-// one per plan, campaign, initiative, activity, line item and person, live or in the recycle bin. Features
-// 003–007 report them through a ReferenceSource, so Settings counts "Used by", refuses in-use deletes and
-// states impacts without importing those features.
+// Reference is one record outside Settings and the Settings records it uses (data model §10, D-042), live
+// or in the recycle bin, reported by features 003–007 through a ReferenceSource.
 type Reference struct {
 	Record              history.RecordRef // {type: "activity", id: "A-1003", name: "Launch film"}; plans carry their name
 	InBin               bool              // true while the record is in the recycle bin
@@ -30,9 +28,7 @@ type Reference struct {
 	FinanceBudgetItemID string            // line items: linked finance budget item
 }
 
-// ReferenceSource lists every record of one kind, live and in the recycle bin (read with
-// history.SnapshotsInBin), inside the caller's transaction, which ctx carries. Features 003–007 each provide
-// one; internal/app registers them with (*Service).AddReferenceSource.
+// ReferenceSource lists every record of one kind, live and in the bin; each feature 003–007 provides one.
 type ReferenceSource func(ctx context.Context) ([]Reference, error)
 
 // The kinds of usage parts (contract UsagePart.kind) that are not a level.
@@ -42,9 +38,9 @@ const (
 	usedByDependent    = "dependentAttribute"
 	usedByCondition    = "condition"
 	usedByLinkedOption = "linkedOption"
+	usedByCategory     = "activityCategory"
 )
 
-// notUsedYet is the summary of a record nothing uses.
 const notUsedYet = "Not used yet"
 
 // maxUsageRecords is how many plans Usage.Records lists at most.
@@ -64,7 +60,6 @@ type tally struct {
 	count, inBin int
 }
 
-// add counts one record.
 func (t *tally) add(inBin bool) {
 	t.count++
 	if inBin {
@@ -72,16 +67,13 @@ func (t *tally) add(inBin bool) {
 	}
 }
 
-// binned is a Settings record that may be in the recycle bin: Settings records in the bin count in "Used
-// by" the same way (data model §10), so a restore never meets a missing setting.
+// binned is a Settings record that may be in the recycle bin; it counts in "Used by" the same way.
 type binned[T any] struct {
 	record T
 	inBin  bool
 }
 
-// usageIndex answers "Used by" for every Settings record (FR-003, data model §10). It is built once per
-// request by (*Service).usage, inside the request's transaction, from the references of features 003–007
-// and the Settings records themselves, live and in the recycle bin.
+// usageIndex answers "Used by" for every Settings record (FR-003, data model §10), built once per request.
 type usageIndex struct {
 	refs       []Reference
 	attributes map[string]Attribute // every attribute, live and in the bin, by id
@@ -89,6 +81,7 @@ type usageIndex struct {
 	plansByModel       map[string]*tally
 	activitiesByType   map[string]*tally
 	modelsByType       map[string]*tally
+	categoriesByType   map[string]*tally
 	valuesByAttribute  map[string]*tally
 	valuesByOption     map[string]*tally
 	dependents         map[string][]binned[Attribute] // parent attribute id → the attributes depending on it
@@ -102,12 +95,12 @@ type usageIndex struct {
 	plansByBudget      map[string]*tally
 }
 
-// usage reads every reference source once, the Settings records and the Settings records in the recycle
-// bin, inside the caller's transaction, and returns the index that answers "Used by".
+// usage reads every reference source and Settings record, live and binned, into the index that answers "Used by".
 func (s *Service) usage(ctx context.Context) (*usageIndex, error) {
 	u := &usageIndex{
 		attributes:   map[string]Attribute{},
 		plansByModel: map[string]*tally{}, activitiesByType: map[string]*tally{}, modelsByType: map[string]*tally{},
+		categoriesByType:  map[string]*tally{},
 		valuesByAttribute: map[string]*tally{}, valuesByOption: map[string]*tally{},
 		dependents: map[string][]binned[Attribute]{}, conditionsByOption: map[string]*tally{},
 		linkedOptions:   map[string]map[string]*tally{},
@@ -119,7 +112,7 @@ func (s *Service) usage(ctx context.Context) (*usageIndex, error) {
 		return nil, err
 	}
 	u.refs = refs
-	models, attributes, options, err := s.settingsInUse(ctx)
+	models, attributes, options, categories, err := s.settingsInUse(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -132,6 +125,7 @@ func (s *Service) usage(ctx context.Context) (*usageIndex, error) {
 			count(u.modelsByType, typeID, m.inBin)
 		}
 	}
+	addCategoryTypes(u.categoriesByType, categories)
 	for _, a := range attributes {
 		if a.record.ParentAttributeID != "" {
 			u.dependents[a.record.ParentAttributeID] = append(u.dependents[a.record.ParentAttributeID], a)
@@ -157,8 +151,7 @@ func (s *Service) usage(ctx context.Context) (*usageIndex, error) {
 	return u, nil
 }
 
-// references reads every reference source once, inside the caller's transaction: the records of features
-// 003–007 that use Settings records, live and in the recycle bin.
+// references reads every reference source once: the records of features 003–007 that use Settings records.
 func (s *Service) references(ctx context.Context) ([]Reference, error) {
 	refs := []Reference{}
 	for _, source := range s.sources {
@@ -171,7 +164,14 @@ func (s *Service) references(ctx context.Context) ([]Reference, error) {
 	return refs, nil
 }
 
-// addReference counts what one record outside Settings uses.
+func addCategoryTypes(tallies map[string]*tally, categories []ActivityCategory) {
+	for _, c := range categories {
+		for _, typeID := range c.ActivityTypeIDs {
+			count(tallies, typeID, false)
+		}
+	}
+}
+
 func (u *usageIndex) addReference(ref Reference) {
 	if ref.ModelID != "" {
 		count(u.plansByModel, ref.ModelID, ref.InBin)
@@ -207,7 +207,6 @@ func (u *usageIndex) addReference(ref Reference) {
 	}
 }
 
-// count adds one record to the tally of key in tallies.
 func count(tallies map[string]*tally, key string, inBin bool) {
 	if tallies[key] == nil {
 		tallies[key] = &tally{}
@@ -215,42 +214,45 @@ func count(tallies map[string]*tally, key string, inBin bool) {
 	tallies[key].add(inBin)
 }
 
-// settingsInUse returns the models, attributes and options that may use other Settings records: those
-// stored and those in the recycle bin.
-func (s *Service) settingsInUse(ctx context.Context) ([]binned[Model], []binned[Attribute], []binned[Option], error) {
+// settingsInUse returns the models, attributes, options and categories that may use other records, live and binned.
+func (s *Service) settingsInUse(ctx context.Context) ([]binned[Model], []binned[Attribute], []binned[Option], []ActivityCategory, error) {
 	inBin := map[string][]history.Snapshot{}
 	for _, kind := range []string{modelKind, attributeKind, optionKind} {
 		snapshots, err := s.history.SnapshotsInBin(ctx, kind)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 		inBin[kind] = snapshots
 	}
 	storedModels, err := s.repo.ListModels(ctx)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	storedAttributes, err := s.repo.ListAttributes(ctx)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	storedOptions, err := s.repo.ListOptions(ctx)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
+	}
+	categories, err := s.repo.ListActivityCategories(ctx)
+	if err != nil {
+		return nil, nil, nil, nil, err
 	}
 	models, err := withBinned(storedModels, inBin[modelKind])
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	attributes, err := withBinned(storedAttributes, inBin[attributeKind])
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	options, err := withBinned(storedOptions, inBin[optionKind])
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
-	return models, attributes, options, nil
+	return models, attributes, options, categories, nil
 }
 
 // withBinned returns the stored records followed by the records of the snapshots, marked as in the bin.

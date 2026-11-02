@@ -108,6 +108,7 @@ export function ActivityCategoriesPage() {
           name={deleting.name}
           usage={deleting.usage}
           active={deleting.active}
+          neverRefuses
           deleteText="It moves to the recycle bin; you can restore it. Its activity types become Uncategorised."
           remove={() => deleteCategory.mutateAsync(deleting.id)}
           setInactive={() => status.applyInactive(deleting)}
