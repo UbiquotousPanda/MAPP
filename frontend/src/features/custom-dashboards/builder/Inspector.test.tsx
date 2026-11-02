@@ -104,4 +104,16 @@ describe('051 FR-025, FR-031: removing a measure keeps the options of the measur
       totals: true,
     });
   });
+
+  it('shows a measure added to a table whose columns were chosen', async () => {
+    const { user } = renderInspector(
+      withWidget({
+        type: 'table',
+        display: { table: { columns: ['dimension', 'm2'], totals: false } },
+      }),
+    );
+    await user.click(await screen.findByRole('button', { name: 'Add measure' }));
+
+    expect(latest?.draft.widgets[0]?.display.table?.columns).toEqual(['dimension', 'm2', 'm3']);
+  });
 });

@@ -120,7 +120,8 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       return edit(
         state,
         action.id,
-        (widget) => fitDisplay({ ...widget, query: action.query }, action.removedMeasure),
+        (widget) =>
+          fitDisplay({ ...widget, query: action.query }, widget.query, action.removedMeasure),
         { typing: action.typing && `query:${action.id}:${action.typing}` },
       );
     case 'setDisplay':
