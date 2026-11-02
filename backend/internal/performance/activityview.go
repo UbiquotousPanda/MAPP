@@ -83,7 +83,7 @@ func (s *Service) ActivityPanel(ctx context.Context, _ actor.Actor, activityID s
 		}
 		if !approved {
 			panel = Panel{State: PanelNotApproved, Stages: []StageFigure{},
-				Revenue: RevenueFigure{Reason: PanelNotApproved}, WebMetrics: []MetricFigure{}, Sources: []PanelSource{}}
+				Revenue: RevenueFigure{Reason: PanelNotApproved, Months: []projection.SplitMoneyMonth{}}, WebMetrics: []MetricFigure{}, Sources: []PanelSource{}}
 			return nil
 		}
 		var buildErr error

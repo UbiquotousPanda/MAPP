@@ -1,6 +1,8 @@
 package performance_test
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -194,5 +196,25 @@ func TestActivityPanel_AStageWithFactsButNoGoalStillSaysWhy_FR013(t *testing.T) 
 	if inq.Projected != nil || inq.ProjectedReason != "noGoal" {
 		t.Errorf("INQ = %+v, want the projection absent with its own reason — the actual must not swallow it",
 			inq)
+	}
+}
+
+func TestActivityPanel_MonthsAreAnEmptyListWithoutAProjection_FR013(t *testing.T) {
+	t.Parallel()
+	f, src := panelFixture(t)
+	f.service.UseFigures(figuresStub{known: true, goals: performance.GoalFacts{PlanYear: 2026, ModelID: "MOD-1"}})
+	f.runImport(t, src.ID, map[string]string{"r1": "40"})
+
+	panel, err := f.service.ActivityPanel(t.Context(), alex, "A-1")
+	if err != nil {
+		t.Fatalf("ActivityPanel: %v", err)
+	}
+
+	body, err := json.Marshal(panel)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if strings.Contains(string(body), `"months":null`) {
+		t.Errorf("panel = %s, want every months an empty list: the contract requires an array", body)
 	}
 }
