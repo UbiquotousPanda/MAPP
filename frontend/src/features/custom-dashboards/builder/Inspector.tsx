@@ -93,7 +93,6 @@ function WidgetInspector({ draft, widget, problems, onAction }: WidgetInspectorP
         )}
         {tab === 'layout' && (
           <LayoutTab
-            key={JSON.stringify(widget.layout)}
             widget={widget}
             widgets={draft.widgets}
             onPlace={(layout) => onAction({ type: 'place', id, layout })}
