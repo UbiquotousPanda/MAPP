@@ -1076,6 +1076,16 @@ type ShellOptionParent struct {
 	ParentOptionID string
 }
 
+type SignIn struct {
+	PersonID       string
+	LastSignedInAt time.Time
+}
+
+type SignInRecording struct {
+	ID    bool
+	Since time.Time
+}
+
 type SwbsRun struct {
 	ID            string
 	Source        string
