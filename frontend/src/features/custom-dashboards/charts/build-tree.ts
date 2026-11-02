@@ -1,4 +1,4 @@
-import { baseOption, labelOption } from './build-common';
+import { baseOption, LABEL_WIDTH, labelOption, shortened } from './build-common';
 import {
   cellOf,
   hasSeries,
@@ -67,7 +67,7 @@ export function radarOption(ctx: ChartContext) {
     ...baseOption(ctx, 'item', 'categorical'),
     radar: {
       indicator: grid.categories.map((name) => ({ name, max })),
-      axisName: { color: theme.ink2 },
+      axisName: { color: theme.ink2, ...shortened(LABEL_WIDTH) },
       axisLine: { lineStyle: { color: theme.hairline } },
       splitLine: { show: ctx.display.gridlines ?? true, lineStyle: { color: theme.hairline } },
       splitArea: { show: false },

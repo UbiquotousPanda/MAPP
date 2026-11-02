@@ -148,6 +148,11 @@ describe('051 edge cases: a very long label is shortened with "…" on the chart
     });
     expect(at(option, 'legend', 'tooltip', 'show')).toBe(true);
   });
+
+  it('shortens the names at a radar’s spokes', () => {
+    const option = buildOption(widget('radar'), seriesData(), THEME);
+    expect(at(option, 'radar', 'axisName')).toMatchObject({ overflow: 'truncate', ellipsis: '…' });
+  });
 });
 
 describe('051 FR-025: data labels people can read', () => {
