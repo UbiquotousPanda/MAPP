@@ -55,7 +55,7 @@ export type BuilderAction =
   | { type: 'delete'; id: string }
   | { type: 'place'; id: string; layout: WidgetLayout }
   | { type: 'step'; id: string; step: Step; resize: boolean }
-  | { type: 'setQuery'; id: string; query: WidgetQuery; typing?: string }
+  | { type: 'setQuery'; id: string; query: WidgetQuery; typing?: string; removedMeasure?: number }
   | { type: 'setDisplay'; id: string; display: WidgetDisplay; typing?: string }
   | { type: 'setText'; id: string; patch: TextPatch }
   | { type: 'undo' }
@@ -117,9 +117,13 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
     case 'step':
       return step(state, action);
     case 'setQuery':
-      return edit(state, action.id, (widget) => fitDisplay({ ...widget, query: action.query }), {
-        typing: action.typing && `query:${action.id}:${action.typing}`,
-      });
+      return edit(
+        state,
+        action.id,
+        (widget) =>
+          fitDisplay({ ...widget, query: action.query }, widget.query, action.removedMeasure),
+        { typing: action.typing && `query:${action.id}:${action.typing}` },
+      );
     case 'setDisplay':
       return edit(state, action.id, (widget) => ({ ...widget, display: action.display }), {
         typing: action.typing && `display:${action.id}:${action.typing}`,

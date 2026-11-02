@@ -78,11 +78,14 @@ export function tableColumnKeys(query: WidgetQuery | null): string[] {
   ];
 }
 
-export function fitDisplay(widget: Widget): Widget {
+export function fitDisplay(
+  widget: Widget,
+  before: WidgetQuery | null,
+  removedMeasure?: number,
+): Widget {
   const { display, query } = widget;
-  const styles = display.measureStyles;
-  const columns = display.table?.columns;
-  const keys = tableColumnKeys(query);
+  const styles = display.measureStyles?.filter((_, at) => at !== removedMeasure);
+  const table = display.table;
   return {
     ...widget,
     display: {
@@ -92,10 +95,34 @@ export function fitDisplay(widget: Widget): Widget {
           (_, index) => styles[index] ?? defaultMeasureStyle(index),
         ),
       }),
-      ...(display.table &&
-        columns && {
-          table: { ...display.table, columns: columns.filter((key) => keys.includes(key)) },
-        }),
+      ...(table && {
+        table: { ...table, columns: fitColumns(table.columns, { before, query, removedMeasure }) },
+      }),
     },
   };
+}
+
+interface ColumnChange {
+  before: WidgetQuery | null;
+  query: WidgetQuery | null;
+  removedMeasure: number | undefined;
+}
+
+function fitColumns(columns: string[], { before, query, removedMeasure }: ColumnChange): string[] {
+  const kept =
+    removedMeasure === undefined
+      ? columns
+      : columns.flatMap((key) => renumbered(key, removedMeasure));
+  const keys = tableColumnKeys(query);
+  const wereThere = removedMeasure === undefined ? tableColumnKeys(before) : keys;
+  const added = columns.length > 0 ? keys.filter((key) => !wereThere.includes(key)) : [];
+  return [...kept.filter((key) => keys.includes(key)), ...added];
+}
+
+function renumbered(key: string, removed: number): string[] {
+  const index = /^m(\d+)$/.exec(key)?.[1];
+  if (index === undefined || Number(index) < removed) {
+    return [key];
+  }
+  return Number(index) === removed ? [] : [`m${Number(index) - 1}`];
 }

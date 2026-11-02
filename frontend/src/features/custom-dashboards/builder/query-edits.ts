@@ -35,6 +35,7 @@ export const AGGREGATION_WORDS: Record<Aggregation, string> = {
   max: 'Maximum',
 };
 
+const DATASET_PREFIX = 'DS-';
 const ALL_KINDS: Operator[] = ['eq', 'ne', 'in', 'isEmpty', 'notEmpty'];
 const COMPARING: Operator[] = ['gt', 'gte', 'lt', 'lte', 'between'];
 
@@ -58,7 +59,9 @@ export function valuesFor(operator: Operator, values: string[]): string[] {
 }
 
 export function changeSource(query: WidgetQuery, source: DataSource): SourceChange {
-  const fieldOf = (key: string | null) => source.fields.find((field) => field.key === key);
+  const keysCarryOver = query.source === source.key || !isDataset(query.source);
+  const fieldOf = (key: string | null) =>
+    keysCarryOver ? source.fields.find((field) => field.key === key) : undefined;
   const dimension = keptGroup(query.dimension, fieldOf);
   const series = keptGroup(query.series, fieldOf);
   const measures = query.measures.filter((measure) => measureFits(measure, fieldOf));
@@ -87,6 +90,17 @@ export function changeSource(query: WidgetQuery, source: DataSource): SourceChan
   };
 }
 
+export function withoutMeasure(query: WidgetQuery, index: number): WidgetQuery {
+  const { sort } = query;
+  const shifted = sort.measureIndex > index ? sort.measureIndex - 1 : sort.measureIndex;
+  const measureIndex = sort.measureIndex === index ? 0 : shifted;
+  return {
+    ...query,
+    measures: query.measures.filter((_, at) => at !== index),
+    sort: sort.by === 'measure' ? { ...sort, measureIndex } : sort,
+  };
+}
+
 export function withDimension(
   type: WidgetType,
   query: WidgetQuery,
@@ -112,6 +126,11 @@ export function groupOf(field: DataField | undefined): GroupBy | null {
 
 export function aggregationsFor(field: DataField | undefined): Aggregation[] {
   return field ? field.aggregations : ['count'];
+}
+
+// A dataset's columns are numbered c1, c2… by position, so the same key names another column elsewhere.
+function isDataset(sourceKey: string): boolean {
+  return sourceKey.startsWith(DATASET_PREFIX);
 }
 
 function sameSort(a: WidgetQuery['sort'], b: WidgetQuery['sort']): boolean {

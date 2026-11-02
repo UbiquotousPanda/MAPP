@@ -18,18 +18,24 @@ const PARTS = [
   { key: 'h', label: 'Height (rows)', offset: 0, min: 2, max: 12 },
 ] as const;
 
+interface Attempt {
+  from: WidgetLayout;
+  layout: WidgetLayout;
+}
+
 export function LayoutTab({ widget, widgets, onPlace }: LayoutTabProps) {
-  const [typed, setTyped] = useState<WidgetLayout | null>(null);
+  const [attempt, setAttempt] = useState<Attempt | null>(null);
+  const typed = attempt && sameLayout(attempt.from, widget.layout) ? attempt.layout : null;
   const shown = typed ?? widget.layout;
   const blocked = typed && blockedBy(typed, widgets, widget.id);
 
   function change(key: keyof WidgetLayout, value: number, offset: number) {
     const next = { ...shown, [key]: value - offset };
     if (blockedBy(next, widgets, widget.id) === null) {
-      setTyped(null);
+      setAttempt(null);
       onPlace(next);
     } else {
-      setTyped(next);
+      setAttempt({ from: widget.layout, layout: next });
     }
   }
 
@@ -57,4 +63,8 @@ export function LayoutTab({ widget, widgets, onPlace }: LayoutTabProps) {
       )}
     </div>
   );
+}
+
+function sameLayout(a: WidgetLayout, b: WidgetLayout): boolean {
+  return a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
 }

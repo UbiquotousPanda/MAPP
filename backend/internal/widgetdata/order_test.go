@@ -1,6 +1,7 @@
 package widgetdata
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -157,5 +158,27 @@ func TestOrder_UngroupedAnswersOneRow_FR020(t *testing.T) {
 	out, err := p.run(nil)
 	if err != nil || len(out.rows) != 1 || out.rows[0].Dimension != nil || out.rows[0].Values[0].Money != nil {
 		t.Errorf("an ungrouped sum of no rows = %+v, %v; want one row without a value", out.rows, err)
+	}
+}
+
+func TestNotes_RadarSaysHowManySpokesItShows_FR020(t *testing.T) {
+	t.Parallel()
+	r := barOf(Sort{By: sortByMeasure, Direction: directionDesc}, 50, false)
+	r.Type = typeRadar
+	p, err := compile(r, shapes)
+	if err != nil {
+		t.Fatalf("compile: %v", err)
+	}
+	rows := []Row{}
+	for i := range 14 {
+		rows = append(rows, Row{TextValue(fmt.Sprintf("Type %02d", i)), TextsValue(nil),
+			moneyValue(t, "1.00"), dateValue(t, "2026-01-01")})
+	}
+	out, err := p.run(rows)
+	if err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	if diff := cmp.Diff([]string{"Showing 12 of 14"}, p.notes(nil, out)); diff != "" || len(out.rows) != 12 {
+		t.Errorf("notes (-want +got):\n%s rows = %d, want 12", diff, len(out.rows))
 	}
 }

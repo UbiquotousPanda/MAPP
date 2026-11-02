@@ -80,7 +80,9 @@ function WidgetInspector({ draft, widget, problems, onAction }: WidgetInspectorP
             sources={sources.data}
             sourcesFailed={sources.isError}
             errorAt={errorAt}
-            onQuery={(next, typing) => onAction({ type: 'setQuery', id, query: next, typing })}
+            onQuery={(next, typing, removedMeasure) =>
+              onAction({ type: 'setQuery', id, query: next, typing, removedMeasure })
+            }
           />
         )}
         {tab === 'style' && (
@@ -93,7 +95,6 @@ function WidgetInspector({ draft, widget, problems, onAction }: WidgetInspectorP
         )}
         {tab === 'layout' && (
           <LayoutTab
-            key={JSON.stringify(widget.layout)}
             widget={widget}
             widgets={draft.widgets}
             onPlace={(layout) => onAction({ type: 'place', id, layout })}

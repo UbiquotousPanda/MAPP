@@ -75,13 +75,14 @@ export function gaugeOption(ctx: ChartContext) {
         splitLine: { length: 8, lineStyle: { color: theme.ink2 } },
         axisLabel: {
           color: theme.ink2,
+          distance: -36,
           formatter: (tick: number) =>
             isEnd(tick, min, max) ? formatTick(tick, column, display) : '',
         },
-        title: { color: theme.ink2, offsetCenter: [0, '70%'] },
+        title: { color: theme.ink2, fontSize: 12, offsetCenter: [0, '70%'] },
         detail: {
           color: theme.ink,
-          fontSize: 24,
+          fontSize: 20,
           formatter: () => cell?.text ?? '—',
           offsetCenter: [0, '0%'],
         },

@@ -5,12 +5,9 @@ import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
-import { WidgetView } from '../charts';
 import type { CustomDashboard } from '../model';
+import { ViewerGrid } from '../viewer/ViewerGrid';
 import { useCopyDashboard } from './api';
-import { gridArea, widgetCellName } from './canvas-dom';
-import { widgetName } from './widget-defaults';
-import styles from './Builder.module.css';
 
 export interface ViewOnlyBuilderProps {
   dashboard: CustomDashboard;
@@ -53,29 +50,12 @@ export function ViewOnlyBuilder({ dashboard }: ViewOnlyBuilderProps) {
         }
       />
       {copy.error && <FailureMessage failure={{ message: asApiError(copy.error).message }} />}
-      <div className={styles.canvas}>
-        <div className={styles.grid}>
-          {dashboard.widgets.map((widget) => (
-            <div
-              key={widget.id}
-              role="group"
-              aria-label={widgetCellName(widgetName(widget), widget.layout)}
-              className={styles.widget}
-              style={gridArea(widget.layout)}
-            >
-              <div className={styles.preview}>
-                <WidgetView
-                  widget={widget}
-                  filters={dashboard.filters}
-                  mode="view"
-                  dashboardName={dashboard.name}
-                  viewerOwnsDashboard={false}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ViewerGrid
+        widgets={dashboard.widgets}
+        filters={dashboard.filters}
+        dashboardName={dashboard.name}
+        viewerOwnsDashboard={false}
+      />
     </>
   );
 }

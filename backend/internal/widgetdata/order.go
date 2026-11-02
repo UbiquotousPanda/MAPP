@@ -75,10 +75,7 @@ func (p *compiled) compareRanked(a, b ranked) int {
 
 // limited keeps the first limit groups and, with groupRest, makes the others one "Other" group.
 func (p *compiled) limited(rows []Row, rs []ranked) ([]ranked, error) {
-	limit := p.limit
-	if p.typ == typeRadar {
-		limit = min(limit, maxRadarSpokes)
-	}
+	limit := p.groupLimit()
 	if len(rs) <= limit {
 		return rs, nil
 	}
@@ -92,6 +89,14 @@ func (p *compiled) limited(rows []Row, rs []ranked) ([]ranked, error) {
 	}
 	other, err := p.rank(rows, []group{merged(rest, otherKey)})
 	return append(kept, other...), err
+}
+
+// groupLimit is how many groups are shown: the query's limit, and at most 12 spokes on a radar.
+func (p *compiled) groupLimit() int {
+	if p.typ == typeRadar {
+		return min(p.limit, maxRadarSpokes)
+	}
+	return p.limit
 }
 
 // topSeries are the series kept: the largest by the first measure; the others join "Other".
