@@ -265,5 +265,10 @@
     {"name": "PR for Search media, second half", "activity": "Helix search and social, second half", "lineItem": "Search media, second half", "amount": "40000.00", "delivery": "2026-12-18", "workflow": "Purchase request approval (MoA)", "vendor": {"shortText": "Helix search media, Benelux", "name": "Searchlight Digital BV", "code": "V-100201"}, "createdAgo": 3, "submittedAgo": 3, "decisions": [{"by": "Carlos Mendes", "daysAgo": 2}]},
     {"name": "PR for Search media, first half", "activity": "Helix search and social, first half", "lineItem": "Search media, first half", "amount": "40000.00", "delivery": "2026-06-30", "workflow": "Purchase request approval (MoA)", "vendor": {"shortText": "Helix search media, Benelux", "name": "Searchlight Digital BV", "code": "V-100201"}, "createdAgo": 11, "submittedAgo": 11, "decisions": [{"by": "Carlos Mendes", "daysAgo": 10}], "orderedAgo": 9, "documents": [{"type": "invoice", "number": "5100009001", "amount": "10000.00", "postedAgo": 6, "description": "Search media, January and February"}, {"type": "invoice", "number": "5100009002", "amount": "10000.00", "postedAgo": 2, "description": "Search media, March and April"}]},
     {"name": "PR for Case study production", "activity": "Tellus case studies", "lineItem": "Case study production", "amount": "30000.00", "delivery": "2026-03-31", "workflow": "Purchase request approval (MoA)", "vendor": {"shortText": "Tellus case study production", "name": "Clearwater Content BV", "code": "V-100203"}, "createdAgo": 39, "submittedAgo": 38, "decisions": [{"by": "Carlos Mendes", "daysAgo": 37}], "orderedAgo": 36, "closedAgo": 5, "documents": [{"type": "invoice", "number": "5100009003", "amount": "30000.00", "postedAgo": 20, "description": "Tellus case studies"}, {"type": "payment", "number": "1500009001", "amount": "30000.00", "postedAgo": 10, "description": "Tellus case studies"}]}
+  ],
+  "categories": [
+    {"name": "Digital", "default": true, "types": ["Digital media"]},
+    {"name": "Events and sponsorship", "types": ["Event", "Sponsorship"]},
+    {"name": "Content and creative", "types": ["Content production", "Agency fees – Creative"]}
   ]
 }

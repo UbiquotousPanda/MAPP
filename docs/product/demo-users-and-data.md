@@ -117,3 +117,8 @@ Seven purchase requests, owner Alex Morgan, MoA approver Carlos Mendes, Email gr
 
 The purchase orders, invoices and payment are 6 GSAP transactions on those line items; the invoices and payment come
 in one *Demo data (simulated GSAP)* import, the last, so Financials still shows the demo data as its source.
+
+It also groups the demo's activity types into three **activity categories** (047): **Digital** (the default: Digital
+media), **Events and sponsorship** (Event, Sponsorship) and **Content and creative** (Content production, Agency
+fees – Creative). *MOBILITY – Long-term contract* is in none, so the reports' *Uncategorised* has activities too.
+The categories are Settings, so every persona sees them; the plain seed has none.
