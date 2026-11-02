@@ -20,12 +20,9 @@ import (
 	"mapp/internal/stores"
 )
 
-// The adapters below tell Settings (002) and people (003) where their records are used (D-196): Settings'
-// reference sources ("Used by", in-use deletes, impact statements) and people's plan source, usage counts
-// and currencies. They read the other features inside the caller's transaction.
+// These adapters tell Settings and people where their records are used. They read the other areas inside the
+// caller's transaction.
 
-// planningRecords reads the records below the plans — campaigns, initiatives, activities, line items —
-// stored and in the recycle bin.
 type planningRecords struct {
 	history    *history.Service
 	campaigns  stores.CampaignStore
@@ -33,8 +30,6 @@ type planningRecords struct {
 	lineItems  stores.LineItemStore
 }
 
-// references lists a Settings reference for every campaign, initiative, activity and line item, stored and
-// in the recycle bin (Settings' ReferenceSource of features 005, 006 and 007).
 func (p planningRecords) references(ctx context.Context) ([]settings.Reference, error) {
 	refs, err := p.stored(ctx)
 	if err != nil {
@@ -47,7 +42,6 @@ func (p planningRecords) references(ctx context.Context) ([]settings.Reference, 
 	return append(refs, binned...), nil
 }
 
-// stored lists the references of the stored records, each with its plan.
 func (p planningRecords) stored(ctx context.Context) ([]settings.Reference, error) {
 	campaignList, err := p.campaigns.ListCampaigns(ctx)
 	if err != nil {
@@ -66,7 +60,7 @@ func (p planningRecords) stored(ctx context.Context) ([]settings.Reference, erro
 		return nil, err
 	}
 
-	planOf := map[string]string{} // record id → plan id
+	planOf := map[string]string{}
 	var refs []settings.Reference
 	for _, c := range campaignList {
 		planOf[c.ID] = c.PlanID
@@ -86,10 +80,10 @@ func (p planningRecords) stored(ctx context.Context) ([]settings.Reference, erro
 	return refs, nil
 }
 
-// inBin lists the references of the records in the recycle bin. Everything in one bin entry belongs to the
-// plan of its deleted record: the first record of the entry's path, or the deleted plan itself.
+// Everything in one bin entry belongs to the plan of its deleted record: the first of the entry's path, or the
+// deleted plan itself.
 func (p planningRecords) inBin(ctx context.Context) ([]settings.Reference, error) {
-	// Every record in the bin counts, whoever asks (014): entries undone or restored are left out.
+	// Every record in the bin counts, whoever asks: entries undone or restored are left out.
 	entries, err := p.history.ListBin(authz.Unrestricted(ctx), actor.System)
 	if err != nil {
 		return nil, err
@@ -113,8 +107,7 @@ func (p planningRecords) inBin(ctx context.Context) ([]settings.Reference, error
 	return refs, nil
 }
 
-// snapshotReference returns the reference of a record of the recycle bin, and false for kinds that are not
-// planning records below the plan (plans report themselves).
+// snapshotReference answers false for plans: they report themselves.
 func snapshotReference(s history.Snapshot, planID string) (settings.Reference, bool, error) {
 	decode := func(v any) error {
 		if err := json.Unmarshal(s.Data, v); err != nil {
@@ -174,9 +167,6 @@ func lineItemReference(li lineitem.LineItem, planID string, inBin bool) settings
 	}
 }
 
-// planReferences is Settings' ReferenceSource of plans (004): every plan, stored and in the recycle bin,
-// with its model, default finance budget, Shell attribute values, and its plan currency with its budget in it
-// (016: "Plan currency of n plans", FR-010; the rate impact, FR-005).
 func planReferences(svc *plan.Service) settings.ReferenceSource {
 	return func(ctx context.Context) ([]settings.Reference, error) {
 		list, err := svc.References(ctx, actor.System)
@@ -188,14 +178,14 @@ func planReferences(svc *plan.Service) settings.ReferenceSource {
 			refs = append(refs, settings.Reference{
 				Record: history.RecordRef{Type: "plan", ID: p.PlanID, Name: p.Name}, InBin: p.InRecycleBin,
 				Level: settings.LevelPlan, PlanID: p.PlanID, Attributes: p.Attributes, ModelID: p.ModelID,
-				FinanceBudgetID: p.DefaultFinanceBudgetID, Currency: p.Currency, Budget: p.Budget, // 016 FR-005, FR-010
+				GoalStage:       string(p.GoalStage),
+				FinanceBudgetID: p.DefaultFinanceBudgetID, Currency: p.Currency, Budget: p.Budget,
 			})
 		}
 		return refs, nil
 	}
 }
 
-// personReferences is Settings' ReferenceSource of people (003): the display currency of each person.
 func personReferences(svc *people.Service) settings.ReferenceSource {
 	return func(ctx context.Context) ([]settings.Reference, error) {
 		byCurrency, err := svc.PeopleByDisplayCurrency(ctx)
@@ -212,8 +202,6 @@ func personReferences(svc *people.Service) settings.ReferenceSource {
 	}
 }
 
-// planUses is people's PlanSource (004): every plan, stored and in the recycle bin, with its owner and
-// teams.
 func planUses(svc *plan.Service) people.PlanSource {
 	return func(ctx context.Context) ([]people.PlanUse, error) {
 		list, err := svc.References(ctx, actor.System)
@@ -232,8 +220,7 @@ func planUses(svc *plan.Service) people.PlanSource {
 
 const ownerRole = "owner"
 
-// personUsages are the counts of what a person owns or approves below the plans (005, 006, 007, 008), over
-// the stored records: records in the recycle bin are not stored, so they are not counted (FR-004).
+// personUsages counts stored records only: records in the recycle bin are not stored.
 func personUsages(campaignsRepo stores.CampaignStore, activitiesRepo stores.ActivityStore,
 	lineItemsRepo stores.LineItemStore, approvalsRepo stores.ApprovalStore) []people.PersonUsage {
 	return []people.PersonUsage{
@@ -252,7 +239,6 @@ func personUsages(campaignsRepo stores.CampaignStore, activitiesRepo stores.Acti
 	}
 }
 
-// countWhere counts the records of list that keep says yes to; err is the error of reading the list.
 func countWhere[T any](list []T, err error, keep func(T) bool) (int, error) {
 	if err != nil {
 		return 0, err
@@ -266,8 +252,6 @@ func countWhere[T any](list []T, err error, keep func(T) bool) (int, error) {
 	return n, nil
 }
 
-// peopleCurrencies is people's CurrencySource over Settings' currencies (002): every currency, active or
-// not, with its current rate.
 func peopleCurrencies(svc *settings.Service) people.CurrencySource {
 	return func(ctx context.Context) ([]people.Currency, error) {
 		list, err := svc.Currencies(ctx)

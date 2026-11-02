@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router';
 import {
   AccessPage,
+  ActivityCategoriesPage,
   ActivityTypesPage,
   ApprovalWorkflowsPage,
   CurrenciesPage,
@@ -27,6 +28,11 @@ export const SETTINGS_ROUTES: RouteObject[] = [
   { path: '/settings', element: <SettingsPage />, ...titled('Settings') },
   { path: '/settings/models', element: <ModelsPage />, ...titled('Models') },
   { path: '/settings/activity-types', element: <ActivityTypesPage />, ...titled('Activity types') },
+  {
+    path: '/settings/activity-categories',
+    element: <ActivityCategoriesPage />,
+    ...titled('Activity categories'),
+  },
   {
     path: '/settings/shell-attributes',
     element: <ShellAttributesPage />,

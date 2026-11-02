@@ -7,6 +7,7 @@ import (
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"
+	"mapp/internal/projection"
 )
 
 const (
@@ -23,15 +24,23 @@ type StageFigure struct {
 	Stage      string   `json:"stage"`
 	Goal       *int64   `json:"goal"`
 	Actual     *int64   `json:"actual"`
+	Projected  *int64   `json:"projected"`
 	Conversion *float64 `json:"conversion"`
 	Reason     string   `json:"reason"`
+	// ProjectedReason says why the projection is absent: a figure can have an actual and still no goal.
+	ProjectedReason string `json:"projectedReason"`
+	// Months splits the plan year at today: actual behind it, projected from it, both in the month in progress.
+	Months []projection.SplitMonth `json:"months"`
 }
 
 type RevenueFigure struct {
-	Goal          *money.Money `json:"goal"`
-	Actual        *money.Money `json:"actual"`
-	ExcludedCount int          `json:"excludedCount"`
-	Reason        string       `json:"reason"`
+	Goal            *money.Money                 `json:"goal"`
+	Actual          *money.Money                 `json:"actual"`
+	Projected       *money.Money                 `json:"projected"`
+	ExcludedCount   int                          `json:"excludedCount"`
+	Reason          string                       `json:"reason"`
+	ProjectedReason string                       `json:"projectedReason"`
+	Months          []projection.SplitMoneyMonth `json:"months"`
 }
 
 type MonthCount struct {
@@ -51,14 +60,15 @@ type PanelSource struct {
 	DataThrough *string   `json:"dataThrough"`
 }
 
-// Panel is the activity's Performance area (FR-029). Projected is 047's and absent until it lands; the
-// revenue model's name is 050's and arrives with it (Assumptions).
+// Panel is the activity's Performance area. The revenue model's name is 050's and arrives with it
+// (Assumptions); Projection names the model behind the projected figures.
 type Panel struct {
-	State      string         `json:"state"`
-	Stages     []StageFigure  `json:"stages"`
-	Revenue    RevenueFigure  `json:"revenue"`
-	WebMetrics []MetricFigure `json:"webMetrics"`
-	Sources    []PanelSource  `json:"sources"`
+	State      string            `json:"state"`
+	Stages     []StageFigure     `json:"stages"`
+	Revenue    RevenueFigure     `json:"revenue"`
+	WebMetrics []MetricFigure    `json:"webMetrics"`
+	Sources    []PanelSource     `json:"sources"`
+	Projection *projection.Stamp `json:"projection"`
 }
 
 func (s *Service) ActivityPanel(ctx context.Context, _ actor.Actor, activityID string) (Panel, error) {
@@ -73,7 +83,7 @@ func (s *Service) ActivityPanel(ctx context.Context, _ actor.Actor, activityID s
 		}
 		if !approved {
 			panel = Panel{State: PanelNotApproved, Stages: []StageFigure{},
-				Revenue: RevenueFigure{Reason: PanelNotApproved}, WebMetrics: []MetricFigure{}, Sources: []PanelSource{}}
+				Revenue: RevenueFigure{Reason: PanelNotApproved, Months: []projection.SplitMoneyMonth{}}, WebMetrics: []MetricFigure{}, Sources: []PanelSource{}}
 			return nil
 		}
 		var buildErr error
@@ -123,7 +133,7 @@ func (s *Service) buildPanel(ctx context.Context, activityID string) (Panel, err
 		WebMetrics: metricFigures(totals),
 		Sources:    sources,
 	}
-	return panel, nil
+	return s.withProjection(ctx, panel, in), nil
 }
 
 func (s *Service) goalFacts(ctx context.Context, activityID string) (GoalFacts, error) {

@@ -7,7 +7,6 @@ import (
 	"mapp/internal/history"
 )
 
-// snapshot returns record as history keeps it: its id, name, parent and stored data.
 func snapshot(record any, id, name, parentID string) (history.Snapshot, bool, error) {
 	data, err := json.Marshal(record)
 	if err != nil {
@@ -16,7 +15,6 @@ func snapshot(record any, id, name, parentID string) (history.Snapshot, bool, er
 	return history.Snapshot{ID: id, Name: name, ParentID: parentID, Data: data}, true, nil
 }
 
-// putRecord returns the Put of a kind: it stores the record of a snapshot exactly as the snapshot holds it.
 func putRecord[T any](put func(context.Context, T) error) func(context.Context, history.Snapshot) error {
 	return func(ctx context.Context, s history.Snapshot) error {
 		var record T
@@ -41,6 +39,15 @@ func (s *Service) activityTypeSnapshot(ctx context.Context, id string) (history.
 		return history.Snapshot{}, false, err
 	}
 	return snapshot(t, t.ID, t.Name, "")
+}
+
+// The snapshot of a category carries its activity types, so an Undo or a Restore assigns them back.
+func (s *Service) activityCategorySnapshot(ctx context.Context, id string) (history.Snapshot, bool, error) {
+	c, found, err := s.repo.GetActivityCategory(ctx, id)
+	if err != nil || !found {
+		return history.Snapshot{}, false, err
+	}
+	return snapshot(c, c.ID, c.Name, "")
 }
 
 func (s *Service) attributeSnapshot(ctx context.Context, id string) (history.Snapshot, bool, error) {
@@ -84,8 +91,7 @@ func (s *Service) itemSnapshot(ctx context.Context, id string) (history.Snapshot
 	return snapshot(i, i.ID, i.Name, i.BudgetID)
 }
 
-// optionIDs lists the ids of the options of the attribute attributeID: deleting an attribute takes them
-// with it.
+// optionIDs: deleting an attribute takes its options with it.
 func (s *Service) optionIDs(ctx context.Context, attributeID string) ([]string, error) {
 	options, err := s.repo.OptionsOf(ctx, attributeID)
 	if err != nil {
@@ -98,7 +104,6 @@ func (s *Service) optionIDs(ctx context.Context, attributeID string) ([]string, 
 	return list, nil
 }
 
-// itemIDs lists the ids of the items of the finance budget budgetID.
 func (s *Service) itemIDs(ctx context.Context, budgetID string) ([]string, error) {
 	items, err := s.repo.ItemsOf(ctx, budgetID)
 	if err != nil {
