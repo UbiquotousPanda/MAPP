@@ -11,6 +11,11 @@ export interface LayoutTabProps {
   onPlace: (layout: WidgetLayout) => void;
 }
 
+interface TypedLayout {
+  from: WidgetLayout;
+  layout: WidgetLayout;
+}
+
 const PARTS = [
   { key: 'x', label: 'Column', offset: 1, min: 1, max: 12 },
   { key: 'y', label: 'Row', offset: 1, min: 1, max: 200 },
@@ -19,17 +24,18 @@ const PARTS = [
 ] as const;
 
 export function LayoutTab({ widget, widgets, onPlace }: LayoutTabProps) {
-  const [typed, setTyped] = useState<WidgetLayout | null>(null);
+  const [draft, setDraft] = useState<TypedLayout | null>(null);
+  const typed = draft && sameLayout(draft.from, widget.layout) ? draft.layout : null;
   const shown = typed ?? widget.layout;
   const blocked = typed && blockedBy(typed, widgets, widget.id);
 
   function change(key: keyof WidgetLayout, value: number, offset: number) {
     const next = { ...shown, [key]: value - offset };
     if (blockedBy(next, widgets, widget.id) === null) {
-      setTyped(null);
+      setDraft(null);
       onPlace(next);
     } else {
-      setTyped(next);
+      setDraft({ from: widget.layout, layout: next });
     }
   }
 
@@ -57,4 +63,8 @@ export function LayoutTab({ widget, widgets, onPlace }: LayoutTabProps) {
       )}
     </div>
   );
+}
+
+function sameLayout(a: WidgetLayout, b: WidgetLayout): boolean {
+  return a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
 }
