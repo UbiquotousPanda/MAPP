@@ -223,3 +223,18 @@ test('051 FR-026: on a 1280 px window the canvas keeps room for readable preview
   await expect(cell(page, 'Text note')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1280);
 });
+
+test('051 FR-039: a key figure in a narrow widget shows every digit of its value', async ({
+  page,
+}) => {
+  await signInAs(page, PRIYA);
+  await page.goto('/builder/DB-1001');
+  const widget = cell(page, 'Plan budgets');
+  const figure = widget.getByText(/^\$[\d,]+\.\d{2}$/);
+  await expect(figure).toBeVisible();
+
+  const [cellBox, figureBox] = [await widget.boundingBox(), await figure.boundingBox()];
+  expect((figureBox?.x ?? 0) + (figureBox?.width ?? 0)).toBeLessThanOrEqual(
+    (cellBox?.x ?? 0) + (cellBox?.width ?? 0),
+  );
+});

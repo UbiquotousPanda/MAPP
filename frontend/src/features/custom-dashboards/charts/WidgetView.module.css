@@ -114,16 +114,19 @@
   font-size: var(--text-sm);
 }
 
+/* The figure shrinks with a narrow widget rather than lose digits at its edge. */
 .keyFigure {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  container-type: inline-size;
 }
 
 .figure {
+  overflow-wrap: anywhere;
   color: var(--ink);
   font-family: var(--font-heading);
-  font-size: var(--text-2xl);
+  font-size: clamp(var(--text-md), 13cqi, var(--text-2xl));
   font-weight: var(--weight-heading);
   font-variant-numeric: tabular-nums;
 }
