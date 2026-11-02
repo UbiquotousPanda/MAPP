@@ -9,8 +9,8 @@ import (
 // Spread is one approved request of one vendor with a line due on each of the dates, 100.00 each.
 func Spread(first, last string) []purchasereport.Request {
 	r := request(requestSpec{"pr-s", "Spread", "Solo", purchasereport.StatusApproved, PlanWithFinance, Alice().ID},
-		line(lineSpec{id: "s1", item: "li-1", amount: 100, delivery: first}),
-		line(lineSpec{id: "s2", item: "li-2", amount: 100, delivery: last}))
+		line(lineSpec{id: "s1", item: item1, amount: 100, delivery: first}),
+		line(lineSpec{id: "s2", item: item2, amount: 100, delivery: last}))
 	return []purchasereport.Request{r}
 }
 
@@ -20,7 +20,7 @@ func Vendors(n int) []purchasereport.Request {
 	for i := 1; i <= n; i++ {
 		spec := requestSpec{fmt.Sprintf("pr-v%02d", i), fmt.Sprintf("Request %02d", i), fmt.Sprintf("V%02d", i),
 			purchasereport.StatusApproved, PlanWithFinance, Alice().ID}
-		list = append(list, request(spec, line(lineSpec{id: fmt.Sprintf("v%02d", i), item: "li-1", amount: int64(i) * 10, delivery: "2026-03-10"})))
+		list = append(list, request(spec, line(lineSpec{id: fmt.Sprintf("v%02d", i), item: item1, amount: int64(i) * 10, delivery: march10})))
 	}
 	return list
 }

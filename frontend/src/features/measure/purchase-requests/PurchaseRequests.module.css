@@ -119,6 +119,7 @@
 
 .scroll {
   overflow-x: auto;
+  contain: inline-size;
 }
 
 .table {

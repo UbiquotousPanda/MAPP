@@ -193,10 +193,19 @@ func TestParseQuery_042_FR016(t *testing.T) {
 
 	good, err := purchasereport.ParseQuery(url.Values{"sort": {"amount"}, "order": {"desc"}, "pageSize": {"25"}, "page": {"2"},
 		"columns": {"id,invoiced,status"}, "vendor": {"Acme", "x"}, "requestOwner": {"p-bob"}, "status": {"approved"}, "q": {" stand "}})
-	if err != nil || good.Sort != "amount" || good.PageSize != 25 || good.Page != 2 || good.Search != "stand" ||
-		len(good.Vendors) != 2 || cmp.Diff([]string{"id", "invoiced", "status"}, good.Columns) != "" {
-		t.Errorf("ParseQuery(good) = %+v, %v, want the values kept, columns in order and unknown filter values allowed", good, err)
+
+	if err != nil {
+		t.Fatalf("ParseQuery(good) error: %v", err)
 	}
+	summary := fmt.Sprintf("%s %d %d %q %d %v", good.Sort, good.PageSize, good.Page, good.Search, len(good.Vendors), good.Columns)
+	if want := `amount 25 2 "stand" 2 [id invoiced status]`; summary != want {
+		t.Errorf("ParseQuery(good) = %s, want %s: the values kept, columns in order, unknown filter values allowed", summary, want)
+	}
+}
+
+func TestParseQuery_Malformed_042_FR016(t *testing.T) {
+	t.Parallel()
+
 	bad := []url.Values{{"sort": {"nope"}}, {"order": {"up"}}, {"page": {"0"}}, {"pageSize": {"7"}}, {"columns": {"id,id"}},
 		{"columns": {"nonsense"}}}
 	for _, values := range bad {

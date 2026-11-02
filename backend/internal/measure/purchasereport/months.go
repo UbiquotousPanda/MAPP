@@ -21,12 +21,12 @@ func monthOf(d date.Date) string {
 // monthRange lists every month from the earliest to the latest of keys, then none when a key has no delivery date
 // (042-C2).
 func monthRange(keys []string) []string {
-	real := slices.DeleteFunc(slices.Clone(keys), func(k string) bool { return k == noMonth })
-	slices.Sort(real)
+	dated := slices.DeleteFunc(slices.Clone(keys), func(k string) bool { return k == noMonth })
+	slices.Sort(dated)
 	months := []string{}
-	if len(real) > 0 {
-		first, errFirst := time.Parse("2006-01", real[0])
-		last, errLast := time.Parse("2006-01", real[len(real)-1])
+	if len(dated) > 0 {
+		first, errFirst := time.Parse("2006-01", dated[0])
+		last, errLast := time.Parse("2006-01", dated[len(dated)-1])
 		if errFirst == nil && errLast == nil {
 			for m := first; !m.After(last); m = m.AddDate(0, 1, 0) {
 				months = append(months, m.Format("2006-01"))
