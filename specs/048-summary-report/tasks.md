@@ -13,7 +13,7 @@ own folders only, plus the contract, route rules and `notYetServed` lines of 048
 
 ## Phase 2: Contract and skeleton
 
-- [ ] T003 `backend/api/openapi.yaml`: `getSummaryReport` and `getSummaryLeague` with their schemas and parameters from
+- [x] T003 `backend/api/openapi.yaml`: `getSummaryReport` and `getSummaryLeague` with their schemas and parameters from
   `contracts/api.md`; `routes_measure.go` rules `need(authz.ReportsView)`; two `notYetServed` lines; `pnpm run api:types`
 - [ ] T004 [P] `summary/model.go` (API types), `ports.go` (`Transactor`, `Scoper`, `Series` over `ActivitySeries`,
   `Spending`, `Attribution`, `Deps`)
@@ -24,7 +24,7 @@ own folders only, plus the contract, route rules and `notYetServed` lines of 048
 
 ## Phase 3: User Story 1 — are we on track (P1) 🎯 MVP
 
-- [ ] T006 [P] [US1] Tests: `TestVarianceWord_048_C1` (99.5 %, 100 %, 100.4 %, zero goal, no goal),
+- [ ] T006 [P] [US1] Tests (rules done 2 Nov: variance, coverage, conversion): `TestVarianceWord_048_C1` (99.5 %, 100 %, 100.4 %, zero goal, no goal),
   `TestGoalCoverage_048_C2`, `TestConversion_048_C7` (rate and goal from sums, zero denominator, mixed models),
   `TestCategory_048_C8`, `TestStates_048_FR018`, `TestNoFinanceView_048_FR003`
 - [ ] T007 [P] [US1] Tests: contract `TestSummaryReport_Contract_048` (200, 400 for a bad `category` or `stage`, 401,
@@ -41,7 +41,7 @@ own folders only, plus the contract, route rules and `notYetServed` lines of 048
 
 ## Phase 4: User Story 2 — league tables (P2)
 
-- [ ] T013 [P] [US2] Tests: `TestSegments_048_C4` (inherited values, Not filled in, equal shares adding up exactly,
+- [ ] T013 [P] [US2] Tests (shares, top five and query done 2 Nov): `TestSegments_048_C4` (inherited values, Not filled in, equal shares adding up exactly,
   Total counting each record once), `TestLeague_048_C5` (five highest, Total over all, "—" last, ties by name),
   `TestROI_048_FR015` (model and basis named; not configured gives the reason), `TestParseQuery_048_FR004`
 - [ ] T014 [US2] `segments.go`, `league.go`, the league operation in `handler.go`; remove its `notYetServed` line

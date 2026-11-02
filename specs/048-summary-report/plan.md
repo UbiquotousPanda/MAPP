@@ -30,7 +30,7 @@ vitest-axe; Playwright for US1.
 - **R2 — Segments (048-C4).** The active Shell attributes at Plan, Campaign and Activity level come from the frame's
   scope (`measure.Scope.Attributes`), the same source 043 uses; a node's values are on `allwork.Node`. An activity
   takes a Plan or Campaign attribute's value from its ancestor. Several values share the activity's figures equally
-  in exact decimals (the remainder cent to the first value in label order, so shares add up exactly).
+  in exact decimals (`money.SplitEvenly` over the values in label order, the remainder cent to the last, so shares add up exactly).
 - **R3 — Cost and ROI (048-C5).** Actual cost per activity is 015's paid in the plans' year (D-357), read once for the
   line items in view through the dashboards' `Spending` read (`SpendByMonth`). ROI is `attribution.ROI(revenue,
   cost)` with `attribution.Designated` naming the model; while no model is designated, ROI is `null` with the reason.
