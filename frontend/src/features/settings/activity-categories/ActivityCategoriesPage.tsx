@@ -35,7 +35,7 @@ const CATEGORY_NOUN = { one: 'activity category', many: 'activity categories' };
 type OpenForm = { kind: 'new' } | { kind: 'edit'; category: ActivityCategory };
 
 /**
- * Activity categories (feature 047, US3, FR-018 to FR-021): the groups of activity types the
+ * Activity categories: the groups of activity types the
  * reports open on, as the standard CRUD pattern — search and status filter in the address, a
  * table, details in a side panel (`?id=`), New category and Edit in a side-panel form, Set
  * inactive / Reactivate, and Delete (with Undo).

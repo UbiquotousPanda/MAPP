@@ -17,7 +17,7 @@ export function createBody(values: ActivityCategoryValues): ActivityCategoryCrea
   };
 }
 
-/** The fields people changed, with the version (D-203); null when nothing changed. */
+/** The fields people changed, with the version; null when nothing changed. */
 export function changedFields(
   start: ActivityCategoryValues,
   values: ActivityCategoryValues,
@@ -31,7 +31,7 @@ export function changedFields(
     body.isDefault = values.isDefault;
   }
   if (!sameIds(values.activityTypeIds, start.activityTypeIds)) {
-    // The complete new list of activity types in the category (FR-019).
+    // The complete new list of activity types in the category.
     body.activityTypeIds = values.activityTypeIds;
   }
   return Object.keys(body).length > 1 ? body : null;

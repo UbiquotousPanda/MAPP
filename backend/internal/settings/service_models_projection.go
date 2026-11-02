@@ -39,7 +39,7 @@ func parseVelocity(problems *errs.Problems, field string, months int) int {
 }
 
 // parseGoalStages keeps the funnel's own order whatever order the form sent, and refuses an empty set or an
-// unknown stage with one message (047-C2).
+// unknown stage with one message.
 func parseGoalStages(problems *errs.Problems, stages []string) []string {
 	kept := make([]string, 0, 3)
 	for _, stage := range allGoalStages() {
@@ -65,8 +65,8 @@ func valueOrZero(months *int) *int {
 const stageRemovedMessage = "%s set their goal at a stage this model would no longer allow. They keep it " +
 	"and it keeps projecting; new goals can't choose it."
 
-// stageRemovedWarnings warns, per goal stage the change removes, of the live plans whose goal sits there
-// (FR-003, 047-C3). Existing goals are never rewritten; the warning is the whole effect.
+// stageRemovedWarnings warns, per goal stage the change removes, of the live plans whose goal sits there.
+// Existing goals are never rewritten; the warning is the whole effect.
 func stageRemovedWarnings(before, after Model, refs []Reference) []ImpactWarning {
 	warnings := []ImpactWarning{}
 	for _, stage := range before.AllowedGoalStages {

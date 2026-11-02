@@ -1,7 +1,5 @@
 -- +goose Up
--- Velocity in whole months per transition and the allowed goal stages live on the model beside the two
--- conversion rates they qualify (047-C1, 047-C2). Backfills keep every existing model meaning what it
--- meant: zero lag, every stage allowed.
+-- Backfills keep every existing model meaning what it meant: zero lag, every stage allowed.
 ALTER TABLE models
     ADD COLUMN inq_to_mql_velocity_months  integer NOT NULL DEFAULT 0
         CHECK (inq_to_mql_velocity_months BETWEEN 0 AND 24),
@@ -33,7 +31,7 @@ CREATE TABLE activity_categories (
 CREATE UNIQUE INDEX activity_categories_name_key ON activity_categories (lower(name COLLATE "C"));
 CREATE UNIQUE INDEX activity_categories_default_key ON activity_categories (is_default) WHERE is_default;
 
--- The primary key IS the rule: an activity type belongs to at most one category (047-C7).
+-- The primary key IS the rule: an activity type belongs to at most one category.
 CREATE TABLE activity_category_types (
     activity_type_id text PRIMARY KEY REFERENCES activity_types (id) ON DELETE CASCADE,
     category_id      text NOT NULL REFERENCES activity_categories (id) ON DELETE CASCADE

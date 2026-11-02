@@ -46,7 +46,7 @@ func values(s projection.Series) []int64 {
 	return out
 }
 
-// SC-001: the hand-calculated table. A goal of 365,000 INQ over the whole of 2026 is 1,000 a day, so every
+// The hand-calculated table. A goal of 365,000 INQ over the whole of 2026 is 1,000 a day, so every
 // month is its day count × 1,000 and each later stage can be checked by hand.
 func TestProject_MatchesTheHandCalculatedTable_FR007_SC001(t *testing.T) {
 	t.Parallel()

@@ -9,8 +9,6 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// A new model answers 201 with its values, its allowed types by name and its usage; the list has it in name
-// order; a model that is gone answers not found; every problem of a new model comes at once (FR-009).
 func TestModelsAPI_ListCreateGet_FR009(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -45,13 +43,11 @@ func TestModelsAPI_ListCreateGet_FR009(t *testing.T) {
 	}
 }
 
-// lubricants2 is a new model allowing Event (AT-1002) and Digital media (AT-1003).
 var lubricants2 = map[string]any{
 	"name": "Lubricants 2.0", "inqToMqlRate": "2", "mqlToDealRate": "5",
 	"averageDealSize": map[string]string{"amount": "10000", "currency": "USD"}, "activityTypeIds": []string{"AT-1002", "AT-1003"},
 }
 
-// lubricants2Body is the answer for the model lubricants2 at version, with its bookkeeping meta.
 func lubricants2Body(version int, meta string) string {
 	return `{"id":"MOD-1003","name":"Lubricants 2.0","inqToMqlRate":"2.00","mqlToDealRate":"5.00",` +
 		`"averageDealSize":{"amount":"10000.00","currency":"USD"},"activityTypes":[` +
@@ -60,13 +56,12 @@ func lubricants2Body(version int, meta string) string {
 		`"active":true,"usage":` + unusedBody + `,"version":` + itoa(version) + `,` + meta + `}`
 }
 
-// A save from an out-of-date copy is refused with who changed the model and when (FR-007).
 func TestModelsAPI_UpdateConflict_FR007(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	alex := server.SignIn(t, alexsEmail)
 	daniel := server.SignIn(t, danielsEmail)
-	server.GrantRole(t, danielsEmail, "administrator", "all") // 014: changing Settings
+	server.GrantRole(t, danielsEmail, "administrator", "all")
 	mustCreate(t, alex, "/api/v1/models", lubricants2)
 	server.Advance(90 * time.Minute)
 	daniels := daniel.Do(t, http.MethodPatch, "/api/v1/models/MOD-1003", map[string]any{"mqlToDealRate": "6", "version": 1})
@@ -82,7 +77,6 @@ func TestModelsAPI_UpdateConflict_FR007(t *testing.T) {
 	assertAnswer(t, gone, http.StatusNotFound, modelGoneBody)
 }
 
-// The impact check validates like the update and answers the warnings, saving nothing (FR-011, D-044).
 func TestModelsAPI_Impact_FR011(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -99,8 +93,6 @@ func TestModelsAPI_Impact_FR011(t *testing.T) {
 	assertAnswer(t, alex.Do(t, http.MethodGet, "/api/v1/models/MOD-1003", nil), http.StatusOK, lubricants2Body(1, alexAtStart))
 }
 
-// Set inactive and Reactivate answer the model with its new status; an out-of-date version is refused
-// (FR-004).
 func TestModelsAPI_Status_FR004(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -117,8 +109,6 @@ func TestModelsAPI_Status_FR004(t *testing.T) {
 	}
 }
 
-// An unused model moves to the recycle bin, which lists it as a model, and Undo brings it back (FR-004,
-// FR-006).
 func TestModelsAPI_DeleteAndUndo_FR004(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t, apitest.WithoutDemoHistory()) // BIN-1001 is the first entry of an empty recycle bin

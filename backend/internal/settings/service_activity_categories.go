@@ -21,7 +21,7 @@ const (
 	activityCategoryNameTaken   = "An activity category called '%s' already exists."
 )
 
-// CreateActivityCategory creates an active activity category (FR-018, FR-019, FR-020): a name of 1 to 80
+// CreateActivityCategory creates an active activity category: a name of 1 to 80
 // characters that no other category has ignoring letter case, and the activity types it groups — each type
 // leaves the category it was in. Marking it the default unmarks the previous default in the same
 // transaction. Every problem is reported at once.
@@ -58,8 +58,8 @@ func (s *Service) CreateActivityCategory(ctx context.Context, a actor.Actor, inp
 }
 
 // UpdateActivityCategory changes the fields of the activity category id that update sends, from the version
-// the person started at (FR-007, FR-018). activityTypeIds, when sent, is the complete new list of types:
-// a type listed here leaves the category it was in (FR-019), and one left out becomes Uncategorised.
+// the person started at. activityTypeIds, when sent, is the complete new list of types:
+// a type listed here leaves the category it was in, and one left out becomes Uncategorised.
 func (s *Service) UpdateActivityCategory(ctx context.Context, a actor.Actor, id string, update ActivityCategoryUpdate) (ActivityCategoryView, error) {
 	var view ActivityCategoryView
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
@@ -99,8 +99,8 @@ func (s *Service) UpdateActivityCategory(ctx context.Context, a actor.Actor, id 
 	return view, err
 }
 
-// DeleteActivityCategory moves the activity category id to the recycle bin, so that it can be undone
-// (FR-021). Its types are released to Uncategorised by the database; the snapshot keeps them, so an Undo or
+// DeleteActivityCategory moves the activity category id to the recycle bin, so that it can be undone.
+// Its types are released to Uncategorised by the database; the snapshot keeps them, so an Undo or
 // a Restore assigns them back.
 func (s *Service) DeleteActivityCategory(ctx context.Context, a actor.Actor, id string) (history.BinEntry, error) {
 	var entry history.BinEntry

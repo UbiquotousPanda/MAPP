@@ -32,7 +32,7 @@ func (s *PostgresStore) ListActivityCategories(ctx context.Context) ([]ActivityC
 }
 
 // PutActivityCategory saves the category and its activity types. The assignment's primary key is one row
-// per type, so assigning a type here takes it out of the category it was in (047-C7).
+// per type, so assigning a type here takes it out of the category it was in.
 func (s *PostgresStore) PutActivityCategory(ctx context.Context, c ActivityCategory) error {
 	q := s.change(ctx)
 	err := q.PutActivityCategory(ctx, sqlcdb.PutActivityCategoryParams{

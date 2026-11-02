@@ -92,7 +92,7 @@ func (s fakeStore) DeleteActivityCategory(ctx context.Context, id string) error 
 }
 
 // releaseCategoryTypes mirrors the assignment table's primary key: a type assigned to c leaves every other
-// category (047-C7).
+// category.
 func (s fakeStore) releaseCategoryTypes(ctx context.Context, c ActivityCategory) error {
 	others, err := s.categories.Where(func(o ActivityCategory) bool { return o.ID != c.ID })
 	if err != nil {

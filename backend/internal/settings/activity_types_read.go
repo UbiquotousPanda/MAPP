@@ -8,9 +8,6 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// ListActivityTypes returns every activity type, active and inactive, by name ignoring letter case, each
-// with the models that allow it and its usage (FR-002, FR-003). Every signed-in person may see them
-// (FR-008).
 func (s *Service) ListActivityTypes(ctx context.Context, _ actor.Actor) ([]ActivityTypeView, error) {
 	var views []ActivityTypeView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -25,7 +22,6 @@ func (s *Service) ListActivityTypes(ctx context.Context, _ actor.Actor) ([]Activ
 	return views, err
 }
 
-// GetActivityType returns the activity type id with its models and usage (US5-2).
 func (s *Service) GetActivityType(ctx context.Context, _ actor.Actor, id string) (ActivityTypeView, error) {
 	var view ActivityTypeView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -39,7 +35,6 @@ func (s *Service) GetActivityType(ctx context.Context, _ actor.Actor, id string)
 	return view, err
 }
 
-// storedActivityType reads the activity type id, or answers not found.
 func (s *Service) storedActivityType(ctx context.Context, id string) (ActivityType, error) {
 	t, found, err := s.repo.GetActivityType(ctx, id)
 	if err != nil {
@@ -51,7 +46,6 @@ func (s *Service) storedActivityType(ctx context.Context, id string) (ActivityTy
 	return t, nil
 }
 
-// activityTypeView returns the activity type t as the API answers it.
 func (s *Service) activityTypeView(ctx context.Context, t ActivityType) (ActivityTypeView, error) {
 	views, err := s.activityTypeViews(ctx, []ActivityType{t})
 	if err != nil {
@@ -60,8 +54,7 @@ func (s *Service) activityTypeView(ctx context.Context, t ActivityType) (Activit
 	return views[0], nil
 }
 
-// activityTypeViews returns activity types as the API answers them: each with the models allowing it, by
-// name, and its usage.
+// activityTypeViews reads the models and the usage once for all the types.
 func (s *Service) activityTypeViews(ctx context.Context, types []ActivityType) ([]ActivityTypeView, error) {
 	models, err := s.repo.ListModels(ctx)
 	if err != nil {

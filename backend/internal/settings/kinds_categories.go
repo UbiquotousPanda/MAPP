@@ -8,13 +8,11 @@ import (
 	"mapp/internal/history"
 )
 
-// defaultReleasedNote says why a category comes back without being the default (FR-020).
 const (
 	defaultReleasedNote = "No longer the default because another category is now the default."
 	typesGoneNote       = "Activity types deleted since are no longer in it."
 )
 
-// The fields of an activity category and their labels in the activity log (data model §12).
 const (
 	fieldName            = "name"
 	fieldIsDefault       = "isDefault"
@@ -52,8 +50,7 @@ func yesNoText(value any) string {
 	return "No"
 }
 
-// prepareActivityCategoryRestore applies the name rule before a category comes back, and lets the category
-// that is the default now keep it, so at most one is ever the default.
+// prepareActivityCategoryRestore lets the category that is the default now keep it: at most one is the default.
 func (s *Service) prepareActivityCategoryRestore(ctx context.Context, rc history.RestoreContext, snap *history.Snapshot) ([]string, error) {
 	var c ActivityCategory
 	if err := json.Unmarshal(snap.Data, &c); err != nil {

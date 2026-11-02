@@ -25,7 +25,6 @@ const GROUPS_ONE_TYPE: ActivityCategory['usage'] = {
   records: [],
 };
 
-/** Asset: the default category, groups Event. */
 export const ASSET: ActivityCategory = {
   id: 'CAT-1001',
   name: 'Asset',
@@ -37,7 +36,6 @@ export const ASSET: ActivityCategory = {
   ...MADE,
 };
 
-/** Promotion: not the default, groups nothing yet, unused. */
 export const PROMOTION: ActivityCategory = {
   ...ASSET,
   id: 'CAT-1002',
@@ -62,7 +60,6 @@ export const CATEGORIES = { items: [ASSET, PROMOTION, LEGACY], total: 3 };
 
 export const UNCATEGORISED_TYPE = PODCAST;
 
-/** The Activity categories page for a signed-in person, with the categories and types answered. */
 export function renderActivityCategoriesPage(
   answers: HttpHandler[] = [],
   route: string = CATEGORIES_PATH,

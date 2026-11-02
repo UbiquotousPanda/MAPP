@@ -38,7 +38,7 @@ func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput
 }
 
 // noProjection says why each figure has no projection, which an actual alone would otherwise swallow: the
-// stage's own reason answers "why no actual", and a figure can have one and not the other (FR-013).
+// stage's own reason answers "why no actual", and a figure can have one and not the other.
 func noProjection(panel Panel) Panel {
 	for i := range panel.Stages {
 		panel.Stages[i].ProjectedReason = reasonNoGoal
@@ -71,7 +71,7 @@ func monthlyCounts(totals []StageTotals, stage string, year int) []projection.Mo
 	return months
 }
 
-// monthlyRevenue converts each month once at the current rate; a month with no rate stays empty (046-C7).
+// monthlyRevenue converts each month once at the current rate; a month with no rate stays empty.
 func (s *Service) monthlyRevenue(ctx context.Context, totals []StageTotals, year int) []projection.MoneyFigure {
 	rates := s.currentRates(ctx)
 	months := make([]projection.MoneyFigure, 0, projection.Months)

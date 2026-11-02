@@ -1,8 +1,3 @@
-/**
- * The words each kind of Settings record is called by on screen (feature 002 plan, "User-visible
- * messages"): in the middle of a sentence, at the start of one, what setting it inactive does, and
- * what its details say when it is gone.
- */
 export type SettingKind =
   | 'model'
   | 'activityType'

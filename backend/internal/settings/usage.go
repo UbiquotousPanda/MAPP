@@ -9,29 +9,27 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Reference is one record outside Settings and the Settings records it uses (data model §10, D-042), live
-// or in the recycle bin, reported by features 003–007 through a ReferenceSource.
+// Reference is one record outside Settings, live or binned, and the Settings records it uses.
 type Reference struct {
-	Record              history.RecordRef // {type: "activity", id: "A-1003", name: "Launch film"}; plans carry their name
-	InBin               bool              // true while the record is in the recycle bin
-	Level               Level             // its Shell-attribute level; "" for people
-	PlanID              string            // its plan (a plan: its own id); "" for people
-	ActivityID          string            // an activity: its own id; a line item: its activity; "" otherwise
-	Attributes          AttributeValues   // its Shell attribute values; nil when none
-	ModelID             string            // plans
-	GoalStage           string            // plans: the stage their goal is set at (047)
-	ActivityTypeID      string            // activities
-	Currency            string            // line items: their currency; people: their display currency; plans: their plan currency (016)
-	PlannedCost         *money.Amount     // line items: planned cost in Currency
-	Budget              *money.Amount     // plans: the plan budget in Currency (016 FR-005)
-	FinanceBudgetID     string            // plans: default finance budget
-	FinanceBudgetItemID string            // line items: linked finance budget item
+	Record              history.RecordRef
+	InBin               bool
+	Level               Level
+	PlanID              string
+	ActivityID          string // an activity: its own id; a line item: its activity; "" otherwise
+	Attributes          AttributeValues
+	ModelID             string
+	GoalStage           string
+	ActivityTypeID      string
+	Currency            string // line items: their currency; people: their display currency; plans: their plan currency
+	PlannedCost         *money.Amount
+	Budget              *money.Amount
+	FinanceBudgetID     string
+	FinanceBudgetItemID string
 }
 
-// ReferenceSource lists every record of one kind, live and in the bin; each feature 003–007 provides one.
+// ReferenceSource lists every record of one kind, live and in the bin; each record area provides one.
 type ReferenceSource func(ctx context.Context) ([]Reference, error)
 
-// The kinds of usage parts (contract UsagePart.kind) that are not a level.
 const (
 	usedByPerson       = "person"
 	usedByModel        = "model"
@@ -43,10 +41,8 @@ const (
 
 const notUsedYet = "Not used yet"
 
-// maxUsageRecords is how many plans Usage.Records lists at most.
 const maxUsageRecords = 50
 
-// levelNouns are the singular and plural nouns of the records of each level, as "Used by" counts them.
 var levelNouns = map[Level][2]string{
 	LevelPlan:       {"plan", "plans"},
 	LevelCampaign:   {"campaign", "campaigns"},
@@ -55,7 +51,6 @@ var levelNouns = map[Level][2]string{
 	LevelLineItem:   {"line item", "line items"},
 }
 
-// tally counts the records that use a Settings record, and how many of them are in the recycle bin.
 type tally struct {
 	count, inBin int
 }
@@ -67,16 +62,15 @@ func (t *tally) add(inBin bool) {
 	}
 }
 
-// binned is a Settings record that may be in the recycle bin; it counts in "Used by" the same way.
 type binned[T any] struct {
 	record T
 	inBin  bool
 }
 
-// usageIndex answers "Used by" for every Settings record (FR-003, data model §10), built once per request.
+// usageIndex answers "Used by" for every Settings record, built once per request.
 type usageIndex struct {
 	refs       []Reference
-	attributes map[string]Attribute // every attribute, live and in the bin, by id
+	attributes map[string]Attribute
 
 	plansByModel       map[string]*tally
 	activitiesByType   map[string]*tally
@@ -85,17 +79,16 @@ type usageIndex struct {
 	valuesByAttribute  map[string]*tally
 	valuesByOption     map[string]*tally
 	dependents         map[string][]binned[Attribute] // parent attribute id → the attributes depending on it
-	conditions         tally                          // attributes with a business-unit condition
+	conditions         tally
 	conditionsByOption map[string]*tally
 	linkedOptions      map[string]map[string]*tally // parent option id → dependent attribute id → its options linked to it
 	lineItemsByCurr    map[string]*tally
 	peopleByCurr       map[string]*tally
-	plansByCurr        map[string]*tally // plans planned in a currency (016 FR-010)
+	plansByCurr        map[string]*tally
 	lineItemsByItem    map[string]*tally
 	plansByBudget      map[string]*tally
 }
 
-// usage reads every reference source and Settings record, live and binned, into the index that answers "Used by".
 func (s *Service) usage(ctx context.Context) (*usageIndex, error) {
 	u := &usageIndex{
 		attributes:   map[string]Attribute{},
@@ -151,7 +144,6 @@ func (s *Service) usage(ctx context.Context) (*usageIndex, error) {
 	return u, nil
 }
 
-// references reads every reference source once: the records of features 003–007 that use Settings records.
 func (s *Service) references(ctx context.Context) ([]Reference, error) {
 	refs := []Reference{}
 	for _, source := range s.sources {
@@ -214,7 +206,6 @@ func count(tallies map[string]*tally, key string, inBin bool) {
 	tallies[key].add(inBin)
 }
 
-// settingsInUse returns the models, attributes, options and categories that may use other records, live and binned.
 func (s *Service) settingsInUse(ctx context.Context) ([]binned[Model], []binned[Attribute], []binned[Option], []ActivityCategory, error) {
 	models, err := liveAndBinned(ctx, s, modelKind, s.repo.ListModels)
 	if err != nil {
@@ -247,7 +238,6 @@ func liveAndBinned[T any](ctx context.Context, s *Service, kind string, list fun
 	return withBinned(stored, snapshots)
 }
 
-// withBinned returns the stored records followed by the records of the snapshots, marked as in the bin.
 func withBinned[T any](stored []T, snapshots []history.Snapshot) ([]binned[T], error) {
 	list := make([]binned[T], 0, len(stored)+len(snapshots))
 	for _, record := range stored {

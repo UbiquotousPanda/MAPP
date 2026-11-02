@@ -54,7 +54,7 @@ func SplitCounts(actual, projected []MonthFigure, today date.Date, planYear int)
 	return out
 }
 
-// valueBefore keeps the month in progress out of the actual total, so nothing is counted twice (FR-010).
+// valueBefore keeps the month in progress out of the actual total, so nothing is counted twice.
 func valueBefore(value int64, i, at int) int64 {
 	if i < at {
 		return value

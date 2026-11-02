@@ -20,7 +20,6 @@ const (
 	Custom   RuleKind = "custom"
 )
 
-// Rule's Permission is needed anywhere by a View rule; a Custom rule's only documents its service's check.
 type Rule struct {
 	Kind       RuleKind
 	Permission authz.Permission
