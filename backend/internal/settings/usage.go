@@ -216,23 +216,15 @@ func count(tallies map[string]*tally, key string, inBin bool) {
 
 // settingsInUse returns the models, attributes, options and categories that may use other records, live and binned.
 func (s *Service) settingsInUse(ctx context.Context) ([]binned[Model], []binned[Attribute], []binned[Option], []ActivityCategory, error) {
-	inBin := map[string][]history.Snapshot{}
-	for _, kind := range []string{modelKind, attributeKind, optionKind} {
-		snapshots, err := s.history.SnapshotsInBin(ctx, kind)
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
-		inBin[kind] = snapshots
-	}
-	storedModels, err := s.repo.ListModels(ctx)
+	models, err := liveAndBinned(ctx, s, modelKind, s.repo.ListModels)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
-	storedAttributes, err := s.repo.ListAttributes(ctx)
+	attributes, err := liveAndBinned(ctx, s, attributeKind, s.repo.ListAttributes)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
-	storedOptions, err := s.repo.ListOptions(ctx)
+	options, err := liveAndBinned(ctx, s, optionKind, s.repo.ListOptions)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -240,19 +232,19 @@ func (s *Service) settingsInUse(ctx context.Context) ([]binned[Model], []binned[
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
-	models, err := withBinned(storedModels, inBin[modelKind])
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-	attributes, err := withBinned(storedAttributes, inBin[attributeKind])
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-	options, err := withBinned(storedOptions, inBin[optionKind])
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
 	return models, attributes, options, categories, nil
+}
+
+func liveAndBinned[T any](ctx context.Context, s *Service, kind string, list func(context.Context) ([]T, error)) ([]binned[T], error) {
+	snapshots, err := s.history.SnapshotsInBin(ctx, kind)
+	if err != nil {
+		return nil, err
+	}
+	stored, err := list(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return withBinned(stored, snapshots)
 }
 
 // withBinned returns the stored records followed by the records of the snapshots, marked as in the bin.
