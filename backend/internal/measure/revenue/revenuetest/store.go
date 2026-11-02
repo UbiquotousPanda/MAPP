@@ -1,5 +1,4 @@
-// Package revenuetest fakes feature 049's one store read, for tests that build the service or the whole
-// API without a database.
+// Package revenuetest fakes the revenue reports' one store read, for tests without a database.
 package revenuetest
 
 import (
@@ -12,8 +11,7 @@ import (
 
 var _ revenue.Facts = (*Store)(nil)
 
-// Store holds every fact total a test seeds directly; it applies no scope filter itself, because the
-// activity IDs a caller passes are already the ones its own scope resolved (as 046's fake does).
+// Store applies no scope filter: the activity IDs a caller passes already come from its own scope.
 type Store struct {
 	Totals []revenue.FactTotal
 }

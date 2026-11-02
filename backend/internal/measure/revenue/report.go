@@ -10,7 +10,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// RankedRevenue is the ranked list of entries sorted by actual or projected revenue (FR-006, FR-012).
+// RankedRevenue is the ranked list of entries sorted by actual or projected revenue.
 func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Filter, q RankedQuery) (RevenueRanked, error) {
 	var out RevenueRanked
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -62,7 +62,7 @@ func (r revenueReport) Sheets(ctx context.Context, a actor.Actor, f measure.Filt
 	return r.service.revenueSheets(ctx, a, f)
 }
 
-// funnelReport is Funnel stages in 039's registry, sharing Revenue's service (research R1).
+// funnelReport is Funnel stages in 039's registry, sharing Revenue's service.
 type funnelReport struct {
 	service *Service
 }

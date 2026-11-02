@@ -21,7 +21,7 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 	return &PostgresStore{db: db}
 }
 
-// ReportTotals is 049's one new read: the activities' counted facts, one row per activity (research R2).
+// ReportTotals is 049's one new read: the activities' counted facts, one row per activity.
 func (s *PostgresStore) ReportTotals(ctx context.Context, scope authz.Scope, activityIDs []string, year int) ([]FactTotal, error) {
 	rows, err := s.db.Queries(ctx).ReportFactTotals(ctx, sqlcdb.ReportFactTotalsParams{
 		ActivityIds: activityIDs, Year: year,

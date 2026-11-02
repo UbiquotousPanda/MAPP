@@ -46,13 +46,12 @@ var (
 	idPattern    = regexp.MustCompile(`^[A-Z]+-[0-9]+$`)
 )
 
-// categoryOf reads the category parameter: "" for all categories, "uncategorised", or a category id
-// (049-C10).
+// categoryOf reads the category parameter: "" for all categories, "uncategorised", or a category id.
 func categoryOf(values url.Values) string {
 	return strings.TrimSpace(values.Get(paramCategory))
 }
 
-// RankedQuery is the ranked list's own parameters, 040's shape (research R5) with this feature's sort keys.
+// RankedQuery is the ranked list's own parameters, 040's shape with this feature's sort keys.
 type RankedQuery struct {
 	Sort, Order, Group, Search, Drill, Stage string
 	Size, Page                               int

@@ -40,7 +40,9 @@ test('049 US1: the Revenue report shows cards, a chart and a ranked list against
   await expect(fleetCards).toContainText('%');
 
   await ranked.getByRole('button', { name: 'Fleet cards' }).click();
-  await expect(ranked.getByRole('navigation', { name: 'Drill trail' })).toContainText('Fleet cards');
+  await expect(ranked.getByRole('navigation', { name: 'Drill trail' })).toContainText(
+    'Fleet cards',
+  );
   await expect(ranked.getByRole('button', { name: 'Back' })).toBeVisible();
 
   await expectNoAxeViolationsExceptOpenLinkTargetSize(page);

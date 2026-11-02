@@ -13,7 +13,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// RankedFunnel is the ranked list sorted by the selected stage's actual or projected volume (FR-006, FR-017).
+// RankedFunnel is the ranked list sorted by the selected stage's actual or projected volume.
 func (s *Service) RankedFunnel(ctx context.Context, a actor.Actor, f measure.Filter, q RankedQuery) (FunnelRanked, error) {
 	var out FunnelRanked
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -50,7 +50,7 @@ type funnelIndex struct {
 	attrs    map[string]allwork.Attribute
 }
 
-// buildFunnelRanked builds one page of entries across their groups, with drill, 040's own rules exactly (049-C18).
+// buildFunnelRanked builds one page of entries across their groups, with drill, 040's own rules exactly.
 func buildFunnelRanked(in funnelRankedInput) FunnelRanked {
 	byID, below := nodeIndex(in.nodes)
 	own := funnelFiguresOfActivities(in.views, in.stage, in.w)
@@ -71,7 +71,7 @@ func buildFunnelRanked(in funnelRankedInput) FunnelRanked {
 		Total: total, Trail: trail, Groups: pages, DrillLost: drillLost}
 }
 
-// funnelTops is the entries to group and page: the Show level, or the one drilled record (FR-005, 049-C18).
+// funnelTops is the entries to group and page: the Show level, or the one drilled record.
 func funnelTops(idx funnelIndex, matched allwork.Matched, show, drill string) ([]string, []TrailStep, bool) {
 	if drill == "" {
 		return topLevelIDs(idx.nodes, show), []TrailStep{}, false
@@ -149,7 +149,7 @@ type funnelShare struct {
 	part     *money.Percent
 }
 
-// funnelEntryOf builds one entry, with its children one level below scaled by the same share (049-C18).
+// funnelEntryOf builds one entry, with its children one level below scaled by the same share.
 func funnelEntryOf(idx funnelIndex, id string, s funnelShare) FunnelEntry {
 	n := idx.byID[id]
 	entry := FunnelEntry{ID: n.ID, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID,
@@ -164,7 +164,7 @@ func funnelEntryOf(idx funnelIndex, id string, s funnelShare) FunnelEntry {
 	return entry
 }
 
-// compareFunnel ranks by the sort figure in the chosen order, entries without it last, then by name (049-C18).
+// compareFunnel ranks by the sort figure in the chosen order, entries without it last, then by name.
 func compareFunnel(x, y FunnelEntry, q RankedQuery) int {
 	a, hasA := funnelFigureOf(x.Figures, q.Sort)
 	b, hasB := funnelFigureOf(y.Figures, q.Sort)

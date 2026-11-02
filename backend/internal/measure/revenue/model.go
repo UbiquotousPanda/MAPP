@@ -17,13 +17,13 @@ const (
 	ReasonNoPreviousStage          = "noPreviousStage"
 )
 
-// Stamp names the model behind a projected figure and when its parameters last changed (047 FR-012).
+// Stamp names the model behind a projected figure and when its parameters last changed.
 type Stamp struct {
 	ModelName      string `json:"modelName"`
 	ModelChangedAt string `json:"modelChangedAt"`
 }
 
-// MoneyCard is one card whose figure is money; Reason is set only when Value is nil (FR-009).
+// MoneyCard is one card whose figure is money; Reason is set only when Value is nil.
 type MoneyCard struct {
 	Value  *money.Money `json:"value"`
 	Reason string       `json:"reason"`
@@ -41,7 +41,7 @@ type RevenueCards struct {
 	Performance NumberCard `json:"performance"`
 }
 
-// RevenuePeriod is one period of the series, split at today (047 FR-010).
+// RevenuePeriod is one period of the series, split at today.
 type RevenuePeriod struct {
 	Key        string       `json:"key"`
 	State      string       `json:"state"`
@@ -59,7 +59,7 @@ type RevenueReport struct {
 	Reason     string          `json:"reason"`
 }
 
-// RevenueFigures is one entry's figures; ActualCost and ROI are absent until 050 lands (049-C6).
+// RevenueFigures is one entry's figures; ActualCost and ROI are absent until 050 lands.
 type RevenueFigures struct {
 	Goal             *money.Money `json:"goal"`
 	Actual           *money.Money `json:"actual"`
@@ -106,7 +106,7 @@ type TrailStep struct {
 	Name  string `json:"name"`
 }
 
-// FunnelCards mirrors RevenueCards, plus the conversion from the previous stage (049-C13).
+// FunnelCards mirrors RevenueCards, plus the conversion from the previous stage.
 type FunnelCards struct {
 	Goal        NumberCard `json:"goal"`
 	Actual      NumberCard `json:"actual"`

@@ -28,7 +28,7 @@ func levelWords() map[string]string {
 	return map[string]string{"plan": "Plan", "campaign": "Campaign", "initiative": "Initiative", "activity": "Activity"}
 }
 
-// revenueSheets are Revenue's widgets as 039's export writes them; the ranked list has every page (FR-007).
+// revenueSheets are Revenue's widgets as 039's export writes them; the ranked list has every page.
 func (s *Service) revenueSheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
 	report, err := s.Report(ctx, a, f)
 	if err != nil {
@@ -125,7 +125,7 @@ func numberCell(n *float64) sheet.Cell {
 
 func numberCardCell(c NumberCard) sheet.Cell { return numberCell(c.Value) }
 
-// funnelSheets are Funnel stages' widgets as 039's export writes them (FR-007).
+// funnelSheets are Funnel stages' widgets as 039's export writes them.
 func (s *Service) funnelSheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
 	report, err := s.FunnelReport(ctx, a, f, f.Own.Get(paramStage))
 	if err != nil {

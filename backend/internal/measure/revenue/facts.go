@@ -10,16 +10,14 @@ import (
 
 const stageRevenue = "revenue"
 
-// activityTotals is one activity's counted facts, laid out in the engine's own shape so they line up month
-// by month with its projected series (mirrors 046's activityprojection.go).
+// activityTotals lays one activity's counted facts out month by month, in line with its projected series.
 type activityTotals struct {
 	counts  map[string][]projection.MonthFigure // by stage ("inq", "mql")
 	revenue []projection.MoneyFigure
 }
 
-// factsByActivity reads the activities' counted facts for the plan year and lays each one out as a twelve-
-// month series per stage, one query whatever the number of activities (research R2, SC-003). Revenue is
-// converted to the current rate once per month; a currency with no rate is excluded, as 046-C7 has it.
+// factsByActivity reads the facts in one query whatever the number of activities and converts revenue at the
+// current rate; a currency with no rate is excluded.
 func (s *Service) factsByActivity(ctx context.Context, scope authz.Scope, activityIDs []string, year int) (map[string]activityTotals, error) {
 	if len(activityIDs) == 0 {
 		return map[string]activityTotals{}, nil

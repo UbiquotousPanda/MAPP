@@ -1,4 +1,4 @@
-// Package revenue serves feature 049's two reports: Revenue and Funnel stages (research R1).
+// Package revenue serves the Revenue and Funnel stages reports.
 package revenue
 
 import (
@@ -40,7 +40,6 @@ type ActivityGoals struct {
 	Model                projection.Model
 }
 
-// Goals answers each activity's plan model and "set later stages myself" flag (research R3).
 type Goals interface {
 	ActivityGoals(ctx context.Context, scope authz.Scope, nodes []allwork.Node) (map[string]ActivityGoals, error)
 }
@@ -56,7 +55,7 @@ type Categories interface {
 	ListCategories(ctx context.Context) ([]Category, error)
 }
 
-// Rates answers the current exchange rates, as 046's revenue figure uses them (046-C7).
+// Rates answers the current exchange rates, which convert every revenue fact.
 type Rates interface {
 	Rates(ctx context.Context) (money.Rates, error)
 }

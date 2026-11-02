@@ -12,8 +12,8 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// twoPlanScope is two plans, each with one campaign and one activity with an INQ goal, for T014's grouping
-// and drill tests: Launch film (P-1 › C-1 › A-1, owned by Priya) and Relaunch film (P-2 › C-2 › A-2, no
+// twoPlanScope is two plans, each with one campaign and one activity with an INQ goal, for the grouping and
+// drill tests: Launch film (P-1 › C-1 › A-1, owned by Priya) and Relaunch film (P-2 › C-2 › A-2, no
 // owner).
 func twoPlanScope() measure.Scope {
 	start, end := date.MustParse("2026-01-01"), date.MustParse("2026-12-31")

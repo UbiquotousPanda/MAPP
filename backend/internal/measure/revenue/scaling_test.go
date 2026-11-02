@@ -12,7 +12,7 @@ import (
 )
 
 // countedFacts counts every call to ReportTotals, so a test can pin that the statement count does not grow
-// with the number of activities in view (research R2, SC-003).
+// with the number of activities in view.
 type countedFacts struct {
 	calls int
 }

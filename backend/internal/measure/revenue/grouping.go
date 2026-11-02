@@ -21,7 +21,7 @@ const (
 )
 
 // groupShare is one group an entry belongs to; part is its share under a % split, nil for all of it. Shared
-// by both reports, since group membership never depends on which figures a node carries (049-C18).
+// by both reports, since group membership never depends on which figures a node carries.
 type groupShare struct {
 	key, label string
 	part       *money.Percent

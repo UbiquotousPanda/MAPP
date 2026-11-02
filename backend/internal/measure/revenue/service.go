@@ -31,14 +31,14 @@ func NewService(tx Transactor, deps Deps, now clock.Clock) *Service {
 	return &Service{tx: tx, deps: deps, now: now}
 }
 
-// activityView is one activity with its projected series (research R3, R4) and its counted facts.
+// activityView is one activity with its projected series and its counted facts.
 type activityView struct {
 	node       allwork.Node
 	projection projection.Projection
 	facts      activityTotals
 }
 
-// scopeAndActivities resolves the scope, applies the category parameter (049-C10), and projects each activity.
+// scopeAndActivities resolves the scope, applies the category parameter, and projects each activity.
 func (s *Service) scopeAndActivities(ctx context.Context, a actor.Actor, f measure.Filter, category string) (
 	measure.Scope, []activityView, error,
 ) {
@@ -84,7 +84,7 @@ func (s *Service) scopeAndActivities(ctx context.Context, a actor.Actor, f measu
 	return sc, views, nil
 }
 
-// activitiesInView is the matched activities, narrowed to one category or "uncategorised" (049-C10).
+// activitiesInView is the matched activities, narrowed to one category or "uncategorised".
 func (s *Service) activitiesInView(sc measure.Scope, category string, categories []Category) []allwork.Node {
 	typeCategory := map[string]string{}
 	for _, c := range categories {
@@ -129,7 +129,7 @@ func idsOf(nodes []allwork.Node) []string {
 }
 
 // nodesForRanking keeps the plan/campaign/initiative hierarchy but narrows the activity leaves to the ones
-// in view (049-C10); revenue and funnel stop at the activity, so line items never appear.
+// in view; revenue and funnel stop at the activity, so line items never appear.
 func nodesForRanking(sc measure.Scope, views []activityView) []allwork.Node {
 	kept := make([]allwork.Node, 0, len(sc.Nodes))
 	for _, n := range sc.Nodes {

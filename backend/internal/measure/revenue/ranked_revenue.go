@@ -31,7 +31,7 @@ type revenueIndex struct {
 	display money.Display
 }
 
-// revenueRanked builds one page of entries across their groups, with drill, 040's own rules exactly (049-C18).
+// revenueRanked builds one page of entries across their groups, with drill, 040's own rules exactly.
 func revenueRanked(in revenueRankedInput) RevenueRanked {
 	byID, below := nodeIndex(in.nodes)
 	own := revenueFiguresOfActivities(in.views, in.w)
@@ -51,7 +51,7 @@ func revenueRanked(in revenueRankedInput) RevenueRanked {
 		Total: total, Trail: trail, Groups: pages, DrillLost: drillLost}
 }
 
-// revenueTops is the entries to group and page: the Show level, or the one drilled record (FR-005, 049-C18).
+// revenueTops is the entries to group and page: the Show level, or the one drilled record.
 func revenueTops(idx revenueIndex, matched allwork.Matched, show, drill string) ([]string, []TrailStep, bool) {
 	if drill == "" {
 		return topLevelIDs(idx.nodes, show), []TrailStep{}, false
@@ -160,7 +160,7 @@ func searchByName(ids []string, byID map[string]allwork.Node, search string) []s
 	return found
 }
 
-// revenueEntryOf builds one entry, with its children one level below scaled by the same share (049-C18).
+// revenueEntryOf builds one entry, with its children one level below scaled by the same share.
 func revenueEntryOf(idx revenueIndex, id string, figures RevenueFigures, part *money.Percent) RevenueEntry {
 	n := idx.byID[id]
 	entry := RevenueEntry{ID: n.ID, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID, Figures: withPerformance(figures, idx.display)}
@@ -174,7 +174,7 @@ func revenueEntryOf(idx revenueIndex, id string, figures RevenueFigures, part *m
 	return entry
 }
 
-// compareRevenue ranks by the sort figure in the chosen order, entries without it last, then by name (049-C18).
+// compareRevenue ranks by the sort figure in the chosen order, entries without it last, then by name.
 func compareRevenue(x, y RevenueEntry, q RankedQuery) int {
 	a, hasA := revenueFigureOf(x.Figures, q.Sort)
 	b, hasB := revenueFigureOf(y.Figures, q.Sort)

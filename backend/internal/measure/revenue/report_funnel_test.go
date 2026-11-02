@@ -30,7 +30,7 @@ func TestFunnelReport_SelectsTheFirstAvailableStageAndCountsUncovered_FR015_049C
 	}
 }
 
-// Proves FR-018: a plan whose activity types only an INQ goal is uncovered for MQL, even while another
+// A plan whose activity types only an INQ goal is uncovered for MQL, even while another
 // plan's model still offers it.
 func TestFunnelReport_AModelThatDoesNotAllowTheStageIsUncovered_FR018(t *testing.T) {
 	t.Parallel()
@@ -79,9 +79,8 @@ func TestRankedRevenue_SortsByProjectedByDefault(t *testing.T) {
 	}
 }
 
-// TestRankedRevenue_TopLevelTotalsMatchTheSeriesTotals proves SC-002: with no grouping, the ranked list's
-// one top-level group totals the same actual, projected and goal as the report's own cards, for the same
-// filter.
+// With no grouping, the ranked list's one top-level group totals the same actual, projected and goal as
+// the report's own cards, for the same filter.
 func TestRankedRevenue_TopLevelTotalsMatchTheSeriesTotals_SC002(t *testing.T) {
 	t.Parallel()
 	sc := oneActivityScope()
@@ -107,7 +106,7 @@ func TestRankedRevenue_TopLevelTotalsMatchTheSeriesTotals_SC002(t *testing.T) {
 	}
 }
 
-// Pins a real defect found while closing T053's SC-002 gap: ranked rows never carried Projected or
+// A real defect: ranked rows never carried Projected or
 // Performance, so every one answered "—" for both regardless of real data.
 func TestRankedFunnel_EntriesCarryProjectedAndPerformance_FR012_FR017(t *testing.T) {
 	t.Parallel()
@@ -129,7 +128,7 @@ func TestRankedFunnel_EntriesCarryProjectedAndPerformance_FR012_FR017(t *testing
 	}
 }
 
-// Closes T057: every ranked Funnel entry now carries Conversion, not just the report's own cards.
+// Every ranked Funnel entry carries Conversion, not just the report's own cards.
 func TestRankedFunnel_EntryCarriesConversionFromThePreviousStage_FR017_T057(t *testing.T) {
 	t.Parallel()
 	sc := oneActivityScope()
