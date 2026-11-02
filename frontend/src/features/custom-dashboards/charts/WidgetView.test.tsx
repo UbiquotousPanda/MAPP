@@ -62,7 +62,7 @@ describe('051 FR-039: every state of a widget', () => {
       reply(QUERY_PATH, () => {
         calls += 1;
         return calls === 1
-          ? { status: 400, body: apiError('validation_failed', 'Choose a field to measure.') }
+          ? { status: 500, body: apiError('internal_error', 'Something went wrong.') }
           : { body: widgetData() };
       }),
     ]);
@@ -72,6 +72,21 @@ describe('051 FR-039: every state of a widget', () => {
     await expectNoAxeViolations();
     await user.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByRole('img', { name: CHART_NAME })).toBeInTheDocument();
+  });
+
+  it('names what to correct, without Retry, when SP&A One refuses the settings', async () => {
+    mockApi([
+      reply(QUERY_PATH, {
+        status: 400,
+        body: apiError('validation_failed', 'Some fields need your attention.', {
+          fields: [{ field: 'query.filters[0].values', message: 'Enter an amount in US dollars.' }],
+        }),
+      }),
+    ]);
+    show(widget('bar'), { mode: 'edit' });
+    expect(await screen.findByText("Check this widget's settings")).toBeInTheDocument();
+    expect(screen.getByText('Enter an amount in US dollars.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
   });
 
   it('says there is no data to show and what to change', async () => {

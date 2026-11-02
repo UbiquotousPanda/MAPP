@@ -122,6 +122,28 @@ describe('051 FR-015, FR-023: what a widget asks for', () => {
     expect(widgetDataRequest(shown, null)).toBeNull();
   });
 
+  it('leaves out a filter still being filled in, so the preview keeps its figures', () => {
+    const done = { field: 'status', operator: 'eq' as const, values: ['Approved'] };
+    const shown = widget(
+      'bar',
+      {},
+      {
+        query: query({
+          filters: [
+            done,
+            { field: '', operator: 'eq', values: [''] },
+            { field: 'plannedCost', operator: 'between', values: ['100', ''] },
+            { field: 'status', operator: 'isEmpty', values: [] },
+          ],
+        }),
+      },
+    );
+    expect(widgetDataRequest(shown, null)?.query.filters).toEqual([
+      done,
+      { field: 'status', operator: 'isEmpty', values: [] },
+    ]);
+  });
+
   it('compares a key figure with its target', () => {
     const shown = kpi({ kpi: { comparison: 'target', target: '1000', higherIsBetter: true } });
     expect(widgetDataRequest(shown, null)?.comparison).toEqual({ kind: 'target', target: '1000' });

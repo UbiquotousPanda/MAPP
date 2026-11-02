@@ -31,6 +31,13 @@ export function WidgetError({ error, onRetry }: { error: unknown; onRetry: () =>
   );
 }
 
+export function WidgetInvalid({ error }: { error: ApiError }) {
+  const text = error.fields[0]?.message ?? error.message;
+  return (
+    <WidgetMessage icon={<SlidersHorizontal />} title="Check this widget's settings" text={text} />
+  );
+}
+
 export function WidgetNoData({ isFiltered }: { isFiltered: boolean }) {
   const hint = isFiltered
     ? 'Try a wider date range, other plans or teams, or fewer filters on this widget.'

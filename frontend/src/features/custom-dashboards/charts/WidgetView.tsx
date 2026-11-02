@@ -23,6 +23,7 @@ import {
   WidgetError,
   WidgetGone,
   WidgetIncomplete,
+  WidgetInvalid,
   WidgetLoading,
   WidgetNoAccess,
   WidgetNoData,
@@ -202,6 +203,9 @@ function failure(error: ApiError, viewerOwnsDashboard: boolean, retry: () => voi
   }
   if (error.kind === 'notFound') {
     return <WidgetGone />;
+  }
+  if (error.kind === 'validation') {
+    return <WidgetInvalid error={error} />;
   }
   return <WidgetError error={error} onRetry={retry} />;
 }

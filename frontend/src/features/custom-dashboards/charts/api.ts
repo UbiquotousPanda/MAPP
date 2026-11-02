@@ -36,7 +36,12 @@ export function widgetDataRequest(
   if (widget.type === 'kpi' && kpi?.comparison === 'target' && kpi.target === null) {
     return null;
   }
-  return { type: widget.type, query, filters, comparison: comparisonOf(widget, filters) };
+  return {
+    type: widget.type,
+    query: { ...query, filters: query.filters.filter(isFilledIn) },
+    filters,
+    comparison: comparisonOf(widget, filters),
+  };
 }
 
 /** The widget's figures, worked out by the API; the builder waits for typing to settle first. */
@@ -81,6 +86,12 @@ function isComplete(widget: Widget, query: NonNullable<Widget['query']>): boolea
     query.measures.length <= most &&
     query.measures.every((measure) => measure.aggregation === 'count' || Boolean(measure.field))
   );
+}
+
+function isFilledIn(filter: NonNullable<Widget['query']>['filters'][number]): boolean {
+  const needsNoValue = filter.operator === 'isEmpty' || filter.operator === 'notEmpty';
+  const hasValues = filter.values.length > 0 && filter.values.every((value) => value.trim() !== '');
+  return filter.field !== '' && (needsNoValue || hasValues);
 }
 
 function comparisonOf(
