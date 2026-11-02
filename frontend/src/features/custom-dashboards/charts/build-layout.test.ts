@@ -3,7 +3,7 @@ import type { WidgetType } from '../model';
 import { buildOption } from './build-option';
 import { column, seriesData, THEME, twoMeasureData, widget, widgetData } from './widget-fixtures';
 
-const TOKENS = new Set([
+const TOKENS = new Set<unknown>([
   THEME.ink,
   THEME.ink2,
   THEME.hairline,
