@@ -15,6 +15,8 @@ const (
 	msgDuplicateName = "Two columns are called '%s'. Rename one before saving."
 	msgNoName        = "Column %d has no name in the first row; it is called '%s'."
 	msgEmptyColumn   = "Column '%s' has no values."
+	msgEmptyRow      = "Row %d is empty; it is left out."
+	msgEmptyRows     = "Rows %d to %d are empty; they are left out."
 	msgLongCell      = "Row %d, %s: the text is longer than 500 characters."
 	msgMoreLongCells = "… and %d more cells longer than 500 characters."
 

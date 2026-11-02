@@ -134,6 +134,19 @@ func TestPreview_ColumnsSamplesAndProblems_FR041(t *testing.T) {
 	}
 }
 
+func TestPreview_ReportsEmptyRows_FR041(t *testing.T) {
+	t.Parallel()
+	csv := "Event,Leads\nExpo,1\n,\n\n,\nFair,2\n\nShow,3\n"
+	p, err := newFixture(t).service.Preview(t.Context(), priya, upload("leads.csv", csv))
+	if err != nil {
+		t.Fatalf("Preview() error = %v", err)
+	}
+	want := []string{fmt.Sprintf(msgEmptyRows, 3, 5), fmt.Sprintf(msgEmptyRow, 7)}
+	if diff := cmp.Diff(want, p.Problems); diff != "" || p.RowCount != 3 {
+		t.Errorf("problems of %d rows (-want +got):\n%s", p.RowCount, diff)
+	}
+}
+
 func TestPreview_SaysWhenNoRoomIsLeft_FR043(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
