@@ -41,6 +41,8 @@ func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.POST("/activity-types/:activityTypeId/impact", h.activityTypeImpact)
 	r.POST("/activity-types/:activityTypeId/status", h.setActivityTypeStatus)
 
+	h.activityCategoryRoutes(r)
+
 	h.attributeRoutes(r)
 
 	r.GET("/currencies", h.listCurrencies)
@@ -50,8 +52,8 @@ func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.DELETE("/currencies/:code", h.deleteCurrency)
 	r.POST("/currencies/:code/impact", h.currencyImpact)
 	r.POST("/currencies/:code/status", h.setCurrencyStatus)
-	h.rateRoutes(r)      // 016: rate history, current rates, GSAP rate import
-	h.fieldHelpRoutes(r) // 016: Field help
+	h.rateRoutes(r)
+	h.fieldHelpRoutes(r)
 
 	r.GET("/finance-budgets", h.listFinanceBudgets)
 	r.PATCH("/finance-budgets/:budgetId", h.renameFinanceBudget)
@@ -84,7 +86,6 @@ func (h *Handler) attributeRoutes(r gin.IRoutes) {
 	r.POST("/shell-attribute-forms/:level/check", h.checkValues)
 }
 
-// overview answers GET /api/v1/settings/overview: the active records of each section (FR-001).
 func (h *Handler) overview(c *gin.Context) {
 	overview, err := h.service.Overview(c.Request.Context(), actorOf(c))
 	respond(c, http.StatusOK, overview, err)
@@ -95,8 +96,6 @@ func actorOf(c *gin.Context) actor.Actor {
 	return a
 }
 
-// readBody decodes the request's JSON body into dst; when it cannot, it answers the error and returns
-// false.
 func readBody(c *gin.Context, dst any) bool {
 	if err := web.BindJSON(c, dst); err != nil {
 		web.RespondError(c, err)

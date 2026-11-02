@@ -412,6 +412,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings/activity-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every activity category (active and inactive), sorted by name ignoring letter case (FR-018, FR-022) */
+        get: operations["listActivityCategories"];
+        put?: never;
+        /** Create an activity category grouping activity types (FR-018) */
+        post: operations["createActivityCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/activity-categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        /** One activity category with the activity types it groups */
+        get: operations["getActivityCategory"];
+        put?: never;
+        post?: never;
+        /** Delete an activity category; its activity types become Uncategorised (FR-021) */
+        delete: operations["deleteActivityCategory"];
+        options?: never;
+        head?: never;
+        /** Change an activity category and the activity types it groups (FR-018, FR-019, FR-020) */
+        patch: operations["updateActivityCategory"];
+        trace?: never;
+    };
     "/api/v1/activity-types": {
         parameters: {
             query?: never;
@@ -4263,6 +4303,552 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/performance/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Settings › Performance data — the data sources, with their derived freshness (046 FR-001, FR-005) */
+        get: operations["listPerformanceSources"];
+        put?: never;
+        /** Add a data source (needs performance.import) (046 FR-001) */
+        post: operations["createPerformanceSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/sources/{sourceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        /** One data source with its freshness (046 FR-005) */
+        get: operations["getPerformanceSource"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a data source, only while it holds no performance data (needs performance.import) (046 FR-002)
+         * @description A source that holds facts is refused with 409 in_use and Deactivate offered instead, because deleting it would silently restate every figure its data fed.
+         */
+        delete: operations["deletePerformanceSource"];
+        options?: never;
+        head?: never;
+        /**
+         * Change a data source (needs performance.import) (046 FR-001, FR-045)
+         * @description Version-checked — a save against a version someone has moved past is refused.
+         */
+        patch: operations["updatePerformanceSource"];
+        trace?: never;
+    };
+    "/api/v1/performance/sources/{sourceId}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop a data source accepting data, keeping everything it has loaded (046 FR-004) */
+        post: operations["deactivatePerformanceSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/sources/{sourceId}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Let a deactivated data source accept data again (046 FR-004) */
+        post: operations["reactivatePerformanceSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/sources/{sourceId}/mappings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        /** The column mappings of a data source (046 FR-006) */
+        get: operations["listColumnMappings"];
+        put?: never;
+        /**
+         * Say what one column of this source's file means (needs performance.import) (046 FR-003, FR-006)
+         * @description Within a model, each stage and revenue is supplied by at most one active source; a second is refused with 409, naming the source that already supplies it.
+         */
+        post: operations["createColumnMapping"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/sources/{sourceId}/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        /** A blank file carrying exactly the columns this source's mappings define (046 FR-008) */
+        get: operations["downloadPerformanceTemplate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/mappings/{mappingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A column mapping's readable ID, such as PSM-1001. */
+                mappingId: components["parameters"]["MappingId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a column mapping (needs performance.import) (046 FR-006) */
+        delete: operations["deleteColumnMapping"];
+        options?: never;
+        head?: never;
+        /**
+         * Change a column mapping (needs performance.import) (046 FR-006, FR-007)
+         * @description A change affects future loads only and never restates a completed load.
+         */
+        patch: operations["updateColumnMapping"];
+        trace?: never;
+    };
+    "/api/v1/performance/sources/{sourceId}/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a CSV of performance rows for this source (needs performance.import) (046 FR-009)
+         * @description The whole file lands or none of it does. A file carrying a personal-data column is refused in
+         *     full, naming the columns, and nothing from it is stored (FR-012).
+         */
+        post: operations["uploadPerformanceFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/sources/{sourceId}/pull": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pull the simulated feed once, by explicit action (needs performance.import) (046 FR-010, 046-C13) */
+        post: operations["pullPerformanceFeed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The uploads, newest first, findable by file, uploader, source, status and date (needs performance.import) (046 FR-016) */
+        get: operations["listPerformanceImports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/imports/{importId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example IMP-1001 */
+                importId: components["parameters"]["ImportId"];
+            };
+            cookie?: never;
+        };
+        /** One upload with its summary and the counts per measure (needs performance.import) (046 FR-022, 046-C18) */
+        get: operations["getPerformanceImport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/imports/{importId}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example IMP-1001 */
+                importId: components["parameters"]["ImportId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Undo a whole upload (needs performance.import and settings.manage) (046 FR-017, 046-C16)
+         * @description Replaced versions return and the upload stays listed as undone.
+         */
+        post: operations["undoPerformanceImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/performance/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The activity's Data sources area (046 FR-031) */
+        get: operations["getActivityDataSources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/external-name-aliases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The superseded names kept for matching (046 FR-034) */
+        get: operations["listExternalNameAliases"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/external-name-aliases/{aliasId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                aliasId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove an alias; the old name then stops matching (needs performance.link) (046 FR-034) */
+        delete: operations["deleteExternalNameAlias"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/integration-ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The outside systems' own ids for this activity, one per source (046 FR-037) */
+        get: operations["listIntegrationIds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/integration-ids/{sourceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Register the source's own id for this activity (needs performance.link) (046 FR-037) */
+        put: operations["setIntegrationId"];
+        post?: never;
+        /** Remove the source's key; its rows then stop matching this activity (needs performance.link) (046 FR-037) */
+        delete: operations["deleteIntegrationId"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/review-rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The rows to review, findable by key, source, reason, upload, date and status; none can be created by hand (046 FR-023) */
+        get: operations["listReviewRows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/review-rows/{rowId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A review row's readable ID, such as PRV-1001. */
+                rowId: components["parameters"]["ReviewRowId"];
+            };
+            cookie?: never;
+        };
+        /** One row with its content, every fault and its history of actions (046 FR-024) */
+        get: operations["getReviewRow"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/review-rows/{rowId}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A review row's readable ID, such as PRV-1001. */
+                rowId: components["parameters"]["ReviewRowId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set a row aside with the required comment (046 FR-024) */
+        post: operations["dismissReviewRow"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/review-rows/{rowId}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A review row's readable ID, such as PRV-1001. */
+                rowId: components["parameters"]["ReviewRowId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Return a dismissed row to the queue (046 FR-024) */
+        post: operations["reopenReviewRow"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/review-rows/{rowId}/correct": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A review row's readable ID, such as PRV-1001. */
+                rowId: components["parameters"]["ReviewRowId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fix the row's load-time cells and re-check it at once (046 FR-024, FR-007)
+         * @description The reference may not change - a new identity is a new upload's to create (FR-013).
+         */
+        post: operations["correctReviewRow"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/sources/{sourceId}/recheck": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Re-check the source's open rows and held facts on demand (046 FR-025) */
+        post: operations["recheckSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/performance/facts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The activity's facts - date, source, stage or metric, value, currency, key matched on, upload (046 FR-030) */
+        get: operations["listActivityFacts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/performance/facts/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The same list as a CSV file (needs data.export) (046 FR-030, D-367) */
+        get: operations["exportActivityFacts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/performance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * The activity's performance panel, gated until it counts as approved (046 FR-027, FR-029)
+         * @description Projected figures are feature 047's and the revenue model's name is feature 050's; both arrive as
+         *     backward-compatible additions. Every empty figure states its reason (FR-032), never a sample value.
+         */
+        get: operations["getActivityPerformance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports": {
         parameters: {
             query?: never;
@@ -4398,6 +4984,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/revenue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Revenue against goal by period, as cards and a series, for the records in view (feature 049)
+         * @description Records match as the report frame matches them, in the person's reports.view scope (039). Actual is 046's counted facts; projected comes from 047's engine run per activity and summed (049-C3). ROI and actual cost are always null with reason "Attribution is not configured yet" until feature 050 lands (049-C6). Exported through exportReport with the widget keys cards, periods and ranked.
+         */
+        get: operations["getRevenueReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/revenue/ranked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The records of the Show level ranked by revenue, each with its children, grouped and paged (feature 049) */
+        get: operations["getRevenueRanked"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/funnel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One funnel stage against goal by period, as cards and a series, for the records in view (feature 049)
+         * @description The stage selector lists every stage the models in view allow (049-C11); a plan whose model does not allow the selected stage shows null with reason and is counted in uncoveredCount. Deals is not selectable (049-C12).
+         */
+        get: operations["getFunnelReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/funnel/ranked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The records of the Show level ranked by the selected stage, each with its children, grouped and paged (feature 049) */
+        get: operations["getFunnelRanked"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/plan-details": {
         parameters: {
             query?: never;
@@ -4518,6 +5178,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/activities/{activityId}/media-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The activity's media codes; present only where its type requires them (046 FR-040) */
+        get: operations["listMediaCodes"];
+        put?: never;
+        /** Generate a code at any activity status (needs performance.link) (046 FR-041, FR-042) */
+        post: operations["generateMediaCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media-codes/{codeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a code while unused; once facts matched through it, Deactivate is offered (046 FR-041) */
+        delete: operations["deleteMediaCode"];
+        options?: never;
+        head?: never;
+        /** Change a code's attributes and landing page only (needs performance.link) (046 FR-041) */
+        patch: operations["editMediaCode"];
+        trace?: never;
+    };
+    "/api/v1/media-codes/{codeId}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop a code matching; its history stays (needs performance.link) (046 FR-041) */
+        post: operations["deactivateMediaCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/configuration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Which activity types require codes, the attribute catalogue and the next number (046 FR-039, 046-C12) */
+        get: operations["getPerformanceConfiguration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change the configuration (needs performance.import) (046 FR-039, FR-042) */
+        patch: operations["savePerformanceConfiguration"];
+        trace?: never;
+    };
     "/api/v1/reports/approvals": {
         parameters: {
             query?: never;
@@ -4542,6 +5282,436 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description The kind of system a data source is, which decides what it can supply (FA §E7.2).
+         * @enum {string}
+         */
+        PerformanceCategory: "webAnalytics" | "marketingAutomation" | "crm" | "leadProgression";
+        /**
+         * @description How rows arrive — a file someone uploads, or a pull from the simulated feed (ADR-0020).
+         * @enum {string}
+         */
+        PerformanceDeliveryRoute: "upload" | "simulated";
+        /**
+         * @description How often the source is expected to deliver; it decides when freshness reads Stale.
+         * @enum {string}
+         */
+        PerformanceCadence: "daily" | "weekly" | "monthly" | "onDemand";
+        /**
+         * @description Derived from the last load and the cadence, never stored. Inactive when the source is deactivated, Stale when nothing has loaded within one extra cadence period, Failed when the last load failed.
+         * @enum {string}
+         */
+        PerformanceFreshness: "current" | "stale" | "failed" | "inactive";
+        /**
+         * @description What one column of a source's file means (client 020 FR-006).
+         * @enum {string}
+         */
+        ColumnMeaning: "key" | "reference" | "factDate" | "stage" | "revenue" | "currency" | "webMetric" | "journey";
+        /**
+         * @description The web-analytics vocabulary — counts by month, never money (clarification 046-C11).
+         * @enum {string}
+         */
+        WebMetric: "sessions" | "visits" | "engagementTouches";
+        /** @description Where performance data comes from (Settings › Performance data). */
+        PerformanceSource: {
+            id: string;
+            name: string;
+            description: string;
+            ownerId: string;
+            category: components["schemas"]["PerformanceCategory"];
+            /** @enum {string} */
+            status: "active" | "inactive";
+            deliveryRoute: components["schemas"]["PerformanceDeliveryRoute"];
+            cadence: components["schemas"]["PerformanceCadence"];
+            /** @description The source's own identifier, empty when it has none. */
+            integrationId: string;
+            freshness: components["schemas"]["PerformanceFreshness"];
+            /**
+             * Format: date-time
+             * @description Null when nothing has ever loaded, which is every newly created source.
+             */
+            lastLoadedAt?: string | null;
+            /**
+             * Format: date
+             * @description The date the source's data runs through; null until something loads.
+             */
+            dataThrough?: string | null;
+            /** @description How many facts this source holds; it may not be deleted while above zero. */
+            factCount: number;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceSourceInput: {
+            name: string;
+            description?: string;
+            ownerId: string;
+            category: components["schemas"]["PerformanceCategory"];
+            deliveryRoute: components["schemas"]["PerformanceDeliveryRoute"];
+            cadence: components["schemas"]["PerformanceCadence"];
+            integrationId?: string;
+            /** @description The version the editor read; a save against an older one is refused (409 version_conflict). */
+            version?: number;
+        };
+        PerformanceSourceList: {
+            items: components["schemas"]["PerformanceSource"][];
+        };
+        PerformanceUpload: {
+            /** @example eloqua_2026-10.csv */
+            fileName: string;
+            /** @description The file, base64 (at most 2 MB before encoding). */
+            content: string;
+        };
+        /** @description The five outcomes of a load; they add up to rows read (046-C3). */
+        PerformanceCounts: {
+            read: number;
+            matched: number;
+            held: number;
+            unattributed: number;
+            rejected: number;
+            unmatched: number;
+        };
+        /** @description The five counts again for one measure; a row carrying two measures counts in both (046-C18). */
+        PerformanceBreakdownGroup: {
+            stage: string;
+            webMetric: string;
+            counts: components["schemas"]["PerformanceCounts"];
+        };
+        /** @description One load of performance data. Never editable; undo is the only way back (FR-016). */
+        PerformanceImport: {
+            id: string;
+            sourceId: string;
+            fileName: string;
+            /** @enum {string} */
+            origin: "upload" | "simulated";
+            /** @enum {string} */
+            status: "completed" | "failed" | "undone";
+            /** Format: date */
+            dataThrough: string | null;
+            counts: components["schemas"]["PerformanceCounts"];
+            breakdown: components["schemas"]["PerformanceBreakdownGroup"][];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceImportList: {
+            items: components["schemas"]["PerformanceImport"][];
+        };
+        /** @description A superseded external name, kept so the outside world's old exports still match (FR-034). */
+        ExternalNameAlias: {
+            id: string;
+            activityId: string;
+            name: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ExternalNameAliasList: {
+            items: components["schemas"]["ExternalNameAlias"][];
+        };
+        /** @description One outside system's own id for an activity; at most one per source (FR-037). */
+        IntegrationId: {
+            id: string;
+            activityId: string;
+            sourceId: string;
+            value: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        IntegrationIdList: {
+            items: components["schemas"]["IntegrationId"][];
+        };
+        IntegrationIdInput: {
+            value: string;
+        };
+        SourceOfFacts: {
+            sourceId: string;
+            sourceName: string;
+            /** @description Empty when the source has no key for this activity. */
+            integrationId: string;
+            factCount: number;
+            /** @description Empty until the source has delivered a fact. */
+            lastFactDate: string;
+        };
+        /** @description The activity's Performance - Data sources section (FR-031). */
+        DataSourcesArea: {
+            externalName: string;
+            aliases: components["schemas"]["ExternalNameAlias"][];
+            mediaCodeCount: number;
+            integrated: boolean;
+            goalEntered: boolean;
+            sources: components["schemas"]["SourceOfFacts"][];
+        };
+        ReviewFault: {
+            column: string;
+            code: string;
+            message: string;
+        };
+        /** @description One row a person must fix; never created by hand (FR-023). */
+        ReviewRow: {
+            id: string;
+            importId: string;
+            sourceId: string;
+            sourceName: string;
+            /** @description The row exactly as the file carried it. */
+            raw: {
+                [key: string]: string;
+            };
+            /** @description The headline the queue is findable by (FR-023). */
+            reason: string;
+            faults: components["schemas"]["ReviewFault"][];
+            /** @description The activities named when keys disagree, filtered to the reader's scope (046-C15). */
+            candidates: string[];
+            /** @enum {string} */
+            status: "open" | "resolved" | "dismissed";
+            comment: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ReviewRowList: {
+            items: components["schemas"]["ReviewRow"][];
+        };
+        DismissInput: {
+            comment: string;
+        };
+        CorrectInput: {
+            date?: string | null;
+            currency?: string | null;
+            keys?: {
+                activityId?: string;
+                mediaCode?: string;
+                integrationId?: string;
+                externalName?: string;
+            } | null;
+            values?: {
+                column: string;
+                value: string;
+            }[];
+        };
+        /** @description One figure a source delivered, matched to this activity (FR-030). */
+        PerformanceFact: {
+            id: string;
+            sourceId: string;
+            sourceName: string;
+            /** @description The originating upload. */
+            importId: string;
+            sourceReference: string;
+            /** Format: date */
+            factDate: string;
+            stage: string;
+            webMetric: string;
+            count: number | null;
+            amount: components["schemas"]["Money"] | null;
+            held: boolean;
+            /** @enum {string} */
+            matchedOn: "" | "activityId" | "mediaCode" | "integrationId" | "externalName";
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceFactList: {
+            items: components["schemas"]["PerformanceFact"][];
+        };
+        /** @description One month split at today (047 FR-010); the month in progress carries both figures. */
+        SplitMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: number | null;
+            projected: number | null;
+            inProgress: boolean;
+        };
+        SplitMoneyMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            inProgress: boolean;
+        };
+        /** @description The model behind the projected figures and when its parameters last changed (047 FR-012). */
+        ProjectionStamp: {
+            modelName: string;
+            /** Format: date-time */
+            modelChangedAt: string;
+        };
+        StageFigure: {
+            /** @enum {string} */
+            stage: "inq" | "mql";
+            goal: number | null;
+            actual: number | null;
+            /** @description The plan-year figure: actual to the end of the last whole month before today plus projected from today, so a closed year equals the actual (047 FR-010). Null with projectedReason when nothing projects. Never add this to actual — they overlap. */
+            projected: number | null;
+            /** @description Actual over the previous stage's actual, one decimal; null where it cannot be worked out. */
+            conversion: number | null;
+            /** @enum {string} */
+            reason: "" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /**
+             * @description Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013).
+             * @enum {string}
+             */
+            projectedReason: "" | "noGoal";
+            months: components["schemas"]["SplitMonth"][];
+        };
+        RevenueFigure: {
+            goal: components["schemas"]["Money"] | null;
+            /** @description One USD total at the current rate (046-C7). */
+            actual: components["schemas"]["Money"] | null;
+            /** @description The plan-year figure, as StageFigure.projected, with the deals from today priced at the model's average deal size (047 FR-007, FR-010). */
+            projected: components["schemas"]["Money"] | null;
+            /** @description Facts left out because their currency has no rate (SC-010). */
+            excludedCount: number;
+            /** @enum {string} */
+            reason: "" | "notApproved" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /** @enum {string} */
+            projectedReason: "" | "noGoal";
+            months: components["schemas"]["SplitMoneyMonth"][];
+        };
+        MetricFigure: {
+            /** @enum {string} */
+            metric: "sessions" | "visits" | "engagementTouches";
+            months: {
+                /** @example 2026-02 */
+                month: string;
+                value: number;
+            }[];
+        };
+        PanelSource: {
+            sourceId: string;
+            sourceName: string;
+            freshness: components["schemas"]["PerformanceFreshness"];
+            /** Format: date */
+            dataThrough: string | null;
+        };
+        /** @description The activity's Performance area (FR-029); gated until the activity counts as approved. */
+        PerformancePanel: {
+            /** @enum {string} */
+            state: "ok" | "notApproved";
+            stages: components["schemas"]["StageFigure"][];
+            revenue: components["schemas"]["RevenueFigure"];
+            webMetrics: components["schemas"]["MetricFigure"][];
+            sources: components["schemas"]["PanelSource"][];
+            projection: components["schemas"]["ProjectionStamp"] | null;
+        };
+        CodeAttribute: {
+            name: string;
+            required: boolean;
+        };
+        /** @description A system-generated campaign-link code; its number is never reused (FR-042). */
+        MediaCode: {
+            id: string;
+            /** Format: int64 */
+            code: number;
+            activityId: string;
+            attributes: {
+                [key: string]: string;
+            };
+            landingPage: string;
+            /** @enum {string} */
+            status: "active" | "inactive";
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        MediaCodeArea: {
+            /** @description Stated by the API (FR-040); the web app hides the section when false. */
+            requiresCodes: boolean;
+            items: components["schemas"]["MediaCode"][];
+        };
+        MediaCodeInput: {
+            attributes?: {
+                [key: string]: string;
+            };
+            landingPage?: string;
+            version?: number;
+        };
+        /** @description Settings - Performance data's one record (046-C12), never on the activity type. */
+        PerformanceConfiguration: {
+            activityTypeIds: string[];
+            codeAttributes: components["schemas"]["CodeAttribute"][];
+            /** Format: int64 */
+            mediaCodeNext: number;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceConfigurationInput: {
+            activityTypeIds: string[];
+            codeAttributes: components["schemas"]["CodeAttribute"][];
+            /** Format: int64 */
+            mediaCodeNext: number;
+            version: number;
+        };
+        /**
+         * @description Which matching key a key column carries (046-C23); empty on every other column.
+         * @enum {string}
+         */
+        MatchKeyType: "" | "activityId" | "mediaCode" | "integrationId" | "externalName";
+        /** @description What one column of a source's file means. A change affects future loads only. */
+        ColumnMapping: {
+            id: string;
+            sourceId: string;
+            columnName: string;
+            meaning: components["schemas"]["ColumnMeaning"];
+            keyType: components["schemas"]["MatchKeyType"];
+            /** @description Set only on a stage column. */
+            stage: string;
+            /** @description Set only on a web-metric column. */
+            webMetric: string;
+            /** @description Set only on a stage or revenue column, which a model supplies. */
+            modelId: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ColumnMappingInput: {
+            columnName: string;
+            meaning: components["schemas"]["ColumnMeaning"];
+            keyType?: components["schemas"]["MatchKeyType"];
+            stage?: string;
+            webMetric?: components["schemas"]["WebMetric"];
+            modelId?: string;
+            version?: number;
+        };
+        ColumnMappingList: {
+            items: components["schemas"]["ColumnMapping"][];
+        };
         /** @enum {string} */
         ReportKey: "planBudget" | "approvals" | "purchaseRequests" | "planDetails" | "gsapLink" | "userAccess" | "summary" | "revenue" | "funnel";
         ReportEntry: {
@@ -4774,6 +5944,185 @@ export interface components {
                 label: string;
                 totals: components["schemas"]["PlanBudgetFigures"];
                 entries: components["schemas"]["RankedEntry"][];
+            }[];
+            drillLost: boolean;
+        };
+        /** @description A revenue card figure; null with reason when it cannot be worked out (FR-009). */
+        RevenueCardFigure: {
+            value: components["schemas"]["Money"] | null;
+            /** @enum {string} */
+            reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+        };
+        RevenueCards: {
+            goal: components["schemas"]["RevenueCardFigure"];
+            actual: components["schemas"]["RevenueCardFigure"];
+            projected: components["schemas"]["RevenueCardFigure"];
+            performance: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+        };
+        /** @description One period of the series, split at today (047 FR-010); the period in progress carries both. */
+        RevenuePeriod: {
+            /** @example 2026-03 */
+            key: string;
+            /** @enum {string} */
+            state: "actual" | "inProgress" | "planned";
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            goal: components["schemas"]["Money"] | null;
+            inProgress: boolean;
+        };
+        RevenueReport: {
+            cards: components["schemas"]["RevenueCards"];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            periods: components["schemas"]["RevenuePeriod"][];
+            projection: components["schemas"]["ProjectionStamp"] | null;
+            /**
+             * @description Why the report is empty, never an empty grid alone (049-C20).
+             * @enum {string}
+             */
+            reason: "" | "noGoals" | "notApproved" | "noData" | "noModel";
+        };
+        RevenueFigures: {
+            goal: components["schemas"]["Money"] | null;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            performance: number | null;
+            /** @description Always null until feature 050 configures attribution (049-C6). */
+            actualCost: components["schemas"]["Money"] | null;
+            /** @description Always null until feature 050 configures attribution (049-C6). */
+            roi: number | null;
+            /** @enum {string} */
+            actualCostReason: "" | "attributionNotConfigured";
+            /** @enum {string} */
+            roiReason: "" | "attributionNotConfigured";
+        };
+        RevenueEntry: {
+            id: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            name: string;
+            planId: string;
+            figures: components["schemas"]["RevenueFigures"];
+            children?: components["schemas"]["RevenueEntry"][];
+        };
+        RevenueRanked: {
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            /** @enum {string} */
+            sort: "actualRevenue" | "projectedRevenue";
+            /** @enum {string} */
+            order: "desc" | "asc";
+            group: string;
+            page: number;
+            size: number;
+            total: number;
+            trail: {
+                id: string;
+                level: string;
+                name: string;
+            }[];
+            groups: {
+                key: string;
+                label: string;
+                totals: components["schemas"]["RevenueFigures"];
+                entries: components["schemas"]["RevenueEntry"][];
+            }[];
+            drillLost: boolean;
+        };
+        FunnelCards: {
+            goal: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            actual: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            projected: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            performance: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            /** @description The selected stage's actual over the previous stage's actual (049-C13). */
+            conversion: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noPreviousStage";
+            };
+        };
+        FunnelPeriod: {
+            /** @example 2026-03 */
+            key: string;
+            /** @enum {string} */
+            state: "actual" | "inProgress" | "planned";
+            actual: number | null;
+            projected: number | null;
+            goal: number | null;
+            inProgress: boolean;
+        };
+        FunnelReport: {
+            /** @enum {string} */
+            stage: "inq" | "mql";
+            /** @description Every stage any model in view allows, in funnel order (049-C11). */
+            availableStages: ("inq" | "mql")[];
+            /** @description Plans whose model does not allow the selected stage (049-C11, FR-018). */
+            uncoveredCount: number;
+            cards: components["schemas"]["FunnelCards"];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            periods: components["schemas"]["FunnelPeriod"][];
+            projection: components["schemas"]["ProjectionStamp"] | null;
+            /** @enum {string} */
+            reason: "" | "noGoals" | "notApproved" | "noData" | "noModel";
+        };
+        FunnelFigures: {
+            goal: number | null;
+            actual: number | null;
+            projected: number | null;
+            performance: number | null;
+            conversion: number | null;
+        };
+        FunnelEntry: {
+            id: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            name: string;
+            planId: string;
+            figures: components["schemas"]["FunnelFigures"];
+            children?: components["schemas"]["FunnelEntry"][];
+        };
+        FunnelRanked: {
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            /** @enum {string} */
+            sort: "actual" | "projected";
+            /** @enum {string} */
+            order: "desc" | "asc";
+            group: string;
+            page: number;
+            size: number;
+            total: number;
+            trail: {
+                id: string;
+                level: string;
+                name: string;
+            }[];
+            groups: {
+                key: string;
+                label: string;
+                totals: components["schemas"]["FunnelFigures"];
+                entries: components["schemas"]["FunnelEntry"][];
             }[];
             drillLost: boolean;
         };
@@ -6045,10 +7394,10 @@ export interface components {
         };
         UsagePart: {
             /**
-             * @description What uses the record (the purchase request levels since 032).
+             * @description What uses the record (the purchase request levels since 032, activity types and categories since 047).
              * @enum {string}
              */
-            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption";
+            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption" | "activityType" | "activityCategory";
             /** @description The part as people read it, for example Used by 12 activities (1 in the recycle bin). */
             text: string;
             /** @description Records using it, those in the recycle bin included. */
@@ -6113,6 +7462,11 @@ export interface components {
             averageDealSize: components["schemas"]["Money"];
             /** @description The allowed activity types, sorted by name. */
             activityTypes: components["schemas"]["SettingRef"][];
+            /** @description Whole months a conversion takes (047-C1). */
+            inqToMqlVelocityMonths: number;
+            mqlToDealVelocityMonths: number;
+            /** @description The stages a goal may be set against, in funnel order (047-C2). */
+            allowedGoalStages: ("inq" | "mql" | "revenue")[];
             active: boolean;
             usage: components["schemas"]["Usage"];
             version: number;
@@ -6139,14 +7493,61 @@ export interface components {
             /** @description USD; null when not filled in. */
             averageDealSize: components["schemas"]["MoneyInput"] | null;
             activityTypeIds: string[];
+            /** @description Whole months; 0 when left out (047-C2). */
+            inqToMqlVelocityMonths?: number;
+            mqlToDealVelocityMonths?: number;
+            /** @description Every stage when left out (047-C2). */
+            allowedGoalStages?: ("inq" | "mql" | "revenue")[];
         };
         /** @description Only the fields to change, and the version. Also the body of the impact check. */
         ModelUpdate: {
             name?: string;
             inqToMqlRate?: string;
             mqlToDealRate?: string;
+            inqToMqlVelocityMonths?: number;
+            mqlToDealVelocityMonths?: number;
+            allowedGoalStages?: ("inq" | "mql" | "revenue")[];
             averageDealSize?: components["schemas"]["MoneyInput"] | null;
             activityTypeIds?: string[];
+            version: number;
+        };
+        /** @description A group of activity types; a type belongs to at most one category (047-C7). */
+        ActivityCategory: {
+            /** @example CAT-1001 */
+            id: string;
+            /** @example Digital */
+            name: string;
+            /** @description At most one category is the default the reports open on. */
+            isDefault: boolean;
+            /** @description The activity types in this category, sorted by name. */
+            activityTypes: components["schemas"]["SettingRef"][];
+            active: boolean;
+            usage: components["schemas"]["Usage"];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ActivityCategoryPage: {
+            items: components["schemas"]["ActivityCategory"][];
+            total: number;
+        };
+        ActivityCategoryCreate: {
+            name: string;
+            /** @description True takes the default away from the category that had it. */
+            isDefault: boolean;
+            /** @description The activity types to put in the new category; each leaves the category it was in. */
+            activityTypeIds: string[];
+        };
+        /** @description Only the fields to change, and the version. activityTypeIds is the complete new list of activity types in the category: a type listed here leaves the category it was in, one left out becomes Uncategorised. */
+        ActivityCategoryUpdate: {
+            name?: string;
+            isDefault?: boolean;
+            activityTypeIds?: string[];
+            active?: boolean;
             version: number;
         };
         ActivityType: {
@@ -6158,6 +7559,8 @@ export interface components {
             defaultPlannedCost: components["schemas"]["Money"] | null;
             /** @description The models that allow this type, sorted by name. */
             models: components["schemas"]["SettingRef"][];
+            /** @description The activity category grouping this type; null when it is uncategorised (047 FR-022). */
+            category: components["schemas"]["SettingRef"] | null;
             active: boolean;
             usage: components["schemas"]["Usage"];
             version: number;
@@ -9681,7 +11084,7 @@ export interface components {
          * @description A permission of spec Table A.
          * @enum {string}
          */
-        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "reports.view" | "finance.view" | "finance.link" | "finance.import" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge";
+        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "reports.view" | "finance.view" | "finance.link" | "finance.import" | "performance.import" | "performance.link" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge";
         PermissionInfo: {
             key: components["schemas"]["PermissionKey"];
             /** @example Edit plan details */
@@ -11354,6 +12757,14 @@ export interface components {
         };
     };
     parameters: {
+        /** @description A data source's readable ID, such as PS-1001. */
+        SourceId: string;
+        /** @description A media code's readable ID, such as MC-1001. */
+        MediaCodeId: string;
+        /** @description A review row's readable ID, such as PRV-1001. */
+        ReviewRowId: string;
+        /** @description A column mapping's readable ID, such as PSM-1001. */
+        MappingId: string;
         /** @description The report the frame is for. */
         ReportKey: components["schemas"]["ReportKey"];
         /** @description The report's path in the web app's address. */
@@ -11377,6 +12788,12 @@ export interface components {
         RankedSearch: string;
         /** @description The record whose children the list shows under it. */
         RankedDrill: string;
+        /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+        RevenueCategory: string;
+        /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
+        FunnelStage: "inq" | "mql";
+        RevenueRankedSort: "actualRevenue" | "projectedRevenue";
+        FunnelRankedSort: "actual" | "projected";
         /** @example RV-1001 */
         ReportViewId: string;
         /** @description Time widgets by month (default) or quarter of the plan year. */
@@ -11468,6 +12885,8 @@ export interface components {
         ModelId: string;
         /** @example AT-1001 */
         ActivityTypeId: string;
+        /** @example CAT-1001 */
+        ActivityCategoryId: string;
         /** @example SA-1001 */
         AttributeId: string;
         /** @example SO-1001 */
@@ -12381,6 +13800,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Model"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listActivityCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The activity categories with the activity types they group. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategoryPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Created, active. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The activity category. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Moved to the recycle bin. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCategoryUpdate"];
+            };
+        };
+        responses: {
+            /** @description The activity category after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -19643,6 +21200,918 @@ export interface operations {
             default: components["responses"]["Error"];
         };
     };
+    listPerformanceSources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every data source, by name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceSourceList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createPerformanceSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerformanceSourceInput"];
+            };
+        };
+        responses: {
+            /** @description The source as created, active and never loaded. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceSource"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getPerformanceSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The source. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceSource"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deletePerformanceSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted, to the recycle bin. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updatePerformanceSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerformanceSourceInput"];
+            };
+        };
+        responses: {
+            /** @description The source as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceSource"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deactivatePerformanceSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The source, now inactive; every activity that depended only on it stops counting as integrated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceSource"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    reactivatePerformanceSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The source, active again. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceSource"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listColumnMappings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Its mappings, by column name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ColumnMappingList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createColumnMapping: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ColumnMappingInput"];
+            };
+        };
+        responses: {
+            /** @description The mapping as created; it affects future loads only. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ColumnMapping"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    downloadPerformanceTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The template. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteColumnMapping: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A column mapping's readable ID, such as PSM-1001. */
+                mappingId: components["parameters"]["MappingId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed; loads already completed are unchanged. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateColumnMapping: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A column mapping's readable ID, such as PSM-1001. */
+                mappingId: components["parameters"]["MappingId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ColumnMappingInput"];
+            };
+        };
+        responses: {
+            /** @description The mapping as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ColumnMapping"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    uploadPerformanceFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerformanceUpload"];
+            };
+        };
+        responses: {
+            /** @description The completed load with its reconciling summary (FR-022). */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    pullPerformanceFeed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The completed load; its rows took the same path as an uploaded file (ADR-0020). */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listPerformanceImports: {
+        parameters: {
+            query?: {
+                sourceId?: string;
+                /** @description Matches the file name and the uploader's name. */
+                search?: string;
+                status?: "completed" | "failed" | "undone";
+                since?: string;
+                /** @description Inclusive; the range covers this whole day. */
+                until?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The uploads with their summaries. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImportList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getPerformanceImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example IMP-1001 */
+                importId: components["parameters"]["ImportId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The upload. An upload is never editable; undo is the only way back (FR-016). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    undoPerformanceImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example IMP-1001 */
+                importId: components["parameters"]["ImportId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The upload, undone. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getActivityDataSources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description External name and aliases, media-code count, the two flags, and each source's key and totals. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataSourcesArea"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listExternalNameAliases: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The aliases, by name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalNameAliasList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteExternalNameAlias: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                aliasId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listIntegrationIds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The integration ids, by source. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntegrationIdList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    setIntegrationId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IntegrationIdInput"];
+            };
+        };
+        responses: {
+            /** @description The key as registered. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntegrationId"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteIntegrationId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listReviewRows: {
+        parameters: {
+            query?: {
+                status?: "open" | "resolved" | "dismissed";
+                sourceId?: string;
+                importId?: string;
+                reason?: string;
+                key?: string;
+                since?: string;
+                /** @description Inclusive; the range covers this whole day. */
+                until?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rows, newest first; each row's candidates are filtered to the reader's scope (046-C15). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewRowList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getReviewRow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A review row's readable ID, such as PRV-1001. */
+                rowId: components["parameters"]["ReviewRowId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The row. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewRow"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    dismissReviewRow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A review row's readable ID, such as PRV-1001. */
+                rowId: components["parameters"]["ReviewRowId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DismissInput"];
+            };
+        };
+        responses: {
+            /** @description The row, dismissed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewRow"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    reopenReviewRow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A review row's readable ID, such as PRV-1001. */
+                rowId: components["parameters"]["ReviewRowId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The row, open again. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewRow"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    correctReviewRow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A review row's readable ID, such as PRV-1001. */
+                rowId: components["parameters"]["ReviewRowId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectInput"];
+            };
+        };
+        responses: {
+            /** @description The row after its re-check - resolved on a match, or open with its new verdict. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewRow"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    recheckSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description What the re-check resolved, by outcome. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceCounts"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listActivityFacts: {
+        parameters: {
+            query?: {
+                search?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The facts, newest first; replaced versions are left out. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceFactList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    exportActivityFacts: {
+        parameters: {
+            query?: {
+                search?: string;
+            };
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The file; its name is in Content-Disposition. */
+            200: {
+                headers: {
+                    "Content-Disposition"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getActivityPerformance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The panel, or state notApproved with no figures. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformancePanel"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
     listReports: {
         parameters: {
             query?: never;
@@ -20047,6 +22516,248 @@ export interface operations {
             default: components["responses"]["Error"];
         };
     };
+    getRevenueReport: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The cards and the periods of the year. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevenueReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getRevenueRanked: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+                sort?: components["parameters"]["RevenueRankedSort"];
+                order?: components["parameters"]["RankedOrder"];
+                /** @description none, plan, owner or attr:<attribute ID>. */
+                group?: components["parameters"]["RankedGroup"];
+                size?: 10 | 25 | 50;
+                page?: number;
+                q?: components["parameters"]["RankedSearch"];
+                /** @description The record whose children the list shows under it. */
+                drill?: components["parameters"]["RankedDrill"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of top entries with their children, in groups. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevenueRanked"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getFunnelReport: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+                /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
+                stage?: components["parameters"]["FunnelStage"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The cards and the periods of the year, for the selected stage. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunnelReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getFunnelRanked: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+                /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
+                stage?: components["parameters"]["FunnelStage"];
+                sort?: components["parameters"]["FunnelRankedSort"];
+                order?: components["parameters"]["RankedOrder"];
+                /** @description none, plan, owner or attr:<attribute ID>. */
+                group?: components["parameters"]["RankedGroup"];
+                size?: 10 | 25 | 50;
+                page?: number;
+                q?: components["parameters"]["RankedSearch"];
+                /** @description The record whose children the list shows under it. */
+                drill?: components["parameters"]["RankedDrill"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of top entries with their children, in groups. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunnelRanked"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
     getPlanDetailsReport: {
         parameters: {
             query?: {
@@ -20375,6 +23086,202 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listMediaCodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The codes, and whether the type requires them at all. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaCodeArea"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    generateMediaCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaCodeInput"];
+            };
+        };
+        responses: {
+            /** @description The code, system-numbered and never reused. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaCode"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteMediaCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted to the recycle bin. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    editMediaCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaCodeInput"];
+            };
+        };
+        responses: {
+            /** @description The code as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaCode"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deactivateMediaCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The code, inactive. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaCode"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getPerformanceConfiguration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The configuration; its defaults before the first save. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceConfiguration"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            default: components["responses"]["Error"];
+        };
+    };
+    savePerformanceConfiguration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerformanceConfigurationInput"];
+            };
+        };
+        responses: {
+            /** @description The configuration as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceConfiguration"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };

@@ -17,6 +17,7 @@ const (
 
 	PrefixModel             = "MOD"
 	PrefixActivityType      = "AT"
+	PrefixActivityCategory  = "CAT"
 	PrefixShellAttribute    = "SA"
 	PrefixShellOption       = "SO"
 	PrefixFinanceBudget     = "FB"
@@ -61,12 +62,21 @@ const (
 	PrefixBulkAction = "BLK"
 	PrefixPlanImport = "IMP"
 
+	PrefixPerformanceSource    = "PS"
+	PrefixPerformanceMapping   = "PSM"
+	PrefixPerformanceImport    = "PIM"
+	PrefixPerformanceFact      = "PF"
+	PrefixPerformanceReviewRow = "PRV"
+	PrefixMediaCode            = "MC"
+	PrefixExternalNameAlias    = "XN"
+	PrefixIntegrationID        = "IID"
+
 	PrefixReportView = "RV"
 )
 
 var Prefixes = []string{
 	PrefixPerson, PrefixLogEntry, PrefixBinEntry, PrefixSampleFolder, PrefixSampleNote,
-	PrefixModel, PrefixActivityType, PrefixShellAttribute, PrefixShellOption, PrefixFinanceBudget, PrefixFinanceBudgetItem,
+	PrefixModel, PrefixActivityType, PrefixActivityCategory, PrefixShellAttribute, PrefixShellOption, PrefixFinanceBudget, PrefixFinanceBudgetItem,
 	PrefixTeam, PrefixTeamMembership,
 	PrefixPlan, PrefixCampaign, PrefixInitiative, PrefixActivity, PrefixLineItem,
 	PrefixApprovalWorkflow, PrefixApprovalRound, PrefixApprovalAction, PrefixNotification,
@@ -78,6 +88,9 @@ var Prefixes = []string{
 	PrefixSwbsRun,
 	PrefixPurchaseRequest, PrefixPurchaseRequestLine, PrefixPurchaseRequestRouting, PrefixSimulatedGSAPPR, PrefixSimulatedPO,
 	PrefixBulkAction, PrefixPlanImport,
+	PrefixPerformanceSource, PrefixPerformanceMapping, PrefixPerformanceImport, PrefixPerformanceFact,
+	PrefixPerformanceReviewRow, PrefixMediaCode, PrefixExternalNameAlias, PrefixIntegrationID,
+	PrefixReportView,
 }
 
 const firstNumber = 1001

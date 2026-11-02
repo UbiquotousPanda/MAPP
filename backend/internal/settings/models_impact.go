@@ -9,10 +9,7 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// ModelImpact says, before a change of the model id is saved, what it would affect (FR-011, FR-012, D-044):
-// changed rates or deal size recalculate the goals of the live plans using it; each activity type no longer
-// allowed is kept by the live activities of those plans that use it. The body is checked as UpdateModel
-// checks it, except the version; nothing is saved.
+// ModelImpact checks the body as UpdateModel does, except the version, and saves nothing.
 func (s *Service) ModelImpact(ctx context.Context, _ actor.Actor, id string, update ModelUpdate) (ChangeImpact, error) {
 	impact := ChangeImpact{Warnings: []ImpactWarning{}}
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -43,13 +40,12 @@ func (s *Service) ModelImpact(ctx context.Context, _ actor.Actor, id string, upd
 		removed := filter(m.ActivityTypeIDs, func(typeID string) bool { return !slices.Contains(changed.ActivityTypeIDs, typeID) })
 		warnings, err := s.typeRemovedWarnings(ctx, removed, refs, plans)
 		impact.Warnings = append(impact.Warnings, warnings...)
+		impact.Warnings = append(impact.Warnings, stageRemovedWarnings(m, changed, refs)...)
 		return err
 	})
 	return impact, err
 }
 
-// typeRemovedWarnings warns, for each activity type of typeIDs that a model no longer allows, of the live
-// activities of plans that keep it.
 func (s *Service) typeRemovedWarnings(ctx context.Context, typeIDs []string, refs []Reference, plans map[string]bool) ([]ImpactWarning, error) {
 	warnings := []ImpactWarning{}
 	for _, typeID := range typeIDs {
@@ -70,16 +66,12 @@ func (s *Service) typeRemovedWarnings(ctx context.Context, typeIDs []string, ref
 	return warnings, nil
 }
 
-// goalsChange reports whether a change of a model changes the goals it calculates: its rates or its deal
-// size (FR-011).
 func goalsChange(before, after Model) bool {
 	return before.InqToMqlRate != after.InqToMqlRate || before.MqlToDealRate != after.MqlToDealRate ||
 		before.AverageDealSize != after.AverageDealSize
 }
 
-// modelInUse returns the live plans using the model modelID and the number of live activities in them.
-// Impact statements count live records only: records in the recycle bin are recalculated when they come
-// back (data model §10).
+// modelInUse counts live records only: records in the recycle bin are recalculated when they come back.
 func modelInUse(refs []Reference, modelID string) (plans map[string]bool, activities int) {
 	plans = map[string]bool{}
 	for _, ref := range refs {
@@ -95,7 +87,6 @@ func modelInUse(refs []Reference, modelID string) (plans map[string]bool, activi
 	return plans, activities
 }
 
-// liveActivitiesOfType counts the live activities of the activity type typeID in the plans.
 func liveActivitiesOfType(refs []Reference, typeID string, plans map[string]bool) int {
 	n := 0
 	for _, ref := range refs {

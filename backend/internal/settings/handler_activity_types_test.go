@@ -10,9 +10,6 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// The activity types are listed by name with the models allowing them; one is read with its default
-// planned cost; a new one answers 201, allowed in the models ticked, which list it from then on; every
-// problem of a new one comes at once (FR-013, US5-1).
 func TestActivityTypesAPI_ListCreateGet_FR013(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -60,15 +57,12 @@ func TestActivityTypesAPI_ListCreateGet_FR013(t *testing.T) {
 	}
 }
 
-// Bodies of the activity-type tests.
 const (
 	activityTypeGoneBody = `{"error":{"code":"not_found","message":"This activity type no longer exists — someone may have deleted it.","fields":[]}}`
 	lubricantsRef        = `{"id":"MOD-1001","name":"Lubricants 1.0","active":true}`
 	allowedInOneModel    = `{"inUse":true,"summary":"Allowed in 1 model","parts":[{"kind":"model","text":"Allowed in 1 model","count":1,"inRecycleBin":0}],"records":[]}`
 )
 
-// webinarBody is the new activity type of US5-1: "Webinar", default planned cost 5,000 USD, allowed in the
-// models.
 func webinarBody(modelIDs ...string) map[string]any {
 	if modelIDs == nil {
 		modelIDs = []string{}
@@ -76,20 +70,18 @@ func webinarBody(modelIDs ...string) map[string]any {
 	return map[string]any{"name": "Webinar", "defaultPlannedCost": map[string]string{"amount": "5000", "currency": "USD"}, "modelIds": modelIDs}
 }
 
-// webinarAnswer is the answer for the activity type webinarBody (AT-1007) at version, with the models
-// allowing it (JSON objects, comma separated) and its usage, created by Alex.
+// webinarAnswer takes the models allowing the type as comma-separated JSON objects.
 func webinarAnswer(version int, models, usage string) string {
 	return `{"id":"AT-1007","name":"Webinar","defaultPlannedCost":{"amount":"5000.00","currency":"USD"},"models":[` + models +
-		`],"active":true,"usage":` + usage + `,"version":` + itoa(version) + `,` + alexAtStart + `}`
+		`],"category":null,"active":true,"usage":` + usage + `,"version":` + itoa(version) + `,` + alexAtStart + `}`
 }
 
-// A save from an out-of-date copy is refused with who changed the activity type and when (FR-007).
 func TestActivityTypesAPI_UpdateConflict_FR007(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	alex := server.SignIn(t, alexsEmail)
 	daniel := server.SignIn(t, danielsEmail)
-	server.GrantRole(t, danielsEmail, "administrator", "all") // 014: changing Settings
+	server.GrantRole(t, danielsEmail, "administrator", "all")
 	mustCreate(t, alex, "/api/v1/activity-types", webinarBody())
 	server.Advance(90 * time.Minute)
 	daniels := daniel.Do(t, http.MethodPatch, "/api/v1/activity-types/AT-1007", map[string]any{"defaultPlannedCost": nil, "version": 1})
@@ -97,7 +89,7 @@ func TestActivityTypesAPI_UpdateConflict_FR007(t *testing.T) {
 	alexs := alex.Do(t, http.MethodPatch, "/api/v1/activity-types/AT-1007", map[string]any{"name": "Webinars", "version": 1})
 	gone := alex.Do(t, http.MethodPatch, "/api/v1/activity-types/AT-9999", map[string]any{"name": "X", "version": 1})
 
-	assertAnswer(t, daniels, http.StatusOK, `{"id":"AT-1007","name":"Webinar","defaultPlannedCost":null,"models":[],"active":true,"usage":`+
+	assertAnswer(t, daniels, http.StatusOK, `{"id":"AT-1007","name":"Webinar","defaultPlannedCost":null,"models":[],"category":null,"active":true,"usage":`+
 		unusedBody+`,"version":2,"createdAt":"2026-03-12T09:00:00Z","createdBy":{"id":"U-1001","name":"Alex Morgan"},`+
 		`"updatedAt":"2026-03-12T10:30:00Z","updatedBy":{"id":"U-1003","name":"Daniel Okoro"}}`)
 	assertAnswer(t, alexs, http.StatusConflict, `{"error":{"code":"version_conflict","message":"Not saved — Daniel Okoro changed this activity type",`+
@@ -105,8 +97,6 @@ func TestActivityTypesAPI_UpdateConflict_FR007(t *testing.T) {
 	assertAnswer(t, gone, http.StatusNotFound, activityTypeGoneBody)
 }
 
-// The impact check validates like the update and answers, per model the type is removed from, the
-// activities of its plans that keep the type; it saves nothing (FR-012, D-044).
 func TestActivityTypesAPI_Impact_FR012(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -135,8 +125,6 @@ func TestActivityTypesAPI_Impact_FR012(t *testing.T) {
 		webinarAnswer(1, lubricantsRef, allowedInOneModel))
 }
 
-// Set inactive and Reactivate answer the activity type with its new status; an out-of-date version is
-// refused (FR-004).
 func TestActivityTypesAPI_Status_FR004(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -153,8 +141,6 @@ func TestActivityTypesAPI_Status_FR004(t *testing.T) {
 	}
 }
 
-// An unused activity type moves to the recycle bin and Undo brings it back; a type in use is refused with
-// in_use (FR-004, US5-5).
 func TestActivityTypesAPI_DeleteAndUndo_FR004(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t, apitest.WithoutDemoHistory())
