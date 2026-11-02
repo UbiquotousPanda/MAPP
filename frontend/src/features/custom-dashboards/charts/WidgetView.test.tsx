@@ -111,7 +111,7 @@ describe('051 FR-039: every state of a widget', () => {
       widgetData({
         rows: [row(key('Event'), [money('3.00')])],
         groupCount: 37,
-        notes: ['Not filtered by date'],
+        notes: ['Not filtered by date', 'Showing 1 of 37'],
       }),
     );
     show(widget('bar', {}, { subtitle: 'This year' }));
@@ -119,9 +119,25 @@ describe('051 FR-039: every state of a widget', () => {
     expect(await screen.findByRole('img', { name: CHART_NAME })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Planned cost by type' })).toBeInTheDocument();
     expect(screen.getByText('This year')).toBeInTheDocument();
-    expect(screen.getByText('Showing 1 of 37 groups')).toBeInTheDocument();
+    expect(screen.getByText('Showing 1 of 37')).toBeInTheDocument();
     expect(screen.getByText('Not filtered by date')).toBeInTheDocument();
     await expectNoAxeViolations();
+  });
+
+  it('051 FR-020: says once how many groups it shows, in SP&A One’s words', async () => {
+    answer(
+      widgetData({
+        rows: [row(key('Event'), [money('3.00')])],
+        groupCount: 37,
+        notes: ['Showing 1 of 37'],
+      }),
+    );
+    show(widget('bar'));
+
+    expect(await screen.findByRole('img', { name: /Bar chart/ })).toBeInTheDocument();
+    expect(screen.getAllByText(/^Showing/).map((note) => note.textContent)).toEqual([
+      'Showing 1 of 37',
+    ]);
   });
 
   it('shows a key figure with its comparison in words', async () => {

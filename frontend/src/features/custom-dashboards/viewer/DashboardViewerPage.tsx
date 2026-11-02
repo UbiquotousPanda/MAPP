@@ -76,8 +76,16 @@ function Viewer({ dashboard }: { dashboard: CustomDashboard }) {
         meta={<Facts dashboard={dashboard} />}
         description={dashboard.description || undefined}
         moreActions={
-          isShown(access.delete)
-            ? [{ label: 'Delete', tone: 'danger', onSelect: () => setDeleting(true) }]
+          dashboard.isOwner && isShown(access.delete)
+            ? [
+                {
+                  label: 'Delete',
+                  tone: 'danger',
+                  onSelect: () => setDeleting(true),
+                  disabled: !access.delete.available,
+                  hint: access.delete.reason || undefined,
+                },
+              ]
             : undefined
         }
         actions={
