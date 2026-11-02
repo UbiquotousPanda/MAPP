@@ -26,6 +26,22 @@ describe('051 FR-038: tooltips', () => {
     ]);
   });
 
+  it('leaves out a series with no value in that group', () => {
+    const content = tooltipContent([
+      { axisValueLabel: 'Mar 2027', seriesName: 'Helix launch', color: 'red', data: null },
+      {
+        axisValueLabel: 'Mar 2027',
+        seriesName: 'Helix UK & Ireland',
+        color: 'blue',
+        data: { value: 2, text: '$2.00' },
+      },
+    ]);
+    expect(content.querySelector('p')?.textContent).toBe('Mar 2027');
+    expect([...content.querySelectorAll('li')].map((li) => li.textContent)).toEqual([
+      'Helix UK & Ireland$2.00',
+    ]);
+  });
+
   it('shows the lines an item carries, as scatter points and heatmap cells do', () => {
     const content = tooltipContent({
       name: 'Event',
