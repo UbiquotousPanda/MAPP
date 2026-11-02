@@ -67,6 +67,18 @@ func TestUpdate_RulesAndRefusals_FR044(t *testing.T) {
 	}
 }
 
+func TestUpdate_ATakenNameIsSaidOnTheRenamedColumn_FR044(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	created := f.create(t, priya, "Leads")
+
+	_, err := f.service.Update(t.Context(), priya, created.ID, UpdateInput{Version: ptr(1),
+		Columns: []LabelInput{{Position: 0, Label: "leads"}}})
+
+	same(t, "problems", []errs.FieldError{{Field: "columns[0].label", Message: fmt.Sprintf(msgLabelTaken, "leads")}},
+		fieldErrors(t, err))
+}
+
 func statusOf(err error) int {
 	switch codeOf(err) {
 	case "":

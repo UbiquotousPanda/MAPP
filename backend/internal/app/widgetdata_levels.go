@@ -21,7 +21,7 @@ type levelReader struct {
 }
 
 func (r levelReader) Rows(ctx context.Context, a actor.Actor, f widgetdata.Prefilter) (widgetdata.Rows, error) {
-	d, err := r.planning.read(ctx, a, f, r.dated)
+	d, err := r.planning.read(ctx, a, f)
 	if err != nil {
 		return widgetdata.Rows{}, err
 	}

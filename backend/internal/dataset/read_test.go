@@ -69,7 +69,7 @@ func TestPreview_FormatsAndLimits_FR041_FR043(t *testing.T) {
 			{sheet.Text("Expo"), sheet.Date(date.MustParse("2026-01-22"))}}), wantRows: [][]string{{"Expo", "2026-01-22"}}},
 		{name: "formulas by their saved value", up: formulaUpload(t), wantRows: [][]string{{"21", "42"}}},
 		{name: "header only", up: upload("a.csv", "Event,Leads\n"), wantRows: [][]string{}},
-		{name: "not UTF-8", up: upload("a.csv", "Event\nCaf\xe9\n"), wantErr: msgFormat},
+		{name: "not UTF-8", up: upload("a.csv", "Event\nCaf\xe9\n"), wantErr: msgNotUTF8},
 		{name: "neither CSV nor .xlsx", up: upload("a.txt", "Event\nExpo\n"), wantErr: msgFormat},
 		{name: "not base64", up: Upload{FileName: "a.csv", Content: "%%%"}, wantErr: msgUnreadable},
 		{name: "empty", up: upload("a.csv", ""), wantErr: msgEmptyFile},
@@ -131,6 +131,19 @@ func TestPreview_ColumnsSamplesAndProblems_FR041(t *testing.T) {
 	}
 	if p.FileName != "leads.csv" || p.SheetName != "" || p.RowCount != 2 {
 		t.Errorf("preview = %q %q %d, want leads.csv, no sheet, 2 rows", p.FileName, p.SheetName, p.RowCount)
+	}
+}
+
+func TestPreview_ReportsEmptyRows_FR041(t *testing.T) {
+	t.Parallel()
+	csv := "Event,Leads\nExpo,1\n,\n\n,\nFair,2\n\nShow,3\n"
+	p, err := newFixture(t).service.Preview(t.Context(), priya, upload("leads.csv", csv))
+	if err != nil {
+		t.Fatalf("Preview() error = %v", err)
+	}
+	want := []string{fmt.Sprintf(msgEmptyRows, 3, 5), fmt.Sprintf(msgEmptyRow, 7)}
+	if diff := cmp.Diff(want, p.Problems); diff != "" || p.RowCount != 3 {
+		t.Errorf("problems of %d rows (-want +got):\n%s", p.RowCount, diff)
 	}
 }
 

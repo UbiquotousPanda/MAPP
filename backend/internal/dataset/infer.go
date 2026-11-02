@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 	"strings"
@@ -53,12 +54,17 @@ func isMoneyName(label string) bool {
 			return true
 		}
 	}
+	return currencyIn(label) != ""
+}
+
+// currencyIn is the currency code a column's name holds as a word, "Cost (EUR)", or "".
+func currencyIn(label string) string {
 	for _, word := range strings.FieldsFunc(label, func(r rune) bool { return !unicode.IsLetter(r) }) {
 		if strings.Contains(currencyCodes, " "+word+" ") {
-			return true
+			return word
 		}
 	}
-	return false
+	return ""
 }
 
 // labelOf names column i from the header: trimmed, at most 60 characters, "Column 3" when the cell is empty.
@@ -93,8 +99,8 @@ func previewColumn(f file, i int) PreviewColumn {
 	c := PreviewColumn{Position: i, Label: labelOf(f, i), Samples: []string{}}
 	c.ProposedKind = proposeKind(c.Label, f.column(i, inferRows))
 	if c.ProposedKind == KindMoney {
-		usd := money.BaseCurrency
-		c.ProposedCurrency = &usd
+		currency := cmp.Or(currencyIn(c.Label), money.BaseCurrency)
+		c.ProposedCurrency = &currency
 	}
 	for _, cell := range f.column(i, len(f.rows)) {
 		switch {
@@ -122,7 +128,24 @@ func previewProblems(f file, columns []PreviewColumn) []string {
 		}
 		seen[key] = true
 	}
+	problems = append(problems, emptyRows(f)...)
 	return append(problems, longCells(f, columns)...)
+}
+
+// emptyRows names the rows left out between the header and the last row, read from the gaps in the row numbers.
+func emptyRows(f file) []string {
+	problems := []string{}
+	previous := f.header.Number
+	for _, r := range f.rows {
+		switch first, last := previous+1, r.Number-1; {
+		case first == last:
+			problems = append(problems, fmt.Sprintf(msgEmptyRow, first))
+		case first < last:
+			problems = append(problems, fmt.Sprintf(msgEmptyRows, first, last))
+		}
+		previous = r.Number
+	}
+	return problems
 }
 
 func longCells(f file, columns []PreviewColumn) []string {

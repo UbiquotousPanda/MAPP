@@ -21,7 +21,7 @@ type transactionsReader struct {
 }
 
 func (r transactionsReader) Rows(ctx context.Context, a actor.Actor, f widgetdata.Prefilter) (widgetdata.Rows, error) {
-	d, err := r.planning.read(ctx, a, f, false)
+	d, err := r.planning.read(ctx, a, f)
 	if err != nil {
 		return widgetdata.Rows{}, err
 	}

@@ -29,7 +29,7 @@ func compile(r Request, src Source) (*compiled, error) {
 	c.dimension = groupingOf(src, q.Dimension, "query.dimension", &problems)
 	c.series = groupingOf(src, q.Series, "query.series", &problems)
 	c.measures = measuresOf(src, q.Measures, &problems)
-	checkMeasureKinds(r.Type, c.measures, &problems)
+	checkMeasureKinds(r, c.measures, &problems)
 	c.conditions = conditionsOf(src, q.Filters, &problems)
 	checkFilters(r.Filters, &problems)
 	checkComparison(r, src, &problems)

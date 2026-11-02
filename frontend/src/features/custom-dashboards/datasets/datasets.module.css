@@ -113,6 +113,12 @@
   font-weight: var(--weight-bold);
 }
 
+.table th.number,
+.table td.number {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .table a {
   color: var(--link);
 }

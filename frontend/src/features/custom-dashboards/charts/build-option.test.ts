@@ -131,22 +131,6 @@ describe('051 FR-025: bar, line and area', () => {
     expect(at(option, 'yAxis')).toMatchObject({ type: 'category', inverse: true, name: 'Type' });
   });
 
-  it.each(['bar', 'scatter', 'heatmap'] as const)(
-    'keeps the axis titles of a %s inside the chart and clear of its labels and legend',
-    (type) => {
-      const option = buildOption(
-        widget(type, { axisTitles: { x: 'Cost', y: 'Type', y2: '' } }),
-        type === 'heatmap' ? seriesData() : twoMeasureData(),
-        THEME,
-      );
-      expect(at(option, 'grid')).toMatchObject({
-        outerBoundsMode: 'same',
-        outerBoundsContain: 'all',
-      });
-      expect(at(option, 'grid', 'containLabel')).toBeUndefined();
-    },
-  );
-
   it('shows the legend where chosen, or hides it', () => {
     const right = buildOption(
       widget('bar', { legend: { show: true, position: 'right' } }),

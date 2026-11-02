@@ -133,4 +133,8 @@ func TestInferKinds_FromTheFirst200Rows_FR041(t *testing.T) {
 	if err != nil || p.Columns[0].ProposedCurrency == nil || *p.Columns[0].ProposedCurrency != "USD" {
 		t.Errorf("Preview() = %+v, %v; want Money in USD", p.Columns, err)
 	}
+	p, err = newFixture(t).service.Preview(t.Context(), priya, upload("a.csv", "Agency cost (EUR)\n12.50\n"))
+	if err != nil || p.Columns[0].ProposedCurrency == nil || *p.Columns[0].ProposedCurrency != "EUR" {
+		t.Errorf("Preview() = %+v, %v; want Money in the EUR its name holds", p.Columns, err)
+	}
 }

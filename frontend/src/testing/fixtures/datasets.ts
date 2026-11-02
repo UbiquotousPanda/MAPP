@@ -1,11 +1,19 @@
 /** Datasets of feature 051 for the Datasets pages and the upload, shaped as the API answers them. */
 import type { components } from '@/api/generated/schema';
-import { AVAILABLE, DANIEL_PERSON, EUROPE_REF, HIDDEN, PRIYA_PERSON } from './shared-dashboards';
+import { AVAILABLE, DANIEL_PERSON, EUROPE_REF, PRIYA_PERSON } from './shared-dashboards';
 
 type S = components['schemas'];
 
 const OWNER_ACCESS: S['DatasetAccess'] = { edit: AVAILABLE, share: AVAILABLE, delete: AVAILABLE };
-export const READER_ACCESS: S['DatasetAccess'] = { edit: HIDDEN, share: HIDDEN, delete: HIDDEN };
+const NOT_OWNER = {
+  available: false,
+  reason: "Only the dataset's owner can change, share or delete it.",
+};
+export const READER_ACCESS: S['DatasetAccess'] = {
+  edit: NOT_OWNER,
+  share: NOT_OWNER,
+  delete: NOT_OWNER,
+};
 
 export const CURRENCIES: S['DisplayCurrencyPage'] = {
   items: [

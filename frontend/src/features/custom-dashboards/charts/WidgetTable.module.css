@@ -44,6 +44,7 @@
   text-align: right;
 }
 
-.table th.number {
+.table th.number,
+.table td.number {
   text-align: right;
 }
