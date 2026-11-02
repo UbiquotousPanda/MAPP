@@ -97,7 +97,23 @@ Measure's own, which opt in with `apitest.WithMeasureDemo()`.
 
 Its 2 campaigns, 3 initiatives, 9 activities and 13 EUR line items spread over every month of 2026, with the
 plan's INQ goal and activities' INQ, MQL and revenue for the Measure reports. Five activities are Approved by Daniel
-Okoro 1, 4, 7, 12 and 40 days before the seed time; their line items ask for SWBS codes and have none, so the GSAP
-link has a line item in every wait band. **Fleet expo Rotterdam** waits for approval, **Workshop roadshow Benelux**
-was declined, and **Dealer summit** and **Tellus trade press** are Created; Tellus trade press has no Shell
+Okoro 1, 4, 7, 12 and 40 days before the seed time; their line items ask for SWBS codes, and four have one from the
+simulated GSAP (Case study production, both Search media line items, Webinar speaker fees), so the GSAP link still
+has a line item without a code in every wait band. **Fleet expo Rotterdam** waits for approval, **Workshop roadshow
+Benelux** was declined, and **Dealer summit** and **Tellus trade press** are Created; Tellus trade press has no Shell
 attributes, for Plan details' *Not filled in*.
+
+Seven purchase requests, owner Alex Morgan, MoA approver Carlos Mendes, Email group BE_LUBES, one in each status:
+
+| Purchase request | Status | What happened |
+|---|---|---|
+| PR for Social media, second half · 30,000.00 EUR | Created | — |
+| PR for Webinar speaker fees · 30,000.00 EUR | Submitted | Waits for Carlos Mendes (WF-1004) |
+| PR for Search media, first half – extra flights · 15,000.00 EUR | In review | **Two-level PR approval (Measure demo)**: Carlos Mendes approved level 1, level 2 waits for Alex Morgan |
+| PR for Search media, second half – trial · 5,000.00 EUR | Declined | Declined by Carlos Mendes |
+| PR for Search media, second half · 40,000.00 EUR | Approved | Routed to BE_LUBES two days ago, no GSAP PR number yet: *Waiting for GSAP* |
+| PR for Search media, first half · 40,000.00 EUR | Approved | GSAP PR and PO from the simulated GSAP, two invoices of 10,000.00 EUR |
+| PR for Case study production · 30,000.00 EUR | Closed | PO invoiced and paid in full, closed five days ago |
+
+The purchase orders, invoices and payment are 6 GSAP transactions on those line items; the invoices and payment come
+in one *Demo data (simulated GSAP)* import, the last, so Financials still shows the demo data as its source.
