@@ -19,6 +19,7 @@ const (
 	item2   = "li-2"
 	item3   = "li-3"
 	item4   = "li-4"
+	item6   = "li-6"
 	march10 = "2026-03-10"
 )
 
@@ -114,7 +115,7 @@ func requests() []purchasereport.Request {
 			line(lineSpec{id: "l8", item: item3, amount: 60, delivery: "2026-03-03"})),
 		request(pr("pr-8", "Declined one", "Initech", purchasereport.StatusDeclined, Carol()),
 			line(lineSpec{id: "l9", item: item4, amount: 70, delivery: "2026-03-04"})),
-		request(approvedPlan2, line(lineSpec{id: "l10", item: "li-6", amount: 900, delivery: "2026-03-12"})),
+		request(approvedPlan2, line(lineSpec{id: "l10", item: item6, amount: 900, delivery: "2026-03-12"})),
 	}
 }
 

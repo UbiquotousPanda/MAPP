@@ -218,3 +218,16 @@ func TestSwitchedOff_042_FR022(t *testing.T) {
 		t.Errorf("PurchaseSupport, requests = %v, %d, want off and none", view.PurchaseSupport, view.Cards.PurchaseRequests)
 	}
 }
+
+func TestNoFinanceView_NothingCommitted_042_FR020_FR021(t *testing.T) {
+	t.Parallel()
+	f := purchasereporttest.New(t)
+	f.Deps.Purchases = purchasereporttest.Purchases{Requests: purchasereporttest.Hidden()}
+
+	view := reportOf(t, f, purchasereport.Query{})
+
+	got := []string{amountText(view.Cards.Committed), amountText(view.Cards.Invoiced), amountText(view.ByVendor.Committed)}
+	if diff := cmp.Diff([]string{"—", "—", "—"}, got); diff != "" {
+		t.Errorf("committed, invoiced and the chart's total for a plan without finance.view, never a zero (-want +got):\n%s", diff)
+	}
+}

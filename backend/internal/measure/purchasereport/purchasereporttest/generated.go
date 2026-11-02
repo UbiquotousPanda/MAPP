@@ -24,3 +24,9 @@ func Vendors(n int) []purchasereport.Request {
 	}
 	return list
 }
+
+// Hidden is one Created request in the plan without finance.view: it commits nothing and has no invoices.
+func Hidden() []purchasereport.Request {
+	spec := requestSpec{"pr-h", "Hidden", "Acme", purchasereport.StatusCreated, PlanWithoutFinance, Alice().ID}
+	return []purchasereport.Request{request(spec, line(lineSpec{id: "h1", item: item6, amount: 200, delivery: march10}))}
+}
