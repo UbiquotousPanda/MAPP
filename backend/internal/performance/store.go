@@ -21,6 +21,18 @@ type SourceView struct {
 	LastLoadFailed bool
 }
 
+// SourceUse counts what still refers to a source, each of which keeps it from being deleted.
+type SourceUse struct {
+	Facts          int
+	Imports        int
+	ReviewRows     int
+	IntegrationIDs int
+}
+
+func (u SourceUse) IsUsed() bool {
+	return u.Facts+u.Imports+u.ReviewRows+u.IntegrationIDs > 0
+}
+
 type Supplier struct {
 	MappingID  string
 	SourceID   string
@@ -43,6 +55,7 @@ type ReviewRowView struct {
 type Sources interface {
 	ListSources(ctx context.Context, id string) ([]SourceView, error)
 	PutSource(ctx context.Context, s Source) error
+	SourceUse(ctx context.Context, id string) (SourceUse, error)
 	DeleteSource(ctx context.Context, id string) (bool, error)
 	ListMappings(ctx context.Context, sourceIDs []string) ([]Mapping, error)
 	PutMapping(ctx context.Context, m Mapping) error

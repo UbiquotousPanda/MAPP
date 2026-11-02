@@ -24,10 +24,20 @@ ON CONFLICT (id) DO UPDATE SET
     updated_at = excluded.updated_at, updated_by_id = excluded.updated_by_id,
     updated_by_name = excluded.updated_by_name;
 
+-- name: PerformanceSourceUse :one
+SELECT
+    (SELECT count(*) FROM performance_facts f WHERE f.source_id = sqlc.arg(source_id))::integer AS facts,
+    (SELECT count(*) FROM performance_imports i WHERE i.source_id = sqlc.arg(source_id))::integer AS imports,
+    (SELECT count(*) FROM performance_review_rows r WHERE r.source_id = sqlc.arg(source_id))::integer AS review_rows,
+    (SELECT count(*) FROM activity_integration_ids k WHERE k.source_id = sqlc.arg(source_id))::integer AS integration_ids;
+
 -- name: DeletePerformanceSource :execrows
 DELETE FROM performance_sources
 WHERE performance_sources.id = sqlc.arg(source_id)
-    AND NOT EXISTS (SELECT 1 FROM performance_facts f WHERE f.source_id = performance_sources.id);
+    AND NOT EXISTS (SELECT 1 FROM performance_facts f WHERE f.source_id = performance_sources.id)
+    AND NOT EXISTS (SELECT 1 FROM performance_imports i WHERE i.source_id = performance_sources.id)
+    AND NOT EXISTS (SELECT 1 FROM performance_review_rows r WHERE r.source_id = performance_sources.id)
+    AND NOT EXISTS (SELECT 1 FROM activity_integration_ids k WHERE k.source_id = performance_sources.id);
 
 -- name: ListPerformanceMappings :many
 -- An empty or null source_ids means every source's mappings (performance.go: ListMappings(ctx, nil)).

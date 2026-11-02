@@ -353,6 +353,9 @@ const deletePerformanceSource = `-- name: DeletePerformanceSource :execrows
 DELETE FROM performance_sources
 WHERE performance_sources.id = $1
     AND NOT EXISTS (SELECT 1 FROM performance_facts f WHERE f.source_id = performance_sources.id)
+    AND NOT EXISTS (SELECT 1 FROM performance_imports i WHERE i.source_id = performance_sources.id)
+    AND NOT EXISTS (SELECT 1 FROM performance_review_rows r WHERE r.source_id = performance_sources.id)
+    AND NOT EXISTS (SELECT 1 FROM activity_integration_ids k WHERE k.source_id = performance_sources.id)
 `
 
 func (q *Queries) DeletePerformanceSource(ctx context.Context, sourceID string) (int64, error) {
@@ -1633,6 +1636,33 @@ func (q *Queries) MediaCodeUsed(ctx context.Context, code string) (bool, error) 
 	var used bool
 	err := row.Scan(&used)
 	return used, err
+}
+
+const performanceSourceUse = `-- name: PerformanceSourceUse :one
+SELECT
+    (SELECT count(*) FROM performance_facts f WHERE f.source_id = $1)::integer AS facts,
+    (SELECT count(*) FROM performance_imports i WHERE i.source_id = $1)::integer AS imports,
+    (SELECT count(*) FROM performance_review_rows r WHERE r.source_id = $1)::integer AS review_rows,
+    (SELECT count(*) FROM activity_integration_ids k WHERE k.source_id = $1)::integer AS integration_ids
+`
+
+type PerformanceSourceUseRow struct {
+	Facts          int
+	Imports        int
+	ReviewRows     int
+	IntegrationIds int
+}
+
+func (q *Queries) PerformanceSourceUse(ctx context.Context, sourceID string) (PerformanceSourceUseRow, error) {
+	row := q.db.QueryRow(ctx, performanceSourceUse, sourceID)
+	var i PerformanceSourceUseRow
+	err := row.Scan(
+		&i.Facts,
+		&i.Imports,
+		&i.ReviewRows,
+		&i.IntegrationIds,
+	)
+	return i, err
 }
 
 const putAlias = `-- name: PutAlias :exec
