@@ -23,7 +23,7 @@ type monthReader struct {
 }
 
 func (r monthReader) Rows(ctx context.Context, a actor.Actor, f widgetdata.Prefilter) (widgetdata.Rows, error) {
-	d, err := r.planning.read(ctx, a, f, true)
+	d, err := r.planning.read(ctx, a, f)
 	if err != nil {
 		return widgetdata.Rows{}, err
 	}
