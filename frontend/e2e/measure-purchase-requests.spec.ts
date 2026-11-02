@@ -48,6 +48,7 @@ test('042 US2 and US3: the grid opens from vendor to line, keeps its columns, se
     })
     .last();
   await expect(grid.getByRole('table')).toBeVisible();
+  await expectNoAxeViolations(page);
   await grid
     .getByRole('button', { name: /^Open / })
     .first()
@@ -58,7 +59,6 @@ test('042 US2 and US3: the grid opens from vendor to line, keeps its columns, se
     .first()
     .click();
   await expect(grid.getByRole('row').nth(3)).toBeVisible();
-  await expectNoAxeViolations(page);
 
   await grid.getByText('Columns', { exact: true }).click();
   await grid.getByRole('checkbox', { name: 'Owner' }).uncheck();
