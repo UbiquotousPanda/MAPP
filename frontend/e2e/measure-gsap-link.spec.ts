@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { expectNoAxeViolations, signInAs } from './fixtures';
+import {
+  MEASURE_ORDERED_LINE_ITEMS,
+  MEASURE_PURCHASE_REQUESTS,
+  SEES_MEASURE_PLAN,
+} from './measure';
 
 // GSAP link (044 US1): the demo year's line items Ready to send to GSAP inside the report frame, waiting since their
 // activity was approved, sorted in the address, and one opened.
@@ -47,6 +52,27 @@ test('044 US2: the Waiting for GSAP tab in the address, with its cards (FR-001, 
 
   await page.goBack();
   await expect(page.getByRole('tab', { name: 'SWBS not received', selected: true })).toBeVisible();
+});
+
+test('044 with the Measure demo (#48): the routed request waits for GSAP and the ordered ones are on Purchase orders', async ({
+  page,
+}) => {
+  await signInAs(page, SEES_MEASURE_PLAN);
+  await page.goto('/reports/gsap-link?tab=waiting&pageSize=500');
+  const waiting = page.getByRole('region', { name: 'Waiting for GSAP' });
+  await expect(
+    waiting.getByRole('link', { name: MEASURE_PURCHASE_REQUESTS.waitingForGsap, exact: true }),
+  ).toBeVisible();
+  await expect(
+    waiting.getByRole('link', { name: MEASURE_PURCHASE_REQUESTS.ordered, exact: true }),
+  ).toHaveCount(0);
+
+  await page.goto('/reports/gsap-link?tab=orders&pageSize=500');
+  const orders = page.getByRole('region', { name: 'Purchase orders' });
+  for (const lineItem of MEASURE_ORDERED_LINE_ITEMS) {
+    await expect(orders.getByRole('link', { name: lineItem, exact: true }).first()).toBeVisible();
+  }
+  await expectNoAxeViolations(page);
 });
 
 test('044 US4: a tab exports as CSV and Excel with its sort, and the report as one workbook (FR-019)', async ({
