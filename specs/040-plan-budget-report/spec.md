@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-01
 
-**Status**: Built (2026-11-02); T022 waits for 049
+**Status**: Built (2026-11-02); the ranked list is shared with 049 through `measure/ranking` (T022)
 
 **Input**: User description: "Plan budget report (lane A, issue #40): budget, planned cost, committed and actual by
 period split at today, summary cards, and the ranked list (show plan, campaign, initiative or activity; group by;

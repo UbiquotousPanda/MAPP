@@ -2,7 +2,10 @@
 // cards and the ranked list with drill, over 039's records in view.
 package planbudget
 
-import "mapp/internal/platform/money"
+import (
+	"mapp/internal/measure/ranking"
+	"mapp/internal/platform/money"
+)
 
 const (
 	StatePast       = "actual"
@@ -53,37 +56,8 @@ type Report struct {
 	Notes   Notes    `json:"notes"`
 }
 
-type Entry struct {
-	ID       string  `json:"id"`
-	Level    string  `json:"level"`
-	Name     string  `json:"name"`
-	PlanID   string  `json:"planId"`
-	Figures  Figures `json:"figures"`
-	Children []Entry `json:"children,omitempty"`
-}
-
-type Group struct {
-	Key     string  `json:"key"`
-	Label   string  `json:"label"`
-	Totals  Figures `json:"totals"`
-	Entries []Entry `json:"entries"`
-}
-
-type TrailStep struct {
-	ID    string `json:"id"`
-	Level string `json:"level"`
-	Name  string `json:"name"`
-}
-
-type Ranked struct {
-	Level     string      `json:"level"`
-	Sort      string      `json:"sort"`
-	Order     string      `json:"order"`
-	Group     string      `json:"group"`
-	Page      int         `json:"page"`
-	Size      int         `json:"size"`
-	Total     int         `json:"total"`
-	Trail     []TrailStep `json:"trail"`
-	Groups    []Group     `json:"groups"`
-	DrillLost bool        `json:"drillLost"`
-}
+type (
+	Entry  = ranking.Entry[Figures]
+	Group  = ranking.Group[Figures]
+	Ranked = ranking.List[Figures]
+)
