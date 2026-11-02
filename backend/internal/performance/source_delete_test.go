@@ -88,6 +88,22 @@ func TestDeleteSource_RefusedWhileABinnedActivityCarriesItsIntegrationID_FR002_F
 	refusedInUse(t, f, src.ID, "1 activity's integration ID")
 }
 
+// deletedSource deletes the source and answers its recycle-bin entry, checking its mappings went with it.
+func (f *fixture) deletedSource(t *testing.T, sourceID string) string {
+	t.Helper()
+	if err := f.service.DeleteSource(t.Context(), alex, sourceID); err != nil {
+		t.Fatalf("DeleteSource: %v", err)
+	}
+	if left, _ := f.store.ListMappings(t.Context(), []string{sourceID}); len(left) != 0 {
+		t.Fatalf("after the delete %d mappings remain, want them in the bin with their source", len(left))
+	}
+	bin, err := f.history.ListBin(t.Context(), alex)
+	if err != nil || len(bin) != 1 {
+		t.Fatalf("ListBin = %d entries, %v; want the source's", len(bin), err)
+	}
+	return bin[0].ID
+}
+
 func TestDeleteSource_UndoBringsItsMappingsBack_FR002_FR045(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -97,18 +113,9 @@ func TestDeleteSource_UndoBringsItsMappingsBack_FR002_FR045(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateMapping: %v", err)
 	}
-	if err = f.service.DeleteSource(t.Context(), alex, src.ID); err != nil {
-		t.Fatalf("DeleteSource: %v", err)
-	}
-	if left, _ := f.store.ListMappings(t.Context(), []string{src.ID}); len(left) != 0 {
-		t.Fatalf("after the delete %d mappings remain, want them in the bin with their source", len(left))
-	}
-	bin, err := f.history.ListBin(t.Context(), alex)
-	if err != nil || len(bin) != 1 {
-		t.Fatalf("ListBin = %d entries, %v; want the source's", len(bin), err)
-	}
+	entryID := f.deletedSource(t, src.ID)
 
-	if _, err = f.history.Undo(t.Context(), alex, bin[0].ID); err != nil {
+	if _, err = f.history.Undo(t.Context(), alex, entryID); err != nil {
 		t.Fatalf("Undo: %v", err)
 	}
 

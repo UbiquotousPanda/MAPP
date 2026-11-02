@@ -114,8 +114,8 @@ func (s *PostgresStore) SourceUse(ctx context.Context, id string) (SourceUse, er
 	if err != nil {
 		return SourceUse{}, fmt.Errorf("count what uses performance source %s: %w", id, err)
 	}
-	return SourceUse{Facts: int(row.Facts), Imports: int(row.Imports), ReviewRows: int(row.ReviewRows),
-		IntegrationIDs: int(row.IntegrationIds)}, nil
+	return SourceUse{Facts: row.Facts, Imports: row.Imports, ReviewRows: row.ReviewRows,
+		IntegrationIDs: row.IntegrationIds}, nil
 }
 
 // DeleteSource reports false while anything SourceUse counts still refers to the source, which the query

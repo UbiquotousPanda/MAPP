@@ -2,8 +2,8 @@ package performance_test
 
 import (
 	"errors"
+	"io/fs"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -114,13 +114,14 @@ func TestDeleteAlias_NeedsPerformanceLink_FR043(t *testing.T) {
 // matches on, which a scan of its own queries pins.
 func TestQueries_NeverWriteTheExternalName_FR036(t *testing.T) {
 	t.Parallel()
-	files, err := filepath.Glob("../platform/database/queries/performance_*.sql")
+	dir := os.DirFS("../platform/database/queries")
+	files, err := fs.Glob(dir, "performance_*.sql")
 	if err != nil || len(files) == 0 {
 		t.Fatalf("find the feature's queries: %v, %d files", err, len(files))
 	}
 	var queries []byte
 	for _, file := range files {
-		text, readErr := os.ReadFile(file)
+		text, readErr := fs.ReadFile(dir, file)
 		if readErr != nil {
 			t.Fatalf("read the feature's queries: %v", readErr)
 		}
