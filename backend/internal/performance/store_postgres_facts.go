@@ -94,6 +94,17 @@ func (s *PostgresStore) ReleaseHeld(ctx context.Context, activityID string, by a
 	return int(released), nil
 }
 
+// HoldFacts re-sets the hold on an activity's facts, for when it leaves Approved again (FR-020, FR-021).
+func (s *PostgresStore) HoldFacts(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error) {
+	held, err := s.db.Queries(ctx).HoldFactsForActivity(ctx, sqlcdb.HoldFactsForActivityParams{
+		ActivityID: optional(activityID), UpdatedAt: at, UpdatedByID: by.ID, UpdatedByName: by.Name,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("hold the facts of activity %s: %w", activityID, err)
+	}
+	return int(held), nil
+}
+
 func (s *PostgresStore) ListFactsOfImport(ctx context.Context, importID string) ([]Fact, error) {
 	rows, err := s.db.Queries(ctx).ListFactsOfImport(ctx, importID)
 	if err != nil {

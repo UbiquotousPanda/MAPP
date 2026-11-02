@@ -44,7 +44,7 @@ CREATE INDEX activity_external_name_aliases_activity_idx
 CREATE TABLE activity_integration_ids (
     id              text        PRIMARY KEY CHECK (id ~ '^IID-[0-9]+$'),
     activity_id     text        NOT NULL REFERENCES activities (id) DEFERRABLE INITIALLY DEFERRED,
-    source_id       text        NOT NULL REFERENCES performance_sources (id) DEFERRABLE INITIALLY DEFERRED,
+    source_id       text        NOT NULL REFERENCES performance_sources (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     value           text        NOT NULL CHECK (char_length(value) BETWEEN 1 AND 200),
     version         integer     NOT NULL CHECK (version >= 1),
     created_at      timestamptz NOT NULL,

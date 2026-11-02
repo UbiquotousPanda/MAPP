@@ -50,6 +50,45 @@ func TestSetStatus_ApprovedReleasesHeldFacts_046FR020(t *testing.T) {
 	}
 }
 
+// A real defect: the adapter only ever called the release hook, never its reverse, so an activity recalled
+// from Approved back to Submitted kept counting its facts as if still approved (046-C blocker).
+func TestSetStatus_RecallFromApprovedHoldsFactsAgain(t *testing.T) {
+	t.Parallel()
+	db := fake.NewDB()
+	set := storestest.New(db)
+	alex := actor.Actor{ID: "U-1001", Name: "Alex Morgan"}
+	noon := time.Date(2026, 3, 12, 12, 0, 0, 0, time.UTC)
+	if err := seed.Load(t.Context(), set, func() time.Time { return noon }); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	submitted := seededActivity(t, set, activity.StatusSubmitted)
+	held := []string{}
+	adapter := &approvalsActivities{
+		activities: set.Activities, lineItems: set.LineItems, campaigns: set.Campaigns,
+		plans: set.Plans, settings: set.Settings,
+		rates: func(context.Context) (money.Rates, error) { return money.Rates{}, nil },
+		now:   func() time.Time { return noon },
+		approved: func(context.Context, actor.Actor, string) error {
+			return nil
+		},
+		unapproved: func(_ context.Context, _ actor.Actor, activityID string) error {
+			held = append(held, activityID)
+			return nil
+		},
+	}
+
+	if _, err := adapter.SetStatus(t.Context(), alex, submitted, string(activity.StatusApproved)); err != nil {
+		t.Fatalf("SetStatus(approved): %v", err)
+	}
+	if _, err := adapter.SetStatus(t.Context(), alex, submitted, string(activity.StatusSubmitted)); err != nil {
+		t.Fatalf("SetStatus(submitted): %v", err)
+	}
+
+	if len(held) != 1 || held[0] != submitted {
+		t.Fatalf("held = %v, want exactly the recall to hold %s's facts again", held, submitted)
+	}
+}
+
 func seededActivity(t *testing.T, set stores.Set, status activity.Status) string {
 	t.Helper()
 	all, err := set.Activities.List(t.Context())

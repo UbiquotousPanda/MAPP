@@ -257,6 +257,27 @@ func (s *Store) ReleaseHeld(ctx context.Context, activityID string, by actor.Act
 	return released, nil
 }
 
+func (s *Store) HoldFacts(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error) {
+	all, err := s.facts.List()
+	if err != nil {
+		return 0, err
+	}
+	held := 0
+	for _, f := range all {
+		if f.ActivityID != activityID || f.Held || f.ReplacedByID != "" {
+			continue
+		}
+		f.Held = true
+		f.Version++
+		f.UpdatedAt, f.UpdatedBy = at, by
+		if err := s.facts.Put(ctx, f); err != nil {
+			return held, err
+		}
+		held++
+	}
+	return held, nil
+}
+
 func (s *Store) ListImports(_ context.Context, f performance.ImportFilter) ([]performance.Import, error) {
 	all, err := s.imports.List()
 	if err != nil {

@@ -683,6 +683,34 @@ func (q *Queries) HeldActivityIDsOfSource(ctx context.Context, sourceID string) 
 	return items, nil
 }
 
+const holdFactsForActivity = `-- name: HoldFactsForActivity :execrows
+UPDATE performance_facts
+SET held = true, version = version + 1, updated_at = $1,
+    updated_by_id = $2, updated_by_name = $3
+WHERE activity_id = $4 AND NOT held AND replaced_by_id IS NULL
+`
+
+type HoldFactsForActivityParams struct {
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+	ActivityID    *string
+}
+
+// A replaced fact is never shown, so it never comes back held (FR-020, FR-021).
+func (q *Queries) HoldFactsForActivity(ctx context.Context, arg HoldFactsForActivityParams) (int64, error) {
+	result, err := q.db.Exec(ctx, holdFactsForActivity,
+		arg.UpdatedAt,
+		arg.UpdatedByID,
+		arg.UpdatedByName,
+		arg.ActivityID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const integrationIDsOfActivities = `-- name: IntegrationIDsOfActivities :many
 SELECT id FROM activity_integration_ids
 WHERE activity_id = ANY ($1::text[]) ORDER BY id
@@ -1183,7 +1211,8 @@ func (q *Queries) ListPerformanceImports(ctx context.Context, arg ListPerformanc
 const listPerformanceMappings = `-- name: ListPerformanceMappings :many
 SELECT performance_source_mappings.id, performance_source_mappings.source_id, performance_source_mappings.column_name, performance_source_mappings.meaning, performance_source_mappings.key_type, performance_source_mappings.stage, performance_source_mappings.web_metric, performance_source_mappings.model_id, performance_source_mappings.version, performance_source_mappings.created_at, performance_source_mappings.created_by_id, performance_source_mappings.created_by_name, performance_source_mappings.updated_at, performance_source_mappings.updated_by_id, performance_source_mappings.updated_by_name
 FROM performance_source_mappings
-WHERE source_id = ANY ($1::text[])
+WHERE $1::text[] IS NULL OR cardinality($1::text[]) = 0
+    OR source_id = ANY ($1::text[])
 ORDER BY source_id COLLATE "C", lower(column_name COLLATE "C")
 `
 
@@ -1191,6 +1220,7 @@ type ListPerformanceMappingsRow struct {
 	PerformanceSourceMapping PerformanceSourceMapping
 }
 
+// An empty or null source_ids means every source's mappings (performance.go: ListMappings(ctx, nil)).
 func (q *Queries) ListPerformanceMappings(ctx context.Context, sourceIds []string) ([]ListPerformanceMappingsRow, error) {
 	rows, err := q.db.Query(ctx, listPerformanceMappings, sourceIds)
 	if err != nil {

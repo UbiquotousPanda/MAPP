@@ -30,9 +30,11 @@ WHERE performance_sources.id = sqlc.arg(source_id)
     AND NOT EXISTS (SELECT 1 FROM performance_facts f WHERE f.source_id = performance_sources.id);
 
 -- name: ListPerformanceMappings :many
+-- An empty or null source_ids means every source's mappings (performance.go: ListMappings(ctx, nil)).
 SELECT sqlc.embed(performance_source_mappings)
 FROM performance_source_mappings
-WHERE source_id = ANY (sqlc.arg(source_ids)::text[])
+WHERE sqlc.arg(source_ids)::text[] IS NULL OR cardinality(sqlc.arg(source_ids)::text[]) = 0
+    OR source_id = ANY (sqlc.arg(source_ids)::text[])
 ORDER BY source_id COLLATE "C", lower(column_name COLLATE "C");
 
 -- name: ActiveSuppliersForModel :many
@@ -118,6 +120,13 @@ UPDATE performance_facts
 SET held = false, version = version + 1, updated_at = sqlc.arg(updated_at),
     updated_by_id = sqlc.arg(updated_by_id), updated_by_name = sqlc.arg(updated_by_name)
 WHERE activity_id = sqlc.arg(activity_id) AND held;
+
+-- name: HoldFactsForActivity :execrows
+-- A replaced fact is never shown, so it never comes back held (FR-020, FR-021).
+UPDATE performance_facts
+SET held = true, version = version + 1, updated_at = sqlc.arg(updated_at),
+    updated_by_id = sqlc.arg(updated_by_id), updated_by_name = sqlc.arg(updated_by_name)
+WHERE activity_id = sqlc.arg(activity_id) AND NOT held AND replaced_by_id IS NULL;
 
 -- name: ListPerformanceImports :many
 SELECT sqlc.embed(performance_imports)
