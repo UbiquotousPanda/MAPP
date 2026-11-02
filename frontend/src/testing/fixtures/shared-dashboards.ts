@@ -42,10 +42,11 @@ const OWNER_ACCESS: S['CustomDashboardAccess'] = {
   delete: AVAILABLE,
   copy: AVAILABLE,
 };
+const NOT_OWNER = { available: false, reason: 'Only Priya Raman can change this dashboard.' };
 export const VIEWER_ACCESS: S['CustomDashboardAccess'] = {
-  edit: HIDDEN,
-  share: HIDDEN,
-  delete: HIDDEN,
+  edit: NOT_OWNER,
+  share: NOT_OWNER,
+  delete: NOT_OWNER,
   copy: AVAILABLE,
 };
 

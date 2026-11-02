@@ -79,12 +79,13 @@ function CustomSections({ canBuild }: { canBuild: boolean }) {
     );
   }
 
-  const cards = (items: CustomDashboardSummary[]) => (
+  const cards = (items: CustomDashboardSummary[], isMine: boolean) => (
     <ul role="list" className={styles.cards}>
       {items.map((dashboard) => (
         <DashboardCard
           key={dashboard.id}
           dashboard={dashboard}
+          isMine={isMine}
           canBuild={canBuild}
           onCopy={(id) => void copyAndOpen(id)}
           onDelete={setDeleting}
@@ -97,7 +98,7 @@ function CustomSections({ canBuild }: { canBuild: boolean }) {
     <>
       <Section title="My dashboards">
         {list.data.mine.length > 0 ? (
-          cards(list.data.mine)
+          cards(list.data.mine, true)
         ) : (
           <Card>
             <NoDashboardsYet canBuild={canBuild} />
@@ -106,7 +107,7 @@ function CustomSections({ canBuild }: { canBuild: boolean }) {
       </Section>
       <Section title="Shared with me">
         {list.data.sharedWithMe.length > 0 ? (
-          cards(list.data.sharedWithMe)
+          cards(list.data.sharedWithMe, false)
         ) : (
           <Card>
             <EmptyState icon={<Share2 />} title="Nothing shared with you yet." />
