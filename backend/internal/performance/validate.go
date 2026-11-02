@@ -11,7 +11,7 @@ import (
 
 const maxReferenceLength = 200
 
-// Fault: a row carries every fault it has, not the first (FR-011); the review row's reason is the headline.
+// Fault: a row carries every fault it has, not the first; the review row's reason is the headline.
 type Fault struct {
 	Column  string `json:"column"`
 	Code    string `json:"code"`
@@ -95,7 +95,7 @@ func firstColumn(readings []Reading) string {
 	return readings[0].Column
 }
 
-// countFaults reports negative and fractional separately, because "-1.5" is both (FR-011). The count is read
+// countFaults reports negative and fractional separately, because "-1.5" is both. The count is read
 // as an integer, never a float, so a value the bigint column cannot hold is refused here rather than there.
 func countFaults(c Cell) []Fault {
 	whole, fraction, hasPoint := strings.Cut(strings.TrimSpace(c.Value), ".")

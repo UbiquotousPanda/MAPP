@@ -15,8 +15,8 @@ var (
 
 type cells struct{ ref, date, inq, revenue, ccy string }
 
-// loadRow builds a row of a source mapping one INQ column and one revenue column, the wide shape FR-006
-// allows: the mapping names each measure and the cell carries only its figure.
+// loadRow builds a row of a source mapping one INQ column and one revenue column, the wide shape a
+// mapping allows: it names each measure and the cell carries only its figure.
 func loadRow(c cells) performance.Row {
 	return performance.Row{
 		Reference: performance.Cell{Column: "reference", Value: c.ref},

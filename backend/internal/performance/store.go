@@ -65,7 +65,7 @@ type Sources interface {
 
 // Matching resolves a whole batch's distinct keys in one query per key type, never one per row (research
 // R2, plan R16). Each answer maps a key to every activity it reached: more than one means ambiguous, and
-// the matcher refuses to guess (FR-019).
+// the matcher refuses to guess.
 type Matching interface {
 	MatchByActivityID(ctx context.Context, scope authz.Scope, keys []string) (map[string][]string, error)
 	MatchByMediaCode(ctx context.Context, scope authz.Scope, codes []int64) (map[string][]string, error)
@@ -86,7 +86,7 @@ type Facts interface {
 	HoldFacts(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error)
 }
 
-// ImportFilter is FR-016's findability: by file and uploader (Search), source, status and date.
+// ImportFilter is the imports' findability: by file and uploader (Search), source, status and date.
 type ImportFilter struct {
 	ID       string
 	SourceID string
@@ -105,7 +105,7 @@ type Imports interface {
 	CurrencyCodes(ctx context.Context) (map[string]bool, error)
 }
 
-// FactQuery is FR-030's findability on one activity's facts.
+// FactQuery is the findability on one activity's facts.
 type FactQuery struct {
 	ActivityID  string
 	Search      string
@@ -113,7 +113,7 @@ type FactQuery struct {
 	Limit       int
 }
 
-// ReviewFilter is FR-023's findability: by key, source, reason, upload, date and status.
+// ReviewFilter is the review queue's findability: by key, source, reason, upload, date and status.
 type ReviewFilter struct {
 	ID        string
 	Status    string
@@ -151,7 +151,7 @@ type Codes interface {
 	PutConfiguration(ctx context.Context, c Configuration) error
 }
 
-// Children serves the recycle bin, which collects an activity's records before deleting it (FR-021).
+// Children serves the recycle bin, which collects an activity's records before deleting it.
 type Children interface {
 	FactIDsOf(ctx context.Context, activityIDs []string) ([]string, error)
 	MediaCodeIDsOf(ctx context.Context, activityIDs []string) ([]string, error)

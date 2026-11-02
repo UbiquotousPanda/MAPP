@@ -15,7 +15,7 @@ import (
 )
 
 // The release hook is one line of wiring; this proves an approval reaches it and a decline does not
-// (046 FR-020, research R4).
+// (research R4).
 func TestSetStatus_ApprovedReleasesHeldFacts_046FR020(t *testing.T) {
 	t.Parallel()
 	db := fake.NewDB()

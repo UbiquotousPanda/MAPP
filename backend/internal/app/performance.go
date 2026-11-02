@@ -16,7 +16,7 @@ import (
 
 const feedSeed = 46
 
-// performanceApprovals answers 046-C1: In progress and Complete are display forms of approved.
+// performanceApprovals: In progress and Complete are display forms of approved.
 type performanceApprovals struct {
 	activities interface {
 		ListByIDs(ctx context.Context, ids []string) ([]activity.Activity, error)
