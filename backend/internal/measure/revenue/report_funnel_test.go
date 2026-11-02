@@ -129,6 +129,34 @@ func TestRankedFunnel_EntriesCarryProjectedAndPerformance_FR012_FR017(t *testing
 	}
 }
 
+// Closes T057: every ranked Funnel entry now carries Conversion, not just the report's own cards.
+func TestRankedFunnel_EntryCarriesConversionFromThePreviousStage_FR017_T057(t *testing.T) {
+	t.Parallel()
+	sc := oneActivityScope()
+	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}
+	facts := []revenue.FactTotal{
+		{ActivityID: "A-1", Stage: "inq", Month: "2026-02", Counts: 1000, FactCount: 1},
+		{ActivityID: "A-1", Stage: "mql", Month: "2026-02", Counts: 25, FactCount: 1},
+	}
+	s := newFixtureWith(sc, goals, facts)
+
+	got, err := s.RankedFunnel(t.Context(), priya, measure.Filter{Show: "activity"},
+		revenue.RankedQuery{Stage: "mql", Sort: revenue.SortActual, Order: revenue.OrderDesc, Size: 10, Page: 1})
+	if err != nil {
+		t.Fatalf("RankedFunnel: %v", err)
+	}
+	entry := got.Groups[0].Entries[0]
+	if entry.Figures.Conversion == nil {
+		t.Fatalf("entry conversion = %+v, want a value: both stages have counted facts", entry.Figures)
+	}
+	if *entry.Figures.Conversion != 2.5 {
+		t.Errorf("entry conversion = %v, want 2.5 %% (25 of 1,000, one decimal), matching the report's own card", *entry.Figures.Conversion)
+	}
+	if got.Groups[0].Totals.Conversion == nil || *got.Groups[0].Totals.Conversion != 2.5 {
+		t.Errorf("group totals conversion = %v, want 2.5 %%", got.Groups[0].Totals.Conversion)
+	}
+}
+
 func TestConversionCard_NoPreviousActualShowsTheReason_FR017(t *testing.T) {
 	t.Parallel()
 	sc := oneActivityScope()

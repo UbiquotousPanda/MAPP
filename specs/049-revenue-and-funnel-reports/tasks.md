@@ -120,12 +120,17 @@ marks tasks that can run in parallel.
   (`TestRankedRevenue_TopLevelTotalsMatchTheSeriesTotals_SC002`, which caught the Projected/Performance
   defect above) and SC-006 was only half-tested (added a `ModelChangedAt` assertion to the existing FR-012
   test). T014's drill/group gap was reconfirmed as a disclosed, not hidden, gap.
-- [ ] T057 [P] Set `Conversion` on every ranked Funnel entry, not just the report's own cards (FR-017):
-  needs each level's own previous-stage actual rolled up alongside its own, not just summed from entries'
-  own figures. Found while fixing T053/T054's Projected/Performance defect; same shape, left for its own
-  pass rather than widening this one further.
+- [X] T057 [P] Set `Conversion` on every ranked Funnel entry, not just the report's own cards (FR-017).
+  Done: a second rolled-up map carries each node's previous-stage actual (`previousActualsOfActivities`/
+  `rollUpInt64`), summed the same way `rollUpFunnel` sums figures, so `withFunnelDerived` can compute
+  Conversion from `conversionCard` at every level, leaf or rolled up — not just the report's own cards.
+  Demo seed data has no counted facts for the one activity with a funnel goal, so the real previous-stage
+  actual is 0 there and the e2e spec can't show a non-"—" value; pinned instead with
+  `TestRankedFunnel_EntryCarriesConversionFromThePreviousStage_FR017_T057`, a fixture with real INQ/MQL
+  facts, matching the existing report-level conversion test exactly (2.5%).
 - [X] T055 Run `/speckit-converge`; record remaining or "clean". Converged: no gap found that isn't
-  already a traceable, open task (T014, T057 remain, both pre-existing and honestly disclosed).
+  already a traceable, open task (T014, T057 remain, both pre-existing and honestly disclosed). T057 closed
+  in a follow-up pass after the PR opened; only T014 (ranked-list drill/grouping) remains.
 - [X] T056 Open the PR into `measure-module` (note: branch stacked on 047's; retarget once PRs #62/#75
   merge), with the feature-map status change and the asks from T051. Opened as PR #82 against
   `feature/047-projections` (047's own PR #75's base chain); retarget to `measure-module` once #62/#75
