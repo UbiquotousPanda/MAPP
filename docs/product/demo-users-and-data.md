@@ -86,3 +86,18 @@ Forecourt POS refresh, Nitro+ racing heritage film and Fleet EV charging contrac
 Morgan), and Rimula R6 fleet roadshow, Fleet operator breakfast series and Hannover Messe stand (Daniel
 Okoro). The other six are Created, ready to submit. Their line items ask for SWBS codes but have none yet, so
 a demonstration can send them to the simulated GSAP.
+
+## Measure demo plan (optional)
+
+`go run ./cmd/seed -reset -measure` adds **FY2026 Measure demo – Lubricants Benelux** (Published, owner Alex
+Morgan) last, after the demo story and the showcase, so no ID above moves (D-354). Its team **Measure demo** has no
+members: Alex Morgan and Carlos Mendes see it through their All markets roles, and every other persona sees the
+demo story as before. The compose setup and the end-to-end suite load it; the Go tests load without it, except
+Measure's own, which opt in with `apitest.WithMeasureDemo()`.
+
+Its 2 campaigns, 3 initiatives, 9 activities and 13 EUR line items spread over every month of 2026, with the
+plan's INQ goal and activities' INQ, MQL and revenue for the Measure reports. Five activities are Approved by Daniel
+Okoro 1, 4, 7, 12 and 40 days before the seed time; their line items ask for SWBS codes and have none, so the GSAP
+link has a line item in every wait band. **Fleet expo Rotterdam** waits for approval, **Workshop roadshow Benelux**
+was declined, and **Dealer summit** and **Tellus trade press** are Created; Tellus trade press has no Shell
+attributes, for Plan details' *Not filled in*.

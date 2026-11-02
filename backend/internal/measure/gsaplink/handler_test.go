@@ -66,6 +66,18 @@ func TestGsapLink_Contract(t *testing.T) {
 	get(t, carlosSees, report+"&tab=orders&sort=-waiting", http.StatusBadRequest)
 }
 
+// TestGsapLink_MeasureDemoFillsEveryWaitBand: the Measure demo's line items wait in every band for their SWBS codes.
+func TestGsapLink_MeasureDemoFillsEveryWaitBand(t *testing.T) {
+	t.Parallel()
+	r := reportOf(t, apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, carlos), report+"&tab=swbs")
+
+	for _, b := range r.Swbs.Bands {
+		if b.Count == 0 {
+			t.Errorf("SWBS band %q has no line item, want the Measure demo in every band: %+v", b.Label, r.Swbs.Bands)
+		}
+	}
+}
+
 func TestGsapLink_OrdersInReportCurrency_Contract(t *testing.T) {
 	t.Parallel()
 	r := reportOf(t, apitest.New(t).SignIn(t, carlos), report+"&tab=orders&sort=-poAmount&currency=EUR&page=1&pageSize=5")
