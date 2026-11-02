@@ -3,6 +3,7 @@ package performance_test
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -109,14 +110,21 @@ func TestDeleteAlias_NeedsPerformanceLink_FR043(t *testing.T) {
 	}
 }
 
-// FR-036's generation belongs to feature 006; what 046 must prove is the negative - none of its SQL ever
-// writes the external name it matches on (046-C14). A scan of this feature's own queries pins that.
+// Generating the external name belongs to feature 006; this feature must only never write the name it
+// matches on, which a scan of its own queries pins.
 func TestQueries_NeverWriteTheExternalName_FR036(t *testing.T) {
 	t.Parallel()
-
-	queries, err := os.ReadFile("../platform/database/queries/performance.sql")
-	if err != nil {
-		t.Fatalf("read the feature's queries: %v", err)
+	files, err := filepath.Glob("../platform/database/queries/performance_*.sql")
+	if err != nil || len(files) == 0 {
+		t.Fatalf("find the feature's queries: %v, %d files", err, len(files))
+	}
+	var queries []byte
+	for _, file := range files {
+		text, readErr := os.ReadFile(file)
+		if readErr != nil {
+			t.Fatalf("read the feature's queries: %v", readErr)
+		}
+		queries = append(queries, text...)
 	}
 	for _, statement := range strings.Split(string(queries), ";") {
 		lowered := strings.ToLower(statement)

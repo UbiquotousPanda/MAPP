@@ -80,8 +80,7 @@ CREATE TABLE performance_facts (
     CHECK (NOT held OR activity_id IS NOT NULL)
 );
 
--- 046-C21 (correcting research R3): the measure joins the identity because one file row holding an INQ column and an MQL
--- column produces one fact for each, under the same source reference.
+-- The measure joins the identity: a file row with an INQ and an MQL column makes one fact for each, under one reference.
 CREATE UNIQUE INDEX performance_facts_identity_idx
     ON performance_facts (source_id, source_reference, stage, web_metric) WHERE replaced_by_id IS NULL;
 CREATE INDEX performance_facts_activity_idx ON performance_facts (activity_id, held, fact_date);
