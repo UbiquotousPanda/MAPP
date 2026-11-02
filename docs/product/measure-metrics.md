@@ -23,13 +23,13 @@ figure that cannot be worked out shows "—" with the reason, never 0.
 | **Approvals waiting / decided / automatic** | Counts over the approval rounds of the plans' activities and purchase requests, and since when the oldest waits | 017, 036 (D-342) | 041 |
 | **Average days to a decision** | Mean days from submission to decision, one decimal, as Approvals monitoring works it out | 017 | 041, 048 |
 | **Purchase requests by status** | Count and amount per status (Created, Submitted, In review, Approved, Declined, Closed) and how many approved ones wait for GSAP, as the Purchase requests page | 032, 036 (D-342) | 042 |
-| **Commitment by vendor / by owner per delivery month** | PR line amounts of Approved and Closed requests bucketed by the line's delivery date; a Closed line is its closed-out amount. Its total is 042's **Committed** card, which is not 040's Committed above (D-384, Q-032) | 032, D-335 | 042 |
+| **Commitment by vendor / by owner per delivery month** | PR line amounts of Approved and Closed requests bucketed by the line's delivery date; a Closed line is its closed-out amount; every month from the first to the last delivery month is shown, then No delivery date. Its total is 042's **Committed** card, which is not 040's Committed above (D-384, Q-032) | 032, D-335 | 042 |
 | **Invoiced per PR line** | Invoices linked to the line's line item and purchase order | 015, 033 | 042, 044 |
 | **Completeness** | Records with every needed field filled in, per level, as a count and a whole per cent | domain model §2.6, 036 | 043, 048 |
 | **Records by attribute value** | For one Shell attribute at one level: how many records carry each value, their planned cost, and how many have it *Not filled in*; % splits count by share (D-270, D-336) | 016 Breakdown | 043 |
 | **Planned cost entered** · **Goal entered** | Activities with a planned cost above zero · activities with a goal | 006 | 043 |
-| **SWBS not received** | Line items whose SWBS request is Ready to send to GSAP (request on, activity approved, no code), with the time waiting since the approval (D-386) | 030 | 044 |
-| **Waiting for GSAP** | Approved purchase requests routed to GSAP that GSAP has not answered: no purchase order, or a line whose amount or currency differs from its PO line, as the Purchase requests page's view (032 FR-032, D-386) | 032, 033 | 044 |
+| **SWBS not received** | Line items whose SWBS request is Ready to send to GSAP (request on, activity approved, no code), with the time waiting since the approval, flagged Over 48 hours after 48 hours (D-386) | 030 | 044 |
+| **Waiting for GSAP** | Approved purchase requests routed to GSAP that GSAP has not answered: no purchase order, or a line whose amount or currency differs from its PO line, as the Purchase requests page's view, flagged Over 2 working days (Monday to Friday) after routing (032 FR-032, D-386) | 032, 033 | 044 |
 | **Purchase orders per line item** | The PO ledger: line item, purchase request, GSAP PR number, PO number and date, PO amount, invoiced, paid | 033, 015 | 044 |
 | **Last sign-in** | The time of the person's latest successful demo sign-in, in UTC | 045 (new) | 045 |
 

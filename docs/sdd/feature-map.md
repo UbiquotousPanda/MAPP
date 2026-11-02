@@ -6,7 +6,7 @@ Every feature of this phase, one Spec Kit folder each under `specs/`. **Numbers 
 The map sets scope boundaries so no requirement is specified twice and none is missed. Statuses as of the final merge (`plan-module` at `a1ae8fe`, 21 October 2026); the open tasks of each feature are listed at the top of its `tasks.md` (014–017) and in the [final validation report](../reports/final-validation-report.md) §7.
 
 **Status values:** Draft (spec written, waiting for product-owner review) · Clarifying · Planned ·
-In progress · Built (merged on `plan-module` and working on the demo data; the product owner's acceptance and the items left open in its `tasks.md` remain) · Done.
+In progress · Built (merged on `plan-module`, or on `measure-module` for 039–050, and working on the demo data; the product owner's acceptance and the items left open in its `tasks.md` remain) · Done.
 
 | # | Folder | Feature | Priority | Depends on | Status |
 |---|---|---|---|---|---|
@@ -54,7 +54,7 @@ In progress · Built (merged on `plan-module` and working on the demo data; the 
 Read-only reports, shown as **Reports**. Built on the `measure-module` branch by four lanes (A–D) following
 [measure-module-build.md](measure-module-build.md); the figures are defined once in
 [measure-metrics.md](../product/measure-metrics.md); the GitHub issues are in [measure-issues.md](measure-issues.md).
-**Wave A** uses only data MAPP holds; **wave B** adds performance data from a simulated feed (D-370). Statuses as of 2 November 2026: wave A is built on `measure-module` (D-381–D-388 record its clarifications); 046, 047 and 049 are open pull requests, and 050 waits for 046.
+**Wave A** uses only data MAPP holds; **wave B** adds performance data from a simulated feed (D-370). Statuses as of 2 November 2026: wave A is built on `measure-module` (D-381–D-388 record its clarifications); 046, 047 and 049 are open pull requests; 050 has 6 of its 8 tasks on `measure-module`, and its last two wait for 046.
 
 | # | Folder | Feature | Wave · lane · hours | Depends on | Status |
 |---|---|---|---|---|---|
