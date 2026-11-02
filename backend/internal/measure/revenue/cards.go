@@ -2,7 +2,6 @@ package revenue
 
 import (
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // revenueCards add the twelve months before any grouping, so the cards are the same in month and quarter view.
@@ -24,13 +23,14 @@ func moneyCardOf(amount money.Amount, currency string, has bool, reason string) 
 	return MoneyCard{Value: &shown}
 }
 
-// performanceOf is (actual + projected) ÷ goal as a whole per cent, computed exactly on cents.
 func performanceOf(actualOrProjected, goal money.Amount, anyGoal bool) NumberCard {
 	if !anyGoal {
 		return NumberCard{Reason: ReasonNoGoal}
 	}
-	a, g := money.USD(actualOrProjected), money.USD(goal)
-	pct := rollup.BudgetUsedPercent(&a, &g)
+	return percentCard(Performance(actualOrProjected.Cents(), goal.Cents()))
+}
+
+func percentCard(pct *int) NumberCard {
 	if pct == nil {
 		return NumberCard{Reason: ReasonNoGoal}
 	}

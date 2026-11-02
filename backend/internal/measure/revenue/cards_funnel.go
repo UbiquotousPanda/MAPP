@@ -1,7 +1,5 @@
 package revenue
 
-import "math"
-
 // funnelCards sum the months before any grouping, as Revenue's cards do, counting the month in progress once.
 func funnelCards(sums monthlySums, w window, anyGoal bool, previousActual *int64) FunnelCards {
 	goal, actual, total := sums.activityGoals, sums.actualTotal(), sums.total()
@@ -23,11 +21,10 @@ func intCard(value int64, present bool, reason string) NumberCard {
 }
 
 func ratioCard(value, goal int64, anyGoal bool) NumberCard {
-	if !anyGoal || goal == 0 {
+	if !anyGoal {
 		return NumberCard{Reason: ReasonNoGoal}
 	}
-	pct := math.Round(float64(value) / float64(goal) * 100)
-	return NumberCard{Value: &pct}
+	return percentCard(Performance(value, goal))
 }
 
 // conversionCard mirrors 046's conversionOf: one decimal, "—" on a zero denominator.
