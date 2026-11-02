@@ -49,7 +49,7 @@ export function legendOption(ctx: ChartContext) {
   };
 }
 
-/** Room around the plot for the legend and the zoom slider. */
+/** Room around the plot for the legend and the zoom slider; axis labels and titles stay inside the rest. */
 export function gridOption(ctx: ChartContext, zoomEdge: Position | null) {
   const room: Record<Position, number> = { top: EDGE, bottom: EDGE, left: EDGE, right: EDGE };
   const legend = ctx.display.legend ?? DEFAULT_LEGEND;
@@ -60,7 +60,7 @@ export function gridOption(ctx: ChartContext, zoomEdge: Position | null) {
   if (zoomEdge) {
     room[zoomEdge] += ZOOM_ROOM;
   }
-  return { ...room, containLabel: true };
+  return { ...room, outerBoundsMode: 'same', outerBoundsContain: 'all' };
 }
 
 export function labelOption(ctx: ChartContext, shownByDefault: boolean) {

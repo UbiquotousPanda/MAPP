@@ -88,6 +88,16 @@ describe('051 FR-025: funnel and gauge', () => {
     expect(at(option, 'series', 0)).toMatchObject({ min: 1000, max: 40000 });
   });
 
+  it('labels only the minimum and maximum, so no tick label covers the value in a small widget', () => {
+    const option = buildOption(
+      widget('gauge', { gauge: { min: '1000', max: '40000' } }),
+      widgetData(),
+      THEME,
+    );
+    const series = at(option, 'series', 0);
+    expect(series).toMatchObject({ splitNumber: 1, splitLine: { show: false } });
+  });
+
   it.each([
     [0, 1],
     [7, 10],
