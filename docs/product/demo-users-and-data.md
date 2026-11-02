@@ -91,8 +91,8 @@ a demonstration can send them to the simulated GSAP.
 
 `go run ./cmd/seed -reset -measure` adds **FY2026 Measure demo – Lubricants Benelux** (Published, owner Alex
 Morgan) last, after the demo story and the showcase, so no ID above moves (D-354). Its team **Measure demo** has no
-members: Alex Morgan and Carlos Mendes see it through their All markets roles, and every other persona sees the
-demo story as before. The compose setup and the end-to-end suite load it; the Go tests load without it, except
+members: Alex Morgan, Carlos Mendes and Lea Santos see it through their All markets roles, and Priya, Daniel, Mei and
+Sara see the demo story as before. The compose setup and the end-to-end suite load it; the Go tests load without it, except
 Measure's own, which opt in with `apitest.WithMeasureDemo()`.
 
 Its 2 campaigns, 3 initiatives, 9 activities and 13 EUR line items spread over every month of 2026, with the
