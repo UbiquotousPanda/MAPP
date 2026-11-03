@@ -4,6 +4,9 @@ Lane C, 2026-11-02. Every built wave A report on the demo data under the demo ro
 harness (`backend/internal/measure/waveaqa`), so a role's scope, access and financial visibility are checked
 without a browser. The browser pass below is still to run.
 
+The harness is `apitest.New`: the standard demo data **without** the optional Measure demo plan (seed `-measure`),
+whose purchase requests and two-level approval the wave B pass covers through `apitest.WithMeasureDemo()`.
+
 ## Roles and what they must see
 
 | Person | Role | Plans (2026) | Reports offered | Financial data | Export |
@@ -25,9 +28,9 @@ the filters and columns on screen (`GridExportsKeepFilters`, `PurchaseRequestExp
 
 | # | Report | Severity | Finding | State |
 |---|---|---|---|---|
-| 1 | 042 Purchase requests | High | A person without financial access saw **Committed** and **Invoiced** as `0.00 USD` in the cards and in the commitment charts' total, because a plan's amounts were marked hidden only when one of its lines added to the figure. Spec FR-020 and FR-021: a dash, never a zero. | Fixed here, with `TestNoFinanceView_NothingCommitted_042_FR020_FR021` |
-| 2 | 042 Purchase requests | Medium | The grid export ignored the filters, columns and descending order on screen: the shared export declared and sent only 041's parameters. | Fixed by lane A in PR #86 (merged 2 Nov); kept by `TestWaveA_PurchaseRequestExportKeepsFilters_FR027` |
-| 3 | 041 Approvals | Medium | The grid export ignored the grid's filters. | Fixed by lane A (`29d8682f`) before this pass; kept by `TestWaveA_GridExportsKeepFilters_FR023` |
+| 1 | 042 Purchase requests | High | A person without financial access saw **Committed** and **Invoiced** as `0.00 USD` in the cards, in the commitment charts' total and in the grid's vendor and request totals, because a plan's amounts were marked hidden only when one of its lines added to the figure. Spec FR-020 and FR-021: a dash, never a zero. | Fixed here, with `TestNoFinanceView_NothingCommitted_042_FR020_FR021` |
+| 2 | 042 Purchase requests | Medium | The grid export ignored the filters, columns and descending order on screen: the shared export declared and sent only 041's parameters. | Fixed by lane A in PR #86 (merged 2 Nov); kept by `TestWaveA_PurchaseRequestExportKeepsFilters_042_FR027` |
+| 3 | 041 Approvals | Medium | The grid export ignored the grid's filters. | Fixed by lane A (`29d8682f`) before this pass; kept by `TestWaveA_GridExportsKeepFilters_041_FR023` |
 | 4 | 043 to 045 | — | Their exports and amounts were not read beyond access and scope: no finding, none looked for. | Left to their lane's own pass |
 
 No role sees a plan, owner or team outside its scope in any report; the word "Mobility" in Plan details for a

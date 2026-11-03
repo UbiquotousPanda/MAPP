@@ -25,7 +25,7 @@ const (
 	mobility   = "FY2026 Mobility China"
 )
 
-// builtReports are the wave A reports with the year the demo data has something to show for.
+// built is one wave A report with the year the demo data has something to show for.
 type built struct {
 	path, key string
 	year      int
@@ -65,7 +65,7 @@ func planNames(t *testing.T, c *apitest.Client, report string) ([]string, frame)
 	return names, f
 }
 
-func TestWaveA_ScopePerRole_FR003(t *testing.T) {
+func TestWaveA_ScopePerRole_039_FR003(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 
@@ -83,7 +83,7 @@ func TestWaveA_ScopePerRole_FR003(t *testing.T) {
 	}
 }
 
-func TestWaveA_CatalogueMatchesAccess_FR001(t *testing.T) {
+func TestWaveA_CatalogueMatchesAccess_039_FR001(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 
@@ -104,7 +104,7 @@ func TestWaveA_CatalogueMatchesAccess_FR001(t *testing.T) {
 	}
 }
 
-func TestWaveA_NoFinancialAccess_Approvals_FR004(t *testing.T) {
+func TestWaveA_NoFinancialAccess_Approvals_039_FR004(t *testing.T) {
 	t.Parallel()
 	var approvals struct {
 		FinanceCovers struct{ Plans, Of int } `json:"financeCovers"`
@@ -126,7 +126,7 @@ func TestWaveA_NoFinancialAccess_Approvals_FR004(t *testing.T) {
 	}
 }
 
-func TestWaveA_NoFinancialAccess_PurchaseRequests_FR004(t *testing.T) {
+func TestWaveA_NoFinancialAccess_PurchaseRequests_039_FR004(t *testing.T) {
 	t.Parallel()
 	var requests struct {
 		FinanceCovers struct{ Plans, Of int } `json:"financeCovers"`
@@ -145,7 +145,7 @@ func TestWaveA_NoFinancialAccess_PurchaseRequests_FR004(t *testing.T) {
 	}
 }
 
-func TestWaveA_ExportRights_FR022(t *testing.T) {
+func TestWaveA_ExportRights_039_FR022(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	exports := []string{
@@ -164,7 +164,7 @@ func TestWaveA_ExportRights_FR022(t *testing.T) {
 	}
 }
 
-func TestWaveA_GridExportsKeepFilters_FR023(t *testing.T) {
+func TestWaveA_GridExportsKeepFilters_041_FR023(t *testing.T) {
 	t.Parallel()
 	c := apitest.New(t).SignIn(t, alex)
 
@@ -176,7 +176,7 @@ func TestWaveA_GridExportsKeepFilters_FR023(t *testing.T) {
 	}
 }
 
-func TestWaveA_PurchaseRequestExportKeepsFilters_FR027(t *testing.T) {
+func TestWaveA_PurchaseRequestExportKeepsFilters_042_FR027(t *testing.T) {
 	t.Parallel()
 	c := apitest.New(t).SignIn(t, alex)
 	base := "/api/v1/reports/purchase-requests/export?year=2027&format=csv&widget=grid"

@@ -230,4 +230,12 @@ func TestNoFinanceView_NothingCommitted_042_FR020_FR021(t *testing.T) {
 	if diff := cmp.Diff([]string{"—", "—", "—"}, got); diff != "" {
 		t.Errorf("committed, invoiced and the chart's total for a plan without finance.view, never a zero (-want +got):\n%s", diff)
 	}
+	if len(view.Grid.Vendors) != 1 || len(view.Grid.Vendors[0].Requests) != 1 {
+		t.Fatalf("grid = %+v, want the hidden request's vendor and the request", view.Grid.Vendors)
+	}
+	vendor, request := view.Grid.Vendors[0], view.Grid.Vendors[0].Requests[0]
+	grid := []string{amountText(vendor.Committed), amountText(vendor.Invoiced), amountText(request.Invoiced)}
+	if diff := cmp.Diff([]string{"—", "—", "—"}, grid); diff != "" {
+		t.Errorf("the grid's vendor committed and invoiced and the request's invoiced, never a zero (-want +got):\n%s", diff)
+	}
 }
