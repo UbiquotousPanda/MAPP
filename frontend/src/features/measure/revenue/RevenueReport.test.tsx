@@ -103,6 +103,17 @@ describe('RevenueReport (049 US1)', () => {
     expect(requests.at(-1)?.search).toContain('sort=actualRevenue');
   });
 
+  it('offers only the sorts the API accepts, so no column sorts silently by Projected (FR-006)', async () => {
+    renderPage();
+
+    await screen.findByText('Helix launch');
+    const sortBy = screen.getByRole('combobox', { name: 'Sort by' });
+    const values = within(sortBy)
+      .getAllByRole('option')
+      .map((o) => o.getAttribute('value'));
+    expect(values).toEqual(['actualRevenue', 'projectedRevenue']);
+  });
+
   it('fails on its own: the ranked list stays when the figures fail', async () => {
     renderPage({ status: 500, body: apiError('internal_error', 'Something went wrong.') });
 

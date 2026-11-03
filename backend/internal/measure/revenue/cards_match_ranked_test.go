@@ -155,3 +155,34 @@ func activityWithoutGoalsScope() measure.Scope {
 	sc.Nodes[0].INQ, sc.Nodes[0].MQL, sc.Nodes[0].Revenue = nil, nil, nil
 	return sc
 }
+
+func TestFunnelCards_ConversionWithoutAnActivityThatProjectsTheStageBefore_FR017_SC002(t *testing.T) {
+	t.Parallel()
+	facts := append(julyAndAugustFacts(revenue.StageINQ, 40, 40), julyAndAugustFacts(revenue.StageMQL, 4, 6)...)
+	sc := oneActivityScope()
+	sc.Nodes[0].INQ = nil
+	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel(), SetLaterStagesMyself: true}}
+	s := newFixtureAt(midAugust, sc, goals, facts)
+	f := measure.Filter{Period: measure.PeriodMonth, Show: measure.ShowActivity}
+	report, err := s.FunnelReport(t.Context(), priya, f, revenue.StageMQL)
+	if err != nil {
+		t.Fatalf("FunnelReport: %v", err)
+	}
+	list, err := s.RankedFunnel(t.Context(), priya, f,
+		revenue.RankedQuery{Sort: revenue.SortActual, Order: revenue.OrderDesc, Size: 10, Page: 1, Stage: revenue.StageMQL})
+	if err != nil {
+		t.Fatalf("RankedFunnel: %v", err)
+	}
+	row := list.Groups[0].Entries[0].Figures.Conversion
+	card := report.Cards.Conversion.Value
+	if row == nil || card == nil || *row != *card {
+		t.Errorf("conversion card = %v, ranked row = %v: both must be 12.5 (10 MQL from 80 INQ)", deref(card), deref(row))
+	}
+}
+
+func deref(p *float64) any {
+	if p == nil {
+		return nil
+	}
+	return *p
+}

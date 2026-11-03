@@ -85,11 +85,7 @@ func previousStageTotal(series []ActivitySeries, stage string) *int64 {
 	if !found {
 		return nil
 	}
-	m := stageMeasure(previous)
-	if !slices.ContainsFunc(series, m.covers) {
-		return nil
-	}
-	total := sumMonths(series, m).actualTotal()
+	total := sumMonths(series, stageMeasure(previous)).actualTotal()
 	return &total
 }
 

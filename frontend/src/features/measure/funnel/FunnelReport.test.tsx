@@ -133,4 +133,15 @@ describe('FunnelReport (049 US2)', () => {
     expect(nth(asked(api, '/api/v1/reports/funnel/export'), 0).get('stage')).toBe('mql');
     save.mockRestore();
   });
+
+  it('offers only the sorts the API accepts, so no column sorts silently by Projected (FR-006)', async () => {
+    renderPage();
+
+    await screen.findByText('Helix launch');
+    const sortBy = screen.getByRole('combobox', { name: 'Sort by' });
+    const values = within(sortBy)
+      .getAllByRole('option')
+      .map((o) => o.getAttribute('value'));
+    expect(values).toEqual(['actual', 'projected']);
+  });
 });
