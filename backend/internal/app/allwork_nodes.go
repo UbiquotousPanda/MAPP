@@ -47,7 +47,7 @@ func (y *yearReader) addContainer(ctx context.Context, c container) error {
 		Level: c.level, ID: c.id, ParentID: c.parentID, PlanID: c.planID, Order: c.order, Name: c.name,
 		Description: c.description, Owner: owner, StartDate: c.start, EndDate: c.end,
 		Status: c.progress.State, Approved: c.progress.Approved, Total: c.progress.Total,
-		Missing: len(c.completeness.Missing), CreatedAt: c.meta.CreatedAt, UpdatedAt: c.meta.UpdatedAt,
+		Missing: y.missingCount(len(c.completeness.Missing)), CreatedAt: c.meta.CreatedAt, UpdatedAt: c.meta.UpdatedAt,
 	}
 	if c.timing != nil {
 		node.Timing = *c.timing
@@ -67,7 +67,7 @@ func (y *yearReader) addContainer(ctx context.Context, c container) error {
 		level = settings.LevelInitiative
 	}
 	node.Fields = map[string]allwork.Value{string(c.level) + ".description": {Text: c.description}}
-	y.addAttributes(node.Fields, level, c.attributes)
+	y.addAttributeWords(node.Fields, level, c.attributes)
 	node.Attrs = y.attrValues(level, c.attributes)
 	y.nodes = append(y.nodes, node)
 	return nil
@@ -76,13 +76,9 @@ func (y *yearReader) addContainer(ctx context.Context, c container) error {
 // addActivityDetails adds to the activity nodes what 006's plan-tree rows leave out: external name,
 // description, workflow, attributes and dates of change from the stored activities and, when the view shows
 // INQ, MQL or revenue, the goals as 006 shows them (typed, or calculated with the plan's model).
-func (y *yearReader) addActivityDetails(ctx context.Context) error {
+func (y *yearReader) addActivityDetails(ctx context.Context, stored []activity.Activity) error {
 	if len(y.activities) == 0 {
 		return nil
-	}
-	stored, err := y.s.activitiesRepo.ListByInitiatives(ctx, y.initiativeIDs)
-	if err != nil {
-		return err
 	}
 	y.stored = make(map[string]string, len(stored))
 	for _, a := range stored {
@@ -115,13 +111,17 @@ func (y *yearReader) addStoredActivity(ctx context.Context, n *allwork.Node, a a
 			n.Fields["activity.approvalWorkflow"] = allwork.Value{Text: w.Name, Inactive: !w.Active}
 		}
 	}
-	y.addAttributes(n.Fields, settings.LevelActivity, a.Attributes)
+	y.addAttributeWords(n.Fields, settings.LevelActivity, a.Attributes)
 	n.Attrs = y.attrValues(settings.LevelActivity, a.Attributes)
 	return nil
 }
 
 func (y *yearReader) addActivityGoals(ctx context.Context) error {
-	goals, err := y.s.activities.Summaries(ctx, y.initiativeIDs)
+	summaries := y.s.activities.Summaries
+	if y.s.lean {
+		summaries = y.s.activities.PlanningSummaries
+	}
+	goals, err := summaries(ctx, y.initiativeIDs)
 	if err != nil {
 		return err
 	}
@@ -137,18 +137,13 @@ func (y *yearReader) addActivityGoals(ctx context.Context) error {
 	return nil
 }
 
-// addLineItems adds the line items of the year's activities in creation order, each with its USD planned
-// cost and spread (007's PlannedCostUSD, SpreadMonths and USDMonths at today's rates), its SWBS request
-// status and its completeness (007's Summaries).
-func (y *yearReader) addLineItems(ctx context.Context) error {
-	if len(y.activities) == 0 {
+// addLineItems adds the line items of the year's activities from items, in id (creation) order, each with its USD
+// planned cost and spread at today's rates, its SWBS request status and its completeness, as 007 works them out.
+func (y *yearReader) addLineItems(ctx context.Context, items []lineitem.LineItem) error {
+	if len(y.activities) == 0 || len(items) == 0 {
 		return nil
 	}
 	activityIDs := slices.Collect(maps.Keys(y.activities))
-	items, err := y.s.lineItemsRepo.ListByActivities(ctx, activityIDs) // ordered by id: creation order
-	if err != nil || len(items) == 0 {
-		return err
-	}
 	missing, err := y.lineItemsMissing(ctx, activityIDs)
 	if err != nil {
 		return err
@@ -157,19 +152,27 @@ func (y *yearReader) addLineItems(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	for order, li := range items {
+	order := 0
+	for _, li := range items {
+		if _, found := y.activities[li.ActivityID]; !found {
+			continue
+		}
 		node, err := y.lineItemNode(ctx, li, rates)
 		if err != nil {
 			return err
 		}
 		node.Order, node.Missing = order, missing[li.ID]
 		y.nodes = append(y.nodes, node)
+		order++
 	}
 	return nil
 }
 
 // lineItemsMissing returns how many needed fields each incomplete line item of the activities still lacks.
 func (y *yearReader) lineItemsMissing(ctx context.Context, activityIDs []string) (map[string]int, error) {
+	if y.s.lean {
+		return map[string]int{}, nil
+	}
 	summaries, err := y.s.lineItems.Summaries(ctx, activityIDs)
 	if err != nil {
 		return nil, err
@@ -216,10 +219,9 @@ func (y *yearReader) lineItemNode(ctx context.Context, li lineitem.LineItem, rat
 			"lineItem.requestSwbs":      {Yes: &li.RequestSwbs},
 		},
 	}
-	if err := y.addFinanceFields(ctx, node.Fields, li); err != nil {
+	if err := y.lineItemWords(ctx, node.Fields, li); err != nil {
 		return allwork.Node{}, err
 	}
-	y.addAttributes(node.Fields, settings.LevelLineItem, li.Attributes)
 	node.Attrs = y.attrValues(settings.LevelLineItem, li.Attributes)
 	y.planFacts(&node)
 	months, spread := lineitem.SpreadMonths(li, f)

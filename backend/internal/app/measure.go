@@ -18,7 +18,7 @@ import (
 func (w *wiring) measureArea() error {
 	registry := measure.NewRegistry()
 	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
-	w.reports = measure.NewService(tools, measure.Deps{Planning: w.allWork, Plans: reportPlans{repo: w.set.Plans},
+	w.reports = measure.NewService(tools, measure.Deps{Planning: reportsYear{w.allWork}, Plans: reportPlans{repo: w.set.Plans},
 		Currencies: reportCurrencies{settings: w.settings}, Views: w.set.Measure}, registry)
 	if err := w.history.Register(w.reports.ViewKind()); err != nil {
 		return err
