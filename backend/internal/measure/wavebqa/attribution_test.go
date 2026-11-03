@@ -110,20 +110,45 @@ func checkSum(t *testing.T, label string, all revenueFigures, parts []revenueFig
 	}
 }
 
-// checkReturns: every ROI is its figure's own credits against its own cost; groups and parents add up their parts.
-func checkReturns(t *testing.T, label string, r ranked[revenueFigures]) {
-	t.Helper()
-	for _, f := range r.everyFigure() {
-		if got, want := whole(f.ROI), roiOf(returnsIn(f)); shown(got) != shown(want) {
-			t.Errorf("%s: ROI %s on %s, want %s, the API's rounding", label, shown(got), returnsIn(f), shown(want))
-			return
+// visibleCredit is the credit of the parts whose cost the person sees: all a sum's ROI may divide.
+func visibleCredit(parts []revenueFigures) *int64 {
+	var credited *int64
+	for _, f := range parts {
+		if f.ActualCost != nil {
+			credited = plus(credited, cents(f.AttributedRevenue))
 		}
 	}
+	return credited
+}
+
+func checkROI(t *testing.T, label string, f revenueFigures, credited *int64) {
+	t.Helper()
+	on := returns{credited, cents(f.ActualCost)}
+	if got, want := whole(f.ROI), roiOf(on); shown(got) != shown(want) {
+		t.Errorf("%s: ROI %s, want %s on %s, the API's rounding", label, shown(got), shown(want), on)
+	}
+}
+
+func checkWhole(t *testing.T, label string, all revenueFigures, parts []revenueFigures) {
+	t.Helper()
+	checkSum(t, label, all, parts)
+	checkROI(t, label, all, visibleCredit(parts))
+}
+
+// checkReturns: each row's ROI is its own credit against its own cost; a group or parent adds up its parts and
+// divides the credit of those whose cost is seen.
+func checkReturns(t *testing.T, label string, r ranked[revenueFigures]) {
+	t.Helper()
 	for _, g := range r.Groups {
-		checkSum(t, label+", group "+g.Key, g.Totals, figuresOf(g.Entries))
+		checkWhole(t, label+", group "+g.Key, g.Totals, figuresOf(g.Entries))
 		for _, e := range g.Entries {
+			rows := append([]entry[revenueFigures]{e}, e.Children...)
 			if len(e.Children) > 0 {
-				checkSum(t, label+", "+e.Name, e.Figures, figuresOf(e.Children))
+				checkWhole(t, label+", "+e.Name, e.Figures, figuresOf(e.Children))
+				rows = e.Children
+			}
+			for _, row := range rows {
+				checkROI(t, label+", "+row.Name, row.Figures, cents(row.Figures.AttributedRevenue))
 			}
 		}
 	}
