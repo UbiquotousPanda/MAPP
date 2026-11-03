@@ -55,7 +55,7 @@ column(s), with no row stored (FR-012).
 | `GET` | `/performance/review-rows` | `performance.import` | filter by key, source, reason, upload, status, `since`/`until`. **No POST** — rows are never created by hand (FR-023) |
 | `GET` | `/performance/review-rows/{rowId}` | `performance.import` | includes history |
 | `POST` | `/performance/review-rows/{rowId}/correct` | `performance.import` | re-checks immediately; becomes *Resolved* on a match |
-| `POST` | `/performance/review-rows/{rowId}/dismiss` | `performance.import` | comment **required**; **422** without one |
+| `POST` | `/performance/review-rows/{rowId}/dismiss` | `performance.import` | comment **required**; **400** `validation_failed` without one |
 | `POST` | `/performance/review-rows/{rowId}/reopen` | `performance.import` | |
 | `POST` | `/performance/sources/{sourceId}/recheck` | `performance.import` | re-checks open rows and held facts on demand (FR-025) |
 
