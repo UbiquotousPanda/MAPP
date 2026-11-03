@@ -39,13 +39,13 @@ func isSegment(at allwork.Attribute) bool {
 
 // tally is one segment value's share of the activities' figures, in cents and counts as each table needs them.
 type tally struct {
-	total, goal, actual, cost int64
-	costSeen                  bool
-	months                    []int64
+	total, goal, cost int64
+	costSeen          bool
+	months            []int64
 }
 
 func (t tally) add(o tally) tally {
-	t.total, t.goal, t.actual, t.cost = t.total+o.total, t.goal+o.goal, t.actual+o.actual, t.cost+o.cost
+	t.total, t.goal, t.cost = t.total+o.total, t.goal+o.goal, t.cost+o.cost
 	t.costSeen = t.costSeen || o.costSeen
 	for len(t.months) < len(o.months) {
 		t.months = append(t.months, 0)
@@ -58,11 +58,10 @@ func (t tally) add(o tally) tally {
 
 // split shares one activity's tally between its values; Not filled in takes it when it has none.
 func (t tally) split(value allwork.AttrValue) map[string]tally {
-	totals, goals, actuals, costs := shares(t.total, value), shares(t.goal, value), shares(t.actual, value),
-		shares(t.cost, value)
+	totals, goals, costs := shares(t.total, value), shares(t.goal, value), shares(t.cost, value)
 	out := make(map[string]tally, len(totals))
 	for key := range totals {
-		out[key] = tally{total: totals[key], goal: goals[key], actual: actuals[key], cost: costs[key],
+		out[key] = tally{total: totals[key], goal: goals[key], cost: costs[key],
 			costSeen: t.costSeen, months: make([]int64, len(t.months))}
 	}
 	for i, v := range t.months {
@@ -81,7 +80,7 @@ func tallyOf(s revenue.ActivitySeries, cost *int64) tally {
 		out.months = append(out.months, m.actualOrProjected)
 	}
 	if cost != nil {
-		out.actual, out.cost, out.costSeen = valueOf(own.Actual), *cost, true
+		out.cost, out.costSeen = *cost, true
 	}
 	return out
 }

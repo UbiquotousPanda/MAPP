@@ -71,12 +71,12 @@ func TestFunnelSection_048_FR009_FR010(t *testing.T) {
 	got := report(t, newFakes(), measure.Filter{}).Funnel
 
 	// INQ: 50 past + 10 in June + 60 ahead = 120 against 100; conversion so far 11 MQL of 54 INQ.
-	wantINQ := StageFigures{Stage: StageINQ, ActualOrProjected: int64(120), Goal: ptr[int64](100),
+	wantINQ := StageFigures{Stage: StageINQ, ActualOrProjected: ptr[int64](120), Goal: ptr[int64](100),
 		Performance: Performance{Percent: ptr(120), Variance: revenue.AbovePlan}}
 	if !cmp.Equal(wantINQ, got.Stages[0]) || len(got.Stages) != 3 || got.Stages[2].Stage != StageRevenue {
 		t.Errorf("stages = %+v, want INQ %+v, then MQL and Revenue", got.Stages, wantINQ)
 	}
-	wantConversions := []Conversion{{Stage: StageMQL, Rate: ptr("20.4"), Goal: ptr("20.0"), Variance: revenue.AbovePlan}}
+	wantConversions := []Conversion{{Stage: StageMQL, Rate: ptr("20.4"), Goal: ptr("20.0"), Variance: ptr(revenue.AbovePlan)}}
 	if diff := cmp.Diff(wantConversions, got.Conversions); diff != "" {
 		t.Errorf("conversions (-want +got)\n%s", diff)
 	}

@@ -97,7 +97,7 @@ func conversionSheet(f FunnelSection) sheet.Sheet {
 	rows := [][]sheet.Cell{heads("Stage", "Rate (%)", "Goal (%)", "Variance")}
 	for _, c := range f.Conversions {
 		rows = append(rows, []sheet.Cell{sheet.Text(stageWord(c.Stage)), textCell(c.Rate), textCell(c.Goal),
-			sheet.Text(varianceWord(c.Variance))})
+			sheet.Text(conversionWord(c.Variance))})
 	}
 	rows = append(rows, []sheet.Cell{}, heads("Period", "State", stageWord(f.Trend.Stage)+" rate (%)", "Goal (%)"))
 	for _, p := range f.Trend.Periods {
@@ -122,11 +122,18 @@ func leagueSheet(l LeagueTable) sheet.Sheet {
 		rows = append(rows, []sheet.Cell{sheet.Text(r.Name), figureCell(r.Value)})
 	}
 	rows = append(rows, []sheet.Cell{sheet.Bold("Total"), figureCell(l.Total)})
-	return sheet.Sheet{Name: "Top " + tableWord(l.Table) + " by " + segment, Rows: rows}
+	return sheet.Sheet{Name: "Top " + tableWord(l.Table), Rows: rows}
 }
 
 func inCurrency(label, currency string) string {
 	return label + " (" + currency + ")"
+}
+
+func conversionWord(v *revenue.Variance) string {
+	if v == nil {
+		return dash
+	}
+	return varianceWord(*v)
 }
 
 func varianceWord(v revenue.Variance) string {

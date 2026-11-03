@@ -90,6 +90,13 @@ two with the same wording (049-C13, 049-C15).
 - **048-C13** — Q: Client 016 FR-027 shows earlier years as one "FY (total)" bucket each; does Summary? → A: **No.** A
   report covers one plan year (D-368, 039 Assumptions): multi-year selection is not adopted because plans are one
   year. The edge case is replaced, and convergence task T030 is closed without code.
+- **048-C15** — Q: The ROI league table works ROI out from the facts' own revenue; is that right while 050's
+  crediting is not wired in? → A: **No (#137 finding 1).** Until 048 reads attributed revenue through
+  `attribution.Crediting` (lane A), every ROI value is "—" with "Attribution is not configured yet" and no model is
+  named, as Revenue's ranked list answers.
+- **048-C16** — Q: A conversion with a goal but no rate (nothing counted in the previous stage) says "No goal"; is
+  that right? → A: **No (#137 finding 3).** "No goal" only when the goal is zero or absent (048-C1); with no rate the
+  variance is null, shown "—".
 
 ## User Scenarios & Testing *(mandatory)*
 

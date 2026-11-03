@@ -9194,10 +9194,10 @@ paths:
       operationId: getSummaryLeague
       summary: One league table of the Summary report - the five highest values of a segment and the total (feature 048)
       description: >-
-        The same frame filter and category as getSummaryReport. Each activity's figures are shared equally between
-        its values of the segment; Not filled in has the key none. The total counts each activity once. Cost and ROI
-        are null for plans whose financial data the person may not see. A segment that matches nothing answers 200
-        with no rows.
+        The same frame filter and category as getSummaryReport. Each activity's figures are shared between its values
+        of the segment, by a % split's own shares or else equally (048-C4, C14); Not filled in has the key none. The total counts each activity once. Cost and ROI
+        are null for plans whose financial data the person may not see. ROI is null, with the reason, while
+        attribution is not configured. A segment that matches nothing answers 200 with no rows.
       parameters:
         - name: table
           in: path
@@ -12679,7 +12679,10 @@ components:
                   goal:
                     $ref: "#/components/schemas/SummaryRate"
                   variance:
-                    $ref: "#/components/schemas/SummaryVariance"
+                    description: The rate against its goal in words; null when the rate is missing, noGoal when the goal is.
+                    oneOf:
+                      - $ref: "#/components/schemas/SummaryVariance"
+                      - type: "null"
             trend:
               type: object
               additionalProperties: false
@@ -12720,7 +12723,7 @@ components:
           description: The report states that apply (FR-018).
           items:
             type: string
-            enum: [noPlans, noGoals, noPerformanceData, nothingMatches, noFinancialAccess]
+            enum: [noPlans, notApproved, noGoals, noPerformanceData, nothingMatches, noFinancialAccess]
         financeCovers:
           type: object
           additionalProperties: false

@@ -2,24 +2,24 @@ package app
 
 import (
 	"context"
+	"errors"
 
-	"mapp/internal/history"
 	"mapp/internal/measure"
-	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/revenue"
 	"mapp/internal/measure/summary"
 	"mapp/internal/plan"
+	"mapp/internal/platform/actor"
+	"mapp/internal/platform/errs"
 	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 
 // registerSummary registers the Summary report on 049's ActivitySeries.
 func registerSummary(w *wiring, r *measure.Registry) error {
-	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
 	service := summary.NewService(w.set.Tx, summary.Deps{
 		Series: revenueService(w), PlanGoals: summaryPlanGoals{plans: w.set.Plans, settings: w.settings},
-		Spending: w.financials, Attribution: attribution.NewService(tools, w.set.Attribution),
-		Categories: revenueCategories{settings: w.settings},
+		Spending:   w.financials,
+		Categories: revenueCategories{settings: w.settings}, Segments: summarySegments{settings: w.settings},
 	}, w.now)
 	mount(w.signedIn, summary.NewHandler(service))
 	return r.Register(summary.NewReport(service))
@@ -67,4 +67,17 @@ func goalOf(goals plan.GoalFigures) revenue.Goal {
 		goal.RevenueUSD = &goals.Revenue.Amount
 	}
 	return goal
+}
+
+// summarySegments names an attribute as Settings shows it; one that is gone gives "", so the export keeps its ID.
+type summarySegments struct {
+	settings *settings.Service
+}
+
+func (s summarySegments) SegmentLabel(ctx context.Context, id string) (string, error) {
+	view, err := s.settings.GetAttribute(ctx, actor.System, id)
+	if e, ok := errors.AsType[*errs.Error](err); ok && e.Code == errs.CodeNotFound {
+		return "", nil
+	}
+	return view.Label, err
 }

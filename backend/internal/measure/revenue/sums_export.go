@@ -12,13 +12,14 @@ func StageMeasure(stage string) Measure { return Measure{of: stageMeasure(stage)
 type Sums struct {
 	Actual, PastActual, Projected, Goal [projection.Months]int64
 	Unprojected                         [projection.Months]int64
+	Counted, Projects                   [projection.Months]bool
 	ActivityGoals                       int64
 }
 
 func SumMonths(series []ActivitySeries, m Measure) Sums {
 	s := sumMonths(series, m.of)
 	return Sums{Actual: s.actual, PastActual: s.pastActual, Projected: s.projected, Goal: s.goal,
-		Unprojected: s.unprojected, ActivityGoals: s.activityGoals}
+		Unprojected: s.unprojected, Counted: s.counted, Projects: s.projects, ActivityGoals: s.activityGoals}
 }
 
 func (s Sums) Total() int64 { return s.internal().total() }
@@ -31,7 +32,7 @@ func (s Sums) ActualOrProjected(i int) int64 {
 
 func (s Sums) internal() monthlySums {
 	return monthlySums{actual: s.Actual, pastActual: s.PastActual, projected: s.Projected, goal: s.Goal,
-		unprojected: s.Unprojected, activityGoals: s.ActivityGoals}
+		unprojected: s.Unprojected, counted: s.Counted, projects: s.Projects, activityGoals: s.ActivityGoals}
 }
 
 // OwnFigure is a ranked row's figures: Actual is nil before any counted fact, Total when nothing projects or was counted.

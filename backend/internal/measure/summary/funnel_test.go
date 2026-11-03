@@ -19,8 +19,8 @@ func TestConversion_048_C7(t *testing.T) {
 	got := conversions([]Stage{StageINQ, StageMQL, StageRevenue}, totals)
 
 	want := []Conversion{
-		{Stage: StageMQL, Rate: ptr("12.5"), Goal: ptr("10.0"), Variance: revenue.AbovePlan},
-		{Stage: StageRevenue, Rate: ptr("0.0"), Goal: ptr("0.0"), Variance: revenue.NoGoal},
+		{Stage: StageMQL, Rate: ptr("12.5"), Goal: ptr("10.0"), Variance: ptr(revenue.AbovePlan)},
+		{Stage: StageRevenue, Rate: ptr("0.0"), Goal: ptr("0.0"), Variance: ptr(revenue.NoGoal)},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("conversions() (-want +got)\n%s", diff)

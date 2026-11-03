@@ -13,13 +13,14 @@ const monthsPerQuarter = 3
 type period struct {
 	key, label, state       string
 	actual, projected, goal int64
+	counted, projects       bool
 }
 
 func periodsOf(months []monthTotal, quarterly bool) []period {
 	out := make([]period, 0, len(months))
 	for i, m := range months {
 		p := period{key: m.key, label: monthLabel(m.key), state: stateOf(m.state), actual: m.actual,
-			projected: m.projected, goal: m.goal}
+			projected: m.projected, goal: m.goal, counted: m.counted, projects: m.projects}
 		if !quarterly {
 			out = append(out, p)
 			continue
@@ -46,6 +47,7 @@ func (p period) with(m period) period {
 	p.actual += m.actual
 	p.projected += m.projected
 	p.goal += m.goal
+	p.counted, p.projects = p.counted || m.counted, p.projects || m.projects
 	if m.state == PeriodInProgress || (m.state == PeriodProjected && p.state == PeriodActual) {
 		p.state = m.state
 	}

@@ -101,8 +101,8 @@ export function summaryLeague(
       { key: 'O-2', name: 'South', value: value('600.00', 83), trend: [] },
     ],
     total: value('1200.00', 83),
-    roi: table === 'roi' ? { model: 'Equally distributed', basis: 'actual' } : null,
-    reason: null,
+    roi: null,
+    reason: table === 'roi' ? 'Attribution is not configured yet' : null,
     ...overrides,
   };
 }

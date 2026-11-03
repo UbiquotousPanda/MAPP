@@ -11,6 +11,7 @@ export const STATE_TEXT: Record<string, string> = {
   noFinancialAccess: 'Cost and ROI leave out the plans whose financial data you may not see.',
   noGoals: 'The activities in view have no goals yet, so there is nothing to compare against.',
   noPerformanceData: 'No performance data has arrived yet.',
+  notApproved: 'The activities in view are not approved yet, so their performance data is held.',
 };
 
 export const LEAGUE_TITLE: Record<LeagueTableKey, string> = {

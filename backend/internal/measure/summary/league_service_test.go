@@ -88,13 +88,9 @@ func TestLeague_CostAndROI_048_FR015(t *testing.T) {
 	if !cmp.Equal(usd(30_000), cost.Total, amounts()) || !cmp.Equal(usd(15_000), cost.Rows[0].Value, amounts()) {
 		t.Errorf("cost total %v and North %v, want 300.00 and 150.00", cost.Total, cost.Rows[0].Value)
 	}
-	// North: half of A-1's 550.00 so far against half its 300.00 paid, 83 %. The total adds A-2's 200.00, which cost
-	// nothing in a plan whose finances show: (750 − 300) ÷ 300 = 150 %.
-	if roi.Total != int64(150) || roi.Rows[0].Value != int64(83) {
-		t.Errorf("ROI total %v and North %v, want 150 and 83", roi.Total, roi.Rows[0].Value)
-	}
-	if roi.ROI == nil || *roi.ROI != (ROIBasis{Model: "Equally distributed", Basis: "actual"}) {
-		t.Errorf("ROI basis = %v, want Equally distributed on actual cost", roi.ROI)
+	if roi.Total != nil || roi.Rows[0].Value != nil || roi.ROI != nil {
+		t.Errorf("ROI total %v, North %v, basis %v; want dashes and no model until 050's crediting", roi.Total,
+			roi.Rows[0].Value, roi.ROI)
 	}
 }
 
@@ -143,21 +139,5 @@ func TestLeague_NoSegmentsIsAnEmptyList_048_C4(t *testing.T) {
 	if got.Segments == nil || len(got.Segments) != 0 || got.Segment != nil || len(got.Rows) != 0 {
 		t.Errorf("without segment attributes = segments %#v, segment %v, %d rows; want an empty list and no rows",
 			got.Segments, got.Segment, len(got.Rows))
-	}
-}
-
-func TestLeague_ROICountsRevenueOnlyWhereCostIs_048_FR003(t *testing.T) {
-	t.Parallel()
-	f := withSegments()
-	hidden := projected("A-3", planTwo)
-	hidden.Attributes = f.series[0].Attributes
-	f.series = append(f.series, hidden)
-	f.scope.Choices.FinancePlans = []string{planOne}
-
-	got := league(t, f, TableROI, nil)
-
-	// A-3's revenue is in a plan without financial access, so it cannot raise A-1's 83 %.
-	if got.Total != int64(83) || got.Rows[0].Value != int64(83) {
-		t.Errorf("ROI total %v and first row %v, want 83 without the hidden plan's revenue", got.Total, got.Rows[0].Value)
 	}
 }
