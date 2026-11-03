@@ -242,16 +242,19 @@ func projectedSum(months []splitMonth) int64 {
 
 func checkAtRate(t *testing.T, inq, mql []splitMonth, rate int64) {
 	t.Helper()
+	var running, placed int64
 	for i := range min(len(inq), len(mql)) {
-		from, got := counted(inq[i].Projected, true), counted(mql[i].Projected, true)
-		if want := (from*rate + 50) / 100; got != want {
-			t.Errorf("%s MQL %s = %d, want %d: %d %% of %d INQ, rounded half-up in the month", helixSecondHalf,
-				mql[i].Month, got, want, rate, from)
+		running += counted(inq[i].Projected, true)
+		share := (running*rate + 50) / 100
+		if got := counted(mql[i].Projected, true); got != share-placed {
+			t.Errorf("%s MQL %s = %d, want %d: %d %% of the INQ to date rounded half-up, less the months before",
+				helixSecondHalf, mql[i].Month, got, share-placed, rate)
 		}
+		placed = share
 	}
 }
 
-// TestWaveB_StagesProjectTheirGoals_047_FR007_FR009: typed stages phase their own goals; a calculated MQL is 2 % a month.
+// TestWaveB_StagesProjectTheirGoals_047_FR007_FR009: typed stages phase their own goals; calculated ones carry remainders.
 func TestWaveB_StagesProjectTheirGoals_047_FR007_FR009(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t, apitest.WithMeasureDemo())
@@ -273,4 +276,8 @@ func TestWaveB_StagesProjectTheirGoals_047_FR007_FR009(t *testing.T) {
 		t.Errorf("%s INQ months total %d, want the whole goal of 4,000 (SC-003)", helixSecondHalf, got)
 	}
 	checkAtRate(t, inq, second.stage("mql").Months, 2)
+	if got := cents(second.Revenue.Projected); got == nil || *got != 40_000_00 {
+		t.Errorf("%s revenue projected %v cents, want its 40,000.00 goal: 4 deals, the remainder carried", helixSecondHalf,
+			shown(got))
+	}
 }
