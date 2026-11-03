@@ -12550,10 +12550,6 @@ components:
             of:
               type: integer
               minimum: 0
-    SummaryVariance:
-      type: string
-      description: Performance in words (048-C1); noGoal when the goal is zero or missing.
-      enum: [abovePlan, onPlan, belowPlan, noGoal]
     SummaryStageKey:
       type: string
       enum: [inq, mql, revenue]

@@ -3,7 +3,8 @@ import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { FunnelSectionData, SummaryFigure } from './api';
-import { STAGE, VARIANCE, percentText, rateText } from './words';
+import { varianceText } from '../revenue/variance';
+import { STAGE, percentText, rateText } from './words';
 import styles from './Summary.module.css';
 
 const WIDTH = 720;
@@ -30,7 +31,7 @@ export function FunnelSection({ funnel }: { funnel: FunnelSectionData }) {
         figure(s.actualOrProjected),
         figure(s.goal),
         percentText(s.performance),
-        VARIANCE[s.variance],
+        varianceText(s.variance),
       ],
     })),
   };
@@ -62,7 +63,7 @@ export function FunnelSection({ funnel }: { funnel: FunnelSectionData }) {
             key={c.stage}
             label={`${STAGE[c.stage]} conversion`}
             value={rateText(c.rate)}
-            detail={`Goal ${rateText(c.goal)} · ${VARIANCE[c.variance]}`}
+            detail={`Goal ${rateText(c.goal)} · ${varianceText(c.variance)}`}
             tip="This stage's actual ÷ the previous stage's actual, to one decimal. Its goal is the same ratio of the goals."
           />
         ))}

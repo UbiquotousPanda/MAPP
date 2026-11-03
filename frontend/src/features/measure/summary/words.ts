@@ -1,15 +1,7 @@
 import type { components } from '@/api/generated/schema';
 import type { LeagueTableKey } from './schemas';
 
-type Variance = components['schemas']['SummaryVariance'];
 type Stage = components['schemas']['SummaryStageKey'];
-
-export const VARIANCE: Record<Variance, string> = {
-  abovePlan: 'Above plan',
-  onPlan: 'On plan',
-  belowPlan: 'Below plan',
-  noGoal: 'No goal',
-};
 
 export const STAGE: Record<Stage, string> = { inq: 'INQ', mql: 'MQL', revenue: 'Revenue' };
 

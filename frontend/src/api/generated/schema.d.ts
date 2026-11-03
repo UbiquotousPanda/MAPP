@@ -6245,11 +6245,6 @@ export interface components {
                 of: number;
             };
         };
-        /**
-         * @description Performance in words (048-C1); noGoal when the goal is zero or missing.
-         * @enum {string}
-         */
-        SummaryVariance: "abovePlan" | "onPlan" | "belowPlan" | "noGoal";
         /** @enum {string} */
         SummaryStageKey: "inq" | "mql" | "revenue";
         /** @enum {string} */

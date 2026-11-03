@@ -4,7 +4,8 @@ import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { RevenueSectionData, SummaryTrendPeriod } from './api';
-import { STAGE, VARIANCE, percentText } from './words';
+import { varianceText } from '../revenue/variance';
+import { STAGE, percentText } from './words';
 import styles from './Summary.module.css';
 
 const WIDTH = 720;
@@ -37,7 +38,7 @@ export function RevenueSection({ revenue }: { revenue: RevenueSectionData }) {
         <SummaryCard
           label="Performance"
           value={percentText(revenue.performance)}
-          detail={VARIANCE[revenue.variance]}
+          detail={varianceText(revenue.variance)}
           tip="Actual or projected ÷ goal, as a whole per cent."
         />
         <SummaryCard
