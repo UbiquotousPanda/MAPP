@@ -1,6 +1,7 @@
 import { useFormatters } from '@/format/useFormatters';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { reasonText } from './reasons';
+import { varianceText } from './variance';
 import type { RevenueCards as RevenueCardsData } from './api';
 import styles from './Revenue.module.css';
 
@@ -31,8 +32,9 @@ export function RevenueCards({ cards }: { cards: RevenueCardsData }) {
         value={
           cards.performance.value !== null
             ? `${cards.performance.value}%`
-            : reasonText(cards.performance.reason)
+            : varianceText(cards.performance.variance)
         }
+        detail={cards.performance.value !== null && varianceText(cards.performance.variance)}
         tip="Actual or projected ÷ goal."
       />
     </div>

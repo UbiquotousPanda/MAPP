@@ -160,6 +160,9 @@ marks tasks that can run in parallel.
   children only from what is in view, children sorted), pinned by `ranked_in_view_test.go`
 - [X] T061 `Performance` and `VarianceOf` exported for 048-C1 (`variance.go`), both cards computing Performance
   through it; table test `TestPerformanceAndVariance_048C1_FR023`
-- [ ] T062 Show 048-C1's variance word on the Revenue and Funnel cards and ranked rows (FR-023): waits for the
-  contract change (an `openapi.yaml` field, lane A's file) and the frontend
+- [X] T062 Show 048-C1's variance word on the Revenue and Funnel cards and ranked rows (FR-023): `variance`
+  (`SummaryVariance`, as in #106) on both Performance cards and every ranked entry's figures, always from
+  `VarianceOf(performance)` in Go; the web shows "Above plan", "On plan", "Below plan" or "No goal" from the API's
+  word, never from the number (`revenue/variance.ts`). Tests in `variance_internal_test.go`, `handler_test.go` and
+  both report pages
 
