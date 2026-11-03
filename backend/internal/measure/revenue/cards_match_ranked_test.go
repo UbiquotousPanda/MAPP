@@ -103,3 +103,55 @@ func assertSameFigure(t *testing.T, name string, card *float64, want float64) {
 		t.Errorf("%s card = %v, want %v", name, *card, want)
 	}
 }
+
+func TestCards_CountTheFactsOfAnActivityWithoutAProjection_FR009_SC002(t *testing.T) {
+	t.Parallel()
+	for _, stage := range []string{"revenue", revenue.StageINQ} {
+		s := newFixtureAt(midAugust, activityWithoutGoalsScope(), fakeGoals{}, julyAndAugustFacts(stage, 1_000_000, 500_000))
+		f := measure.Filter{Period: measure.PeriodMonth, Show: measure.ShowActivity}
+		cardActual, rankedActual := actualsOf(t, s, f, stage)
+		if cardActual != rankedActual {
+			t.Errorf("%s: Actual card = %d, want the ranked actual %d: facts count without a goal", stage, cardActual, rankedActual)
+		}
+	}
+}
+
+func actualsOf(t *testing.T, s *revenue.Service, f measure.Filter, stage string) (card, ranked int64) {
+	t.Helper()
+	if stage == "revenue" {
+		report, err := s.Report(t.Context(), priya, f)
+		if err != nil {
+			t.Fatalf("Report: %v", err)
+		}
+		list, err := s.RankedRevenue(t.Context(), priya, f,
+			revenue.RankedQuery{Sort: revenue.SortActualRevenue, Order: revenue.OrderDesc, Size: 10, Page: 1})
+		if err != nil {
+			t.Fatalf("RankedRevenue: %v", err)
+		}
+		return centsOf(report.Cards.Actual.Value), centsOf(list.Groups[0].Entries[0].Figures.Actual)
+	}
+	report, err := s.FunnelReport(t.Context(), priya, f, stage)
+	if err != nil {
+		t.Fatalf("FunnelReport: %v", err)
+	}
+	list, err := s.RankedFunnel(t.Context(), priya, f,
+		revenue.RankedQuery{Sort: revenue.SortActual, Order: revenue.OrderDesc, Size: 10, Page: 1, Stage: stage})
+	if err != nil {
+		t.Fatalf("RankedFunnel: %v", err)
+	}
+	var cardValue int64 = -1
+	if v := report.Cards.Actual.Value; v != nil {
+		cardValue = int64(*v)
+	}
+	var rankedValue int64 = -1
+	if v := list.Groups[0].Entries[0].Figures.Actual; v != nil {
+		rankedValue = *v
+	}
+	return cardValue, rankedValue
+}
+
+func activityWithoutGoalsScope() measure.Scope {
+	sc := oneActivityScope()
+	sc.Nodes[0].INQ, sc.Nodes[0].MQL, sc.Nodes[0].Revenue = nil, nil, nil
+	return sc
+}

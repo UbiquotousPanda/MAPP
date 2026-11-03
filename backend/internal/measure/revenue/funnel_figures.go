@@ -12,9 +12,7 @@ func previousActualsOfActivities(series []ActivitySeries, stage string) map[stri
 	}
 	m := stageMeasure(previous)
 	for _, a := range series {
-		if m.covers(a) {
-			out[a.ID] = int64Of(ownFigureOf(a, m).actual)
-		}
+		out[a.ID] = int64Of(ownFigureOf(a, m).actual)
 	}
 	return out
 }
@@ -25,11 +23,11 @@ func funnelFiguresOfActivities(series []ActivitySeries, stage string) map[string
 	m := stageMeasure(stage)
 	out := make(map[string]FunnelFigures, len(series))
 	for _, a := range series {
+		own := ownFigureOf(a, m)
 		if !m.covers(a) {
-			out[a.ID] = FunnelFigures{}
+			out[a.ID] = FunnelFigures{Goal: own.goal, Actual: own.actual, Projected: own.total}
 			continue
 		}
-		own := ownFigureOf(a, m)
 		actual := int64Of(own.actual)
 		out[a.ID] = FunnelFigures{Goal: own.goal, Actual: &actual, Projected: own.total}
 	}

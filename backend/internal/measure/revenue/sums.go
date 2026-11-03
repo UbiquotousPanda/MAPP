@@ -48,9 +48,6 @@ type monthlySums struct {
 func sumMonths(series []ActivitySeries, m measureOf) monthlySums {
 	var sums monthlySums
 	for _, a := range series {
-		if !m.covers(a) {
-			continue
-		}
 		for i, month := range a.Months {
 			f := m.month(month)
 			sums.actual[i] += int64Of(f.Actual)
@@ -88,8 +85,7 @@ type ownFigure struct {
 }
 
 func ownFigureOf(a ActivitySeries, m measureOf) ownFigure {
-	sums := sumMonths([]ActivitySeries{a}, measureOf{month: m.month, goal: m.goal,
-		covers: func(ActivitySeries) bool { return true }})
+	sums := sumMonths([]ActivitySeries{a}, m)
 	out := ownFigure{goal: m.goal(a)}
 	if slices.ContainsFunc(a.Months, func(month Month) bool { return m.month(month).Actual != nil }) {
 		actual := sums.actualTotal()
