@@ -6,7 +6,7 @@ demo seed; never put real Shell data here. Set up on 2026-11-03.
 
 | | |
 |---|---|
-| URL | https://mapp-test-northstar.centralindia.cloudapp.azure.com |
+| URL | https://spa-one.centralindia.cloudapp.azure.com |
 | Sign-in | the app's own demo sign-in: pick a demo person, no typing needed (demo password `mapp`) |
 | Who can open it | anyone with the URL; there is no extra login in front of the app (see Known limits) |
 | Shuts down | every day at 15:30 UTC (21:00 IST); start it again with `az vm start` (below) |
@@ -34,8 +34,8 @@ the group removes it all.
 | Resource group | `mapp-test-rg` | Central India (`centralindia`) |
 | Virtual machine | `mapp-test-vm` | `Standard_B2als_v2` (2 vCPU, 4 GB), Ubuntu 24.04 LTS (`Ubuntu2404`), admin user `azureuser`, SSH key only |
 | OS disk | `mapp-test-vm_OsDisk_1_7b4bdaf7b2d24875bb7280349f1de5e3` | 32 GB, StandardSSD_LRS |
-| Public IP | `mapp-test-vmPublicIP` | `20.219.251.125`, Static, Standard SKU, DNS label `mapp-test-northstar` |
-| DNS name | `mapp-test-northstar.centralindia.cloudapp.azure.com` | from the public IP's DNS label; no custom domain |
+| Public IP | `mapp-test-vmPublicIP` | `20.219.251.125`, Static, Standard SKU, DNS label `spa-one` |
+| DNS name | `spa-one.centralindia.cloudapp.azure.com` | from the public IP's DNS label; no custom domain |
 | Virtual network | `mapp-test-vmVNET` | `10.0.0.0/16` |
 | Subnet | `mapp-test-vmSubnet` | `10.0.0.0/24`; the VM's private IP is `10.0.0.4` |
 | Network interface | `mapp-test-vmVMNic` | the NSG below is attached here |
@@ -141,7 +141,7 @@ az group create -n mapp-test-rg -l centralindia
 az vm create -g mapp-test-rg -n mapp-test-vm --image Ubuntu2404 --size Standard_B2als_v2 \
   --admin-username azureuser --ssh-key-values ~/.ssh/mapp-test-vm.pub \
   --custom-data deploy/test-vm/cloud-init.yaml --public-ip-sku Standard \
-  --public-ip-address-dns-name mapp-test-northstar --nsg-rule NONE --os-disk-size-gb 32 --storage-sku StandardSSD_LRS
+  --public-ip-address-dns-name spa-one --nsg-rule NONE --os-disk-size-gb 32 --storage-sku StandardSSD_LRS
 az network nsg rule create -g mapp-test-rg --nsg-name mapp-test-vmNSG -n allow-web --priority 100 \
   --protocol Tcp --destination-port-ranges 80 443 --access Allow
 az network nsg rule create -g mapp-test-rg --nsg-name mapp-test-vmNSG -n allow-ssh-me --priority 110 \
