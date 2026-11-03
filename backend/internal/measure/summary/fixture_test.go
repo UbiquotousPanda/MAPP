@@ -79,8 +79,8 @@ func newFakes() *fakes {
 // projected: INQ 10, MQL 2 and 100.00 a month; June in progress has 4, 1 and 50.00 so far.
 func projected(id, plan string) revenue.ActivitySeries {
 	s := revenue.ActivitySeries{ID: id, Name: "Activity " + id, PlanID: plan, HasProjection: true,
-		Stages: []string{string(StageINQ), string(StageMQL)},
-		Goal:   revenue.Goal{INQ: ptr[int64](100), MQL: ptr[int64](20), RevenueUSD: ptr(money.FromCents(1_000_000))}}
+		Stages: []string{string(StageINQ), string(StageMQL)}, AllowedStages: []string{string(StageINQ), string(StageMQL)},
+		Goal: revenue.Goal{INQ: ptr[int64](100), MQL: ptr[int64](20), RevenueUSD: ptr(money.FromCents(1_000_000))}}
 	for i := range monthsInAll {
 		m := revenue.Month{Key: fmt.Sprintf("2026-%02d", i+1), State: revenue.StateFuture}
 		m.INQ.Goal, m.MQL.Goal, m.RevenueUSD.Goal = ptr[int64](8), ptr[int64](2), ptr(money.FromCents(80_000))

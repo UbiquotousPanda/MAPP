@@ -119,6 +119,18 @@ describe('SummaryReport (048 US1, US2)', () => {
     expect(await screen.findAllByText(/^Top .* by segment$/)).toHaveLength(4);
   });
 
+  it('says which stage leaves out plans whose model does not have it (048-C7)', async () => {
+    const report = summaryReport();
+    report.funnel.stages = report.funnel.stages.map((s) =>
+      s.stage === 'inq' ? { ...s, plansWithout: 1 } : s,
+    );
+    renderPage({ body: report });
+
+    expect(
+      await screen.findByText('INQ leaves out 1 plan whose model does not have it.'),
+    ).toBeInTheDocument();
+  });
+
   it('names the ROI model and cost basis, and shows a dash with the reason when there is no cost (FR-015)', async () => {
     renderPage();
 

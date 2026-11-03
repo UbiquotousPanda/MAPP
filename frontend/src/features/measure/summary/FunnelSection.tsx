@@ -35,9 +35,13 @@ export function FunnelSection({ funnel }: { funnel: FunnelSectionData }) {
     })),
   };
   const note =
-    funnel.plansWithoutStage > 0
-      ? `${funnel.plansWithoutStage} plans use a model without some of these stages and are not counted there.`
-      : undefined;
+    funnel.stages
+      .filter((s) => s.plansWithout > 0)
+      .map(
+        (s) =>
+          `${STAGE[s.stage]} leaves out ${s.plansWithout} ${s.plansWithout === 1 ? 'plan' : 'plans'} whose model does not have it.`,
+      )
+      .join(' ') || undefined;
   return (
     <section className={styles.section} aria-labelledby="summary-funnel">
       <h2 id="summary-funnel" className={styles.heading}>

@@ -6265,6 +6265,8 @@ export interface components {
             funnel: {
                 stages: {
                     stage: components["schemas"]["SummaryStageKey"];
+                    /** @description Plans whose model does not allow the stage, so it does not count them. */
+                    plansWithout: number;
                     actualOrProjected: components["schemas"]["SummaryFigure"];
                     goal: components["schemas"]["SummaryFigure"];
                     performance: number | null;
@@ -6286,7 +6288,6 @@ export interface components {
                         goal: components["schemas"]["SummaryRate"];
                     }[];
                 };
-                plansWithoutStage: number;
             };
             categories: {
                 id: string;

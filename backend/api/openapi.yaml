@@ -12603,17 +12603,21 @@ components:
         funnel:
           type: object
           additionalProperties: false
-          required: [stages, conversions, trend, plansWithoutStage]
+          required: [stages, conversions, trend]
           properties:
             stages:
               type: array
               items:
                 type: object
                 additionalProperties: false
-                required: [stage, actualOrProjected, goal, performance, variance]
+                required: [stage, actualOrProjected, goal, performance, variance, plansWithout]
                 properties:
                   stage:
                     $ref: "#/components/schemas/SummaryStageKey"
+                  plansWithout:
+                    type: integer
+                    minimum: 0
+                    description: Plans whose model does not allow the stage, so it does not count them.
                   actualOrProjected:
                     $ref: "#/components/schemas/SummaryFigure"
                   goal:
@@ -12661,9 +12665,6 @@ components:
                         $ref: "#/components/schemas/SummaryRate"
                       goal:
                         $ref: "#/components/schemas/SummaryRate"
-            plansWithoutStage:
-              type: integer
-              minimum: 0
         categories:
           type: array
           items:

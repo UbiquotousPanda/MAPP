@@ -79,10 +79,9 @@ type TrendPeriod struct {
 }
 
 type FunnelSection struct {
-	Stages            []StageFigures  `json:"stages"`
-	Conversions       []Conversion    `json:"conversions"`
-	Trend             ConversionTrend `json:"trend"`
-	PlansWithoutStage int             `json:"plansWithoutStage"`
+	Stages      []StageFigures  `json:"stages"`
+	Conversions []Conversion    `json:"conversions"`
+	Trend       ConversionTrend `json:"trend"`
 }
 
 // StageFigures holds money for revenue and a count for the other stages.
@@ -91,6 +90,7 @@ type StageFigures struct {
 	ActualOrProjected any   `json:"actualOrProjected"`
 	Goal              any   `json:"goal"`
 	Performance
+	PlansWithout int `json:"plansWithout"`
 }
 
 type ConversionTrend struct {

@@ -80,8 +80,8 @@ func TestFunnelSection_048_FR009_FR010(t *testing.T) {
 	if diff := cmp.Diff(wantConversions, got.Conversions); diff != "" {
 		t.Errorf("conversions (-want +got)\n%s", diff)
 	}
-	if len(got.Trend.Periods) != monthsInAll || *got.Trend.Periods[0].Rate != "20.0" || got.PlansWithoutStage != 0 {
-		t.Errorf("trend = %+v, plans without a stage %d", got.Trend.Periods, got.PlansWithoutStage)
+	if len(got.Trend.Periods) != monthsInAll || *got.Trend.Periods[0].Rate != "20.0" || got.Stages[0].PlansWithout != 0 {
+		t.Errorf("trend = %+v, INQ leaves out %d plans", got.Trend.Periods, got.Stages[0].PlansWithout)
 	}
 }
 
@@ -175,5 +175,31 @@ func TestRevenueTrend_NoGoalNoProjection_048_FR017(t *testing.T) {
 	if len(trend) != monthsInAll || trend[0].Goal != nil || trend[11].Goal != nil {
 		t.Errorf("trend = %d periods, goals %v and %v; want the year's twelve without a goal", len(trend), trend[0].Goal,
 			trend[11].Goal)
+	}
+}
+
+func TestFunnel_StagesTheModelsAllow_048_C7(t *testing.T) {
+	t.Parallel()
+	f := newFakes()
+	mqlOnly := projected("A-3", planTwo)
+	mqlOnly.AllowedStages = []string{string(StageMQL)}
+	f.series = []revenue.ActivitySeries{projected("A-1", planOne), mqlOnly}
+	onlyMQL := newFakes()
+	onlyMQL.series = []revenue.ActivitySeries{mqlOnly}
+
+	both := report(t, f, measure.Filter{}).Funnel
+	mql := report(t, onlyMQL, measure.Filter{}).Funnel
+
+	got := map[Stage]int{}
+	for _, s := range both.Stages {
+		got[s.Stage] = s.PlansWithout
+	}
+	// Plan two's model has no INQ, so INQ leaves that plan out and MQL leaves out none.
+	if diff := cmp.Diff(map[Stage]int{StageINQ: 1, StageMQL: 0, StageRevenue: 0}, got); diff != "" {
+		t.Errorf("plans each stage leaves out (-want +got)\n%s", diff)
+	}
+	if len(mql.Stages) != 2 || mql.Stages[0].Stage != StageMQL || len(mql.Conversions) != 0 {
+		t.Errorf("a model that allows only MQL shows %+v with %d conversions, want MQL and Revenue and none",
+			mql.Stages, len(mql.Conversions))
 	}
 }
