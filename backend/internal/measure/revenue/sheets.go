@@ -115,11 +115,15 @@ func moneyCell(m *money.Money) sheet.Cell {
 
 func moneyCardCell(c MoneyCard) sheet.Cell { return moneyCell(c.Value) }
 
+// numberCell keeps a figure with decimals, such as a 2.5% conversion, in sheet's one decimal kind.
 func numberCell(n *float64) sheet.Cell {
 	if n == nil {
 		return sheet.Text(noValue)
 	}
-	return sheet.Number(int64(*n))
+	if whole := math.Trunc(*n); whole == *n {
+		return sheet.Number(int64(whole))
+	}
+	return sheet.Money(money.FromCents(int64(math.Round(*n * 100))))
 }
 
 func numberCardCell(c NumberCard) sheet.Cell { return numberCell(c.Value) }

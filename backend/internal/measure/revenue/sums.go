@@ -10,6 +10,7 @@ import (
 // measureOf picks one measure out of ActivitySeries, revenue in cents or a stage's count, so both reports add up
 // the same way.
 type measureOf struct {
+	key    string
 	month  func(Month) Figure[int64]
 	goal   func(ActivitySeries) *int64
 	covers func(ActivitySeries) bool
@@ -17,6 +18,7 @@ type measureOf struct {
 
 func revenueMeasure() measureOf {
 	return measureOf{
+		key: stageRevenue,
 		month: func(m Month) Figure[int64] {
 			f := m.RevenueUSD
 			return Figure[int64]{Actual: cents(f.Actual), Projected: cents(f.Projected), Goal: cents(f.Goal)}
@@ -28,6 +30,7 @@ func revenueMeasure() measureOf {
 
 func stageMeasure(stage string) measureOf {
 	return measureOf{
+		key: stage,
 		month: func(m Month) Figure[int64] {
 			if stage == StageMQL {
 				return m.MQL
@@ -48,9 +51,6 @@ type monthlySums struct {
 func sumMonths(series []ActivitySeries, m measureOf) monthlySums {
 	var sums monthlySums
 	for _, a := range series {
-		if !m.covers(a) {
-			continue
-		}
 		for i, month := range a.Months {
 			f := m.month(month)
 			sums.actual[i] += int64Of(f.Actual)
@@ -88,8 +88,7 @@ type ownFigure struct {
 }
 
 func ownFigureOf(a ActivitySeries, m measureOf) ownFigure {
-	sums := sumMonths([]ActivitySeries{a}, measureOf{month: m.month, goal: m.goal,
-		covers: func(ActivitySeries) bool { return true }})
+	sums := sumMonths([]ActivitySeries{a}, m)
 	out := ownFigure{goal: m.goal(a)}
 	if slices.ContainsFunc(a.Months, func(month Month) bool { return m.month(month).Actual != nil }) {
 		actual := sums.actualTotal()

@@ -1,11 +1,10 @@
 package revenue
 
 // funnelCards sum the months before any grouping, as Revenue's cards do, counting the month in progress once.
-func funnelCards(sums monthlySums, w window, anyGoal bool, previousActual *int64) FunnelCards {
+func funnelCards(sums monthlySums, anyGoal bool, previousActual *int64) FunnelCards {
 	goal, actual, total := sums.activityGoals, sums.actualTotal(), sums.total()
 	cards := FunnelCards{}
 	cards.Goal = intCard(goal, goal != 0 && anyGoal, ReasonNoGoal)
-	cards.Actual = intCard(actual, todayMonthIndex(w.today, w.year) >= 0, ReasonNoData)
 	cards.Projected = intCard(total, true, ReasonNoGoal)
 	cards.Performance = ratioCard(total, goal, anyGoal)
 	cards.Conversion = conversionCard(actual, previousActual)

@@ -62,25 +62,21 @@ func buildFunnelReport(in funnelReportInput) FunnelReport {
 	anyGoal := slices.ContainsFunc(in.series, func(a ActivitySeries) bool { return m.covers(a) && a.HasProjection })
 	out := FunnelReport{Stage: in.stage, AvailableStages: in.available, UncoveredCount: uncoveredCount(in.series, m),
 		Period: periodShown(in.period), Periods: funnelPeriods(sums, in.period, in.w), Projection: stampOf(in.series)}
-	out.Cards = funnelCards(sums, in.w, anyGoal, previousStageTotal(in.series, in.stage))
-	if len(in.series) == 0 {
-		out.Reason = ReasonNoData
-	} else if !anyGoal {
-		out.Reason = ReasonNoGoal
-	}
+	out.Cards = funnelCards(sums, anyGoal, previousStageTotal(in.series, in.stage))
+	out.Cards.Actual = intCard(sums.actualTotal(), counted(in.series, m), actualReason(in.series, m))
+	out.Reason = reportReason(in.series, anyGoal)
 	return out
 }
 
-// uncoveredCount is the number of plans in view whose model does not allow the stage at all.
+// uncoveredCount counts the plans whose model does not allow the stage; a plan without a model is not counted.
 func uncoveredCount(series []ActivitySeries, m measureOf) int {
-	coveredPlans, allPlans := map[string]bool{}, map[string]bool{}
+	uncovered := map[string]bool{}
 	for _, a := range series {
-		allPlans[a.PlanID] = true
-		if m.covers(a) {
-			coveredPlans[a.PlanID] = true
+		if len(a.AllowedStages) > 0 && !slices.Contains(a.AllowedStages, m.key) {
+			uncovered[a.PlanID] = true
 		}
 	}
-	return len(allPlans) - len(coveredPlans)
+	return len(uncovered)
 }
 
 // previousStageTotal is the actual total of the stage before the selected one, for conversion.
@@ -89,11 +85,7 @@ func previousStageTotal(series []ActivitySeries, stage string) *int64 {
 	if !found {
 		return nil
 	}
-	m := stageMeasure(previous)
-	if !slices.ContainsFunc(series, m.covers) {
-		return nil
-	}
-	total := sumMonths(series, m).actualTotal()
+	total := sumMonths(series, stageMeasure(previous)).actualTotal()
 	return &total
 }
 
