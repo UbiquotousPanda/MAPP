@@ -56,4 +56,13 @@ describe('the Approvals search (041 FR-015)', () => {
     expect(at(100)).toBe('a'.repeat(100));
     expect(at(101)).toBe('');
   });
+
+  it('writes at most 100 characters, so a long search reads back instead of being dropped (FR-015)', () => {
+    const typed = 'b'.repeat(150);
+
+    const address = writeApprovalsParams(new URLSearchParams(), { ...DEFAULT_PARAMS, q: typed });
+
+    expect(address.get('q')).toBe('b'.repeat(100));
+    expect(readApprovalsParams(address).q).toBe('b'.repeat(100));
+  });
 });
