@@ -170,7 +170,7 @@ the file holds every matching row and no row of a plan outside Alex's scope.
 
 ## Phase 5: Polish and cross-cutting
 
-- [ ] T039 `BenchmarkApprovalsReport` in `backend/internal/platform/apibench/measure_approvals_test.go` (location
+- [x] T039 (run 3 Nov on PostgreSQL 17: statements fixed; time over 2 s from the shared scope read, raised with lane A; plan.md, Benchmark) `BenchmarkApprovalsReport` in `backend/internal/platform/apibench/measure_approvals_test.go` (location
   per lane A, T002) at the 028 volumes; record statements and time in `plan.md` § Benchmark
 - [X] T040 Comment budget and file length of **every file this feature touched**, including the test files; split
   any file above 300 non-blank lines
