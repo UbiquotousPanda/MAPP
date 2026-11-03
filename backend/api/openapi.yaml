@@ -9140,6 +9140,95 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  # Feature 048 Summary report (wave B contract)
+  /api/v1/reports/summary:
+    get:
+      tags:
+        - Reports
+      operationId: getSummaryReport
+      summary: Revenue against goal, the funnel stages and their conversions for the activities in view (feature 048)
+      description: >-
+        Activities match as the report frame matches them, in the person's reports.view scope (039). The figures come
+        from the same series as the Revenue and Funnel reports (049), so the same filters give the same totals. A
+        category narrows every figure. The widgets revenue, trend, funnel and conversion are exported through
+        exportReport; the league tables have their own operation.
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/RevenueCategory"
+        - $ref: "#/components/parameters/SummaryStage"
+      responses:
+        "200":
+          description: The revenue section, the funnel section and what the page needs to label them.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummaryReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/summary/league/{table}:
+    get:
+      tags:
+        - Reports
+      operationId: getSummaryLeague
+      summary: One league table of the Summary report - the five highest values of a segment and the total (feature 048)
+      description: >-
+        The same frame filter and category as getSummaryReport. Each activity's figures are shared equally between
+        its values of the segment; Not filled in has the key none. The total counts each activity once. Cost and ROI
+        are null for plans whose financial data the person may not see. A segment that matches nothing answers 200
+        with no rows.
+      parameters:
+        - name: table
+          in: path
+          required: true
+          description: The league table.
+          schema:
+            type: string
+            enum: [revenue, performance, cost, roi]
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/RevenueCategory"
+        - $ref: "#/components/parameters/SummarySegment"
+      responses:
+        "200":
+          description: The table's five highest values, its total and the segments to choose from.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummaryLeague"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
   # Feature 044 GSAP link reports (wave A contract)
   /api/v1/reports/gsap-link:
     get:
@@ -9653,6 +9742,20 @@ components:
         items:
           type: string
           pattern: ^[a-z][A-Za-z0-9]{0,39}$
+    SummaryStage:
+      name: stage
+      in: query
+      description: The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12).
+      schema:
+        type: string
+        enum: [mql]
+    SummarySegment:
+      name: segment
+      in: query
+      description: A Shell attribute ID at Plan, Campaign or Activity level; the default is the first Activity-level attribute.
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9-]{1,40}$
     ReportFormat:
       name: format
       in: query
@@ -12447,6 +12550,239 @@ components:
             of:
               type: integer
               minimum: 0
+    SummaryStageKey:
+      type: string
+      enum: [inq, mql, revenue]
+    SummaryPeriodState:
+      type: string
+      enum: [actual, inProgress, projected]
+    SummaryFigure:
+      description: Money for the revenue stage, a whole count for inq and mql, or null where there is no figure.
+      oneOf:
+        - $ref: "#/components/schemas/Money"
+        - type: integer
+          minimum: 0
+        - type: "null"
+    SummaryRate:
+      description: A percentage with one decimal, as "12.5", or null on a zero denominator.
+      oneOf:
+        - type: string
+          pattern: ^[0-9]{1,6}\.[0-9]$
+        - type: "null"
+    SummaryReport:
+      type: object
+      additionalProperties: false
+      required: [revenue, funnel, categories, states, financeCovers]
+      properties:
+        revenue:
+          type: object
+          additionalProperties: false
+          required: [periodLabel, actualOrProjected, goal, performance, variance, goalCoverage, trend]
+          properties:
+            periodLabel:
+              type: string
+            actualOrProjected:
+              $ref: "#/components/schemas/PrReportMoney"
+            goal:
+              $ref: "#/components/schemas/PrReportMoney"
+            performance:
+              type: [integer, "null"]
+            variance:
+              $ref: "#/components/schemas/SummaryVariance"
+            goalCoverage:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [stage, percent]
+                properties:
+                  stage:
+                    $ref: "#/components/schemas/SummaryStageKey"
+                  percent:
+                    type: [integer, "null"]
+            trend:
+              type: array
+              items:
+                $ref: "#/components/schemas/SummaryTrendPeriod"
+        funnel:
+          type: object
+          additionalProperties: false
+          required: [stages, conversions, trend]
+          properties:
+            stages:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [stage, actualOrProjected, goal, performance, variance, plansWithout]
+                properties:
+                  stage:
+                    $ref: "#/components/schemas/SummaryStageKey"
+                  plansWithout:
+                    type: integer
+                    minimum: 0
+                    description: Plans whose model does not allow the stage, so it does not count them.
+                  actualOrProjected:
+                    $ref: "#/components/schemas/SummaryFigure"
+                  goal:
+                    $ref: "#/components/schemas/SummaryFigure"
+                  performance:
+                    type: [integer, "null"]
+                  variance:
+                    $ref: "#/components/schemas/SummaryVariance"
+            conversions:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [stage, rate, goal, variance]
+                properties:
+                  stage:
+                    $ref: "#/components/schemas/SummaryStageKey"
+                  rate:
+                    $ref: "#/components/schemas/SummaryRate"
+                  goal:
+                    $ref: "#/components/schemas/SummaryRate"
+                  variance:
+                    $ref: "#/components/schemas/SummaryVariance"
+            trend:
+              type: object
+              additionalProperties: false
+              required: [stage, periods]
+              properties:
+                stage:
+                  $ref: "#/components/schemas/SummaryStageKey"
+                periods:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [key, label, state, rate, goal]
+                    properties:
+                      key:
+                        type: string
+                      label:
+                        type: string
+                      state:
+                        $ref: "#/components/schemas/SummaryPeriodState"
+                      rate:
+                        $ref: "#/components/schemas/SummaryRate"
+                      goal:
+                        $ref: "#/components/schemas/SummaryRate"
+        categories:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, name]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+        states:
+          type: array
+          description: The report states that apply (FR-018).
+          items:
+            type: string
+            enum: [noPlans, noGoals, noPerformanceData, nothingMatches, noFinancialAccess]
+        financeCovers:
+          type: object
+          additionalProperties: false
+          required: [plans, of]
+          properties:
+            plans:
+              type: integer
+              minimum: 0
+            of:
+              type: integer
+              minimum: 0
+    SummaryTrendPeriod:
+      type: object
+      additionalProperties: false
+      required: [key, label, state, actual, projected, goal]
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        state:
+          $ref: "#/components/schemas/SummaryPeriodState"
+        actual:
+          $ref: "#/components/schemas/PrReportMoney"
+        projected:
+          $ref: "#/components/schemas/PrReportMoney"
+        goal:
+          $ref: "#/components/schemas/PrReportMoney"
+    SummarySegment:
+      type: object
+      additionalProperties: false
+      required: [id, label, level]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        level:
+          type: string
+          enum: [plan, campaign, activity]
+    SummaryLeagueValue:
+      description: Money for revenue and cost, a whole per cent for performance and ROI, or null for "—".
+      oneOf:
+        - $ref: "#/components/schemas/Money"
+        - type: integer
+        - type: "null"
+    SummaryLeague:
+      type: object
+      additionalProperties: false
+      required: [table, segment, segments, rows, total, roi, reason]
+      properties:
+        table:
+          type: string
+          enum: [revenue, performance, cost, roi]
+        segment:
+          oneOf:
+            - $ref: "#/components/schemas/SummarySegment"
+            - type: "null"
+        segments:
+          type: array
+          items:
+            $ref: "#/components/schemas/SummarySegment"
+        rows:
+          type: array
+          maxItems: 5
+          items:
+            type: object
+            additionalProperties: false
+            required: [key, name, value, trend]
+            properties:
+              key:
+                type: string
+              name:
+                type: string
+              value:
+                $ref: "#/components/schemas/SummaryLeagueValue"
+              trend:
+                type: array
+                description: The segment's actual or projected revenue by month, whatever the table's figure.
+                items:
+                  $ref: "#/components/schemas/Money"
+        total:
+          $ref: "#/components/schemas/SummaryLeagueValue"
+        roi:
+          oneOf:
+            - type: object
+              additionalProperties: false
+              required: [model, basis]
+              properties:
+                model:
+                  type: string
+                basis:
+                  type: string
+                  enum: [actual, planned]
+            - type: "null"
+        reason:
+          type: [string, "null"]
     ApprovalsPerson:
       type: object
       additionalProperties: false

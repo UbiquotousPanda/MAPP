@@ -5101,6 +5101,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Revenue against goal, the funnel stages and their conversions for the activities in view (feature 048)
+         * @description Activities match as the report frame matches them, in the person's reports.view scope (039). The figures come from the same series as the Revenue and Funnel reports (049), so the same filters give the same totals. A category narrows every figure. The widgets revenue, trend, funnel and conversion are exported through exportReport; the league tables have their own operation.
+         */
+        get: operations["getSummaryReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/summary/league/{table}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One league table of the Summary report - the five highest values of a segment and the total (feature 048)
+         * @description The same frame filter and category as getSummaryReport. Each activity's figures are shared equally between its values of the segment; Not filled in has the key none. The total counts each activity once. Cost and ROI are null for plans whose financial data the person may not see. A segment that matches nothing answers 200 with no rows.
+         */
+        get: operations["getSummaryLeague"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/gsap-link": {
         parameters: {
             query?: never;
@@ -6204,6 +6244,101 @@ export interface components {
                 plans: number;
                 of: number;
             };
+        };
+        /** @enum {string} */
+        SummaryStageKey: "inq" | "mql" | "revenue";
+        /** @enum {string} */
+        SummaryPeriodState: "actual" | "inProgress" | "projected";
+        /** @description Money for the revenue stage, a whole count for inq and mql, or null where there is no figure. */
+        SummaryFigure: components["schemas"]["Money"] | number | null;
+        /** @description A percentage with one decimal, as "12.5", or null on a zero denominator. */
+        SummaryRate: string | null;
+        SummaryReport: {
+            revenue: {
+                periodLabel: string;
+                actualOrProjected: components["schemas"]["PrReportMoney"];
+                goal: components["schemas"]["PrReportMoney"];
+                performance: number | null;
+                variance: components["schemas"]["SummaryVariance"];
+                goalCoverage: {
+                    stage: components["schemas"]["SummaryStageKey"];
+                    percent: number | null;
+                }[];
+                trend: components["schemas"]["SummaryTrendPeriod"][];
+            };
+            funnel: {
+                stages: {
+                    stage: components["schemas"]["SummaryStageKey"];
+                    /** @description Plans whose model does not allow the stage, so it does not count them. */
+                    plansWithout: number;
+                    actualOrProjected: components["schemas"]["SummaryFigure"];
+                    goal: components["schemas"]["SummaryFigure"];
+                    performance: number | null;
+                    variance: components["schemas"]["SummaryVariance"];
+                }[];
+                conversions: {
+                    stage: components["schemas"]["SummaryStageKey"];
+                    rate: components["schemas"]["SummaryRate"];
+                    goal: components["schemas"]["SummaryRate"];
+                    variance: components["schemas"]["SummaryVariance"];
+                }[];
+                trend: {
+                    stage: components["schemas"]["SummaryStageKey"];
+                    periods: {
+                        key: string;
+                        label: string;
+                        state: components["schemas"]["SummaryPeriodState"];
+                        rate: components["schemas"]["SummaryRate"];
+                        goal: components["schemas"]["SummaryRate"];
+                    }[];
+                };
+            };
+            categories: {
+                id: string;
+                name: string;
+            }[];
+            /** @description The report states that apply (FR-018). */
+            states: ("noPlans" | "noGoals" | "noPerformanceData" | "nothingMatches" | "noFinancialAccess")[];
+            financeCovers: {
+                plans: number;
+                of: number;
+            };
+        };
+        SummaryTrendPeriod: {
+            key: string;
+            label: string;
+            state: components["schemas"]["SummaryPeriodState"];
+            actual: components["schemas"]["PrReportMoney"];
+            projected: components["schemas"]["PrReportMoney"];
+            goal: components["schemas"]["PrReportMoney"];
+        };
+        SummarySegment: {
+            id: string;
+            label: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "activity";
+        };
+        /** @description Money for revenue and cost, a whole per cent for performance and ROI, or null for "—". */
+        SummaryLeagueValue: components["schemas"]["Money"] | number | null;
+        SummaryLeague: {
+            /** @enum {string} */
+            table: "revenue" | "performance" | "cost" | "roi";
+            segment: components["schemas"]["SummarySegment"] | null;
+            segments: components["schemas"]["SummarySegment"][];
+            rows: {
+                key: string;
+                name: string;
+                value: components["schemas"]["SummaryLeagueValue"];
+                /** @description The segment's actual or projected revenue by month, whatever the table's figure. */
+                trend: components["schemas"]["Money"][];
+            }[];
+            total: components["schemas"]["SummaryLeagueValue"];
+            roi: {
+                model: string;
+                /** @enum {string} */
+                basis: "actual" | "planned";
+            } | null;
+            reason: string | null;
         };
         ApprovalsPerson: {
             id: string;
@@ -12690,6 +12825,10 @@ export interface components {
         ReportCurrency: string;
         /** @description Keys of the widgets shown as a table instead of a chart. */
         ReportTable: string[];
+        /** @description The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12). */
+        SummaryStage: "mql";
+        /** @description A Shell attribute ID at Plan, Campaign or Activity level; the default is the first Activity-level attribute. */
+        SummarySegment: string;
         ReportFormat: "xlsx" | "csv";
         /** @description One widget of the report; required for CSV. */
         ReportWidget: string;
@@ -22765,6 +22904,121 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PurchaseRequestsReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getSummaryReport: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+                /** @description The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12). */
+                stage?: components["parameters"]["SummaryStage"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The revenue section, the funnel section and what the page needs to label them. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SummaryReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getSummaryLeague: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+                /** @description A Shell attribute ID at Plan, Campaign or Activity level; the default is the first Activity-level attribute. */
+                segment?: components["parameters"]["SummarySegment"];
+            };
+            header?: never;
+            path: {
+                /** @description The league table. */
+                table: "revenue" | "performance" | "cost" | "roi";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The table's five highest values, its total and the segments to choose from. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SummaryLeague"];
                 };
             };
             400: components["responses"]["BadRequest"];
