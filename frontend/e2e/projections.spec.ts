@@ -41,9 +41,9 @@ test('047 US1: a model carries its velocity and allowed goal stages, and the wor
   await expectToast(page, "Model 'Lubricants 1.0' saved");
 });
 
-// Helix search and social, second half: 4,000 INQ phased over its 184 days from July, no source, no facts.
-const HELIX_SECOND_HALF = 'Helix search and social, second half';
-const HELIX_INQ_BY_MONTH = [0, 0, 0, 0, 0, 0, 673, 674, 653, 673, 653, 674];
+// Tellus webinar series: 1,500 INQ phased day-exactly over 1 April to 15 December (259 days), floor of the running total.
+const TELLUS_WEBINARS = 'Tellus webinar series';
+const TELLUS_INQ_BY_MONTH = [0, 0, 0, 173, 180, 174, 179, 180, 173, 180, 174, 87];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function monthInProgress(today: Date): number {
@@ -57,23 +57,24 @@ test('047 US2: an approved activity shows its projected figures, split at today,
   test.slow();
   await signInAs(page, ALEX);
   const planId = await idOf(page, '/api/v1/plans', MEASURE_PLAN);
-  const activityId = await idOf(page, `/api/v1/plans/${planId}/activities`, HELIX_SECOND_HALF);
+  const activityId = await idOf(page, `/api/v1/plans/${planId}/activities`, TELLUS_WEBINARS);
   const at = monthInProgress(new Date());
-  const planYearINQ = HELIX_INQ_BY_MONTH.slice(Math.max(at, 0)).reduce((sum, n) => sum + n, 0);
+  const planYearINQ = TELLUS_INQ_BY_MONTH.slice(Math.max(at, 0)).reduce((sum, n) => sum + n, 0);
 
   await page.goto(`/plans/${planId}/activities/${activityId}?tab=details`);
   const performance = page.getByRole('region', { name: 'Performance' });
   const inq = performance.getByRole('row', { name: /^INQ/ });
-  await expect(inq).toContainText('4,000');
-  await expect(inq).toContainText('No active data source supplies this figure.');
-  await expect(inq).toContainText(planYearINQ.toLocaleString('en-US'));
+  const cells = inq.getByRole('cell');
+  await expect(cells.nth(0)).toHaveText('1,500');
+  await expect(cells.nth(1)).not.toHaveText(/\d/);
+  await expect(cells.nth(2)).toHaveText(planYearINQ.toLocaleString('en-US'));
   await expect(
     performance.getByText(/^Projected from Lubricants 1\.0, last changed /),
   ).toBeVisible();
 
   await performance.getByText('Months behind the projection').click();
   const months = performance.getByRole('table', { name: 'Months behind the projection' });
-  for (const [i, inqOfMonth] of HELIX_INQ_BY_MONTH.entries()) {
+  for (const [i, inqOfMonth] of TELLUS_INQ_BY_MONTH.entries()) {
     const label = `${MONTHS[i] ?? ''} 2026`;
     const projected = i >= at ? inqOfMonth.toLocaleString('en-US') : '—';
     const name = i === at ? `${label} · this month — ${projected}` : `${label} — ${projected}`;
