@@ -91,6 +91,22 @@ func (y year) inCurrency(usd money.Amount) money.Money {
 	return money.Money{Amount: money.FromUSD(usd, y.scope.Currency.Rate), Currency: y.scope.Currency.Code}
 }
 
+// inReport converts an amount once, from its own currency to the report's at the current rate (D-303, 016 D-261):
+// one already in the report currency keeps its cents. One without a rate adds nothing, as in 015.
+func (y year) inReport(rates money.Rates) func(money.Money) money.Amount {
+	display := money.DisplayIn(y.scope.Currency.Code, y.scope.Currency.Rate.String()).WithRates(rates)
+	return func(m money.Money) money.Amount {
+		if shown := display.Money(m); shown.Currency == display.Currency() {
+			return shown.Amount
+		}
+		return money.Amount{}
+	}
+}
+
+func (y year) reportMoney(amount money.Amount) money.Money {
+	return money.Money{Amount: amount, Currency: y.scope.Currency.Code}
+}
+
 // companyCode reads the option chosen for the activity's Company code, as 030 sends it; "" when none.
 func (y year) companyCode(activity allwork.Node) string {
 	i := slices.IndexFunc(y.scope.Attributes, func(a allwork.Attribute) bool {

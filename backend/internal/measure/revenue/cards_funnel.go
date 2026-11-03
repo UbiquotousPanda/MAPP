@@ -19,9 +19,9 @@ func intCard(value int64, present bool, reason string) NumberCard {
 	return NumberCard{Value: &v}
 }
 
-func ratioCard(value, goal int64, anyGoal bool) NumberCard {
+func ratioCard(value, goal int64, anyGoal bool) PerformanceCard {
 	if !anyGoal {
-		return NumberCard{Reason: ReasonNoGoal}
+		return percentCard(nil)
 	}
 	return percentCard(Performance(value, goal))
 }

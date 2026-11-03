@@ -2,6 +2,7 @@ package gsaplink
 
 import (
 	"context"
+	"net/url"
 	"strings"
 
 	"mapp/internal/measure"
@@ -62,13 +63,45 @@ func (s *Service) sheets(ctx context.Context, y year, t Table) ([]measure.Widget
 	if err != nil {
 		return nil, err
 	}
-	code := y.scope.Currency.Code
+	code, names := y.scope.Currency.Code, tabNames()
 	return []measure.WidgetSheet{
-		{Key: widgetSwbs, Sheet: sheet.Sheet{Name: "SWBS not received", Rows: swbsTable(swbs.Rows)}},
+		{Key: widgetSwbs, Sheet: sheet.Sheet{Name: names[TabSwbs], Rows: swbsTable(swbs.Rows)}},
 		{Key: widgetBands, Sheet: sheet.Sheet{Name: "Waiting by time", Rows: bandsTable(swbs.Bands)}},
-		{Key: widgetWaiting, Sheet: sheet.Sheet{Name: "Waiting for GSAP", Rows: waitingTable(waiting.Rows, code)}},
-		{Key: widgetOrders, Sheet: sheet.Sheet{Name: "Purchase orders", Rows: ordersTable(orders, code)}},
+		{Key: widgetWaiting, Sheet: sheet.Sheet{Name: names[TabWaiting], Rows: waitingTable(waiting.Rows, code)}},
+		{Key: widgetOrders, Sheet: sheet.Sheet{Name: names[TabOrders],
+			Rows: ordersTable(orders, code, y.coverage().Plans > 0)}},
 	}, nil
+}
+
+func tabNames() map[string]string {
+	return map[string]string{TabSwbs: "SWBS not received", TabWaiting: "Waiting for GSAP", TabOrders: "Purchase orders"}
+}
+
+// Describe says the address's tab and its sort in About this export, after Filters (039 FR-022).
+func (s *Service) Describe(_ context.Context, _ actor.Actor, own url.Values) ([][2]string, error) {
+	t, err := ParseTable(own)
+	if err != nil {
+		return nil, err
+	}
+	t = withDefaults(t)
+	return [][2]string{{"Tab", tabNames()[t.Tab]}, {"Sort", sortWords(t)}}, nil
+}
+
+// sortWords names the sort by the screen's column heading, then its direction.
+func sortWords(t Table) string {
+	key, direction := strings.TrimPrefix(t.Sort, descending), "ascending"
+	if key != t.Sort {
+		direction = "descending"
+	}
+	heading := map[string]string{sortLineItem: "Line item", sortPlan: "Plan › Activity", sortOwner: "Owner",
+		sortCompanyCode: "Company code", sortApprovedAt: "Approved on", sortWaiting: "Waiting",
+		sortPurchaseRequest: "Purchase request", sortVendor: "Vendor", sortRoutedAt: "Routed on", sortAmount: "Amount",
+		sortPoNumber: "PO number", sortPoDate: "PO date", sortPoAmount: "PO amount", sortInvoiced: "Invoiced",
+		sortPaid: "Paid", sortGsapPrNumber: "GSAP PR number"}[key]
+	if t.Tab == TabSwbs && key == sortOwner {
+		heading = "Activity owner"
+	}
+	return heading + ", " + direction
 }
 
 func sortOf(t Table, tab string) string {
@@ -140,8 +173,8 @@ func routingWords(routing string) string {
 	return "Original"
 }
 
-// ordersTable ends with the totals of every row (FR-013).
-func ordersTable(tab OrdersTab, code string) [][]sheet.Cell {
+// ordersTable ends with the totals of every row (FR-013): empty cells, as "—", when no plan's may be seen (FR-004).
+func ordersTable(tab OrdersTab, code string, seen bool) [][]sheet.Cell {
 	table := [][]sheet.Cell{boldRow("Line item ID", "Line item", "Plan", "Campaign", "Initiative", "Activity",
 		"Purchase request", "GSAP PR number", "PO number", "PO lines", "PO date", "Vendor", "PO amount ("+code+")",
 		"Invoiced ("+code+")", "Paid ("+code+")")}
@@ -152,8 +185,11 @@ func ordersTable(tab OrdersTab, code string) [][]sheet.Cell {
 			sheet.Text(strings.Join(r.PoLines, ", ")), sheet.Date(r.PoDate), sheet.Text(r.Vendor),
 			sheet.Money(r.PoAmount.Amount), sheet.Money(r.Invoiced.Amount), sheet.Money(r.Paid.Amount)})
 	}
-	amounts := []sheet.Cell{sheet.Money(tab.Totals.PoAmount.Amount), sheet.Money(tab.Totals.Invoiced.Amount),
-		sheet.Money(tab.Totals.Paid.Amount)}
+	amounts := make([]sheet.Cell, 3)
+	if seen {
+		amounts = []sheet.Cell{sheet.Money(tab.Totals.PoAmount.Amount), sheet.Money(tab.Totals.Invoiced.Amount),
+			sheet.Money(tab.Totals.Paid.Amount)}
+	}
 	totals := append(make([]sheet.Cell, len(table[0])-len(amounts)), amounts...)
 	totals[0] = sheet.Bold("Total")
 	return append(table, totals)

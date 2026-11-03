@@ -10,7 +10,7 @@ import (
 func TestFunnelCardsSheet_ConversionKeepsItsDecimals_FR007(t *testing.T) {
 	t.Parallel()
 	conversion, performance := 2.5, 73.0
-	cards := FunnelCards{Conversion: NumberCard{Value: &conversion}, Performance: NumberCard{Value: &performance}}
+	cards := FunnelCards{Conversion: NumberCard{Value: &conversion}, Performance: PerformanceCard{NumberCard: NumberCard{Value: &performance}}}
 
 	var out strings.Builder
 	if err := sheet.WriteCSV(&out, nil, funnelCardsSheet(StageMQL, cards).Rows); err != nil {

@@ -8,6 +8,7 @@ type FunnelReport = components['schemas']['FunnelReport'];
 type FunnelRanked = components['schemas']['FunnelRanked'];
 type FunnelFigures = components['schemas']['FunnelFigures'];
 type FunnelEntry = components['schemas']['FunnelEntry'];
+type SummaryVariance = components['schemas']['SummaryVariance'];
 
 const usd = (amount: string) => ({ amount, currency: 'USD' });
 
@@ -34,7 +35,7 @@ export function revenueReport(overrides: Partial<RevenueReport> = {}): RevenueRe
       goal: { value: usd('2730000.00'), reason: '' },
       actual: { value: usd('300000.00'), reason: '' },
       projected: { value: usd('2000000.00'), reason: '' },
-      performance: { value: 73, reason: '' },
+      performance: { value: 73, reason: '', variance: 'belowPlan' },
     },
     period: 'month',
     periods: revenuePeriods(),
@@ -50,6 +51,7 @@ function revenueFigures(goal: string, actual: string | null): RevenueFigures {
     actual: actual ? usd(actual) : null,
     projected: usd(goal),
     performance: 80,
+    variance: 'belowPlan',
     actualCost: null,
     roi: null,
     actualCostReason: 'attributionNotConfigured',
@@ -135,7 +137,7 @@ export function funnelReport(overrides: Partial<FunnelReport> = {}): FunnelRepor
       goal: { value: 365000, reason: '' },
       actual: { value: 180000, reason: '' },
       projected: { value: 365000, reason: '' },
-      performance: { value: 100, reason: '' },
+      performance: { value: 100, reason: '', variance: 'onPlan' },
       conversion: { value: null, reason: 'noPreviousStage' },
     },
     period: 'month',
@@ -147,7 +149,7 @@ export function funnelReport(overrides: Partial<FunnelReport> = {}): FunnelRepor
 }
 
 function funnelFigures(goal: number, actual: number | null): FunnelFigures {
-  return { goal, actual, projected: goal, performance: 80, conversion: 2.5 };
+  return { goal, actual, projected: goal, performance: 80, variance: 'belowPlan', conversion: 2.5 };
 }
 
 const funnelEntry = (
@@ -190,4 +192,34 @@ export function funnelRanked(overrides: Partial<FunnelRanked> = {}): FunnelRanke
     drillLost: false,
     ...overrides,
   };
+}
+
+/** One case per variance word: the API's performance, its variance, and the words on screen. */
+export const VARIANCE_CASES: [number | null, SummaryVariance, string][] = [
+  [101, 'abovePlan', 'Above plan'],
+  [100, 'onPlan', 'On plan'],
+  [99, 'belowPlan', 'Below plan'],
+  [null, 'noGoal', 'No goal'],
+];
+
+export function revenueRankedWith(performance: number | null, variance: SummaryVariance) {
+  const figures = (f: RevenueFigures): RevenueFigures => ({ ...f, performance, variance });
+  return revenueRanked({
+    groups: revenueRanked().groups.map((g) => ({
+      ...g,
+      totals: figures(g.totals),
+      entries: g.entries.map((e) => ({ ...e, figures: figures(e.figures), children: [] })),
+    })),
+  });
+}
+
+export function funnelRankedWith(performance: number | null, variance: SummaryVariance) {
+  const figures = (f: FunnelFigures): FunnelFigures => ({ ...f, performance, variance });
+  return funnelRanked({
+    groups: funnelRanked().groups.map((g) => ({
+      ...g,
+      totals: figures(g.totals),
+      entries: g.entries.map((e) => ({ ...e, figures: figures(e.figures), children: [] })),
+    })),
+  });
 }

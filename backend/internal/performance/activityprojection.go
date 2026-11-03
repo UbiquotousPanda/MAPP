@@ -10,7 +10,7 @@ import (
 	"mapp/internal/projection"
 )
 
-// withProjection fills the fields 046 reserved: projected volumes, projected revenue and the model stamp.
+// withProjection fills the fields 046 reserved; with no series at all, no model stands behind a figure.
 func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput) Panel {
 	forecast := projection.Project(projection.Inputs{
 		Goals: projection.Goals{INQ: in.goals.INQ, MQL: in.goals.MQL, Revenue: in.goals.Revenue,
@@ -19,7 +19,7 @@ func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput
 		StartDate: in.goals.StartDate, EndDate: in.goals.EndDate, Ongoing: in.goals.Ongoing,
 		Today: date.Today(s.now()),
 	})
-	if !forecast.Present {
+	if !forecast.Present || (len(forecast.Stages) == 0 && len(forecast.Revenue) == 0) {
 		return noProjection(panel)
 	}
 	stamp := forecast.Stamp
@@ -28,6 +28,7 @@ func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput
 	for i, figure := range panel.Stages {
 		series, found := forecast.Find(figure.Stage)
 		if !found {
+			panel.Stages[i].ProjectedReason = reasonNoGoal
 			continue
 		}
 		split := projection.SplitCounts(monthlyCounts(in.totals, figure.Stage, year), series.Months, today, year)
@@ -54,6 +55,10 @@ func noProjection(panel Panel) Panel {
 func (s *Service) projectedRevenue(ctx context.Context, figure RevenueFigure, forecast projection.Projection,
 	in panelInput,
 ) RevenueFigure {
+	if len(forecast.Revenue) == 0 {
+		figure.ProjectedReason = reasonNoGoal
+		return figure
+	}
 	today, year := date.Today(s.now()), in.goals.PlanYear
 	split := projection.SplitAmounts(s.monthlyRevenue(ctx, in.totals, year), forecast.Revenue, today, year)
 	projected := split.Total

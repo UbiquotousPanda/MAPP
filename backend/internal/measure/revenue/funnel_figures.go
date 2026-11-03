@@ -40,9 +40,11 @@ func funnelFiguresOfActivities(series []ActivitySeries, stage string) map[string
 
 // withFunnelDerived uses the cards' own formulas, so it holds for one activity and for a rolled-up total.
 func withFunnelDerived(f FunnelFigures, previousActual int64) FunnelFigures {
+	performance := percentCard(nil)
 	if f.Goal != nil {
-		f.Performance = ratioCard(int64Of(f.Projected), *f.Goal, true).Value
+		performance = ratioCard(int64Of(f.Projected), *f.Goal, true)
 	}
+	f.Performance, f.Variance = performance.Value, performance.Variance
 	f.Conversion = conversionCard(int64Of(f.Actual), &previousActual).Value
 	return f
 }

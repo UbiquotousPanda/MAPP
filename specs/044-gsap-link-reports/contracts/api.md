@@ -114,8 +114,14 @@ Sort keys: swbs `lineItem`, `plan`, `owner`, `companyCode`, `approvedAt`, `waiti
 
 `Sheets(ctx, a, f measure.Filter) ([]measure.WidgetSheet, error)` returns `swbs`, `swbsBands`, `waiting` and
 `orders` in that order, each with the columns of its table (amounts as numbers, currency in the heading, "—" as an
-empty cell for a hidden amount) and, for `orders`, the totals row. The sort is each tab's default; 039's export
-has no report parameters (research R4).
+empty cell for a hidden amount) and, for `orders`, the totals row, its amounts empty cells when no plan in view
+has `finance.view` (FR-004; the JSON `totals` stay 0.00, as `GsapOrderTotals` is not nullable). The address's
+`tab` is in its `sort`, every other tab in its default (FR-019); `Describe` (`measure.Described`) says both in
+About this export, after Filters: `Tab: Waiting for GSAP`, `Sort: Vendor, ascending`.
+
+Purchase orders convert each transaction once from its own currency to the report's at the current rate
+(`money.Display` with the rates) and add them there: an amount already in the report currency keeps its cents, a
+row equals the line item's Financials to the cent (SC-003), and the totals equal the rows.
 
 ## Go interfaces (`internal/measure/gsaplink/ports.go`)
 

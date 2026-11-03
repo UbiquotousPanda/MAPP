@@ -4,18 +4,25 @@ import { expectNoAxeViolations } from '@/testing/axe';
 import { nth } from '@/testing/dom';
 import { CATEGORIES } from '@/testing/fixtures/activity-categories';
 import { reportFrame } from '@/testing/fixtures/reports';
-import { revenueRanked, revenueReport } from '@/testing/fixtures/revenue';
+import {
+  VARIANCE_CASES,
+  revenueRanked,
+  revenueRankedWith,
+  revenueReport,
+} from '@/testing/fixtures/revenue';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import type { RevenueCards } from './api';
 import { RevenueReport } from './RevenueReport';
 
 function renderPage(
   report: Answer<'GET /api/v1/reports/revenue'> = { body: revenueReport() },
   route = '/reports/revenue?year=2026',
+  ranked: Answer<'GET /api/v1/reports/revenue/ranked'> = { body: revenueRanked() },
 ) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
@@ -23,7 +30,7 @@ function renderPage(
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/settings/activity-categories', { body: CATEGORIES }),
     reply('GET /api/v1/reports/revenue', report),
-    reply('GET /api/v1/reports/revenue/ranked', { body: revenueRanked() }),
+    reply('GET /api/v1/reports/revenue/ranked', ranked),
     reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
   ]);
   const rendered = renderWithProviders(<RevenueReport />, {
@@ -63,7 +70,7 @@ describe('RevenueReport (049 US1)', () => {
           goal: { value: null, reason: 'noGoal' },
           actual: { value: null, reason: 'noData' },
           projected: { value: null, reason: 'noGoal' },
-          performance: { value: null, reason: 'noGoal' },
+          performance: { value: null, reason: 'noGoal', variance: 'noGoal' },
         },
       }),
     });
@@ -72,6 +79,28 @@ describe('RevenueReport (049 US1)', () => {
     expect(within(cards).getAllByText('No goal set.').length).toBeGreaterThan(0);
     expect(within(cards).getByText('No data has arrived yet.')).toBeInTheDocument();
   });
+
+  it.each(VARIANCE_CASES)(
+    'performance %s with the API\'s variance %s shows "%s" on the card, and a ranked row its figure and word or "—" (048-C1, FR-018, FR-023)',
+    async (value, variance, word) => {
+      const cards = revenueReport().cards;
+      const performance: RevenueCards['performance'] = {
+        value,
+        reason: value === null ? 'noGoal' : '',
+        variance,
+      };
+      renderPage({ body: revenueReport({ cards: { ...cards, performance } }) }, undefined, {
+        body: revenueRankedWith(value, variance),
+      });
+
+      const summary = await screen.findByLabelText('Summary');
+      expect(within(summary).getByText(word)).toBeInTheDocument();
+      const ranked = screen.getByRole('region', { name: 'Ranked list' });
+      const shown = value === null ? '—' : `${value}% · ${word}`;
+      expect((await within(ranked).findAllByText(shown)).length).toBeGreaterThan(0);
+      await expectNoAxeViolations();
+    },
+  );
 
   it('charts goal, actual and projected by month with today marked, and lists every period in the table (FR-004, 047 FR-010)', async () => {
     const { user } = renderPage();
