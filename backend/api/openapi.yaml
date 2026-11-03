@@ -9861,7 +9861,7 @@ components:
       description: Free text over the grid's text columns.
       schema:
         type: string
-        maxLength: 200
+        maxLength: 100
     ApprovalsSort:
       name: sort
       in: query
