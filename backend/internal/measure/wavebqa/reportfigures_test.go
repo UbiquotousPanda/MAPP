@@ -11,7 +11,10 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-const noPreviousStage = "noPreviousStage"
+const (
+	noPreviousStage = "noPreviousStage"
+	notApproved     = "notApproved"
+)
 
 func noActualAnywhere(t *testing.T, alexSees person) {
 	t.Helper()
@@ -184,4 +187,20 @@ func csvRows(t *testing.T, file string) [][]string {
 		t.Fatalf("the exported table is no CSV: %v\n%s", err, table)
 	}
 	return rows
+}
+
+// TestWaveB_UnapprovedSaysNotApproved_049_FR008_049C22: submitted activities only: the report says so, their facts held,
+// and their goals and projections still count as planning figures.
+func TestWaveB_UnapprovedSaysNotApproved_049_FR008_049C22(t *testing.T) {
+	t.Parallel()
+	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
+	revenue, funnel := revenueOf(t, alexSees, "activityStatus=submitted"), funnelOf(t, alexSees, "activityStatus=submitted")
+	if revenue.Reason != notApproved || revenue.Cards.Actual.Reason != notApproved || revenue.Cards.Projected.Value == nil {
+		t.Errorf("Revenue of submitted activities: reason %q, actual %+v, projected %+v; want %s twice and a projection",
+			revenue.Reason, revenue.Cards.Actual, revenue.Cards.Projected, notApproved)
+	}
+	if funnel.Reason != notApproved || funnel.Cards.Actual.Reason != notApproved || funnel.Cards.Goal.Value == nil {
+		t.Errorf("Funnel stages of submitted activities: reason %q, actual %+v, goal %+v; want %s twice and a goal",
+			funnel.Reason, funnel.Cards.Actual, funnel.Cards.Goal, notApproved)
+	}
 }
