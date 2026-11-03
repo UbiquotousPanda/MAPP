@@ -186,15 +186,16 @@ func valuesByKey(l leagueAnswer) map[string]*int64 {
 	return out
 }
 
-func checkRoiNamed(t *testing.T, alexSees person, model string) {
+func checkRoiDash(t *testing.T, alexSees person) {
 	t.Helper()
-	roi, cost := leagueOf(t, alexSees, "roi", ""), valuesByKey(leagueOf(t, alexSees, "cost", ""))
-	if roi.ROI == nil || roi.ROI.Model != model || roi.ROI.Basis != "actual" {
-		t.Errorf("ROI league names %+v, want %s on actual cost (FR-015)", roi.ROI, model)
+	roi := leagueOf(t, alexSees, "roi", "")
+	if roi.ROI != nil || textOf(roi.Reason) != "Attribution is not configured yet" || units(roi.Total) != nil {
+		t.Errorf("ROI league names %+v, reason %s, total %s; want \"—\" with \"Attribution is not configured yet\" (FR-015)",
+			roi.ROI, textOf(roi.Reason), shown(units(roi.Total)))
 	}
 	for _, r := range roi.Rows {
-		if c, found := cost[r.Key]; found && c == nil && units(r.Value) != nil {
-			t.Errorf("ROI of %s is %s with no cost, want null", r.Name, shown(units(r.Value)))
+		if units(r.Value) != nil {
+			t.Errorf("ROI of %s is %s, want \"—\" while attribution is not configured", r.Name, shown(units(r.Value)))
 		}
 	}
 }
@@ -208,23 +209,14 @@ func checkNoRoiBasis(t *testing.T, alexSees person) {
 	}
 }
 
-// TestWaveB_SummaryRoiNamesItsModel_048_FR015: the ROI league names the designated model and basis, and follows a change.
-func TestWaveB_SummaryRoiNamesItsModel_048_FR015(t *testing.T) {
+// TestWaveB_SummaryRoiIsADashUntilCrediting_048_FR015: until 050's crediting, ROI is "—" with its reason, whatever the model.
+func TestWaveB_SummaryRoiIsADashUntilCrediting_048_FR015(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
-	type settings struct {
-		Model   string
-		Models  []struct{ Key, Name string }
-		Version int
-	}
-	nameOf := func(s settings) string {
-		i := slices.IndexFunc(s.Models, func(m struct{ Key, Name string }) bool { return m.Key == s.Model })
-		return s.Models[max(i, 0)].Name
-	}
-	designated := decode[settings](t, alexSees.expect(t, get(attributionPath), http.StatusOK))
-	checkRoiNamed(t, alexSees, nameOf(designated))
+	designated := decode[struct{ Version int }](t, alexSees.expect(t, get(attributionPath), http.StatusOK))
+	checkRoiDash(t, alexSees)
 	checkNoRoiBasis(t, alexSees)
-	changed := decode[settings](t, alexSees.expect(t, put(attributionPath, map[string]any{"model": "uShaped",
-		"version": designated.Version}), http.StatusOK))
-	checkRoiNamed(t, alexSees, nameOf(changed))
+	alexSees.expect(t, put(attributionPath, map[string]any{"model": "uShaped", "version": designated.Version}),
+		http.StatusOK)
+	checkRoiDash(t, alexSees)
 }
