@@ -1,6 +1,6 @@
 import { Gauge, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/ui/Button/Button';
+import { Button, LinkButton } from '@/ui/Button/Button';
 import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
 import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
@@ -44,8 +44,17 @@ export function SourceListPage() {
         title={PERFORMANCE_DATA}
         description={SETTINGS_DESCRIPTION}
         actions={
-          <CanChange permission="performance.import" otherwise={<SettingsViewOnlyNote />}>
-            <Button icon={<Plus aria-hidden />} onClick={() => setForm({ kind: 'new' })}>
+          <CanChange
+            permission="performance.import"
+            otherwise={<SettingsViewOnlyNote permission="performance.import" />}
+          >
+            <LinkButton to="/settings/performance-data/imports">Imports</LinkButton>
+            <LinkButton to="/settings/performance-data/review">Rows to review</LinkButton>
+            <Button
+              variant="primary"
+              icon={<Plus aria-hidden />}
+              onClick={() => setForm({ kind: 'new' })}
+            >
               New data source
             </Button>
           </CanChange>
