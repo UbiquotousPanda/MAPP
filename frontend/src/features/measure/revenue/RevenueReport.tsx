@@ -85,7 +85,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       </div>
       {report.data ? (
         <>
-          <RevenueCards cards={report.data.cards} />
+          <RevenueCards cards={report.data.cards} projection={report.data.projection} />
           <RevenueChart report={report.data} />
         </>
       ) : report.isError ? (

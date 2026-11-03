@@ -144,6 +144,25 @@ Benchmark result (2026-11-01, `BenchmarkGsapLink_SC001`, a 14-thread Windows dev
 fakes): SWBS not received 32 ms, Waiting for GSAP 44 ms, Purchase orders 89 ms per request, each with its sort and
 first page; all under the 300 ms the tab may add to the year read (R6).
 
+PostgreSQL result (3 Nov 2026, a Windows laptop with an Intel Core Ultra 5 135U, PostgreSQL 18 in Docker, CI runs 18 on
+Linux): `BenchmarkGsapLinkOnPostgres_SC001` through the API, `-benchtime 3x -count 2`, on `measure-module` 4ccb4888 (#135 and #142 merged). Each cell is
+the time per request (both runs), then the number of statements; the volume adds 5,000 approved, routed purchase requests, 20,000 lines waiting for GSAP:
+
+| Request | Demo | 028 volume |
+|---|---|---|
+| Frame (039's, beside every tab) | 31–44 ms · 37 | 0.64–0.77 s · 37 |
+| SWBS not received | 31–33 ms · 37 | 0.65–0.66 s · 37 |
+| Waiting for GSAP | 31–33 ms · 38 | 1.00–1.05 s · 38 |
+| Purchase orders | 26–27 ms · 37 | 0.80–0.88 s · 37 |
+| Waiting for GSAP, one market | 30–45 ms · 39 | 1.05–1.07 s · 39 |
+| Waiting for GSAP sorted by amount, page 2 | 29–33 ms · 38 | 0.96–1.11 s · 38 |
+| Export, every tab (Excel) | 61 ms · 64 | 2.22–2.36 s · 64 |
+
+- **Statements:** the same at both sizes for every request.
+- **Time:** every tab's first page, page and sort within SC-001's 2 s. Before #142 the Waiting for GSAP tab and the
+  export ran past 60 s: planned on statistics not yet refreshed after a bulk change, the in-view check probed the index
+  for every line item of the year on every line. The export, 039's one workbook of every tab, is not under SC-001.
+
 ## Dependencies and hand-offs
 
 - **039 (lane A)** — used as merged in `measure-module`: `measure.Service.Scope` (the shared step), `measure.Report` with

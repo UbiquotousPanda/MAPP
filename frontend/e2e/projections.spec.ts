@@ -69,7 +69,7 @@ test('047 US2: an approved activity shows its projected figures, split at today,
   await expect(cells.nth(1)).not.toHaveText(/\d/);
   await expect(cells.nth(2)).toHaveText(planYearINQ.toLocaleString('en-US'));
   await expect(
-    performance.getByText(/^Projected from Lubricants 1\.0, last changed /),
+    performance.getByText(/^Projected from Lubricants 1\.0, last changed [^T:]+ \d{4}\.$/),
   ).toBeVisible();
 
   await performance.getByText('Months behind the projection').click();

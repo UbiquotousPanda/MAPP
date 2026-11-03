@@ -2,12 +2,19 @@ import { useFormatters } from '@/format/useFormatters';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { reasonText } from './reasons';
 import { varianceText } from './variance';
-import type { RevenueCards as RevenueCardsData } from './api';
+import type { RevenueCards as RevenueCardsData, RevenueReport } from './api';
+import { projectionLine } from './projection-line';
 import styles from './Revenue.module.css';
 
 /** The fixed Revenue card set: goal, actual, projected, performance (049-C9). */
-export function RevenueCards({ cards }: { cards: RevenueCardsData }) {
-  const { money } = useFormatters();
+export function RevenueCards({
+  cards,
+  projection,
+}: {
+  cards: RevenueCardsData;
+  projection: RevenueReport['projection'];
+}) {
+  const { money, date } = useFormatters();
   return (
     <div className={styles.cards} aria-label="Summary">
       <SummaryCard
@@ -26,6 +33,7 @@ export function RevenueCards({ cards }: { cards: RevenueCardsData }) {
           cards.projected.value ? money(cards.projected.value) : reasonText(cards.projected.reason)
         }
         tip="Actual to the end of last period, projected from today."
+        detail={projectionLine(projection, date)}
       />
       <SummaryCard
         label="Performance"

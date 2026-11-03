@@ -8,7 +8,10 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-const leagueSize = 5
+const (
+	leagueSize      = 5
+	noFinanceReason = "Financial data of these plans is not shown to you"
+)
 
 func rowsTotal(rows []leagueEntry) *int64 {
 	var total int64

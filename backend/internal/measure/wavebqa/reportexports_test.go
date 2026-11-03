@@ -135,7 +135,7 @@ func TestWaveB_ExportsKeepOwnParams_FR022(t *testing.T) {
 			t.Errorf("GET %s: row %d of %v, want %v, as the report shows it, and a file unlike the default", path, c.at,
 				rows, c.row)
 		}
-		if notes, _, _ := strings.Cut(strings.ReplaceAll(string(kept.Body), "\r\n", "\n"), "\n\n"); !strings.Contains(notes, c.note) {
+		if notes := notesOf(kept.Body); !strings.Contains(notes, c.note) {
 			t.Errorf("GET %s: About this export %q, want %q (039 FR-022)", path, notes, c.note)
 		}
 	}

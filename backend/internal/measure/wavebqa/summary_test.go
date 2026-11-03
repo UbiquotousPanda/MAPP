@@ -43,9 +43,8 @@ type summaryStage struct {
 }
 
 type summaryRate struct {
-	Stage, Key, State string
-	Rate, Goal        *string
-	Variance          string
+	Stage, Key, State    string
+	Rate, Goal, Variance *string
 }
 
 type coverage struct {
@@ -255,8 +254,11 @@ func costHidden(t *testing.T, who person, label string) {
 	t.Helper()
 	for _, table := range []string{"cost", "roi"} {
 		l := leagueOf(t, who, table, "")
-		if units(l.Total) != nil || slices.ContainsFunc(l.Rows, func(r leagueEntry) bool { return units(r.Value) != nil }) {
-			t.Errorf("%s's %s league = %s, want every value and the total null (FR-003)", label, table, l.values())
+		modelNamed := (l.ROI != nil) == (table == "roi")
+		if units(l.Total) != nil || slices.ContainsFunc(l.Rows, func(r leagueEntry) bool { return units(r.Value) != nil }) ||
+			textOf(l.Reason) != noFinanceReason || !modelNamed {
+			t.Errorf("%s's %s league = %s, reason %s, model %+v; want every value and the total null with %q, the model "+
+				"named beside ROI only (FR-003)", label, table, l.values(), textOf(l.Reason), l.ROI, noFinanceReason)
 		}
 	}
 }
@@ -316,8 +318,9 @@ func TestWaveB_FinanceCoversSomePlans_048_FR003(t *testing.T) {
 		t.Errorf("Priya's Summary %q, want all three plans' %q", got.headline(), alexView.headline())
 	}
 	cost, ownCost := leagueOf(t, priyaSees, "cost", ""), leagueOf(t, alexSees, "cost", lubricants)
-	if units(cost.Total) == nil || cost.valued() != ownCost.valued() {
-		t.Errorf("Priya's cost league %s, want %s's alone: %s", cost.values(), lubricantsPlan, ownCost.values())
+	if units(cost.Total) == nil || cost.valued() != ownCost.valued() || cost.Reason != nil {
+		t.Errorf("Priya's cost league %s, reason %s; want %s's alone, no reason: %s", cost.values(), textOf(cost.Reason),
+			lubricantsPlan, ownCost.values())
 	}
 	if revenue, all := leagueOf(t, priyaSees, "revenue", ""), leagueOf(t, alexSees, "revenue", ""); revenue.values() != all.values() {
 		t.Errorf("Priya's revenue league %s, want every plan's %s", revenue.values(), all.values())
