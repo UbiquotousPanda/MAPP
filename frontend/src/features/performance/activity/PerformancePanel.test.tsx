@@ -101,7 +101,7 @@ function renderPanel(answer: Panel) {
   return renderWithProviders(<PerformancePanel activityId="A-1042" />, { user: testUser() });
 }
 
-/** SC-008: whatever the state, nothing that looks like a figure appears. */
+/** Whatever the state, nothing that looks like a figure appears. */
 function expectNoSampleFigure() {
   expect(screen.queryByText(/\d/)).not.toBeInTheDocument();
 }

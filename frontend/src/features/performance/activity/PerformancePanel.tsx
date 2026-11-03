@@ -16,6 +16,7 @@ import type {
 } from './api';
 import styles from './DataSourcesArea.module.css';
 import { ProjectionMonths } from './ProjectionMonths';
+import { STAGE_WORDS } from '../performance-text';
 
 const GATE = 'Approve the activity to see performance data.';
 
@@ -29,7 +30,6 @@ const REASON_WORDS: Record<string, string> = {
   notApproved: GATE,
 };
 
-const STAGE_WORDS: Record<string, string> = { inq: 'INQ', mql: 'MQL' };
 const METRIC_WORDS: Record<string, string> = {
   sessions: 'Sessions',
   visits: 'Visits',

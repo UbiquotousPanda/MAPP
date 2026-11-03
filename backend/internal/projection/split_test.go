@@ -72,11 +72,11 @@ func TestSplitCounts_BeforeAndAfterThePlanYear_FR010(t *testing.T) {
 // the dates and the velocities: no negative month, twelve months exactly, and the goal stage adding up to
 // the goal itself whenever the activity covers any of the plan year.
 func FuzzProject_SeriesStayInsideTheYearAndReconcile_SC003(f *testing.F) {
-	f.Add(int64(365_000), 1, 12, 1, 2)
+	f.Add(int64(365_000), 12, 11, 1, 2)
 	f.Add(int64(1), 6, 6, 0, 0)
 	f.Add(int64(0), 1, 12, 24, 24)
 	f.Add(int64(1_000_000_000), 12, 1, 3, 4)
-	f.Add(int64(math.MaxInt64), 1, 12, 0, 0)
+	f.Add(int64(math.MaxInt64), 12, 11, 0, 0)
 
 	f.Fuzz(func(t *testing.T, goal int64, startMonth, endMonth, inqVelocity, mqlVelocity int) {
 		in := inputs(goal)

@@ -2,9 +2,9 @@ import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import type { RevenueFigure, StageFigure } from './api';
 import styles from './DataSourcesArea.module.css';
+import { STAGE_WORDS } from '../performance-text';
 
 const TITLE = 'Months behind the projection';
-const STAGE_WORDS: Record<string, string> = { inq: 'INQ', mql: 'MQL' };
 
 interface Column {
   label: string;
