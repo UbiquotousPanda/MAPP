@@ -49,9 +49,13 @@ func (s Store) PutSettings(ctx context.Context, st attribution.Settings) error {
 }
 
 func (s Store) Conversions(_ context.Context, _ authz.Scope, activityIDs []string, year int) ([]attribution.RevenueFact, error) {
+	journeys, err := s.journeysOf(activityIDs)
+	if err != nil {
+		return nil, err
+	}
 	facts, err := s.facts.Where(func(f performance.Fact) bool {
-		return f.Counts() && f.Stage == stageRevenue && f.Amount != nil && f.FactDate.Year() == year &&
-			slices.Contains(activityIDs, f.ActivityID)
+		inView := slices.Contains(activityIDs, f.ActivityID) || slices.Contains(journeys, f.JourneyRef)
+		return inView && f.Counts() && f.Stage == stageRevenue && f.Amount != nil && f.FactDate.Year() == year
 	})
 	out := make([]attribution.RevenueFact, 0, len(facts))
 	for _, f := range facts {
@@ -59,6 +63,17 @@ func (s Store) Conversions(_ context.Context, _ authz.Scope, activityIDs []strin
 			JourneyRef: f.JourneyRef})
 	}
 	return out, err
+}
+
+func (s Store) journeysOf(activityIDs []string) ([]string, error) {
+	facts, err := s.facts.Where(func(f performance.Fact) bool {
+		return f.Counts() && f.JourneyRef != "" && slices.Contains(activityIDs, f.ActivityID)
+	})
+	refs := make([]string, 0, len(facts))
+	for _, f := range facts {
+		refs = append(refs, f.JourneyRef)
+	}
+	return refs, err
 }
 
 func (s Store) Touches(_ context.Context, _ authz.Scope, journeyRefs []string) ([]attribution.JourneyTouch, error) {

@@ -36,10 +36,12 @@ the decision log.
 
 - **050-C3** Q: Which of 046's facts are a journey's conversions and which its touches? → A: its **revenue facts are
   the conversions**; its **other facts (inquiries, MQLs, web metrics) are the touches**, one per activity and day.
-  Held, unmatched and replaced facts count nowhere, as in every 046 figure. A conversion is credited when its revenue
-  fact is dated in the report year on an activity the report asks about; its touches may be on any activity of any
-  year, dated on or before it (FR-003). Revenue is converted to USD at the current rate, and a fact whose currency
-  has no rate is left out and counted, as 046-C7 has it.
+  Held, unmatched and replaced facts count nowhere, as in every 046 figure. A conversion counts when its revenue
+  fact is dated in the report year and is on an activity in view, or its journey has a touch on one; its touches may
+  be on any activity of any year, dated on or before it (FR-003). The read returns the credit of the activities in
+  view and the unattributed revenue of the conversions on them, nothing for other activities: an activity's credit
+  is the same whatever else is in view, and a caller sums what it is given. Revenue is converted to USD at the
+  current rate, and a fact whose currency has no rate is left out and counted, as 046-C7 has it.
 - **050-C4** Q: Whose facts does crediting read? → A: **only those in the person's `reports.view` scope**, like every
   report (constitution VII). A touch outside the scope is not seen, so its share goes to the touches the person can
   see; when a journey crosses two scopes, people with different scopes can see different credits for one activity.

@@ -18,11 +18,17 @@ ON CONFLICT (id) DO UPDATE SET
 SELECT activity_id::text AS activity_id, fact_date, amount_minor::bigint AS amount_minor,
     coalesce(currency, '') AS currency, coalesce(journey_ref, '') AS journey_ref
 FROM performance_facts
-WHERE activity_id = ANY(sqlc.arg(activity_ids)::text[]) AND stage = 'revenue' AND NOT held
-    AND replaced_by_id IS NULL
+WHERE stage = 'revenue' AND NOT held AND replaced_by_id IS NULL
     AND fact_date BETWEEN make_date(sqlc.arg(year)::int, 1, 1) AND make_date(sqlc.arg(year)::int, 12, 31)
     AND activity_in_scope(activity_id, sqlc.arg(sees_everything)::boolean, sqlc.arg(viewer_id)::text,
         sqlc.arg(views_plans)::boolean, sqlc.arg(viewer_team_ids)::text[])
+    AND (activity_id = ANY(sqlc.arg(activity_ids)::text[])
+        OR journey_ref IN (
+            SELECT journey_ref FROM performance_facts
+            WHERE activity_id = ANY(sqlc.arg(activity_ids)::text[]) AND journey_ref IS NOT NULL
+                AND NOT held AND replaced_by_id IS NULL
+                AND activity_in_scope(activity_id, sqlc.arg(sees_everything)::boolean, sqlc.arg(viewer_id)::text,
+                    sqlc.arg(views_plans)::boolean, sqlc.arg(viewer_team_ids)::text[])))
 ORDER BY fact_date, id;
 
 -- name: AttributionTouches :many

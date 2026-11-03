@@ -12,8 +12,7 @@ type RateSource interface {
 	Rates(ctx context.Context) (money.Rates, error)
 }
 
-// Crediting is how 048 and 049 read attributed revenue: worked out from the facts when read, under the
-// designated model, so a model change restates every figure.
+// Crediting is how 048 and 049 read attributed revenue, worked out from the facts at each read (FR-009).
 type Crediting struct {
 	settings *Service
 	facts    FactStore
@@ -24,7 +23,8 @@ func NewCrediting(settings *Service, facts FactStore, rates RateSource) *Crediti
 	return &Crediting{settings: settings, facts: facts, rates: rates}
 }
 
-// Credit credits the revenue facts of activityIDs dated in year; their touches may be on any activity in scope.
+// Credit reads the conversions on activityIDs and on every journey they touched, dated in year, and returns the
+// view's share only, so an activity's credit is the same whatever else is in view (050-C3).
 func (c *Crediting) Credit(ctx context.Context, scope authz.Scope, activityIDs []string, year int) (Credited, error) {
 	model, err := c.settings.Designated(ctx)
 	if err != nil {
@@ -43,7 +43,7 @@ func (c *Crediting) Credit(ctx context.Context, scope authz.Scope, activityIDs [
 		return Credited{}, err
 	}
 	converted, withoutRate := conversions(facts, touches, rates)
-	credited := CreditAll(converted, model)
+	credited := CreditAll(converted, model, activityIDs)
 	credited.WithoutRate = withoutRate
 	return credited, nil
 }

@@ -120,3 +120,33 @@ func touchedActivities(touches []attribution.JourneyTouch) []string {
 	}
 	return ids
 }
+
+func TestPostgresStore_ReadsTheConversionsOfJourneysTheViewTouched_050_C3(t *testing.T) {
+	t.Parallel()
+	store := pgFactStore(t)
+	onlyFirst := []string{"A-1001"}
+
+	all, err := store.Conversions(t.Context(), authz.Scope{Everything: true}, onlyFirst, 2026)
+	if err != nil {
+		t.Fatalf("Conversions: %v", err)
+	}
+	mine, err := store.Conversions(t.Context(), team1Only, onlyFirst, 2026)
+	if err != nil {
+		t.Fatalf("Conversions: %v", err)
+	}
+
+	if diff := cmp.Diff([]string{"A-1001", "A-1002"}, convertingActivities(all)); diff != "" {
+		t.Errorf("A-1002's conversion reached through J-1, which A-1001 touched (-want +got):\n%s", diff)
+	}
+	if diff := cmp.Diff([]string{"A-1001"}, convertingActivities(mine)); diff != "" {
+		t.Errorf("a journey must not reach past the scope (-want +got):\n%s", diff)
+	}
+}
+
+func convertingActivities(facts []attribution.RevenueFact) []string {
+	var ids []string
+	for _, f := range facts {
+		ids = append(ids, f.ActivityID)
+	}
+	return ids
+}

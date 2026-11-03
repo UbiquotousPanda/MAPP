@@ -14,21 +14,27 @@ const attributionConversions = `-- name: AttributionConversions :many
 SELECT activity_id::text AS activity_id, fact_date, amount_minor::bigint AS amount_minor,
     coalesce(currency, '') AS currency, coalesce(journey_ref, '') AS journey_ref
 FROM performance_facts
-WHERE activity_id = ANY($1::text[]) AND stage = 'revenue' AND NOT held
-    AND replaced_by_id IS NULL
-    AND fact_date BETWEEN make_date($2::int, 1, 1) AND make_date($2::int, 12, 31)
-    AND activity_in_scope(activity_id, $3::boolean, $4::text,
-        $5::boolean, $6::text[])
+WHERE stage = 'revenue' AND NOT held AND replaced_by_id IS NULL
+    AND fact_date BETWEEN make_date($1::int, 1, 1) AND make_date($1::int, 12, 31)
+    AND activity_in_scope(activity_id, $2::boolean, $3::text,
+        $4::boolean, $5::text[])
+    AND (activity_id = ANY($6::text[])
+        OR journey_ref IN (
+            SELECT journey_ref FROM performance_facts
+            WHERE activity_id = ANY($6::text[]) AND journey_ref IS NOT NULL
+                AND NOT held AND replaced_by_id IS NULL
+                AND activity_in_scope(activity_id, $2::boolean, $3::text,
+                    $4::boolean, $5::text[])))
 ORDER BY fact_date, id
 `
 
 type AttributionConversionsParams struct {
-	ActivityIds    []string
 	Year           int
 	SeesEverything bool
 	ViewerID       string
 	ViewsPlans     bool
 	ViewerTeamIds  []string
+	ActivityIds    []string
 }
 
 type AttributionConversionsRow struct {
@@ -41,12 +47,12 @@ type AttributionConversionsRow struct {
 
 func (q *Queries) AttributionConversions(ctx context.Context, arg AttributionConversionsParams) ([]AttributionConversionsRow, error) {
 	rows, err := q.db.Query(ctx, attributionConversions,
-		arg.ActivityIds,
 		arg.Year,
 		arg.SeesEverything,
 		arg.ViewerID,
 		arg.ViewsPlans,
 		arg.ViewerTeamIds,
+		arg.ActivityIds,
 	)
 	if err != nil {
 		return nil, err

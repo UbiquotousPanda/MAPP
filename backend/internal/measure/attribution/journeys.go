@@ -69,16 +69,22 @@ func conversions(facts []RevenueFact, touches []JourneyTouch, rates money.Rates)
 	return out, withoutRate
 }
 
-// CreditAll credits every conversion under m; credited plus unattributed equals their revenue exactly.
-func CreditAll(conversions []Conversion, m Model) Credited {
+// CreditAll credits every conversion under m and keeps the view's share: its activities' credit, and the
+// unattributed revenue of the conversions on them.
+func CreditAll(conversions []Conversion, m Model, view []string) Credited {
+	inView := map[string]bool{}
+	for _, id := range view {
+		inView[id] = true
+	}
 	out := Credited{Model: m, ByActivity: map[string]money.Amount{}}
 	for _, c := range conversions {
 		for _, cr := range Attribute(c, m) {
-			if cr.ActivityID == "" {
+			switch {
+			case cr.ActivityID == "" && inView[c.ActivityID]:
 				out.Unattributed = out.Unattributed.Add(cr.Amount)
-				continue
+			case inView[cr.ActivityID]:
+				out.ByActivity[cr.ActivityID] = out.ByActivity[cr.ActivityID].Add(cr.Amount)
 			}
-			out.ByActivity[cr.ActivityID] = out.ByActivity[cr.ActivityID].Add(cr.Amount)
 		}
 	}
 	return out

@@ -18,13 +18,29 @@ type factStore struct {
 }
 
 func (f factStore) Conversions(_ context.Context, _ authz.Scope, activityIDs []string, _ int) ([]attribution.RevenueFact, error) {
+	journeys := f.journeysOf(activityIDs)
 	var out []attribution.RevenueFact
 	for _, c := range f.conversions {
-		if slices.Contains(activityIDs, c.ActivityID) {
+		if slices.Contains(activityIDs, c.ActivityID) || slices.Contains(journeys, c.JourneyRef) {
 			out = append(out, c)
 		}
 	}
 	return out, nil
+}
+
+func (f factStore) journeysOf(activityIDs []string) []string {
+	var refs []string
+	for _, t := range f.touches {
+		if slices.Contains(activityIDs, t.ActivityID) {
+			refs = append(refs, t.JourneyRef)
+		}
+	}
+	for _, c := range f.conversions {
+		if c.JourneyRef != "" && slices.Contains(activityIDs, c.ActivityID) {
+			refs = append(refs, c.JourneyRef)
+		}
+	}
+	return refs
 }
 
 func (f factStore) Touches(_ context.Context, _ authz.Scope, refs []string) ([]attribution.JourneyTouch, error) {
@@ -67,7 +83,7 @@ var demoFacts = factStore{
 	},
 }
 
-var everyActivity = []string{"A-5", "A-6", "A-7", "A-8", "A-9"}
+var everyActivity = []string{"A-1", "A-2", "A-3", "A-5", "A-6", "A-7", "A-8", "A-9"}
 
 func crediting(t *testing.T) (*attribution.Crediting, *attribution.Service) {
 	t.Helper()
@@ -111,7 +127,7 @@ func TestCrediting_AModelChangeRestatesEveryFigure_050_FR009_SC002(t *testing.T)
 		t.Fatalf("SaveSettings: %v", err)
 	}
 
-	got, err := c.Credit(t.Context(), authz.Scope{Everything: true}, []string{"A-9"}, 2026)
+	got, err := c.Credit(t.Context(), authz.Scope{Everything: true}, []string{"A-3", "A-9"}, 2026)
 	if err != nil {
 		t.Fatalf("Credit: %v", err)
 	}
@@ -119,5 +135,27 @@ func TestCrediting_AModelChangeRestatesEveryFigure_050_FR009_SC002(t *testing.T)
 	want := map[string]string{"A-3": "1000.00", "unattributed": "0.00"}
 	if diff := cmp.Diff(want, shown(got)); diff != "" || got.Model != attribution.LastTouch {
 		t.Errorf("after the change to last touch, model %q (-want +got):\n%s", got.Model, diff)
+	}
+}
+
+// A-1 touched J-1, which converts on A-9, and J-2, whose conversion on A-8 came before the touch.
+func TestCrediting_AnActivitysCreditIsTheSameWhateverElseIsInView_050_C3(t *testing.T) {
+	t.Parallel()
+	c, _ := crediting(t)
+
+	alone, err := c.Credit(t.Context(), authz.Scope{Everything: true}, []string{"A-1"}, 2026)
+	if err != nil {
+		t.Fatalf("Credit: %v", err)
+	}
+	converting, err := c.Credit(t.Context(), authz.Scope{Everything: true}, []string{"A-8"}, 2026)
+	if err != nil {
+		t.Fatalf("Credit: %v", err)
+	}
+
+	if diff := cmp.Diff(map[string]string{"A-1": "333.33", "unattributed": "0.00"}, shown(alone)); diff != "" {
+		t.Errorf("A-1 alone in view, its share of A-9's conversion (-want +got):\n%s", diff)
+	}
+	if diff := cmp.Diff(map[string]string{"unattributed": "90.00"}, shown(converting)); diff != "" {
+		t.Errorf("A-8 alone in view, the unattributed revenue of its own conversion (-want +got):\n%s", diff)
 	}
 }
