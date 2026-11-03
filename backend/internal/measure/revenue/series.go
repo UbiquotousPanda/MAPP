@@ -25,6 +25,8 @@ type ActivitySeries struct {
 	Stages         []string
 	ModelName      string
 	ModelChangedAt time.Time
+	FactsHeld      bool
+	Sourced        []string
 	Months         []Month
 }
 
@@ -86,6 +88,7 @@ func seriesOf(v activityView, byID map[string]allwork.Node, w window) ActivitySe
 		Goal:          Goal{INQ: cloned(n.INQ), MQL: cloned(n.MQL), RevenueUSD: cloned(n.Revenue)},
 		HasProjection: p.Present, Stages: stagesOf(v), ModelName: p.Stamp.ModelName,
 		ModelChangedAt: p.Stamp.ModelChangedAt, Months: monthsOf(v, w),
+		FactsHeld: factsHeld(n.Status), Sourced: slices.Clone(v.goals.Sourced),
 	}
 }
 

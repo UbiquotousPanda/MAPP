@@ -10,6 +10,7 @@ import (
 // measureOf picks one measure out of ActivitySeries, revenue in cents or a stage's count, so both reports add up
 // the same way.
 type measureOf struct {
+	key    string
 	month  func(Month) Figure[int64]
 	goal   func(ActivitySeries) *int64
 	covers func(ActivitySeries) bool
@@ -17,6 +18,7 @@ type measureOf struct {
 
 func revenueMeasure() measureOf {
 	return measureOf{
+		key: stageRevenue,
 		month: func(m Month) Figure[int64] {
 			f := m.RevenueUSD
 			return Figure[int64]{Actual: cents(f.Actual), Projected: cents(f.Projected), Goal: cents(f.Goal)}
@@ -28,6 +30,7 @@ func revenueMeasure() measureOf {
 
 func stageMeasure(stage string) measureOf {
 	return measureOf{
+		key: stage,
 		month: func(m Month) Figure[int64] {
 			if stage == StageMQL {
 				return m.MQL
