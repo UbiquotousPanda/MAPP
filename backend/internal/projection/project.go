@@ -90,18 +90,18 @@ func seriesOf(stage string, months []MonthFigure) Series {
 	return Series{Stage: stage, Months: months, Total: total}
 }
 
+// revenueOf answers no series for a total past the money range; no month exceeds the total, so none can.
 func revenueOf(deals []MonthFigure, size money.Money) ([]MoneyFigure, money.Money) {
-	revenue := make([]MoneyFigure, len(deals))
-	total := money.Money{Currency: size.Currency}
-	for i, m := range deals {
-		amount, err := size.Amount.MulInt(m.Value)
-		if err != nil {
-			amount = money.Amount{}
-		}
-		revenue[i] = MoneyFigure{Month: m.Month, Value: money.Money{Amount: amount, Currency: size.Currency}}
-		total.Amount = total.Amount.Add(amount)
+	total, err := size.Amount.MulInt(seriesOf(StageDeals, deals).Total)
+	if err != nil {
+		return nil, money.Money{Currency: size.Currency}
 	}
-	return revenue, total
+	revenue := make([]MoneyFigure, len(deals))
+	for i, m := range deals {
+		amount, _ := size.Amount.MulInt(m.Value)
+		revenue[i] = MoneyFigure{Month: m.Month, Value: money.Money{Amount: amount, Currency: size.Currency}}
+	}
+	return revenue, money.Money{Amount: total, Currency: size.Currency}
 }
 
 func phaseMoney(goal money.Money, start, end date.Date) ([]MoneyFigure, money.Money) {

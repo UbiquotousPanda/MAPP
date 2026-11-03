@@ -33,17 +33,20 @@ func moneyCardOf(amount money.Amount, currency string, has bool, reason string) 
 	return MoneyCard{Value: &shown}
 }
 
-func performanceOf(actualOrProjected, goal money.Amount, anyGoal bool) NumberCard {
+func performanceOf(actualOrProjected, goal money.Amount, anyGoal bool) PerformanceCard {
 	if !anyGoal {
-		return NumberCard{Reason: ReasonNoGoal}
+		return percentCard(nil)
 	}
 	return percentCard(Performance(actualOrProjected.Cents(), goal.Cents()))
 }
 
-func percentCard(pct *int) NumberCard {
+func percentCard(pct *int) PerformanceCard {
+	card := PerformanceCard{Variance: VarianceOf(pct)}
 	if pct == nil {
-		return NumberCard{Reason: ReasonNoGoal}
+		card.Reason = ReasonNoGoal
+		return card
 	}
 	value := float64(*pct)
-	return NumberCard{Value: &value}
+	card.Value = &value
+	return card
 }

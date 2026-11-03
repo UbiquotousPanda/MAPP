@@ -12039,6 +12039,10 @@ components:
         drillLost:
           type: boolean
     # Feature 049 Revenue and funnel-stage reports (wave B contract)
+    SummaryVariance:
+      type: string
+      description: Performance in words (048-C1); noGoal when the goal is zero or missing.
+      enum: [abovePlan, onPlan, belowPlan, noGoal]
     RevenueCardFigure:
       type: object
       description: A revenue card figure; null with reason when it cannot be worked out (FR-009).
@@ -12056,10 +12060,11 @@ components:
         projected: { $ref: "#/components/schemas/RevenueCardFigure" }
         performance:
           type: object
-          required: [value, reason]
+          required: [value, reason, variance]
           properties:
             value: { type: [number, "null"] }
             reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+            variance: { $ref: "#/components/schemas/SummaryVariance" }
     RevenuePeriod:
       type: object
       description: One period of the series, split at today (047 FR-010); the period in progress carries both.
@@ -12093,7 +12098,7 @@ components:
     RevenueFigures:
       type: object
       additionalProperties: false
-      required: [goal, actual, projected, performance, actualCost, roi, actualCostReason, roiReason]
+      required: [goal, actual, projected, performance, variance, actualCost, roi, actualCostReason, roiReason]
       properties:
         goal:
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
@@ -12102,6 +12107,7 @@ components:
         projected:
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         performance: { type: [number, "null"] }
+        variance: { $ref: "#/components/schemas/SummaryVariance" }
         actualCost:
           description: Always null until feature 050 configures attribution (049-C6).
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
@@ -12183,10 +12189,11 @@ components:
             reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
         performance:
           type: object
-          required: [value, reason]
+          required: [value, reason, variance]
           properties:
             value: { type: [number, "null"] }
             reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+            variance: { $ref: "#/components/schemas/SummaryVariance" }
         conversion:
           description: The selected stage's actual over the previous stage's actual (049-C13).
           type: object
@@ -12230,12 +12237,13 @@ components:
     FunnelFigures:
       type: object
       additionalProperties: false
-      required: [goal, actual, projected, performance, conversion]
+      required: [goal, actual, projected, performance, variance, conversion]
       properties:
         goal: { type: [integer, "null"] }
         actual: { type: [integer, "null"] }
         projected: { type: [integer, "null"] }
         performance: { type: [number, "null"] }
+        variance: { $ref: "#/components/schemas/SummaryVariance" }
         conversion: { type: [number, "null"] }
     FunnelEntry:
       type: object

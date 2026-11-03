@@ -1,4 +1,5 @@
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
+import { varianceText } from '../revenue/variance';
 import { reasonText } from './reasons';
 import type { FunnelCards as FunnelCardsData } from '../revenue/api';
 import styles from './Funnel.module.css';
@@ -30,8 +31,9 @@ export function FunnelCards({ stage, cards }: { stage: string; cards: FunnelCard
         value={
           cards.performance.value !== null
             ? `${cards.performance.value}%`
-            : reasonText(cards.performance.reason)
+            : varianceText(cards.performance.variance)
         }
+        detail={cards.performance.value !== null && varianceText(cards.performance.variance)}
       />
       <SummaryCard
         label="Conversion"

@@ -1,8 +1,8 @@
 package revenue
 
 // funnelCards sum the months before any grouping, as Revenue's cards do, counting the month in progress once.
-func funnelCards(sums monthlySums, anyGoal bool, previousActual *int64) FunnelCards {
-	goal, actual, total := sums.activityGoals, sums.actualTotal(), sums.total()
+func funnelCards(sums monthlySums, total int64, anyGoal bool, previousActual *int64) FunnelCards {
+	goal, actual := sums.activityGoals, sums.actualTotal()
 	cards := FunnelCards{}
 	cards.Goal = intCard(goal, goal != 0 && anyGoal, ReasonNoGoal)
 	cards.Projected = intCard(total, true, ReasonNoGoal)
@@ -19,9 +19,9 @@ func intCard(value int64, present bool, reason string) NumberCard {
 	return NumberCard{Value: &v}
 }
 
-func ratioCard(value, goal int64, anyGoal bool) NumberCard {
+func ratioCard(value, goal int64, anyGoal bool) PerformanceCard {
 	if !anyGoal {
-		return NumberCard{Reason: ReasonNoGoal}
+		return percentCard(nil)
 	}
 	return percentCard(Performance(value, goal))
 }
