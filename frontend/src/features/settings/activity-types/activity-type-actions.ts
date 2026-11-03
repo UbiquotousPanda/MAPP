@@ -33,3 +33,12 @@ export function modelNames(type: ActivityType): string {
     .map((model) => (model.active ? model.name : `${model.name} (inactive)`))
     .join(', ');
 }
+
+/** The category grouping the type, "Uncategorised" when none does: the reports count it there. */
+export function categoryName(type: ActivityType): string {
+  const { category } = type;
+  if (!category) {
+    return 'Uncategorised';
+  }
+  return category.active ? category.name : `${category.name} (inactive)`;
+}

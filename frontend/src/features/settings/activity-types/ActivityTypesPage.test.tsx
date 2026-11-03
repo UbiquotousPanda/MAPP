@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { findMessages } from '@/testing/render';
-import { EVENT, PRINT, TYPES } from '@/testing/fixtures/activity-types';
+import { EVENT, PODCAST, PRINT, TYPES } from '@/testing/fixtures/activity-types';
 import { deleted, inUse } from '@/testing/fixtures/settings';
 import { chooseAction, renderActivityTypesPage, rowOf } from '@/testing/fixtures/settings-pages';
 import { reply } from '@/testing/replies';
@@ -91,6 +91,42 @@ describe('ActivityTypesPage: the list (FR-002)', () => {
     await user.click(screen.getByRole('button', { name: 'Try again' }));
 
     expect(await screen.findByRole('table')).toBeInTheDocument();
+  });
+});
+
+describe('ActivityTypesPage: each type names its category (047 FR-022)', () => {
+  const ASSET = { id: 'CAT-1001', name: 'Asset', active: true };
+  const withCategories = reply('GET /api/v1/activity-types', {
+    body: {
+      items: [
+        { ...EVENT, category: ASSET },
+        { ...PODCAST, category: { id: 'CAT-1002', name: 'Promotion', active: false } },
+        { ...PRINT, active: true },
+      ],
+      total: 3,
+    },
+  });
+
+  it('shows the category grouping a type, and Uncategorised when none does', async () => {
+    renderActivityTypesPage([withCategories]);
+    await screen.findByRole('table');
+
+    expect(within(table()).getByRole('columnheader', { name: 'Category' })).toBeInTheDocument();
+    expect(rowOf('Event')).toHaveTextContent('Asset');
+    expect(rowOf('Podcast')).toHaveTextContent('Promotion (inactive)');
+    expect(rowOf('Print advert')).toHaveTextContent('Uncategorised');
+  });
+
+  it('names the category in the details too', async () => {
+    const { user } = renderActivityTypesPage([withCategories]);
+
+    await user.click(await screen.findByRole('button', { name: 'Event' }));
+    expect(await screen.findByRole('dialog', { name: 'Event' })).toHaveTextContent('CategoryAsset');
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await user.click(screen.getByRole('button', { name: 'Print advert' }));
+    expect(await screen.findByRole('dialog', { name: 'Print advert' })).toHaveTextContent(
+      'CategoryUncategorised',
+    );
   });
 });
 
