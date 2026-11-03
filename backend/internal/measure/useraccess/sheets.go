@@ -3,6 +3,7 @@ package useraccess
 import (
 	"cmp"
 	"context"
+	"maps"
 	"net/url"
 	"strings"
 
@@ -25,7 +26,7 @@ func (s *Service) Params() []string { return []string{paramSearch, paramTeam, pa
 
 // Sheets gives both widgets with every matching row in the address's sort (FR-013); 039 checks access.manage.
 func (s *Service) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
-	q, err := ParseQuery(f.Own)
+	q, err := ParseQuery(withTeams(f))
 	if err != nil {
 		return nil, err
 	}
@@ -43,6 +44,16 @@ func (s *Service) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) (
 		return nil, err
 	}
 	return sheets, nil
+}
+
+// withTeams is the address as the screen reads it: the frame takes team as its Team filter, so it is not in f.Own.
+func withTeams(f measure.Filter) url.Values {
+	own := url.Values{}
+	maps.Copy(own, f.Own)
+	if len(own[paramTeam]) == 0 && len(f.Query.Teams) > 0 {
+		own[paramTeam] = f.Query.Teams
+	}
+	return own
 }
 
 // peopleTable has the screen's columns; Never is an empty cell.
