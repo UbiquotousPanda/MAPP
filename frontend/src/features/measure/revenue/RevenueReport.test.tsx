@@ -81,7 +81,7 @@ describe('RevenueReport (049 US1)', () => {
   });
 
   it.each(VARIANCE_CASES)(
-    'performance %s with the API\'s variance %s shows "%s" on the card and in the ranked list (048-C1, FR-023)',
+    'performance %s with the API\'s variance %s shows "%s" on the card, and a ranked row its figure and word or "—" (048-C1, FR-018, FR-023)',
     async (value, variance, word) => {
       const cards = revenueReport().cards;
       const performance: RevenueCards['performance'] = {
@@ -96,7 +96,7 @@ describe('RevenueReport (049 US1)', () => {
       const summary = await screen.findByLabelText('Summary');
       expect(within(summary).getByText(word)).toBeInTheDocument();
       const ranked = screen.getByRole('region', { name: 'Ranked list' });
-      const shown = value === null ? word : `${value}% · ${word}`;
+      const shown = value === null ? '—' : `${value}% · ${word}`;
       expect((await within(ranked).findAllByText(shown)).length).toBeGreaterThan(0);
       await expectNoAxeViolations();
     },

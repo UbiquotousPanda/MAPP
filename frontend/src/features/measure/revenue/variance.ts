@@ -15,6 +15,5 @@ export function varianceText(variance: Variance): string {
 }
 
 export function performanceText(performance: number | null, variance: Variance): string {
-  const word = varianceText(variance);
-  return performance === null ? word : `${performance}% · ${word}`;
+  return performance === null ? '—' : `${performance}% · ${varianceText(variance)}`;
 }
