@@ -33,9 +33,12 @@ func (d data) statusMix(rs []Request) StatusMix {
 	}
 	shares := wholeShares(list, len(rs))
 	for i, s := range allStatuses() {
-		item := StatusCount{Status: s, Count: counts[s], SharePercent: shares[i], Amount: d.shown.of(money.Amount{})}
-		if t := amounts[s]; t != nil {
+		item := StatusCount{Status: s, Count: counts[s], SharePercent: shares[i]}
+		switch t := amounts[s]; {
+		case t != nil:
 			item.Amount = t.money(d.shown)
+		case mix.TotalAmount != nil:
+			item.Amount = d.shown.of(money.Amount{})
 		}
 		mix.Items = append(mix.Items, item)
 	}
