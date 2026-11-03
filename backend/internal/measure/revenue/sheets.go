@@ -151,7 +151,7 @@ func (s *Service) funnelSheets(ctx context.Context, a actor.Actor, f measure.Fil
 }
 
 func funnelCardsSheet(stage string, c FunnelCards) sheet.Sheet {
-	name := map[string]string{StageINQ: "INQ", StageMQL: "MQL"}[stage]
+	name, _ := stageWords(stage)
 	rows := [][]sheet.Cell{{sheet.Bold("Figure"), sheet.Bold("Value")}}
 	for _, row := range []struct {
 		label string

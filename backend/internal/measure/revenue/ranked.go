@@ -2,6 +2,9 @@ package revenue
 
 import (
 	"context"
+	"slices"
+
+	"mapp/internal/allwork"
 
 	"mapp/internal/measure"
 	"mapp/internal/measure/ranking"
@@ -17,7 +20,7 @@ func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Fi
 		if err != nil {
 			return err
 		}
-		x := indexInView(sc, series)
+		x := indexInView(sc, series, categoryOf(f.Own))
 		figures := &revenueRanking{x: x, own: revenueFiguresOfActivities(series), memo: map[string]RevenueFigures{},
 			display: money.DisplayIn(sc.Currency.Code, sc.Currency.Rate.String())}
 		out = ranking.Build(x, showLevel(f.Show), q.shared(), figures)
@@ -35,7 +38,7 @@ func (s *Service) RankedFunnel(ctx context.Context, a actor.Actor, f measure.Fil
 			return err
 		}
 		stage := stageOf(q.Stage, availableStages(series))
-		x := indexInView(sc, series)
+		x := indexInView(sc, series, categoryOf(f.Own))
 		figures := &funnelRanking{x: x, own: funnelFiguresOfActivities(series, stage),
 			previous: previousActualsOfActivities(series, stage), memo: map[string]funnelSums{}}
 		out = ranking.Build(x, showLevel(f.Show), q.shared(), figures)
@@ -44,16 +47,37 @@ func (s *Service) RankedFunnel(ctx context.Context, a actor.Actor, f measure.Fil
 	return out, err
 }
 
-// indexInView keeps only the activities in view, the category's alone when one is chosen; revenue and funnel stop
-// at the activity, so line items are never children.
-func indexInView(sc measure.Scope, series []ActivitySeries) *ranking.Index {
+// indexInView keeps only the activities in view, and with a category only the records above that hold one of them;
+// revenue and funnel stop at the activity, so line items are never children.
+func indexInView(sc measure.Scope, series []ActivitySeries, category string) *ranking.Index {
 	narrowed := sc
 	narrowed.Matched.Activities = make([]string, 0, len(series))
 	for _, a := range series {
 		narrowed.Matched.Activities = append(narrowed.Matched.Activities, a.ID)
 	}
 	narrowed.Matched.LineItems = nil
+	if category != "" {
+		narrowed.Matched = holdingActivities(narrowed.Matched, sc.Nodes)
+	}
 	return ranking.NewIndex(narrowed)
+}
+
+func holdingActivities(m allwork.Matched, nodes []allwork.Node) allwork.Matched {
+	parentOf := make(map[string]string, len(nodes))
+	for _, n := range nodes {
+		parentOf[n.ID] = n.ParentID
+	}
+	holds := map[string]bool{}
+	for _, id := range m.Activities {
+		for p := parentOf[id]; p != "" && !holds[p]; p = parentOf[p] {
+			holds[p] = true
+		}
+	}
+	kept := func(ids []string) []string {
+		return slices.DeleteFunc(slices.Clone(ids), func(id string) bool { return !holds[id] })
+	}
+	m.Plans, m.Campaigns, m.Initiatives = kept(m.Plans), kept(m.Campaigns), kept(m.Initiatives)
+	return m
 }
 
 func showLevel(show string) string {

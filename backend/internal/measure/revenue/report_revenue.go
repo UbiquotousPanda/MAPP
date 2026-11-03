@@ -32,6 +32,9 @@ func (s *Service) buildRevenueReport(series []ActivitySeries, period string, sc 
 	anyGoal := slices.ContainsFunc(series, func(a ActivitySeries) bool { return a.HasProjection })
 	cards := revenueCards(sums, anyGoal, display)
 	cards.Actual = actualMoneyCard(series, display, sums)
+	if !anyTotal(series, revenueMeasure()) {
+		cards.Projected = MoneyCard{Reason: reportReason(series, false)}
+	}
 	return RevenueReport{Cards: cards, Period: periodShown(period), Periods: revenuePeriods(sums, period, w, display),
 		Projection: stampOf(series), Reason: reportReason(series, anyGoal)}
 }

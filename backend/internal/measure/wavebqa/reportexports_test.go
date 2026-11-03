@@ -84,11 +84,13 @@ func TestWaveB_ExportRights_049_FR022(t *testing.T) {
 	checkWorkbook(t, alexSees, "funnel", "Funnel stages")
 }
 
-// ownParam is one of 049's own parameters, the widget export it reaches, and the row the file must hold at row at.
+// ownParam is one of 049's own parameters, the widget export it reaches, the row the file must hold at row at,
+// and the note About this export says it in.
 type ownParam struct {
 	report, widget, param string
 	at                    int
 	row                   []string
+	note                  string
 }
 
 func categoryNamed(t *testing.T, who person, name string) string {
@@ -110,17 +112,17 @@ func ownParams(t *testing.T, alexSees person) []ownParam {
 	}
 	return []ownParam{
 		{"revenue", "cards", digital, 3,
-			[]string{"Actual or projected", revenueOf(t, alexSees, digital).Cards.Projected.Value.Amount}},
-		{"funnel", "cards", mql, 3, stageCard(mql)},
-		{"funnel", "cards", unsorted, 3, stageCard(unsorted)},
+			[]string{"Actual or projected", revenueOf(t, alexSees, digital).Cards.Projected.Value.Amount}, "Category,Digital"},
+		{"funnel", "cards", mql, 3, stageCard(mql), "Stage,MQL"},
+		{"funnel", "cards", unsorted, 3, stageCard(unsorted), "Category,Uncategorised"},
 		{"revenue", "ranked", "sort=actualRevenue", 1,
-			[]string{"", "Campaign", revenueRankedOf(t, alexSees, "sort=actualRevenue").tops()[0].Name}},
+			[]string{"", "Campaign", revenueRankedOf(t, alexSees, "sort=actualRevenue").tops()[0].Name}, "Sort by,Actual"},
 		{"funnel", "ranked", "sort=actual", 1,
-			[]string{"", "Campaign", funnelRankedOf(t, alexSees, "sort=actual").tops()[0].Name}},
+			[]string{"", "Campaign", funnelRankedOf(t, alexSees, "sort=actual").tops()[0].Name}, "Sort by,Actual"},
 	}
 }
 
-// TestWaveB_ExportsKeepOwnParams_FR022: category, stage and sort reach the widget export, which differs from the default.
+// TestWaveB_ExportsKeepOwnParams_FR022: category, stage and sort reach the widget export and its notes, unlike the default.
 func TestWaveB_ExportsKeepOwnParams_FR022(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
@@ -132,6 +134,9 @@ func TestWaveB_ExportsKeepOwnParams_FR022(t *testing.T) {
 		if bytes.Equal(plain.Body, kept.Body) || len(rows) <= c.at || !slices.Equal(rows[c.at][:len(c.row)], c.row) {
 			t.Errorf("GET %s: row %d of %v, want %v, as the report shows it, and a file unlike the default", path, c.at,
 				rows, c.row)
+		}
+		if notes, _, _ := strings.Cut(strings.ReplaceAll(string(kept.Body), "\r\n", "\n"), "\n\n"); !strings.Contains(notes, c.note) {
+			t.Errorf("GET %s: About this export %q, want %q (039 FR-022)", path, notes, c.note)
 		}
 	}
 }
