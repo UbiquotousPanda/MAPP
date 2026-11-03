@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     branches: [main, release, develop, measure-module]
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main, release, develop, measure-module]
 
@@ -28,6 +29,7 @@ jobs:
     outputs:
       backend: ${{ steps.parts.outputs.backend }}
       frontend: ${{ steps.parts.outputs.frontend }}
+      full: ${{ steps.parts.outputs.full }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -39,6 +41,7 @@ jobs:
           EVENT: ${{ github.event_name }}
           BRANCH: ${{ github.ref_name }}
           BASE: ${{ github.event.pull_request.base.sha }}
+          DRAFT: ${{ github.event.pull_request.draft }}
         run: |
           if [ "$EVENT" = push ]; then
             BASE="$(gh run list --workflow ci.yml --branch "$BRANCH" --event push --status success --limit 1 \
@@ -57,9 +60,15 @@ jobs:
               esac
             done <<< "$files"
           fi
+          # A draft runs nothing until it is marked ready; a push runs only the quick checks, as its pull request
+          # already ran the tests, lint and end-to-end tests on the merged result.
+          [ "$DRAFT" = true ] && backend=false frontend=false
+          full=false
+          [ "$EVENT" = pull_request ] && full=true
+          echo "full=$full" >> "$GITHUB_OUTPUT"
           echo "backend=$backend" >> "$GITHUB_OUTPUT"
           echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
-          echo "backend: $backend, frontend: $frontend"
+          echo "backend: $backend, frontend: $frontend, full: $full"
 
   backend-checks:
     needs: changes
@@ -105,7 +114,7 @@ jobs:
 
   backend-lint:
     needs: changes
-    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' && needs.changes.outputs.full == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -142,13 +151,13 @@ jobs:
 
   backend-test:
     needs: changes
-    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' && needs.changes.outputs.full == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7]
+        shard: [1, 2, 3, 4]
     defaults: *in-backend
     # The scope-isolation tests run on PostgreSQL 18 (constitution VI, B9). Trust authentication is safe here:
     # the service is reachable only from this job, on the runner's loopback address, and holds only test data.
@@ -179,10 +188,8 @@ jobs:
         run: |
           set -o pipefail
           groups=(
-            "app budget campaign people financials plan"
-            "allwork approval settings access"
-            "purchaserequest home activity lineitem"
-            "measure/wavebqa"
+            "app budget campaign people financials plan allwork approval settings access"
+            "purchaserequest home activity lineitem measure/wavebqa"
           )
           rest=$((TOTAL - ${#groups[@]}))
           [ "$rest" -ge 1 ] || { echo "Give the matrix one shard per group, plus at least one more."; exit 1; }
@@ -256,13 +263,13 @@ jobs:
 
   frontend-test:
     needs: changes
-    if: ${{ !cancelled() && needs.changes.outputs.frontend != 'false' }}
+    if: ${{ !cancelled() && needs.changes.outputs.frontend != 'false' && needs.changes.outputs.full == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2]
     defaults: *in-frontend
     steps:
       - uses: actions/checkout@v7
@@ -295,14 +302,16 @@ jobs:
       - *corepack-cache
       - *install
       - uses: actions/download-artifact@v8
+        if: needs.changes.outputs.full == 'true'
         with:
           pattern: frontend-blob-*
           path: frontend/.vitest/blob
           merge-multiple: true
       - name: Test results
+        if: needs.changes.outputs.full == 'true'
         run: pnpm run test:coverage --merge-reports
       - name: Upload test results
-        if: always()
+        if: always() && needs.changes.outputs.full == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: frontend-test
@@ -315,7 +324,7 @@ jobs:
 
   e2e-test:
     needs: changes
-    if: ${{ !cancelled() && (needs.changes.outputs.backend != 'false' || needs.changes.outputs.frontend != 'false') }}
+    if: ${{ !cancelled() && (needs.changes.outputs.backend != 'false' || needs.changes.outputs.frontend != 'false') && needs.changes.outputs.full == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -346,7 +355,7 @@ jobs:
 
   e2e:
     needs: [changes, e2e-test]
-    if: ${{ !cancelled() && (needs.changes.outputs.backend != 'false' || needs.changes.outputs.frontend != 'false') }}
+    if: ${{ !cancelled() && (needs.changes.outputs.backend != 'false' || needs.changes.outputs.frontend != 'false') && needs.changes.outputs.full == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - *fail-if-a-job-failed
