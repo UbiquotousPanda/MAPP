@@ -161,6 +161,24 @@ the time per request (both runs), then the number of statements:
   every plan's roll-up), which Plan details asks for and the other reports no longer read (#135). Without it the read
   is about 0.7 s. The fix is All work's and 004's, not this report's: #132.
 
+After #151 (4 Nov 2026, the same benchmark on `measure-module` 570df525 with #151 merged): plan completeness counts each
+plan's own missing fields without the roll-ups below. Other workloads shared the laptop's VM, so the frame ran slower
+than above; each request is also given against the frame, which does the same work in every run:
+
+| Request at the 028 volume | Before #151 | After #151 | Against the frame |
+|---|---|---|---|
+| Frame (039's, beside every tab) | 0.73–0.75 s · 37 | 1.05–1.13 s · 37 | — |
+| Activity level | 4.98–6.05 s · 39 | 2.34–2.49 s · 39 | 7.4× → 2.2× |
+| Campaign level | 5.19–5.28 s · 39 | 2.76–3.04 s · 39 | 7.0× → 2.6× |
+| Plan level | 4.91–5.35 s · 39 | 1.94–2.69 s · 39 | 6.9× → 2.1× |
+| Activity level, one market (Priya) | 1.76–1.85 s · 40 | 2.39–2.61 s · 40 | 2.4× → 2.3× |
+| Activity level, filtered | 5.13–5.64 s · 39 | 1.93 s · 39 | 7.2× → 1.7× |
+| Export, Activity level (Excel) | 5.92–6.90 s · 63 | 2.86–3.13 s · 63 | 8.6× → 2.7× |
+
+- **Statements:** unchanged.
+- **Time:** on the earlier run's frame (0.74 s) every level comes to about 1.3–2.0 s and the export to about 2.0 s:
+  within SC-001's 3 s. One market is unchanged, as it never paid for the roll-ups.
+
 ## Dependencies and hand-offs
 
 - **039 (lane A)** — `measure.Filter`, `measure.Report`/`WidgetSheet`, `measure.Planning`/`Plans`,
