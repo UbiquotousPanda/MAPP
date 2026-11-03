@@ -68,8 +68,8 @@ func funnelPeriods(sums monthlySums, period string, w window) []FunnelPeriod {
 	return out
 }
 
-// periodValues is one period's sums; actual is nil before today reaches it, projected once it has passed, goal
-// when it is zero.
+// periodValues is one period's sums; actual is nil where nothing is counted, projected where nothing is projected,
+// goal when it is zero.
 type periodValues struct {
 	key, state              string
 	inProgress              bool
@@ -81,8 +81,7 @@ func (s monthlySums) periodOf(b periodBounds) periodValues {
 	hasActual, hasProjected := false, false
 	for i := b.first; i < b.first+b.size; i++ {
 		a, p, g = a+s.actual[i], p+s.projected[i], g+s.goal[i]
-		hasActual = hasActual || (b.todayIndex >= 0 && i <= b.todayIndex)
-		hasProjected = hasProjected || b.todayIndex < 0 || i >= b.todayIndex
+		hasActual, hasProjected = hasActual || s.counted[i], hasProjected || s.projects[i]
 	}
 	out := periodValues{key: periodKey(b.year, b.first, b.size), state: periodState(b.first, b.size, b.todayIndex),
 		inProgress: b.inProgress()}

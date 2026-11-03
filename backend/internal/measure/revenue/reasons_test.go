@@ -91,3 +91,17 @@ func TestReport_WithoutGoalsOnUnapprovedActivitiesSaysNotApproved_FR008_049C20(t
 		t.Errorf("report reasons = %q and %q, want %q", r.Reason, f.Reason, revenue.ReasonNotApproved)
 	}
 }
+
+func TestReport_EveryActivityUnapprovedSaysSoAndKeepsItsGoalsAndProjection_FR008_049C20_049C22(t *testing.T) {
+	t.Parallel()
+	r, f := reportsOf(t, reasonsFixture("submitted", everySource, nil))
+
+	if r.Reason != revenue.ReasonNotApproved || f.Reason != revenue.ReasonNotApproved {
+		t.Errorf("report reasons = %q and %q, want %q: every activity in view awaits approval",
+			r.Reason, f.Reason, revenue.ReasonNotApproved)
+	}
+	if r.Cards.Goal.Value == nil || r.Cards.Projected.Value == nil || f.Cards.Goal.Value == nil {
+		t.Errorf("revenue goal %+v, projected %+v, INQ goal %+v, want values: goals and projections are planning figures",
+			r.Cards.Goal, r.Cards.Projected, f.Cards.Goal)
+	}
+}

@@ -11,16 +11,40 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-const noPreviousStage = "noPreviousStage"
+const (
+	noPreviousStage = "noPreviousStage"
+	notApproved     = "notApproved"
+)
 
 func noActualAnywhere(t *testing.T, alexSees person) {
 	t.Helper()
 	for _, show := range levels() {
-		for _, f := range revenueRankedOf(t, alexSees, "show="+show).everyFigure() {
-			if f.Actual != nil {
-				t.Errorf("Revenue at show=%s: actual %v with no fact loaded, want null (FR-009)", show, *f.Actual)
-				break
-			}
+		if slices.ContainsFunc(revenueRankedOf(t, alexSees, "show="+show).everyFigure(),
+			func(f revenueFigures) bool { return f.Actual != nil }) {
+			t.Errorf("Revenue at show=%s: an actual with no fact loaded, want null (FR-009)", show)
+		}
+		if slices.ContainsFunc(funnelRankedOf(t, alexSees, "show="+show).everyFigure(),
+			func(f funnelFigures) bool { return f.Actual != nil }) {
+			t.Errorf("Funnel stages at show=%s: an actual with no fact loaded, want null (FR-009)", show)
+		}
+	}
+	for _, r := range reportsUnderTest() {
+		months := r.shapeOf(t, alexSees, "")
+		if months.cards.actual != nil || slices.ContainsFunc(months.periods, func(p point) bool { return p.actual != nil }) {
+			t.Errorf("%s: actual card %s or a month's actual with no fact loaded, want null (FR-009)", r.name,
+				shown(months.cards.actual))
+		}
+	}
+}
+
+func noGridOfZeros(t *testing.T, label string, s shape) {
+	t.Helper()
+	if s.cards.actual != nil || s.cards.projected != nil {
+		t.Errorf("%s: cards %s, want actual and actual or projected null (FR-008)", label, s.cards)
+	}
+	for _, p := range s.periods {
+		if p.goal != nil || p.actual != nil || p.projected != nil {
+			t.Errorf("%s %s: %s, want every figure null (FR-008)", label, p.key, p.figures)
 		}
 	}
 }
@@ -69,9 +93,11 @@ func emptyYearStated(t *testing.T, alexSees person) {
 	if funnel.Reason != "noData" || funnel.Cards.Goal.Value != nil || funnel.Cards.Performance.Value != nil {
 		t.Errorf("Funnel stages 2025, no plan in view = %+v, want reason noData, goal and performance null", funnel)
 	}
+	noGridOfZeros(t, "Revenue 2025", revenue.shape())
+	noGridOfZeros(t, "Funnel stages 2025", funnel.shape())
 }
 
-// TestWaveB_MissingIsNeverZero_FR009: without facts or goals the figure is null with its reason; zero actuals: a finding.
+// TestWaveB_MissingIsNeverZero_FR009: without facts or goals every figure is null with its reason, never 0.
 func TestWaveB_MissingIsNeverZero_FR009(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
@@ -100,13 +126,33 @@ func exportedCostColumns(t *testing.T, alexSees person) {
 func TestWaveB_RoiNotConfigured_049_FR013(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
+	digital := "category=" + categoryNamed(t, alexSees, "Digital")
 	for _, show := range levels() {
 		for _, group := range []string{"none", "plan", "owner"} {
-			list := revenueRankedOf(t, alexSees, joined("show="+show, "group="+group))
-			costless(t, "Revenue at show="+show+" by "+group, list, notConfigured)
+			for _, category := range []string{"", digital} {
+				list := revenueRankedOf(t, alexSees, joined("show="+show, "group="+group, category))
+				costless(t, "Revenue at show="+show+" by "+group+" "+category, list, notConfigured)
+			}
 		}
 	}
 	exportedCostColumns(t, alexSees)
+}
+
+// TestWaveB_CategoryNarrowsTheRecordsAbove_049_FR019: a category lists only the records holding one of its activities.
+func TestWaveB_CategoryNarrowsTheRecordsAbove_049_FR019(t *testing.T) {
+	t.Parallel()
+	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
+	digital := "category=" + categoryNamed(t, alexSees, "Digital")
+	for _, show := range []string{"plan", "campaign", "initiative"} {
+		byType := listingOf(revenueRankedOf(t, alexSees, joined("show="+show, "activityType=AT-1003")))
+		for _, r := range reportsUnderTest() {
+			got := r.listOf(t, alexSees, joined("show="+show, digital))
+			if got.total != byType.total || !slices.Equal(slices.Sorted(slices.Values(got.ids)), slices.Sorted(slices.Values(byType.ids))) {
+				t.Errorf("%s at show=%s, Digital: %d entries %v, want the %d of Digital media %v", r.name, show,
+					got.total, got.ids, byType.total, byType.ids)
+			}
+		}
+	}
 }
 
 // TestWaveB_FunnelStageSelector_049_FR015: INQ then MQL, opening on INQ, never deals; every plan covered.
@@ -161,4 +207,20 @@ func csvRows(t *testing.T, file string) [][]string {
 		t.Fatalf("the exported table is no CSV: %v\n%s", err, table)
 	}
 	return rows
+}
+
+// TestWaveB_UnapprovedSaysNotApproved_049_FR008_049C22: submitted activities only: the report says so, their facts held,
+// and their goals and projections still count as planning figures.
+func TestWaveB_UnapprovedSaysNotApproved_049_FR008_049C22(t *testing.T) {
+	t.Parallel()
+	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
+	revenue, funnel := revenueOf(t, alexSees, "activityStatus=submitted"), funnelOf(t, alexSees, "activityStatus=submitted")
+	if revenue.Reason != notApproved || revenue.Cards.Actual.Reason != notApproved || revenue.Cards.Projected.Value == nil {
+		t.Errorf("Revenue of submitted activities: reason %q, actual %+v, projected %+v; want %s twice and a projection",
+			revenue.Reason, revenue.Cards.Actual, revenue.Cards.Projected, notApproved)
+	}
+	if funnel.Reason != notApproved || funnel.Cards.Actual.Reason != notApproved || funnel.Cards.Goal.Value == nil {
+		t.Errorf("Funnel stages of submitted activities: reason %q, actual %+v, goal %+v; want %s twice and a goal",
+			funnel.Reason, funnel.Cards.Actual, funnel.Cards.Goal, notApproved)
+	}
 }

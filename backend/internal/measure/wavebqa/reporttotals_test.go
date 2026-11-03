@@ -41,12 +41,31 @@ func checkGroupsAddUp(t *testing.T, label string, l listing) {
 	}
 }
 
+func (s shape) goalTotal() int64 {
+	var total int64
+	for _, p := range s.periods {
+		total += orZero(p.goal)
+	}
+	return total
+}
+
+func checkSeriesGoal(t *testing.T, label string, s shape) {
+	t.Helper()
+	if s.goalTotal() != orZero(s.cards.goal) {
+		t.Errorf("%s: the months' goals add to %d, the goal card %s", label, s.goalTotal(), shown(s.cards.goal))
+	}
+}
+
 // TestWaveB_RankedTotalsEqualSeries_049_SC002: ungrouped top entries add to the series at every level; groups to theirs.
 func TestWaveB_RankedTotalsEqualSeries_049_SC002(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
 	for _, r := range reportsUnderTest() {
 		series := r.shapeOf(t, alexSees, "")
+		checkSeriesGoal(t, r.name, series)
+		for _, plan := range frameOf(t, alexSees, "revenue").planIDs() {
+			checkSeriesGoal(t, r.name+" of "+plan, r.shapeOf(t, alexSees, "plan="+plan))
+		}
 		for _, show := range levels() {
 			checkTopsEqualSeries(t, r.name+" at show="+show, r.listOf(t, alexSees, "show="+show), series)
 		}

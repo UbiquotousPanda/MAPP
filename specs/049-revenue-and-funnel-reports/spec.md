@@ -133,6 +133,15 @@ today, and 040's ranked list sorted by revenue or by a stage. Sources: client 01
   (`revenue.Performance`, `revenue.VarianceOf`); showing the word in these two reports waits for a contract
   change decided separately.
 
+- **049-C22** — Q: An activity that is not approved yet (Created, Submitted, Declined) shows no figures on its
+  own Performance panel (046 FR-027). Do Revenue and Funnel stages count its goals and projections? → A: **Yes:
+  goals and projections are planning figures and count wherever the activity is in view; its facts stay held
+  and count nowhere** (046 FR-020, FR-021). 046 FR-027 is about the activity's own panel, which shows facts
+  beside the projection; a report sums the plan's intent, which exists before approval. So cross-report
+  agreement between a panel and these reports holds for approved activities only. When every activity in view
+  is unapproved, the report's `reason` and its Actual card's are `notApproved` (049-C20) while the goal and
+  projected figures stay shown; when only some are, nothing is stated and only the approved ones' facts count.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Revenue against goal (Priority: P1)
@@ -217,7 +226,7 @@ of the report and that *Uncategorised* is selectable and loses nothing.
 - No facts have been loaded at all: actual is empty and the series is projection alone, with the reason
   stated (049-C20).
 - Every activity in view is unapproved: its facts are held and count nowhere (046 FR-020); the report says
-  so rather than showing zeros.
+  so rather than showing zeros, and still shows the activities' goals and projections (049-C22).
 - Plans in view use different models: each activity projects through its own plan's model (049-C3); the
   stage selector is the union of what those models allow (049-C11).
 - An activity spans two plan years: its facts count in the year of each fact's date (046 FR-015), so a

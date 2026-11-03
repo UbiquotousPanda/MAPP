@@ -42,9 +42,11 @@ func stageMeasure(stage string) measureOf {
 	}
 }
 
-// monthlySums keeps pastActual month by month, so a quarter in progress keeps its finished months.
+// monthlySums keeps pastActual by month for a quarter in progress; counted and projects tell a real zero from none.
 type monthlySums struct {
 	actual, pastActual, projected, goal [projection.Months]int64
+	unprojected                         [projection.Months]int64
+	counted, projects                   [projection.Months]bool
 	activityGoals                       int64
 }
 
@@ -58,6 +60,11 @@ func sumMonths(series []ActivitySeries, m measureOf) monthlySums {
 				sums.pastActual[i] += int64Of(f.Actual)
 			}
 			sums.projected[i] += int64Of(f.Projected)
+			if month.State == StateInProgress && f.Projected == nil {
+				sums.unprojected[i] += int64Of(f.Actual)
+			}
+			sums.counted[i] = sums.counted[i] || f.Actual != nil
+			sums.projects[i] = sums.projects[i] || f.Projected != nil
 			sums.goal[i] += int64Of(f.Goal)
 		}
 		sums.activityGoals += int64Of(m.goal(a))
@@ -69,7 +76,7 @@ func sumMonths(series []ActivitySeries, m measureOf) monthlySums {
 func (s monthlySums) total() int64 {
 	var total int64
 	for i := range projection.Months {
-		total += s.pastActual[i] + s.projected[i]
+		total += s.pastActual[i] + s.projected[i] + s.unprojected[i]
 	}
 	return total
 }
@@ -99,6 +106,11 @@ func ownFigureOf(a ActivitySeries, m measureOf) ownFigure {
 		out.total = &total
 	}
 	return out
+}
+
+// anyTotal says whether some activity has an actual or projected figure of the measure, so a total of none is "—".
+func anyTotal(series []ActivitySeries, m measureOf) bool {
+	return slices.ContainsFunc(series, func(a ActivitySeries) bool { return ownFigureOf(a, m).total != nil })
 }
 
 func cents(a *money.Amount) *int64 {

@@ -54,13 +54,22 @@ type Figure[T int64 | money.Amount] struct {
 func (s *Service) ActivitySeries(ctx context.Context, a actor.Actor, f measure.Filter, category string) (
 	[]ActivitySeries, error,
 ) {
+	_, series, err := s.ActivitySeriesIn(ctx, a, f, category)
+	return series, err
+}
+
+// ActivitySeriesIn also returns the scope it read, so a caller that needs the scope too reads it once.
+func (s *Service) ActivitySeriesIn(ctx context.Context, a actor.Actor, f measure.Filter, category string) (
+	measure.Scope, []ActivitySeries, error,
+) {
+	var sc measure.Scope
 	var out []ActivitySeries
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
-		_, series, err := s.series(ctx, a, f, category)
-		out = series
+		var err error
+		sc, out, err = s.series(ctx, a, f, category)
 		return err
 	})
-	return out, err
+	return sc, out, err
 }
 
 func (s *Service) series(ctx context.Context, a actor.Actor, f measure.Filter, category string) (
