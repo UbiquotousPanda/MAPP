@@ -6,7 +6,7 @@ Every feature of this phase, one Spec Kit folder each under `specs/`. **Numbers 
 The map sets scope boundaries so no requirement is specified twice and none is missed. Statuses as of the final merge (`plan-module` at `a1ae8fe`, 21 October 2026); the open tasks of each feature are listed at the top of its `tasks.md` (014–017) and in the [final validation report](../reports/final-validation-report.md) §7.
 
 **Status values:** Draft (spec written, waiting for product-owner review) · Clarifying · Planned ·
-In progress · Built (merged on `plan-module` and working on the demo data; the product owner's acceptance and the items left open in its `tasks.md` remain) · Done.
+In progress · Built (merged on `plan-module`, or on `measure-module` for 039–050, and working on the demo data; the product owner's acceptance and the items left open in its `tasks.md` remain) · Done.
 
 | # | Folder | Feature | Priority | Depends on | Status |
 |---|---|---|---|---|---|
@@ -54,22 +54,22 @@ In progress · Built (merged on `plan-module` and working on the demo data; the 
 Read-only reports, shown as **Reports**. Built on the `measure-module` branch by four lanes (A–D) following
 [measure-module-build.md](measure-module-build.md); the figures are defined once in
 [measure-metrics.md](../product/measure-metrics.md); the GitHub issues are in [measure-issues.md](measure-issues.md).
-**Wave A** uses only data MAPP holds; **wave B** adds performance data from a simulated feed (D-370).
+**Wave A** uses only data MAPP holds; **wave B** adds performance data from a simulated feed (D-370). Statuses as of 2 November 2026: wave A is built on `measure-module` (D-381–D-388 record its clarifications); 046, 047 and 049 are open pull requests; 050 has 6 of its 8 tasks on `measure-module`, and its last two wait for 046.
 
 | # | Folder | Feature | Wave · lane · hours | Depends on | Status |
 |---|---|---|---|---|---|
-| 039 | `039-measure-foundation` | Reports area, report frame, filter panel, periods, display currency, saved report views, table view and export of every widget, `reports.view`, route rules and wiring hub with one stub per report | A · A · 28 | 010, 014, 016, 036 | Planned |
-| 040 | `040-plan-budget-report` | Budget, planned cost, committed and actual by period split at today; summary cards; the ranked list with group by, sort, drill and record links | A · A · 16 | 039, 036, 010, 015 | Planned |
-| 041 | `041-approvals-report` | Status mix by record type, average days to a decision, approvals grid with filters and export | A · C · 10 | 039, 008, 017, 031 | Planned |
-| 042 | `042-purchase-request-report` | Counts and amounts by status, commitment by vendor and owner per delivery month, invoiced per line, vendor › request › line › line item grid | A · C · 14 | 039, 032, 033, 015 | Planned |
-| 043 | `043-plan-details-report` | Per Shell attribute and level: records and planned cost per value, Not filled in; Planned cost entered, Goal entered | A · D · 10 | 039, 002, 006 | Planned |
-| 044 | `044-gsap-link-reports` | SWBS not received, purchase requests waiting for GSAP, purchase orders per line item | A · D · 10 | 039, 030, 032, 033 | Planned |
-| 045 | `045-user-access-report` | People with role, teams and last sign-in; the sign-in time recorded | A · D · 6 | 039, 003, 014 | Planned |
-| 046 | `046-performance-data` | Data sources and mappings, performance facts from a simulated feed or file, matching to activities, rows to review, media codes, external names, Is integrated | B · B · 30 | 006, 008, 015 | Planned |
-| 047 | `047-projections` | Velocity and allowed goal stages on models, activity categories, projected INQ, MQL and revenue per period | B · B · 14 | 002, 046 | Planned |
+| 039 | `039-measure-foundation` | Reports area, report frame, filter panel, periods, display currency, saved report views, table view and export of every widget, `reports.view`, route rules and wiring hub with one stub per report | A · A · 28 | 010, 014, 016, 036 | Built |
+| 040 | `040-plan-budget-report` | Budget, planned cost, committed and actual by period split at today; summary cards; the ranked list with group by, sort, drill and record links | A · A · 16 | 039, 036, 010, 015 | Built |
+| 041 | `041-approvals-report` | Status mix by record type, average days to a decision, approvals grid with filters and export | A · C · 10 | 039, 008, 017, 031 | Built |
+| 042 | `042-purchase-request-report` | Counts and amounts by status, commitment by vendor and owner per delivery month, invoiced per line, vendor › request › line › line item grid | A · C · 14 | 039, 032, 033, 015 | Built |
+| 043 | `043-plan-details-report` | Per Shell attribute and level: records and planned cost per value, Not filled in; Planned cost entered, Goal entered | A · D · 10 | 039, 002, 006 | Built |
+| 044 | `044-gsap-link-reports` | SWBS not received, purchase requests waiting for GSAP, purchase orders per line item | A · D · 10 | 039, 030, 032, 033 | Built |
+| 045 | `045-user-access-report` | People with role, teams and last sign-in; the sign-in time recorded | A · D · 6 | 039, 003, 014 | Built |
+| 046 | `046-performance-data` | Data sources and mappings, performance facts from a simulated feed or file, matching to activities, rows to review, media codes, external names, Is integrated | B · B · 30 | 006, 008, 015 | In progress |
+| 047 | `047-projections` | Velocity and allowed goal stages on models, activity categories, projected INQ, MQL and revenue per period | B · B · 14 | 002, 046 | In progress |
 | 048 | `048-summary-report` | Projected against goal, four league tables, funnel stages and conversion against goal | B · C · 14 | 039, 046, 047 | Planned |
-| 049 | `049-revenue-and-funnel-reports` | Summary cards per stage and category, actual, projected and goal split at today, the ranked list by revenue or a stage | B · B · 14 | 040, 046, 047 | Planned |
-| 050 | `050-attribution-and-roi` | A chosen attribution model credits revenue to activities; ROI with its model and cost basis named | B · A · 16 | 046, 048, 049 | Planned |
+| 049 | `049-revenue-and-funnel-reports` | Summary cards per stage and category, actual, projected and goal split at today, the ranked list by revenue or a stage | B · B · 14 | 040, 046, 047 | In progress |
+| 050 | `050-attribution-roi` | A chosen attribution model credits revenue to activities; ROI with its model and cost basis named | B · A · 16 | 046, 048, 049 | In progress |
 
 **Wave C (out of scope, future integration points):** the Finance budget report (needs the Finance budgets
 module), AR invoice details (accrual requests), the China budget pack (budget release figures), vendor delivery

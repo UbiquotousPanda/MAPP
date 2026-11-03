@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"mapp/internal/measure"
+	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/errs"
 	"mapp/internal/platform/web"
 )
 
@@ -48,14 +48,13 @@ func (h *Handler) revenueRanked(c *gin.Context) {
 		web.RespondError(c, err)
 		return
 	}
-	var problems errs.Problems
-	q := parseRanked(values, []string{SortActualRevenue, SortProjectedRevenue}, SortProjectedRevenue, &problems)
-	if problemErr := problems.Err(); problemErr != nil {
-		web.RespondError(c, problemErr)
+	q, err := ranking.Parse(values, revenueSorts(), SortProjectedRevenue)
+	if err != nil {
+		web.RespondError(c, err)
 		return
 	}
 	a, _ := actor.From(c.Request.Context())
-	out, err := h.service.RankedRevenue(c.Request.Context(), a, f, q)
+	out, err := h.service.RankedRevenue(c.Request.Context(), a, f, rankedQueryOf(q, ""))
 	if err != nil {
 		web.RespondError(c, err)
 		return
@@ -85,15 +84,13 @@ func (h *Handler) funnelRanked(c *gin.Context) {
 		web.RespondError(c, err)
 		return
 	}
-	var problems errs.Problems
-	q := parseRanked(values, []string{SortActual, SortProjected}, SortProjected, &problems)
-	q.Stage = values.Get(paramStage)
-	if problemErr := problems.Err(); problemErr != nil {
-		web.RespondError(c, problemErr)
+	q, err := ranking.Parse(values, funnelSorts(), SortProjected)
+	if err != nil {
+		web.RespondError(c, err)
 		return
 	}
 	a, _ := actor.From(c.Request.Context())
-	out, err := h.service.RankedFunnel(c.Request.Context(), a, f, q)
+	out, err := h.service.RankedFunnel(c.Request.Context(), a, f, rankedQueryOf(q, values.Get(paramStage)))
 	if err != nil {
 		web.RespondError(c, err)
 		return

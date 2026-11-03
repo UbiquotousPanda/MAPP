@@ -70,7 +70,7 @@ export function readApprovalsParams(params: URLSearchParams): ApprovalsParams {
     recordTypes: words(params, 'recordType'),
     approvers: words(params, 'approver'),
     outcomes: words(params, 'outcome'),
-    q: pick(params, 'q', z.string().trim().min(1).max(200), ''),
+    q: pick(params, 'q', z.string().trim().min(1).max(100), ''),
     sort: pick(params, 'sort', z.enum(SORT_KEYS), DEFAULT_PARAMS.sort),
     order: pick(params, 'order', z.enum(['asc', 'desc']), DEFAULT_PARAMS.order),
     page: pick(params, 'page', z.coerce.number().int().min(1), 1),
