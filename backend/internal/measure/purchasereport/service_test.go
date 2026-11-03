@@ -238,4 +238,9 @@ func TestNoFinanceView_NothingCommitted_042_FR020_FR021(t *testing.T) {
 	if diff := cmp.Diff([]string{"—", "—", "—"}, grid); diff != "" {
 		t.Errorf("the grid's vendor committed and invoiced and the request's invoiced, never a zero (-want +got):\n%s", diff)
 	}
+	for _, item := range view.StatusMix.Items {
+		if got := amountText(item.Amount); got != "—" {
+			t.Errorf("status %s amount = %s, want — for a person without financial access, even with no requests", item.Status, got)
+		}
+	}
 }
