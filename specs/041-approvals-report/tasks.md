@@ -122,7 +122,7 @@ same plans.
 - [X] T026 [US1] (written; CI runs it, not yet run locally) `frontend/e2e/measure-approvals.spec.ts` US1 with axe: Alex opens Reports › Approvals, the
   figures equal Approvals › Monitoring, switching the record type changes the mix, a filter narrows both widgets,
   Sara (Viewer) sees the report without export, a person without `reports.view` gets the no-access page
-- [ ] T027 [US1] Checkpoint: the checks of `docs/sdd/quality-gates.md` on the changed files, comment budget and
+- [x] T027 (checked before #68; CI green on merge) [US1] Checkpoint: the checks of `docs/sdd/quality-gates.md` on the changed files, comment budget and
   file length of every file touched; commit `feat(041): approvals status mix and average (US1)`; stop
 
 ## Phase 4: User Story 2 — Find, inspect and export approval records (P2)
@@ -165,7 +165,7 @@ the file holds every matching row and no row of a plan outside Alex's scope.
   frame's menu
 - [X] T037 [US2] `ApprovalsReport.tsx`: place the grid below the widgets; extend `frontend/e2e/measure-approvals.spec.ts`
   with the export scenario (P2, one short test)
-- [ ] T038 [US2] Checkpoint: the quality-gates checks on the changed files, comment budget and file length;
+- [x] T038 (checked before #68; CI green on merge) [US2] Checkpoint: the quality-gates checks on the changed files, comment budget and file length;
   commit `feat(041): approvals grid and export (US2)`; stop
 
 ## Phase 5: Polish and cross-cutting
@@ -176,9 +176,9 @@ the file holds every matching row and no row of a plan outside Alex's scope.
   any file above 300 non-blank lines
 - [ ] T041 Run the report by hand on the demo data (Alex, Daniel, Sara): every spec scenario and state; fix what
   differs
-- [ ] T042 Contract problems found while building (`openapi.yaml`, route rule, shared parts) written in the pull
+- [x] T042 (in #68, "For lane A") Contract problems found while building (`openapi.yaml`, route rule, shared parts) written in the pull
   request for lane A, not edited here (build guide §4.3)
-- [ ] T043 `/speckit-converge`; spec status Built; rebase on `measure-module`; pull request into `measure-module`
+- [x] T043 (spec Built; merged as #68) `/speckit-converge`; spec status Built; rebase on `measure-module`; pull request into `measure-module`
   with the feature-map status change "041 Built" in its description (build guide §4.5), three checks green
 
 ## Dependencies
