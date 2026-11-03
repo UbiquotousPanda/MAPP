@@ -127,6 +127,19 @@ func TestStates_NoPlansInScope_048_FR018(t *testing.T) {
 	}
 }
 
+func TestReport_ReadsTheScopeOnce_048_FR020(t *testing.T) {
+	t.Parallel()
+	forReport, forLeague := newFakes(), withSegments()
+
+	report(t, forReport, measure.Filter{})
+	league(t, forLeague, TableRevenue, nil)
+
+	if forReport.scopeReads != 1 || forLeague.scopeReads != 1 {
+		t.Errorf("scope reads: report %d, league %d; want 1 each, the one ActivitySeriesIn makes",
+			forReport.scopeReads, forLeague.scopeReads)
+	}
+}
+
 func TestNoFinanceView_048_FR003(t *testing.T) {
 	t.Parallel()
 	onePlan := newFakes()
@@ -201,5 +214,24 @@ func TestFunnel_StagesTheModelsAllow_048_C7(t *testing.T) {
 	if len(mql.Stages) != 2 || mql.Stages[0].Stage != StageMQL || len(mql.Conversions) != 0 {
 		t.Errorf("a model that allows only MQL shows %+v with %d conversions, want MQL and Revenue and none",
 			mql.Stages, len(mql.Conversions))
+	}
+}
+
+func TestRevenueSection_FactInProgressWithoutProjection_048_C10(t *testing.T) {
+	t.Parallel()
+	f := newFakes()
+	noModel := unprojected("A-5", planTwo)
+	for i := range pastMonths {
+		noModel.Months[i].State = revenue.StatePast
+	}
+	noModel.Months[pastMonths].State = revenue.StateInProgress
+	noModel.Months[pastMonths].RevenueUSD.Actual = ptr(money.FromCents(5_000))
+	f.series = []revenue.ActivitySeries{noModel}
+
+	got := report(t, f, measure.Filter{}).Revenue.ActualOrProjected
+
+	// January's 200.00 and June's 50.00 so far: nothing projects June, so its facts count, as in Revenue (#130).
+	if !cmp.Equal(usd(25_000), got, amounts()) {
+		t.Errorf("actual or projected = %v, want 250.00 with the month in progress's facts", got)
 	}
 }
