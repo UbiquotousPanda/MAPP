@@ -47,6 +47,11 @@ export const DEFAULT_PARAMS: ApprovalsParams = {
 };
 
 const MAX_SEARCH = 100;
+
+/** The search cut to MAX_SEARCH whole characters, as the server's maxLength counts them, never half an emoji. */
+function searchOf(text: string): string {
+  return Array.from(text.trim()).slice(0, MAX_SEARCH).join('');
+}
 const wordSchema = z.string().regex(/^[A-Za-z0-9-]{1,40}$/);
 
 function words(params: URLSearchParams, name: string): string[] {
@@ -71,7 +76,16 @@ export function readApprovalsParams(params: URLSearchParams): ApprovalsParams {
     recordTypes: words(params, 'recordType'),
     approvers: words(params, 'approver'),
     outcomes: words(params, 'outcome'),
-    q: pick(params, 'q', z.string().trim().min(1).max(MAX_SEARCH), ''),
+    q: pick(
+      params,
+      'q',
+      z
+        .string()
+        .trim()
+        .min(1)
+        .refine((text) => searchOf(text) === text),
+      '',
+    ),
     sort: pick(params, 'sort', z.enum(SORT_KEYS), DEFAULT_PARAMS.sort),
     order: pick(params, 'order', z.enum(['asc', 'desc']), DEFAULT_PARAMS.order),
     page: pick(params, 'page', z.coerce.number().int().min(1), 1),
@@ -107,7 +121,7 @@ export function writeApprovalsParams(
     }
   };
   set('statusType', next.statusType, DEFAULT_PARAMS.statusType);
-  set('q', next.q.trim().slice(0, MAX_SEARCH), '');
+  set('q', searchOf(next.q), '');
   set('sort', next.sort, DEFAULT_PARAMS.sort);
   set('order', next.order, DEFAULT_PARAMS.order);
   set('page', String(next.page), '1');

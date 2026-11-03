@@ -65,4 +65,13 @@ describe('the Approvals search (041 FR-015)', () => {
     expect(address.get('q')).toBe('b'.repeat(100));
     expect(readApprovalsParams(address).q).toBe('b'.repeat(100));
   });
+
+  it('counts whole characters as the server does, so an emoji is never cut in half (FR-015)', () => {
+    const typed = '😀'.repeat(150);
+
+    const address = writeApprovalsParams(new URLSearchParams(), { ...DEFAULT_PARAMS, q: typed });
+
+    expect(address.get('q')).toBe('😀'.repeat(100));
+    expect(readApprovalsParams(address).q).toBe('😀'.repeat(100));
+  });
 });
