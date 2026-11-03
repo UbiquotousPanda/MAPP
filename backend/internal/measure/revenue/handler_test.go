@@ -45,9 +45,8 @@ func TestRevenueAndFunnelReports_Contract_049(t *testing.T) {
 	}
 }
 
-// The cards' "actual or projected" total and the ranked list's own group total come from different code
-// paths (cards.go sums periods, ranked_revenue.go rolls up figures); this is the one place proving they
-// still agree once both are converted to the display currency.
+// The cards sum months while the ranked list rolls activities up, both from ActivitySeries; this proves they
+// agree on the demo data once both are in the display currency.
 func TestRevenue_CardsTotalMatchesTheRankedListsOwnTotal_049(t *testing.T) {
 	t.Parallel()
 	planner := apitest.New(t).SignIn(t, "priya.raman@shell.com")

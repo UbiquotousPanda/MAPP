@@ -127,18 +127,3 @@ func idsOf(nodes []allwork.Node) []string {
 	}
 	return out
 }
-
-// nodesForRanking keeps the plan/campaign/initiative hierarchy but narrows the activity leaves to the ones
-// in view; revenue and funnel stop at the activity, so line items never appear.
-func nodesForRanking(sc measure.Scope, views []activityView) []allwork.Node {
-	kept := make([]allwork.Node, 0, len(sc.Nodes))
-	for _, n := range sc.Nodes {
-		if n.Level != allwork.LevelActivity && n.Level != allwork.LevelLineItem {
-			kept = append(kept, n)
-		}
-	}
-	for _, v := range views {
-		kept = append(kept, v.node)
-	}
-	return kept
-}

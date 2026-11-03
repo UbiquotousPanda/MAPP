@@ -1,19 +1,8 @@
 package revenue
 
-import (
-	"math"
-
-	"mapp/internal/projection"
-)
-
-// funnelCards sums the months before any grouping, as Revenue's cards do, counting the month in progress once.
-func funnelCards(sums funnelMonthlySums, w window, anyGoal bool, previousActual *int64) FunnelCards {
-	goal := sums.activityGoals
-	var actual, total int64
-	for i := range projection.Months {
-		actual += sums.actual[i]
-		total += sums.pastActual[i] + sums.projected[i]
-	}
+// funnelCards sum the months before any grouping, as Revenue's cards do, counting the month in progress once.
+func funnelCards(sums monthlySums, w window, anyGoal bool, previousActual *int64) FunnelCards {
+	goal, actual, total := sums.activityGoals, sums.actualTotal(), sums.total()
 	cards := FunnelCards{}
 	cards.Goal = intCard(goal, goal != 0 && anyGoal, ReasonNoGoal)
 	cards.Actual = intCard(actual, todayMonthIndex(w.today, w.year) >= 0, ReasonNoData)
@@ -21,17 +10,6 @@ func funnelCards(sums funnelMonthlySums, w window, anyGoal bool, previousActual 
 	cards.Performance = ratioCard(total, goal, anyGoal)
 	cards.Conversion = conversionCard(actual, previousActual)
 	return cards
-}
-
-// actualToToday keeps the month in progress, which split.Actual leaves out so the total counts it once.
-func actualToToday(split projection.Split) int64 {
-	var total int64
-	for _, m := range split.Months {
-		if m.Actual != nil {
-			total += *m.Actual
-		}
-	}
-	return total
 }
 
 func intCard(value int64, present bool, reason string) NumberCard {
@@ -43,11 +21,10 @@ func intCard(value int64, present bool, reason string) NumberCard {
 }
 
 func ratioCard(value, goal int64, anyGoal bool) NumberCard {
-	if !anyGoal || goal == 0 {
+	if !anyGoal {
 		return NumberCard{Reason: ReasonNoGoal}
 	}
-	pct := math.Round(float64(value) / float64(goal) * 100)
-	return NumberCard{Value: &pct}
+	return percentCard(Performance(value, goal))
 }
 
 // conversionCard mirrors 046's conversionOf: one decimal, "—" on a zero denominator.
