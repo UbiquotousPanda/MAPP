@@ -78,7 +78,7 @@ func tallyOf(s revenue.ActivitySeries, cost *int64) tally {
 	own := revenue.OwnFigureOf(s, revenue.RevenueMeasure())
 	out := tally{total: valueOf(own.Total), goal: valueOf(own.Goal)}
 	for _, m := range sumSeries([]revenue.ActivitySeries{s}, revenuePick()).months {
-		out.months = append(out.months, m.actualOrProjected())
+		out.months = append(out.months, m.actualOrProjected)
 	}
 	if cost != nil {
 		out.actual, out.cost, out.costSeen = valueOf(own.Actual), *cost, true

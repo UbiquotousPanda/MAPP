@@ -25,10 +25,10 @@ func stagePick(stage Stage) pick {
 	}}
 }
 
+// monthTotal is one month added up; actualOrProjected is 049's, which counts the month in progress once.
 type monthTotal struct {
-	key, state                          string
-	actual, pastActual, projected, goal int64
-	actualOrProjectedShare              int64
+	key, state                                 string
+	actual, projected, goal, actualOrProjected int64
 }
 
 type totals struct {
@@ -48,21 +48,15 @@ func sumSeries(series []revenue.ActivitySeries, p pick) totals {
 	}
 	for i, m := range series[0].Months[:min(len(series[0].Months), len(sums.Actual))] {
 		t.months = append(t.months, monthTotal{key: m.Key, state: m.State, actual: sums.Actual[i],
-			pastActual: sums.PastActual[i], projected: sums.Projected[i], goal: sums.Goal[i],
-			actualOrProjectedShare: sums.ActualOrProjected(i)})
+			projected: sums.Projected[i], goal: sums.Goal[i], actualOrProjected: sums.ActualOrProjected(i)})
 	}
 	return t
-}
-
-// actualOrProjected counts the month in progress once, through projected, as Revenue's cards do.
-func (m monthTotal) actualOrProjected() int64 {
-	return m.actualOrProjectedShare
 }
 
 func (t totals) actualOrProjected() int64 {
 	var sum int64
 	for _, m := range t.months {
-		sum += m.actualOrProjected()
+		sum += m.actualOrProjected
 	}
 	return sum
 }

@@ -216,3 +216,22 @@ func TestFunnel_StagesTheModelsAllow_048_C7(t *testing.T) {
 			mql.Stages, len(mql.Conversions))
 	}
 }
+
+func TestRevenueSection_FactInProgressWithoutProjection_048_C10(t *testing.T) {
+	t.Parallel()
+	f := newFakes()
+	noModel := unprojected("A-5", planTwo)
+	for i := range pastMonths {
+		noModel.Months[i].State = revenue.StatePast
+	}
+	noModel.Months[pastMonths].State = revenue.StateInProgress
+	noModel.Months[pastMonths].RevenueUSD.Actual = ptr(money.FromCents(5_000))
+	f.series = []revenue.ActivitySeries{noModel}
+
+	got := report(t, f, measure.Filter{}).Revenue.ActualOrProjected
+
+	// January's 200.00 and June's 50.00 so far: nothing projects June, so its facts count, as in Revenue (#130).
+	if !cmp.Equal(usd(25_000), got, amounts()) {
+		t.Errorf("actual or projected = %v, want 250.00 with the month in progress's facts", got)
+	}
+}
