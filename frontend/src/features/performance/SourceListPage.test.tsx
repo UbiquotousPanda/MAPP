@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { components } from '@/api/generated/schema';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { testUser } from '@/testing/fixtures/users';
+import { VIEWER } from '@/testing/fixtures/viewer';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, pending, reply } from '@/testing/replies';
@@ -36,9 +37,9 @@ function source(
   };
 }
 
-function renderPage(handlers: Parameters<typeof mockApi>[0]) {
+function renderPage(handlers: Parameters<typeof mockApi>[0], user = testUser()) {
   const api = mockApi(handlers);
-  return { api, ...renderWithProviders(<SourceListPage />, { user: testUser() }) };
+  return { api, ...renderWithProviders(<SourceListPage />, { user }) };
 }
 
 type Sources = { items: ReturnType<typeof source>[] };
@@ -90,5 +91,15 @@ describe('SourceListPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Performance data' })).toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('046 FR-043 someone without performance.import reads the sources with the view-only note and no changes', async () => {
+    renderPage([listing({ items: [source()] })], VIEWER);
+
+    expect(await screen.findByRole('cell', { name: 'Adobe Analytics' })).toBeInTheDocument();
+    expect(screen.getByRole('note')).toHaveTextContent(/View only/);
+    expect(screen.queryByRole('button', { name: 'New data source' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Imports' })).not.toBeInTheDocument();
   });
 });
