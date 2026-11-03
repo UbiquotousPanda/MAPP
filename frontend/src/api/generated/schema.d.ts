@@ -5907,6 +5907,11 @@ export interface components {
             }[];
             drillLost: boolean;
         };
+        /**
+         * @description Performance in words (048-C1); noGoal when the goal is zero or missing.
+         * @enum {string}
+         */
+        SummaryVariance: "abovePlan" | "onPlan" | "belowPlan" | "noGoal";
         /** @description A revenue card figure; null with reason when it cannot be worked out (FR-009). */
         RevenueCardFigure: {
             value: components["schemas"]["Money"] | null;
@@ -5921,6 +5926,7 @@ export interface components {
                 value: number | null;
                 /** @enum {string} */
                 reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+                variance: components["schemas"]["SummaryVariance"];
             };
         };
         /** @description One period of the series, split at today (047 FR-010); the period in progress carries both. */
@@ -5951,6 +5957,7 @@ export interface components {
             actual: components["schemas"]["Money"] | null;
             projected: components["schemas"]["Money"] | null;
             performance: number | null;
+            variance: components["schemas"]["SummaryVariance"];
             /** @description Always null until feature 050 configures attribution (049-C6). */
             actualCost: components["schemas"]["Money"] | null;
             /** @description Always null until feature 050 configures attribution (049-C6). */
@@ -6013,6 +6020,7 @@ export interface components {
                 value: number | null;
                 /** @enum {string} */
                 reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+                variance: components["schemas"]["SummaryVariance"];
             };
             /** @description The selected stage's actual over the previous stage's actual (049-C13). */
             conversion: {
@@ -6051,6 +6059,7 @@ export interface components {
             actual: number | null;
             projected: number | null;
             performance: number | null;
+            variance: components["schemas"]["SummaryVariance"];
             conversion: number | null;
         };
         FunnelEntry: {

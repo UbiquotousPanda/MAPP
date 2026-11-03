@@ -37,11 +37,17 @@ type NumberCard struct {
 	Reason string   `json:"reason"`
 }
 
+// PerformanceCard carries its figure in words too, so the web never derives the word from the number.
+type PerformanceCard struct {
+	NumberCard
+	Variance Variance `json:"variance"`
+}
+
 type RevenueCards struct {
-	Goal        MoneyCard  `json:"goal"`
-	Actual      MoneyCard  `json:"actual"`
-	Projected   MoneyCard  `json:"projected"`
-	Performance NumberCard `json:"performance"`
+	Goal        MoneyCard       `json:"goal"`
+	Actual      MoneyCard       `json:"actual"`
+	Projected   MoneyCard       `json:"projected"`
+	Performance PerformanceCard `json:"performance"`
 }
 
 // RevenuePeriod is one period of the series, split at today.
@@ -68,6 +74,7 @@ type RevenueFigures struct {
 	Actual           *money.Money `json:"actual"`
 	Projected        *money.Money `json:"projected"`
 	Performance      *float64     `json:"performance"`
+	Variance         Variance     `json:"variance"`
 	ActualCost       *money.Money `json:"actualCost"`
 	ROI              *float64     `json:"roi"`
 	ActualCostReason string       `json:"actualCostReason"`
@@ -76,11 +83,11 @@ type RevenueFigures struct {
 
 // FunnelCards mirrors RevenueCards, plus the conversion from the previous stage.
 type FunnelCards struct {
-	Goal        NumberCard `json:"goal"`
-	Actual      NumberCard `json:"actual"`
-	Projected   NumberCard `json:"projected"`
-	Performance NumberCard `json:"performance"`
-	Conversion  NumberCard `json:"conversion"`
+	Goal        NumberCard      `json:"goal"`
+	Actual      NumberCard      `json:"actual"`
+	Projected   NumberCard      `json:"projected"`
+	Performance PerformanceCard `json:"performance"`
+	Conversion  NumberCard      `json:"conversion"`
 }
 
 type FunnelPeriod struct {
@@ -108,6 +115,7 @@ type FunnelFigures struct {
 	Actual      *int64   `json:"actual"`
 	Projected   *int64   `json:"projected"`
 	Performance *float64 `json:"performance"`
+	Variance    Variance `json:"variance"`
 	Conversion  *float64 `json:"conversion"`
 }
 

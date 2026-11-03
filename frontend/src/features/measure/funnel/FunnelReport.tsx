@@ -6,6 +6,7 @@ import { useFunnelReport, useFunnelRanked } from '../revenue/api';
 import type { FunnelFigures, FunnelRankedParams } from '../revenue/api';
 import { CategorySelect } from '../revenue/CategorySelect';
 import { useOwnParam } from '../revenue/useOwnParam';
+import { performanceText } from '../revenue/variance';
 import { FunnelCards } from './FunnelCards';
 import { FunnelChart } from './FunnelChart';
 import { StageSelect } from './StageSelect';
@@ -42,7 +43,7 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
     {
       key: 'performance',
       label: 'Performance',
-      value: (f) => (f.performance !== null ? `${f.performance}%` : '—'),
+      value: (f) => performanceText(f.performance, f.variance),
     },
     {
       key: 'conversion',

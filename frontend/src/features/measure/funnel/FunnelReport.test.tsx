@@ -3,18 +3,25 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { nth } from '@/testing/dom';
 import { reportFrame } from '@/testing/fixtures/reports';
-import { funnelRanked, funnelReport } from '@/testing/fixtures/revenue';
+import {
+  VARIANCE_CASES,
+  funnelRanked,
+  funnelRankedWith,
+  funnelReport,
+} from '@/testing/fixtures/revenue';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import type { FunnelCards } from '../revenue/api';
 import { FunnelReport } from './FunnelReport';
 
 function renderPage(
   report: Answer<'GET /api/v1/reports/funnel'> = { body: funnelReport() },
   route = '/reports/funnel?year=2026',
+  ranked: Answer<'GET /api/v1/reports/funnel/ranked'> = { body: funnelRanked() },
 ) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
@@ -22,7 +29,7 @@ function renderPage(
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/settings/activity-categories', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/reports/funnel', report),
-    reply('GET /api/v1/reports/funnel/ranked', { body: funnelRanked() }),
+    reply('GET /api/v1/reports/funnel/ranked', ranked),
     reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
   ]);
   const rendered = renderWithProviders(<FunnelReport />, {
@@ -79,6 +86,28 @@ describe('FunnelReport (049 US2)', () => {
     const cards = await screen.findByLabelText('Summary');
     expect(within(cards).getByText('—')).toBeInTheDocument();
   });
+
+  it.each(VARIANCE_CASES)(
+    'performance %s with the API\'s variance %s shows "%s" on the card and in the ranked list (048-C1, FR-023)',
+    async (value, variance, word) => {
+      const cards = funnelReport().cards;
+      const performance: FunnelCards['performance'] = {
+        value,
+        reason: value === null ? 'noGoal' : '',
+        variance,
+      };
+      renderPage({ body: funnelReport({ cards: { ...cards, performance } }) }, undefined, {
+        body: funnelRankedWith(value, variance),
+      });
+
+      const summary = await screen.findByLabelText('Summary');
+      expect(within(summary).getByText(word)).toBeInTheDocument();
+      const ranked = screen.getByRole('region', { name: 'Ranked list' });
+      const shown = value === null ? word : `${value}% · ${word}`;
+      expect((await within(ranked).findAllByText(shown)).length).toBeGreaterThan(0);
+      await expectNoAxeViolations();
+    },
+  );
 
   it('charts goal, actual and projected volume by month with today marked (FR-004, 047 FR-010)', async () => {
     const { user } = renderPage();

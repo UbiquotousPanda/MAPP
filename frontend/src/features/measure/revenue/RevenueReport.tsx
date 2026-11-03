@@ -11,6 +11,7 @@ import { RevenueChart } from './RevenueChart';
 import { reasonText } from './reasons';
 import styles from './Revenue.module.css';
 import { useOwnParam } from './useOwnParam';
+import { performanceText } from './variance';
 
 const LEVELS = ['plan', 'campaign', 'initiative', 'activity'];
 const DEFAULT_SORT = 'projectedRevenue';
@@ -46,7 +47,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
     {
       key: 'performance',
       label: 'Performance',
-      value: (f) => (f.performance !== null ? `${f.performance}%` : '—'),
+      value: (f) => performanceText(f.performance, f.variance),
     },
     {
       key: 'actualCost',

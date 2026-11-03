@@ -16,17 +16,18 @@ func revenueFiguresOfActivities(series []ActivitySeries) map[string]RevenueFigur
 	return out
 }
 
-// withPerformance converts f into the display currency, then derives Performance, a ratio, from Projected ÷ Goal.
+// withPerformance converts f into the display currency, then derives Performance and its word from Projected ÷ Goal.
 func withPerformance(f RevenueFigures, display money.Display) RevenueFigures {
 	f.Goal, f.Actual, f.Projected = display.Optional(f.Goal), display.Optional(f.Actual), display.Optional(f.Projected)
-	if f.Goal == nil {
-		return f
+	performance := percentCard(nil)
+	if f.Goal != nil {
+		var total money.Amount
+		if f.Projected != nil {
+			total = f.Projected.Amount
+		}
+		performance = performanceOf(total, f.Goal.Amount, true)
 	}
-	var total money.Amount
-	if f.Projected != nil {
-		total = f.Projected.Amount
-	}
-	f.Performance = performanceOf(total, f.Goal.Amount, true).Value
+	f.Performance, f.Variance = performance.Value, performance.Variance
 	return f
 }
 

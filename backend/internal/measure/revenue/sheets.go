@@ -62,7 +62,7 @@ func revenueCardsSheet(c RevenueCards) sheet.Sheet {
 		value sheet.Cell
 	}{
 		{"Revenue goal", moneyCardCell(c.Goal)}, {"Actual revenue", moneyCardCell(c.Actual)},
-		{"Actual or projected", moneyCardCell(c.Projected)}, {labelPerformance, numberCardCell(c.Performance)},
+		{"Actual or projected", moneyCardCell(c.Projected)}, {labelPerformance, numberCardCell(c.Performance.NumberCard)},
 	} {
 		rows = append(rows, []sheet.Cell{sheet.Text(row.label), row.value})
 	}
@@ -159,7 +159,7 @@ func funnelCardsSheet(stage string, c FunnelCards) sheet.Sheet {
 	}{
 		{name + " goal", numberCardCell(c.Goal)}, {name + " actual", numberCardCell(c.Actual)},
 		{name + " actual or projected", numberCardCell(c.Projected)},
-		{labelPerformance, numberCardCell(c.Performance)}, {"Conversion (%)", numberCardCell(c.Conversion)},
+		{labelPerformance, numberCardCell(c.Performance.NumberCard)}, {"Conversion (%)", numberCardCell(c.Conversion)},
 	} {
 		rows = append(rows, []sheet.Cell{sheet.Text(row.label), row.value})
 	}
