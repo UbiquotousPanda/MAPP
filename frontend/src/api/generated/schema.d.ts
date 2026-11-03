@@ -4495,7 +4495,7 @@ export interface paths {
         put?: never;
         /**
          * Pull the simulated feed once, by explicit action (needs performance.import) (046 FR-010, 046-C13)
-         * @description Refused with 409 not_allowed when the source is deactivated or does not deliver by simulated feed.
+         * @description Refused with 409 not_allowed when the source is deactivated or does not deliver by simulated feed, and with 400 validation_failed on content when the feed can't be read (no columns mapped); nothing is stored.
          */
         post: operations["pullPerformanceFeed"];
         delete?: never;
@@ -4695,7 +4695,10 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** One row with its content, every fault and its history of actions (046 FR-024) */
+        /**
+         * One row with its content and every fault (046 FR-024)
+         * @description The row doesn't carry its history: each action on it is written to the activity log as a row to review (record type performanceReviewRow, keyed by the row's ID).
+         */
         get: operations["getReviewRow"];
         put?: never;
         post?: never;
@@ -5437,8 +5440,11 @@ export interface components {
             raw: {
                 [key: string]: string;
             };
-            /** @description The headline the queue is findable by (FR-023). */
-            reason: string;
+            /**
+             * @description The headline the queue is findable by (FR-023): no key at all, keys that found no activity, several or disagreeing activities, or rejected with the code of the row's first fault.
+             * @enum {string}
+             */
+            reason: "unattributed:noKey" | "unmatched:unknown" | "unmatched:ambiguous" | "unmatched:disagree" | "rejected:emptyColumn" | "rejected:invalidDate" | "rejected:futureDate" | "rejected:negativeCount" | "rejected:fractionalCount" | "rejected:invalidCount" | "rejected:invalidAmount" | "rejected:unconfiguredCurrency" | "rejected:missingReference" | "rejected:referenceTooLong" | "rejected:journeyTooLong" | "rejected:repeatedReference" | "rejected:noMeasure" | "rejected:duplicateMeasure";
             faults: components["schemas"]["ReviewFault"][];
             /** @description The activities named when keys disagree, filtered to the reader's scope (046-C15). */
             candidates: string[];
@@ -5536,10 +5542,10 @@ export interface components {
             /** @enum {string} */
             reason: "" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
             /**
-             * @description Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013).
+             * @description Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013): no goal at this stage, or the activity lies outside its plan's year.
              * @enum {string}
              */
-            projectedReason: "" | "noGoal";
+            projectedReason: "" | "noGoal" | "outsidePlanYear";
             months: components["schemas"]["SplitMonth"][];
         };
         RevenueFigure: {
@@ -5552,8 +5558,11 @@ export interface components {
             excludedCount: number;
             /** @enum {string} */
             reason: "" | "notApproved" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
-            /** @enum {string} */
-            projectedReason: "" | "noGoal";
+            /**
+             * @description Why nothing projects (047 FR-013): no revenue goal, the activity lies outside its plan's year, or the projection would leave the money range.
+             * @enum {string}
+             */
+            projectedReason: "" | "noGoal" | "outsidePlanYear" | "outOfRange";
             months: components["schemas"]["SplitMoneyMonth"][];
         };
         MetricFigure: {
@@ -21457,6 +21466,7 @@ export interface operations {
                     "application/json": components["schemas"]["PerformanceImport"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
