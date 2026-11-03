@@ -175,8 +175,9 @@ func TestFunnelCards_ConversionWithoutAnActivityThatProjectsTheStageBefore_FR017
 	}
 	row := list.Groups[0].Entries[0].Figures.Conversion
 	card := report.Cards.Conversion.Value
-	if row == nil || card == nil || *row != *card {
-		t.Errorf("conversion card = %v, ranked row = %v: both must be 12.5 (10 MQL from 80 INQ)", deref(card), deref(row))
+	const want = 12.5
+	if row == nil || card == nil || *row != want || *card != want {
+		t.Errorf("conversion card = %v, ranked row = %v, want both %v", deref(card), deref(row), want)
 	}
 }
 

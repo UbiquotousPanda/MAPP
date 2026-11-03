@@ -52,6 +52,9 @@ func (d data) vendorNode(g vendorGroup) VendorNode {
 	node := VendorNode{Vendor: g.vendor, Label: vendorLabel(g.vendor), PurchaseRequests: len(g.requests),
 		Requests: make([]RequestNode, 0, len(g.requests))}
 	for _, rv := range g.requests {
+		if !d.sees(rv.r.PlanID) {
+			committed.hidden, invoiced.hidden = true, true
+		}
 		node.Lines += len(rv.r.Lines)
 		for _, l := range rv.r.Lines {
 			if isCommitted(rv.r.Status) {
@@ -72,6 +75,9 @@ func (d data) requestNode(rv reqView) RequestNode {
 	var amount, invoiced tally
 	var orders []string
 	var delivery, sent date.Date
+	if !d.sees(r.PlanID) {
+		amount.hidden, invoiced.hidden = true, true
+	}
 	for _, l := range r.Lines {
 		amount.add(l.Amount, d.sees(r.PlanID))
 		if l.Invoiced != nil {
