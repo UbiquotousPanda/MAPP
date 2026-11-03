@@ -14,6 +14,11 @@ finding 25 of `measure-wave-b-qa.md` (a "—" ROI on Summary does not say why). 
 themes, 24 tests in 366 s: 22 passed, and Lea's Summary and Revenue in the light theme failed on axe
 `color-contrast` alone (B3, still open); nothing new.
 
+**Rerun 2026-11-04 on #149's 156e9e45** (Yash's fixes of findings 24–26, merged with `measure-module` 570df525,
+branch `qa/wave-b-050-check`), same setup: the "—" check now wants the reason beside the model, in the web's words
+("Equally distributed, on actual cost · No cost recorded"), and adds Lea ("… · Financial data of these plans is not
+shown to you · Covers 0 of 3 plans"). All 24 facts tests passed in 58 s; finding 25 is fixed on screen.
+
 The browser rows of `measure-wave-b-qa.md` ("Roles and what they must see", "Per screen checklist", the rows left
 *Not run* or *browser pass*), as a repeatable Playwright run instead of wave A's pass by hand
 (`measure-wave-a-qa.md`, "Browser pass, 3 Nov 2026"): `scripts/measure-wave-b-browser-pass.spec.ts` and its modules,
@@ -109,7 +114,8 @@ Both themes unless the theme says light (keyboard and facts checks). "All five" 
 | Summary | Alex | light | no state; actual or projected = Revenue's $216,549.97; MQL conversion 16.0 %, Above plan; trend February, March as Revenue | Pass | facts; cross-report 1 |
 | Summary | Carlos, Lea | light | no "No performance data" state | Pass | facts |
 | Summary | Alex | light | ROI league External and Total 36%, "Equally distributed, on actual cost", as Revenue's 36 % | Pass | facts, #149 (the check below replaces it) |
-| Summary | Alex | light | ROI league of Mobility China (`plan=P-1002`) and Lubricants Europe (`P-1001`): Total "—" with "No cost recorded" and "No revenue is credited to these activities" | **Fail** | facts, #149: the Total "—", beside it only "Equally distributed, on actual cost" (finding 25 of `measure-wave-b-qa.md`) |
+| Summary | Alex | light | ROI league of Mobility China (`plan=P-1002`) and Lubricants Europe (`P-1001`): Total "—" with "No cost recorded" and "No revenue is credited to these activities" | **Fail** on e8ae9a2e; Pass on 156e9e45 | facts, #149: the Total "—", beside it only "Equally distributed, on actual cost" (finding 25 of `measure-wave-b-qa.md`); since 156e9e45 "Equally distributed, on actual cost · No cost recorded", "… · No revenue is credited to these activities" |
+| Summary | Lea | light | ROI league: Total "—", "Equally distributed, on actual cost · Financial data of these plans is not shown to you · Covers 0 of 3 plans" | Pass | facts, 156e9e45 |
 | Summary | Alex | light | ROI league "—" while attribution is not configured | **Fail** | until #149; finding 15: External 36 %, Total 36 %, "Equally distributed, on actual cost"; fixed by #139 in the API, the screen not rerun |
 | Funnel stages | Alex | light | the INQ actual card is a figure | Pass | facts |
 
@@ -140,11 +146,11 @@ by (#97), below 1024 px, loading and failed widgets, EUR display.
 | Shared frame | Dark theme | Pass (axe) |
 | Shared frame | No "Measure", "Tactic", "HUD" | Pass |
 | Summary | Cost and ROI "—" with plans left out; revenue, performance, volumes shown | Pass |
-| Summary | ROI "—" with the reason until configured | Fail (finding 15); fixed by #139 in the API, the screen not rerun. On #149: the model and basis named, 36 % as Revenue (Pass); a "—" total without its reason (Fail, finding 25) |
+| Summary | ROI "—" with the reason until configured | Fail (finding 15); fixed by #139 in the API, the screen not rerun. On #149: the model and basis named, 36 % as Revenue (Pass); a "—" total without its reason (Fail, finding 25), with it beside the model since 156e9e45 (Pass) |
 | Revenue | Cards: goal, actual, actual or projected, performance | Pass |
 | Revenue | One-team viewer: only their plans | Pass |
 | Revenue | Actual cost and ROI "—", "Attribution is not configured yet" | Pass; on #149 the figures: credited, cost, ROI, Lea's "Financial data not shown to you." (Pass) |
-| Attribution | ROI with its model and basis; no payments "—", "No actual cost yet" | On #149: Pass on Revenue (headings, Helix … first half "No actual cost yet.", Tellus case studies -59%); Fail on Summary (finding 25) |
+| Attribution | ROI with its model and basis; no payments "—", "No actual cost yet" | On #149: Pass on Revenue (headings, Helix … first half "No actual cost yet.", Tellus case studies -59%); on Summary Fail (finding 25), Pass since 156e9e45 |
 | Revenue, Funnel stages | Model and its last change beside projected figures | Fail (B1) |
 | Funnel stages | Stage selector: allowed stages, opens on the first | Pass |
 | Attribution | Equally distributed designated; five models | Pass |

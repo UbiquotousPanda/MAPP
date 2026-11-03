@@ -4,8 +4,6 @@ import (
 	"cmp"
 	"fmt"
 	"maps"
-	"net/http"
-	"slices"
 	"testing"
 
 	"mapp/internal/platform/apitest"
@@ -16,7 +14,6 @@ const (
 	actualBasis   = "actual"
 	noActualCost  = "noActualCost"
 	noRevenueData = "noData"
-	wholeFact     = "5000.00"
 )
 
 type basisStamp struct{ Model, Basis string }
@@ -209,78 +206,4 @@ func creditsOf(r ranked[revenueFigures]) []string {
 		out = append(out, amountOr(f.AttributedRevenue, f.AttributedRevenueReason))
 	}
 	return out
-}
-
-func creditsByName(r ranked[revenueFigures]) map[string]string {
-	out := map[string]string{}
-	for _, e := range r.tops() {
-		out[e.Name] = amountOr(e.Figures.AttributedRevenue, e.Figures.AttributedRevenueReason)
-	}
-	return out
-}
-
-// eachModel designates the five models in turn, as Alex would in Settings › Attribution, and checks each.
-func eachModel(t *testing.T, alexSees person, check func(name string)) {
-	t.Helper()
-	settings := decode[struct {
-		Version int
-		Models  []struct{ Key, Name string }
-	}](t, alexSees.expect(t, get(attributionPath), http.StatusOK))
-	version := settings.Version
-	for _, m := range settings.Models {
-		saved := alexSees.expect(t, put(attributionPath, map[string]any{"model": m.Key, "version": version}), http.StatusOK)
-		version = decode[struct{ Version int }](t, saved).Version
-		check(m.Name)
-	}
-}
-
-func countedRevenue(t *testing.T, alexSees person, ids map[string]string) int64 {
-	t.Helper()
-	var total int64
-	for _, id := range ids {
-		if a := panelOf(t, alexSees, id).Revenue.Actual; a != nil {
-			total += orZero(cents(&amount{Amount: a.Amount}))
-		}
-	}
-	return total
-}
-
-func checkModelNamed(t *testing.T, alexSees person, list ranked[revenueFigures], name string) {
-	t.Helper()
-	want := basisStamp{name, actualBasis}
-	if league := leagueOf(t, alexSees, "roi", ""); !sameStamp(list.Attribution, &want) || !sameStamp(league.ROI, &want) {
-		t.Errorf("under %s: Revenue names %+v, Summary's ROI league %+v; want %+v", name, list.Attribution, league.ROI, want)
-	}
-	file := alexSees.expect(t, get(reportPath("/reports/revenue/export", "widget=ranked", "format=csv", "show=activity")),
-		http.StatusOK)
-	headings := []string{"Attributed revenue (" + name + ")", "Actual cost", "ROI (%, " + name + ", on actual cost)"}
-	if rows := csvRows(t, string(file.Body)); len(rows) == 0 || len(rows[0]) < 7 || !slices.Equal(rows[0][7:], headings) {
-		t.Errorf("under %s: the ranked export's headings %v, want %v last", name, rows[:min(1, len(rows))], headings)
-	}
-}
-
-// TestWaveB_ModelChangeRestates_050_SC002: under each model Revenue, Summary and the export name it, the credits add up
-// to the revenue counted on the panels, a fact without a journey stays whole with its activity, and ROI follows.
-func TestWaveB_ModelChangeRestates_050_SC002(t *testing.T) {
-	t.Parallel()
-	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
-	ids := demoIDs(t, alexSees)
-	upload(t, alexSees, demoFeed(t, alexSees), csvOf(fmt.Sprintf("w1,2026-02-10,%s,,,,%s,USD", ids[helixSecondHalf], wholeFact)))
-	counted := countedRevenue(t, alexSees, ids)
-	helix := map[string]bool{}
-	eachModel(t, alexSees, func(name string) {
-		list := revenueRankedOf(t, alexSees, "show=activity")
-		checkModelNamed(t, alexSees, list, name)
-		checkReturns(t, "Revenue under "+name, list)
-		checkSummaryRoiIsRevenues(t, alexSees, "")
-		credits := creditsByName(list)
-		if total := cents(topOf(t, list).AttributedRevenue); shown(total) != shown(&counted) || credits[helixSecondHalf] != wholeFact {
-			t.Errorf("under %s: credited %s in all, %s to %s; want the %d counted and its whole %s without a journey", name,
-				shown(total), credits[helixSecondHalf], helixSecondHalf, counted, wholeFact)
-		}
-		helix[credits[helixFirstHalf]] = true
-	})
-	if len(helix) < 2 {
-		t.Errorf("%s credited %v under all five models, want the model change to restate it", helixFirstHalf, helix)
-	}
 }

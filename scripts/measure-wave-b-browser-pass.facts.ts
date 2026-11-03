@@ -40,11 +40,20 @@ const CREDITS = [
 ];
 /** The ranked row's cells after its name: goal, actual, projected, performance, attributed revenue, cost, ROI. */
 const CELL = { actual: 1, credited: 4, cost: 5, roi: 6 };
-/** Summary's ROI "—" with the API's reason: Mobility China has no payment, Lubricants Europe no credited revenue. */
-const DASHED_ROI = [
-  { plan: 'P-1002', reason: 'No cost recorded' },
-  { plan: 'P-1001', reason: 'No revenue is credited to these activities' },
-];
+/** Summary's ROI "—" with the API's reason beside the model: Mobility China has no payment, Lubricants Europe no
+ * credited revenue, Lea no financial access. */
+const DASHED_ROI: Record<string, { query: string; reason: string }[]> = {
+  alex: [
+    { query: 'plan=P-1002', reason: 'No cost recorded' },
+    { query: 'plan=P-1001', reason: 'No revenue is credited to these activities' },
+  ],
+  lea: [
+    {
+      query: '',
+      reason: 'Financial data of these plans is not shown to you · Covers 0 of 3 plans',
+    },
+  ],
+};
 
 type FactCheck = (page: Page, role: Role) => Promise<void>;
 
@@ -204,15 +213,16 @@ const summaryFigures: FactCheck = async (page) => {
   );
 };
 
-const summaryRoiDash: FactCheck = async (page) => {
-  for (const { plan, reason } of DASHED_ROI) {
-    const query = `year=2026&plan=${plan}&table=leagueRoi`;
-    await opened(page, `/reports/summary?${query}`, h1(page, 'Summary'), test.info());
+const summaryRoiDash: FactCheck = async (page, role) => {
+  for (const { query, reason } of DASHED_ROI[role.key] ?? []) {
+    const address = `/reports/summary?${['year=2026', query, 'table=leagueRoi'].filter(Boolean).join('&')}`;
+    await opened(page, address, h1(page, 'Summary'), test.info());
+    const note = `${MODEL}, on actual cost · ${reason}`;
     await check(
-      `ROI league of ${plan}: Total "—" with "${reason}" (048 FR-015, 050 US3-2)`,
+      `ROI league ${query || 'of all'}: Total "—", "${note}" (048 FR-015, 050 US3-2)`,
       async () => {
         await expect(leagueValue(page, 'Total')).toHaveText('—');
-        await expect(roiLeague(page)).toContainText(reason);
+        await expect(roiLeague(page)).toContainText(note);
       },
     );
   }
@@ -248,7 +258,7 @@ const FACT_CHECKS: { title: string; roles: Role[]; run: FactCheck }[] = [
   { title: 'Reports › Revenue figures on PostgreSQL', roles: [ALEX], run: revenueFigures },
   { title: 'Reports › Revenue credited revenue and ROI', roles: [ALEX, LEA], run: revenueCredits },
   { title: 'Reports › Summary figures on PostgreSQL', roles: [ALEX], run: summaryFigures },
-  { title: 'Reports › Summary ROI "—" says why', roles: [ALEX], run: summaryRoiDash },
+  { title: 'Reports › Summary ROI "—" says why', roles: [ALEX, LEA], run: summaryRoiDash },
   { title: 'Reports › Summary with data', roles: [CARLOS, LEA], run: summaryHasData },
   { title: 'Reports › Funnel stages actual', roles: [ALEX], run: funnelActual },
 ];
