@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"mapp/internal/measure/revenue"
+	"mapp/internal/projection"
 )
 
 func conversions(stages []Stage, totals map[Stage]Figures) []Conversion {
@@ -30,12 +31,12 @@ func conversionVariance(stage, previous Figures) revenue.Variance {
 	return performanceOf(rate, goal).Variance
 }
 
-// rateOf is count ÷ previous as a per cent with one decimal, or nil on a zero denominator.
+// rateOf is projection.ConversionRate, the one every report uses, written with its one decimal.
 func rateOf(count, previous int64) *string {
-	if previous <= 0 {
+	rate, ok := projection.ConversionRate(count, previous)
+	if !ok {
 		return nil
 	}
-	tenths := roundedRatio(count, previous, tenthPercent)
-	text := strconv.FormatInt(tenths/10, 10) + "." + strconv.FormatInt(tenths%10, 10)
+	text := strconv.FormatFloat(rate, 'f', 1, 64)
 	return &text
 }
