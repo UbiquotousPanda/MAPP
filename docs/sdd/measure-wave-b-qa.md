@@ -373,3 +373,37 @@ create a source with mappings, and either upload a CSV keyed by activity ID or r
     `contracts/api.md`:62). A finding on 040 or accepted? Still open: `.open` has had a 24 × 24 px minimum since
     78e87178 (`RankedList.module.css`:102-108), and the exclusion stays on 3df7cc7d; whether axe still fails needs that
     e2e without it (browser pass).
+
+## Lane D's own pass of 043–045 (wave A QA finding 4)
+
+**Ran 2026-11-03 against `measure-module` c7bba407** (branch `qa/043-045-own-pass`): wave A left the exports and
+amounts of Plan details, GSAP link and User access to lane D (`measure-wave-a-qa.md`, finding 4). Seventeen API checks,
+`TestOwnPass_*` in `backend/internal/measure/{plandetails,gsaplink,useraccess}/ownpass_test.go`, on the demo fakes **with
+the Measure demo plan**, every file read back with `platform/sheet`'s CSV and XLSX readers; all green, what fails is
+kept out (L1–L6). No demo person sees a plan without its financial data beside one with it, and Lea, the one without
+`finance.view`, has no `data.export`: those cases take a second role given through the access API (Priya: Planner and a
+reader of All markets; Mei: a reader of All markets with `data.export`, no `finance.view`, or for 045 `access.manage` alone).
+
+| Check | Source | Result |
+|---|---|---|
+| 043 workbook at all four levels (EUR, quarters): one sheet per widget in screen order, each its table view, then In view and About this export; each measure's first widget and the start periods as CSV the same | FR-017, US3-5, SC-005 | Green. CSV of every widget not run: 100 files, 17 s; they share `Sheets` with the workbook |
+| 043 a planned-cost widget whose records count once adds to its total and the card, to the cent, every level, EUR | FR-011, FR-017, SC-002 | Green |
+| 043 without `finance.view`: Lea's answer is Carlos's byte for byte at every level, every planned-cost value set; Mei's workbook is Carlos's | FR-004, US1-17, D-237 | Green: planned cost follows View plans, so nothing is dashed |
+| 044 each tab's CSV in a sort of its own (`lineItem`, `vendor`, `-poAmount`, EUR) = every row and the totals; bands add to Waiting; workbook sheets = the widget files, then In view, About this export | FR-007, FR-019, US4-1, US4-2, SC-005 | Green |
+| 044 without `finance.view`: Lea's amounts and Amount waiting null, 0 of 3 plans, no purchase order, the SWBS tab Carlos's; Mei's waiting file leaves the amount empty and lists no PO | FR-004, D-386, US1-11, US2-6, US3-6, US4-3 | Green, but the orders file's totals (L3) |
+| 044 finance in one of three plans (Priya): covers 1 of 3, the Measure demo's request "—"; orders = Carlos's Lubricants Europe rows, the file the same | FR-004, US2-6, US3-6 | Green |
+| 044 orders in EUR against the line item's Financials | SC-003, FR-014 | L4 |
+| 045 people and band files (`q=planner&status=all&sort=-lastSignedIn`) = the table, Never empty; bands add to People; workbook sheets = the files; Mei (`access.manage` alone) sees Alex's answer | FR-007, FR-013, US1-13, US2-1, SC-005 | Green without a team; with one, L1. Workbook sheets: L2 |
+| Export rights: Lea 403 on the workbook and every widget of every level (043), tab (044) and widget (045); Mei with `access.manage` alone 403 on 045's exports, the report 200 | 039 FR-022, 045 US2-3 | Green |
+| About this export names the report's own parameters | 039 FR-022 | 043 plans, period, currency green; level L6. 044 tab and sort L5. 045 search and status green (`TestExport_SaysOwnFilters_US2`), team L1, sort not named (US2-2 asks only the three) |
+
+**Findings** (all open, production unchanged):
+
+- **L1 — 045, High.** The export ignores the Team filter and says it applied it. `GET /reports/user-access?status=all&team=T-1001` lists 3 people (Daniel, Priya, Sara); `GET /reports/user-access/export?format=csv&widget=people&status=all&team=T-1001` lists all 7 under `Filters,Team: Lubricants Europe`, and its bands count 7; the workbook too. The web sends `team` so (`shared/report-address.ts`:154). US2-1, FR-013, SC-005. `team` is a frame filter (`measure/filter.go`:24, :106), so it never reaches `f.Own`, the only input of `useraccess/sheets.go`:28; `Describe` never names a team either. An access review filed from it lists people outside the team.
+- **L2 — 045, Low.** The workbook holds an In view sheet of plan counts (Plans 3, Campaigns 5, …) and both files name Year, Period Months, Currency USD and four rates, controls the page does not have. US2-2 (People, Last sign-in, then About this export), FR-001, 045-C1. `measure/export.go`:132 and `export_notes.go`:15-21 add them for every report.
+- **L3 — 044, Medium.** Without `finance.view`, the Purchase orders file ends `Total,…,0.00,0.00,0.00` (Mei, `…/gsap-link/export?year=2026&format=csv&widget=orders`, and the workbook's sheet), where the screen shows "You can't see financial data" and no figure; `GET /reports/gsap-link?tab=orders` serves `totals` 0.00 too, which the contract cannot make null. 039 FR-004 ("—", never 0), 044 US3-6, US4-3. `gsaplink/sheets.go`:155-157 writes the totals row whatever the coverage (`orders.go`:69). No demo role reaches it: Lea cannot export.
+- **L4 — 044, Low.** Invoiced in EUR is a cent off Financials. Carlos, `GET /reports/gsap-link?year=2026&tab=orders&currency=EUR`: L-1012, SIM-4500001001 invoiced 20,000.01 EUR; its Financials in EUR, two invoices of 10,000.00, 20,000.00; totals 80,500.01. SC-003 ("to the cent"), FR-014. `gsaplink/orders.go`:52 rounds each transaction to USD (`usdOf`) and :65 converts the sum back once; in USD it holds (`TestOrders_EqualLineItemFinancials_SC003`).
+- **L5 — 044, Low.** About this export does not say the tab or sort. `…/gsap-link/export?year=2026&format=csv&widget=waiting&tab=waiting&sort=vendor`: rows by vendor, notes Report to Exported at and the rates only. 039 FR-022; gsaplink is `Parameterised` (`sheets.go`:28) but not `Described`, as finding 14 for 049. 044 `contracts/api.md` ("Export sheets") still says each tab's default sort.
+- **L6 — 043, Low.** About this export does not say the level. `…/plan-details/export?year=2026&show=campaign&format=csv&widget=progressCount` names Period and Currency, not Show; only the heading "Campaigns" tells. 043 FR-001 (the level lives in the address with the filters), 039 FR-022; `export_notes.go`:15-21 has no Show line and plandetails no `Describe`.
+
+Not checked: the browser (export buttons, "—", "You can't see financial data"), PostgreSQL (fakes only), `-race`.
