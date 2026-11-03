@@ -149,6 +149,32 @@ func TestOwnPass_ExportEqualsScreen_FR013_SC005(t *testing.T) {
 	}
 }
 
+// TestOwnPass_ExportKeepsTeam_US2_1: the Team filter, which the frame reads, narrows both files as it does the table.
+func TestOwnPass_ExportKeepsTeam_US2_1(t *testing.T) {
+	t.Parallel()
+	alexSees := alexAfterPriya(t)
+	team := "&status=all&team=T-1001"
+
+	screen, everyone := reportOf(t, alexSees, report+"?pageSize=500"+team), reportOf(t, alexSees, report+"?status=all")
+	people := csvOf(t, alexSees, team+"&widget=people")
+	if diff := cmp.Diff(peopleRows(screen), people.rows); screen.Total == 0 || screen.Total == everyone.Total || diff != "" {
+		t.Errorf("people of T-1001, %d of %d on screen (-screen +file):\n%s", screen.Total, everyone.Total, diff)
+	}
+	if diff := cmp.Diff(bandRows(screen), csvOf(t, alexSees, team+"&widget=signInBands").rows); diff != "" {
+		t.Errorf("Last sign-in of T-1001 (-screen +file):\n%s", diff)
+	}
+	if people.notes["Filters"] != "Team: Lubricants Europe" {
+		t.Errorf("About this export Filters = %q, want the team", people.notes["Filters"])
+	}
+	tables, err := sheet.ReadXLSX(get(t, alexSees, exported+"xlsx"+team, http.StatusOK).Body, 10000)
+	if err != nil || len(tables) == 0 {
+		t.Fatalf("workbook of T-1001: %d sheets (%v)", len(tables), err)
+	}
+	if diff := cmp.Diff(asRead(people.rows), textOf(tables[0].Rows)); diff != "" {
+		t.Errorf("People sheet of T-1001 against the file (-file +sheet):\n%s", diff)
+	}
+}
+
 // TestOwnPass_WorkbookEqualsFiles_US2_2: the people and Last sign-in sheets first, About this export last.
 func TestOwnPass_WorkbookEqualsFiles_US2_2(t *testing.T) {
 	t.Parallel()

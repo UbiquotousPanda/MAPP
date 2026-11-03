@@ -146,9 +146,11 @@ func TestOwnPass_ExportEqualsScreen_FR019_SC005(t *testing.T) {
 	t.Parallel()
 	carlosSees := apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, carlos)
 	tabs := []struct {
-		tab, sort string
-		rows      func(gsaplink.Report) [][]string
-	}{{"swbs", "lineItem", swbsRows}, {"waiting", "vendor", waitingRows}, {"orders", "-poAmount", orderRows}}
+		tab, sort, words string
+		rows             func(gsaplink.Report) [][]string
+	}{{"swbs", "lineItem", "SWBS not received; Line item, ascending", swbsRows},
+		{"waiting", "vendor", "Waiting for GSAP; Vendor, ascending", waitingRows},
+		{"orders", "-poAmount", "Purchase orders; PO amount, descending", orderRows}}
 
 	for _, tab := range tabs {
 		own := "&currency=EUR&tab=" + tab.tab + "&sort=" + tab.sort
@@ -157,16 +159,24 @@ func TestOwnPass_ExportEqualsScreen_FR019_SC005(t *testing.T) {
 		if diff := cmp.Diff(tab.rows(screen), file.rows); screen.Total == 0 || diff != "" {
 			t.Errorf("%s: %d rows on screen; export (-screen +file):\n%s", own, screen.Total, diff)
 		}
-		if file.notes["Report"] != "GSAP link" || file.notes["Currency"] != "EUR" {
-			t.Errorf("%s: About this export %v, want the report and EUR", own, file.notes)
-		}
+		saysTabAndSort(t, file, "EUR", tab.words)
 	}
+	saysTabAndSort(t, csvOf(t, carlosSees, "&widget=swbs"), "USD", "SWBS not received; Waiting, descending")
 	screen := reportOf(t, carlosSees, report+"&currency=EUR")
 	if diff := cmp.Diff(bandRows(screen), csvOf(t, carlosSees, "&currency=EUR&widget=swbsBands").rows); diff != "" {
 		t.Errorf("Waiting by time (-screen +file):\n%s", diff)
 	}
 	if bands := bandRows(screen); bands[len(bands)-1][1] != strconv.Itoa(screen.Swbs.Waiting) {
 		t.Errorf("bands add up to %s, the Waiting card says %d (FR-007)", bands[len(bands)-1][1], screen.Swbs.Waiting)
+	}
+}
+
+// saysTabAndSort reports About this export without the report, the currency, or the tab and sort in words (039 FR-022).
+func saysTabAndSort(t *testing.T, file exportFile, currency, words string) {
+	t.Helper()
+	if file.notes["Report"] != "GSAP link" || file.notes["Currency"] != currency ||
+		file.notes["Tab"]+"; "+file.notes["Sort"] != words {
+		t.Errorf("About this export %v, want GSAP link, %s and %q", file.notes, currency, words)
 	}
 }
 
@@ -252,10 +262,11 @@ func TestOwnPass_ExportWithoutFinanceView_US4_3(t *testing.T) {
 	if diff := cmp.Diff(waitingRows(screen), csvOf(t, meiSees, "&widget=waiting").rows); screen.Total == 0 || diff != "" {
 		t.Errorf("waiting export, %d rows on screen (-screen +file):\n%s", screen.Total, diff)
 	}
-	for _, row := range csvOf(t, meiSees, "&widget=orders").rows[1:] {
-		if row[0] != "Total" {
-			t.Errorf("purchase order row %v without finance.view, want none (US3-6)", row)
-		}
+	orders, sheets := csvOf(t, meiSees, "&widget=orders").rows, workbookOf(t, meiSees, "")
+	diff := cmp.Diff(orders, textOf(sheets[3].Rows))
+	if len(orders) != 2 || !slices.Equal(orders[1], []string{"Total"}) || diff != "" {
+		t.Errorf("purchase orders without finance.view: %v, want no row and Total with no figure (US3-6); "+
+			"sheet (-file +sheet):\n%s", orders[1:], diff)
 	}
 }
 
