@@ -107,12 +107,19 @@ jobs:
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: read
       pull-requests: read
     defaults: *in-backend
     steps:
+      # Vet and lint compile every test variant of the module, about 7.5 GB of build cache and work files, which no
+      # longer fits beside the tools the runner image preinstalls. None of these is needed here.
+      - name: Free disk space
+        run: |
+          df -h /
+          sudo rm -rf /usr/local/lib/android /opt/hostedtoolcache/CodeQL /usr/share/dotnet /usr/share/swift /opt/ghc /usr/local/.ghcup
+          df -h /
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
@@ -135,11 +142,11 @@ jobs:
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5]
+        shard: [1, 2, 3, 4, 5, 6, 7]
     defaults: *in-backend
     # The scope-isolation tests run on PostgreSQL 18 (constitution VI, B9). Trust authentication is safe here:
     # the service is reachable only from this job, on the runner's loopback address, and holds only test data.
@@ -160,7 +167,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - *setup-go
-      # Each group of the slowest packages has a shard of its own, sized by CI time; the last shard tests every
+      # Each group of the slowest packages has a shard of its own, sized by CI time; the remaining shards share every
       # other package, so a new one is never left out.
       - name: Test
         env:
@@ -175,11 +182,13 @@ jobs:
             "purchaserequest home activity lineitem"
             "measure/wavebqa"
           )
-          [ "${#groups[@]}" -eq $((TOTAL - 1)) ] || { echo "Give the matrix one shard per group, plus one."; exit 1; }
+          rest=$((TOTAL - ${#groups[@]}))
+          [ "$rest" -ge 1 ] || { echo "Give the matrix one shard per group, plus at least one more."; exit 1; }
           if [ "$INDEX" -lt "${#groups[@]}" ]; then
             packages="$(printf 'mapp/internal/%s\n' ${groups[INDEX]})"
           else
-            packages="$(go list ./... | grep -vxF "$(printf 'mapp/internal/%s\n' ${groups[*]})")"
+            packages="$(go list ./... | grep -vxF "$(printf 'mapp/internal/%s\n' ${groups[*]})" \
+              | awk -v n="$rest" -v i="$((INDEX - ${#groups[@]}))" 'NR % n == i')"
           fi
           go test -race -covermode=atomic -coverprofile=coverage.out $packages | tee go-test.txt
       - name: Upload test results
