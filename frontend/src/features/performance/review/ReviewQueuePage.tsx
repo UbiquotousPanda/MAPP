@@ -74,15 +74,18 @@ export function ReviewQueuePage() {
   const open = rows.data?.items.find((row) => row.id === openId);
 
   function openRow(id: string) {
-    setParams((previous) => {
-      const next = new URLSearchParams(previous);
-      if (id) {
-        next.set('row', id);
-      } else {
-        next.delete('row');
-      }
-      return next;
-    });
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (id) {
+          next.set('row', id);
+        } else {
+          next.delete('row');
+        }
+        return next;
+      },
+      { replace: !id },
+    );
   }
 
   return (
