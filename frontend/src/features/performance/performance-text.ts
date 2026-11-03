@@ -43,3 +43,5 @@ export const DELIVERY_WORDS: Record<'upload' | 'simulated', string> = {
   upload: 'File upload',
   simulated: 'Simulated feed',
 };
+
+export const STAGE_WORDS: Record<string, string> = { inq: 'INQ', mql: 'MQL' };

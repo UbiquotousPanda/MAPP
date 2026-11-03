@@ -6,6 +6,7 @@ import {
   toHundredths,
 } from '@/format/decimal';
 import type { Model, ModelCreate, ModelUpdate } from './api';
+import { velocityMonths } from './schemas';
 import type { ModelValues } from './schemas';
 
 export type ModelFormMode =
@@ -40,12 +41,14 @@ export function startValues(mode: ModelFormMode): ModelValues {
   };
 }
 
-/** The stages a goal may be set against, in funnel order. */
 export const ALL_GOAL_STAGES = ['inq', 'mql', 'revenue'] as const;
 
-/** A typed velocity as the API takes it: whole months, or NaN left for the API to refuse. */
 function velocity(text: string): number {
-  return Number.parseInt(text.trim(), 10);
+  const months = velocityMonths(text);
+  if (months === null) {
+    throw new Error('The model schema lets only whole months from 0 to 24 through.');
+  }
+  return months;
 }
 
 export function createBody(values: ModelValues): ModelCreate {
@@ -61,7 +64,7 @@ export function createBody(values: ModelValues): ModelCreate {
   };
 }
 
-/** The fields people changed, with the version (D-203); null when nothing changed. */
+/** The fields people changed, with the version; null when nothing changed. */
 export function changedFields(
   model: Model,
   start: ModelValues,
@@ -96,7 +99,6 @@ export function changedFields(
   return Object.keys(body).length > 1 ? body : null;
 }
 
-/** Changes that may affect plans and activities, checked with …/impact first (FR-011, FR-012). */
 export function affectsOthers(body: ModelUpdate): boolean {
   return (
     body.inqToMqlRate !== undefined ||
