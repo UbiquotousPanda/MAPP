@@ -54,7 +54,20 @@ export function useReportFrame(report: ReportKey, address: ReportAddress) {
 
 type ExportQuery = NonNullable<operations['exportReport']['parameters']['query']>;
 
-const OWN_VALUES = ['sort', 'tab', 'group', 'q', 'drill', 'statusType', 'columns'] as const;
+const OWN_VALUES = [
+  'sort',
+  'tab',
+  'group',
+  'q',
+  'drill',
+  'statusType',
+  'columns',
+  'category',
+  'revenueBy',
+  'performanceBy',
+  'costBy',
+  'roiBy',
+] as const;
 const OWN_LISTS = [
   'recordType',
   'approver',
@@ -77,6 +90,8 @@ function ownQuery(params?: URLSearchParams): Partial<ExportQuery> {
   }
   const order = params?.get('order');
   if (order === 'asc' || order === 'desc') query.order = order;
+  const stage = params?.get('stage');
+  if (stage === 'inq' || stage === 'mql') query.stage = stage;
   return query;
 }
 

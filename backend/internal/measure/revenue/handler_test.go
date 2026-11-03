@@ -36,6 +36,11 @@ func TestRevenueAndFunnelReports_Contract_049(t *testing.T) {
 			t.Errorf("GET %s = %d %s, want 400", path, bad.Status, bad.Body)
 		}
 	}
+	for _, path := range []string{"/api/v1/reports/revenue?year=2027", "/api/v1/reports/funnel?year=2027"} {
+		if r := planner.Do(t, http.MethodGet, path, nil); r.Status != http.StatusOK {
+			t.Errorf("GET %s, a year without goals = %d %s, want 200 with its reason in the contract", path, r.Status, r.Body)
+		}
+	}
 	var catalogue measure.ReportCatalogue
 	planner.Do(t, http.MethodGet, "/api/v1/reports", nil).Decode(t, &catalogue)
 	for _, key := range []string{measure.KeyRevenue, measure.KeyFunnel} {
@@ -45,9 +50,8 @@ func TestRevenueAndFunnelReports_Contract_049(t *testing.T) {
 	}
 }
 
-// The cards' "actual or projected" total and the ranked list's own group total come from different code
-// paths (cards.go sums periods, ranked_revenue.go rolls up figures); this is the one place proving they
-// still agree once both are converted to the display currency.
+// The cards sum months while the ranked list rolls activities up, both from ActivitySeries; this proves they
+// agree on the demo data once both are in the display currency.
 func TestRevenue_CardsTotalMatchesTheRankedListsOwnTotal_049(t *testing.T) {
 	t.Parallel()
 	planner := apitest.New(t).SignIn(t, "priya.raman@shell.com")

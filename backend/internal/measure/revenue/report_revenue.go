@@ -2,6 +2,8 @@ package revenue
 
 import (
 	"context"
+	"slices"
+	"time"
 
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
@@ -13,33 +15,24 @@ import (
 func (s *Service) Report(ctx context.Context, a actor.Actor, f measure.Filter) (RevenueReport, error) {
 	var out RevenueReport
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
-		sc, views, err := s.scopeAndActivities(ctx, a, f, categoryOf(f.Own))
+		sc, series, err := s.series(ctx, a, f, categoryOf(f.Own))
 		if err != nil {
 			return err
 		}
-		out = s.buildRevenueReport(views, f.Period, sc)
+		out = s.buildRevenueReport(series, f.Period, sc)
 		return nil
 	})
 	return out, err
 }
 
-func (s *Service) buildRevenueReport(views []activityView, period string, sc measure.Scope) RevenueReport {
+func (s *Service) buildRevenueReport(series []ActivitySeries, period string, sc measure.Scope) RevenueReport {
 	w := window{today: date.Today(s.now()), year: sc.Year}
 	display := money.DisplayIn(sc.Currency.Code, sc.Currency.Rate.String())
-	sums := revenueMonths(views, w)
-	periods := revenuePeriods(sums, period, w, display)
-	anyGoal := false
-	for _, v := range views {
-		if v.projection.Present {
-			anyGoal = true
-			break
-		}
-	}
-	out := RevenueReport{Cards: revenueCards(sums, w, anyGoal, display), Period: periodShown(period), Periods: periods}
-	if stamp := stampOf(views); stamp != nil {
-		out.Projection = stamp
-	}
-	if len(views) == 0 {
+	sums := sumMonths(series, revenueMeasure())
+	anyGoal := slices.ContainsFunc(series, func(a ActivitySeries) bool { return a.HasProjection })
+	out := RevenueReport{Cards: revenueCards(sums, w, anyGoal, display), Period: periodShown(period),
+		Periods: revenuePeriods(sums, period, w, display), Projection: stampOf(series)}
+	if len(series) == 0 {
 		out.Reason = ReasonNoData
 	} else if !anyGoal {
 		out.Reason = ReasonNoGoal
@@ -56,10 +49,10 @@ func periodShown(period string) string {
 
 // stampOf names the first model behind a projected figure, so a reviewer can reproduce it; reports
 // mixing models name one, and the ranked list's own entries carry the rest.
-func stampOf(views []activityView) *Stamp {
-	for _, v := range views {
-		if v.projection.Present && v.projection.Stamp.ModelName != "" {
-			return &Stamp{ModelName: v.projection.Stamp.ModelName, ModelChangedAt: v.projection.Stamp.ModelChangedAt.Format("2006-01-02T15:04:05Z07:00")}
+func stampOf(series []ActivitySeries) *Stamp {
+	for _, a := range series {
+		if a.HasProjection && a.ModelName != "" {
+			return &Stamp{ModelName: a.ModelName, ModelChangedAt: a.ModelChangedAt.Format(time.RFC3339)}
 		}
 	}
 	return nil

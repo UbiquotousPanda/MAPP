@@ -14,46 +14,6 @@ type window struct {
 	year  int
 }
 
-// revenueMonthlySums keeps pastActual month by month, so a quarter in progress keeps its finished months.
-type revenueMonthlySums struct {
-	actual, pastActual, projected, goal [projection.Months]money.Amount
-	activityGoals                       money.Amount
-}
-
-func revenueMonths(views []activityView, w window) revenueMonthlySums {
-	var sums revenueMonthlySums
-	for _, v := range views {
-		if !v.projection.Present {
-			continue
-		}
-		addRevenueMonths(&sums, v, w)
-		if goal := revenueGoalOf(v.node); goal != nil {
-			sums.activityGoals = sums.activityGoals.Add(goal.Amount)
-		}
-	}
-	return sums
-}
-
-func addRevenueMonths(sums *revenueMonthlySums, v activityView, w window) {
-	split := projection.SplitAmounts(v.facts.revenue, v.projection.Revenue, w.today, w.year)
-	for i, m := range split.Months {
-		if m.Actual != nil {
-			sums.actual[i] = sums.actual[i].Add(m.Actual.Amount)
-		}
-		if m.Actual != nil && !m.InProgress {
-			sums.pastActual[i] = sums.pastActual[i].Add(m.Actual.Amount)
-		}
-		if m.Projected != nil {
-			sums.projected[i] = sums.projected[i].Add(m.Projected.Amount)
-		}
-	}
-	for i, m := range v.projection.Revenue {
-		if i < len(sums.goal) {
-			sums.goal[i] = sums.goal[i].Add(m.Value.Amount)
-		}
-	}
-}
-
 // periodBounds is one period's position in the year: its first month, its size, and where today falls.
 type periodBounds struct {
 	first, size, todayIndex, year int
@@ -73,42 +33,69 @@ func periodsOf(w window, period string) []periodBounds {
 	return out
 }
 
-func revenuePeriods(sums revenueMonthlySums, period string, w window, display money.Display) []RevenuePeriod {
+func revenuePeriods(sums monthlySums, period string, w window, display money.Display) []RevenuePeriod {
+	shown := func(c int64) *money.Money {
+		m := display.Money(money.USD(money.FromCents(c)))
+		return &m
+	}
 	bounds := periodsOf(w, period)
 	out := make([]RevenuePeriod, 0, len(bounds))
 	for _, b := range bounds {
-		out = append(out, revenuePeriodOf(sums, b, display))
+		v := sums.periodOf(b)
+		p := RevenuePeriod{Key: v.key, State: v.state, InProgress: v.inProgress}
+		if v.goal != nil {
+			p.Goal = shown(*v.goal)
+		}
+		if v.actual != nil {
+			p.Actual = shown(*v.actual)
+		}
+		if v.projected != nil {
+			p.Projected = shown(*v.projected)
+		}
+		out = append(out, p)
 	}
 	return out
 }
 
-func revenuePeriodOf(sums revenueMonthlySums, b periodBounds, display money.Display) RevenuePeriod {
-	var a, p, g money.Amount
+func funnelPeriods(sums monthlySums, period string, w window) []FunnelPeriod {
+	bounds := periodsOf(w, period)
+	out := make([]FunnelPeriod, 0, len(bounds))
+	for _, b := range bounds {
+		v := sums.periodOf(b)
+		out = append(out, FunnelPeriod{Key: v.key, State: v.state, InProgress: v.inProgress,
+			Goal: v.goal, Actual: v.actual, Projected: v.projected})
+	}
+	return out
+}
+
+// periodValues is one period's sums; actual is nil before today reaches it, projected once it has passed, goal
+// when it is zero.
+type periodValues struct {
+	key, state              string
+	inProgress              bool
+	actual, projected, goal *int64
+}
+
+func (s monthlySums) periodOf(b periodBounds) periodValues {
+	var a, p, g int64
 	hasActual, hasProjected := false, false
 	for i := b.first; i < b.first+b.size; i++ {
-		a, p, g = a.Add(sums.actual[i]), p.Add(sums.projected[i]), g.Add(sums.goal[i])
-		if b.todayIndex >= 0 && i <= b.todayIndex {
-			hasActual = true
-		}
-		if b.todayIndex < 0 || i >= b.todayIndex {
-			hasProjected = true
-		}
+		a, p, g = a+s.actual[i], p+s.projected[i], g+s.goal[i]
+		hasActual = hasActual || (b.todayIndex >= 0 && i <= b.todayIndex)
+		hasProjected = hasProjected || b.todayIndex < 0 || i >= b.todayIndex
 	}
-	period := RevenuePeriod{Key: periodKey(b.year, b.first, b.size), InProgress: b.inProgress(),
-		State: periodState(b.first, b.size, b.todayIndex)}
-	if g.Cents() != 0 {
-		goalShown := display.Money(money.USD(g))
-		period.Goal = &goalShown
+	out := periodValues{key: periodKey(b.year, b.first, b.size), state: periodState(b.first, b.size, b.todayIndex),
+		inProgress: b.inProgress()}
+	if g != 0 {
+		out.goal = &g
 	}
 	if hasActual {
-		shown := display.Money(money.USD(a))
-		period.Actual = &shown
+		out.actual = &a
 	}
 	if hasProjected {
-		shown := display.Money(money.USD(p))
-		period.Projected = &shown
+		out.projected = &p
 	}
-	return period
+	return out
 }
 
 func periodSize(period string) int {
