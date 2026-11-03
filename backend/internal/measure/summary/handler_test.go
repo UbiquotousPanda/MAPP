@@ -40,7 +40,7 @@ func TestSummaryReport_Contract_048(t *testing.T) {
 	if view.Revenue.PeriodLabel != "FY 2026" || len(view.Revenue.GoalCoverage) != 3 || len(view.Categories) == 0 {
 		t.Errorf("report = %+v, want FY 2026 with three coverage stages and the categories", view.Revenue)
 	}
-	for _, query := range []string{"period=quarter&currency=EUR", "category=uncategorised&stage=mql", "category=NOPE"} {
+	for _, query := range []string{"period=quarter&currency=EUR", "category=uncategorised&stage=mql", "category=CAT-999"} {
 		get(t, alex, reportURL+"?year=2026&"+query, http.StatusOK)
 	}
 	for _, table := range []string{"revenue", "performance", "cost", "roi"} {
@@ -75,7 +75,8 @@ func TestSummary_EqualsRevenueAndFunnel_048_SC002(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	alex := server.SignIn(t, alexEmail)
-	for _, query := range []string{"?year=2026", "?year=2026&period=quarter", "?year=2026&category=uncategorised"} {
+	for _, query := range []string{"?year=2026", "?year=2026&period=quarter", "?year=2026&category=uncategorised",
+		"?year=2026&currency=EUR"} {
 		var view summary.Report
 		var rev revenue.RevenueReport
 		get(t, alex, reportURL+query, http.StatusOK).Decode(t, &view)
@@ -84,6 +85,14 @@ func TestSummary_EqualsRevenueAndFunnel_048_SC002(t *testing.T) {
 		if !sameMoney(view.Revenue.ActualOrProjected, rev.Cards.Projected) || !sameMoney(view.Revenue.Goal, rev.Cards.Goal) {
 			t.Errorf("%s: summary %v of %v, revenue %v of %v", query, view.Revenue.ActualOrProjected, view.Revenue.Goal,
 				rev.Cards.Projected.Value, rev.Cards.Goal.Value)
+		}
+		if !samePercent(view.Revenue.Percent, rev.Cards.Performance.Value) {
+			t.Errorf("%s: summary performance %v, revenue %v", query, view.Revenue.Percent, rev.Cards.Performance.Value)
+		}
+		for i, p := range rev.Periods {
+			if i < len(view.Revenue.Trend) && !sameMoney(view.Revenue.Trend[i].Goal, revenue.MoneyCard{Value: p.Goal}) {
+				t.Errorf("%s period %s: summary goal %v, revenue %v", query, p.Key, view.Revenue.Trend[i].Goal, p.Goal)
+			}
 		}
 		for _, s := range view.Funnel.Stages {
 			if s.Stage == summary.StageRevenue {
@@ -103,4 +112,11 @@ func sameMoney(shown *money.Money, card revenue.MoneyCard) bool {
 		return shown == nil && card.Value == nil
 	}
 	return shown.Amount.Cmp(card.Value.Amount) == 0 && shown.Currency == card.Value.Currency
+}
+
+func samePercent(shown *int, card *float64) bool {
+	if shown == nil || card == nil {
+		return shown == nil && card == nil
+	}
+	return float64(*shown) == *card
 }

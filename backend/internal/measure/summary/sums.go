@@ -59,6 +59,7 @@ func sumSeries(series []revenue.ActivitySeries, p pick) totals {
 	var t totals
 	for _, s := range series {
 		if !p.covers(s) {
+			t.keepMonths(s.Months)
 			continue
 		}
 		t.addGoal(p.goal(s))
@@ -67,6 +68,13 @@ func sumSeries(series []revenue.ActivitySeries, p pick) totals {
 		}
 	}
 	return t
+}
+
+// keepMonths adds the months a covered activity has not given yet, so the trend has the year's periods.
+func (t *totals) keepMonths(months []revenue.Month) {
+	for _, m := range months[min(len(t.months), len(months)):] {
+		t.months = append(t.months, monthTotal{key: m.Key, state: m.State})
+	}
 }
 
 func (t *totals) addGoal(goal *int64) {

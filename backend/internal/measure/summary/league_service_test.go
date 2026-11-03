@@ -133,3 +133,30 @@ func TestLeague_RefusesAnUnknownTable_048_FR004(t *testing.T) {
 		t.Error("League(deals) gave no error, want the problem")
 	}
 }
+
+func TestLeague_NoSegmentsIsAnEmptyList_048_C4(t *testing.T) {
+	t.Parallel()
+
+	got := league(t, newFakes(), TableRevenue, nil)
+
+	if got.Segments == nil || len(got.Segments) != 0 || got.Segment != nil || len(got.Rows) != 0 {
+		t.Errorf("without segment attributes = segments %#v, segment %v, %d rows; want an empty list and no rows",
+			got.Segments, got.Segment, len(got.Rows))
+	}
+}
+
+func TestLeague_ROICountsRevenueOnlyWhereCostIs_048_FR003(t *testing.T) {
+	t.Parallel()
+	f := withSegments()
+	hidden := projected("A-3", planTwo)
+	hidden.Attributes = f.series[0].Attributes
+	f.series = append(f.series, hidden)
+	f.scope.Choices.FinancePlans = []string{planOne}
+
+	got := league(t, f, TableROI, nil)
+
+	// A-3's revenue is in a plan without financial access, so it cannot raise A-1's 83 %.
+	if got.Total != int64(83) || got.Rows[0].Value != int64(83) {
+		t.Errorf("ROI total %v and first row %v, want 83 without the hidden plan's revenue", got.Total, got.Rows[0].Value)
+	}
+}

@@ -1,6 +1,7 @@
 package summary
 
 import (
+	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/sheet"
 )
@@ -128,9 +129,9 @@ func inCurrency(label, currency string) string {
 	return label + " (" + currency + ")"
 }
 
-func varianceWord(v string) string {
-	return map[string]string{VarianceAbovePlan: "Above plan", VarianceOnPlan: "On plan", VarianceBelowPlan: "Below plan",
-		VarianceNoGoal: "No goal"}[v]
+func varianceWord(v revenue.Variance) string {
+	return map[revenue.Variance]string{revenue.AbovePlan: "Above plan", revenue.OnPlan: "On plan",
+		revenue.BelowPlan: "Below plan", revenue.NoGoal: "No goal"}[v]
 }
 
 func stageWord(s Stage) string {

@@ -50,19 +50,21 @@ func (s *Service) Report(ctx context.Context, a actor.Actor, f measure.Filter) (
 }
 
 func (s *Service) read(ctx context.Context, a actor.Actor, f measure.Filter, category string) (view, error) {
+	v, err := s.readSeries(ctx, a, f, category)
+	if err != nil {
+		return view{}, err
+	}
+	v.plans, err = s.deps.PlanGoals.PlanGoals(ctx, planIDsOf(v.series))
+	return v, err
+}
+
+func (s *Service) readSeries(ctx context.Context, a actor.Actor, f measure.Filter, category string) (view, error) {
 	sc, err := s.deps.Scope.Scope(ctx, a, f, nil)
 	if err != nil {
 		return view{}, err
 	}
 	series, err := s.deps.Series.ActivitySeries(ctx, a, f, category)
-	if err != nil {
-		return view{}, err
-	}
-	plans, err := s.deps.PlanGoals.PlanGoals(ctx, planIDsOf(series))
-	if err != nil {
-		return view{}, err
-	}
-	return view{scope: sc, series: series, plans: plans}, nil
+	return view{scope: sc, series: series}, err
 }
 
 func (v view) report(b builder, categories []revenue.Category) Report {

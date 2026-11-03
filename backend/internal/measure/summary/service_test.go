@@ -37,7 +37,7 @@ func TestRevenueSection_048_FR005_C2(t *testing.T) {
 
 	// 5 past months of 100.00, then June's and six more months' projections of 100.00; A-2 has no projection.
 	want := RevenueSection{PeriodLabel: "FY 2026", ActualOrProjected: usd(120_000), Goal: usd(1_000_000),
-		Performance:  Performance{Percent: ptr(12), Variance: VarianceBelowPlan},
+		Performance:  Performance{Percent: ptr(12), Variance: revenue.BelowPlan},
 		GoalCoverage: []Coverage{{StageINQ, ptr(50)}, {StageMQL, ptr(50)}, {StageRevenue, ptr(50)}}}
 	if diff := cmp.Diff(want, got, amounts(), cmp.FilterPath(func(p cmp.Path) bool { return p.Last().String() == ".Trend" }, cmp.Ignore())); diff != "" {
 		t.Errorf("revenue section (-want +got)\n%s", diff)
@@ -72,11 +72,11 @@ func TestFunnelSection_048_FR009_FR010(t *testing.T) {
 
 	// INQ: 50 past + 10 in June + 60 ahead = 120 against 100; conversion so far 11 MQL of 54 INQ.
 	wantINQ := StageFigures{Stage: StageINQ, ActualOrProjected: int64(120), Goal: ptr[int64](100),
-		Performance: Performance{Percent: ptr(120), Variance: VarianceAbovePlan}}
+		Performance: Performance{Percent: ptr(120), Variance: revenue.AbovePlan}}
 	if !cmp.Equal(wantINQ, got.Stages[0]) || len(got.Stages) != 3 || got.Stages[2].Stage != StageRevenue {
 		t.Errorf("stages = %+v, want INQ %+v, then MQL and Revenue", got.Stages, wantINQ)
 	}
-	wantConversions := []Conversion{{Stage: StageMQL, Rate: ptr("20.4"), Goal: ptr("20.0"), Variance: VarianceAbovePlan}}
+	wantConversions := []Conversion{{Stage: StageMQL, Rate: ptr("20.4"), Goal: ptr("20.0"), Variance: revenue.AbovePlan}}
 	if diff := cmp.Diff(wantConversions, got.Conversions); diff != "" {
 		t.Errorf("conversions (-want +got)\n%s", diff)
 	}
@@ -162,5 +162,18 @@ func TestReport_RefusesMalformedOwnParameters_048_FR004(t *testing.T) {
 	_, err := newFakes().service().Report(t.Context(), actor.System, measure.Filter{Own: url.Values{"stage": {"inq"}}})
 	if err == nil {
 		t.Error("Report() with stage=inq gave no error, want the problem")
+	}
+}
+
+func TestRevenueTrend_NoGoalNoProjection_048_FR017(t *testing.T) {
+	t.Parallel()
+	f := newFakes()
+	f.series = []revenue.ActivitySeries{unprojected("A-2", planTwo)}
+
+	trend := report(t, f, measure.Filter{}).Revenue.Trend
+
+	if len(trend) != monthsInAll || trend[0].Goal != nil || trend[11].Goal != nil {
+		t.Errorf("trend = %d periods, goals %v and %v; want the year's twelve without a goal", len(trend), trend[0].Goal,
+			trend[11].Goal)
 	}
 }

@@ -17,6 +17,7 @@ const LEAGUE = '/api/v1/reports/summary/league/';
 function renderPage(
   report: Answer<'GET /api/v1/reports/summary'> = { body: summaryReport() },
   route = '/reports/summary?year=2026',
+  league = summaryLeague,
 ) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
@@ -25,11 +26,7 @@ function renderPage(
     reply('GET /api/v1/settings/activity-categories', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/reports/summary', report),
     ...TABLES.map(({ table }) =>
-      reply(
-        'GET /api/v1/reports/summary/league/{table}',
-        { body: summaryLeague(table) },
-        { table },
-      ),
+      reply('GET /api/v1/reports/summary/league/{table}', { body: league(table) }, { table }),
     ),
   ]);
   const rendered = renderWithProviders(<SummaryReport />, {
@@ -112,6 +109,14 @@ describe('SummaryReport (048 US1, US2)', () => {
     expect(
       await screen.findByText('Equally distributed, on actual cost · Covers 1 of 2 plans'),
     ).toBeInTheDocument();
+  });
+
+  it('shows the league tables without segments when no attribute is a segment (048-C4)', async () => {
+    renderPage(undefined, undefined, (table) =>
+      summaryLeague(table, { segment: null, segments: [], rows: [] }),
+    );
+
+    expect(await screen.findAllByText(/^Top .* by segment$/)).toHaveLength(4);
   });
 
   it('names the ROI model and cost basis, and shows a dash with the reason when there is no cost (FR-015)', async () => {

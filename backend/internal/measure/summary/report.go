@@ -23,6 +23,16 @@ func (r *ReportEntry) Params() []string { return Params() }
 
 // Sheets gives every widget in page order; each league table uses the segment its own address parameter names.
 func (r *ReportEntry) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
+	var out []measure.WidgetSheet
+	err := r.service.tx.Read(ctx, func(ctx context.Context) error {
+		var sheetsErr error
+		out, sheetsErr = r.sheets(ctx, a, f)
+		return sheetsErr
+	})
+	return out, err
+}
+
+func (r *ReportEntry) sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
 	q, err := ParseQuery(f.Own)
 	if err != nil {
 		return nil, err

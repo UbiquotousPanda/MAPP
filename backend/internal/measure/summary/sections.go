@@ -41,7 +41,10 @@ func (b builder) revenueSection(series []revenue.ActivitySeries, plans map[strin
 }
 
 func (b builder) trendPeriod(p period) TrendPeriod {
-	out := TrendPeriod{Key: p.key, Label: p.label, State: p.state, Goal: b.money(p.goal)}
+	out := TrendPeriod{Key: p.key, Label: p.label, State: p.state}
+	if p.goal != 0 {
+		out.Goal = b.money(p.goal)
+	}
 	if p.state != PeriodProjected {
 		out.Actual = b.money(p.actual)
 	}

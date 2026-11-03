@@ -21,6 +21,7 @@ const (
 
 	msgChooseListed = "Choose one of the listed values."
 	msgIdentifier   = "Use an ID of letters, digits and hyphens, at most 40 characters."
+	msgCategory     = "Choose a category from the list, or Uncategorised."
 )
 
 type Query struct {
@@ -87,10 +88,16 @@ func ParseLeague(table string, own url.Values) (League, error) {
 }
 
 func categoryOf(own url.Values, problems *errs.Problems) string {
-	if own.Get(paramCategory) == Uncategorised {
-		return Uncategorised
+	raw := own.Get(paramCategory)
+	if raw == "" || raw == Uncategorised || categoryID().MatchString(raw) {
+		return raw
 	}
-	return identifierOf(own, paramCategory, problems)
+	problems.Add(paramCategory, msgCategory)
+	return ""
+}
+
+func categoryID() *regexp.Regexp {
+	return regexp.MustCompile(`^CAT-[0-9]+$`)
 }
 
 func stageOf(own url.Values, problems *errs.Problems) Stage {

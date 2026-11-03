@@ -32,7 +32,7 @@ function pick<T>(params: URLSearchParams, name: string, schema: z.ZodType<T>, fa
 
 export function readSummaryParams(params: URLSearchParams): SummaryParams {
   return {
-    category: pick(params, 'category', z.union([z.literal('uncategorised'), idSchema]), ''),
+    category: pick(params, 'category', z.string().regex(/^(CAT-[0-9]+|uncategorised)$/), ''),
     stage: pick(params, 'stage', z.enum(['mql']), ''),
     revenueBy: pick(params, 'revenueBy', idSchema, ''),
     performanceBy: pick(params, 'performanceBy', idSchema, ''),

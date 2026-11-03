@@ -10,7 +10,7 @@ const (
 // performanceOf takes 049's rule and words, so Summary and Revenue never word one figure differently.
 func performanceOf(actualOrProjected, goal int64) Performance {
 	whole := revenue.Performance(actualOrProjected, goal)
-	return Performance{Percent: whole, Variance: string(revenue.VarianceOf(whole))}
+	return Performance{Percent: whole, Variance: revenue.VarianceOf(whole)}
 }
 
 func goalCoverage(activities, plans int64) *int {

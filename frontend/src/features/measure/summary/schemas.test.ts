@@ -6,7 +6,11 @@ import type { SummaryParams } from './schemas';
 const id = fc.stringMatching(/^[A-Za-z0-9-]{1,40}$/);
 const segment = fc.option(id, { nil: '' });
 const params: fc.Arbitrary<SummaryParams> = fc.record({
-  category: fc.oneof(fc.constant(''), fc.constant('uncategorised'), id),
+  category: fc.oneof(
+    fc.constant(''),
+    fc.constant('uncategorised'),
+    fc.nat(9999).map((n) => `CAT-${n}`),
+  ),
   stage: fc.constantFrom('', 'mql'),
   revenueBy: segment,
   performanceBy: segment,

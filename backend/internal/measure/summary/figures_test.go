@@ -1,6 +1,10 @@
 package summary
 
-import "testing"
+import (
+	"testing"
+
+	"mapp/internal/measure/revenue"
+)
 
 func TestVarianceWord_048_C1(t *testing.T) {
 	t.Parallel()
@@ -9,14 +13,14 @@ func TestVarianceWord_048_C1(t *testing.T) {
 		actualOrProjected int64
 		goal              int64
 		wantPercent       int
-		wantWord          string
+		wantWord          revenue.Variance
 	}{
-		{"99.5 % rounds to 100, on plan", 995, 1000, 100, VarianceOnPlan},
-		{"exactly 100 %", 1000, 1000, 100, VarianceOnPlan},
-		{"100.4 % rounds to 100, on plan", 1004, 1000, 100, VarianceOnPlan},
-		{"100.5 % rounds to 101, above plan", 1005, 1000, 101, VarianceAbovePlan},
-		{"99.4 % rounds to 99, below plan", 994, 1000, 99, VarianceBelowPlan},
-		{"nothing yet against a goal", 0, 1000, 0, VarianceBelowPlan},
+		{"99.5 % rounds to 100, on plan", 995, 1000, 100, revenue.OnPlan},
+		{"exactly 100 %", 1000, 1000, 100, revenue.OnPlan},
+		{"100.4 % rounds to 100, on plan", 1004, 1000, 100, revenue.OnPlan},
+		{"100.5 % rounds to 101, above plan", 1005, 1000, 101, revenue.AbovePlan},
+		{"99.4 % rounds to 99, below plan", 994, 1000, 99, revenue.BelowPlan},
+		{"nothing yet against a goal", 0, 1000, 0, revenue.BelowPlan},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -34,8 +38,8 @@ func TestVarianceWord_NoGoal_048_C1(t *testing.T) {
 	t.Parallel()
 	for _, goal := range []int64{0, -5} {
 		got := performanceOf(500, goal)
-		if got.Percent != nil || got.Variance != VarianceNoGoal {
-			t.Errorf("performanceOf(500, %d) = %v %q, want nil %q", goal, got.Percent, got.Variance, VarianceNoGoal)
+		if got.Percent != nil || got.Variance != revenue.NoGoal {
+			t.Errorf("performanceOf(500, %d) = %v %q, want nil %q", goal, got.Percent, got.Variance, revenue.NoGoal)
 		}
 	}
 }

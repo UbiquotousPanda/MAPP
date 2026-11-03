@@ -1,6 +1,10 @@
 package summary
 
-import "strconv"
+import (
+	"strconv"
+
+	"mapp/internal/measure/revenue"
+)
 
 func conversions(stages []Stage, totals map[Stage]Figures) []Conversion {
 	out := make([]Conversion, 0, len(stages))
@@ -17,9 +21,9 @@ func conversions(stages []Stage, totals map[Stage]Figures) []Conversion {
 }
 
 // conversionVariance compares the shown rate with the shown goal, so the word matches the two figures beside it.
-func conversionVariance(stage, previous Figures) string {
+func conversionVariance(stage, previous Figures) revenue.Variance {
 	if previous.Actual <= 0 || previous.Goal <= 0 {
-		return VarianceNoGoal
+		return revenue.NoGoal
 	}
 	rate := roundedRatio(stage.Actual, previous.Actual, tenthPercent)
 	goal := roundedRatio(stage.Goal, previous.Goal, tenthPercent)

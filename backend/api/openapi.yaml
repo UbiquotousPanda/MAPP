@@ -9135,7 +9135,7 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
-  # Feature 048 Summary report (wave B contract, added by lane C, 048-C11)
+  # Feature 048 Summary report (wave B contract)
   /api/v1/reports/summary:
     get:
       tags:
@@ -9160,7 +9160,7 @@ paths:
         - $ref: "#/components/parameters/ReportShow"
         - $ref: "#/components/parameters/ReportCurrency"
         - $ref: "#/components/parameters/ReportTable"
-        - $ref: "#/components/parameters/SummaryCategory"
+        - $ref: "#/components/parameters/RevenueCategory"
         - $ref: "#/components/parameters/SummaryStage"
       responses:
         "200":
@@ -9207,7 +9207,7 @@ paths:
         - $ref: "#/components/parameters/ReportPeriod"
         - $ref: "#/components/parameters/ReportShow"
         - $ref: "#/components/parameters/ReportCurrency"
-        - $ref: "#/components/parameters/SummaryCategory"
+        - $ref: "#/components/parameters/RevenueCategory"
         - $ref: "#/components/parameters/SummarySegment"
       responses:
         "200":
@@ -9737,13 +9737,6 @@ components:
         items:
           type: string
           pattern: ^[a-z][A-Za-z0-9]{0,39}$
-    SummaryCategory:
-      name: category
-      in: query
-      description: An activity category ID, or uncategorised; every figure of the Summary report counts only its activities.
-      schema:
-        type: string
-        pattern: ^(uncategorised|[A-Za-z0-9-]{1,40})$
     SummaryStage:
       name: stage
       in: query
@@ -12566,7 +12559,7 @@ components:
     SummaryReport:
       type: object
       additionalProperties: false
-      required: [revenue, funnel, categories, states, financeCovers, performanceAsOf]
+      required: [revenue, funnel, categories, states, financeCovers]
       properties:
         revenue:
           type: object
@@ -12678,7 +12671,7 @@ components:
           description: The report states that apply (FR-018).
           items:
             type: string
-            enum: [noPlans, noGoals, noPerformanceData, notApproved, nothingMatches, noFinancialAccess, attributionNotConfigured]
+            enum: [noPlans, noGoals, noPerformanceData, nothingMatches, noFinancialAccess]
         financeCovers:
           type: object
           additionalProperties: false
@@ -12690,9 +12683,6 @@ components:
             of:
               type: integer
               minimum: 0
-        performanceAsOf:
-          type: [string, "null"]
-          format: date-time
     SummaryTrendPeriod:
       type: object
       additionalProperties: false
@@ -12760,8 +12750,9 @@ components:
                 $ref: "#/components/schemas/SummaryLeagueValue"
               trend:
                 type: array
+                description: The segment's actual or projected revenue by month, whatever the table's figure.
                 items:
-                  $ref: "#/components/schemas/SummaryLeagueValue"
+                  $ref: "#/components/schemas/Money"
         total:
           $ref: "#/components/schemas/SummaryLeagueValue"
         roi:

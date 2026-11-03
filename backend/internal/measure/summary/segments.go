@@ -16,7 +16,7 @@ type Segment struct {
 // segmentsOf are the active choice attributes at Plan, Campaign and Activity level, the Activity ones first so the
 // default is the first of them.
 func segmentsOf(attributes []allwork.Attribute) []Segment {
-	var activity, others []Segment
+	activity, others := []Segment{}, []Segment{}
 	for _, at := range attributes {
 		if !isSegment(at) {
 			continue
@@ -28,7 +28,7 @@ func segmentsOf(attributes []allwork.Attribute) []Segment {
 			others = append(others, s)
 		}
 	}
-	return slices.Concat(activity, others)
+	return append(activity, others...)
 }
 
 func isSegment(at allwork.Attribute) bool {
@@ -75,12 +75,12 @@ func (t tally) split(values []string) map[string]tally {
 
 func tallyOf(s revenue.ActivitySeries, cost *int64) tally {
 	sums := sumSeries([]revenue.ActivitySeries{s}, revenuePick())
-	out := tally{total: sums.actualOrProjected(), goal: sums.goal, actual: sums.actual()}
+	out := tally{total: sums.actualOrProjected(), goal: sums.goal}
 	for _, m := range sums.months {
 		out.months = append(out.months, m.actualOrProjected())
 	}
 	if cost != nil {
-		out.cost, out.costSeen = *cost, true
+		out.actual, out.cost, out.costSeen = sums.actual(), *cost, true
 	}
 	return out
 }

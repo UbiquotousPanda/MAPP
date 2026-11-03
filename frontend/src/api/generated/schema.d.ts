@@ -6288,13 +6288,11 @@ export interface components {
                 name: string;
             }[];
             /** @description The report states that apply (FR-018). */
-            states: ("noPlans" | "noGoals" | "noPerformanceData" | "notApproved" | "nothingMatches" | "noFinancialAccess" | "attributionNotConfigured")[];
+            states: ("noPlans" | "noGoals" | "noPerformanceData" | "nothingMatches" | "noFinancialAccess")[];
             financeCovers: {
                 plans: number;
                 of: number;
             };
-            /** Format: date-time */
-            performanceAsOf: string | null;
         };
         SummaryTrendPeriod: {
             key: string;
@@ -6321,7 +6319,8 @@ export interface components {
                 key: string;
                 name: string;
                 value: components["schemas"]["SummaryLeagueValue"];
-                trend: components["schemas"]["SummaryLeagueValue"][];
+                /** @description The segment's actual or projected revenue by month, whatever the table's figure. */
+                trend: components["schemas"]["Money"][];
             }[];
             total: components["schemas"]["SummaryLeagueValue"];
             roi: {
@@ -12816,8 +12815,6 @@ export interface components {
         ReportCurrency: string;
         /** @description Keys of the widgets shown as a table instead of a chart. */
         ReportTable: string[];
-        /** @description An activity category ID, or uncategorised; every figure of the Summary report counts only its activities. */
-        SummaryCategory: string;
         /** @description The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12). */
         SummaryStage: "mql";
         /** @description A Shell attribute ID at Plan, Campaign or Activity level; the default is the first Activity-level attribute. */
@@ -22935,8 +22932,8 @@ export interface operations {
                 currency?: components["parameters"]["ReportCurrency"];
                 /** @description Keys of the widgets shown as a table instead of a chart. */
                 table?: components["parameters"]["ReportTable"];
-                /** @description An activity category ID, or uncategorised; every figure of the Summary report counts only its activities. */
-                category?: components["parameters"]["SummaryCategory"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
                 /** @description The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12). */
                 stage?: components["parameters"]["SummaryStage"];
             };
@@ -22990,8 +22987,8 @@ export interface operations {
                 show?: components["parameters"]["ReportShow"];
                 /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
                 currency?: components["parameters"]["ReportCurrency"];
-                /** @description An activity category ID, or uncategorised; every figure of the Summary report counts only its activities. */
-                category?: components["parameters"]["SummaryCategory"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
                 /** @description A Shell attribute ID at Plan, Campaign or Activity level; the default is the first Activity-level attribute. */
                 segment?: components["parameters"]["SummarySegment"];
             };

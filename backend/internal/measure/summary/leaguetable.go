@@ -61,7 +61,7 @@ func (s *Service) League(ctx context.Context, a actor.Actor, f measure.Filter, t
 }
 
 func (s *Service) readLeague(ctx context.Context, a actor.Actor, f measure.Filter, category string) (leagueView, error) {
-	v, err := s.read(ctx, a, f, category)
+	v, err := s.readSeries(ctx, a, f, category)
 	if err != nil {
 		return leagueView{}, err
 	}

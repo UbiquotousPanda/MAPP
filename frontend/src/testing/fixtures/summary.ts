@@ -71,7 +71,6 @@ export function summaryReport(overrides: Partial<SummaryReport> = {}): SummaryRe
     ],
     states: [],
     financeCovers: { plans: 1, of: 1 },
-    performanceAsOf: null,
     ...overrides,
   };
 }

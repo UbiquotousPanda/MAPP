@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	"mapp/internal/measure/revenue"
 )
 
 func TestConversion_048_C7(t *testing.T) {
@@ -17,8 +19,8 @@ func TestConversion_048_C7(t *testing.T) {
 	got := conversions([]Stage{StageINQ, StageMQL, StageRevenue}, totals)
 
 	want := []Conversion{
-		{Stage: StageMQL, Rate: ptr("12.5"), Goal: ptr("10.0"), Variance: VarianceAbovePlan},
-		{Stage: StageRevenue, Rate: ptr("0.0"), Goal: ptr("0.0"), Variance: VarianceNoGoal},
+		{Stage: StageMQL, Rate: ptr("12.5"), Goal: ptr("10.0"), Variance: revenue.AbovePlan},
+		{Stage: StageRevenue, Rate: ptr("0.0"), Goal: ptr("0.0"), Variance: revenue.NoGoal},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("conversions() (-want +got)\n%s", diff)

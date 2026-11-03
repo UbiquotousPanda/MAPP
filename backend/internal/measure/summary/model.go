@@ -2,24 +2,16 @@
 package summary
 
 import (
-	"time"
-
+	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/money"
 )
 
 type Stage string
 
 const (
-	StageINQ     Stage = "inq"
-	StageMQL     Stage = "mql"
+	StageINQ     Stage = revenue.StageINQ
+	StageMQL     Stage = revenue.StageMQL
 	StageRevenue Stage = "revenue"
-)
-
-const (
-	VarianceAbovePlan = "abovePlan"
-	VarianceOnPlan    = "onPlan"
-	VarianceBelowPlan = "belowPlan"
-	VarianceNoGoal    = "noGoal"
 )
 
 const (
@@ -43,25 +35,24 @@ type Figures struct {
 }
 
 type Performance struct {
-	Percent  *int   `json:"performance"`
-	Variance string `json:"variance"`
+	Percent  *int             `json:"performance"`
+	Variance revenue.Variance `json:"variance"`
 }
 
 type Conversion struct {
-	Stage    Stage   `json:"stage"`
-	Rate     *string `json:"rate"`
-	Goal     *string `json:"goal"`
-	Variance string  `json:"variance"`
+	Stage    Stage            `json:"stage"`
+	Rate     *string          `json:"rate"`
+	Goal     *string          `json:"goal"`
+	Variance revenue.Variance `json:"variance"`
 }
 
 type Report struct {
-	Revenue         RevenueSection `json:"revenue"`
-	Funnel          FunnelSection  `json:"funnel"`
-	Categories      []Choice       `json:"categories"`
-	States          []string       `json:"states"`
-	FinanceCovers   Covers         `json:"financeCovers"`
-	PerformanceAsOf *time.Time     `json:"performanceAsOf"`
-	currency        string
+	Revenue       RevenueSection `json:"revenue"`
+	Funnel        FunnelSection  `json:"funnel"`
+	Categories    []Choice       `json:"categories"`
+	States        []string       `json:"states"`
+	FinanceCovers Covers         `json:"financeCovers"`
+	currency      string
 }
 
 type RevenueSection struct {
