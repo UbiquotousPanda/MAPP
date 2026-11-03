@@ -27,6 +27,10 @@ func checkNothingCounted(t *testing.T, alexSees person) {
 			t.Errorf("Summary %q, nothing in view: %q; want the actual or projected null in both sections, never 0.00",
 				query, got.headline())
 		}
+		if cost := leagueOf(t, alexSees, "cost", query); cost.Reason != nil || units(cost.Total) != nil {
+			t.Errorf("Summary cost league %q, nothing in view: total %s, reason %s; want neither: Alex sees every plan's finance",
+				query, shown(units(cost.Total)), textOf(cost.Reason))
+		}
 	}
 }
 
