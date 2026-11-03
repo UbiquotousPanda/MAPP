@@ -83,5 +83,5 @@ own folders only, plus the contract, route rules and `notYetServed` lines of 048
 - [x] T027 Show "Covers n of m plans" on the Cost and ROI league tables per FR-003 (partial)
 - [x] T028 Name the display currency in the export's money columns per US3/AC1 (partial)
 - [ ] T029 Run `BenchmarkSummaryReport` on PostgreSQL and record it in plan.md per FR-020 (partial)
-- [ ] T030 Show earlier years as one "FY (total)" bucket each in the trend per Edge case: several years (partial)
+- [x] T030 Show earlier years as one "FY (total)" bucket each in the trend per Edge case: several years (partial) — closed without code: one plan year per report (D-368, 048-C13)
 - [ ] T031 Ask lane B to read `category` from the address on Revenue and Funnel stages, so Details keeps it, per FR-016 (partial)

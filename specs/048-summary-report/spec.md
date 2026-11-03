@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-02
 
-**Status**: Built (3 Nov; open: T029 benchmark on PostgreSQL, T030 earlier-year buckets, T031 an ask to lane B)
+**Status**: Built (3 Nov; open: T029 benchmark on PostgreSQL, T031 an ask to lane B)
 
 **Input**: User description: "Summary report of the Measure module (wave B, lane C, issue #41): projected against
 goal with the variance word, the trend split at today, four league tables (top by revenue, performance, cost and
@@ -82,6 +82,9 @@ two with the same wording (049-C13, 049-C15).
   Revenue? → A: **There is none.** A rate of money over a count of MQLs is not a conversion, so the funnel shows
   Revenue's volume as an amount and converts only between counted stages: MQL from INQ. `stage` takes `mql` only.
   The variance word and Performance come from 049's `revenue.Performance` and `revenue.VarianceOf` (048-C10).
+- **048-C13** — Q: Client 016 FR-027 shows earlier years as one "FY (total)" bucket each; does Summary? → A: **No.** A
+  report covers one plan year (D-368, 039 Assumptions): multi-year selection is not adopted because plans are one
+  year. The edge case is replaced, and convergence task T030 is closed without code.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -173,8 +176,8 @@ The lead exports a widget or the whole page to discuss it.
 
 - A plan whose model does not allow Revenue as a goal stage: its revenue goal comes from the model's rates and average
   deal size (measure-metrics), and the revenue figure still shows.
-- Several years in the frame: earlier years show as one "FY (total)" bucket each and the latest by period (client 016
-  FR-027), as 039's frame shows them.
+- One plan year only: 039's frame covers a single plan year (D-368), so there is no multi-year view and no
+  "FY (total)" bucket (048-C13).
 - A league-table value whose figure is "—" (no goal, no cost): it sorts after valued rows and is not counted among
   the five.
 - Fewer than five values: the table shows them all and the Total.
