@@ -1,29 +1,16 @@
 package summary
 
+import "mapp/internal/measure/revenue"
+
 const (
 	percent      = 100
-	onPlan       = 100
 	tenthPercent = 1000
 )
 
-// performanceOf gives no per cent for a goal of zero or below, never "0 % above".
+// performanceOf takes 049's rule and words, so Summary and Revenue never word one figure differently (048-C10).
 func performanceOf(actualOrProjected, goal int64) Performance {
-	if goal <= 0 {
-		return Performance{Variance: VarianceNoGoal}
-	}
-	whole := int(roundedRatio(actualOrProjected, goal, percent))
-	return Performance{Percent: &whole, Variance: varianceOf(whole)}
-}
-
-func varianceOf(whole int) string {
-	switch {
-	case whole > onPlan:
-		return VarianceAbovePlan
-	case whole == onPlan:
-		return VarianceOnPlan
-	default:
-		return VarianceBelowPlan
-	}
+	whole := revenue.Performance(actualOrProjected, goal)
+	return Performance{Percent: whole, Variance: string(revenue.VarianceOf(whole))}
 }
 
 func goalCoverage(activities, plans int64) *int {

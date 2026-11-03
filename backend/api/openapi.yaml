@@ -9699,10 +9699,10 @@ components:
     SummaryStage:
       name: stage
       in: query
-      description: The stage whose conversion trend is shown; the default is the first conversion stage the models allow.
+      description: The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12).
       schema:
         type: string
-        enum: [mql, revenue]
+        enum: [mql]
     SummarySegment:
       name: segment
       in: query

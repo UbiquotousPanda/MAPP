@@ -12806,8 +12806,8 @@ export interface components {
         ReportTable: string[];
         /** @description An activity category ID, or uncategorised; every figure of the Summary report counts only its activities. */
         SummaryCategory: string;
-        /** @description The stage whose conversion trend is shown; the default is the first conversion stage the models allow. */
-        SummaryStage: "mql" | "revenue";
+        /** @description The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12). */
+        SummaryStage: "mql";
         /** @description A Shell attribute ID at Plan, Campaign or Activity level; the default is the first Activity-level attribute. */
         SummarySegment: string;
         ReportFormat: "xlsx" | "csv";
@@ -22913,7 +22913,7 @@ export interface operations {
                 table?: components["parameters"]["ReportTable"];
                 /** @description An activity category ID, or uncategorised; every figure of the Summary report counts only its activities. */
                 category?: components["parameters"]["SummaryCategory"];
-                /** @description The stage whose conversion trend is shown; the default is the first conversion stage the models allow. */
+                /** @description The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12). */
                 stage?: components["parameters"]["SummaryStage"];
             };
             header?: never;

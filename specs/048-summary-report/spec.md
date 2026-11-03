@@ -76,6 +76,13 @@ two with the same wording (049-C13, 049-C15).
 - **048-C11** — Q: Who adds 048's operations to the wave B contract? → A: **Lane C, with this feature**, as for 041
   and 042, with lane B (UbiquotousPanda) tagged to review.
 
+### Session 2026-11-03
+
+- **048-C12** — Q: `ActivitySeries` (#99) counts INQ and MQL and gives revenue as money; what is the conversion into
+  Revenue? → A: **There is none.** A rate of money over a count of MQLs is not a conversion, so the funnel shows
+  Revenue's volume as an amount and converts only between counted stages: MQL from INQ. `stage` takes `mql` only.
+  The variance word and Performance come from 049's `revenue.Performance` and `revenue.VarianceOf` (048-C10).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Are we on track? (Priority: P1)
