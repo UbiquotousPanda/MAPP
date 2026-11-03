@@ -49,11 +49,21 @@ func TestConversion_RoundsHalfAwayFromZero_048_C7(t *testing.T) {
 		{2, 3, "66.7"},
 		{1, 16, "6.3"},
 		{3, 2, "150.0"},
+		{23, 80, "28.8"},
 	}
 	for _, tt := range tests {
 		got := rateOf(tt.count, tt.previous)
 		if got == nil || *got != tt.want {
 			t.Errorf("rateOf(%d, %d) = %v, want %s", tt.count, tt.previous, got, tt.want)
+		}
+	}
+}
+
+func TestConversion_RefusesWhatEveryReportRefuses_048_C7(t *testing.T) {
+	t.Parallel()
+	for _, tt := range []struct{ count, previous int64 }{{5, 0}, {-1, 5}} {
+		if got := rateOf(tt.count, tt.previous); got != nil {
+			t.Errorf("rateOf(%d, %d) = %s, want no rate, as projection.ConversionRate answers", tt.count, tt.previous, *got)
 		}
 	}
 }
