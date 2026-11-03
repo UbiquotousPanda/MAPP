@@ -11929,7 +11929,7 @@ components:
         reason:
           type: string
           description: Why the report is empty, never an empty grid alone (049-C20).
-          enum: ["", noGoals, notApproved, noData, noModel]
+          enum: ["", noGoal, notApproved, noData, noModel]
     RevenueFigures:
       type: object
       additionalProperties: false
@@ -12066,7 +12066,7 @@ components:
           oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
         reason:
           type: string
-          enum: ["", noGoals, notApproved, noData, noModel]
+          enum: ["", noGoal, notApproved, noData, noModel]
     FunnelFigures:
       type: object
       additionalProperties: false

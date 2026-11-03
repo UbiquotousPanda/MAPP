@@ -5944,7 +5944,7 @@ export interface components {
              * @description Why the report is empty, never an empty grid alone (049-C20).
              * @enum {string}
              */
-            reason: "" | "noGoals" | "notApproved" | "noData" | "noModel";
+            reason: "" | "noGoal" | "notApproved" | "noData" | "noModel";
         };
         RevenueFigures: {
             goal: components["schemas"]["Money"] | null;
@@ -6044,7 +6044,7 @@ export interface components {
             periods: components["schemas"]["FunnelPeriod"][];
             projection: components["schemas"]["ProjectionStamp"] | null;
             /** @enum {string} */
-            reason: "" | "noGoals" | "notApproved" | "noData" | "noModel";
+            reason: "" | "noGoal" | "notApproved" | "noData" | "noModel";
         };
         FunnelFigures: {
             goal: number | null;
