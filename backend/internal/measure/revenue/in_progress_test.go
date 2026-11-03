@@ -31,3 +31,21 @@ func TestCards_ActualOrProjectedKeepsTheMonthInProgressWithoutAProjection_FR010_
 		t.Errorf("INQ: actual or projected = %v, want every counted fact, 60", deref(v))
 	}
 }
+
+func TestSums_MonthsAddUpToTheCardWithoutAProjection_048C10_FR010(t *testing.T) {
+	t.Parallel()
+	f := measure.Filter{Period: measure.PeriodMonth, Show: measure.ShowActivity}
+	s := newFixtureAt(midAugust, activityWithoutGoalsScope(), fakeGoals{}, julyAndAugustFacts(revenue.StageINQ, 40, 20))
+	series, err := s.ActivitySeries(t.Context(), priya, f, "")
+	if err != nil {
+		t.Fatalf("ActivitySeries: %v", err)
+	}
+	sums := revenue.SumMonths(series, revenue.StageMeasure(revenue.StageINQ))
+	var months int64
+	for i := range sums.Actual {
+		months += sums.ActualOrProjected(i)
+	}
+	if months != 60 || sums.Total() != 60 {
+		t.Errorf("months add up to %d and Total is %d, want both 60: a report showing months must reach the card", months, sums.Total())
+	}
+}
