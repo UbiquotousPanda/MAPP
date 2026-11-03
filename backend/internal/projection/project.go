@@ -24,9 +24,18 @@ func Project(in Inputs) Projection {
 
 func hasGoal(g Goals) bool {
 	if g.SetLaterStagesMyself {
-		return g.INQ != nil || g.MQL != nil || g.Revenue != nil
+		return IsGoal(g.INQ) || IsGoal(g.MQL) || IsRevenueGoal(g.Revenue)
 	}
-	return g.INQ != nil
+	return IsGoal(g.INQ)
+}
+
+// IsGoal says whether a stage has a goal: zero is no goal, as the variance has it, never a target of nothing.
+func IsGoal(goal *int64) bool {
+	return goal != nil && *goal > 0
+}
+
+func IsRevenueGoal(goal *money.Money) bool {
+	return goal != nil && goal.Amount.Sign() > 0
 }
 
 // typed phases each stage's own goal: the override means the rates and velocity change nothing.
@@ -35,11 +44,11 @@ func typed(out Projection, in Inputs, start, end date.Date) Projection {
 		name string
 		goal *int64
 	}{{StageINQ, in.Goals.INQ}, {StageMQL, in.Goals.MQL}} {
-		if stage.goal != nil {
+		if IsGoal(stage.goal) {
 			out.Stages = append(out.Stages, seriesOf(stage.name, phase(*stage.goal, start, end)))
 		}
 	}
-	if in.Goals.Revenue != nil {
+	if IsRevenueGoal(in.Goals.Revenue) {
 		out.Revenue, out.Total = phaseMoney(*in.Goals.Revenue, start, end)
 	}
 	return out

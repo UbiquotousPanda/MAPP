@@ -115,6 +115,13 @@ US7, client 016 FR-033–FR-039, FA §E3.2.6 and §E7.5.1, MA §5–§6, domain 
   turns into tens of thousands). SC-001's hand table is unchanged: its 1,000 INQ a day leaves no remainder
   at 2 % or 5 % (273 deals, 2,730,000 USD).
 
+- **047-C17** — Q: Is a goal of exactly zero a goal (T059)? → A: **No: a goal of zero means no goal** (decided
+  2026-11-03), as 048-C1 already says for the variance (`revenue.Performance` is null for a goal of zero or less,
+  so the word is *No goal*). The engine treats a zero goal exactly like an absent one, stage by stage: no series,
+  no projection, no stamp, and the panel's `projectedReason` and `reason` say `noGoal` — never a projected 0 or
+  0.00. A typed activity whose INQ is zero still projects the typed stages that are above zero. Rejected:
+  projecting zeros (it shows a goal that sets no target, and the variance already calls it *No goal*).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Velocity and allowed goal stages on the model (Priority: P1)
@@ -263,8 +270,8 @@ check — plus the type assignment, without any report.
   last changed** (047-C8, 020 FR-052, SC-011 of client 020). The record's own `updatedAt` is that date: it
   moves on any edit to the model, which is the honest conservative answer — it never says "unchanged" when
   a rate did change.
-- **FR-013**: An activity without a goal MUST show no projection, with the reason *no goal* — never a zero
-  (016 FR-036, measure-metrics header). That reason MUST be carried separately from the reason a figure
+- **FR-013**: An activity without a goal — a goal of zero included (047-C17) — MUST show no projection, with
+  the reason *no goal* — never a zero (016 FR-036, measure-metrics header). That reason MUST be carried separately from the reason a figure
   has no **actual**: a stage can have facts and still no goal, and an actual must never swallow the
   explanation of a missing projection.
 - **FR-014**: Actual inputs MUST be 046's counted facts — held, unmatched and replaced facts excluded;

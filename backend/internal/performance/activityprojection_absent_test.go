@@ -85,3 +85,19 @@ func TestActivityPanel_RefusesARevenueGoalInAnotherCurrency_FR007(t *testing.T) 
 		t.Errorf("ActivityPanel = %+v, %v, want ErrMixedCurrencies", panel.Revenue.Projected, err)
 	}
 }
+
+func TestActivityPanel_AGoalOfZeroProjectsNothing_FR013_047C17(t *testing.T) {
+	t.Parallel()
+	zero := int64(0)
+
+	panel := useGoals(t, performance.GoalFacts{INQ: &zero, PlanYear: 2026, ModelID: "MOD-1", Model: projectingModel()})
+
+	if panel.Projection != nil {
+		t.Errorf("stamp = %+v, want none: a goal of zero is no goal, so no model stands behind a figure", panel.Projection)
+	}
+	for _, stage := range panel.Stages {
+		assertNoProjection(t, stage.Stage, served{stage.Projected != nil, stage.ProjectedReason, len(stage.Months)})
+	}
+	revenue := panel.Revenue
+	assertNoProjection(t, "revenue", served{revenue.Projected != nil, revenue.ProjectedReason, len(revenue.Months)})
+}

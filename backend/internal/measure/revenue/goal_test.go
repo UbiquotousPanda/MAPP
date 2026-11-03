@@ -60,3 +60,33 @@ func TestFunnelGoal_IsTheSumOfTheActivitiesGoalsNotTheInYearProjection_FR023_049
 		t.Errorf("ranked MQL Goal = %v, want the activity's own 7,300", got)
 	}
 }
+
+// The reports read the projection engine, so a goal of zero is no goal there too: no projection, the word "No goal".
+func TestReports_AGoalOfZeroIsNoGoal_047C17_048C1(t *testing.T) {
+	t.Parallel()
+	sc := oneActivityScope()
+	zero, none := int64(0), money.Amount{}
+	sc.Nodes[0].INQ, sc.Nodes[0].MQL, sc.Nodes[0].Revenue = &zero, &zero, &none
+	s := newFixtureWith(sc, fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}, nil)
+
+	report, err := s.Report(t.Context(), priya, measure.Filter{})
+	if err != nil {
+		t.Fatalf("Report: %v", err)
+	}
+	funnel, err := s.FunnelReport(t.Context(), priya, measure.Filter{}, revenue.StageINQ)
+	if err != nil {
+		t.Fatalf("FunnelReport: %v", err)
+	}
+
+	for name, card := range map[string]revenue.PerformanceCard{
+		"Revenue": report.Cards.Performance, "Funnel INQ": funnel.Cards.Performance,
+	} {
+		if card.Value != nil || card.Variance != revenue.NoGoal {
+			t.Errorf("%s Performance = %+v, want no figure and the word No goal", name, card)
+		}
+	}
+	if report.Cards.Projected.Value != nil || funnel.Cards.Projected.Value != nil {
+		t.Errorf("Projected = %v and %v, want none: nothing projects from a goal of zero",
+			report.Cards.Projected.Value, funnel.Cards.Projected.Value)
+	}
+}
