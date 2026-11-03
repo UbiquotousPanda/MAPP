@@ -73,7 +73,11 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
       </div>
       {report.data ? (
         <>
-          <FunnelCards stage={report.data.stage} cards={report.data.cards} />
+          <FunnelCards
+            stage={report.data.stage}
+            cards={report.data.cards}
+            projection={report.data.projection}
+          />
           <FunnelChart report={report.data} />
           {report.data.uncoveredCount > 0 && (
             <p>

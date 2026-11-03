@@ -185,4 +185,13 @@ describe('RevenueReport (049 US1)', () => {
     expect(nth(asked(api, '/api/v1/reports/revenue/export'), 0).get('category')).toBe('CAT-1001');
     save.mockRestore();
   });
+
+  it('names the model behind the projected figures and when it last changed (049 FR-022, SC-006)', async () => {
+    renderPage();
+
+    const summary = await screen.findByLabelText('Summary');
+    expect(
+      within(summary).getByText(/^Projected from Lubricants 1\.0, last changed [^T:]+ 2026\.$/),
+    ).toBeInTheDocument();
+  });
 });

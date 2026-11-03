@@ -5,6 +5,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import type { StatusTone } from '@/ui/StatusChip/StatusChip';
 import { formatWhole } from '@/format/decimal';
+import { localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
 import { usePerformancePanel } from './api';
 import type {
@@ -146,7 +147,7 @@ function ProjectionNote({ stamp }: { stamp: NonNullable<Panel['projection']> }) 
   const { date } = useFormatters();
   return (
     <p className={styles.notice}>
-      Projected from {stamp.modelName}, last changed {date(stamp.modelChangedAt)}.
+      Projected from {stamp.modelName}, last changed {date(localDate(stamp.modelChangedAt))}.
     </p>
   );
 }

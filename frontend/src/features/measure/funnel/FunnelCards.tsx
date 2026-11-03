@@ -1,13 +1,24 @@
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
+import { useFormatters } from '@/format/useFormatters';
 import { varianceText } from '../revenue/variance';
 import { reasonText } from './reasons';
-import type { FunnelCards as FunnelCardsData } from '../revenue/api';
+import type { FunnelCards as FunnelCardsData, FunnelReport } from '../revenue/api';
+import { projectionLine } from '../revenue/projection-line';
 import styles from './Funnel.module.css';
 
 const STAGE_WORDS: Record<string, string> = { inq: 'INQ', mql: 'MQL' };
 
 /** The fixed Funnel card set for one stage: goal, actual, projected, performance, conversion (049-C9). */
-export function FunnelCards({ stage, cards }: { stage: string; cards: FunnelCardsData }) {
+export function FunnelCards({
+  stage,
+  cards,
+  projection,
+}: {
+  stage: string;
+  cards: FunnelCardsData;
+  projection: FunnelReport['projection'];
+}) {
+  const { date } = useFormatters();
   const name = STAGE_WORDS[stage] ?? stage;
   const whole = (value: number | null) =>
     value === null ? null : Math.round(value).toLocaleString();
@@ -25,6 +36,7 @@ export function FunnelCards({ stage, cards }: { stage: string; cards: FunnelCard
       <SummaryCard
         label={`${name} actual or projected`}
         value={whole(cards.projected.value) ?? reasonText(cards.projected.reason)}
+        detail={projectionLine(projection, date)}
       />
       <SummaryCard
         label="Performance"

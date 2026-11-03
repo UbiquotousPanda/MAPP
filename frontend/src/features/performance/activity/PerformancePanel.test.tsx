@@ -198,7 +198,9 @@ describe('projected figures (047)', () => {
     );
 
     expect(await screen.findByText('120')).toBeInTheDocument();
-    expect(screen.getByText(/Projected from Lubricants 1\.0/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/^Projected from Lubricants 1\.0, last changed [^T:]+ 2026\.$/),
+    ).toBeInTheDocument();
   });
 
   it('shows an em dash where nothing projects, never a zero (047 FR-013)', async () => {
