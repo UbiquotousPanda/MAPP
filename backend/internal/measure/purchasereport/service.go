@@ -55,6 +55,9 @@ func (d data) cards(rs []Request) Cards {
 	cards := Cards{PurchaseRequests: len(rs)}
 	for _, r := range rs {
 		vendors[r.Vendor] = true
+		if !d.sees(r.PlanID) {
+			committed.hidden, invoiced.hidden = true, true
+		}
 		cards.Lines += len(r.Lines)
 		for _, l := range r.Lines {
 			if isCommitted(r.Status) {

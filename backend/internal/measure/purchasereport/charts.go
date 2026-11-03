@@ -45,6 +45,9 @@ func (d data) chart(rs []Request, group grouping) Chart {
 	months := map[string]*tally{}
 	var all tally
 	for _, r := range rs {
+		if !d.sees(r.PlanID) {
+			all.hidden = true
+		}
 		if !isCommitted(r.Status) {
 			continue
 		}

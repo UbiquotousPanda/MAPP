@@ -67,7 +67,7 @@ func (h *Handler) createSource(c *gin.Context) {
 	}
 	a, _ := actor.From(c.Request.Context())
 	created, err := h.service.CreateSource(c.Request.Context(), a, in)
-	h.answerSource(c, http.StatusCreated, created, err)
+	h.answerSource(c, http.StatusCreated, created.ID, err)
 }
 
 func (h *Handler) updateSource(c *gin.Context) {
@@ -78,7 +78,7 @@ func (h *Handler) updateSource(c *gin.Context) {
 	}
 	a, _ := actor.From(c.Request.Context())
 	saved, err := h.service.UpdateSource(c.Request.Context(), a, c.Param("sourceId"), in)
-	h.answerSource(c, http.StatusOK, saved, err)
+	h.answerSource(c, http.StatusOK, saved.ID, err)
 }
 
 func (h *Handler) deleteSource(c *gin.Context) {
@@ -101,16 +101,8 @@ func (h *Handler) reactivate(c *gin.Context) {
 func (h *Handler) setStatus(c *gin.Context, status Status) {
 	a, _ := actor.From(c.Request.Context())
 	id := c.Param("sourceId")
-	if err := h.service.SetSourceStatus(c.Request.Context(), a, id, status); err != nil {
-		web.RespondError(c, err)
-		return
-	}
-	found, err := h.service.Source(c.Request.Context(), a, id)
-	if err != nil {
-		web.RespondError(c, err)
-		return
-	}
-	web.Respond(c, http.StatusOK, viewOf(found, h.now()))
+	err := h.service.SetSourceStatus(c.Request.Context(), a, id, status)
+	h.answerSource(c, http.StatusOK, id, err)
 }
 
 func (h *Handler) mappings(c *gin.Context) {
@@ -164,12 +156,19 @@ func (h *Handler) template(c *gin.Context) {
 	c.Data(http.StatusOK, "text/csv; charset=utf-8", []byte(file))
 }
 
-func (h *Handler) answerSource(c *gin.Context, status int, src Source, err error) {
+// answerSource answers a change with the source as GET reads it, its load figures included.
+func (h *Handler) answerSource(c *gin.Context, status int, sourceID string, err error) {
 	if err != nil {
 		web.RespondError(c, err)
 		return
 	}
-	web.Respond(c, status, viewOf(SourceView{Source: src}, h.now()))
+	a, _ := actor.From(c.Request.Context())
+	found, err := h.service.Source(c.Request.Context(), a, sourceID)
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	web.Respond(c, status, viewOf(found, h.now()))
 }
 
 func answer(c *gin.Context, status int, v any, err error) {

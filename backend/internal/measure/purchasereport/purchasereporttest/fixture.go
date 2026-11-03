@@ -15,10 +15,12 @@ import (
 )
 
 const (
+	acme    = "Acme"
 	item1   = "li-1"
 	item2   = "li-2"
 	item3   = "li-3"
 	item4   = "li-4"
+	item6   = "li-6"
 	march10 = "2026-03-10"
 )
 
@@ -93,15 +95,15 @@ func requests() []purchasereport.Request {
 	pr := func(id, name, vendor string, st purchasereport.Status, owner actor.Actor) requestSpec {
 		return requestSpec{id, name, vendor, st, PlanWithFinance, owner.ID}
 	}
-	approvedPlan2 := requestSpec{"pr-9", "Plan two PR", "Acme", purchasereport.StatusApproved, PlanWithoutFinance, Alice().ID}
+	approvedPlan2 := requestSpec{"pr-9", "Plan two PR", acme, purchasereport.StatusApproved, PlanWithoutFinance, Alice().ID}
 	waiting := request(pr("pr-3", "Stage", "Globex", purchasereport.StatusApproved, Alice()),
 		line(lineSpec{id: "l4", item: item4, amount: 2000, delivery: "2026-04-15"}))
 	waiting.WaitingForGSAP, waiting.GSAPNumber = true, "GSAP-3"
 	return []purchasereport.Request{
-		request(pr("pr-1", "Event stand", "Acme", purchasereport.StatusApproved, Alice()),
+		request(pr("pr-1", "Event stand", acme, purchasereport.StatusApproved, Alice()),
 			line(lineSpec{id: "l1", item: item1, amount: 1000, delivery: march10, po: "4500001", line: "10", invoiced: invoiced(400)}),
 			line(lineSpec{id: "l2", item: item2, amount: 500, delivery: "2026-05-20", po: "4500001", line: "20", invoiced: invoiced(0)})),
-		request(pr("pr-2", "Brochures", "Acme", purchasereport.StatusClosed, Bob()),
+		request(pr("pr-2", "Brochures", acme, purchasereport.StatusClosed, Bob()),
 			line(lineSpec{id: "l3", item: item3, amount: 300, delivery: "2026-03-25", po: "4500002", line: "10", invoiced: invoiced(300)})),
 		waiting,
 		request(pr("pr-4", "Banners", "", purchasereport.StatusApproved, Carol()),
@@ -114,7 +116,7 @@ func requests() []purchasereport.Request {
 			line(lineSpec{id: "l8", item: item3, amount: 60, delivery: "2026-03-03"})),
 		request(pr("pr-8", "Declined one", "Initech", purchasereport.StatusDeclined, Carol()),
 			line(lineSpec{id: "l9", item: item4, amount: 70, delivery: "2026-03-04"})),
-		request(approvedPlan2, line(lineSpec{id: "l10", item: "li-6", amount: 900, delivery: "2026-03-12"})),
+		request(approvedPlan2, line(lineSpec{id: "l10", item: item6, amount: 900, delivery: "2026-03-12"})),
 	}
 }
 

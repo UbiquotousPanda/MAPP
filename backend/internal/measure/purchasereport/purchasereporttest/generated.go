@@ -14,7 +14,6 @@ func Spread(first, last string) []purchasereport.Request {
 	return []purchasereport.Request{r}
 }
 
-// Vendors is n approved requests, each of its own vendor, V01 with 10.00, V02 with 20.00 and so on.
 func Vendors(n int) []purchasereport.Request {
 	list := make([]purchasereport.Request, 0, n)
 	for i := 1; i <= n; i++ {
@@ -23,4 +22,10 @@ func Vendors(n int) []purchasereport.Request {
 		list = append(list, request(spec, line(lineSpec{id: fmt.Sprintf("v%02d", i), item: item1, amount: int64(i) * 10, delivery: march10})))
 	}
 	return list
+}
+
+// Hidden is one Created request in the plan without finance.view: it commits nothing and has no invoices.
+func Hidden() []purchasereport.Request {
+	spec := requestSpec{"pr-h", "Hidden", acme, purchasereport.StatusCreated, PlanWithoutFinance, Alice().ID}
+	return []purchasereport.Request{request(spec, line(lineSpec{id: "h1", item: item6, amount: 200, delivery: march10}))}
 }
