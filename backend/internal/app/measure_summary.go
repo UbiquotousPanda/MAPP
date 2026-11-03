@@ -12,7 +12,7 @@ import (
 	"mapp/internal/platform/actor"
 )
 
-// registerSummary registers the Summary report of feature 048 on 049's ActivitySeries (048-C10).
+// registerSummary registers the Summary report on 049's ActivitySeries.
 func registerSummary(w *wiring, r *measure.Registry) error {
 	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
 	service := summary.NewService(w.set.Tx, summary.Deps{

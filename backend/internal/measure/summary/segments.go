@@ -14,7 +14,7 @@ type Segment struct {
 }
 
 // segmentsOf are the active choice attributes at Plan, Campaign and Activity level, the Activity ones first so the
-// default is the first of them (048-C4).
+// default is the first of them.
 func segmentsOf(attributes []allwork.Attribute) []Segment {
 	var activity, others []Segment
 	for _, at := range attributes {

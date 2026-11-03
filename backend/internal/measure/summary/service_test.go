@@ -98,6 +98,8 @@ func TestStates_048_FR018(t *testing.T) {
 		want   []string
 	}{
 		{"nothing matches the filters", nil, []string{StateNothingMatches}},
+		{"finance hidden on one plan", []revenue.ActivitySeries{projected("A-1", planOne), projected("A-3", "P-HIDDEN")},
+			[]string{StateNoFinance}},
 		{"activities without goals", []revenue.ActivitySeries{noGoal}, []string{StateNoGoals}},
 		{"no performance data yet", []revenue.ActivitySeries{noActual}, []string{StateNoPerformance}},
 		{"every figure there", []revenue.ActivitySeries{projected("A-1", planOne)}, []string{}},
@@ -106,11 +108,22 @@ func TestStates_048_FR018(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			f := newFakes()
+			f.scope.Choices.FinancePlans = []string{planOne, planTwo}
 			f.series = tt.series
 			if diff := cmp.Diff(tt.want, report(t, f, measure.Filter{}).States); diff != "" {
 				t.Errorf("states (-want +got)\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestStates_NoPlansInScope_048_FR018(t *testing.T) {
+	t.Parallel()
+	f := newFakes()
+	f.scope.Nodes, f.series = nil, nil
+
+	if got := report(t, f, measure.Filter{}).States; !cmp.Equal(got, []string{StateNoPlans}) {
+		t.Errorf("states = %q, want only %q", got, StateNoPlans)
 	}
 }
 

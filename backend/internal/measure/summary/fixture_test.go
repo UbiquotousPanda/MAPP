@@ -66,7 +66,8 @@ func (f *fakes) service() *Service {
 func newFakes() *fakes {
 	return &fakes{
 		scope: measure.Scope{Year: 2026, Currency: allwork.Currency{Code: money.BaseCurrency, Rate: money.One},
-			Choices: allwork.Choices{SeesFinance: true}},
+			Choices: allwork.Choices{SeesFinance: true},
+			Nodes:   []allwork.Node{{ID: planOne, Level: allwork.LevelPlan}, {ID: planTwo, Level: allwork.LevelPlan}}},
 		series: []revenue.ActivitySeries{projected("A-1", planOne), unprojected("A-2", planTwo)},
 		plans: map[string]revenue.Goal{planOne: {INQ: ptr[int64](200), MQL: ptr[int64](40),
 			RevenueUSD: ptr(money.FromCents(2_000_000))}},

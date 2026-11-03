@@ -33,7 +33,7 @@ export function useSummaryReport(address: ReportAddress, own: SummaryOwn) {
   });
 }
 
-/** One league table on its own request, so changing its segment reloads only it (048-C6). */
+/** One league table on its own request, so changing its segment reloads only it. */
 export function useSummaryLeague(table: LeagueTableKey, address: ReportAddress, own: LeagueOwn) {
   return useQuery({
     queryKey: ['reports', 'summary', 'league', table, writeAddress(address).toString(), own],

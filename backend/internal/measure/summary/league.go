@@ -16,7 +16,7 @@ type leagueRow struct {
 	Value *int64
 }
 
-// shares splits cents equally between a record's distinct values, so the shares add up exactly (048-C4).
+// shares splits cents equally between a record's distinct values, so the shares add up exactly.
 func shares(cents int64, values []string) map[string]int64 {
 	keys := slices.Clone(values)
 	slices.Sort(keys)

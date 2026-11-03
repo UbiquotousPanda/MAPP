@@ -9,8 +9,8 @@ import (
 	"mapp/internal/platform/actor"
 )
 
-// costs is each activity's actual cost, paid in the plans' year (D-357), for the plans whose financial data the
-// person may see; the others have no entry, so their cost and ROI stay "—" (FR-003).
+// costs is each activity's actual cost, paid in the plans' year, for the plans whose financial data the
+// person may see; the others have no entry, so their cost and ROI stay "—".
 func (s *Service) costs(ctx context.Context, a actor.Actor, v view) (map[string]*int64, error) {
 	out := map[string]*int64{}
 	for _, series := range v.series {

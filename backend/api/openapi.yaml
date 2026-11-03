@@ -12678,7 +12678,7 @@ components:
           description: The report states that apply (FR-018).
           items:
             type: string
-            enum: [noGoals, noPerformanceData, notApproved, nothingMatches, attributionNotConfigured]
+            enum: [noPlans, noGoals, noPerformanceData, notApproved, nothingMatches, noFinancialAccess, attributionNotConfigured]
         financeCovers:
           type: object
           additionalProperties: false

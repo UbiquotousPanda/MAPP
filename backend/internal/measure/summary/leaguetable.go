@@ -21,6 +21,7 @@ type LeagueTable struct {
 	ROI      *ROIBasis   `json:"roi"`
 	Reason   *string     `json:"reason"`
 	every    []LeagueRow
+	currency string
 }
 
 type LeagueRow struct {
@@ -74,7 +75,7 @@ func (s *Service) readLeague(ctx context.Context, a actor.Actor, f measure.Filte
 
 func (lv leagueView) table(b builder, l League) LeagueTable {
 	segments := segmentsOf(lv.scope.Attributes)
-	out := LeagueTable{Table: l.Table, Segments: segments, Rows: []LeagueRow{}}
+	out := LeagueTable{Table: l.Table, Segments: segments, Rows: []LeagueRow{}, currency: b.display.Currency()}
 	chosen := chosenSegment(segments, l.Segment)
 	var total tally
 	byValue := map[string]tally{}

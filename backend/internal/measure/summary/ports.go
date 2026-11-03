@@ -18,7 +18,7 @@ type Scoper interface {
 	Scope(ctx context.Context, a actor.Actor, f measure.Filter, columns []string) (measure.Scope, error)
 }
 
-// Series is 049's one read the three reports share (048-C10); inside this report's Read it joins that snapshot.
+// Series is 049's one read the three reports share; inside this report's Read it joins that snapshot.
 type Series interface {
 	ActivitySeries(ctx context.Context, a actor.Actor, f measure.Filter, category string) ([]revenue.ActivitySeries, error)
 }

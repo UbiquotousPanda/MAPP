@@ -23,6 +23,8 @@ const (
 )
 
 const (
+	StateNoPlans          = "noPlans"
+	StateNoFinance        = "noFinancialAccess"
 	StateNoGoals          = "noGoals"
 	StateNoPerformance    = "noPerformanceData"
 	StateNothingMatches   = "nothingMatches"
@@ -59,6 +61,7 @@ type Report struct {
 	States          []string       `json:"states"`
 	FinanceCovers   Covers         `json:"financeCovers"`
 	PerformanceAsOf *time.Time     `json:"performanceAsOf"`
+	currency        string
 }
 
 type RevenueSection struct {

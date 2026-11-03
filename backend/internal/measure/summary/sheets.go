@@ -51,12 +51,12 @@ func figureCell(v any) sheet.Cell {
 	return sheet.Text(dash)
 }
 
-func revenueSheet(r RevenueSection) sheet.Sheet {
+func revenueSheet(r RevenueSection, currency string) sheet.Sheet {
 	rows := [][]sheet.Cell{
 		heads("Figure", "Value"),
 		{sheet.Text("Period"), sheet.Text(r.PeriodLabel)},
-		{sheet.Text("Actual or projected"), moneyCell(r.ActualOrProjected)},
-		{sheet.Text("Goal"), moneyCell(r.Goal)},
+		{sheet.Text(inCurrency("Actual or projected", currency)), moneyCell(r.ActualOrProjected)},
+		{sheet.Text(inCurrency("Goal", currency)), moneyCell(r.Goal)},
 		{sheet.Text("Performance (%)"), percentCell(r.Percent)},
 		{sheet.Text("Variance"), sheet.Text(varianceWord(r.Variance))},
 	}
@@ -66,8 +66,9 @@ func revenueSheet(r RevenueSection) sheet.Sheet {
 	return sheet.Sheet{Name: "Revenue against goal", Rows: rows}
 }
 
-func trendSheet(periods []TrendPeriod) sheet.Sheet {
-	rows := [][]sheet.Cell{heads("Period", "State", "Actual", "Projected", "Goal")}
+func trendSheet(periods []TrendPeriod, currency string) sheet.Sheet {
+	rows := [][]sheet.Cell{heads("Period", "State", inCurrency("Actual", currency), inCurrency("Projected", currency),
+		inCurrency("Goal", currency))}
 	for _, p := range periods {
 		rows = append(rows, []sheet.Cell{sheet.Text(p.Label), sheet.Text(stateWord(p.State)), moneyCell(p.Actual),
 			moneyCell(p.Projected), moneyCell(p.Goal)})
@@ -75,10 +76,14 @@ func trendSheet(periods []TrendPeriod) sheet.Sheet {
 	return sheet.Sheet{Name: "Revenue trend", Rows: rows}
 }
 
-func funnelSheet(f FunnelSection) sheet.Sheet {
+func funnelSheet(f FunnelSection, currency string) sheet.Sheet {
 	rows := [][]sheet.Cell{heads("Stage", "Actual or projected", "Goal", "Performance (%)", "Variance")}
 	for _, s := range f.Stages {
-		rows = append(rows, []sheet.Cell{sheet.Text(stageWord(s.Stage)), figureCell(s.ActualOrProjected),
+		name := stageWord(s.Stage)
+		if s.Stage == StageRevenue {
+			name = inCurrency(name, currency)
+		}
+		rows = append(rows, []sheet.Cell{sheet.Text(name), figureCell(s.ActualOrProjected),
 			figureCell(s.Goal), percentCell(s.Percent), sheet.Text(varianceWord(s.Variance))})
 	}
 	return sheet.Sheet{Name: "Funnel stages", Rows: rows}
@@ -98,18 +103,26 @@ func conversionSheet(f FunnelSection) sheet.Sheet {
 	return sheet.Sheet{Name: "Conversions", Rows: rows}
 }
 
-// leagueSheet lists every value of the segment, not only the five the page shows (FR-021).
+// leagueSheet lists every value of the segment, not only the five the page shows.
 func leagueSheet(l LeagueTable) sheet.Sheet {
 	segment := dash
 	if l.Segment != nil {
 		segment = l.Segment.Label
 	}
-	rows := [][]sheet.Cell{heads(segment, tableWord(l.Table))}
+	figure := tableWord(l.Table)
+	if l.Table == TableRevenue || l.Table == TableCost {
+		figure = inCurrency(figure, l.currency)
+	}
+	rows := [][]sheet.Cell{heads(segment, figure)}
 	for _, r := range l.every {
 		rows = append(rows, []sheet.Cell{sheet.Text(r.Name), figureCell(r.Value)})
 	}
 	rows = append(rows, []sheet.Cell{sheet.Bold("Total"), figureCell(l.Total)})
 	return sheet.Sheet{Name: "Top " + tableWord(l.Table) + " by " + segment, Rows: rows}
+}
+
+func inCurrency(label, currency string) string {
+	return label + " (" + currency + ")"
 }
 
 func varianceWord(v string) string {

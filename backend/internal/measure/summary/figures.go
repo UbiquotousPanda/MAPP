@@ -7,7 +7,7 @@ const (
 	tenthPercent = 1000
 )
 
-// performanceOf takes 049's rule and words, so Summary and Revenue never word one figure differently (048-C10).
+// performanceOf takes 049's rule and words, so Summary and Revenue never word one figure differently.
 func performanceOf(actualOrProjected, goal int64) Performance {
 	whole := revenue.Performance(actualOrProjected, goal)
 	return Performance{Percent: whole, Variance: string(revenue.VarianceOf(whole))}

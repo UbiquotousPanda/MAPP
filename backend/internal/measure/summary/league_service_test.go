@@ -29,7 +29,7 @@ func withSegments() *fakes {
 		{ID: "ATTR-Y", Label: "Partner", Level: allwork.LevelActivity, Type: allwork.TypeYesNo, Active: true},
 	}
 	f.series[0].Attributes = map[string]allwork.AttrValue{regionAttr: {OptionIDs: []string{"O-2", "O-1"}}}
-	f.scope.Nodes = []allwork.Node{{ID: "L-1", ParentID: "A-1", Level: allwork.LevelLineItem}}
+	f.scope.Nodes = append(f.scope.Nodes, allwork.Node{ID: "L-1", ParentID: "A-1", Level: allwork.LevelLineItem})
 	f.spend = map[string]map[string]financials.Facts{"L-1": {
 		"2026-03": {Paid: money.FromCents(30_000)}, "2025-12": {Paid: money.FromCents(99_900)},
 	}}

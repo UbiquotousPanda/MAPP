@@ -26,7 +26,7 @@ vitest-axe; Playwright for US1.
   per activity in view, its plan, type, owner, attribute values, and per month its actual, projected and goal per
   stage and revenue in USD; (b) **fallback** — 048 reuses 049's ports and adapters (`Facts`, `Goals`, `Categories`,
   `Rates`, the `projection` engine) and repeats the per-activity summing, as 049-C18 copied 040's ranked list, with
-  `TestSummary_EqualsRevenue_048_SC002` holding the two equal. (a) is taken (048-C10): lane B exports it after #82 merges. Either way the statements stay fixed: one facts read, one goals read, whatever the activities.
+  `TestSummary_EqualsRevenueAndFunnel_048_SC002` holding the two equal. (a) is taken (048-C10): lane B exports it after #82 merges. Either way the statements stay fixed: one facts read, one goals read, whatever the activities.
 - **R2 — Segments (048-C4).** The active Shell attributes at Plan, Campaign and Activity level come from the frame's
   scope (`measure.Scope.Attributes`), the same source 043 uses; a node's values are on `allwork.Node`. An activity
   takes a Plan or Campaign attribute's value from its ancestor. Several values share the activity's figures equally
@@ -59,7 +59,7 @@ them), `app/measure.go`, `features/measure/index.ts`, the decision log.
 |---|---|---|
 | Performance whole per cent and the four words; No goal on a zero or missing goal (048-C1) | `figures.go` | `TestVarianceWord_048_C1` (table: 99.5, 100, 100.4, 0 goal, no goal) |
 | Goal is the activities' sum; Goal coverage = activities' ÷ plans' goals (048-C2) | `figures.go` | `TestGoalCoverage_048_C2` |
-| Summary equals Revenue and Funnel stages for the same filters (048-C3, SC-002) | handler | `TestSummary_EqualsRevenue_048_SC002` |
+| Summary equals Revenue and Funnel stages for the same filters (048-C3, SC-002) | handler | `TestSummary_EqualsRevenueAndFunnel_048_SC002` |
 | Stages any model allows, conversion rate and goal from sums, "—" on zero (048-C7) | `funnel.go` | `TestConversion_048_C7` |
 | Segments with Not filled in, equal shares that add up exactly, Total counts each record once (048-C4) | `segments.go` | `TestSegments_048_C4` |
 | Five highest then Total over all; "—" values last; ties by name (048-C5) | `league.go` | `TestLeague_048_C5` |

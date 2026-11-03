@@ -32,9 +32,9 @@ func (r *ReportEntry) Sheets(ctx context.Context, a actor.Actor, f measure.Filte
 		return nil, err
 	}
 	out := []measure.WidgetSheet{
-		{Key: "revenue", Sheet: revenueSheet(view.Revenue)},
-		{Key: "trend", Sheet: trendSheet(view.Revenue.Trend)},
-		{Key: "funnel", Sheet: funnelSheet(view.Funnel)},
+		{Key: "revenue", Sheet: revenueSheet(view.Revenue, view.currency)},
+		{Key: "trend", Sheet: trendSheet(view.Revenue.Trend, view.currency)},
+		{Key: "funnel", Sheet: funnelSheet(view.Funnel, view.currency)},
 		{Key: "conversion", Sheet: conversionSheet(view.Funnel)},
 	}
 	for _, table := range tables() {

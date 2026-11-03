@@ -122,7 +122,7 @@ func (b builder) conversionTrend(series []revenue.ActivitySeries) []RatePeriod {
 	return out
 }
 
-// countedStages are the counted stages any model in view projects, in funnel order (048-C7, C12).
+// countedStages are the counted stages any model in view projects, in funnel order.
 func countedStages(series []revenue.ActivitySeries) []Stage {
 	var out []Stage
 	for _, stage := range []Stage{StageINQ, StageMQL} {

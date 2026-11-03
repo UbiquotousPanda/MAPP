@@ -4,6 +4,7 @@ import (
 	"context"
 	"slices"
 
+	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/actor"
@@ -67,7 +68,8 @@ func (s *Service) read(ctx context.Context, a actor.Actor, f measure.Filter, cat
 func (v view) report(b builder, categories []revenue.Category) Report {
 	return Report{
 		Revenue: b.revenueSection(v.series, v.plans), Funnel: b.funnelSection(v.series),
-		Categories: choicesOf(categories), States: statesOf(v.series), FinanceCovers: v.financeCovers(),
+		Categories: choicesOf(categories), States: v.states(), FinanceCovers: v.financeCovers(),
+		currency: b.display.Currency(),
 	}
 }
 
@@ -87,18 +89,28 @@ func (v view) seesFinance(planID string) bool {
 	return c.SeesFinance && (c.FinancePlans == nil || slices.Contains(c.FinancePlans, planID))
 }
 
-func statesOf(series []revenue.ActivitySeries) []string {
-	if len(series) == 0 {
+func (v view) states() []string {
+	switch {
+	case !slices.ContainsFunc(v.scope.Nodes, isPlan):
+		return []string{StateNoPlans}
+	case len(v.series) == 0:
 		return []string{StateNothingMatches}
 	}
 	states := []string{}
-	if !slices.ContainsFunc(series, hasGoal) {
+	if !slices.ContainsFunc(v.series, hasGoal) {
 		states = append(states, StateNoGoals)
 	}
-	if !slices.ContainsFunc(series, hasActual) {
+	if !slices.ContainsFunc(v.series, hasActual) {
 		states = append(states, StateNoPerformance)
 	}
+	if covers := v.financeCovers(); covers.Plans < covers.Of {
+		states = append(states, StateNoFinance)
+	}
 	return states
+}
+
+func isPlan(n allwork.Node) bool {
+	return n.Level == allwork.LevelPlan
 }
 
 func hasGoal(s revenue.ActivitySeries) bool {

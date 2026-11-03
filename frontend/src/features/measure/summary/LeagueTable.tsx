@@ -16,10 +16,12 @@ export interface LeagueTableProps {
   category: string;
   segment: string;
   onSegment: (segment: string) => void;
+  covers?: { plans: number; of: number };
 }
 
-/** One league table: the five highest values of its segment, then the total over all (048-C5, C6). */
-export function LeagueTable({ table, address, category, segment, onSegment }: LeagueTableProps) {
+/** One league table: the five highest values of its segment, then the total over all. */
+export function LeagueTable(props: LeagueTableProps) {
+  const { table, address, category, segment, onSegment, covers } = props;
   const { money } = useFormatters();
   const league = useSummaryLeague(table, address, {
     ...(category && { category }),
@@ -38,9 +40,15 @@ export function LeagueTable({ table, address, category, segment, onSegment }: Le
       ...(data ? [{ key: 'total', cells: ['Total', shown(data.total)] }] : []),
     ],
   };
-  const note = data?.roi
-    ? `${data.roi.model}, on ${data.roi.basis} cost`
-    : (data?.reason ?? undefined);
+  const financial = table === 'cost' || table === 'roi';
+  const covered =
+    financial && covers && covers.plans < covers.of
+      ? `Covers ${covers.plans} of ${covers.of} plans`
+      : undefined;
+  const note =
+    [data?.roi ? `${data.roi.model}, on ${data.roi.basis} cost` : data?.reason, covered]
+      .filter(Boolean)
+      .join(' · ') || undefined;
   return (
     <ReportWidget
       report="summary"

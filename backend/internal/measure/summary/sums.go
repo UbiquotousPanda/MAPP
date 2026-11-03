@@ -7,7 +7,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// pick chooses one measure of ActivitySeries and the activities it counts, as 049's sums do (SC-002).
+// pick chooses one measure of ActivitySeries and the activities it counts, as 049's sums do.
 type pick struct {
 	month  func(revenue.Month) revenue.Figure[int64]
 	goal   func(revenue.ActivitySeries) *int64

@@ -99,6 +99,21 @@ describe('SummaryReport (048 US1, US2)', () => {
     expect(after[0]?.search).toContain('segment=ATTR-P');
   });
 
+  it('offers a reset when the filters exclude everything (FR-018)', async () => {
+    renderPage({ body: summaryReport({ states: ['nothingMatches'] }) });
+
+    expect(await screen.findByRole('link', { name: 'Reset the filters' })).toBeInTheDocument();
+  });
+
+  it('says which plans cost and ROI cover when some financial data is hidden (FR-003)', async () => {
+    renderPage({ body: summaryReport({ financeCovers: { plans: 1, of: 2 } }) });
+
+    expect(await screen.findByText('Covers 1 of 2 plans')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Equally distributed, on actual cost · Covers 1 of 2 plans'),
+    ).toBeInTheDocument();
+  });
+
   it('names the ROI model and cost basis, and shows a dash with the reason when there is no cost (FR-015)', async () => {
     renderPage();
 

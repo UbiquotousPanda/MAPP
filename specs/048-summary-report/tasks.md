@@ -6,7 +6,7 @@ own folders only, plus the contract, route rules and `notYetServed` lines of 048
 
 ## Phase 1: Gates (no code)
 
-- [ ] T001 (#62, #75, #82 merged 2 Nov; #99 open, built against its branch) Gate: #62 (046), #75 (047) and #82 (049, after its 2 Nov fixes) are merged into `measure-module`, and lane B's
+- [x] T001 (#62, #75, #82 merged 2 Nov; #99 merged 3 Nov) Gate: #62 (046), #75 (047) and #82 (049, after its 2 Nov fixes) are merged into `measure-module`, and lane B's
   `ActivitySeries` pull request (048-C10) is merged; then merge `origin/measure-module` into this branch
 - [x] T002 Read `ActivitySeries` as merged: its fields, its variance word and its goal rule; adjust `contracts/api.md` and
   plan R1 if they differ from what 048-C10 records
@@ -53,15 +53,15 @@ own folders only, plus the contract, route rules and `notYetServed` lines of 048
 ## Phase 5: User Story 3 — export (P2)
 
 - [x] T018 [P] [US3] Test `TestSheets_048_FR021` (every widget in page order, league tables with every value)
-- [ ] T019 [US3] (sheets done; lane A's export forwarding still open) `sheets.go`; ask lane A to add `category`, `stage` and the four segment parameters to `exportReport`
+- [x] T019 [US3] (sheets done; the export forwarding merged as #105) `sheets.go`; ask lane A to add `category`, `stage` and the four segment parameters to `exportReport`
   if the export does not carry them (as #86 did for 042)
 - [x] T020 [US3] Checkpoint; commit
 
 ## Phase 6: Polish
 
-- [ ] T021 (waits for PostgreSQL) `BenchmarkSummaryReport` in `internal/platform/apibench/measure_summary_test.go` (needs PostgreSQL to run)
+- [ ] T021 (written; running it waits for PostgreSQL, see T029) `BenchmarkSummaryReport` in `internal/platform/apibench/measure_summary_test.go` (needs PostgreSQL to run)
 - [x] T022 Comment budget and file length of every file touched
-- [ ] T023 `/speckit-converge`; spec status Built; merge `measure-module`; pull request with "048 Built", tagging lane B
+- [x] T023 (converge run 3 Nov: Phase 7; pull request #106) `/speckit-converge`; spec status Built; merge `measure-module`; pull request with "048 Built", tagging lane B
   for the contract (048-C11) and listing the integrator's measure-metrics changes (048-C1, C2)
 
 ## Coverage of the requirements
@@ -74,3 +74,14 @@ own folders only, plus the contract, route rules and `notYetServed` lines of 048
 | FR-016 to FR-020 | T006, T008, T010, T021 |
 | FR-021, FR-022 | T018, T019 |
 | SC-002 | T007, T011 |
+
+## Phase 7: Convergence
+
+- [x] T024 CRITICAL: remove requirement IDs from code comments in `summary/` and `features/measure/summary/` per Constitution VIII (contradicts)
+- [x] T025 Name the report states the data shows: no plans in scope, no financial access, filters exclude everything with a reset per FR-018 (partial)
+- [x] T026 Compare Summary's stage volumes with the Funnel stages report in `TestSummary_EqualsRevenue_048_SC002` per SC-002 (partial)
+- [x] T027 Show "Covers n of m plans" on the Cost and ROI league tables per FR-003 (partial)
+- [x] T028 Name the display currency in the export's money columns per US3/AC1 (partial)
+- [ ] T029 Run `BenchmarkSummaryReport` on PostgreSQL and record it in plan.md per FR-020 (partial)
+- [ ] T030 Show earlier years as one "FY (total)" bucket each in the trend per Edge case: several years (partial)
+- [ ] T031 Ask lane B to read `category` from the address on Revenue and Funnel stages, so Details keeps it, per FR-016 (partial)

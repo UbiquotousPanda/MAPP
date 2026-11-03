@@ -43,7 +43,8 @@ function SummaryBody({ address }: { address: ReportAddress }) {
         <>
           {report.data.states.map((state) => (
             <p key={state} className={styles.state} role="status">
-              {STATE_TEXT[state] ?? state}
+              {STATE_TEXT[state] ?? state}{' '}
+              {state === 'nothingMatches' && <Link to="/reports/summary">Reset the filters</Link>}
             </p>
           ))}
           <RevenueSection revenue={report.data.revenue} />
@@ -65,6 +66,7 @@ function SummaryBody({ address }: { address: ReportAddress }) {
             category={params.category}
             segment={params[param]}
             onSegment={(segment) => change({ [param]: segment })}
+            covers={report.data?.financeCovers}
           />
         ))}
       </section>

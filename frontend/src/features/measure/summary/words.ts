@@ -14,7 +14,9 @@ export const VARIANCE: Record<Variance, string> = {
 export const STAGE: Record<Stage, string> = { inq: 'INQ', mql: 'MQL', revenue: 'Revenue' };
 
 export const STATE_TEXT: Record<string, string> = {
+  noPlans: 'There are no plans you may see for this year.',
   nothingMatches: 'No activities match the filters.',
+  noFinancialAccess: 'Cost and ROI leave out the plans whose financial data you may not see.',
   noGoals: 'The activities in view have no goals yet, so there is nothing to compare against.',
   noPerformanceData: 'No performance data has arrived yet.',
 };

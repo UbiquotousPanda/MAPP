@@ -71,7 +71,7 @@ func TestSummaryReport_NoReportsView_048(t *testing.T) {
 	get(t, mei, leagueURL+"revenue", http.StatusForbidden)
 }
 
-func TestSummary_EqualsRevenue_048_SC002(t *testing.T) {
+func TestSummary_EqualsRevenueAndFunnel_048_SC002(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	alex := server.SignIn(t, alexEmail)
@@ -84,6 +84,16 @@ func TestSummary_EqualsRevenue_048_SC002(t *testing.T) {
 		if !sameMoney(view.Revenue.ActualOrProjected, rev.Cards.Projected) || !sameMoney(view.Revenue.Goal, rev.Cards.Goal) {
 			t.Errorf("%s: summary %v of %v, revenue %v of %v", query, view.Revenue.ActualOrProjected, view.Revenue.Goal,
 				rev.Cards.Projected.Value, rev.Cards.Goal.Value)
+		}
+		for _, s := range view.Funnel.Stages {
+			if s.Stage == summary.StageRevenue {
+				continue
+			}
+			var funnel revenue.FunnelReport
+			get(t, alex, "/api/v1/reports/funnel"+query+"&stage="+string(s.Stage), http.StatusOK).Decode(t, &funnel)
+			if p := funnel.Cards.Projected.Value; p == nil || s.ActualOrProjected != *p {
+				t.Errorf("%s %s: summary volume %v, Funnel stages %v", query, s.Stage, s.ActualOrProjected, p)
+			}
 		}
 	}
 }

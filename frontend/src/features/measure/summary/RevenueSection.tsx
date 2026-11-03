@@ -12,7 +12,7 @@ const HEIGHT = 220;
 const BASELINE = 190;
 const PLOT = 170;
 
-/** Revenue against goal (048 US1): the fixed cards, Goal coverage and the trend split at today (048-C9). */
+/** Revenue against goal: the fixed cards, Goal coverage and the trend split at today. */
 export function RevenueSection({ revenue }: { revenue: RevenueSectionData }) {
   const { money } = useFormatters();
   const coverage = revenue.goalCoverage

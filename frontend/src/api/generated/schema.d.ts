@@ -6288,7 +6288,7 @@ export interface components {
                 name: string;
             }[];
             /** @description The report states that apply (FR-018). */
-            states: ("noGoals" | "noPerformanceData" | "notApproved" | "nothingMatches" | "attributionNotConfigured")[];
+            states: ("noPlans" | "noGoals" | "noPerformanceData" | "notApproved" | "nothingMatches" | "noFinancialAccess" | "attributionNotConfigured")[];
             financeCovers: {
                 plans: number;
                 of: number;

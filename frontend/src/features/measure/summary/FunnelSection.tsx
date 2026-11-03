@@ -12,7 +12,7 @@ const PLOT = 130;
 
 type Rate = FunnelSectionData['trend']['periods'][number];
 
-/** The funnel (048 US1): each stage against goal, the conversions between counted stages and their trend (048-C7, C12). */
+/** The funnel: each stage against goal, the conversions between counted stages and their trend. */
 export function FunnelSection({ funnel }: { funnel: FunnelSectionData }) {
   const { money } = useFormatters();
   const figure = (v: SummaryFigure) =>
