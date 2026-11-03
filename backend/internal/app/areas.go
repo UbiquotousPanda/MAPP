@@ -108,11 +108,15 @@ func (w *wiring) buildActivities() {
 }
 
 func (w *wiring) buildCampaigns() {
-	w.campaigns = campaign.NewService(history.Tools{Tx: w.guard, IDs: w.generator, Log: w.history, Now: w.now}, w.set.Campaigns, campaign.Deps{
-		Plans: campaignPlans{repo: w.set.Plans}, People: w.set.People, Settings: w.settings,
-		Activities: activitiesForCampaigns{svc: w.activities},
+	w.campaigns = w.campaignService(activitiesForCampaigns{svc: w.activities})
+}
+
+func (w *wiring) campaignService(activities campaign.Activities) *campaign.Service {
+	s := campaign.NewService(history.Tools{Tx: w.guard, IDs: w.generator, Log: w.history, Now: w.now}, w.set.Campaigns, campaign.Deps{
+		Plans: campaignPlans{repo: w.set.Plans}, People: w.set.People, Settings: w.settings, Activities: activities,
 	})
-	w.campaigns.UseDisplayRates(w.people)
+	s.UseDisplayRates(w.people)
+	return s
 }
 
 // planningKinds registers the kinds and the plan's levels top-down: campaign, initiative, activity, line item.
@@ -225,6 +229,7 @@ func (w *wiring) views() {
 		lineItemsRepo: s.LineItems, settings: w.settings, budgetItems: lineItemBudgets{repo: s.Settings},
 		workflows: activityWorkflows{repo: s.Approvals}, people: w.people, peopleRepo: s.People,
 		history: w.history, financials: w.financials, financeAccess: financialAccess{tx: s.Tx, plans: s.Plans},
+		planningCampaigns: w.campaignService(activitiesForReports{activitiesForCampaigns{svc: w.activities}}),
 	}
 	mount(w.signedIn, home.NewHandler(homeService),
 		allwork.NewHandler(allwork.NewService(history.Tools{Tx: s.Tx, IDs: w.generator, Log: w.history, Now: w.now},

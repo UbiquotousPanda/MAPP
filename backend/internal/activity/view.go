@@ -4,14 +4,12 @@ import (
 	"context"
 
 	"mapp/internal/people"
-	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/money"
 	"mapp/internal/settings"
 )
 
-// derived are the values worked out from a stored activity when it is read (D-041).
 type derived struct {
 	activityType  TypeRef
 	owner         *people.PersonRef
@@ -20,21 +18,16 @@ type derived struct {
 	unassigned    *money.Money
 	readiness     SubmitCheck
 	completeness  Completeness
-	missing       []errs.MissingField // the items of "This activity" as fields still needed
+	missing       []errs.MissingField
 }
 
 // derive works out the derived values of activity a in its plan context, with its line items' facts.
 func (s *Service) derive(ctx context.Context, a Activity, pc planContext, facts LineItemFacts) (derived, error) {
-	d := derived{displayStatus: displayStatus(a, date.Today(s.now())), unassigned: unassigned(a, facts)}
-
-	t, _, err := s.settings.ActivityType(ctx, a.ActivityTypeID)
+	d, err := s.planningDerive(ctx, a, pc)
 	if err != nil {
 		return derived{}, err
 	}
-	d.activityType = TypeRef{ID: a.ActivityTypeID, Name: t.Name, Active: t.Active, Allowed: pc.model.Allows(a.ActivityTypeID)}
-	if d.owner, err = s.personRef(ctx, a.OwnerID); err != nil {
-		return derived{}, err
-	}
+	d.unassigned = unassigned(a, facts)
 	var workflow *WorkflowFacts
 	if a.ApprovalWorkflowID != "" {
 		w, found, err := s.workflows.GetWorkflow(ctx, a.ApprovalWorkflowID)
@@ -51,7 +44,7 @@ func (s *Service) derive(ctx context.Context, a Activity, pc planContext, facts 
 		return derived{}, err
 	}
 	d.readiness = check(checkInput{
-		activity: a, initiative: pc.initiative, missing: missing, typeName: t.Name, typeAllowed: d.activityType.Allowed,
+		activity: a, initiative: pc.initiative, missing: missing, typeName: d.activityType.Name, typeAllowed: d.activityType.Allowed,
 		modelName: pc.model.Name, workflow: workflow, lineItems: facts,
 	})
 	d.completeness = completeness(d.readiness, facts)
@@ -67,7 +60,6 @@ func (s *Service) storedDerive(ctx context.Context, a Activity, pc planContext, 
 	})
 }
 
-// viewOf returns activity a as the API answers it (Activity), with its line items' facts.
 func (s *Service) viewOf(ctx context.Context, a Activity, pc planContext) (View, error) {
 	facts, err := s.lineItemFacts(ctx, []Activity{a})
 	if err != nil {
