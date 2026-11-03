@@ -158,8 +158,6 @@ func checkStrandedNamed(t *testing.T, alexSees person) {
 	t.Helper()
 	check := post("/models/"+lubricantsModel+"/impact", map[string]any{"allowedGoalStages": []string{"mql", "revenue"},
 		"version": modelOf(t, alexSees).Version})
-	// The answer's kind is outside openapi.yaml's ImpactWarning enum (finding 5): its check is left out here.
-	check.opts = []apitest.RequestOption{apitest.SkipValidation()}
 	impact := decode[struct{ Warnings []struct{ Kind string } }](t, alexSees.expect(t, check, http.StatusOK))
 	if len(impact.Warnings) != 1 || impact.Warnings[0].Kind != "goalStageRemoved" {
 		t.Errorf("unticking INQ = %+v, want the plans with an INQ goal named before saving", impact.Warnings)

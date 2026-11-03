@@ -92,7 +92,19 @@ export function PlansPage() {
   }
 
   const searchTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(searchTimer.current), []);
+  useEffect(() => {
+    // A link followed before the search settles must not have the search written onto the page it opens.
+    const leave = (event: MouseEvent) => {
+      if (event.target instanceof Element && event.target.closest('a[href]')) {
+        window.clearTimeout(searchTimer.current);
+      }
+    };
+    document.addEventListener('click', leave, true);
+    return () => {
+      document.removeEventListener('click', leave, true);
+      window.clearTimeout(searchTimer.current);
+    };
+  }, []);
 
   function typeSearch(text: string) {
     setTyped(text);
