@@ -174,7 +174,7 @@ the file holds every matching row and no row of a plan outside Alex's scope.
   per lane A, T002) at the 028 volumes; record statements and time in `plan.md` § Benchmark
 - [X] T040 Comment budget and file length of **every file this feature touched**, including the test files; split
   any file above 300 non-blank lines
-- [ ] T041 Run the report by hand on the demo data (Alex, Daniel, Sara): every spec scenario and state; fix what
+- [x] T041 (3 Nov, as Alex, Daniel and Sara on the local demo database; nothing to fix; `docs/sdd/measure-wave-a-qa.md`, Browser pass) Run the report by hand on the demo data (Alex, Daniel, Sara): every spec scenario and state; fix what
   differs
 - [x] T042 (in #68, "For lane A") Contract problems found while building (`openapi.yaml`, route rule, shared parts) written in the pull
   request for lane A, not edited here (build guide §4.3)
