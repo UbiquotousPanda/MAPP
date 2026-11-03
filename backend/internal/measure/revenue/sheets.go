@@ -6,8 +6,8 @@ import (
 	"net/url"
 
 	"mapp/internal/measure"
+	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/sheet"
 )
@@ -34,7 +34,7 @@ func (s *Service) revenueSheets(ctx context.Context, a actor.Actor, f measure.Fi
 	if err != nil {
 		return nil, err
 	}
-	q, err := unboundedRanked(f.Own, []string{SortActualRevenue, SortProjectedRevenue}, SortProjectedRevenue)
+	q, err := unboundedRanked(f.Own, revenueSorts(), SortProjectedRevenue)
 	if err != nil {
 		return nil, err
 	}
@@ -50,10 +50,9 @@ func (s *Service) revenueSheets(ctx context.Context, a actor.Actor, f measure.Fi
 }
 
 func unboundedRanked(own url.Values, sorts []string, defaultSort string) (RankedQuery, error) {
-	var problems errs.Problems
-	q := parseRanked(own, sorts, defaultSort, &problems)
+	q, err := ranking.Parse(own, sorts, defaultSort)
 	q.Page, q.Size = 1, math.MaxInt32
-	return q, problems.Err()
+	return rankedQueryOf(q, ""), err
 }
 
 func revenueCardsSheet(c RevenueCards) sheet.Sheet {
@@ -131,7 +130,7 @@ func (s *Service) funnelSheets(ctx context.Context, a actor.Actor, f measure.Fil
 	if err != nil {
 		return nil, err
 	}
-	q, err := unboundedRanked(f.Own, []string{SortActual, SortProjected}, SortProjected)
+	q, err := unboundedRanked(f.Own, funnelSorts(), SortProjected)
 	if err != nil {
 		return nil, err
 	}

@@ -145,3 +145,21 @@ marks tasks that can run in parallel.
   merge), with the feature-map status change and the asks from T051. Opened as PR #82 against
   `feature/047-projections` (047's own PR #75's base chain); retarget to `measure-module` once #62/#75
   merge.
+
+## Phase 6 — Shared read for 048 (049-C21, 048-C10)
+
+- [X] T058 Export `ActivitySeries` in `measure/revenue/series.go` + `series_months.go`: per activity in view its
+  plan, type, owner, teams, inherited Shell attributes, own goals, model and stages, and per month actual,
+  projected and goal of INQ, MQL and revenue in USD with the month's state. Tests on fakes in `series_test.go`
+  (per-month values, goal months, category, scope, attributes)
+- [X] T059 Revenue and Funnel stages read through it: cards, periods and ranked lists from one measure selector
+  and one set of monthly sums (`sums.go`); `TestActivitySeries_SumsToTheRevenueCards_048C10_SC002` proves the
+  summed series equal the cards in month and quarter view
+- [X] T060 Ranked lists on `measure/ranking` (040 T022): `grouping.go`, `ranked_revenue.go` and
+  `ranked_funnel.go` removed, JSON types aliased to `ranking`'s; lane A's review point 4a fixed (entries and
+  children only from what is in view, children sorted), pinned by `ranked_in_view_test.go`
+- [X] T061 `Performance` and `VarianceOf` exported for 048-C1 (`variance.go`), both cards computing Performance
+  through it; table test `TestPerformanceAndVariance_048C1_FR023`
+- [ ] T062 Show 048-C1's variance word on the Revenue and Funnel cards and ranked rows (FR-023): waits for the
+  contract change (an `openapi.yaml` field, lane A's file) and the frontend
+

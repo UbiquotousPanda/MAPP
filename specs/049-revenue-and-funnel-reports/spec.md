@@ -120,6 +120,19 @@ today, and 040's ranked list sorted by revenue or by a stage. Sources: client 01
   data has been loaded · no plan in view uses a model with this stage. The backend states which, as 046's
   panel does with its reasons, because only the server knows which one is true.
 
+- **049-C21** — Q: 048's Summary must show the same actual, projected and goal as Revenue and Funnel stages and
+  never disagree (048-C3, 048-C10). Where do the three reports get their figures? → A: **From one exported read,
+  `revenue.Service.ActivitySeries(ctx, a, f, category)`**, a Go-level call with no JSON of its own. Per activity in
+  view it gives the ID, name, plan, activity type, owner, the plan's teams, each Shell attribute's value on the
+  activity or its nearest ancestor, its own goals (049-C16), whether its model projects it and which stages, and
+  for each month of the plan year the actual, projected and goal of INQ, MQL and revenue in USD with the month's
+  state (past, in progress, planned). Actual is set to the month in progress once a fact is counted, projected
+  from it on; a month's goal places the goal in time and drops what lands after the plan year. Revenue's and
+  Funnel stages' cards, period series and ranked lists are all built from it, and the ranked lists run on 040's
+  shared `measure/ranking`. Performance and 048-C1's variance word are exported beside it
+  (`revenue.Performance`, `revenue.VarianceOf`); showing the word in these two reports waits for a contract
+  change decided separately.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Revenue against goal (Priority: P1)
