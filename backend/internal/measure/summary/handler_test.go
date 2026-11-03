@@ -82,27 +82,37 @@ func TestSummary_EqualsRevenueAndFunnel_048_SC002(t *testing.T) {
 		get(t, alex, reportURL+query, http.StatusOK).Decode(t, &view)
 		get(t, alex, "/api/v1/reports/revenue"+query, http.StatusOK).Decode(t, &rev)
 
-		if !sameMoney(view.Revenue.ActualOrProjected, rev.Cards.Projected) || !sameMoney(view.Revenue.Goal, rev.Cards.Goal) {
-			t.Errorf("%s: summary %v of %v, revenue %v of %v", query, view.Revenue.ActualOrProjected, view.Revenue.Goal,
-				rev.Cards.Projected.Value, rev.Cards.Goal.Value)
+		expectSameRevenue(t, query, view.Revenue, rev)
+		expectSameStages(t, alex, query, view.Funnel.Stages)
+	}
+}
+
+func expectSameRevenue(t *testing.T, query string, shown summary.RevenueSection, rev revenue.RevenueReport) {
+	t.Helper()
+	if !sameMoney(shown.ActualOrProjected, rev.Cards.Projected) || !sameMoney(shown.Goal, rev.Cards.Goal) {
+		t.Errorf("%s: summary %v of %v, revenue %v of %v", query, shown.ActualOrProjected, shown.Goal,
+			rev.Cards.Projected.Value, rev.Cards.Goal.Value)
+	}
+	if !samePercent(shown.Percent, rev.Cards.Performance.Value) {
+		t.Errorf("%s: summary performance %v, revenue %v", query, shown.Percent, rev.Cards.Performance.Value)
+	}
+	for i, p := range rev.Periods {
+		if i < len(shown.Trend) && !sameMoney(shown.Trend[i].Goal, revenue.MoneyCard{Value: p.Goal}) {
+			t.Errorf("%s period %s: summary goal %v, revenue %v", query, p.Key, shown.Trend[i].Goal, p.Goal)
 		}
-		if !samePercent(view.Revenue.Percent, rev.Cards.Performance.Value) {
-			t.Errorf("%s: summary performance %v, revenue %v", query, view.Revenue.Percent, rev.Cards.Performance.Value)
+	}
+}
+
+func expectSameStages(t *testing.T, c *apitest.Client, query string, stages []summary.StageFigures) {
+	t.Helper()
+	for _, s := range stages {
+		if s.Stage == summary.StageRevenue {
+			continue
 		}
-		for i, p := range rev.Periods {
-			if i < len(view.Revenue.Trend) && !sameMoney(view.Revenue.Trend[i].Goal, revenue.MoneyCard{Value: p.Goal}) {
-				t.Errorf("%s period %s: summary goal %v, revenue %v", query, p.Key, view.Revenue.Trend[i].Goal, p.Goal)
-			}
-		}
-		for _, s := range view.Funnel.Stages {
-			if s.Stage == summary.StageRevenue {
-				continue
-			}
-			var funnel revenue.FunnelReport
-			get(t, alex, "/api/v1/reports/funnel"+query+"&stage="+string(s.Stage), http.StatusOK).Decode(t, &funnel)
-			if p := funnel.Cards.Projected.Value; p == nil || s.ActualOrProjected != *p {
-				t.Errorf("%s %s: summary volume %v, Funnel stages %v", query, s.Stage, s.ActualOrProjected, p)
-			}
+		var funnel revenue.FunnelReport
+		get(t, c, "/api/v1/reports/funnel"+query+"&stage="+string(s.Stage), http.StatusOK).Decode(t, &funnel)
+		if p := funnel.Cards.Projected.Value; p == nil || s.ActualOrProjected != *p {
+			t.Errorf("%s %s: summary volume %v, Funnel stages %v", query, s.Stage, s.ActualOrProjected, p)
 		}
 	}
 }
