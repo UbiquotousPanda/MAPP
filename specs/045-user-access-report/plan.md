@@ -143,6 +143,22 @@ Benchmark result (2026-11-01, `BenchmarkUserAccess_SC001`, a 14-thread Windows d
 teams, 4,000 role assignments through fakes): first page 3.5 ms, a search 1.8 ms, sorted by last sign-in 1.4 ms; all far
 under the 100 ms of research R5.
 
+PostgreSQL result (3 Nov 2026, a Windows laptop with an Intel Core Ultra 5 135U, PostgreSQL 18 in Docker, CI runs 18 on
+Linux): `BenchmarkUserAccessOnPostgres_SC001` through the API, `-benchtime 3x -count 2`, on `measure-module` 9128e14c (#135 merged). Each cell is
+the time per request (both runs), then the number of statements; the volume brings the people to 2,000, three in four signed in:
+
+| Request | Demo | 028 volume |
+|---|---|---|
+| First page | 11–17 ms · 23 | 0.19–0.20 s · 23 |
+| Search | 9–10 ms · 23 | 0.19 s · 23 |
+| Team and every status | 9–10 ms · 23 | 0.20–0.25 s · 23 |
+| Sorted by last sign-in | 9 ms · 23 | 0.21–0.23 s · 23 |
+| Page 50 | 12–13 ms · 23 | 0.25–0.26 s · 23 |
+| Export (Excel) | 31–35 ms · 47 | 0.86–0.96 s · 47 |
+
+- **Statements:** the same at both sizes for every request.
+- **Time:** every request within SC-001's 2 s; the export reads the shared scope as well (#132).
+
 ## Dependencies and hand-offs
 
 - **039 (lane A)** — used as merged: `measure.Report` with `measure.Parameterised` (`q`, `team`, `status`, `sort`

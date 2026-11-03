@@ -141,6 +141,26 @@ lay them out, wired through 039's stubs.
 
 Benchmark result (2026-11-01, Intel Core Ultra 5 135U, `go test -bench BenchmarkPlanDetails_SC001 -benchtime 5x`): Activity level with 30 attributes 91–97 ms per report, Campaign and Plan levels about 2 ms — under the 300 ms the calculation may add (R5).
 
+PostgreSQL result (3 Nov 2026, a Windows laptop with an Intel Core Ultra 5 135U, PostgreSQL 18 in Docker, CI runs 18 on
+Linux): `BenchmarkPlanDetailsOnPostgres_SC001` through the API, `-benchtime 3x -count 2`, on `measure-module` 9128e14c (#135 merged). Each cell is
+the time per request (both runs), then the number of statements:
+
+| Request | Demo | 028 volume |
+|---|---|---|
+| Frame (039's, beside every tab) | 22–27 ms · 37 | 0.73–0.75 s · 37 |
+| Activity level | 30–32 ms · 39 | 4.98–6.05 s · 39 |
+| Campaign level | 29–35 ms · 39 | 5.19–5.28 s · 39 |
+| Plan level | 29–37 ms · 39 | 4.91–5.35 s · 39 |
+| Activity level, one market (Priya) | 31–41 ms · 40 | 1.76–1.85 s · 40 |
+| Activity level, filtered | 29–30 ms · 39 | 5.13–5.64 s · 39 |
+| Export, Activity level (Excel) | 51–52 ms · 63 | 5.92–6.90 s · 63 |
+
+- **Statements:** the same at both sizes for every request.
+- **Time:** at the 028 volume the whole year misses SC-001's 3 s; one market is within it. A CPU profile puts 85 % of
+  the shared scope read in All work's plan completeness (`allWorkSource.planMissing` → 004's `plan.Service.List` →
+  every plan's roll-up), which Plan details asks for and the other reports no longer read (#135). Without it the read
+  is about 0.7 s. The fix is All work's and 004's, not this report's: #132.
+
 ## Dependencies and hand-offs
 
 - **039 (lane A)** — `measure.Filter`, `measure.Report`/`WidgetSheet`, `measure.Planning`/`Plans`,
