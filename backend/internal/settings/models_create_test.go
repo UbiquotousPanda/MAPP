@@ -10,8 +10,6 @@ import (
 	"mapp/internal/platform/record"
 )
 
-// A new model with valid values is listed as Active, with its allowed types by name, and logged (US1-1,
-// FR-009).
 func TestCreateModel_ListedActive_FR009(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -22,9 +20,10 @@ func TestCreateModel_ListedActive_FR009(t *testing.T) {
 
 	want := ModelView{
 		ID: "MOD-1001", Name: "Lubricants 2.0", InqToMqlRate: money.PercentFromHundredths(200), MqlToDealRate: money.PercentFromHundredths(500),
-		AverageDealSize: money.USD(money.FromCents(1_000_000)),
-		ActivityTypes:   []SettingRef{{ID: digital.ID, Name: "Digital media", Active: true}, {ID: event.ID, Name: "Event", Active: true}},
-		Active:          true, Usage: Usage{Summary: "Not used yet", Parts: []UsagePart{}, Records: []history.RecordRef{}},
+		AverageDealSize:   money.USD(money.FromCents(1_000_000)),
+		ActivityTypes:     []SettingRef{{ID: digital.ID, Name: "Digital media", Active: true}, {ID: event.ID, Name: "Event", Active: true}},
+		AllowedGoalStages: allGoalStages(),
+		Active:            true, Usage: Usage{Summary: "Not used yet", Parts: []UsagePart{}, Records: []history.RecordRef{}},
 		Meta: record.NewMeta(alex, start),
 	}
 	if !reflect.DeepEqual(created, want) {
@@ -44,7 +43,6 @@ func TestCreateModel_ListedActive_FR009(t *testing.T) {
 	}
 }
 
-// Every problem of a new model is shown at once and nothing is saved (US1-5, FR-009, SC-003).
 func TestCreateModel_AllProblemsAtOnce_FR009(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -63,7 +61,6 @@ func TestCreateModel_AllProblemsAtOnce_FR009(t *testing.T) {
 	}
 }
 
-// Each rate is above 0 % and at most 100 %, with at most two decimals (FR-009).
 func TestCreateModel_RateBounds_FR009(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -83,8 +80,6 @@ func TestCreateModel_RateBounds_FR009(t *testing.T) {
 	}
 }
 
-// The average deal size is in USD, above 0 and at most 100,000,000.00, with at most two decimals (FR-009,
-// D-053).
 func TestCreateModel_DealSizeAboveZeroUSD_FR009(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -119,8 +114,6 @@ func TestCreateModel_DealSizeAboveZeroUSD_FR009(t *testing.T) {
 	}
 }
 
-// A model's name has at most 80 characters and is unique ignoring letter case and surrounding spaces; the
-// message names the model it clashes with (FR-005, FR-009).
 func TestCreateModel_NameUniqueIgnoringCaseAndSpaces_FR005(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -135,7 +128,6 @@ func TestCreateModel_NameUniqueIgnoringCaseAndSpaces_FR005(t *testing.T) {
 	f.createModel(t, modelInput(strings.Repeat("é", 80), event.ID))
 }
 
-// A new model can allow active activity types only; a type that no longer exists is reported (FR-004).
 func TestCreateModel_InactiveTypeRefused_FR004(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)

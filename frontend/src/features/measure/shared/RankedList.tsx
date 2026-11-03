@@ -35,6 +35,7 @@ export interface RankedColumn<F> {
   key: string;
   label: string;
   value: (figures: F) => string;
+  sortable?: boolean;
 }
 
 export interface RankedListProps<F> {
@@ -62,7 +63,9 @@ export function RankedList<F>(props: RankedListProps<F>) {
   const { state, change } = useRankedState(defaultSort);
   const [address] = useReportAddress();
   const [params] = useSearchParams();
-  const sorts = columns.map((c) => ({ value: c.key, label: c.label }));
+  const sorts = columns
+    .filter((c) => c.sortable !== false)
+    .map((c) => ({ value: c.key, label: c.label }));
   const back = data && data.trail.length > 1 ? (data.trail.at(-2)?.id ?? '') : '';
   return (
     <Card

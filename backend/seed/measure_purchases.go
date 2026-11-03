@@ -30,6 +30,7 @@ type measureFile struct {
 	showcaseFile
 	SwbsCodes        []measureSwbs
 	PurchaseRequests []measurePR
+	Categories       []measureCategory
 }
 
 type measureSwbs struct {

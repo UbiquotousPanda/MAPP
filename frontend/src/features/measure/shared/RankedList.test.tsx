@@ -10,14 +10,22 @@ import type { RankedColumn, RankedData } from './RankedList';
 
 type Figures = components['schemas']['PlanBudgetFigures'];
 
-const COLUMNS: RankedColumn<Figures>[] = [
-  { key: 'budget', label: 'Budget', value: (f) => f.budget?.amount ?? '—' },
-  { key: 'planned', label: 'Planned cost', value: (f) => f.planned?.amount ?? '—' },
-];
+const BUDGET: RankedColumn<Figures> = {
+  key: 'budget',
+  label: 'Budget',
+  value: (f) => f.budget?.amount ?? '—',
+};
+const PLANNED: RankedColumn<Figures> = {
+  key: 'planned',
+  label: 'Planned cost',
+  value: (f) => f.planned?.amount ?? '—',
+};
+const COLUMNS = [BUDGET, PLANNED];
 
 function renderList(
   data: RankedData<Figures> = planBudgetRanked(),
   route = '/reports/plan-budget',
+  columns = COLUMNS,
 ) {
   return renderWithProviders(
     <RankedList
@@ -25,7 +33,7 @@ function renderList(
       data={data}
       error={null}
       onRetry={() => {}}
-      columns={COLUMNS}
+      columns={columns}
       groups={[
         { value: 'none', label: 'None' },
         { value: 'owner', label: 'Owner' },
@@ -78,6 +86,19 @@ describe('RankedList (040 US2, US3)', () => {
       params.get('page'),
       params.get('year'),
     ]).toEqual(['budget', 'owner', null, '2026']);
+  });
+
+  it('offers a column under Sort by only when it is sortable, and still shows it (FR-013, 049 FR-006)', () => {
+    renderList(planBudgetRanked(), '/reports/plan-budget', [
+      { ...BUDGET, sortable: false },
+      PLANNED,
+    ]);
+
+    const options = within(screen.getByRole('combobox', { name: 'Sort by' })).getAllByRole(
+      'option',
+    );
+    expect(options.map((o) => o.textContent)).toEqual(['Planned cost']);
+    expect(screen.getByRole('columnheader', { name: 'Budget' })).toBeInTheDocument();
   });
 
   it('reaches page 10, whose number is also the default page size (FR-014)', async () => {
