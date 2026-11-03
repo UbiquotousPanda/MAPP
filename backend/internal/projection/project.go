@@ -54,11 +54,16 @@ func calculated(out Projection, in Inputs, start, end date.Date) Projection {
 	return out
 }
 
-// atRate rounds half-up within each month, so every month's figure is one a reader can check by hand.
+// atRate rounds the running total half-up and places the difference, as phase does, so each month's
+// remainder carries into the next and the months add up to the rounded total, never one unit a month more.
 func atRate(months []MonthFigure, rate money.Percent) []MonthFigure {
 	converted := make([]MonthFigure, len(months))
+	var running, placed int64
 	for i, m := range months {
-		converted[i] = MonthFigure{Month: m.Month, Value: rate.OfWhole(m.Value)}
+		running += m.Value
+		share := rate.OfWhole(running)
+		converted[i] = MonthFigure{Month: m.Month, Value: share - placed}
+		placed = share
 	}
 	return converted
 }
@@ -85,18 +90,18 @@ func seriesOf(stage string, months []MonthFigure) Series {
 	return Series{Stage: stage, Months: months, Total: total}
 }
 
+// revenueOf answers no series for a total past the money range; no month exceeds the total, so none can.
 func revenueOf(deals []MonthFigure, size money.Money) ([]MoneyFigure, money.Money) {
-	revenue := make([]MoneyFigure, len(deals))
-	total := money.Money{Currency: size.Currency}
-	for i, m := range deals {
-		amount, err := size.Amount.MulInt(m.Value)
-		if err != nil {
-			amount = money.Amount{}
-		}
-		revenue[i] = MoneyFigure{Month: m.Month, Value: money.Money{Amount: amount, Currency: size.Currency}}
-		total.Amount = total.Amount.Add(amount)
+	total, err := size.Amount.MulInt(seriesOf(StageDeals, deals).Total)
+	if err != nil {
+		return nil, money.Money{Currency: size.Currency}
 	}
-	return revenue, total
+	revenue := make([]MoneyFigure, len(deals))
+	for i, m := range deals {
+		amount, _ := size.Amount.MulInt(m.Value)
+		revenue[i] = MoneyFigure{Month: m.Month, Value: money.Money{Amount: amount, Currency: size.Currency}}
+	}
+	return revenue, money.Money{Amount: total, Currency: size.Currency}
 }
 
 func phaseMoney(goal money.Money, start, end date.Date) ([]MoneyFigure, money.Money) {

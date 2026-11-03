@@ -54,13 +54,17 @@ describe('FunnelReport (049 US2)', () => {
     await expectNoAxeViolations();
   });
 
-  it('states how many plans are uncovered by the selected stage (FR-018, 049-C11)', async () => {
-    renderPage({ body: funnelReport({ uncoveredCount: 2 }) });
+  it.each([
+    [1, '1 plan uses a model that does not allow this stage.'],
+    [2, '2 plans use a model that does not allow this stage.'],
+  ])(
+    'states how many plans are uncovered by the selected stage, %i in agreement (FR-018, 049-C11)',
+    async (uncoveredCount, sentence) => {
+      renderPage({ body: funnelReport({ uncoveredCount }) });
 
-    expect(
-      await screen.findByText(/2 plans use a model that does not allow this stage/),
-    ).toBeInTheDocument();
-  });
+      expect(await screen.findByText(sentence)).toBeInTheDocument();
+    },
+  );
 
   it('shows "—" for conversion when there is no previous stage, never a zero (FR-017)', async () => {
     renderPage({

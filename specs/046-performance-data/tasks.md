@@ -65,7 +65,7 @@ while it holds no facts. No upload needed.
 - [X] T018 [P] [US1] Write `backend/internal/performance/freshness_test.go`: *Current · Stale · Failed · Inactive* derived from the last import, data-through date and cadence (FR-005), on a fixed clock. Failed (latest load fell over) is covered by a `TestFreshnessAt_…` case and `TestSources_LatestLoadThatFellOverShowsFailed_FR005`
 - [X] T019 [P] [US1] Write `backend/internal/performance/mapping_test.go`: each `meaning` value accepted; `web_metric` restricted to **sessions, visits, engagement touches** (046-C11); a mapping change affects future loads only (FR-007) (FR-006)
 - [X] T020 [P] [US1] Write `backend/internal/performance/handler_source_test.go` as a contract test (external `package performance_test`, through `internal/platform/apitest`) for every source and mapping operation in [contracts/api.md](./contracts/api.md), including the **409** on delete-with-facts and on the duplicate stage supplier
-- [ ] T021 [P] [US1] Write `frontend/src/features/performance/sources/SourceList.test.tsx` and `SourceForm.test.tsx`: the states data, empty, no access, and all validation errors shown at once. Note: list, form and tests were built at the feature root (`SourceListPage.tsx`, `SourceForm.tsx` + tests); outstanding here: the no-access state test
+- [X] T021 [P] [US1] Write `frontend/src/features/performance/sources/SourceList.test.tsx` and `SourceForm.test.tsx`: the states data, empty, no access, and all validation errors shown at once. Note: list, form and tests were built at the feature root (`SourceListPage.tsx`, `SourceForm.tsx` + tests); outstanding here: the no-access state test. Done: `SourceListPage.test.tsx` adds the no-access state (someone without `performance.import` reads with the view-only note and no change actions)
 
 ### Implementation
 
@@ -75,7 +75,7 @@ while it holds no facts. No upload needed.
 - [X] T025 [US1] Implement the blank file template in `backend/internal/performance/template.go`, carrying exactly the columns the mappings define (FR-008)
 - [X] T026 [US1] Implement the source and mapping handlers in `backend/internal/performance/handler.go`; add each operation's rule to the access route table. Done: `access/routes_performance.go` exists and serves every operation of this feature now that the wave B contract is applied (`TestEveryOperationHasAnAccessRule_SC001` asserts in both directions)
 - [X] T027 [US1] Remove this story's operations from `notYetServed` in `backend/internal/app/app_test.go` (this feature's group only)
-- [ ] T028 [P] [US1] Build `frontend/src/features/performance/sources/` — list, form and the Settings › Performance data route — with React Hook Form + Zod and MSW-typed answers; run `pnpm run api:types` first. Note: `SourceListPage.tsx` and `SourceForm.tsx` are built at the feature root; outstanding here: the integrator's route lines in `pages.tsx`
+- [X] T028 [P] [US1] Build `frontend/src/features/performance/sources/` — list, form and the Settings › Performance data route — with React Hook Form + Zod and MSW-typed answers; run `pnpm run api:types` first. Note: `SourceListPage.tsx` and `SourceForm.tsx` are built at the feature root; outstanding here: the integrator's route lines in `pages.tsx`. Done: `/settings/performance-data` (plus `/imports`, `/imports/:importId`, `/review`, gated by `performance.import`) in `settings-routes.tsx`, lazy pages in `pages.tsx`; `settings-routes.test.tsx` proves the card no longer leads to Not found
 - [X] T029 [US1] Run the checks of [quality-gates.md](../../docs/sdd/quality-gates.md) on everything changed
 
 **Checkpoint**: sources and mappings are configurable end to end.
@@ -104,7 +104,7 @@ unchanged; undo it.
 - [X] T038 [P] [US2] Covered without a separate file: exact storage and the unconfigured-currency refusal in `validate_test.go`/`importer_test.go` (FR-014), the excluded count in `activityview_test.go` (046-C7, SC-010) and the fiscal year of the fact's own date there too (FR-015): revenue stored exactly in its currency; without a rate it is marked and excluded with its count (FR-014); a fact counts in the fiscal year of its own date across a multi-year activity (FR-015) · proves SC-010
 - [X] T039 [P] [US2] Write `backend/internal/performance/handler_imports_test.go` as a contract test for the upload, list, view and undo operations and the whole-file refusal — a **409**, not 422: whole-file refusals answer `not_allowed` (errs vocabulary). The pull operation's test lands with the adapter (T049)
 - [X] T040 [P] [US2] Write `backend/internal/performance/simulatedfeed/feed_test.go`: rows from the adapter take the identical validation and matching path as an uploaded file (046-C13, ADR-0020), on a fixed seed (FR-010)
-- [ ] T041 [P] [US2] Write `frontend/src/features/performance/imports/ImportPage.test.tsx`: the states data, empty, no access, upload in progress, refused file, and the summary showing all five counts
+- [X] T041 [P] [US2] Write `frontend/src/features/performance/imports/ImportPage.test.tsx`: the states data, empty, no access, upload in progress, refused file, and the summary showing all five counts. Done, split by screen: `imports/ImportsPage.test.tsx` (data, empty, filtered to nothing, no access, loading), `UploadDialog.test.tsx` (upload in progress, refused file, all problems at once, pull), `ImportSummaryPage.test.tsx` (five counts and per measure, undo confirmation, no undo without `settings.manage`, undone)
 
 ### Implementation
 
@@ -118,7 +118,7 @@ unchanged; undo it.
 - [X] T049 [US2] Implement the `simulatedfeed` adapter behind its port, labelling everything it produces as simulated (ADR-0020)
 - [X] T050 [US2] Implement the import handlers; add each operation's route rule and report it in the pull request. The imports list is findable — sourceId, search (file and uploader name), status, since, until (whole day), limit (FR-016) — proved by `TestImports_FindableByFileUploaderStatusAndDate_FR016`, `TestListImports_FiltersTranslate_Contract_FR016_FR023` and `TestDateRangeOf_*`
 - [X] T051 [US2] Remove this story's operations from `notYetServed` in `backend/internal/app/app_test.go`
-- [ ] T052 [P] [US2] Build `frontend/src/features/performance/imports/` — upload, simulated pull, import list and the summary with its five counts and the undo confirmation stating them (FR-017)
+- [X] T052 [P] [US2] Build `frontend/src/features/performance/imports/` — upload, simulated pull, import list and the summary with its five counts and the undo confirmation stating them (FR-017). Done: `ImportsPage`, `UploadDialog` (UTF-8 CSV only), `PullDialog` (explicit action), `ImportSummaryPage` and `UndoDialog` stating the counts before anything happens
 - [X] T053 [US2] Record the benchmark in [plan.md](./plan.md): a 50,000-row file against 5,000 in-scope activities, confirming a **constant** query count (plan R16) · proves SC-009
 - [X] T054 [US2] Run the quality-gate checks on everything changed — run at every push: golangci-lint (CI style) 0 issues, 48 packages green, frontend lint/typecheck/format clean
 
@@ -139,7 +139,7 @@ appear with goal, actual and conversion per stage.
 - [X] T056 [P] [US3] Write `backend/internal/performance/facts_list_test.go`: the fact list carries date, source, stage or metric, value, currency, **the key matched on** and the import (FR-030), searchable and exportable
 - [X] T057 [P] [US3] Write `backend/internal/performance/handler_facts_test.go` as a contract test for the four activity performance operations
 - [X] T058 [P] [US3] Write `frontend/src/features/performance/activity/PerformancePanel.test.tsx` with **one test per state** — not approved, no source, no goal, no data yet, stale, failed (FR-032) — asserting no sample figure appears in any of them · proves SC-008
-- [ ] T059 [P] [US3] Write `frontend/e2e/performance-data.spec.ts` covering US3's journey with axe: Submitted activity shows the gate, approval releases its facts
+- [X] T059 [P] [US3] Write `frontend/e2e/performance-data.spec.ts` covering US3's journey with axe: Submitted activity shows the gate, approval releases its facts. Done: US3 in `frontend/e2e/performance-data.spec.ts` — Fleet expo Rotterdam's panel gated with no table; Daniel approves; its INQ actual shows
 
 ### Implementation
 
@@ -200,8 +200,8 @@ other with a comment and reopen it.
 - [X] T083 [P] [US5] Write `backend/internal/performance/correct_test.go`: a corrected row re-checks and becomes *Resolved* on a match; dismissal **requires** a comment; reopening restores it, with both actions in the history (FR-024)
 - [X] T084 [P] [US5] Write `backend/internal/performance/recheck_test.go`: open rows and held facts re-check on demand and automatically at each load from the same source (FR-025), in a **constant** query count regardless of queue size
 - [X] T085 [P] [US5] Write `backend/internal/performance/precedence_test.go`: a later load with the same source and reference replaces a corrected row — **the source wins** (FR-026)
-- [X] T086 [P] [US5] Write `backend/internal/performance/handler_review_test.go` as a contract test for the six review operations, including the **422** on dismissal without a comment
-- [ ] T087 [P] [US5] Write `frontend/src/features/performance/review/ReviewQueue.test.tsx`: the states data, empty, no access, filtered to nothing, and the required-comment dialog
+- [X] T086 [P] [US5] Write `backend/internal/performance/handler_review_test.go` as a contract test for the six review operations, including the **400** `validation_failed` on dismissal without a comment
+- [X] T087 [P] [US5] Write `frontend/src/features/performance/review/ReviewQueue.test.tsx`: the states data, empty, no access, filtered to nothing, and the required-comment dialog. Done: `review/ReviewQueue.test.tsx` (data, empty, no access, filtered to nothing, row details) and `ReviewRowActions.test.tsx` (the required-comment dialog with the API's `validation_failed` on the field, dismiss, Escape, reopen, correct)
 
 ### Implementation
 
@@ -211,7 +211,7 @@ other with a comment and reopen it.
 - [X] T091 [US5] Implement source-wins precedence over a correction
 - [X] T092 [US5] Implement the review handlers; add their route rules and report them
 - [X] T093 [US5] Remove this story's operations from `notYetServed`
-- [ ] T094 [P] [US5] Build `frontend/src/features/performance/review/` — the queue, its filters, the correction form and the dismissal dialog
+- [X] T094 [P] [US5] Build `frontend/src/features/performance/review/` — the queue, its filters, the correction form and the dismissal dialog. Done: `ReviewQueuePage`, `ReviewRowPanel`, `CorrectDialog` (sends only the changed cells, prefilled from the source's mappings) and `DismissDialog`. The row's history is not shown: `ReviewRow` carries no history in the contract
 - [X] T095 [US5] Run the quality-gate checks on everything changed — run at every push: golangci-lint (CI style) 0 issues, 48 packages green, frontend lint/typecheck/format clean
 
 **Checkpoint**: nothing is lost silently.
@@ -250,7 +250,7 @@ to delete it after a fact has used it.
 
 ## Phase 9: Polish and cross-cutting
 
-- [ ] T109 Extend `frontend/e2e/performance-data.spec.ts` to cover **every P1 story** (US1, US2, US3, US4) with axe included
+- [X] T109 Extend `frontend/e2e/performance-data.spec.ts` to cover **every P1 story** (US1, US2, US3, US4) with axe included. Done: US1–US4 with axe in `frontend/e2e/performance-data.spec.ts`; facts are loaded through the Imports screen because none are seeded (T110). US4-2 (an old name matching through its alias) is not covered: nothing in the API keeps an alias yet (046-C14, feature 006's lane)
 - [ ] T110 Seed the wave B demo facts under `backend/cmd/seed/` — **blocked**: the measure seed file is lane D's to create and 039 wires its call in. Raise in the pull request if it still does not exist (plan *Risks*)
 - [X] T111 [P] Confirm every file changed is within 300 non-blank lines and every file's comments are within 5% of its non-blank lines (constitution V, VIII)
 - [X] T112 [P] Confirm every test name carries the requirement ID it proves, and that no test restates the code, tests generated code or exists only for coverage (constitution VI)

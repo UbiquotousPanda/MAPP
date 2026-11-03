@@ -61,7 +61,6 @@ func TestActivityPanel_ProjectsEachStageAndStampsTheModel_FR012_FR016(t *testing
 	if panel.Revenue.Projected == nil || panel.Revenue.Projected.Currency != "USD" {
 		t.Errorf("projected revenue = %+v, want the deals priced at the model's average deal size", panel.Revenue.Projected)
 	}
-	assertSplitAtToday(t, inq)
 }
 
 // assertSplitAtToday checks the one rule the months carry: actual behind today, projected ahead of it, both
@@ -157,6 +156,7 @@ func TestActivityPanel_TheActualSeriesCountsOnlyCountedFacts_FR014(t *testing.T)
 	if counted != 40 {
 		t.Errorf("the actual series totals %d, want only 046's counted facts — held, unmatched and replaced ones count nowhere", counted)
 	}
+	assertSplitAtToday(t, inq)
 }
 
 func TestActivityPanel_TodayComesFromTheInjectedClock_FR017(t *testing.T) {
@@ -216,5 +216,32 @@ func TestActivityPanel_MonthsAreAnEmptyListWithoutAProjection_FR013(t *testing.T
 	}
 	if strings.Contains(string(body), `"months":null`) {
 		t.Errorf("panel = %s, want every months an empty list: the contract requires an array", body)
+	}
+}
+
+func TestActivityPanel_MonthsClaimNoActualWithoutFacts_FR013_FR016(t *testing.T) {
+	t.Parallel()
+	f, _ := projectingFixture(t)
+
+	panel, err := f.service.ActivityPanel(t.Context(), alex, "A-1")
+	if err != nil {
+		t.Fatalf("ActivityPanel: %v", err)
+	}
+
+	for _, stage := range panel.Stages {
+		if len(stage.Months) != projection.Months {
+			t.Fatalf("%s months = %d, want the plan year's twelve", stage.Stage, len(stage.Months))
+		}
+		for _, month := range stage.Months {
+			if month.Actual != nil {
+				t.Errorf("%s %s actual = %d with no fact loaded, want null: never a 0 for a missing figure",
+					stage.Stage, month.Month, *month.Actual)
+			}
+		}
+	}
+	for _, month := range panel.Revenue.Months {
+		if month.Actual != nil {
+			t.Errorf("revenue %s actual = %s with no fact loaded, want null", month.Month, month.Actual.Amount.Format())
+		}
 	}
 }
