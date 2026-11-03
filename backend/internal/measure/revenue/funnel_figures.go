@@ -28,12 +28,7 @@ func funnelFiguresOfActivities(series []ActivitySeries, stage string) map[string
 			out[a.ID] = FunnelFigures{Actual: own.actual}
 			continue
 		}
-		if !m.covers(a) {
-			out[a.ID] = FunnelFigures{Goal: own.goal, Actual: own.actual, Projected: own.total}
-			continue
-		}
-		actual := int64Of(own.actual)
-		out[a.ID] = FunnelFigures{Goal: own.goal, Actual: &actual, Projected: own.total}
+		out[a.ID] = FunnelFigures{Goal: own.goal, Actual: own.actual, Projected: own.total}
 	}
 	return out
 }
@@ -45,7 +40,10 @@ func withFunnelDerived(f FunnelFigures, previousActual int64) FunnelFigures {
 		performance = ratioCard(int64Of(f.Projected), *f.Goal, true)
 	}
 	f.Performance, f.Variance = performance.Value, performance.Variance
-	f.Conversion = conversionCard(int64Of(f.Actual), &previousActual).Value
+	f.Conversion = nil
+	if f.Actual != nil {
+		f.Conversion = conversionCard(*f.Actual, &previousActual).Value
+	}
 	return f
 }
 

@@ -63,9 +63,12 @@ func buildFunnelReport(in funnelReportInput) FunnelReport {
 	anyGoal := slices.ContainsFunc(series, func(a ActivitySeries) bool { return m.covers(a) && a.HasProjection })
 	out := FunnelReport{Stage: in.stage, AvailableStages: in.available, UncoveredCount: uncoveredCount(series, in.stage),
 		Period: periodShown(in.period), Periods: funnelPeriods(sums, in.period, in.w), Projection: stampOf(series)}
-	projected := sumMonths(allowingStage(series, in.stage), m).total()
-	out.Cards = funnelCards(sums, projected, anyGoal, previousStageTotal(in.series, in.stage))
+	allowing := allowingStage(series, in.stage)
+	out.Cards = funnelCards(sums, sumMonths(allowing, m).total(), anyGoal, previousStageTotal(in.series, in.stage))
 	out.Cards.Actual = intCard(sums.actualTotal(), counted(series, m), actualReason(series, m))
+	if !anyTotal(allowing, m) {
+		out.Cards.Projected = NumberCard{Reason: reportReason(in.series, false)}
+	}
 	out.Reason = reportReason(in.series, anyGoal)
 	return out
 }

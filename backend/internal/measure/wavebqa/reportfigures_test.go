@@ -16,11 +16,32 @@ const noPreviousStage = "noPreviousStage"
 func noActualAnywhere(t *testing.T, alexSees person) {
 	t.Helper()
 	for _, show := range levels() {
-		for _, f := range revenueRankedOf(t, alexSees, "show="+show).everyFigure() {
-			if f.Actual != nil {
-				t.Errorf("Revenue at show=%s: actual %v with no fact loaded, want null (FR-009)", show, *f.Actual)
-				break
-			}
+		if slices.ContainsFunc(revenueRankedOf(t, alexSees, "show="+show).everyFigure(),
+			func(f revenueFigures) bool { return f.Actual != nil }) {
+			t.Errorf("Revenue at show=%s: an actual with no fact loaded, want null (FR-009)", show)
+		}
+		if slices.ContainsFunc(funnelRankedOf(t, alexSees, "show="+show).everyFigure(),
+			func(f funnelFigures) bool { return f.Actual != nil }) {
+			t.Errorf("Funnel stages at show=%s: an actual with no fact loaded, want null (FR-009)", show)
+		}
+	}
+	for _, r := range reportsUnderTest() {
+		months := r.shapeOf(t, alexSees, "")
+		if months.cards.actual != nil || slices.ContainsFunc(months.periods, func(p point) bool { return p.actual != nil }) {
+			t.Errorf("%s: actual card %s or a month's actual with no fact loaded, want null (FR-009)", r.name,
+				shown(months.cards.actual))
+		}
+	}
+}
+
+func noGridOfZeros(t *testing.T, label string, s shape) {
+	t.Helper()
+	if s.cards.actual != nil || s.cards.projected != nil {
+		t.Errorf("%s: cards %s, want actual and actual or projected null (FR-008)", label, s.cards)
+	}
+	for _, p := range s.periods {
+		if p.goal != nil || p.actual != nil || p.projected != nil {
+			t.Errorf("%s %s: %s, want every figure null (FR-008)", label, p.key, p.figures)
 		}
 	}
 }
@@ -69,9 +90,11 @@ func emptyYearStated(t *testing.T, alexSees person) {
 	if funnel.Reason != "noData" || funnel.Cards.Goal.Value != nil || funnel.Cards.Performance.Value != nil {
 		t.Errorf("Funnel stages 2025, no plan in view = %+v, want reason noData, goal and performance null", funnel)
 	}
+	noGridOfZeros(t, "Revenue 2025", revenue.shape())
+	noGridOfZeros(t, "Funnel stages 2025", funnel.shape())
 }
 
-// TestWaveB_MissingIsNeverZero_FR009: without facts or goals the figure is null with its reason; zero actuals: a finding.
+// TestWaveB_MissingIsNeverZero_FR009: without facts or goals every figure is null with its reason, never 0.
 func TestWaveB_MissingIsNeverZero_FR009(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
