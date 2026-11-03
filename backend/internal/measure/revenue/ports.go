@@ -6,6 +6,7 @@ import (
 
 	"mapp/internal/allwork"
 	"mapp/internal/measure"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"
@@ -55,6 +56,10 @@ type Category struct {
 
 type Categories interface {
 	ListCategories(ctx context.Context) ([]Category, error)
+}
+
+type Credits interface {
+	Credit(ctx context.Context, scope authz.Scope, activityIDs []string, year int) (attribution.Credited, error)
 }
 
 // Rates answers the current exchange rates, which convert every revenue fact.

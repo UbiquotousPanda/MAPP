@@ -7,6 +7,7 @@ import (
 	"mapp/internal/allwork"
 
 	"mapp/internal/measure"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
@@ -20,10 +21,15 @@ func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Fi
 		if err != nil {
 			return err
 		}
+		r, err := s.returnsOf(ctx, a, sc, series)
+		if err != nil {
+			return err
+		}
 		x := indexInView(sc, series, categoryOf(f.Own))
-		figures := &revenueRanking{x: x, own: revenueFiguresOfActivities(series), memo: map[string]RevenueFigures{},
+		figures := &revenueRanking{x: x, own: revenueFiguresOfActivities(series, r), memo: map[string]RevenueFigures{},
 			display: money.DisplayIn(sc.Currency.Code, sc.Currency.Rate.String())}
-		out = ranking.Build(x, showLevel(f.Show), q.shared(), figures)
+		out = RevenueRanked{List: ranking.Build(x, showLevel(f.Show), q.shared(), figures),
+			Attribution: attribution.ActualStamp(r.credited.Model)}
 		return nil
 	})
 	return out, err

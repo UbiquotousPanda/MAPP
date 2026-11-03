@@ -8,8 +8,10 @@ import (
 	"mapp/internal/allwork"
 	"mapp/internal/financials"
 	"mapp/internal/measure"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"
 )
 
@@ -30,6 +32,7 @@ type fakes struct {
 	plans      map[string]revenue.Goal
 	categories []revenue.Category
 	spend      map[string]map[string]financials.Facts
+	credits    map[string]money.Amount
 	asked      string
 	scopeReads int
 }
@@ -52,8 +55,12 @@ func (f *fakes) SpendByMonth(context.Context, actor.Actor, []string) (map[string
 	return f.spend, nil
 }
 
+func (f *fakes) Credit(context.Context, authz.Scope, []string, int) (attribution.Credited, error) {
+	return attribution.Credited{Model: attribution.Equal, ByActivity: f.credits}, nil
+}
+
 func (f *fakes) service() *Service {
-	deps := Deps{Series: f, PlanGoals: f, Spending: f, Categories: f, Segments: f}
+	deps := Deps{Series: f, PlanGoals: f, Spending: f, Categories: f, Segments: f, Credits: f}
 	return NewService(fakeRead{}, deps, func() time.Time { return time.Date(2026, 6, 15, 0, 0, 0, 0, time.UTC) })
 }
 

@@ -5133,7 +5133,7 @@ export interface paths {
         };
         /**
          * One league table of the Summary report - the five highest values of a segment and the total (feature 048)
-         * @description The same frame filter and category as getSummaryReport. Each activity's figures are shared between its values of the segment, by a % split's own shares or else equally (048-C4, C14); Not filled in has the key none. The total counts each activity once. Cost and ROI are null for plans whose financial data the person may not see. ROI is null, with the reason, while attribution is not configured. A segment that matches nothing answers 200 with no rows.
+         * @description The same frame filter and category as getSummaryReport. Each activity's figures are shared between its values of the segment, by a % split's own shares or else equally (048-C4, C14); Not filled in has the key none. The total counts each activity once. Cost and ROI are null for plans whose financial data the person may not see. ROI divides the revenue 050's designated model credits by the actual cost, and roi names that model and basis. A segment that matches nothing answers 200 with no rows.
          */
         get: operations["getSummaryLeague"];
         put?: never;
@@ -6012,14 +6012,24 @@ export interface components {
             projected: components["schemas"]["Money"] | null;
             performance: number | null;
             variance: components["schemas"]["SummaryVariance"];
-            /** @description Always null until feature 050 configures attribution (049-C6). */
+            /** @description The revenue the list's attribution model credits to the entry's activities in the year (050 FR-003, FR-010); null, with the reason, when no revenue fact in view credits them. */
+            attributedRevenue: components["schemas"]["Money"] | null;
+            /** @description The payments booked in the year on the entry's line items (050 FR-007); null, with the reason, for plans whose financial data the person may not see. */
             actualCost: components["schemas"]["Money"] | null;
-            /** @description Always null until feature 050 configures attribution (049-C6). */
+            /** @description (attributedRevenue − actualCost) ÷ actualCost as a whole per cent, halves away from zero (050 FR-007); the list's attribution names its model and cost basis. */
             roi: number | null;
             /** @enum {string} */
-            actualCostReason: "" | "attributionNotConfigured";
-            /** @enum {string} */
-            roiReason: "" | "attributionNotConfigured";
+            attributedRevenueReason: "" | "noData";
+            /**
+             * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
+             * @enum {string}
+             */
+            actualCostReason: "" | "attributionNotConfigured" | "noFinancialAccess";
+            /**
+             * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
+             * @enum {string}
+             */
+            roiReason: "" | "attributionNotConfigured" | "noFinancialAccess" | "noActualCost" | "noData";
         };
         RevenueEntry: {
             id: string;
@@ -6030,7 +6040,15 @@ export interface components {
             figures: components["schemas"]["RevenueFigures"];
             children?: components["schemas"]["RevenueEntry"][];
         };
+        /** @description What an attributed revenue and an ROI rest on, named beside them (050 FR-008). */
+        AttributionStamp: {
+            /** @example Equally distributed */
+            model: string;
+            /** @enum {string} */
+            basis: "actual" | "planned";
+        };
         RevenueRanked: {
+            attribution: components["schemas"]["AttributionStamp"];
             /** @enum {string} */
             level: "plan" | "campaign" | "initiative" | "activity";
             /** @enum {string} */

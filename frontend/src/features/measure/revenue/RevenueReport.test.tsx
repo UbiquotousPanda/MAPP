@@ -112,14 +112,22 @@ describe('RevenueReport (049 US1)', () => {
     expect(within(table).getAllByRole('row')).toHaveLength(13);
   });
 
-  it('shows the ROI and actual-cost columns as unavailable until feature 050 configures attribution (049-C6)', async () => {
+  it('names the model and cost basis beside attributed revenue and ROI (050 FR-008, FR-010)', async () => {
     renderPage();
 
     await screen.findByText('Helix launch');
     const ranked = screen.getByRole('region', { name: 'Ranked list' });
     expect(
-      within(ranked).getAllByText('Attribution is not configured yet.').length,
-    ).toBeGreaterThan(0);
+      within(ranked).getByRole('columnheader', {
+        name: /^ROI \(Equally distributed, on actual cost\)/,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(ranked).getByRole('columnheader', {
+        name: /^Attributed revenue \(Equally distributed\)/,
+      }),
+    ).toBeInTheDocument();
+    expect(within(ranked).getAllByText('20%').length).toBeGreaterThan(0);
   });
 
   it('sorts the ranked list by Actual, not silently by Projected (review of 049)', async () => {

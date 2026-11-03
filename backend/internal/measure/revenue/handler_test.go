@@ -82,7 +82,7 @@ func TestRankedEntries_SayTheWordTheirPerformanceImplies_048C1_FR023(t *testing.
 	for _, show := range []string{"plan", "campaign", "activity"} {
 		var revenueList revenue.RevenueRanked
 		planner.Do(t, http.MethodGet, "/api/v1/reports/revenue/ranked?year=2026&size=50&show="+show, nil).Decode(t, &revenueList)
-		checkVariance(t, "revenue "+show, revenueList, func(f revenue.RevenueFigures) (*float64, revenue.Variance) {
+		checkVariance(t, "revenue "+show, revenueList.List, func(f revenue.RevenueFigures) (*float64, revenue.Variance) {
 			return f.Performance, f.Variance
 		})
 		var funnelList revenue.FunnelRanked

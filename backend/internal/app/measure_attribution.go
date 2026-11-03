@@ -15,3 +15,8 @@ func (w *wiring) attributionArea() error {
 	mount(w.signedIn, attribution.NewHandler(service))
 	return nil
 }
+
+func (w *wiring) crediting() *attribution.Crediting {
+	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
+	return attribution.NewCrediting(attribution.NewService(tools, w.set.Attribution), w.set.Attribution, w.settings)
+}

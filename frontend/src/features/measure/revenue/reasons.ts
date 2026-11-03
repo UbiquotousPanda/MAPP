@@ -4,7 +4,8 @@ const REASON_WORDS: Record<string, string> = {
   notApproved: 'Not approved yet.',
   noSource: 'No active data source.',
   noData: 'No data has arrived yet.',
-  attributionNotConfigured: 'Attribution is not configured yet.',
+  noFinancialAccess: 'Financial data not shown to you.',
+  noActualCost: 'No actual cost yet.',
   noPreviousStage: '—',
 };
 

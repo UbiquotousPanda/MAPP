@@ -60,9 +60,9 @@ func TestRanked_ACategoryListsOnlyTheRecordsHoldingOneOfItsActivities_FR019_US3(
 		if err != nil {
 			t.Fatalf("RankedFunnel: %v", err)
 		}
-		if r.Total != len(want) || !slices.Equal(rankedIDs(r), want) {
+		if r.Total != len(want) || !slices.Equal(rankedIDs(r.List), want) {
 			t.Errorf("Revenue at show=%s: %d entries %v, want %v: only records with an Asset activity", show, r.Total,
-				rankedIDs(r), want)
+				rankedIDs(r.List), want)
 		}
 		if funnel.Total != len(want) || !slices.Equal(rankedIDs(funnel), want) {
 			t.Errorf("Funnel stages at show=%s: %d entries %v, want %v", show, funnel.Total, rankedIDs(funnel), want)

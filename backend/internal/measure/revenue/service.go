@@ -5,6 +5,7 @@ import (
 
 	"mapp/internal/allwork"
 	"mapp/internal/measure"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/clock"
@@ -19,6 +20,8 @@ type Deps struct {
 	Goals      Goals
 	Categories Categories
 	Rates      Rates
+	Credits    Credits
+	Spending   attribution.Spending
 }
 
 type Service struct {

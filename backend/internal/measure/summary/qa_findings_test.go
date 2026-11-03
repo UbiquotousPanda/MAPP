@@ -12,19 +12,30 @@ import (
 	"mapp/internal/platform/actor"
 )
 
-func TestLeague_ROIIsADashWhileAttributionIsNotConfigured_048_FR015(t *testing.T) {
+func TestLeague_ROIDashSaysWhy_048_FR015_050_FR007(t *testing.T) {
 	t.Parallel()
-
-	got := league(t, withSegments(), TableROI, nil)
-
-	if got.Total != nil || got.ROI != nil || got.Reason == nil || *got.Reason != reasonAttributionNotConfigured {
-		t.Errorf("ROI = total %v, basis %v, reason %v; want dashes with %q, as Revenue answers", got.Total, got.ROI,
-			got.Reason, reasonAttributionNotConfigured)
+	tests := []struct {
+		name   string
+		change func(f *fakes)
+		want   string
+	}{
+		{"no plan's financial data is shown", func(f *fakes) { f.scope.Choices.SeesFinance = false }, reasonNoFinance},
+		{"nothing paid in the year", func(f *fakes) { f.spend = nil }, reasonNoCost},
+		{"no revenue credited", func(f *fakes) { f.credits = nil }, reasonNoAttributed},
 	}
-	for _, r := range got.Rows {
-		if r.Value != nil {
-			t.Errorf("ROI row %s = %v, want a dash", r.Name, r.Value)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			f := withSegments()
+			tt.change(f)
+
+			got := league(t, f, TableROI, nil)
+
+			if got.Total != nil || got.Reason == nil || *got.Reason != tt.want || got.ROI == nil {
+				t.Errorf("ROI = total %v, reason %v, basis %v; want a dash with %q and the model named", got.Total,
+					got.Reason, got.ROI, tt.want)
+			}
+		})
 	}
 }
 

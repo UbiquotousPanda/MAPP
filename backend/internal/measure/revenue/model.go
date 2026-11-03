@@ -1,6 +1,7 @@
 package revenue
 
 import (
+	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/money"
 )
@@ -12,12 +13,13 @@ const (
 )
 
 const (
-	ReasonNoGoal                   = "noGoal"
-	ReasonNotApproved              = "notApproved"
-	ReasonNoSource                 = "noSource"
-	ReasonNoData                   = "noData"
-	ReasonAttributionNotConfigured = "attributionNotConfigured"
-	ReasonNoPreviousStage          = "noPreviousStage"
+	ReasonNoGoal            = "noGoal"
+	ReasonNotApproved       = "notApproved"
+	ReasonNoSource          = "noSource"
+	ReasonNoData            = "noData"
+	ReasonNoPreviousStage   = "noPreviousStage"
+	ReasonNoFinancialAccess = "noFinancialAccess"
+	ReasonNoActualCost      = "noActualCost"
 )
 
 // Stamp names the model behind a projected figure and when its parameters last changed.
@@ -68,17 +70,19 @@ type RevenueReport struct {
 	Reason     string          `json:"reason"`
 }
 
-// RevenueFigures is one entry's figures; ActualCost and ROI are absent until 050 lands.
+// RevenueFigures is one entry's figures; AttributedRevenue, ActualCost and ROI come from 050, each with its reason.
 type RevenueFigures struct {
-	Goal             *money.Money `json:"goal"`
-	Actual           *money.Money `json:"actual"`
-	Projected        *money.Money `json:"projected"`
-	Performance      *float64     `json:"performance"`
-	Variance         Variance     `json:"variance"`
-	ActualCost       *money.Money `json:"actualCost"`
-	ROI              *float64     `json:"roi"`
-	ActualCostReason string       `json:"actualCostReason"`
-	ROIReason        string       `json:"roiReason"`
+	Goal                    *money.Money `json:"goal"`
+	Actual                  *money.Money `json:"actual"`
+	Projected               *money.Money `json:"projected"`
+	Performance             *float64     `json:"performance"`
+	Variance                Variance     `json:"variance"`
+	AttributedRevenue       *money.Money `json:"attributedRevenue"`
+	ActualCost              *money.Money `json:"actualCost"`
+	ROI                     *float64     `json:"roi"`
+	AttributedRevenueReason string       `json:"attributedRevenueReason"`
+	ActualCostReason        string       `json:"actualCostReason"`
+	ROIReason               string       `json:"roiReason"`
 }
 
 // FunnelCards mirrors RevenueCards, plus the conversion from the previous stage.
@@ -120,11 +124,16 @@ type FunnelFigures struct {
 }
 
 type (
-	RevenueEntry  = ranking.Entry[RevenueFigures]
-	RevenueGroup  = ranking.Group[RevenueFigures]
-	RevenueRanked = ranking.List[RevenueFigures]
-	FunnelEntry   = ranking.Entry[FunnelFigures]
-	FunnelGroup   = ranking.Group[FunnelFigures]
-	FunnelRanked  = ranking.List[FunnelFigures]
-	TrailStep     = ranking.TrailStep
+	RevenueEntry = ranking.Entry[RevenueFigures]
+	RevenueGroup = ranking.Group[RevenueFigures]
+	FunnelEntry  = ranking.Entry[FunnelFigures]
+	FunnelGroup  = ranking.Group[FunnelFigures]
+	FunnelRanked = ranking.List[FunnelFigures]
+	TrailStep    = ranking.TrailStep
 )
+
+// RevenueRanked is the ranked list with the model and cost basis its attributed revenue and ROI rest on.
+type RevenueRanked struct {
+	ranking.List[RevenueFigures]
+	Attribution attribution.Stamp `json:"attribution"`
+}

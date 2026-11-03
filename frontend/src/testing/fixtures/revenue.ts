@@ -52,10 +52,12 @@ function revenueFigures(goal: string, actual: string | null): RevenueFigures {
     projected: usd(goal),
     performance: 80,
     variance: 'belowPlan',
-    actualCost: null,
-    roi: null,
-    actualCostReason: 'attributionNotConfigured',
-    roiReason: 'attributionNotConfigured',
+    attributedRevenue: usd('240000.00'),
+    actualCost: usd('200000.00'),
+    roi: 20,
+    attributedRevenueReason: '',
+    actualCostReason: '',
+    roiReason: '',
   };
 }
 
@@ -76,6 +78,7 @@ const revenueEntry = (
 
 export function revenueRanked(overrides: Partial<RevenueRanked> = {}): RevenueRanked {
   return {
+    attribution: { model: 'Equally distributed', basis: 'actual' },
     level: 'campaign',
     sort: 'projectedRevenue',
     order: 'desc',
