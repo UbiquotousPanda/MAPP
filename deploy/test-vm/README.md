@@ -7,8 +7,8 @@ demo seed; never put real Shell data here. Set up on 2026-11-03.
 | | |
 |---|---|
 | URL | https://mapp-test-northstar.centralindia.cloudapp.azure.com |
-| Browser sign-in | user `tester`, password in the maintainer's `~/mapp-test-credentials.txt` (not in the repo) |
-| Then | the app's own demo sign-in: pick a demo person; the page shows the demo password |
+| Sign-in | the app's own demo sign-in: pick a demo person, no typing needed (demo password `mapp`) |
+| Who can open it | anyone with the URL; there is no extra login in front of the app (see Known limits) |
 | Shuts down | every day at 15:30 UTC (21:00 IST); start it again with `az vm start` (below) |
 | Cost | about USD 30 a month if left on all the time, less with the nightly shutdown |
 
@@ -17,11 +17,10 @@ demo seed; never put real Shell data here. Set up on 2026-11-03.
 ```
 browser ──HTTPS 443──▶ NSG (allow-web) ──▶ VM: Caddy ──▶ web (nginx) ──/api──▶ api (Go) ──▶ postgres
            HTTP 80 only redirects to HTTPS     │ Let's Encrypt certificate
-                                               │ basic auth: tester sign-in
 ```
 
-There is no VPN and no private network to join: the VM has a public IP address. Access is controlled by the
-firewall rules below, the shared tester sign-in in Caddy, and the app's demo sign-in. Only Caddy publishes
+There is no VPN and no private network to join: the VM has a public IP address. The firewall rules below open
+only HTTPS (and HTTP for the certificate); the app's demo sign-in is the only login. Only Caddy publishes
 ports on the VM; PostgreSQL and the web container listen on `127.0.0.1` of the VM only.
 
 ## Azure resources
@@ -74,7 +73,6 @@ Outbound is Azure's default (everything allowed): the VM pulls images, packages 
 |---|---|
 | `MAPP_HOST` | the VM's host name; Caddy's certificate and the API's `PUBLIC_HOSTS` |
 | `DEMO_PASSWORD` | the demo sign-in's password |
-| `TESTER_USER`, `TESTER_PASSWORD_HASH` | the shared tester sign-in; make the hash with `docker run --rm caddy:2.10-alpine caddy hash-password --plaintext '<password>'` and write it in single quotes |
 
 ### On the maintainer's computer
 
@@ -113,8 +111,18 @@ az network nsg rule update -g mapp-test-rg --nsg-name mapp-test-vmNSG -n allow-s
   --source-address-prefixes "$(curl -s https://api.ipify.org)/32"
 ```
 
-**Change the tester password:** make a new hash (above), replace `TESTER_PASSWORD_HASH` in the VM's `.env`,
-then `ssh mapp-test 'cd ~/mapp && docker compose -f compose.yaml -f deploy/test-vm/compose.yaml up -d caddy'`.
+**Change the demo password:** edit `DEMO_PASSWORD` in the VM's `.env`, then
+`ssh mapp-test 'cd ~/mapp && docker compose -f compose.yaml -f deploy/test-vm/compose.yaml up -d api'`.
+
+**Restrict it to the office network later:** change `allow-web` to port 443 from the office IP only (keep port
+80 open so Let's Encrypt can renew the certificate):
+
+```sh
+az network nsg rule update -g mapp-test-rg --nsg-name mapp-test-vmNSG -n allow-web \
+  --destination-port-ranges 443 --source-address-prefixes 115.110.105.36/32
+az network nsg rule create -g mapp-test-rg --nsg-name mapp-test-vmNSG -n allow-http-acme --priority 105 \
+  --protocol Tcp --destination-port-ranges 80 --access Allow
+```
 
 **Fresh demo data** (deletes everything testers entered):
 
@@ -153,6 +161,11 @@ This deletes every resource listed above, data included, and cannot be undone. T
 `mapp-test` entry from `~/.ssh/config` and the key files.
 
 ## Known limits
+
+- **Open to the internet.** Anyone who finds the URL can sign in as a demo person, read and change the demo
+  data. Only the fictitious demo seed is loaded, so nothing real can leak. A shared HTTP basic-auth login was
+  tried first and removed: browsers forget it as soon as the app answers 401 ("not signed in"), so testers
+  were asked for it again and again.
 
 - Not a production environment: Shell's release gates (CSPM scanning, ServiceNow) apply when MAPP moves to
   Shell's environment.

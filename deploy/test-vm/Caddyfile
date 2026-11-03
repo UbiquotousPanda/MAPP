@@ -1,6 +1,4 @@
 {$MAPP_HOST} {
-	basic_auth {
-		{$TESTER_USER} {$TESTER_PASSWORD_HASH}
-	}
+	log
 	reverse_proxy web:8080
 }

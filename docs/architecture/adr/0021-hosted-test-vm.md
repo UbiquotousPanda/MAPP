@@ -16,8 +16,8 @@ the sign-in page shows the demo password to whoever opens it.
 ## Decision
 
 - One small Linux VM (`Standard_B2als_v2`) runs the repository's `compose.yaml` with an overlay,
-  `deploy/test-vm/compose.yaml`, that adds Caddy: HTTPS from Let's Encrypt and one shared tester sign-in
-  (HTTP basic authentication) in front of the whole site.
+  `deploy/test-vm/compose.yaml`, that adds Caddy for HTTPS with a certificate from Let's Encrypt. The site
+  is open to anyone with the URL, with the demo sign-in as its only login and the demo seed as its only data.
 - The API answers the host names in a new, optional `PUBLIC_HOSTS` variable as well as this computer's; the
   cross-site checks are unchanged.
 - `deploy/test-vm/deploy.sh` sends `HEAD` over SSH and rebuilds there: no registry, no deploy from CI.
@@ -26,6 +26,9 @@ the sign-in page shows the demo password to whoever opens it.
 
 ## Consequences
 
+- HTTP basic authentication in front of the site was tried and dropped: browsers discard the saved login when
+  the app answers 401 for "not signed in", and then ask for it again. Firewall rules can limit the site to the
+  office network later.
 - About USD 30 a month if left running, less with the nightly shutdown; one machine to patch.
 - Only the fictitious demo seed is ever loaded; it is not a production environment, and Shell's release
   gates (CSPM scanning, ServiceNow) apply when MAPP moves to Shell's environment.

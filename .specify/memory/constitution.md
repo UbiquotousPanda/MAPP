@@ -511,7 +511,7 @@ both be non-negotiable without conflict.
   reviewers who don't develop it (ADR-0012); every port it publishes is on `127.0.0.1`, nothing is
   pushed to a registry, and developing MAPP never requires Docker or Podman. No cloud services at run time; CI and the
   scans in the quality gates run on GitHub. The one exception is a **hosted test environment** for business
-  analysts and testers: one Azure VM runs the same `compose.yaml`, behind HTTPS and a shared tester sign-in, with
+  analysts and testers: one Azure VM runs the same `compose.yaml`, over HTTPS, with
   the demo seed only (ADR-0021).
 - **Demo data:** a clearly labelled, fictitious seed dataset is loaded by an explicit command; it
   never contains real Shell people or figures.
@@ -1173,6 +1173,6 @@ amended to match.
 | 4.6.0 | 2026-10-28 | Current Phase & Scope: bulk actions and Excel import (012), the SP&A view and BCPIR marker of Shell's spec 006 (013), executive and regional planning dashboards from plan and finance data with PowerPoint and PDF export (036), and overspend control per budget owner (037) come into scope; out of scope narrowed to Measure's performance reporting | D-333; product owner instruction of 2026-10-28 (sandbox readiness) |
 | 4.7.0 | 2026-10-29 | X: a field required to save is marked by a Secondary Red asterisk after its label, bold and at least 19 px (large text), with "required" still given to screen readers; "Needed to publish" and "Needed to submit" stay words | D-364; product owner instruction of 2026-10-29 |
 | 4.9.0 | 2026-11-01 | Current Phase & Scope: the self-service dashboard builder (051) — dashboards people build from the Plan-module data they may see and from CSV or Excel datasets they upload, shown under Dashboards next to 036's built-in dashboards and shared view-only with their teams; out of scope gains dashboards shared outside SP&A One teams, scheduled or e-mailed dashboards and live data connectors. F1: Apache ECharts is the chart library (ADR-0020). 4.8.0 is the Measure-module amendment on `measure-module` | D-371–D-378; ADR-0020; product owner instruction of 2026-11-01 |
-| 4.10.0 | 2026-11-03 | Current Phase & Scope: one Azure VM may run `compose.yaml` as a hosted test environment for business analysts and testers, behind HTTPS and a shared tester sign-in, with the demo seed only | ADR-0021; repository owner instruction of 2026-11-03 |
+| 4.10.0 | 2026-11-03 | Current Phase & Scope: one Azure VM may run `compose.yaml` as a hosted test environment for business analysts and testers, over HTTPS, with the demo seed only | ADR-0021; repository owner instruction of 2026-11-03 |
 
 **Version**: 4.10.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-11-03

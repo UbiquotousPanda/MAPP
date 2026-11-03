@@ -12,13 +12,11 @@ services:
   web:
     restart: unless-stopped
 
-  # Basic auth because the demo sign-in hands its password to anyone who opens the page.
+  # The only service reachable from outside: HTTPS with a certificate from Let's Encrypt.
   caddy:
     image: docker.io/library/caddy:2.10-alpine
     environment:
       MAPP_HOST: ${MAPP_HOST}
-      TESTER_USER: ${TESTER_USER:?set TESTER_USER in .env}
-      TESTER_PASSWORD_HASH: ${TESTER_PASSWORD_HASH:?set TESTER_PASSWORD_HASH in .env}
     ports:
       - "80:80"
       - "443:443"
