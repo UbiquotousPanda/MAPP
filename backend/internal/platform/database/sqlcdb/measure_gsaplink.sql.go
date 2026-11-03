@@ -137,17 +137,20 @@ func (q *Queries) ListPurchaseRequestRoutingsOf(ctx context.Context, purchaseReq
 }
 
 const listPurchaseRequestsWaitingForGsap = `-- name: ListPurchaseRequestsWaitingForGsap :many
+WITH in_view AS MATERIALIZED (
+    SELECT DISTINCT m.purchase_request_id AS id
+    FROM unnest($1::text[]) AS v(line_item_id)
+    JOIN purchase_request_lines m ON m.line_item_id = v.line_item_id)
 SELECT p.id, p.name, p.vendor, p.plan_id, p.gsap_pr_number, o.name AS owner_name, l.line_item_id, l.amount_minor,
     l.currency
-FROM purchase_requests p
+FROM in_view v
+JOIN purchase_requests p ON p.id = v.id
 JOIN people o ON o.id = p.owner_id
 JOIN purchase_request_lines l ON l.purchase_request_id = p.id
 WHERE p.status = 'approved'
     AND EXISTS (SELECT 1 FROM purchase_request_routings g WHERE g.purchase_request_id = p.id)
     AND EXISTS (SELECT 1 FROM purchase_request_lines w WHERE w.purchase_request_id = p.id
         AND (w.po_line = '' OR w.po_value_minor <> w.amount_minor OR w.po_currency <> w.currency))
-    AND EXISTS (SELECT 1 FROM purchase_request_lines m WHERE m.purchase_request_id = p.id
-        AND m.line_item_id = ANY ($1::text[]))
 ORDER BY length(p.id), p.id COLLATE "C", l.position
 `
 
@@ -163,6 +166,7 @@ type ListPurchaseRequestsWaitingForGsapRow struct {
 	Currency     string
 }
 
+// in_view is worked out once: a per-row ANY over the year's line items took minutes on stale statistics.
 func (q *Queries) ListPurchaseRequestsWaitingForGsap(ctx context.Context, lineItemIds []string) ([]ListPurchaseRequestsWaitingForGsapRow, error) {
 	rows, err := q.db.Query(ctx, listPurchaseRequestsWaitingForGsap, lineItemIds)
 	if err != nil {
