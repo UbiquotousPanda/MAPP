@@ -56,6 +56,9 @@ func TestSumMonths_IsWhatTheFunnelCardsShow_048C10_SC002(t *testing.T) {
 			t.Fatalf("%s: FunnelReport: %v", name, err)
 		}
 		sums := revenue.SumMonths(series, revenue.StageMeasure(revenue.StageINQ))
+		if projected := report.Cards.Projected.Value; projected == nil || int64(*projected) != sums.Total() {
+			t.Errorf("%s: SumMonths Total = %d, want the Projected card %s", name, sums.Total(), cardText(projected))
+		}
 		card := report.Cards.Actual.Value
 		if card == nil || int64(*card) != sums.ActualTotal() {
 			t.Errorf("%s: SumMonths ActualTotal = %d, want the Actual card %s", name, sums.ActualTotal(), cardText(card))
