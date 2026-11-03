@@ -142,6 +142,12 @@ func assertWaitingIsolated(tb testing.TB, store *gsaplink.PostgresStore, lineIte
 	if err != nil || len(waiting) != 1 {
 		tb.Fatalf("waiting: %v, %v", waiting, err)
 	}
+	for _, l := range waiting[0].Lines {
+		alone, aloneErr := store.WaitingForGsap(tb.Context(), []string{l.LineItemID})
+		if diff := cmp.Diff(waiting, alone, exact()); aloneErr != nil || diff != "" {
+			tb.Errorf("waiting on %s alone, want the whole request (-want +got):\n%s %v", l.LineItemID, diff, aloneErr)
+		}
+	}
 	on := waiting[0].Lines[0].LineItemID
 	others := slices.DeleteFunc(slices.Clone(lineItems), func(id string) bool { return id == on })
 	if none, noneErr := store.WaitingForGsap(tb.Context(), others); noneErr != nil || len(none) != 0 {

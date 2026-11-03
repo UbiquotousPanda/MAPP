@@ -2,7 +2,6 @@ package gsaplink
 
 import (
 	"context"
-	"slices"
 	"time"
 
 	"mapp/internal/platform/database"
@@ -51,8 +50,12 @@ func (s *PostgresStore) WaitingForGsap(ctx context.Context, lineItemIDs []string
 	if err != nil {
 		return nil, err
 	}
+	index := make(map[string]int, len(requests))
+	for i, r := range requests {
+		index[r.ID] = i
+	}
 	for _, g := range routings {
-		i := slices.IndexFunc(requests, func(r Request) bool { return r.ID == g.PurchaseRequestID })
+		i := index[g.PurchaseRequestID]
 		requests[i].Routings = append(requests[i].Routings, Routing{Type: g.Type, At: g.RoutedAt})
 	}
 	return requests, nil
