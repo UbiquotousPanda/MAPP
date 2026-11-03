@@ -4336,8 +4336,8 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * Delete a data source, only while it holds no performance data (needs performance.import) (046 FR-002)
-         * @description A source that holds facts is refused with 409 in_use and Deactivate offered instead, because deleting it would silently restate every figure its data fed.
+         * Delete a data source, only while nothing refers to it (needs performance.import) (046 FR-002)
+         * @description A source that holds facts is refused with 409 in_use and Deactivate offered instead, because deleting it would silently restate every figure its data fed. A source that loads, rows to review or activities' integration IDs still refer to, those of activities in the recycle bin included, is refused with 409 in_use naming them.
          */
         delete: operations["deletePerformanceSource"];
         options?: never;
@@ -4493,7 +4493,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Pull the simulated feed once, by explicit action (needs performance.import) (046 FR-010, 046-C13) */
+        /**
+         * Pull the simulated feed once, by explicit action (needs performance.import) (046 FR-010, 046-C13)
+         * @description Refused with 409 not_allowed when the source is deactivated or does not deliver by simulated feed.
+         */
         post: operations["pullPerformanceFeed"];
         delete?: never;
         options?: never;
@@ -5524,6 +5527,8 @@ export interface components {
             webMetric: string;
             count: number | null;
             amount: components["schemas"]["Money"] | null;
+            /** @description The row's pseudonymous journey reference (046-C6), absent when it had none; 050 credits by it. */
+            journeyRef?: string;
             held: boolean;
             /** @enum {string} */
             matchedOn: "" | "activityId" | "mediaCode" | "integrationId" | "externalName";
@@ -7428,7 +7433,7 @@ export interface components {
         };
         ImpactWarning: {
             /** @enum {string} */
-            kind: "goalsRecalculated" | "activityTypeRemoved" | "becomesIncomplete" | "optionsRemoved" | "amountsRecalculated" | "ownerNeedsAttention" | "approverCannotApprove" | "removesOwnAdministration";
+            kind: "goalsRecalculated" | "activityTypeRemoved" | "becomesIncomplete" | "optionsRemoved" | "amountsRecalculated" | "ownerNeedsAttention" | "approverCannotApprove" | "removesOwnAdministration" | "goalStageRemoved";
             /** @description The sentence to show before saving. */
             message: string;
             /** @description How many records the warning is about. */
@@ -21598,6 +21603,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };

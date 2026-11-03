@@ -7988,10 +7988,12 @@ paths:
     delete:
       tags: [Performance data]
       operationId: deletePerformanceSource
-      summary: Delete a data source, only while it holds no performance data (needs performance.import) (046 FR-002)
+      summary: Delete a data source, only while nothing refers to it (needs performance.import) (046 FR-002)
       description: >-
         A source that holds facts is refused with 409 in_use and Deactivate offered instead, because deleting
-        it would silently restate every figure its data fed.
+        it would silently restate every figure its data fed. A source that loads, rows to review or activities'
+        integration IDs still refer to, those of activities in the recycle bin included, is refused with 409
+        in_use naming them.
       responses:
         "204": { description: "Deleted, to the recycle bin." }
         "401": { $ref: "#/components/responses/Unauthorized" }
@@ -8158,6 +8160,8 @@ paths:
       tags: [Performance data]
       operationId: pullPerformanceFeed
       summary: Pull the simulated feed once, by explicit action (needs performance.import) (046 FR-010, 046-C13)
+      description: >-
+        Refused with 409 not_allowed when the source is deactivated or does not deliver by simulated feed.
       responses:
         "201":
           description: The completed load; its rows took the same path as an uploaded file (ADR-0020).
@@ -8167,6 +8171,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
         default: { $ref: "#/components/responses/Error" }
   /api/v1/performance/imports:
     get:
@@ -11194,6 +11199,10 @@ components:
           oneOf:
             - { $ref: "#/components/schemas/Money" }
             - { type: "null" }
+        journeyRef:
+          type: string
+          maxLength: 200
+          description: The row's pseudonymous journey reference (046-C6), absent when it had none; 050 credits by it.
         held: { type: boolean }
         matchedOn: { type: string, enum: ["", activityId, mediaCode, integrationId, externalName] }
         version: { type: integer }
@@ -15243,6 +15252,7 @@ components:
             - ownerNeedsAttention
             - approverCannotApprove
             - removesOwnAdministration
+            - goalStageRemoved
         message:
           type: string
           description: The sentence to show before saving.
