@@ -130,3 +130,24 @@ func TestPullAndGetImport_Contract_FR010_FR022(t *testing.T) {
 		t.Errorf("GET a missing import = %d %s, want 404", missing.Status, missing.Body)
 	}
 }
+
+func TestUpdatePerformanceSource_AnswersWhatGetAnswers_Contract_FR002_FR005(t *testing.T) {
+	t.Parallel()
+	alex := apitest.New(t).SignIn(t, alexsEmail)
+	sourceID := preparedSource(t, alex)
+	path := "/api/v1/performance/sources/" + sourceID
+	file := "Ref,Date,Activity,INQs\nr1,2026-02-01,A-1001,5\n"
+	decoded[importAnswer](t, alex.Do(t, http.MethodPost, path+"/uploads", uploadBody(file)), http.StatusCreated)
+	read := decoded[sourceAnswer](t, alex.Do(t, http.MethodGet, path, nil), http.StatusOK)
+
+	saved := alex.Do(t, http.MethodPatch, path, sourceEdit("Eloqua EU", "upload", read.Version))
+	again := alex.Do(t, http.MethodGet, path, nil)
+
+	if saved.Status != http.StatusOK || string(saved.Body) != string(again.Body) {
+		t.Errorf("PATCH answered %d %s,\nGET answers %s; want the same source, its load figures included",
+			saved.Status, saved.Body, again.Body)
+	}
+	if !strings.Contains(string(again.Body), `"factCount":1`) {
+		t.Errorf("GET after the load = %s, want factCount 1", again.Body)
+	}
+}

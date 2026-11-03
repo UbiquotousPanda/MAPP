@@ -38,7 +38,8 @@ US7, client 016 FR-033–FR-039, FA §E3.2.6 and §E7.5.1, MA §5–§6, domain 
   → A: **MAPP adopts the documented default as written in client 020 FR-048–FR-053** and records it here as
   the single definition: the goal stage follows its goal phased evenly across the activity's months (an
   evergreen goal runs to plan-year end); each later stage is the previous stage's series × that
-  transition's conversion rate, shifted forward by its velocity, rounded half-up per month; revenue is the
+  transition's conversion rate, shifted forward by its velocity, rounded half-up per month with the remainder
+  carried into the next month (047-C16); revenue is the
   deal series × average deal size. Nothing projects past the plan year: a conversion shifted beyond it is
   dropped, not bunched into December. SC-001's hand-calculated table is the sign-off artefact.
 
@@ -101,6 +102,18 @@ US7, client 016 FR-033–FR-039, FA §E3.2.6 and §E7.5.1, MA §5–§6, domain 
 - **047-C15** — Q: Does a category need its own activate/deactivate operation, as activity types have? →
   A: **No.** `active` is a field of the category's PATCH, so the five CRUD operations are the whole
   surface; nothing else in Settings needs a sixth.
+
+- **047-C16** — Q: Rounding each month half-up on its own over-projects a small series: Helix search and
+  social, second half (4,000 INQ July–December at 2 % and 5 %) converts 0.65 of a deal a month, which
+  rounds up to 1 six times — 60,000 USD against a 40,000 USD goal (wave B QA finding 7, #102). Which rule?
+  → A: **Carry the remainder** (decided 2026-11-03). Each later stage rounds its
+  running total half-up and places the difference in the month, so each month's unrounded remainder carries
+  into the next — the rule FR-006's goal phasing already follows. Every month is still a whole number, and a
+  stage's months add up to its exact total rounded half-up once: Helix … second half projects 80 MQL,
+  4 deals, 40,000 USD. Rejected: rounding only the total (it leaves no monthly series a reader can add up)
+  and keeping per-month rounding (it misstates the total by up to one unit a month, which one deal size
+  turns into tens of thousands). SC-001's hand table is unchanged: its 1,000 INQ a day leaves no remainder
+  at 2 % or 5 % (273 deals, 2,730,000 USD).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -232,7 +245,9 @@ check — plus the type assignment, without any report.
   activity's days inside the plan year, collapsed to months, so a part month carries only its own days; an
   evergreen or undated activity phases to plan-year end (047-C4, edge cases).
 - **FR-007**: Each later stage MUST be the previous stage's series × that transition's conversion rate,
-  shifted forward by its velocity in whole months, rounded half-up per month; projected revenue MUST be
+  shifted forward by its velocity in whole months, rounded half-up per month with the unrounded remainder
+  carried into the next month, so its months add up to its exact total rounded half-up (047-C16); projected
+  revenue MUST be
   the deal series × average deal size in USD (047-C4).
 - **FR-008**: Projection MUST run forward from the goal stage only, and MUST NOT produce anything past the
   plan year's end — shifted conversions landing beyond it are dropped (020 FR-050, FR-051).
@@ -302,10 +317,9 @@ check — plus the type assignment, without any report.
   047-C4 (client 020 SC-006).
 - **SC-002**: With a fixed clock, reading the same activity twice gives identical projections; changing a
   rate, a goal or today changes them with no other action (FR-011).
-- **SC-003**: The goal stage's months sum to the goal exactly. A later stage's months sum to the earlier
-  stage's kept months at its rate, **within the per-month rounding** (each month is rounded half-up on its
-  own, so the total may differ from rounding the sum by less than one unit per month), with the
-  conversions shifted past December dropped — those are exactly the shifted tail (FR-007, FR-008).
+- **SC-003**: The goal stage's months sum to the goal exactly. A later stage's months sum **exactly** to the
+  earlier stage's kept months at its rate, rounded half-up once (the remainder carries month to month,
+  047-C16), with the conversions shifted past December dropped — those are exactly the shifted tail (FR-007, FR-008).
 - **SC-004**: The activity panel with projections answers within the panel's existing budget (046 SC-008's
   one read, no per-month queries) — the engine adds arithmetic, not queries.
 - **SC-005**: Every rule above has a test naming its FR, and the engine gets a property test driven by Go's

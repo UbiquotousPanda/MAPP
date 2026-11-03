@@ -8,7 +8,8 @@ measure frame.
 
 **Decision**: one pure function: phase the goal-stage series day-exactly across the activity's months of
 the plan year, collapse to months, then for each later stage multiply the previous series by the
-transition's rate (half-up per month) and shift it by the velocity in whole months, dropping what lands
+transition's rate (the running total half-up, so each month's remainder carries into the next, 047-C16)
+and shift it by the velocity in whole months, dropping what lands
 past December; revenue = deals × average deal size.
 
 **Why**: Hive9's own algorithm is undocumented (016 FR-036) and 020 FR-048–FR-053 is the agreed default.
