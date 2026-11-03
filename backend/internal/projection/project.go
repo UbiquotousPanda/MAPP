@@ -63,8 +63,7 @@ func calculated(out Projection, in Inputs, start, end date.Date) Projection {
 	return out
 }
 
-// atRate rounds the running total half-up and places the difference, as phase does, so each month's
-// remainder carries into the next and the months add up to the rounded total, never one unit a month more.
+// atRate carries each month's remainder into the next, as phase does, so the months add up to the rounded total.
 func atRate(months []MonthFigure, rate money.Percent) []MonthFigure {
 	converted := make([]MonthFigure, len(months))
 	var running, placed int64
