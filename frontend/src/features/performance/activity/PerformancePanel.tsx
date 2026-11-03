@@ -15,6 +15,7 @@ import type {
   StageFigure,
 } from './api';
 import styles from './DataSourcesArea.module.css';
+import { ProjectionMonths } from './ProjectionMonths';
 
 const GATE = 'Approve the activity to see performance data.';
 
@@ -64,6 +65,7 @@ function PanelBody({ panel }: { panel: Panel }) {
   return (
     <div className={styles.stack}>
       <StageTable stages={panel.stages} revenue={panel.revenue} />
+      <ProjectionMonths stages={panel.stages} revenue={panel.revenue} />
       {panel.projection && <ProjectionNote stamp={panel.projection} />}
       {panel.webMetrics.length > 0 && <WebMetrics metrics={panel.webMetrics} />}
       {panel.sources.length > 0 && <Sources sources={panel.sources} />}
