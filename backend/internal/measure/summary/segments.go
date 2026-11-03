@@ -73,14 +73,15 @@ func (t tally) split(value allwork.AttrValue) map[string]tally {
 	return out
 }
 
+// tallyOf takes one activity's figures as Revenue's ranked list shows its row, so a league row and that row agree.
 func tallyOf(s revenue.ActivitySeries, cost *int64) tally {
-	sums := sumSeries([]revenue.ActivitySeries{s}, revenuePick())
-	out := tally{total: sums.actualOrProjected(), goal: sums.goal}
-	for _, m := range sums.months {
+	own := revenue.OwnFigureOf(s, revenue.RevenueMeasure())
+	out := tally{total: valueOf(own.Total), goal: valueOf(own.Goal)}
+	for _, m := range sumSeries([]revenue.ActivitySeries{s}, revenuePick()).months {
 		out.months = append(out.months, m.actualOrProjected())
 	}
 	if cost != nil {
-		out.actual, out.cost, out.costSeen = sums.actual(), *cost, true
+		out.actual, out.cost, out.costSeen = valueOf(own.Actual), *cost, true
 	}
 	return out
 }

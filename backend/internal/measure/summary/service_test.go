@@ -35,9 +35,9 @@ func TestRevenueSection_048_FR005_C2(t *testing.T) {
 
 	got := report(t, newFakes(), measure.Filter{}).Revenue
 
-	// 5 past months of 100.00, then June's and six more months' projections of 100.00; A-2 has no projection.
-	want := RevenueSection{PeriodLabel: "FY 2026", ActualOrProjected: usd(120_000), Goal: usd(1_000_000),
-		Performance:  Performance{Percent: ptr(12), Variance: revenue.BelowPlan},
+	// A-1: 5 past months of 100.00, then June's and six more months' projections of 100.00; A-2's 200.00 counts too.
+	want := RevenueSection{PeriodLabel: "FY 2026", ActualOrProjected: usd(140_000), Goal: usd(1_000_000),
+		Performance:  Performance{Percent: ptr(14), Variance: revenue.BelowPlan},
 		GoalCoverage: []Coverage{{StageINQ, ptr(50)}, {StageMQL, ptr(50)}, {StageRevenue, ptr(50)}}}
 	if diff := cmp.Diff(want, got, amounts(), cmp.FilterPath(func(p cmp.Path) bool { return p.Last().String() == ".Trend" }, cmp.Ignore())); diff != "" {
 		t.Errorf("revenue section (-want +got)\n%s", diff)

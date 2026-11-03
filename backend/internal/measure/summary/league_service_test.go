@@ -71,8 +71,8 @@ func TestLeague_RevenueValuesAndTrend_048_C5(t *testing.T) {
 
 	got := league(t, withSegments(), TableRevenue, nil)
 
-	if !cmp.Equal(usd(60_000), got.Rows[0].Value, amounts()) || !cmp.Equal(usd(120_000), got.Total, amounts()) {
-		t.Errorf("North %v and total %v, want 600.00 of 1200.00", got.Rows[0].Value, got.Total)
+	if !cmp.Equal(usd(60_000), got.Rows[0].Value, amounts()) || !cmp.Equal(usd(140_000), got.Total, amounts()) {
+		t.Errorf("North %v and total %v, want 600.00 of 1400.00", got.Rows[0].Value, got.Total)
 	}
 	if len(got.Rows[0].Trend) != monthsInAll || got.ROI != nil || got.Reason != nil {
 		t.Errorf("trend of %d months, ROI %v, reason %v", len(got.Rows[0].Trend), got.ROI, got.Reason)
@@ -88,9 +88,10 @@ func TestLeague_CostAndROI_048_FR015(t *testing.T) {
 	if !cmp.Equal(usd(30_000), cost.Total, amounts()) || !cmp.Equal(usd(15_000), cost.Rows[0].Value, amounts()) {
 		t.Errorf("cost total %v and North %v, want 300.00 and 150.00", cost.Total, cost.Rows[0].Value)
 	}
-	// Revenue so far 550.00 against 300.00 paid: (550 − 300) ÷ 300 = 83 %.
-	if roi.Total != int64(83) || roi.Rows[0].Value != int64(83) {
-		t.Errorf("ROI total %v and North %v, want 83", roi.Total, roi.Rows[0].Value)
+	// North: half of A-1's 550.00 so far against half its 300.00 paid, 83 %. The total adds A-2's 200.00, which cost
+	// nothing in a plan whose finances show: (750 − 300) ÷ 300 = 150 %.
+	if roi.Total != int64(150) || roi.Rows[0].Value != int64(83) {
+		t.Errorf("ROI total %v and North %v, want 150 and 83", roi.Total, roi.Rows[0].Value)
 	}
 	if roi.ROI == nil || *roi.ROI != (ROIBasis{Model: "Equally distributed", Basis: "actual"}) {
 		t.Errorf("ROI basis = %v, want Equally distributed on actual cost", roi.ROI)
@@ -116,8 +117,8 @@ func TestLeague_PerformanceAndSegmentChoice_048_C6(t *testing.T) {
 	performance := league(t, withSegments(), TablePerformance, url.Values{"segment": {unitAttr}})
 	unknown := league(t, withSegments(), TableRevenue, url.Values{"segment": {"ATTR-GONE"}})
 
-	if performance.Segment.ID != unitAttr || performance.Total != int64(12) {
-		t.Errorf("performance by unit = segment %v, total %v; want ATTR-P and 12", performance.Segment, performance.Total)
+	if performance.Segment.ID != unitAttr || performance.Total != int64(14) {
+		t.Errorf("performance by unit = segment %v, total %v; want ATTR-P and 14", performance.Segment, performance.Total)
 	}
 	if diff := cmp.Diff([]string{"Not filled in"}, rowSummary(performance.Rows)); diff != "" {
 		t.Errorf("performance rows (-want +got)\n%s", diff)

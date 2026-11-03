@@ -100,7 +100,7 @@ func projected(id, plan string) revenue.ActivitySeries {
 	return s
 }
 
-// unprojected has 200.00 of revenue in January and no goal, so 049's sums leave it out.
+// unprojected has 200.00 of revenue in January, no goal and no model; its facts still count, as in Revenue.
 func unprojected(id, plan string) revenue.ActivitySeries {
 	s := revenue.ActivitySeries{ID: id, Name: "Activity " + id, PlanID: plan, Stages: []string{}}
 	for i := range monthsInAll {
