@@ -74,14 +74,14 @@ func (s *Service) shownOf(ctx context.Context, p Plan, f Facts, l lookups, c con
 		sh.teams = append(sh.teams, team)
 	}
 	sh.teams = sortedTeams(sh.teams)
-	ownerOK := false
+	ownerOK := ownerFits(p, l)
 	if p.OwnerID != "" {
 		owner, found := l.people[p.OwnerID]
 		if !found {
 			owner = people.PersonRef{ID: p.OwnerID, Name: p.OwnerID}
 		}
 		sh.owner = &owner
-		if ownerOK = ownerEligible(p.OwnerID, p.TeamIDs, l.members); !ownerOK {
+		if !ownerOK {
 			sh.ownerProblem = fmt.Sprintf(msgOwnerNotInTeams, owner.Name)
 		}
 	}
@@ -92,11 +92,11 @@ func (s *Service) shownOf(ctx context.Context, p Plan, f Facts, l lookups, c con
 	if sh.businessUnit, err = s.optionRefs(ctx, unitIDs); err != nil {
 		return shown{}, err
 	}
-	attributes, err := s.settings.MissingAttributes(ctx, settings.LevelPlan, p.Attributes, unitIDs)
+	missing, err := s.ownMissingOf(ctx, p, ownerOK, unitIDs)
 	if err != nil {
 		return shown{}, err
 	}
-	sh.completeness = Completeness{Missing: ownMissing(p, ownerOK, attributes), ItemsBelow: itemsBelow(f)}
+	sh.completeness = Completeness{Missing: missing, ItemsBelow: itemsBelow(f)}
 	return sh, nil
 }
 
