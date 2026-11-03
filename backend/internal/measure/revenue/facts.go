@@ -12,12 +12,13 @@ const stageRevenue = "revenue"
 
 // activityTotals lays one activity's counted facts out month by month, in line with its projected series.
 type activityTotals struct {
-	counts  map[string][]projection.MonthFigure // by stage ("inq", "mql")
-	revenue []projection.MoneyFigure
+	counts   map[string][]projection.MonthFigure // by stage ("inq", "mql")
+	revenue  []projection.MoneyFigure
+	excluded int
 }
 
 // factsByActivity reads the facts in one query whatever the number of activities and converts revenue at the
-// current rate; a currency with no rate is excluded.
+// current rate; a fact in a currency with no rate is left out and counted.
 func (s *Service) factsByActivity(ctx context.Context, scope authz.Scope, activityIDs []string, year int) (map[string]activityTotals, error) {
 	if len(activityIDs) == 0 {
 		return map[string]activityTotals{}, nil
@@ -47,24 +48,25 @@ func (s *Service) addRow(out map[string]activityTotals, r FactTotal, year int, r
 		return
 	}
 	if r.Stage == stageRevenue {
-		t.revenue = addRevenue(t.revenue, r, i, rates)
+		t = addRevenue(t, r, i, rates)
 	} else {
 		t.counts[r.Stage] = appendAt(t.counts[r.Stage], i, r.Counts, r.Month)
 	}
 	out[r.ActivityID] = t
 }
 
-func addRevenue(months []projection.MoneyFigure, r FactTotal, i int, rates money.Rates) []projection.MoneyFigure {
-	if months == nil {
-		months = emptyRevenueMonths(r.Month, i)
-	}
+func addRevenue(t activityTotals, r FactTotal, i int, rates money.Rates) activityTotals {
 	converted, err := rates.Convert(money.Money{Amount: money.FromCents(r.AmountMinor), Currency: r.Currency},
 		money.BaseCurrency)
 	if err != nil {
-		return months
+		t.excluded += r.FactCount
+		return t
 	}
-	months[i].Value.Amount = months[i].Value.Amount.Add(converted.Amount)
-	return months
+	if t.revenue == nil {
+		t.revenue = emptyRevenueMonths(r.Month, i)
+	}
+	t.revenue[i].Value.Amount = t.revenue[i].Value.Amount.Add(converted.Amount)
+	return t
 }
 
 func emptyRevenueMonths(sampleMonth string, atIndex int) []projection.MoneyFigure {
