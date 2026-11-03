@@ -186,3 +186,32 @@ func TestActivityPanel_AFactCountsInTheYearOfItsOwnDate_FR015(t *testing.T) {
 		}
 	}
 }
+
+func TestActivityPanel_ConversionRoundsHalfUpLikeEveryReport_FR029(t *testing.T) {
+	t.Parallel()
+	f, src := panelFixture(t)
+	f.runImport(t, src.ID, map[string]string{"r1": "200", "r2": "200"})
+	mqlRows := importRows(map[string]string{"m1": "201"})
+	mqlRows[0].Readings[0].Measure = performance.Measure{Stage: "mql"}
+	if _, err := f.service.RunImport(t.Context(), alex, performance.ImportInput{
+		SourceID: src.ID, FileName: "mql.csv", Origin: performance.OriginUpload,
+		Headings: []string{"ref", "date", "mqls"}, Rows: mqlRows,
+	}); err != nil {
+		t.Fatalf("RunImport: %v", err)
+	}
+	panel, err := f.service.ActivityPanel(t.Context(), alex, "A-1")
+	if err != nil {
+		t.Fatalf("ActivityPanel: %v", err)
+	}
+	mql := stageOf(t, panel, "mql")
+	if mql.Conversion == nil || *mql.Conversion != 50.3 {
+		t.Errorf("mql conversion = %v, want 201/400 = 50.25 rounded half up to 50.3", deref(mql.Conversion))
+	}
+}
+
+func deref(p *float64) any {
+	if p == nil {
+		return nil
+	}
+	return *p
+}
