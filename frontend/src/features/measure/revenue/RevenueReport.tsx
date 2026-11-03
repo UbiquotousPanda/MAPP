@@ -33,7 +33,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
   const ranked = useRevenueRanked(address, rankedParams(state, category));
   const show = address.show ?? 'campaign';
   const columns: RankedColumn<RevenueFigures>[] = [
-    { key: 'goal', label: 'Goal', value: (f) => (f.goal ? money(f.goal) : '—') },
+    { key: 'goal', label: 'Goal', value: (f) => (f.goal ? money(f.goal) : '—'), sortable: false },
     {
       key: 'actualRevenue',
       label: 'Actual',
@@ -48,16 +48,19 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       key: 'performance',
       label: 'Performance',
       value: (f) => performanceText(f.performance, f.variance),
+      sortable: false,
     },
     {
       key: 'actualCost',
       label: 'Actual cost',
       value: (f) => (f.actualCost ? money(f.actualCost) : reasonText(f.actualCostReason)),
+      sortable: false,
     },
     {
       key: 'roi',
       label: 'ROI',
       value: (f) => (f.roi !== null ? `${f.roi}%` : reasonText(f.roiReason)),
+      sortable: false,
     },
   ];
   const groups = [
