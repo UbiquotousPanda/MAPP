@@ -177,4 +177,13 @@ describe('FunnelReport (049 US2)', () => {
       .map((o) => o.getAttribute('value'));
     expect(values).toEqual(['actual', 'projected']);
   });
+
+  it('names the model behind the projected figures and when it last changed (049 FR-022, SC-006)', async () => {
+    renderPage();
+
+    const summary = await screen.findByLabelText('Summary');
+    expect(
+      within(summary).getByText(/^Projected from Lubricants 1\.0, last changed [^T:]+ 2026\.$/),
+    ).toBeInTheDocument();
+  });
 });
