@@ -113,6 +113,9 @@ jobs:
       pull-requests: read
     defaults: *in-backend
     steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       # Vet and lint compile every test variant of the module, about 7.5 GB of build cache and work files, which no
       # longer fits beside the tools the runner image preinstalls. None of these is needed here.
       - name: Free disk space
@@ -120,9 +123,6 @@ jobs:
           df -h /
           sudo rm -rf /usr/local/lib/android /opt/hostedtoolcache/CodeQL /usr/share/dotnet /usr/share/swift /opt/ghc /usr/local/.ghcup
           df -h /
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - *setup-go
       # Vet first: lint compiles the same packages, so after vet it only has to analyse them.
       - name: Vet
