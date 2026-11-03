@@ -1,11 +1,13 @@
-import { screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { screen, waitFor, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { nth } from '@/testing/dom';
+import { CATEGORIES } from '@/testing/fixtures/activity-categories';
 import { reportFrame } from '@/testing/fixtures/reports';
 import { revenueRanked, revenueReport } from '@/testing/fixtures/revenue';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
+import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
@@ -19,9 +21,10 @@ function renderPage(
     reply('GET /api/v1/me', { body: testUser() }),
     reply('GET /api/v1/reports/frame', { body: reportFrame() }),
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
-    reply('GET /api/v1/settings/activity-categories', { body: { items: [], total: 0 } }),
+    reply('GET /api/v1/settings/activity-categories', { body: CATEGORIES }),
     reply('GET /api/v1/reports/revenue', report),
     reply('GET /api/v1/reports/revenue/ranked', { body: revenueRanked() }),
+    reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
   ]);
   const rendered = renderWithProviders(<RevenueReport />, {
     route,
@@ -30,6 +33,9 @@ function renderPage(
   });
   return { ...rendered, api };
 }
+
+const asked = (api: MockedApi, path: string) =>
+  api.requests.filter((r) => r.path === path).map((r) => new URLSearchParams(r.search));
 
 describe('RevenueReport (049 US1)', () => {
   it('shows the four cards, names the model behind the goal, and is accessible (FR-010, FR-012)', async () => {
@@ -102,5 +108,41 @@ describe('RevenueReport (049 US1)', () => {
 
     expect(await screen.findByRole('button', { name: 'Try again' })).toBeInTheDocument();
     expect(await screen.findByText('Helix launch')).toBeInTheDocument();
+  });
+
+  it('keeps the chosen category in the address and asks every widget for it (US3 scenario 3, FR-019)', async () => {
+    const { user, api, router } = renderPage();
+
+    await screen.findByText('Helix launch');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Activity category' }), 'Asset');
+
+    expect(new URLSearchParams(router.state.location.search).get('category')).toBe('CAT-1001');
+    await waitFor(() =>
+      expect(asked(api, '/api/v1/reports/revenue').at(-1)?.get('category')).toBe('CAT-1001'),
+    );
+    expect(asked(api, '/api/v1/reports/revenue/ranked').at(-1)?.get('category')).toBe('CAT-1001');
+  });
+
+  it('restores the category from the address, as a saved view or Back reopens it (US3 scenario 3, FR-019)', async () => {
+    const { api } = renderPage(undefined, '/reports/revenue?year=2026&category=uncategorised');
+
+    expect(await screen.findByDisplayValue('Uncategorised')).toBeInTheDocument();
+    expect(nth(asked(api, '/api/v1/reports/revenue'), 0).get('category')).toBe('uncategorised');
+  });
+
+  it('exports the report for the chosen category (FR-019)', async () => {
+    URL.createObjectURL = () => 'blob:export';
+    URL.revokeObjectURL = () => {};
+    const save = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const { user, api } = renderPage();
+
+    await screen.findByText('Helix launch');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Activity category' }), 'Asset');
+    await user.click(nth(screen.getAllByRole('button', { name: 'Export' }), 0));
+    await user.click(await screen.findByRole('menuitem', { name: 'Excel (.xlsx)' }));
+
+    await waitFor(() => expect(asked(api, '/api/v1/reports/revenue/export')).toHaveLength(1));
+    expect(nth(asked(api, '/api/v1/reports/revenue/export'), 0).get('category')).toBe('CAT-1001');
+    save.mockRestore();
   });
 });

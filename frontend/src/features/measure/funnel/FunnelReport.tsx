@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { RankedList, ReportFrame, useRankedState } from '../shared';
@@ -6,6 +5,7 @@ import type { RankedColumn, ReportAddress, ReportFrameData } from '../shared';
 import { useFunnelReport, useFunnelRanked } from '../revenue/api';
 import type { FunnelFigures, FunnelRankedParams } from '../revenue/api';
 import { CategorySelect } from '../revenue/CategorySelect';
+import { useOwnParam } from '../revenue/useOwnParam';
 import { FunnelCards } from './FunnelCards';
 import { FunnelChart } from './FunnelChart';
 import { StageSelect } from './StageSelect';
@@ -24,8 +24,8 @@ export function FunnelReport() {
 }
 
 function FunnelBody({ frame, address }: { frame: ReportFrameData; address: ReportAddress }) {
-  const [category, setCategory] = useState('');
-  const [stage, setStage] = useState('');
+  const [category, setCategory] = useOwnParam('category');
+  const [stage, setStage] = useOwnParam('stage');
   const report = useFunnelReport(address, {
     category: category || undefined,
     stage: isStage(stage) ? stage : undefined,

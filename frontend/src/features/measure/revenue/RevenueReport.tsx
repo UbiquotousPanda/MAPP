@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useFormatters } from '@/format/useFormatters';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -11,6 +10,7 @@ import { RevenueCards } from './RevenueCards';
 import { RevenueChart } from './RevenueChart';
 import { reasonText } from './reasons';
 import styles from './Revenue.module.css';
+import { useOwnParam } from './useOwnParam';
 
 const LEVELS = ['plan', 'campaign', 'initiative', 'activity'];
 const DEFAULT_SORT = 'projectedRevenue';
@@ -26,7 +26,7 @@ export function RevenueReport() {
 
 function RevenueBody({ frame, address }: { frame: ReportFrameData; address: ReportAddress }) {
   const { money } = useFormatters();
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useOwnParam('category');
   const report = useRevenueReport(address, { category: category || undefined });
   const { state } = useRankedState(DEFAULT_SORT);
   const ranked = useRevenueRanked(address, rankedParams(state, category));
