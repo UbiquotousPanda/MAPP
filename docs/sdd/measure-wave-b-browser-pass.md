@@ -98,7 +98,7 @@ Both themes unless the theme says light (keyboard and facts checks). "All five" 
 | Revenue | all six | light | actual revenue an amount with the Measure plan, its reason without | Pass | facts |
 | Summary | Alex | light | no state; actual or projected = Revenue's $216,549.97; MQL conversion 16.0 %, Above plan; trend February, March as Revenue | Pass | facts; cross-report 1 |
 | Summary | Carlos, Lea | light | no "No performance data" state | Pass | facts |
-| Summary | Alex | light | ROI league "—" while attribution is not configured | **Fail** | finding 15: External 36 %, Total 36 %, "Equally distributed, on actual cost" |
+| Summary | Alex | light | ROI league "—" while attribution is not configured | **Fail** | finding 15: External 36 %, Total 36 %, "Equally distributed, on actual cost"; fixed by #139 in the API, the screen not rerun |
 | Funnel stages | Alex | light | the INQ actual card is a figure | Pass | facts |
 
 Not run: 050's crediting (Helix 54,000.00, Tellus case studies 13,405.80, Tellus webinar series 18,702.90 under Equally
@@ -126,7 +126,7 @@ by (#97), below 1024 px, loading and failed widgets, EUR display.
 | Shared frame | Dark theme | Pass (axe) |
 | Shared frame | No "Measure", "Tactic", "HUD" | Pass |
 | Summary | Cost and ROI "—" with plans left out; revenue, performance, volumes shown | Pass |
-| Summary | ROI "—" with the reason until configured | Fail (finding 15) |
+| Summary | ROI "—" with the reason until configured | Fail (finding 15); fixed by #139 in the API, the screen not rerun |
 | Revenue | Cards: goal, actual, actual or projected, performance | Pass |
 | Revenue | One-team viewer: only their plans | Pass |
 | Revenue | Actual cost and ROI "—", "Attribution is not configured yet" | Pass |
@@ -144,4 +144,4 @@ by (#97), below 1024 px, loading and failed widgets, EUR display.
 | B1 | 049 Revenue, Funnel stages | Medium | No model is named beside projected figures. Any of the six, either theme, `/reports/revenue?year=2026` or `/reports/funnel?year=2026`: no "Projected from …" or model name anywhere on the page, though the API serves `projection` (model name, `modelChangedAt`) on both reports. Expected: the model and its last change beside the figure (049 FR-022, SC-006; 047 FR-012); `RevenueCards.tsx` and `FunnelCards.tsx` read no `projection`. Finding 13 is the API's half (one model named for two plans). | Open, #140 |
 | B2 | 047 activity Performance | Medium | The model's last change is not a date. Alex, Carlos or Lea, an activity with a projection (Tellus webinar series): "Projected from Lubricants 1.0, last changed 03T14:40:44.211Z Nov 2026." Expected "… last changed 03 Nov 2026." in the person's date format (047 FR-012). `PerformancePanel.tsx`:149 gives `date()` the timestamp `modelChangedAt`; Settings › Attribution passes `localDate(…)` first. 047's e2e checks only the start of the line. | Open, #140 |
 | B3 | 039 frame (Summary, Revenue, Funnel stages) | Medium | The financial notice fails text contrast. Lea, light theme, any of the three reports: axe `color-contrast` on "You can't see the financial data of these plans" (`._note_…`). `.note` (`ReportFrame.module.css`:113-118) is `--ink-2` #757575 on `--page-bg` #f5f5f5, about 4.2:1 against WCAG 1.4.3's 4.5:1 for small text; `tokens.css`:2 says text on grey uses `--ink`. The same rule styles the left-out note, "Changes not applied yet" and `.muted`. Dark theme passes. Constitution X, 039 SC-007. | Open, #140 |
-| 15 | 048 Summary | Medium | Confirmed on screen with T110's facts: Alex's Summary ROI league shows External 36 %, Total 36 %, "Equally distributed, on actual cost", while Revenue's ranked list says "Attribution is not configured yet." for the same activities. | Open, #137 (fix in #139) |
+| 15 | 048 Summary | Medium | Confirmed on screen with T110's facts: Alex's Summary ROI league shows External 36 %, Total 36 %, "Equally distributed, on actual cost", while Revenue's ranked list says "Attribution is not configured yet." for the same activities. | Fixed by #139 (048-C15): on PostgreSQL with T110's facts every ROI value and the total are null with "Attribution is not configured yet" and no model is named; `TestWaveB_SummaryRoiIsADashUntilCrediting_048_FR015` asserts it on the demo fakes. The screen is not rerun |

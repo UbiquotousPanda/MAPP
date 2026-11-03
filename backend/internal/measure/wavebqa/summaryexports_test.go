@@ -18,11 +18,8 @@ func summarySheets() []string {
 func checkSummaryWorkbook(t *testing.T, alexSees person) {
 	t.Helper()
 	file := alexSees.expect(t, get(exportPath("summary")), http.StatusOK)
-	got, want := sheetNames(t, file.Body), summarySheets()
-	if len(got) != len(want) || slices.ContainsFunc(want, func(w string) bool {
-		return !strings.HasPrefix(got[slices.Index(want, w)], w)
-	}) {
-		t.Errorf("Summary workbook sheets = %q, want a sheet per widget in page order: %q", got, want)
+	if got, want := sheetNames(t, file.Body), summarySheets(); !slices.Equal(got, want) {
+		t.Errorf("Summary workbook sheets = %q, want a sheet per widget in page order, names whole: %q", got, want)
 	}
 	if name := fileNameOf(t, file); name != "SP&A One – Summary – 2026 – 12 Mar 2026.xlsx" {
 		t.Errorf("Summary workbook named %q", name)
@@ -94,9 +91,9 @@ func checkFunnelWidget(t *testing.T, alexSees person, s summaryAnswer) {
 	}
 	expectRows(t, "funnel", widgetRows(t, alexSees, "funnel"), funnel)
 	c := s.Funnel.Conversions[0]
-	rate, variance := strings.Replace(textOf(c.Rate), "null", "—", 1), varianceWord(c.Variance)
-	if c.Variance == "" {
-		variance = "—"
+	rate, variance := strings.Replace(textOf(c.Rate), "null", "—", 1), "—"
+	if c.Variance != nil {
+		variance = varianceWord(*c.Variance)
 	}
 	expectRows(t, "conversion", widgetRows(t, alexSees, "conversion"), [][]string{{"Stage", "Rate (%)", "Goal (%)",
 		"Variance"}, {"MQL", rate, textOf(c.Goal), variance}})
@@ -111,7 +108,7 @@ func TestWaveB_SummaryWidgetsExportTheirTable_048_FR021(t *testing.T) {
 	checkFunnelWidget(t, alexSees, s)
 	for _, table := range leagueTables() {
 		l := leagueOf(t, alexSees, table, "")
-		rows := widgetRows(t, alexSees, "league"+strings.ToUpper(table[:1])+table[1:])
+		rows := widgetRows(t, alexSees, leagueWidget(table))
 		if last := rows[len(rows)-1]; rows[0][0] != l.Segment.Label || !slices.Equal(last[:2], []string{"Total", exported(l.Total)}) {
 			t.Errorf("Summary %s league widget = %q, want %s's values, then Total %s", table, rows, l.Segment.Label,
 				shown(units(l.Total)))
@@ -119,27 +116,46 @@ func TestWaveB_SummaryWidgetsExportTheirTable_048_FR021(t *testing.T) {
 	}
 }
 
+func leagueWidget(table string) string {
+	return "league" + strings.ToUpper(table[:1]) + table[1:]
+}
+
+// leagueWord is the table's figure as its sheet and About this export name it.
+func leagueWord(table string) string {
+	return map[string]string{"revenue": "Revenue", "performance": "Performance (%)", "cost": "Actual cost",
+		"roi": "ROI (%)"}[table]
+}
+
 type summaryParam struct {
 	widget, param string
 	row           []string
+	note          string
 }
 
 func summaryParams(t *testing.T, alexSees person) []summaryParam {
 	t.Helper()
 	digital := "category=" + categoryNamed(t, alexSees, "Digital")
-	firstRow := func(table, segmentID string) []string {
+	league := func(table, param, segmentID string) summaryParam {
 		l := leagueOf(t, alexSees, table, "segment="+segmentID)
-		return []string{l.Segment.Label, l.Rows[0].Name, exported(l.Rows[0].Value)}
+		return summaryParam{leagueWidget(table), param + "=" + segmentID,
+			[]string{l.Segment.Label, l.Rows[0].Name, exported(l.Rows[0].Value)}, leagueWord(table) + " by," + l.Segment.Label}
 	}
 	return []summaryParam{
-		{"revenue", digital, []string{"Actual or projected (USD)", money(summaryOf(t, alexSees, digital).Revenue.ActualOrProjected)}},
+		{"revenue", digital, []string{"Actual or projected (USD)", money(summaryOf(t, alexSees, digital).Revenue.ActualOrProjected)},
+			"Category,Digital"},
 		{"funnel", "category=" + uncategorised, []string{"INQ", shown(units(summaryOf(t, alexSees,
-			"category="+uncategorised).stage("inq").ActualOrProjected))}},
-		{"leagueRevenue", "revenueBy=SA-1014", firstRow("revenue", "SA-1014")},
-		{"leaguePerformance", "performanceBy=SA-1013", firstRow("performance", "SA-1013")},
-		{"leagueCost", "costBy=SA-1001", firstRow("cost", "SA-1001")},
-		{"leagueRoi", "roiBy=SA-1004", firstRow("roi", "SA-1004")},
+			"category="+uncategorised).stage("inq").ActualOrProjected))}, "Category,Uncategorised"},
+		league("revenue", "revenueBy", "SA-1014"),
+		league("performance", "performanceBy", "SA-1013"),
+		league("cost", "costBy", "SA-1001"),
+		league("roi", "roiBy", "SA-1004"),
 	}
+}
+
+// notesOf is About this export: an exported CSV's lines before the blank line that ends them.
+func notesOf(file []byte) string {
+	notes, _, _ := strings.Cut(strings.ReplaceAll(string(file), "\r\n", "\n"), "\n\n")
+	return notes
 }
 
 func holds(rows [][]string, want []string) bool {
@@ -149,7 +165,7 @@ func holds(rows [][]string, want []string) bool {
 	return slices.ContainsFunc(rows, func(r []string) bool { return len(r) >= 2 && slices.Equal(r[:2], want) })
 }
 
-// TestWaveB_ExportsKeepOwnParams_048_FR022: category and each league's segment reach the widget export, unlike the default.
+// TestWaveB_ExportsKeepOwnParams_048_FR022: category and segments reach the widget export and its notes, unlike the default.
 func TestWaveB_ExportsKeepOwnParams_048_FR022(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
@@ -159,6 +175,11 @@ func TestWaveB_ExportsKeepOwnParams_048_FR022(t *testing.T) {
 		kept := alexSees.expect(t, get(path), http.StatusOK)
 		if rows := csvRows(t, string(kept.Body)); bytes.Equal(plain.Body, kept.Body) || !holds(rows, c.row) {
 			t.Errorf("GET %s: %q, want %q as the report shows it, and a file unlike the default", path, rows, c.row)
+		}
+		if notes, before := notesOf(kept.Body), notesOf(plain.Body); !strings.Contains(notes, c.note) ||
+			strings.Contains(before, c.note) || !strings.Contains(before, "Category,All categories") {
+			t.Errorf("GET %s: About this export %q, the default's %q; want %q in the first alone, the default All "+
+				"categories (039 FR-022)", path, notes, before, c.note)
 		}
 	}
 }

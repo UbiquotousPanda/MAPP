@@ -8,7 +8,11 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-const leagueSize = 5
+const (
+	leagueSize         = 5
+	notConfiguredWords = "Attribution is not configured yet"
+	noFinanceReason    = "Financial data of these plans is not shown to you"
+)
 
 func rowsTotal(rows []leagueEntry) *int64 {
 	var total int64
@@ -189,9 +193,9 @@ func valuesByKey(l leagueAnswer) map[string]*int64 {
 func checkRoiDash(t *testing.T, alexSees person) {
 	t.Helper()
 	roi := leagueOf(t, alexSees, "roi", "")
-	if roi.ROI != nil || textOf(roi.Reason) != "Attribution is not configured yet" || units(roi.Total) != nil {
-		t.Errorf("ROI league names %+v, reason %s, total %s; want \"—\" with \"Attribution is not configured yet\" (FR-015)",
-			roi.ROI, textOf(roi.Reason), shown(units(roi.Total)))
+	if roi.ROI != nil || textOf(roi.Reason) != notConfiguredWords || units(roi.Total) != nil {
+		t.Errorf("ROI league names %+v, reason %s, total %s; want \"—\" with %q (FR-015)", roi.ROI, textOf(roi.Reason),
+			shown(units(roi.Total)), notConfiguredWords)
 	}
 	for _, r := range roi.Rows {
 		if units(r.Value) != nil {

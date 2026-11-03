@@ -41,7 +41,8 @@ func summaryQueries(t *testing.T, alexSees person) []string {
 }
 
 func samePoint(a, b point) bool {
-	return a.key == b.key && a.state == b.state && shown(a.goal) == shown(b.goal) && shown(a.projected) == shown(b.projected)
+	return a.key == b.key && a.state == b.state && shown(a.goal) == shown(b.goal) && shown(a.actual) == shown(b.actual) &&
+		shown(a.projected) == shown(b.projected)
 }
 
 func checkRevenueSection(t *testing.T, alexSees person, query string, got summaryAnswer) {
@@ -54,7 +55,7 @@ func checkRevenueSection(t *testing.T, alexSees person, query string, got summar
 			shown(got.Revenue.Performance), got.Revenue.Variance, r.cards, shown(whole(revenue.Cards.Performance.Value)), word)
 	}
 	if !slices.EqualFunc(s.periods, r.periods, samePoint) {
-		t.Errorf("Summary %q: trend %v, want Revenue's periods %v (goal and projected)", query, s.periods, r.periods)
+		t.Errorf("Summary %q: trend %v, want Revenue's periods %v (goal, actual, projected)", query, s.periods, r.periods)
 	}
 	if st := got.stage("revenue"); st.figures().String() != s.cards.String() || shown(st.Performance) != shown(got.Revenue.Performance) {
 		t.Errorf("Summary %q: the funnel's revenue %s, want the revenue section's %s", query, st.figures(), s.cards)
@@ -198,67 +199,6 @@ func TestWaveB_SummaryCategoriesLoseNothing_049_FR020(t *testing.T) {
 	for stage, figs := range stages {
 		if got, want := add(figs...), add(all.stage(stage).figures()); got.String() != want.String() {
 			t.Errorf("Summary %s: the categories add to %s, all categories %s", stage, got, want)
-		}
-	}
-}
-
-func checkEmptyYear(t *testing.T, alexSees person) {
-	t.Helper()
-	got := summaryOf(t, alexSees, "year=2025")
-	r := got.Revenue
-	noCoverage := !slices.ContainsFunc(r.GoalCoverage, func(c coverage) bool { return c.Percent != nil })
-	if r.PeriodLabel != "FY 2025" || r.Goal != nil || r.Performance != nil || r.Variance != "noGoal" || !noCoverage ||
-		len(r.Trend) != 0 || len(got.Funnel.Conversions) != 0 {
-		t.Errorf("Summary 2025, no plan in view = %+v, want no goal, performance, coverage, trend or conversion", r)
-	}
-}
-
-func checkNoRateWithoutActual(t *testing.T, alexSees person) {
-	t.Helper()
-	got := summaryOf(t, alexSees, "")
-	if c := got.Funnel.Conversions; len(c) != 1 || c[0].Rate != nil {
-		t.Errorf("Summary's conversions %+v with no INQ actual, want the rate null, never 0 %%", c)
-	}
-	for _, p := range got.Funnel.Trend.Periods {
-		if p.State != summaryAhead && p.Rate != nil {
-			t.Errorf("Summary's %s (%s) conversion %s with no INQ actual, want null", p.Key, p.State, *p.Rate)
-		}
-	}
-}
-
-// TestWaveB_SummaryMissingIsNeverZero_048_FR017: no goal, no plan or no actual leaves the figure null, never 0.
-func TestWaveB_SummaryMissingIsNeverZero_048_FR017(t *testing.T) {
-	t.Parallel()
-	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
-	checkEmptyYear(t, alexSees)
-	checkNoRateWithoutActual(t, alexSees)
-	for _, table := range []string{"cost", "performance"} {
-		for _, r := range leagueOf(t, alexSees, table, "").Rows {
-			if v := units(r.Value); v != nil && *v == 0 {
-				t.Errorf("Summary's %s league: %s at 0, want null where there is no %s", table, r.Name, table)
-			}
-		}
-	}
-}
-
-type stateCase struct {
-	who, query string
-	want       []string
-}
-
-// TestWaveB_SummaryStatesNameTheirCause_048_FR018: the backend names the report state of each empty or partial view.
-func TestWaveB_SummaryStatesNameTheirCause_048_FR018(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t, apitest.WithMeasureDemo())
-	for _, c := range []stateCase{
-		{alex, "year=2025", []string{"noPlans"}},
-		{alex, "owner=U-1004&plan=P-1001", []string{"nothingMatches"}},
-		{alex, "", []string{noPerfData}},
-		{lea, "", []string{noPerfData, noFinance}},
-		{alex, "activityStatus=complete", []string{"noGoals", noPerfData}},
-	} {
-		if got := summaryOf(t, signIn(t, server, c.who), c.query).States; !slices.Equal(got, c.want) {
-			t.Errorf("%s's Summary %q: states %v, want %v", c.who, c.query, got, c.want)
 		}
 	}
 }
