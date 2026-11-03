@@ -2,7 +2,6 @@ package performance
 
 import (
 	"context"
-	"math"
 	"slices"
 	"strings"
 	"time"
@@ -38,10 +37,13 @@ func sumInto(sum *int64, counts int64) *int64 {
 // conversionOf is measure-metrics' one definition: actual of a stage over actual of the one before, one
 // decimal; absent - never 0.0 - when the earlier stage has nothing to divide by.
 func conversionOf(actual, previous *int64) *float64 {
-	if actual == nil || previous == nil || *previous == 0 {
+	if actual == nil || previous == nil {
 		return nil
 	}
-	rate := math.Round(float64(*actual)/float64(*previous)*1000) / 10
+	rate, ok := projection.ConversionRate(*actual, *previous)
+	if !ok {
+		return nil
+	}
 	return &rate
 }
 

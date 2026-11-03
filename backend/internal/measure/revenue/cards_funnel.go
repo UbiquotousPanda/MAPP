@@ -1,5 +1,7 @@
 package revenue
 
+import "mapp/internal/projection"
+
 // funnelCards sum the months before any grouping, as Revenue's cards do, counting the month in progress once.
 func funnelCards(sums monthlySums, total int64, anyGoal bool, previousActual *int64) FunnelCards {
 	goal, actual := sums.activityGoals, sums.actualTotal()
@@ -26,15 +28,13 @@ func ratioCard(value, goal int64, anyGoal bool) NumberCard {
 	return percentCard(Performance(value, goal))
 }
 
-// conversionCard mirrors 046's conversionOf: one decimal, "—" on a zero denominator.
 func conversionCard(actual int64, previous *int64) NumberCard {
-	if previous == nil || *previous == 0 {
+	if previous == nil {
 		return NumberCard{Reason: ReasonNoPreviousStage}
 	}
-	rate := roundToOneDecimal(float64(actual) / float64(*previous) * 100)
+	rate, ok := projection.ConversionRate(actual, *previous)
+	if !ok {
+		return NumberCard{Reason: ReasonNoPreviousStage}
+	}
 	return NumberCard{Value: &rate}
-}
-
-func roundToOneDecimal(v float64) float64 {
-	return float64(int64(v*10+0.5)) / 10
 }

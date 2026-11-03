@@ -187,3 +187,23 @@ func deref(p *float64) any {
 	}
 	return *p
 }
+
+func TestFunnelCards_ConversionRoundsHalfUpLikeEveryReport_FR017(t *testing.T) {
+	t.Parallel()
+	facts := append(julyAndAugustFacts(revenue.StageINQ, 40, 40), julyAndAugustFacts(revenue.StageMQL, 11, 12)...)
+	s := newFixtureAt(midAugust, oneActivityScope(), fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}, facts)
+	f := measure.Filter{Period: measure.PeriodMonth, Show: measure.ShowActivity}
+	report, err := s.FunnelReport(t.Context(), priya, f, revenue.StageMQL)
+	if err != nil {
+		t.Fatalf("FunnelReport: %v", err)
+	}
+	list, err := s.RankedFunnel(t.Context(), priya, f,
+		revenue.RankedQuery{Sort: revenue.SortActual, Order: revenue.OrderDesc, Size: 10, Page: 1, Stage: revenue.StageMQL})
+	if err != nil {
+		t.Fatalf("RankedFunnel: %v", err)
+	}
+	card, row := report.Cards.Conversion.Value, list.Groups[0].Entries[0].Figures.Conversion
+	if card == nil || row == nil || *card != 28.8 || *row != 28.8 {
+		t.Errorf("conversion card = %v, ranked row = %v; want both 23/80 = 28.75 rounded half up to 28.8", deref(card), deref(row))
+	}
+}
