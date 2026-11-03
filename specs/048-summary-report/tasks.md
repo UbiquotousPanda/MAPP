@@ -59,7 +59,7 @@ own folders only, plus the contract, route rules and `notYetServed` lines of 048
 
 ## Phase 6: Polish
 
-- [ ] T021 (written; running it waits for PostgreSQL, see T029) `BenchmarkSummaryReport` in `internal/platform/apibench/measure_summary_test.go` (needs PostgreSQL to run)
+- [x] T021 (written; run 3 Nov, see T029) `BenchmarkSummaryReport` in `internal/platform/apibench/measure_summary_test.go` (needs PostgreSQL to run)
 - [x] T022 Comment budget and file length of every file touched
 - [x] T023 (converge run 3 Nov: Phase 7; pull request #106) `/speckit-converge`; spec status Built; merge `measure-module`; pull request with "048 Built", tagging lane B
   for the contract (048-C11) and listing the integrator's measure-metrics changes (048-C1, C2)
@@ -82,6 +82,6 @@ own folders only, plus the contract, route rules and `notYetServed` lines of 048
 - [x] T026 Compare Summary's stage volumes with the Funnel stages report in `TestSummary_EqualsRevenue_048_SC002` per SC-002 (partial)
 - [x] T027 Show "Covers n of m plans" on the Cost and ROI league tables per FR-003 (partial)
 - [x] T028 Name the display currency in the export's money columns per US3/AC1 (partial)
-- [ ] T029 (blocked: the local PostgreSQL 17 needs a password; no TEST_DATABASE_URL) Run `BenchmarkSummaryReport` on PostgreSQL and record it in plan.md per FR-020 (partial)
+- [x] T029 (run 3 Nov on PostgreSQL 17; statements fixed after `9a01b09a`, time over 2 s from the shared scope read, raised with lanes A and B; plan.md, Benchmark) Run `BenchmarkSummaryReport` on PostgreSQL and record it in plan.md per FR-020 (partial)
 - [x] T030 Show earlier years as one "FY (total)" bucket each in the trend per Edge case: several years (partial) — closed without code: one plan year per report (D-368, 048-C13)
 - [x] T031 Ask lane B to read `category` from the address on Revenue and Funnel stages, so Details keeps it, per FR-016 (partial) — asked on #99, 3 Nov; the change is lane B's

@@ -78,7 +78,23 @@ change reloading that table only.
 ## Benchmark
 
 `BenchmarkSummaryReport` in `internal/platform/apibench/measure_summary_test.go`: statements fixed whatever the
-number of activities and segments; recorded here once PostgreSQL is available.
+number of activities and segments. Recorded 3 Nov 2026 on a Windows laptop with PostgreSQL 17 (CI runs 18 on Linux),
+time and statements per request:
+
+| Request | Demo | 028 volume, first run | 028 volume, after `9a01b09a` |
+|---|---|---|---|
+| Report | 54 ms · 49 | 4.6 s · **146** | 3.3 s · 47 |
+| Report, one market | 52 ms · 49 | 4.0 s · **146** | — |
+| Report by quarter, uncategorised | 57 ms · 49 | 3.8 s · **146** | — |
+| League revenue, cost, ROI | 56–57 ms · 47 | 3.8–4.3 s · 47 | — |
+| Export (eight sheets) | 199 ms · 122 | 16.9 s · 219 | — |
+
+- **Statements:** the first volume run grew from 49 to 146, because plan goals were read through each plan's view.
+  `9a01b09a` reads them in fixed statements (`plan.WaterfallUSD`); the report is back to 47 at volume.
+- **Time:** still over SC-005's 2 s at volume. A CPU profile of the report puts about 91 % of the request in the frame's
+  scope read, `measure.Scope` → `allWorkSource.Year`, which builds every plan's campaign tree with each activity's
+  summary, completeness, attribute values and line-item facts. Summary pays it twice: once itself and once inside
+  `ActivitySeries`. Both are raised with lanes A and B; 048's own code is a small share.
 
 ## Constitution check
 
