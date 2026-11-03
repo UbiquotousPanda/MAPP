@@ -6012,7 +6012,7 @@ export interface components {
             projected: components["schemas"]["Money"] | null;
             performance: number | null;
             variance: components["schemas"]["SummaryVariance"];
-            /** @description The revenue the list's attribution model credits to the entry's activities in the year (050 FR-003, FR-010); null, with the reason, when no revenue fact in view credits them. */
+            /** @description The revenue the list's attribution model credits to the entry's activities in the year (050 FR-003, FR-010); 0.00 when a fact in view concerns them but the model credits them nothing, and null, with the reason, when no revenue fact in view concerns them. */
             attributedRevenue: components["schemas"]["Money"] | null;
             /** @description The payments booked in the year on the entry's line items (050 FR-007); null, with the reason, for plans whose financial data the person may not see. */
             actualCost: components["schemas"]["Money"] | null;

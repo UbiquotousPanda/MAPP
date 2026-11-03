@@ -110,7 +110,7 @@ func TestCrediting_ReadsConversionsAndJourneys_050_FR003_FR004_FR006(t *testing.
 	}
 
 	want := map[string]string{"A-1": "333.33", "A-2": "333.33", "A-3": "333.34", "A-5": "500.00",
-		"A-6": "400.00", "unattributed": "90.00"}
+		"A-6": "400.00", "A-8": "0.00", "A-9": "0.00", "unattributed": "90.00"}
 	if diff := cmp.Diff(want, shown(got)); diff != "" {
 		t.Errorf("credited under the seeded Equally distributed (-want +got):\n%s", diff)
 	}
@@ -132,7 +132,7 @@ func TestCrediting_AModelChangeRestatesEveryFigure_050_FR009_SC002(t *testing.T)
 		t.Fatalf("Credit: %v", err)
 	}
 
-	want := map[string]string{"A-3": "1000.00", "unattributed": "0.00"}
+	want := map[string]string{"A-3": "1000.00", "A-9": "0.00", "unattributed": "0.00"}
 	if diff := cmp.Diff(want, shown(got)); diff != "" || got.Model != attribution.LastTouch {
 		t.Errorf("after the change to last touch, model %q (-want +got):\n%s", got.Model, diff)
 	}
@@ -155,7 +155,28 @@ func TestCrediting_AnActivitysCreditIsTheSameWhateverElseIsInView_050_C3(t *test
 	if diff := cmp.Diff(map[string]string{"A-1": "333.33", "unattributed": "0.00"}, shown(alone)); diff != "" {
 		t.Errorf("A-1 alone in view, its share of A-9's conversion (-want +got):\n%s", diff)
 	}
-	if diff := cmp.Diff(map[string]string{"unattributed": "90.00"}, shown(converting)); diff != "" {
+	if diff := cmp.Diff(map[string]string{"A-8": "0.00", "unattributed": "90.00"}, shown(converting)); diff != "" {
 		t.Errorf("A-8 alone in view, the unattributed revenue of its own conversion (-want +got):\n%s", diff)
+	}
+}
+
+// Under last touch J-1's earlier touches and A-9, the activity the conversion is on, get nothing; their facts are in
+// view, so they read 0.00, and an activity no fact concerns stays out.
+func TestCrediting_AZeroCreditIsZeroNotMissing_050_FR007(t *testing.T) {
+	t.Parallel()
+	c, settings := crediting(t)
+	if _, err := settings.SaveSettings(withPermissions(authz.SettingsManage), alex,
+		attribution.SettingsInput{Version: 1, Model: attribution.LastTouch}); err != nil {
+		t.Fatalf("SaveSettings: %v", err)
+	}
+
+	got, err := c.Credit(t.Context(), authz.Scope{Everything: true}, []string{"A-1", "A-2", "A-3", "A-4", "A-9"}, 2026)
+	if err != nil {
+		t.Fatalf("Credit: %v", err)
+	}
+
+	want := map[string]string{"A-1": "0.00", "A-2": "0.00", "A-3": "1000.00", "A-9": "0.00", "unattributed": "0.00"}
+	if diff := cmp.Diff(want, shown(got)); diff != "" {
+		t.Errorf("credited under last touch (-want +got):\n%s", diff)
 	}
 }

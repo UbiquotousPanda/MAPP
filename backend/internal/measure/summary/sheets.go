@@ -114,8 +114,11 @@ func leagueSheet(l LeagueTable) sheet.Sheet {
 		segment = l.Segment.Label
 	}
 	figure := tableWord(l.Table)
-	if l.Table == TableRevenue || l.Table == TableCost {
+	switch {
+	case l.Table == TableRevenue || l.Table == TableCost:
 		figure = inCurrency(figure, l.currency)
+	case l.ROI != nil:
+		figure = "ROI (%, " + l.ROI.Words() + ")"
 	}
 	rows := [][]sheet.Cell{heads(segment, figure)}
 	for _, r := range l.every {

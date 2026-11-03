@@ -21,6 +21,10 @@ type Spending interface {
 	SpendByMonth(ctx context.Context, a actor.Actor, lineItemIDs []string) (map[string]map[string]financials.Facts, error)
 }
 
+func (s Stamp) Words() string {
+	return s.Model + ", on " + string(s.Basis) + " cost"
+}
+
 func ActualStamp(m Model) Stamp {
 	return Stamp{Model: m.Name(), Basis: BasisActual}
 }

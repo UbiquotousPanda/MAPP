@@ -8,8 +8,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"mapp/internal/measure"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/sheet"
 )
 
 func TestLeague_ROIDashSaysWhy_048_FR015_050_FR007(t *testing.T) {
@@ -117,6 +119,18 @@ func TestSheets_LeagueSheetNamesFitExcel_048_FR021(t *testing.T) {
 
 	if len([]rune(name)) > 31 || name != "Top Performance (%)" {
 		t.Errorf("league sheet name = %q, want the figure alone within Excel's 31 characters", name)
+	}
+}
+
+func TestSheets_ROISheetNamesItsModelAndBasis_048_FR015_050_SC003(t *testing.T) {
+	t.Parallel()
+	roi := LeagueTable{Table: TableROI, Segment: &Segment{Label: "Region"},
+		ROI: &ROIBasis{Model: "U-shaped", Basis: attribution.BasisActual}}
+
+	head := leagueSheet(roi).Rows[0][1]
+
+	if want := sheet.Bold("ROI (%, U-shaped, on actual cost)"); head != want {
+		t.Errorf("ROI sheet's figure heading = %+v, want %+v", head, want)
 	}
 }
 

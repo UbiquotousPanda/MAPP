@@ -140,6 +140,16 @@ describe('SummaryReport (048 US1, US2)', () => {
     expect(await screen.findByText('Goal 3.0% · —')).toBeInTheDocument();
   });
 
+  it('says why an ROI is a dash beside its model (FR-015, 050 FR-008)', async () => {
+    renderPage(undefined, undefined, (table) =>
+      summaryLeague(table, table === 'roi' ? { total: null, reason: 'No cost recorded' } : {}),
+    );
+
+    expect(
+      await screen.findByText('Equally distributed, on actual cost · No cost recorded'),
+    ).toBeInTheDocument();
+  });
+
   it('names the attribution model and cost basis beside ROI (FR-015, 050 FR-008)', async () => {
     renderPage();
 

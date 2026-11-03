@@ -78,9 +78,8 @@ func revenuePeriodsSheet(periods []RevenuePeriod) sheet.Sheet {
 }
 
 func revenueRankedSheet(r RevenueRanked) sheet.Sheet {
-	basis := r.Attribution.Model + ", on " + string(r.Attribution.Basis) + " cost"
 	rows := [][]sheet.Cell{boldRow("Group", "Level", "Name", "Goal", "Actual", "Projected", labelPerformance,
-		"Attributed revenue ("+r.Attribution.Model+")", "Actual cost", "ROI (%, "+basis+")")}
+		"Attributed revenue ("+r.Attribution.Model+")", "Actual cost", "ROI (%, "+r.Attribution.Words()+")")}
 	for _, g := range r.Groups {
 		for _, e := range g.Entries {
 			rows = append(rows, revenueEntryRow(g.Label, e, ""))

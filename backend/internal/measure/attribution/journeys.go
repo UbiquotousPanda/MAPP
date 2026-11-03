@@ -27,7 +27,7 @@ type JourneyTouch struct {
 	Touch
 }
 
-// Credited is each activity's credited revenue in USD; WithoutRate counts the facts left out for want of a rate.
+// Credited is each concerned activity's USD credit, 0.00 when the model gives none; WithoutRate counts no-rate facts.
 type Credited struct {
 	Model        Model
 	ByActivity   map[string]money.Amount
@@ -78,6 +78,11 @@ func CreditAll(conversions []Conversion, m Model, view []string) Credited {
 	}
 	out := Credited{Model: m, ByActivity: map[string]money.Amount{}}
 	for _, c := range conversions {
+		for _, id := range concerned(c) {
+			if _, found := out.ByActivity[id]; inView[id] && !found {
+				out.ByActivity[id] = money.Amount{}
+			}
+		}
 		for _, cr := range Attribute(c, m) {
 			switch {
 			case cr.ActivityID == "" && inView[c.ActivityID]:
@@ -88,4 +93,14 @@ func CreditAll(conversions []Conversion, m Model, view []string) Credited {
 		}
 	}
 	return out
+}
+
+func concerned(c Conversion) []string {
+	ids := []string{c.ActivityID}
+	for _, t := range c.Touches {
+		if !t.Date.After(c.Date) {
+			ids = append(ids, t.ActivityID)
+		}
+	}
+	return ids
 }

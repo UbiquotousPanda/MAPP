@@ -128,3 +128,16 @@ func TestRankedRevenue_ROIDashSaysWhy_050_FR007(t *testing.T) {
 		})
 	}
 }
+
+func TestRankedRevenue_AZeroCreditIsMinusOneHundredPerCent_050_FR007(t *testing.T) {
+	t.Parallel()
+	r := roiReturns()
+	r.credits["A-1"] = money.Amount{}
+
+	got := figuresByID(rankedROI(t, roiScope(), r))["A-1"]
+
+	want := roiRow{Credited: ptrTo[int64](0), Cost: ptrTo[int64](200_000), ROI: ptrTo(-100.0)}
+	if diff := cmp.Diff(want, roiRowOf(got)); diff != "" {
+		t.Errorf("A-1 credited nothing by the model (-want +got):\n%s", diff)
+	}
+}

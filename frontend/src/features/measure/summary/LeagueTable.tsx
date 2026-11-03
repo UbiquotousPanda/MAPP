@@ -46,7 +46,7 @@ export function LeagueTable(props: LeagueTableProps) {
       ? `Covers ${covers.plans} of ${covers.of} plans`
       : undefined;
   const note =
-    [data?.roi ? `${data.roi.model}, on ${data.roi.basis} cost` : data?.reason, covered]
+    [data?.roi && `${data.roi.model}, on ${data.roi.basis} cost`, data?.reason, covered]
       .filter(Boolean)
       .join(' · ') || undefined;
   return (
