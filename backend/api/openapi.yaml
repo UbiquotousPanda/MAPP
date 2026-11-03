@@ -8634,6 +8634,12 @@ paths:
         - $ref: "#/components/parameters/ReportOwnRequestOwner"
         - $ref: "#/components/parameters/ReportOwnStatus"
         - $ref: "#/components/parameters/ReportOwnColumns"
+        - $ref: "#/components/parameters/ReportOwnCategory"
+        - $ref: "#/components/parameters/ReportOwnStage"
+        - $ref: "#/components/parameters/ReportOwnRevenueBy"
+        - $ref: "#/components/parameters/ReportOwnPerformanceBy"
+        - $ref: "#/components/parameters/ReportOwnCostBy"
+        - $ref: "#/components/parameters/ReportOwnRoiBy"
       responses:
         "200":
           description: The file, named "SP&A One – <report> [– <widget>] – <year> – <date>".
@@ -9490,6 +9496,48 @@ components:
       schema:
         type: string
         maxLength: 200
+    ReportOwnCategory:
+      name: category
+      in: query
+      description: An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048).
+      schema:
+        type: string
+        maxLength: 40
+    ReportOwnStage:
+      name: stage
+      in: query
+      description: The funnel stage Funnel stages or Summary shows, which the report validates (049, 048).
+      schema:
+        type: string
+        enum: [inq, mql]
+    ReportOwnRevenueBy:
+      name: revenueBy
+      in: query
+      description: The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048).
+      schema:
+        type: string
+        maxLength: 40
+    ReportOwnPerformanceBy:
+      name: performanceBy
+      in: query
+      description: The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048).
+      schema:
+        type: string
+        maxLength: 40
+    ReportOwnCostBy:
+      name: costBy
+      in: query
+      description: The Summary report's Actual cost league segment, a Shell attribute ID, which the report validates (048).
+      schema:
+        type: string
+        maxLength: 40
+    ReportOwnRoiBy:
+      name: roiBy
+      in: query
+      description: The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048).
+      schema:
+        type: string
+        maxLength: 40
     RankedSort:
       name: sort
       in: query
