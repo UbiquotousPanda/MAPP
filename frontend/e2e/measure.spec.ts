@@ -9,6 +9,7 @@ import { sheetNames } from './xlsx-read';
 const CARLOS = 'carlos.mendes@shell.com';
 const PRIYA = 'priya.raman@shell.com';
 const DANIEL = 'daniel.okoro@shell.com';
+const LEA = 'lea.santos@shell.com';
 const REPORT = '/reports/plan-budget?year=2026';
 
 const inView = (page: Page) => page.getByText(/^In view: /);
@@ -133,4 +134,14 @@ test('039 US3: Export downloads the report with In view and About this export (F
   expect(download.suggestedFilename()).toMatch(/\.xlsx$/);
   const sheets = sheetNames(await readFile(await download.path()));
   expect(sheets).toEqual(expect.arrayContaining(['In view', 'About this export']));
+});
+
+test('039 SC-007: the financial notice on the grey page passes text contrast (#140 B3)', async ({
+  page,
+}) => {
+  await signInAs(page, LEA);
+  await page.goto('/reports/revenue?year=2026');
+  await expect(page.getByText("You can't see the financial data of these plans")).toBeVisible();
+
+  await expectNoAxeViolations(page);
 });
