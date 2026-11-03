@@ -1,10 +1,10 @@
 import path from 'node:path';
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
+import { expectNoAxeViolations } from '../frontend/e2e/fixtures';
 import { tabTo } from '../frontend/e2e/keyboard';
 import { MEASURE_PLAN } from '../frontend/e2e/measure';
 
-// The people, rights and shared steps of the wave B browser pass (docs/sdd/measure-wave-b-qa.md, "Roles and what
-// they must see"). MEASURE_FACTS=1 says the seed loads 046 T110's performance facts.
+// The wave B browser pass's people (the Roles table), rights and shared steps; MEASURE_FACTS=1: T110's facts are seeded.
 
 export const FACTS = process.env.MEASURE_FACTS === '1';
 export const LUBRICANTS = 'FY2026 Lubricants Europe';
@@ -21,17 +21,17 @@ export const ZERO_FIGURE = /^[^\d\s]{0,3}0(\.0+)?( [A-Z]{3})?$/;
 export interface Role {
   key: string;
   email: string;
-  /** The 2026 plans the Roles table gives the person with the Measure demo plan. */
   plans: string[];
   finance: boolean;
   exports: boolean;
   /** settings.manage, performance.import and performance.link: the Administrator alone. */
   admin: boolean;
-  /** An activity in the person's scope, for its Performance section. */
   activity: string;
 }
 
 type Rights = Partial<Pick<Role, 'finance' | 'exports' | 'admin'>>;
+
+export type Screen = (page: Page, role: Role, testInfo: TestInfo) => Promise<void>;
 
 function person(email: string, plans: string[], activity: string, rights: Rights = {}): Role {
   const key = email.split('.')[0] ?? email;
@@ -76,6 +76,10 @@ export async function check(name: string, body: () => Promise<void>): Promise<vo
   });
 }
 
+export function axe(page: Page): Promise<void> {
+  return check('axe: no violations (constitution X)', () => expectNoAxeViolations(page));
+}
+
 export function h1(page: Page, name: string | RegExp): Locator {
   return page.getByRole('heading', { level: 1, name });
 }
@@ -91,12 +95,10 @@ export function viewOnlyNote(page: Page): Locator {
     .filter({ hasText: /^View only/ });
 }
 
-/** Every skeleton gone: the page and its widgets have their data. */
 export async function settle(page: Page): Promise<void> {
   await expect(page.getByRole('status').filter({ hasText: 'Loading…' })).toHaveCount(0);
 }
 
-/** Opens the address and waits for `ready` and the data, in the project's theme. */
 export async function opened(page: Page, url: string, ready: Locator, testInfo: TestInfo) {
   await page.goto(url);
   await expect(ready).toBeVisible();
@@ -104,7 +106,6 @@ export async function opened(page: Page, url: string, ready: Locator, testInfo: 
   await settle(page);
 }
 
-/** The screen as the person sees it, at <results>/screens/<screen>--<person>--<theme>.png. */
 export async function shoot(page: Page, testInfo: TestInfo, screen: string, role: Role) {
   const results: unknown = testInfo.config.metadata.results;
   if (typeof results !== 'string') {
@@ -141,7 +142,6 @@ export async function dialogOpensAndCloses(page: Page, trigger: Locator, dialog:
   await expect(trigger).toBeFocused();
 }
 
-/** The value under a summary card's label, as the reports' e2e reads it. */
 export function cardValue(cards: Locator, label: string): Locator {
   return cards.locator(`p:has-text("${label}") + p`).first();
 }
