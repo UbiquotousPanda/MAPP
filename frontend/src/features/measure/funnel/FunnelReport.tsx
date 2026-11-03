@@ -74,8 +74,10 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
           <FunnelChart report={report.data} />
           {report.data.uncoveredCount > 0 && (
             <p>
-              {report.data.uncoveredCount} plan{report.data.uncoveredCount === 1 ? '' : 's'} use a
-              model that does not allow this stage.
+              {report.data.uncoveredCount === 1
+                ? '1 plan uses'
+                : `${report.data.uncoveredCount} plans use`}{' '}
+              a model that does not allow this stage.
             </p>
           )}
         </>
