@@ -27,12 +27,12 @@ import {
   SETTINGS_DESCRIPTION,
 } from './performance-text';
 
-/**
- * Settings › Performance data (feature 046, FR-001, FR-005): every data source with the category it
- * belongs to, how often it delivers, and the freshness derived from its last load.
- */
 type OpenForm = { kind: 'new' } | { kind: 'edit'; source: PerformanceSource };
 
+/**
+ * Settings › Performance data: every data source with the category it belongs to, how often it
+ * delivers, and the freshness derived from its last load.
+ */
 export function SourceListPage() {
   usePageTitle(PERFORMANCE_DATA);
   const sources = usePerformanceSources();
