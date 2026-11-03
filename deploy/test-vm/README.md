@@ -10,7 +10,7 @@ demo seed; never put real Shell data here. Set up on 2026-11-03.
 | Sign-in | the app's own demo sign-in: pick a demo person, no typing needed (demo password `mapp`) |
 | Who can open it | anyone with the URL; there is no extra login in front of the app (see Known limits) |
 | Shuts down | every day at 15:30 UTC (21:00 IST); start it again with `az vm start` (below) |
-| Cost | about USD 30 a month if left on all the time, less with the nightly shutdown |
+| Cost | about USD 13 a month on weekdays until the nightly shutdown; USD 24 at most if always on (see Cost) |
 
 ## How a request travels
 
@@ -81,6 +81,21 @@ Outbound is Azure's default (everything allowed): the VM pulls images, packages 
 | SSH key | `~/.ssh/mapp-test-vm` (private) and `~/.ssh/mapp-test-vm.pub` |
 | SSH alias | `Host mapp-test` in `~/.ssh/config`, so `ssh mapp-test` works |
 | Passwords | `~/mapp-test-credentials.txt` |
+
+## Cost
+
+Azure list prices for Central India on 2026-11-03, before tax and any discount:
+
+| Resource | Price | Billed |
+|---|---|---|
+| VM (`Standard_B2als_v2`, Linux) | USD 0.0246 an hour | only while running |
+| OS disk (32 GB StandardSSD, E4) | USD 2.64 a month | always |
+| Public IP (Standard, static) | USD 0.005 an hour, about 3.65 a month | always, even when the VM is off |
+| Network, NSG, shutdown schedule | free | — |
+| Outbound traffic | free up to 100 GB a month | — |
+
+That is about USD 24 a month always on, about USD 13 for weekdays from morning to the 21:00 IST shutdown,
+and about USD 6.30 with the VM off all month. Deleting the resource group brings it to zero.
 
 ## Deploy a new version
 

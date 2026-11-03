@@ -29,7 +29,7 @@ the sign-in page shows the demo password to whoever opens it.
 - HTTP basic authentication in front of the site was tried and dropped: browsers discard the saved login when
   the app answers 401 for "not signed in", and then ask for it again. Firewall rules can limit the site to the
   office network later.
-- About USD 30 a month if left running, less with the nightly shutdown; one machine to patch.
+- At most about USD 24 a month (USD 13 on weekdays until the nightly shutdown); one machine to patch.
 - Only the fictitious demo seed is ever loaded; it is not a production environment, and Shell's release
   gates (CSPM scanning, ServiceNow) apply when MAPP moves to Shell's environment.
 - The session cookie is not marked `Secure` behind the proxy, and every tester reaches the API through the
