@@ -63,7 +63,7 @@ func TestWaveB_PerformanceScope_046_FR044(t *testing.T) {
 	})
 }
 
-// TestWaveB_ExportRights_FR022: the 046 part; Summary, Revenue and Funnel stages join when 048 and 049 land.
+// TestWaveB_ExportRights_FR022: the 046 part; 049's is TestWaveB_ExportRights_049_FR022, Summary's waits for 048.
 func TestWaveB_ExportRights_FR022(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t, apitest.WithMeasureDemo())

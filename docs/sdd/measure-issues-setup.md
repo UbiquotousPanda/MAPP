@@ -717,7 +717,7 @@ the model and see every figure follow (P2).
 
 ### Checklist
 
-- [ ] Branch `feature/050-attribution-and-roi` from `measure-module`
+- [ ] Branch `feature/050-attribution-roi` from `measure-module`
 - [ ] `/speckit-specify` citing the client FRs and FA §E; `/speckit-clarify` answers recorded as `050-Cn`
 - [ ] `/speckit-plan` (short), `contracts/api.md` handed to the integrator for the wave contract
 - [ ] `/speckit-tasks`, `/speckit-analyze` with no CRITICAL issue
@@ -736,7 +736,7 @@ I'm on lane A of the Measure module, building feature 050 Attribution and ROI.
    this GitHub issue), then the rows of docs/product/measure-metrics.md and the client lines in
    docs/reference/shell-measure-requirements.md it cites.
 2. git switch measure-module && git pull. Run /speckit-specify with
-   SPECIFY_FEATURE_DIRECTORY=specs/050-attribution-and-roi and GIT_BRANCH_NAME=feature/050-attribution-and-roi,
+   SPECIFY_FEATURE_DIRECTORY=specs/050-attribution-roi and GIT_BRANCH_NAME=feature/050-attribution-roi,
    using the issue's Goal, Stories and References as the feature description.
 3. Read-only report: no create/edit/delete scenarios; write the state scenarios instead
    (data, empty, no access, no financial access, filters exclude everything).
