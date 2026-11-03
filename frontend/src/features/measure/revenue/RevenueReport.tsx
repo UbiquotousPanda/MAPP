@@ -4,7 +4,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { RankedList, ReportFrame, useRankedState } from '../shared';
 import type { RankedColumn, ReportAddress, ReportFrameData } from '../shared';
 import { useRevenueReport, useRevenueRanked } from './api';
-import type { RevenueFigures, RevenueRankedParams } from './api';
+import type { RevenueFigures, RevenueRanked, RevenueRankedParams } from './api';
 import { CategorySelect } from './CategorySelect';
 import { RevenueCards } from './RevenueCards';
 import { RevenueChart } from './RevenueChart';
@@ -51,6 +51,13 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       sortable: false,
     },
     {
+      key: 'attributedRevenue',
+      label: attributedLabel(ranked.data?.attribution),
+      value: (f) =>
+        f.attributedRevenue ? money(f.attributedRevenue) : reasonText(f.attributedRevenueReason),
+      sortable: false,
+    },
+    {
       key: 'actualCost',
       label: 'Actual cost',
       value: (f) => (f.actualCost ? money(f.actualCost) : reasonText(f.actualCostReason)),
@@ -58,7 +65,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
     },
     {
       key: 'roi',
-      label: 'ROI',
+      label: roiLabel(ranked.data?.attribution),
       value: (f) => (f.roi !== null ? `${f.roi}%` : reasonText(f.roiReason)),
       sortable: false,
     },
@@ -99,6 +106,17 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       />
     </div>
   );
+}
+
+type Attribution = RevenueRanked['attribution'];
+
+/** The model behind attributed revenue and the cost an ROI divides by, named beside them. */
+function attributedLabel(stamp: Attribution | undefined): string {
+  return stamp ? `Attributed revenue (${stamp.model})` : 'Attributed revenue';
+}
+
+function roiLabel(stamp: Attribution | undefined): string {
+  return stamp ? `ROI (${stamp.model}, on ${stamp.basis} cost)` : 'ROI';
 }
 
 function rankedParams(

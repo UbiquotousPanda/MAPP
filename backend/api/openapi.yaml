@@ -9196,8 +9196,9 @@ paths:
       description: >-
         The same frame filter and category as getSummaryReport. Each activity's figures are shared between its values
         of the segment, by a % split's own shares or else equally (048-C4, C14); Not filled in has the key none. The total counts each activity once. Cost and ROI
-        are null for plans whose financial data the person may not see. ROI is null, with the reason, while
-        attribution is not configured. A segment that matches nothing answers 200 with no rows.
+        are null for plans whose financial data the person may not see. ROI divides the revenue 050's designated
+        model credits by the actual cost, and roi names that model and basis. A segment that matches nothing answers
+        200 with no rows.
       parameters:
         - name: table
           in: path
@@ -12133,7 +12134,8 @@ components:
     RevenueFigures:
       type: object
       additionalProperties: false
-      required: [goal, actual, projected, performance, variance, actualCost, roi, actualCostReason, roiReason]
+      required: [goal, actual, projected, performance, variance, attributedRevenue, actualCost, roi,
+        attributedRevenueReason, actualCostReason, roiReason]
       properties:
         goal:
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
@@ -12143,14 +12145,31 @@ components:
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         performance: { type: [number, "null"] }
         variance: { $ref: "#/components/schemas/SummaryVariance" }
+        attributedRevenue:
+          description: >-
+            The revenue the list's attribution model credits to the entry's activities in the year (050 FR-003,
+            FR-010); 0.00 when a fact in view concerns them but the model credits them nothing, and null, with the
+            reason, when no revenue fact in view concerns them.
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         actualCost:
-          description: Always null until feature 050 configures attribution (049-C6).
+          description: >-
+            The payments booked in the year on the entry's line items (050 FR-007); null, with the reason, for plans
+            whose financial data the person may not see.
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         roi:
-          description: Always null until feature 050 configures attribution (049-C6).
+          description: >-
+            (attributedRevenue − actualCost) ÷ actualCost as a whole per cent, halves away from zero (050 FR-007); the
+            list's attribution names its model and cost basis.
           type: [number, "null"]
-        actualCostReason: { type: string, enum: ["", attributionNotConfigured] }
-        roiReason: { type: string, enum: ["", attributionNotConfigured] }
+        attributedRevenueReason: { type: string, enum: ["", noData] }
+        actualCostReason:
+          type: string
+          description: attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
+          enum: ["", attributionNotConfigured, noFinancialAccess]
+        roiReason:
+          type: string
+          description: attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
+          enum: ["", attributionNotConfigured, noFinancialAccess, noActualCost, noData]
     RevenueEntry:
       type: object
       additionalProperties: false
@@ -12164,11 +12183,20 @@ components:
         children:
           type: array
           items: { $ref: "#/components/schemas/RevenueEntry" }
+    AttributionStamp:
+      type: object
+      additionalProperties: false
+      description: What an attributed revenue and an ROI rest on, named beside them (050 FR-008).
+      required: [model, basis]
+      properties:
+        model: { type: string, example: Equally distributed }
+        basis: { type: string, enum: [actual, planned] }
     RevenueRanked:
       type: object
       additionalProperties: false
-      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      required: [level, sort, order, group, page, size, total, trail, groups, drillLost, attribution]
       properties:
+        attribution: { $ref: "#/components/schemas/AttributionStamp" }
         level: { type: string, enum: [plan, campaign, initiative, activity] }
         sort: { type: string, enum: [actualRevenue, projectedRevenue] }
         order: { type: string, enum: [desc, asc] }

@@ -12,7 +12,6 @@ const (
 	lubricantsPlan = "FY2026 Lubricants Europe"
 	mobilityPlan   = "FY2026 Mobility China"
 	uncategorised  = "uncategorised"
-	notConfigured  = "attributionNotConfigured"
 	statePast      = "actual"
 )
 

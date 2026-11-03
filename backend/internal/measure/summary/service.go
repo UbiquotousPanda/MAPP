@@ -83,8 +83,7 @@ func (v view) financeCovers() Covers {
 }
 
 func (v view) seesFinance(planID string) bool {
-	c := v.scope.Choices
-	return c.SeesFinance && (c.FinancePlans == nil || slices.Contains(c.FinancePlans, planID))
+	return v.scope.SeesFinanceOf(planID)
 }
 
 func (v view) states() []string {

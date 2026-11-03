@@ -8,23 +8,36 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"mapp/internal/measure"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/sheet"
 )
 
-func TestLeague_ROIIsADashWhileAttributionIsNotConfigured_048_FR015(t *testing.T) {
+func TestLeague_ROIDashSaysWhy_048_FR015_050_FR007(t *testing.T) {
 	t.Parallel()
-
-	got := league(t, withSegments(), TableROI, nil)
-
-	if got.Total != nil || got.ROI != nil || got.Reason == nil || *got.Reason != reasonAttributionNotConfigured {
-		t.Errorf("ROI = total %v, basis %v, reason %v; want dashes with %q, as Revenue answers", got.Total, got.ROI,
-			got.Reason, reasonAttributionNotConfigured)
+	tests := []struct {
+		name   string
+		change func(f *fakes)
+		want   string
+	}{
+		{"no plan's financial data is shown", func(f *fakes) { f.scope.Choices.SeesFinance = false }, reasonNoFinance},
+		{"nothing paid in the year", func(f *fakes) { f.spend = nil }, reasonNoCost},
+		{"no revenue credited", func(f *fakes) { f.credits = nil }, reasonNoAttributed},
 	}
-	for _, r := range got.Rows {
-		if r.Value != nil {
-			t.Errorf("ROI row %s = %v, want a dash", r.Name, r.Value)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			f := withSegments()
+			tt.change(f)
+
+			got := league(t, f, TableROI, nil)
+
+			if got.Total != nil || got.Reason == nil || *got.Reason != tt.want || got.ROI == nil {
+				t.Errorf("ROI = total %v, reason %v, basis %v; want a dash with %q and the model named", got.Total,
+					got.Reason, got.ROI, tt.want)
+			}
+		})
 	}
 }
 
@@ -109,6 +122,18 @@ func TestSheets_LeagueSheetNamesFitExcel_048_FR021(t *testing.T) {
 	}
 }
 
+func TestSheets_ROISheetNamesItsModelAndBasis_048_FR015_050_SC003(t *testing.T) {
+	t.Parallel()
+	roi := LeagueTable{Table: TableROI, Segment: &Segment{Label: "Region"},
+		ROI: &ROIBasis{Model: "U-shaped", Basis: attribution.BasisActual}}
+
+	head := leagueSheet(roi).Rows[0][1]
+
+	if want := sheet.Bold("ROI (%, U-shaped, on actual cost)"); head != want {
+		t.Errorf("ROI sheet's figure heading = %+v, want %+v", head, want)
+	}
+}
+
 func (f *fakes) SegmentLabel(_ context.Context, id string) (string, error) {
 	return map[string]string{regionAttr: "Region"}[id], nil
 }
@@ -134,11 +159,13 @@ func TestLeague_EmptyViewGivesNoFinanceReason_048_FR003(t *testing.T) {
 	empty := withSegments()
 	empty.series = nil
 
-	got := league(t, empty, TableCost, nil)
+	for _, table := range []string{TableCost, TableROI} {
+		got := league(t, empty, table, nil)
 
-	if got.Total != nil || len(got.Rows) != 0 || got.Reason != nil {
-		t.Errorf("cost with nothing in view = total %v, %d rows, reason %v; want no reason, as the other leagues give",
-			got.Total, len(got.Rows), deref(got.Reason))
+		if got.Total != nil || len(got.Rows) != 0 || got.Reason != nil {
+			t.Errorf("%s with nothing in view = total %v, %d rows, reason %v; want no reason, as the other leagues give",
+				table, got.Total, len(got.Rows), deref(got.Reason))
+		}
 	}
 }
 

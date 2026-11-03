@@ -9,12 +9,13 @@ import (
 	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/money"
 )
 
 const (
-	reasonNoCost                   = "No cost recorded"
-	reasonNoFinance                = "Financial data of these plans is not shown to you"
-	reasonAttributionNotConfigured = "Attribution is not configured yet"
+	reasonNoCost       = "No cost recorded"
+	reasonNoFinance    = "Financial data of these plans is not shown to you"
+	reasonNoAttributed = "No revenue is credited to these activities"
 )
 
 type LeagueTable struct {
@@ -36,15 +37,13 @@ type LeagueRow struct {
 	Trend []any  `json:"trend"`
 }
 
-type ROIBasis struct {
-	Model string            `json:"model"`
-	Basis attribution.Basis `json:"basis"`
-}
+type ROIBasis = attribution.Stamp
 
-// leagueView is one league request's read: the series and their costs.
+// leagueView is one league request's read: the series, their costs and, for the ROI table, 050's credits.
 type leagueView struct {
 	view
-	costs map[string]*int64
+	costs    map[string]*int64
+	credited *attribution.Credited
 }
 
 func (s *Service) League(ctx context.Context, a actor.Actor, f measure.Filter, table string) (LeagueTable, error) {
@@ -54,7 +53,7 @@ func (s *Service) League(ctx context.Context, a actor.Actor, f measure.Filter, t
 	}
 	var out LeagueTable
 	err = s.tx.Read(ctx, func(ctx context.Context) error {
-		lv, readErr := s.readLeague(ctx, a, f, l.Category)
+		lv, readErr := s.readLeague(ctx, a, f, l)
 		if readErr != nil {
 			return readErr
 		}
@@ -64,13 +63,17 @@ func (s *Service) League(ctx context.Context, a actor.Actor, f measure.Filter, t
 	return out, err
 }
 
-func (s *Service) readLeague(ctx context.Context, a actor.Actor, f measure.Filter, category string) (leagueView, error) {
-	v, err := s.readSeries(ctx, a, f, category)
+func (s *Service) readLeague(ctx context.Context, a actor.Actor, f measure.Filter, l League) (leagueView, error) {
+	v, err := s.readSeries(ctx, a, f, l.Category)
 	if err != nil {
 		return leagueView{}, err
 	}
 	costs, err := s.costs(ctx, a, v)
-	return leagueView{view: v, costs: costs}, err
+	if err != nil || l.Table != TableROI {
+		return leagueView{view: v, costs: costs}, err
+	}
+	credited, err := s.credits(ctx, v)
+	return leagueView{view: v, costs: costs, credited: &credited}, err
 }
 
 func (lv leagueView) table(b builder, l League) LeagueTable {
@@ -80,7 +83,7 @@ func (lv leagueView) table(b builder, l League) LeagueTable {
 	var total tally
 	byValue := map[string]tally{}
 	for _, s := range lv.series {
-		own := tallyOf(s, lv.costs[s.ID])
+		own := tallyOf(s, lv.costs[s.ID], lv.creditOf(s.ID))
 		total = total.add(own)
 		for key, part := range own.split(valuesOf(s, chosen.ID)) {
 			byValue[key] = byValue[key].add(part)
@@ -92,22 +95,39 @@ func (lv leagueView) table(b builder, l League) LeagueTable {
 		out.Rows = out.every[:min(leagueSize, len(out.every))]
 	}
 	out.Total = b.shown(l.Table, figureOf(l.Table, total))
-	out.Reason = lv.reasonOf(l.Table, out.Total)
+	out.Reason = lv.reasonOf(l.Table, out.Total, total)
+	if lv.credited != nil {
+		stamp := attribution.ActualStamp(lv.credited.Model)
+		out.ROI = &stamp
+	}
 	return out
 }
 
-// reasonOf says why a cost or ROI table shows dashes; ROI waits for 050's crediting, as Revenue's does.
-func (lv leagueView) reasonOf(table string, total any) *string {
+func (lv leagueView) creditOf(activityID string) *int64 {
+	if lv.credited == nil {
+		return nil
+	}
+	amount, found := lv.credited.ByActivity[activityID]
+	if !found {
+		return nil
+	}
+	cents := amount.Cents()
+	return &cents
+}
+
+// reasonOf says why a cost or ROI table shows dashes, in the order a planner would fix it.
+func (lv leagueView) reasonOf(table string, shown any, t tally) *string {
+	dashable := table == TableCost || table == TableROI
 	reason := ""
 	switch {
-	case table == TableROI:
-		reason = reasonAttributionNotConfigured
-	case table != TableCost || total != nil || len(lv.series) == 0:
+	case !dashable || shown != nil || len(lv.series) == 0:
 		return nil
 	case !slices.ContainsFunc(lv.series, func(s revenue.ActivitySeries) bool { return lv.seesFinance(s.PlanID) }):
 		reason = reasonNoFinance
-	default:
+	case !t.costSeen || t.cost <= 0:
 		reason = reasonNoCost
+	default:
+		reason = reasonNoAttributed
 	}
 	return &reason
 }
@@ -157,12 +177,23 @@ func figureOf(table string, t tally) *int64 {
 		return &t.cost
 	case TablePerformance:
 		whole = performanceOf(t.total, t.goal).Percent
+	case TableROI:
+		whole = roiOf(t)
 	}
 	if whole == nil {
 		return nil
 	}
 	v := int64(*whole)
 	return &v
+}
+
+// roiOf is 050's ROI on a tally's credited revenue and actual cost; "—" without either.
+func roiOf(t tally) *int {
+	if !t.costSeen || t.cost <= 0 || !t.creditedSeen {
+		return nil
+	}
+	cost := money.FromCents(t.cost)
+	return attribution.ROI(money.FromCents(t.credited), &cost)
 }
 
 func (b builder) shown(table string, v *int64) any {

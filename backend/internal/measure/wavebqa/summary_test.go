@@ -252,12 +252,13 @@ func TestWaveB_CatalogueMatchesAccess_Summary_048_FR001(t *testing.T) {
 
 func costHidden(t *testing.T, who person, label string) {
 	t.Helper()
-	for _, c := range []struct{ table, reason string }{{"cost", noFinanceReason}, {"roi", notConfiguredWords}} {
-		l := leagueOf(t, who, c.table, "")
+	for _, table := range []string{"cost", "roi"} {
+		l := leagueOf(t, who, table, "")
+		modelNamed := (l.ROI != nil) == (table == "roi")
 		if units(l.Total) != nil || slices.ContainsFunc(l.Rows, func(r leagueEntry) bool { return units(r.Value) != nil }) ||
-			textOf(l.Reason) != c.reason || l.ROI != nil {
-			t.Errorf("%s's %s league = %s, reason %s, model %+v; want every value and the total null with %q, no model "+
-				"(FR-003)", label, c.table, l.values(), textOf(l.Reason), l.ROI, c.reason)
+			textOf(l.Reason) != noFinanceReason || !modelNamed {
+			t.Errorf("%s's %s league = %s, reason %s, model %+v; want every value and the total null with %q, the model "+
+				"named beside ROI only (FR-003)", label, table, l.values(), textOf(l.Reason), l.ROI, noFinanceReason)
 		}
 	}
 }

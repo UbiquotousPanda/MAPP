@@ -2,49 +2,38 @@ package summary
 
 import (
 	"context"
-	"strconv"
-	"strings"
 
-	"mapp/internal/allwork"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/authz"
 )
 
 // costs is each activity's actual cost, paid in the plans' year, for the plans whose financial data the
 // person may see; the others have no entry, so their cost and ROI stay "—".
 func (s *Service) costs(ctx context.Context, a actor.Actor, v view) (map[string]*int64, error) {
-	out := map[string]*int64{}
+	var seen []string
 	for _, series := range v.series {
 		if v.seesFinance(series.PlanID) {
-			out[series.ID] = new(int64)
+			seen = append(seen, series.ID)
 		}
 	}
-	lineItems, activityOf := lineItemsUnder(v.scope.Nodes, out)
-	if len(lineItems) == 0 {
-		return out, nil
-	}
-	spend, err := s.deps.Spending.SpendByMonth(ctx, a, lineItems)
+	q := attribution.CostQuery{Nodes: v.scope.Nodes, ActivityIDs: seen, Year: v.scope.Year}
+	paid, err := attribution.PaidInYear(ctx, s.deps.Spending, a, q)
 	if err != nil {
 		return nil, err
 	}
-	prefix := strconv.Itoa(v.scope.Year) + "-"
-	for lineItem, months := range spend {
-		for month, facts := range months {
-			if cost, found := out[activityOf[lineItem]]; found && strings.HasPrefix(month, prefix) {
-				*cost += facts.Paid.Cents()
-			}
-		}
+	out := make(map[string]*int64, len(paid))
+	for id, amount := range paid {
+		cents := amount.Cents()
+		out[id] = &cents
 	}
 	return out, nil
 }
 
-func lineItemsUnder(nodes []allwork.Node, activities map[string]*int64) ([]string, map[string]string) {
-	var ids []string
-	activityOf := map[string]string{}
-	for _, n := range nodes {
-		if _, found := activities[n.ParentID]; found && n.Level == allwork.LevelLineItem {
-			ids = append(ids, n.ID)
-			activityOf[n.ID] = n.ParentID
-		}
+func (s *Service) credits(ctx context.Context, v view) (attribution.Credited, error) {
+	ids := make([]string, 0, len(v.series))
+	for _, series := range v.series {
+		ids = append(ids, series.ID)
 	}
-	return ids, activityOf
+	return s.deps.Credits.Credit(ctx, authz.ScopeOf(ctx), ids, v.scope.Year)
 }

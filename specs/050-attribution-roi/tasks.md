@@ -29,3 +29,15 @@
   for 048 and 049, the facts reader in the attribution store and its fake, `TestCrediting_*`, scope-isolation test
 - [ ] T008 e2e `frontend/e2e/attribution.spec.ts`; restated figures after a model change (US4, SC-002). Waits for
   049 (#82) or 048 to show attributed revenue through `Crediting.Credit` and for demo facts with journeys
+
+## Phase 5: Credited revenue and ROI in 048 and 049 (FR-007, FR-008, FR-010)
+
+- [X] T009 Contract: Revenue's ranked figures gain `attributedRevenue` and its reason, `noFinancialAccess`,
+  `noActualCost` and `noData` reasons, and the list an `attribution` stamp (model, basis); `pnpm run api:types`
+- [X] T010 `attribution.Stamp`, `PaidInYear` (the actual cost of FR-007, read once for 048 and 049) and
+  `measure.Scope.SeesFinanceOf`; 049's ranked list reads `Crediting.Credit` and the payments, ROI on each entry's
+  sums; the export names the model and basis; `TestRankedRevenue_ROI*`
+- [X] T011 048's ROI league divides credited revenue by actual cost and names the model, each dash with its reason;
+  `TestLeague_CostAndROI_048_FR015_050_FR010`, `TestLeague_ROIDashSaysWhy_048_FR015_050_FR007`
+- [X] T012 Web: Revenue's ranked list shows attributed revenue and names the model and basis beside it and ROI;
+  Summary's fixtures and tests name the model. Lane D's two `wavebqa` ROI expectations follow (rule 7)

@@ -44,6 +44,11 @@ type Scope struct {
 	FinanceAsOf *time.Time
 }
 
+// SeesFinanceOf says whether the person may see the plan's financial data (D-301).
+func (sc Scope) SeesFinanceOf(planID string) bool {
+	return sc.Choices.SeesFinance && (sc.Choices.FinancePlans == nil || slices.Contains(sc.Choices.FinancePlans, planID))
+}
+
 // Scope reads the scope of f inside the caller's Read, so a report and the frame cover the same records (FR-007).
 func (s *Service) Scope(ctx context.Context, a actor.Actor, f Filter, columns []string) (Scope, error) {
 	today := date.Today(s.now())

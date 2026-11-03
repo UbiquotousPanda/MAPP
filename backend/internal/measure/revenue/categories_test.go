@@ -29,7 +29,7 @@ func twoCategoryScope() measure.Scope {
 func newFixtureWithCategories(sc measure.Scope, goals fakeGoals, categories fakeCategories) *revenue.Service {
 	return revenue.NewService(fakeTx{}, revenue.Deps{
 		Scoper: fakeScoper{scope: sc}, Facts: fakeFacts{}, Goals: goals,
-		Categories: categories, Rates: fakeRates{},
+		Categories: categories, Rates: fakeRates{}, Credits: fakeReturns{}, Spending: fakeReturns{},
 	}, func() time.Time { return noon })
 }
 

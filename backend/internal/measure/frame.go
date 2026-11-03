@@ -82,7 +82,7 @@ func inViewOf(m allwork.Matched) InView {
 func financeOf(sc Scope) FinanceCoverage {
 	coverage := FinanceCoverage{Of: len(sc.Matched.Plans)}
 	for _, id := range sc.Matched.Plans {
-		if sc.Choices.SeesFinance && (sc.Choices.FinancePlans == nil || slices.Contains(sc.Choices.FinancePlans, id)) {
+		if sc.SeesFinanceOf(id) {
 			coverage.Plans++
 		}
 	}

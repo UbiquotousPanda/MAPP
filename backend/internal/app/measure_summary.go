@@ -18,7 +18,7 @@ import (
 func registerSummary(w *wiring, r *measure.Registry) error {
 	service := summary.NewService(w.set.Tx, summary.Deps{
 		Series: revenueService(w), PlanGoals: summaryPlanGoals{plans: w.set.Plans, settings: w.settings},
-		Spending:   w.financials,
+		Spending: w.financials, Credits: w.crediting(),
 		Categories: revenueCategories{settings: w.settings}, Segments: summarySegments{settings: w.settings},
 	}, w.now)
 	mount(w.signedIn, summary.NewHandler(service))

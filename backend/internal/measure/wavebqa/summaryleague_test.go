@@ -9,9 +9,8 @@ import (
 )
 
 const (
-	leagueSize         = 5
-	notConfiguredWords = "Attribution is not configured yet"
-	noFinanceReason    = "Financial data of these plans is not shown to you"
+	leagueSize      = 5
+	noFinanceReason = "Financial data of these plans is not shown to you"
 )
 
 func rowsTotal(rows []leagueEntry) *int64 {
@@ -190,17 +189,12 @@ func valuesByKey(l leagueAnswer) map[string]*int64 {
 	return out
 }
 
-func checkRoiDash(t *testing.T, alexSees person) {
+func checkRoiNamesItsModel(t *testing.T, alexSees person, model string) {
 	t.Helper()
 	roi := leagueOf(t, alexSees, "roi", "")
-	if roi.ROI != nil || textOf(roi.Reason) != notConfiguredWords || units(roi.Total) != nil {
-		t.Errorf("ROI league names %+v, reason %s, total %s; want \"—\" with %q (FR-015)", roi.ROI, textOf(roi.Reason),
-			shown(units(roi.Total)), notConfiguredWords)
-	}
-	for _, r := range roi.Rows {
-		if units(r.Value) != nil {
-			t.Errorf("ROI of %s is %s, want \"—\" while attribution is not configured", r.Name, shown(units(r.Value)))
-		}
+	if roi.ROI == nil || roi.ROI.Model != model || roi.ROI.Basis != "actual" || roi.Reason != nil || units(roi.Total) == nil {
+		t.Errorf("ROI league names %+v, reason %s, total %s; want %s on actual cost, a figure and no reason",
+			roi.ROI, textOf(roi.Reason), shown(units(roi.Total)), model)
 	}
 }
 
@@ -213,14 +207,15 @@ func checkNoRoiBasis(t *testing.T, alexSees person) {
 	}
 }
 
-// TestWaveB_SummaryRoiIsADashUntilCrediting_048_FR015: until 050's crediting, ROI is "—" with its reason, whatever the model.
-func TestWaveB_SummaryRoiIsADashUntilCrediting_048_FR015(t *testing.T) {
+// TestWaveB_SummaryRoiNamesItsModel_048_FR015: ROI divides 050's credited revenue by the actual cost and names the
+// designated model, and a model change restates it at once.
+func TestWaveB_SummaryRoiNamesItsModel_048_FR015(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
 	designated := decode[struct{ Version int }](t, alexSees.expect(t, get(attributionPath), http.StatusOK))
-	checkRoiDash(t, alexSees)
+	checkRoiNamesItsModel(t, alexSees, "Equally distributed")
 	checkNoRoiBasis(t, alexSees)
 	alexSees.expect(t, put(attributionPath, map[string]any{"model": "uShaped", "version": designated.Version}),
 		http.StatusOK)
-	checkRoiDash(t, alexSees)
+	checkRoiNamesItsModel(t, alexSees, "U-shaped")
 }

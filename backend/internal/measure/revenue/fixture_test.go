@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"mapp/internal/allwork"
+	"mapp/internal/financials"
 	"mapp/internal/measure"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
@@ -66,6 +68,26 @@ func (f fakeCategories) ListCategories(context.Context) ([]revenue.Category, err
 
 type fakeRates struct{}
 
+// fakeReturns answers 050's credits by activity and 015's payments by line item, all paid in March 2026.
+type fakeReturns struct {
+	credits map[string]money.Amount
+	paid    map[string]money.Amount
+}
+
+func (f fakeReturns) Credit(context.Context, authz.Scope, []string, int) (attribution.Credited, error) {
+	return attribution.Credited{Model: attribution.Equal, ByActivity: f.credits}, nil
+}
+
+func (f fakeReturns) SpendByMonth(_ context.Context, _ actor.Actor, lineItemIDs []string) (map[string]map[string]financials.Facts, error) {
+	out := map[string]map[string]financials.Facts{}
+	for _, id := range lineItemIDs {
+		if paid, found := f.paid[id]; found {
+			out[id] = map[string]financials.Facts{"2026-03": {Paid: paid}}
+		}
+	}
+	return out, nil
+}
+
 func (fakeRates) Rates(context.Context) (money.Rates, error) { return money.Rates{}, nil }
 
 // lubricantsModel mirrors the domain model's own waterfall example (§4.5): 2 %, 5 %, 10,000 USD a deal,
@@ -89,6 +111,13 @@ func newFixtureWith(sc measure.Scope, goals fakeGoals, facts []revenue.FactTotal
 func newFixtureAt(now time.Time, sc measure.Scope, goals fakeGoals, facts []revenue.FactTotal) *revenue.Service {
 	return revenue.NewService(fakeTx{}, revenue.Deps{
 		Scoper: fakeScoper{scope: sc}, Facts: fakeFacts{rows: facts}, Goals: goals,
-		Categories: fakeCategories{}, Rates: fakeRates{},
+		Categories: fakeCategories{}, Rates: fakeRates{}, Credits: fakeReturns{}, Spending: fakeReturns{},
 	}, func() time.Time { return now })
+}
+
+func newFixtureWithReturns(sc measure.Scope, goals fakeGoals, r fakeReturns) *revenue.Service {
+	return revenue.NewService(fakeTx{}, revenue.Deps{
+		Scoper: fakeScoper{scope: sc}, Facts: fakeFacts{}, Goals: goals,
+		Categories: fakeCategories{}, Rates: fakeRates{}, Credits: r, Spending: r,
+	}, func() time.Time { return noon })
 }

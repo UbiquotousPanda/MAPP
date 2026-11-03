@@ -2,6 +2,7 @@ package wavebqa_test
 
 import (
 	"encoding/csv"
+	"fmt"
 	"net/http"
 	"slices"
 	"strings"
@@ -112,28 +113,67 @@ func exportedCostColumns(t *testing.T, alexSees person) {
 	file := alexSees.expect(t, get(reportPath("/reports/revenue/export", "widget=ranked", "format=csv", "show=activity")),
 		http.StatusOK)
 	rows := csvRows(t, string(file.Body))
-	if len(rows) < 2 || !slices.Equal(rows[0][7:], []string{"Actual cost", "ROI (%)"}) {
-		t.Fatalf("the ranked export's columns = %v, want Actual cost and ROI (%%) last", rows)
+	want := []string{"Attributed revenue (Equally distributed)", "Actual cost", "ROI (%, Equally distributed, on actual cost)"}
+	if len(rows) < 2 || !slices.Equal(rows[0][7:], want) {
+		t.Fatalf("the ranked export's columns = %v, want %v last", rows, want)
 	}
 	for _, row := range rows[1:] {
-		if row[7] != "—" || row[8] != "—" {
-			t.Errorf("exported %s: actual cost %q, ROI %q, want —", row[2], row[7], row[8])
+		if row[8] == "—" {
+			t.Errorf("exported %s: actual cost %q, want a figure for Alex", row[2], row[8])
 		}
 	}
 }
 
-// TestWaveB_RoiNotConfigured_049_FR013: every actual cost and ROI is null, "Attribution is not configured yet", until 050 T007.
-func TestWaveB_RoiNotConfigured_049_FR013(t *testing.T) {
+// roiRests counts the ROIs shown and reports the first figure whose ROI does not rest on its parts.
+func roiRests(t *testing.T, label string, r ranked[revenueFigures]) int {
+	t.Helper()
+	shownROIs := 0
+	for _, f := range r.everyFigure() {
+		if problem := roiProblem(f); problem != "" {
+			t.Errorf("%s: %s", label, problem)
+			return shownROIs
+		}
+		if f.ROI != nil {
+			shownROIs++
+		}
+	}
+	return shownROIs
+}
+
+// roiProblem: Alex sees every plan's finances, so every entry has an actual cost; an ROI shows only on a cost above
+// zero, and a dash says why.
+func roiProblem(f revenueFigures) string {
+	cost := cents(f.ActualCost)
+	dashWhy := slices.Contains([]string{"noActualCost", "noData"}, f.ROIReason)
+	switch {
+	case cost == nil || f.ActualCostReason != "":
+		return fmt.Sprintf("actual cost %v, reason %q; want a cost and no reason for Alex", cost, f.ActualCostReason)
+	case f.ROI != nil && (f.ROIReason != "" || *cost <= 0):
+		return fmt.Sprintf("ROI %v on cost %d with reason %q; want an ROI only on a cost above zero", *f.ROI, *cost,
+			f.ROIReason)
+	case f.ROI == nil && !dashWhy:
+		return fmt.Sprintf("ROI \"—\" with reason %q; want noActualCost or noData", f.ROIReason)
+	}
+	return ""
+}
+
+// TestWaveB_RoiRestsOnCreditsAndPayments_049_FR013: every actual cost is shown to Alex, and an ROI divides 050's
+// credited revenue by it, or is "—" with its reason.
+func TestWaveB_RoiRestsOnCreditsAndPayments_049_FR013(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
 	digital := "category=" + categoryNamed(t, alexSees, "Digital")
+	shownROIs := 0
 	for _, show := range levels() {
 		for _, group := range []string{"none", "plan", "owner"} {
 			for _, category := range []string{"", digital} {
 				list := revenueRankedOf(t, alexSees, joined("show="+show, "group="+group, category))
-				costless(t, "Revenue at show="+show+" by "+group+" "+category, list, notConfigured)
+				shownROIs += roiRests(t, "Revenue at show="+show+" by "+group+" "+category, list)
 			}
 		}
+	}
+	if shownROIs == 0 {
+		t.Error("no ROI shown anywhere; want 050's credited revenue divided by the payments")
 	}
 	exportedCostColumns(t, alexSees)
 }
