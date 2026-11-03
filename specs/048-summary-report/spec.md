@@ -50,7 +50,8 @@ two with the same wording (049-C13, 049-C15).
   → A: **Every active single- or multi-choice Shell attribute at the Plan, Campaign and Activity levels**, named
   with its level as 043 names it (Hive9's "marked as report segment" flag does not exist in MAPP); default the first
   Activity-level attribute. A record with no value counts under **Not filled in**; a record with several values is
-  split in equal shares among them (client 016 FR-043), and the Total row counts every record once.
+  split in equal shares among them (client 016 FR-043), except a % split attribute, which shares by its own percentages
+  as Revenue's ranked view does (D-270; 048-C14); the Total row counts every record once.
 - **048-C5** — Q: What does a league table show? → A: **The five highest values** of its figure, then a **Total**
   row over all values (not only the five), with Name, the figure and a small Trend of the segment's actual or
   projected by month. Cost is **Actual cost** (paid in the plans' year, D-357); ROI and its cost basis are 050's, and
@@ -82,6 +83,10 @@ two with the same wording (049-C13, 049-C15).
   Revenue? → A: **There is none.** A rate of money over a count of MQLs is not a conversion, so the funnel shows
   Revenue's volume as an amount and converts only between counted stages: MQL from INQ. `stage` takes `mql` only.
   The variance word and Performance come from 049's `revenue.Performance` and `revenue.VarianceOf` (048-C10).
+- **048-C14** — Q: A % split attribute (multipleChoiceSplit) has its own shares, 80/20; does the league table split
+  equally? → A: **No, by its shares (lane B's review of #106, S1).** D-270 and `measure/ranking` weight by share, so
+  an 80/20 EMEA/APAC activity counts 80/20 in Summary as in Revenue's ranked view, with the same rounding (half up per
+  share). Other multi-value attributes keep 048-C4's equal shares.
 - **048-C13** — Q: Client 016 FR-027 shows earlier years as one "FY (total)" bucket each; does Summary? → A: **No.** A
   report covers one plan year (D-368, 039 Assumptions): multi-year selection is not adopted because plans are one
   year. The edge case is replaced, and convergence task T030 is closed without code.
@@ -222,7 +227,7 @@ The lead exports a widget or the whole page to discuss it.
 - **FR-012**: Four tables — Revenue, Performance, Cost and ROI — MUST each show the five highest values of its figure
   for its chosen segment, with Name, figure and Trend, and a Total row over all values (048-C5).
 - **FR-013**: Segments MUST be the active Shell attributes at Plan, Campaign and Activity level, Not filled in included,
-  with equal shares for several values (048-C4).
+  with equal shares for several values, or a % split's own shares (048-C4, C14).
 - **FR-014**: Changing one table's segment MUST reload that table only (048-C6).
 - **FR-015**: ROI MUST come from 050 with its model and cost basis named, and be "—" with the reason while
   attribution is not configured.

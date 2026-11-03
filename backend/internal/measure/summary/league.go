@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"slices"
 
+	"mapp/internal/allwork"
 	"mapp/internal/platform/money"
 )
 
@@ -16,19 +17,33 @@ type leagueRow struct {
 	Value *int64
 }
 
-// shares splits cents equally between a record's distinct values, so the shares add up exactly.
-func shares(cents int64, values []string) map[string]int64 {
-	keys := slices.Clone(values)
+// shares splits cents between a record's distinct values: by a % split's shares with Revenue's ranked view's rounding,
+// otherwise equally so the shares add up exactly.
+func shares(cents int64, value allwork.AttrValue) map[string]int64 {
+	keys := slices.Clone(value.OptionIDs)
 	slices.Sort(keys)
 	keys = slices.Compact(keys)
 	if len(keys) == 0 {
 		return map[string]int64{NotFilledIn: cents}
 	}
 	out := make(map[string]int64, len(keys))
+	if isWeighted(value, keys) {
+		for _, key := range keys {
+			out[key] = value.Shares[key].OfWhole(cents)
+		}
+		return out
+	}
 	for i, part := range money.FromCents(cents).SplitEvenly(len(keys)) {
 		out[keys[i]] = part.Cents()
 	}
 	return out
+}
+
+func isWeighted(value allwork.AttrValue, keys []string) bool {
+	return len(value.Shares) > 0 && !slices.ContainsFunc(keys, func(key string) bool {
+		_, found := value.Shares[key]
+		return !found
+	})
 }
 
 func topFive(rows []leagueRow) []leagueRow {

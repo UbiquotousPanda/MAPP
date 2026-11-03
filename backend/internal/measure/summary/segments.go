@@ -56,17 +56,17 @@ func (t tally) add(o tally) tally {
 	return t
 }
 
-// split shares one activity's tally equally between its values; Not filled in takes it when it has none.
-func (t tally) split(values []string) map[string]tally {
-	totals, goals, actuals, costs := shares(t.total, values), shares(t.goal, values), shares(t.actual, values),
-		shares(t.cost, values)
+// split shares one activity's tally between its values; Not filled in takes it when it has none.
+func (t tally) split(value allwork.AttrValue) map[string]tally {
+	totals, goals, actuals, costs := shares(t.total, value), shares(t.goal, value), shares(t.actual, value),
+		shares(t.cost, value)
 	out := make(map[string]tally, len(totals))
 	for key := range totals {
 		out[key] = tally{total: totals[key], goal: goals[key], actual: actuals[key], cost: costs[key],
 			costSeen: t.costSeen, months: make([]int64, len(t.months))}
 	}
 	for i, v := range t.months {
-		for key, part := range shares(v, values) {
+		for key, part := range shares(v, value) {
 			out[key].months[i] = part
 		}
 	}
@@ -85,8 +85,8 @@ func tallyOf(s revenue.ActivitySeries, cost *int64) tally {
 	return out
 }
 
-func valuesOf(s revenue.ActivitySeries, segment string) []string {
-	return s.Attributes[segment].OptionIDs
+func valuesOf(s revenue.ActivitySeries, segment string) allwork.AttrValue {
+	return s.Attributes[segment]
 }
 
 func optionNames(attributes []allwork.Attribute, segment string) map[string]string {

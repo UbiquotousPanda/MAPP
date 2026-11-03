@@ -4,29 +4,49 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	"mapp/internal/allwork"
+	"mapp/internal/platform/money"
 )
 
 func TestSegments_048_C4(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name   string
-		cents  int64
-		values []string
-		want   map[string]int64
+		name  string
+		cents int64
+		value allwork.AttrValue
+		want  map[string]int64
 	}{
-		{"no value counts under Not filled in", 1_000, nil, map[string]int64{NotFilledIn: 1_000}},
-		{"one value takes it all", 1_000, []string{"emea"}, map[string]int64{"emea": 1_000}},
-		{"equal shares add up exactly", 1_000, []string{"b", "a", "c"}, map[string]int64{"a": 333, "b": 333, "c": 334}},
-		{"a value repeated counts once", 1_000, []string{"a", "a"}, map[string]int64{"a": 1_000}},
+		{"no value counts under Not filled in", 1_000, allwork.AttrValue{}, map[string]int64{NotFilledIn: 1_000}},
+		{"one value takes it all", 1_000, options("emea"), map[string]int64{"emea": 1_000}},
+		{"equal shares add up exactly", 1_000, options("b", "a", "c"), map[string]int64{"a": 333, "b": 333, "c": 334}},
+		{"a value repeated counts once", 1_000, options("a", "a"), map[string]int64{"a": 1_000}},
+		{"a % split weights by its shares, as Revenue's ranked view", 1_000, split(map[string]int64{"emea": 8_000, "apac": 2_000}),
+			map[string]int64{"emea": 800, "apac": 200}},
+		{"a % split rounds each share half up", 999, split(map[string]int64{"a": 3_333, "b": 6_667}),
+			map[string]int64{"a": 333, "b": 666}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if diff := cmp.Diff(tt.want, shares(tt.cents, tt.values)); diff != "" {
-				t.Errorf("shares(%d, %q) (-want +got)\n%s", tt.cents, tt.values, diff)
+			if diff := cmp.Diff(tt.want, shares(tt.cents, tt.value)); diff != "" {
+				t.Errorf("shares(%d, %v) (-want +got)\n%s", tt.cents, tt.value, diff)
 			}
 		})
 	}
+}
+
+func options(ids ...string) allwork.AttrValue {
+	return allwork.AttrValue{OptionIDs: ids}
+}
+
+func split(hundredths map[string]int64) allwork.AttrValue {
+	out := allwork.AttrValue{Shares: map[string]money.Percent{}}
+	for id, h := range hundredths {
+		out.OptionIDs = append(out.OptionIDs, id)
+		out.Shares[id] = money.PercentFromHundredths(h)
+	}
+	return out
 }
 
 func TestLeague_048_C5(t *testing.T) {

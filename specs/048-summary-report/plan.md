@@ -29,7 +29,7 @@ vitest-axe; Playwright for US1.
   `TestSummary_EqualsRevenueAndFunnel_048_SC002` holding the two equal. (a) is taken (048-C10): lane B exports it after #82 merges. Either way the statements stay fixed: one facts read, one goals read, whatever the activities.
 - **R2 — Segments (048-C4).** The active Shell attributes at Plan, Campaign and Activity level come from the frame's
   scope (`measure.Scope.Attributes`), the same source 043 uses; a node's values are on `allwork.Node`. An activity
-  takes a Plan or Campaign attribute's value from its ancestor. Several values share the activity's figures equally
+  takes a Plan or Campaign attribute's value from its ancestor. Several values share the activity's figures equally, or by a % split's own shares (048-C14),
   in exact decimals (`money.SplitEvenly` over the values in label order, the remainder cent to the last, so shares add up exactly).
 - **R3 — Cost and ROI (048-C5).** Actual cost per activity is 015's paid in the plans' year (D-357), read once for the
   line items in view through the dashboards' `Spending` read (`SpendByMonth`). ROI is `attribution.ROI(revenue,
@@ -61,7 +61,7 @@ them), `app/measure.go`, `features/measure/index.ts`, the decision log.
 | Goal is the activities' sum; Goal coverage = activities' ÷ plans' goals (048-C2) | `figures.go` | `TestGoalCoverage_048_C2` |
 | Summary equals Revenue and Funnel stages for the same filters (048-C3, SC-002) | handler | `TestSummary_EqualsRevenueAndFunnel_048_SC002` |
 | Stages any model allows, conversion rate and goal from sums, "—" on zero (048-C7) | `funnel.go` | `TestConversion_048_C7` |
-| Segments with Not filled in, equal shares that add up exactly, Total counts each record once (048-C4) | `segments.go` | `TestSegments_048_C4` |
+| Segments with Not filled in, equal shares that add up exactly or a % split's shares, Total counts each record once (048-C4, C14) | `segments.go` | `TestSegments_048_C4` |
 | Five highest then Total over all; "—" values last; ties by name (048-C5) | `league.go` | `TestLeague_048_C5` |
 | ROI from 050 with model and basis; "—" with the reason when not configured | `league.go` | `TestROI_048_FR015` |
 | Cost and ROI "—" for plans without finance.view, with plans covered (FR-003) | `service.go` | `TestNoFinanceView_048_FR003` |
