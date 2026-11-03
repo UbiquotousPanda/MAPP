@@ -1,0 +1,105 @@
+package revenue
+
+import (
+	"context"
+	"slices"
+
+	"mapp/internal/measure"
+	"mapp/internal/platform/actor"
+	"mapp/internal/platform/date"
+)
+
+// FunnelReport is one funnel stage against goal: the stage selector, its cards and period series.
+func (s *Service) FunnelReport(ctx context.Context, a actor.Actor, f measure.Filter, stage string) (FunnelReport, error) {
+	var out FunnelReport
+	err := s.tx.Read(ctx, func(ctx context.Context) error {
+		sc, series, err := s.series(ctx, a, f, categoryOf(f.Own))
+		if err != nil {
+			return err
+		}
+		available := availableStages(series)
+		w := window{today: date.Today(s.now()), year: sc.Year}
+		out = buildFunnelReport(funnelReportInput{series: series, stage: stageOf(stage, available), available: available,
+			period: f.Period, w: w})
+		return nil
+	})
+	return out, err
+}
+
+// availableStages lists every stage any activity's model allows, in funnel order; deals is never offered.
+func availableStages(series []ActivitySeries) []string {
+	stages := make([]string, 0, 2)
+	for _, stage := range []string{StageINQ, StageMQL} {
+		if slices.ContainsFunc(series, stageMeasure(stage).covers) {
+			stages = append(stages, stage)
+		}
+	}
+	return stages
+}
+
+func stageOf(requested string, available []string) string {
+	if slices.Contains(available, requested) {
+		return requested
+	}
+	if len(available) > 0 {
+		return available[0]
+	}
+	return StageINQ
+}
+
+// funnelReportInput groups FunnelReport's working parts so building it stays within the argument limit.
+type funnelReportInput struct {
+	series    []ActivitySeries
+	stage     string
+	available []string
+	period    string
+	w         window
+}
+
+func buildFunnelReport(in funnelReportInput) FunnelReport {
+	m := stageMeasure(in.stage)
+	sums := sumMonths(in.series, m)
+	anyGoal := slices.ContainsFunc(in.series, func(a ActivitySeries) bool { return m.covers(a) && a.HasProjection })
+	out := FunnelReport{Stage: in.stage, AvailableStages: in.available, UncoveredCount: uncoveredCount(in.series, m),
+		Period: periodShown(in.period), Periods: funnelPeriods(sums, in.period, in.w), Projection: stampOf(in.series)}
+	out.Cards = funnelCards(sums, in.w, anyGoal, previousStageTotal(in.series, in.stage))
+	if len(in.series) == 0 {
+		out.Reason = ReasonNoData
+	} else if !anyGoal {
+		out.Reason = ReasonNoGoal
+	}
+	return out
+}
+
+// uncoveredCount is the number of plans in view whose model does not allow the stage at all.
+func uncoveredCount(series []ActivitySeries, m measureOf) int {
+	coveredPlans, allPlans := map[string]bool{}, map[string]bool{}
+	for _, a := range series {
+		allPlans[a.PlanID] = true
+		if m.covers(a) {
+			coveredPlans[a.PlanID] = true
+		}
+	}
+	return len(allPlans) - len(coveredPlans)
+}
+
+// previousStageTotal is the actual total of the stage before the selected one, for conversion.
+func previousStageTotal(series []ActivitySeries, stage string) *int64 {
+	previous, found := previousStage(stage)
+	if !found {
+		return nil
+	}
+	m := stageMeasure(previous)
+	if !slices.ContainsFunc(series, m.covers) {
+		return nil
+	}
+	total := sumMonths(series, m).actualTotal()
+	return &total
+}
+
+func previousStage(stage string) (string, bool) {
+	if stage == StageMQL {
+		return StageINQ, true
+	}
+	return "", false
+}

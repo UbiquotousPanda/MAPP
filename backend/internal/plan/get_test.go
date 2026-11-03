@@ -12,7 +12,6 @@ import (
 	"mapp/internal/settings"
 )
 
-// The plan page shows a plan by its ID; an ID that does not exist answers not found (FR-011).
 func TestGet_NotFound_FR011(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -27,12 +26,6 @@ func TestGet_NotFound_FR011(t *testing.T) {
 	assertError(t, errGone, errs.NotFound("This plan no longer exists — someone may have deleted it."))
 }
 
-// User story 3 — Understand a plan at a glance.
-
-// The plan page's figures, goals, completeness and contents come from what the levels below report, in
-// the reader's display currency: remaining −100,000.00 USD (over-allocated), 80 % used, 4 of 7 activities
-// approved, 60 % of the INQ goal planned, and the campaign that needs attention (FR-012, FR-015 – FR-017,
-// US3 scenarios 2, 3 and 5).
 func TestGet_FactsFromLevels_FR012_FR016_FR017(t *testing.T) { //nolint:gocyclo // 14: the figures, goals, completeness and contents of one plan, then its figures in euros
 	t.Parallel()
 	f := newFixture(t)
@@ -83,8 +76,6 @@ func TestGet_FactsFromLevels_FR012_FR016_FR017(t *testing.T) { //nolint:gocyclo 
 	}
 }
 
-// A plan without business unit shows it as the one field needed (FR-017, US3 scenario 4); an owner who is
-// in none of the plan's teams is flagged with the R1 message (FR-021, D-085).
 func TestGet_MissingFieldsAndOwnerProblem_FR017_FR021(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -101,9 +92,6 @@ func TestGet_MissingFieldsAndOwnerProblem_FR017_FR021(t *testing.T) {
 	}
 }
 
-// Lookup reads a plan inside a caller's Write (for 005–007); References lists what every plan uses, the
-// plans in the recycle bin included and marked, for the "Used by" counts of 002 and 003; a recycle-bin
-// snapshot decodes to the same references as the stored plan.
 func TestLookupAndReferences(t *testing.T) { //nolint:gocyclo // 11: two lookups, then the references of both plans and of a snapshot
 	t.Parallel()
 	f := newFixture(t)
@@ -134,10 +122,12 @@ func TestLookupAndReferences(t *testing.T) { //nolint:gocyclo // 11: two lookups
 		t.Errorf("Lookup = %q, %v; deleted found %v; %v", lookedUp.Name, found, missing, err)
 	}
 	want := []References{
-		{PlanID: kept.ID, Name: "FY2026 Lubricants Test", ModelID: lubricantsModel, OwnerID: priya.ID,
-			TeamIDs: []string{teamLubricants}, Attributes: attributesOf(lubricants), Currency: "USD"},
-		{PlanID: deleted.ID, Name: "FY2026 Mobility Test", ModelID: mobilityModel, TeamIDs: []string{teamMobility},
-			Attributes: attributesOf(lubricants), InRecycleBin: true, Currency: "USD"},
+		{PlanID: kept.ID, Name: "FY2026 Lubricants Test", ModelID: lubricantsModel, GoalStage: StageINQ,
+			OwnerID: priya.ID, TeamIDs: []string{teamLubricants}, Attributes: attributesOf(lubricants),
+			Currency: "USD"},
+		{PlanID: deleted.ID, Name: "FY2026 Mobility Test", ModelID: mobilityModel, GoalStage: StageINQ,
+			TeamIDs: []string{teamMobility}, Attributes: attributesOf(lubricants), InRecycleBin: true,
+			Currency: "USD"},
 	}
 	if got, expected := asJSON(t, refs), asJSON(t, want); refsErr != nil || got != expected {
 		t.Errorf("References = %s, %v\nwant         %s", got, refsErr, expected)

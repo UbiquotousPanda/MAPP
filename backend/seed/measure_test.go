@@ -84,13 +84,14 @@ func TestMeasureLoaded_SaysWhatIsAdded(t *testing.T) {
 	}
 
 	got := fmt.Sprintf("%d team, %d plan, %d campaigns, %d initiatives, %d activities, %d line items (%d with SWBS codes), "+
-		"%d approval workflow, %d approval rounds, %d purchase requests, %d financial transactions",
+		"%d approval workflow, %d approval rounds, %d purchase requests, %d financial transactions, %d activity categories",
 		len(measured.teams)-len(plain.teams), len(measured.plans)-len(plain.plans),
 		len(measured.campaigns)-len(plain.campaigns), len(measured.initiatives)-len(plain.initiatives),
 		len(measured.activities)-len(plain.activities), len(measured.lineItems)-len(plain.lineItems),
 		coded(measured)-coded(plain), len(measured.workflows)-len(plain.workflows), len(measured.rounds)-len(plain.rounds),
 		len(measured.purchaseRequests)-len(plain.purchaseRequests),
-		len(gsapIn(t, measuredDB).transactions)-len(gsapIn(t, plainDB).transactions))
+		len(gsapIn(t, measuredDB).transactions)-len(gsapIn(t, plainDB).transactions),
+		len(categoriesIn(t, measuredDB))-len(categoriesIn(t, plainDB)))
 	if got != seed.MeasureLoaded {
 		t.Errorf("added: %s\nseed.MeasureLoaded: %s", got, seed.MeasureLoaded)
 	}
@@ -122,8 +123,10 @@ func TestLoad_MeasurePlanOnlyInAllMarkets(t *testing.T) {
 	if got, want := planNames(t, measured, "priya.raman@shell.com"), planNames(t, plain, "priya.raman@shell.com"); !slices.Equal(got, want) {
 		t.Errorf("Priya's plans with the Measure demo = %v, want %v as without it", got, want)
 	}
-	if got := planNames(t, measured, "carlos.mendes@shell.com"); !slices.Contains(got, measurePlan) {
-		t.Errorf("Carlos (All markets) sees %v, want %q among them", got, measurePlan)
+	for _, email := range []string{"carlos.mendes@shell.com", "lea.santos@shell.com"} {
+		if got := planNames(t, measured, email); !slices.Contains(got, measurePlan) {
+			t.Errorf("%s (All markets) sees %v, want %q among them", email, got, measurePlan)
+		}
 	}
 }
 

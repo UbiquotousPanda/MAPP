@@ -121,6 +121,9 @@ export const PlansPage = lazy(() => plans().then((feature) => ({ default: featur
 export const RecycleBinPage = lazy(() =>
   recycleBin().then((feature) => ({ default: feature.RecycleBinPage })),
 );
+export const ActivityCategoriesPage = lazy(() =>
+  settings().then((feature) => ({ default: feature.ActivityCategoriesPage })),
+);
 export const ActivityTypesPage = lazy(() =>
   settings().then((feature) => ({ default: feature.ActivityTypesPage })),
 );

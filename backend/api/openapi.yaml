@@ -115,6 +115,11 @@ tags:
     description: "Delegation of approval authority for a date range (feature 017)"
   - name: Dashboards
     description: "Executive and regional planning dashboards and the export of plans and dashboards to PowerPoint and PDF (feature 036)"
+  - name: Performance data
+    description: >-
+      Settings › Performance data: the data sources behind every performance figure and the column
+      mappings that say what each column of their files means (feature 046)
+
   - name: Reports
     description: "The Reports area of the Measure module: the catalogue, the report frame, saved report views and the export (features 039–050)"
 paths:
@@ -860,6 +865,124 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/settings/activity-categories:
+    get:
+      tags:
+        - Settings
+      operationId: listActivityCategories
+      summary: Every activity category (active and inactive), sorted by name ignoring letter case (FR-018, FR-022)
+      responses:
+        "200":
+          description: The activity categories with the activity types they group.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityCategoryPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags:
+        - Settings
+      operationId: createActivityCategory
+      summary: Create an activity category grouping activity types (FR-018)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityCategoryCreate"
+      responses:
+        "201":
+          description: Created, active.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityCategory"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/settings/activity-categories/{categoryId}:
+    parameters:
+      - $ref: "#/components/parameters/ActivityCategoryId"
+    get:
+      tags:
+        - Settings
+      operationId: getActivityCategory
+      summary: One activity category with the activity types it groups
+      responses:
+        "200":
+          description: The activity category.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      tags:
+        - Settings
+      operationId: updateActivityCategory
+      summary: Change an activity category and the activity types it groups (FR-018, FR-019, FR-020)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityCategoryUpdate"
+      responses:
+        "200":
+          description: The activity category after the change.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityCategory"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags:
+        - Settings
+      operationId: deleteActivityCategory
+      summary: Delete an activity category; its activity types become Uncategorised (FR-021)
+      responses:
+        "200":
+          description: Moved to the recycle bin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/activity-types:
@@ -7792,6 +7915,622 @@ paths:
           $ref: "#/components/responses/NotFound"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/performance/sources:
+    get:
+      tags: [Performance data]
+      operationId: listPerformanceSources
+      summary: Settings › Performance data — the data sources, with their derived freshness (046 FR-001, FR-005)
+      responses:
+        "200":
+          description: Every data source, by name.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSourceList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Performance data]
+      operationId: createPerformanceSource
+      summary: Add a data source (needs performance.import) (046 FR-001)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceSourceInput" }
+      responses:
+        "201":
+          description: The source as created, active and never loaded.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    get:
+      tags: [Performance data]
+      operationId: getPerformanceSource
+      summary: One data source with its freshness (046 FR-005)
+      responses:
+        "200":
+          description: The source.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Performance data]
+      operationId: updatePerformanceSource
+      summary: Change a data source (needs performance.import) (046 FR-001, FR-045)
+      description: Version-checked — a save against a version someone has moved past is refused.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceSourceInput" }
+      responses:
+        "200":
+          description: The source as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deletePerformanceSource
+      summary: Delete a data source, only while it holds no performance data (needs performance.import) (046 FR-002)
+      description: >-
+        A source that holds facts is refused with 409 in_use and Deactivate offered instead, because deleting
+        it would silently restate every figure its data fed.
+      responses:
+        "204": { description: "Deleted, to the recycle bin." }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/deactivate:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: deactivatePerformanceSource
+      summary: Stop a data source accepting data, keeping everything it has loaded (046 FR-004)
+      responses:
+        "200":
+          description: The source, now inactive; every activity that depended only on it stops counting as integrated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/reactivate:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: reactivatePerformanceSource
+      summary: Let a deactivated data source accept data again (046 FR-004)
+      responses:
+        "200":
+          description: The source, active again.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/mappings:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    get:
+      tags: [Performance data]
+      operationId: listColumnMappings
+      summary: The column mappings of a data source (046 FR-006)
+      responses:
+        "200":
+          description: Its mappings, by column name.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ColumnMappingList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Performance data]
+      operationId: createColumnMapping
+      summary: Say what one column of this source's file means (needs performance.import) (046 FR-003, FR-006)
+      description: >-
+        Within a model, each stage and revenue is supplied by at most one active source; a second is refused
+        with 409, naming the source that already supplies it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ColumnMappingInput" }
+      responses:
+        "201":
+          description: The mapping as created; it affects future loads only.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ColumnMapping" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/template:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    get:
+      tags: [Performance data]
+      operationId: downloadPerformanceTemplate
+      summary: A blank file carrying exactly the columns this source's mappings define (046 FR-008)
+      responses:
+        "200":
+          description: The template.
+          content:
+            text/csv:
+              schema: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/mappings/{mappingId}:
+    parameters:
+      - $ref: "#/components/parameters/MappingId"
+    patch:
+      tags: [Performance data]
+      operationId: updateColumnMapping
+      summary: Change a column mapping (needs performance.import) (046 FR-006, FR-007)
+      description: A change affects future loads only and never restates a completed load.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ColumnMappingInput" }
+      responses:
+        "200":
+          description: The mapping as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ColumnMapping" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteColumnMapping
+      summary: Remove a column mapping (needs performance.import) (046 FR-006)
+      responses:
+        "204": { description: "Removed; loads already completed are unchanged." }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/uploads:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: uploadPerformanceFile
+      summary: Upload a CSV of performance rows for this source (needs performance.import) (046 FR-009)
+      description: |
+        The whole file lands or none of it does. A file carrying a personal-data column is refused in
+        full, naming the columns, and nothing from it is stored (FR-012).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceUpload" }
+      responses:
+        "201":
+          description: The completed load with its reconciling summary (FR-022).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/pull:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: pullPerformanceFeed
+      summary: Pull the simulated feed once, by explicit action (needs performance.import) (046 FR-010, 046-C13)
+      responses:
+        "201":
+          description: The completed load; its rows took the same path as an uploaded file (ADR-0020).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/imports:
+    get:
+      tags: [Performance data]
+      operationId: listPerformanceImports
+      summary: The uploads, newest first, findable by file, uploader, source, status and date (needs performance.import) (046 FR-016)
+      parameters:
+        - name: sourceId
+          in: query
+          required: false
+          schema: { type: string, pattern: "^PS-[0-9]+$" }
+        - name: search
+          in: query
+          required: false
+          description: Matches the file name and the uploader's name.
+          schema: { type: string, maxLength: 200 }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, enum: [completed, failed, undone] }
+        - name: since
+          in: query
+          required: false
+          schema: { type: string, format: date }
+        - name: until
+          in: query
+          required: false
+          description: Inclusive; the range covers this whole day.
+          schema: { type: string, format: date }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 500 }
+      responses:
+        "200":
+          description: The uploads with their summaries.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImportList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/imports/{importId}:
+    parameters:
+      - $ref: "#/components/parameters/ImportId"
+    get:
+      tags: [Performance data]
+      operationId: getPerformanceImport
+      summary: One upload with its summary and the counts per measure (needs performance.import) (046 FR-022, 046-C18)
+      responses:
+        "200":
+          description: The upload. An upload is never editable; undo is the only way back (FR-016).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/imports/{importId}/undo:
+    parameters:
+      - $ref: "#/components/parameters/ImportId"
+    post:
+      tags: [Performance data]
+      operationId: undoPerformanceImport
+      summary: Undo a whole upload (needs performance.import and settings.manage) (046 FR-017, 046-C16)
+      description: Replaced versions return and the upload stays listed as undone.
+      responses:
+        "200":
+          description: The upload, undone.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance/sources:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: getActivityDataSources
+      summary: The activity's Data sources area (046 FR-031)
+      responses:
+        "200":
+          description: External name and aliases, media-code count, the two flags, and each source's key and totals.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataSourcesArea" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/external-name-aliases:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listExternalNameAliases
+      summary: The superseded names kept for matching (046 FR-034)
+      responses:
+        "200":
+          description: The aliases, by name.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExternalNameAliasList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/external-name-aliases/{aliasId}:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+      - name: aliasId
+        in: path
+        required: true
+        schema: { type: string, pattern: "^ENA-[0-9]+$" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteExternalNameAlias
+      summary: Remove an alias; the old name then stops matching (needs performance.link) (046 FR-034)
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/integration-ids:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listIntegrationIds
+      summary: The outside systems' own ids for this activity, one per source (046 FR-037)
+      responses:
+        "200":
+          description: The integration ids, by source.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IntegrationIdList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/integration-ids/{sourceId}:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+      - $ref: "#/components/parameters/SourceId"
+    put:
+      tags: [Performance data]
+      operationId: setIntegrationId
+      summary: Register the source's own id for this activity (needs performance.link) (046 FR-037)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IntegrationIdInput" }
+      responses:
+        "201":
+          description: The key as registered.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IntegrationId" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteIntegrationId
+      summary: Remove the source's key; its rows then stop matching this activity (needs performance.link) (046 FR-037)
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows:
+    get:
+      tags: [Performance data]
+      operationId: listReviewRows
+      summary: The rows to review, findable by key, source, reason, upload, date and status; none can be created by hand (046 FR-023)
+      parameters:
+        - { name: status, in: query, required: false, schema: { type: string, enum: [open, resolved, dismissed] } }
+        - { name: sourceId, in: query, required: false, schema: { type: string, pattern: "^PS-[0-9]+$" } }
+        - { name: importId, in: query, required: false, schema: { type: string, pattern: "^PIM-[0-9]+$" } }
+        - { name: reason, in: query, required: false, schema: { type: string, maxLength: 200 } }
+        - { name: key, in: query, required: false, schema: { type: string, maxLength: 200 } }
+        - { name: since, in: query, required: false, schema: { type: string, format: date } }
+        - { name: until, in: query, required: false, schema: { type: string, format: date },
+            description: "Inclusive; the range covers this whole day." }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500 } }
+      responses:
+        "200":
+          description: The rows, newest first; each row's candidates are filtered to the reader's scope (046-C15).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRowList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    get:
+      tags: [Performance data]
+      operationId: getReviewRow
+      summary: One row with its content, every fault and its history of actions (046 FR-024)
+      responses:
+        "200":
+          description: The row.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}/dismiss:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    post:
+      tags: [Performance data]
+      operationId: dismissReviewRow
+      summary: Set a row aside with the required comment (046 FR-024)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DismissInput" }
+      responses:
+        "200":
+          description: The row, dismissed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}/reopen:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    post:
+      tags: [Performance data]
+      operationId: reopenReviewRow
+      summary: Return a dismissed row to the queue (046 FR-024)
+      responses:
+        "200":
+          description: The row, open again.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}/correct:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    post:
+      tags: [Performance data]
+      operationId: correctReviewRow
+      summary: Fix the row's load-time cells and re-check it at once (046 FR-024, FR-007)
+      description: The reference may not change - a new identity is a new upload's to create (FR-013).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CorrectInput" }
+      responses:
+        "200":
+          description: The row after its re-check - resolved on a match, or open with its new verdict.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/recheck:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: recheckSource
+      summary: Re-check the source's open rows and held facts on demand (046 FR-025)
+      responses:
+        "200":
+          description: What the re-check resolved, by outcome.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceCounts" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance/facts:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listActivityFacts
+      summary: The activity's facts - date, source, stage or metric, value, currency, key matched on, upload (046 FR-030)
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string, maxLength: 100 } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500 } }
+      responses:
+        "200":
+          description: The facts, newest first; replaced versions are left out.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceFactList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance/facts/export:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: exportActivityFacts
+      summary: The same list as a CSV file (needs data.export) (046 FR-030, D-367)
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string, maxLength: 100 } }
+      responses:
+        "200":
+          description: The file; its name is in Content-Disposition.
+          headers:
+            Content-Disposition:
+              schema: { type: string }
+          content:
+            text/csv:
+              schema: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: getActivityPerformance
+      summary: The activity's performance panel, gated until it counts as approved (046 FR-027, FR-029)
+      description: |
+        Projected figures are feature 047's and the revenue model's name is feature 050's; both arrive as
+        backward-compatible additions. Every empty figure states its reason (FR-032), never a sample value.
+      responses:
+        "200":
+          description: The panel, or state notApproved with no figures.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformancePanel" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
   # Feature 039 Measure foundation: the Reports area, the report frame, saved report views and the export
   /api/v1/reports:
     get:
@@ -7895,6 +8634,12 @@ paths:
         - $ref: "#/components/parameters/ReportOwnRequestOwner"
         - $ref: "#/components/parameters/ReportOwnStatus"
         - $ref: "#/components/parameters/ReportOwnColumns"
+        - $ref: "#/components/parameters/ReportOwnCategory"
+        - $ref: "#/components/parameters/ReportOwnStage"
+        - $ref: "#/components/parameters/ReportOwnRevenueBy"
+        - $ref: "#/components/parameters/ReportOwnPerformanceBy"
+        - $ref: "#/components/parameters/ReportOwnCostBy"
+        - $ref: "#/components/parameters/ReportOwnRoiBy"
       responses:
         "200":
           description: The file, named "SP&A One – <report> [– <widget>] – <year> – <date>".
@@ -8119,6 +8864,188 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  # Feature 049 Revenue and funnel-stage reports (wave B contract)
+  /api/v1/reports/revenue:
+    get:
+      tags:
+        - Reports
+      operationId: getRevenueReport
+      summary: Revenue against goal by period, as cards and a series, for the records in view (feature 049)
+      description: >-
+        Records match as the report frame matches them, in the person's reports.view scope (039). Actual is
+        046's counted facts; projected comes from 047's engine run per activity and summed (049-C3). ROI and
+        actual cost are always null with reason "Attribution is not configured yet" until feature 050 lands
+        (049-C6). Exported through exportReport with the widget keys cards, periods and ranked.
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/RevenueCategory"
+      responses:
+        "200":
+          description: The cards and the periods of the year.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevenueReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/revenue/ranked:
+    get:
+      tags:
+        - Reports
+      operationId: getRevenueRanked
+      summary: The records of the Show level ranked by revenue, each with its children, grouped and paged (feature 049)
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/RevenueCategory"
+        - $ref: "#/components/parameters/RevenueRankedSort"
+        - $ref: "#/components/parameters/RankedOrder"
+        - $ref: "#/components/parameters/RankedGroup"
+        - name: size
+          in: query
+          schema:
+            type: integer
+            enum: [10, 25, 50]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - $ref: "#/components/parameters/RankedSearch"
+        - $ref: "#/components/parameters/RankedDrill"
+      responses:
+        "200":
+          description: One page of top entries with their children, in groups.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevenueRanked"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/funnel:
+    get:
+      tags:
+        - Reports
+      operationId: getFunnelReport
+      summary: One funnel stage against goal by period, as cards and a series, for the records in view (feature 049)
+      description: >-
+        The stage selector lists every stage the models in view allow (049-C11); a plan whose model does
+        not allow the selected stage shows null with reason and is counted in uncoveredCount. Deals is not
+        selectable (049-C12).
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/RevenueCategory"
+        - $ref: "#/components/parameters/FunnelStage"
+      responses:
+        "200":
+          description: The cards and the periods of the year, for the selected stage.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FunnelReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/funnel/ranked:
+    get:
+      tags:
+        - Reports
+      operationId: getFunnelRanked
+      summary: The records of the Show level ranked by the selected stage, each with its children, grouped and paged (feature 049)
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/RevenueCategory"
+        - $ref: "#/components/parameters/FunnelStage"
+        - $ref: "#/components/parameters/FunnelRankedSort"
+        - $ref: "#/components/parameters/RankedOrder"
+        - $ref: "#/components/parameters/RankedGroup"
+        - name: size
+          in: query
+          schema:
+            type: integer
+            enum: [10, 25, 50]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - $ref: "#/components/parameters/RankedSearch"
+        - $ref: "#/components/parameters/RankedDrill"
+      responses:
+        "200":
+          description: One page of top entries with their children, in groups.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FunnelRanked"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
   # Feature 043 Plan details report (wave A contract)
   /api/v1/reports/plan-details:
     get:
@@ -8283,6 +9210,128 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/activities/{activityId}/media-codes:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listMediaCodes
+      summary: The activity's media codes; present only where its type requires them (046 FR-040)
+      responses:
+        "200":
+          description: The codes, and whether the type requires them at all.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCodeArea" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Performance data]
+      operationId: generateMediaCode
+      summary: Generate a code at any activity status (needs performance.link) (046 FR-041, FR-042)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MediaCodeInput" }
+      responses:
+        "201":
+          description: The code, system-numbered and never reused.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCode" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/media-codes/{codeId}:
+    parameters:
+      - $ref: "#/components/parameters/MediaCodeId"
+    patch:
+      tags: [Performance data]
+      operationId: editMediaCode
+      summary: Change a code's attributes and landing page only (needs performance.link) (046 FR-041)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MediaCodeInput" }
+      responses:
+        "200":
+          description: The code as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCode" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteMediaCode
+      summary: Delete a code while unused; once facts matched through it, Deactivate is offered (046 FR-041)
+      responses:
+        "204": { description: Deleted to the recycle bin. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/media-codes/{codeId}/deactivate:
+    parameters:
+      - $ref: "#/components/parameters/MediaCodeId"
+    post:
+      tags: [Performance data]
+      operationId: deactivateMediaCode
+      summary: Stop a code matching; its history stays (needs performance.link) (046 FR-041)
+      responses:
+        "200":
+          description: The code, inactive.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCode" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/configuration:
+    get:
+      tags: [Performance data]
+      operationId: getPerformanceConfiguration
+      summary: Which activity types require codes, the attribute catalogue and the next number (046 FR-039, 046-C12)
+      responses:
+        "200":
+          description: The configuration; its defaults before the first save.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceConfiguration" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        default: { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Performance data]
+      operationId: savePerformanceConfiguration
+      summary: Change the configuration (needs performance.import) (046 FR-039, FR-042)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceConfigurationInput" }
+      responses:
+        "200":
+          description: The configuration as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceConfiguration" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
   # Feature 041 Approvals report (wave A contract)
   /api/v1/reports/approvals:
     get:
@@ -8340,6 +9389,31 @@ components:
       name: mapp_session
       description: HttpOnly session cookie set by sign-in.
   parameters:
+    # Feature 046 Performance data
+    SourceId:
+      name: sourceId
+      in: path
+      required: true
+      description: A data source's readable ID, such as PS-1001.
+      schema: { type: string, pattern: "^PS-[0-9]+$" }
+    MediaCodeId:
+      name: codeId
+      in: path
+      required: true
+      description: A media code's readable ID, such as MC-1001.
+      schema: { type: string, pattern: "^MC-[0-9]+$" }
+    ReviewRowId:
+      name: rowId
+      in: path
+      required: true
+      description: A review row's readable ID, such as PRV-1001.
+      schema: { type: string, pattern: "^PRV-[0-9]+$" }
+    MappingId:
+      name: mappingId
+      in: path
+      required: true
+      description: A column mapping's readable ID, such as PSM-1001.
+      schema: { type: string, pattern: "^PSM-[0-9]+$" }
     # Feature 039 Measure foundation
     ReportKey:
       name: report
@@ -8422,6 +9496,48 @@ components:
       schema:
         type: string
         maxLength: 200
+    ReportOwnCategory:
+      name: category
+      in: query
+      description: An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048).
+      schema:
+        type: string
+        maxLength: 40
+    ReportOwnStage:
+      name: stage
+      in: query
+      description: The funnel stage Funnel stages or Summary shows, which the report validates (049, 048).
+      schema:
+        type: string
+        enum: [inq, mql]
+    ReportOwnRevenueBy:
+      name: revenueBy
+      in: query
+      description: The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048).
+      schema:
+        type: string
+        maxLength: 40
+    ReportOwnPerformanceBy:
+      name: performanceBy
+      in: query
+      description: The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048).
+      schema:
+        type: string
+        maxLength: 40
+    ReportOwnCostBy:
+      name: costBy
+      in: query
+      description: The Summary report's Actual cost league segment, a Shell attribute ID, which the report validates (048).
+      schema:
+        type: string
+        maxLength: 40
+    ReportOwnRoiBy:
+      name: roiBy
+      in: query
+      description: The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048).
+      schema:
+        type: string
+        maxLength: 40
     RankedSort:
       name: sort
       in: query
@@ -8454,6 +9570,36 @@ components:
       schema:
         type: string
         pattern: ^[A-Z]+-[0-9]+$
+    RevenueCategory:
+      name: category
+      in: query
+      description: >-
+        An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the
+        cards, the periods and the ranked list.
+      schema:
+        type: string
+        pattern: ^(CAT-[0-9]+|uncategorised)$
+    FunnelStage:
+      name: stage
+      in: query
+      description: >-
+        The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is
+        not selectable (049-C12).
+      schema:
+        type: string
+        enum: [inq, mql]
+    RevenueRankedSort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [actualRevenue, projectedRevenue]
+    FunnelRankedSort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [actual, projected]
     ReportViewId:
       name: viewId
       in: path
@@ -8715,7 +9861,7 @@ components:
       description: Free text over the grid's text columns.
       schema:
         type: string
-        maxLength: 200
+        maxLength: 100
     ApprovalsSort:
       name: sort
       in: query
@@ -8899,6 +10045,13 @@ components:
       schema:
         type: string
       example: AT-1001
+    ActivityCategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: CAT-1001
     AttributeId:
       name: attributeId
       in: path
@@ -9635,6 +10788,551 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
   schemas:
+    # Feature 046 Performance data
+    PerformanceCategory:
+      type: string
+      description: The kind of system a data source is, which decides what it can supply (FA §E7.2).
+      enum: [webAnalytics, marketingAutomation, crm, leadProgression]
+    PerformanceDeliveryRoute:
+      type: string
+      description: How rows arrive — a file someone uploads, or a pull from the simulated feed (ADR-0020).
+      enum: [upload, simulated]
+    PerformanceCadence:
+      type: string
+      description: How often the source is expected to deliver; it decides when freshness reads Stale.
+      enum: [daily, weekly, monthly, onDemand]
+    PerformanceFreshness:
+      type: string
+      description: >-
+        Derived from the last load and the cadence, never stored. Inactive when the source is deactivated,
+        Stale when nothing has loaded within one extra cadence period, Failed when the last load failed.
+      enum: [current, stale, failed, inactive]
+    ColumnMeaning:
+      type: string
+      description: What one column of a source's file means (client 020 FR-006).
+      enum: [key, reference, factDate, stage, revenue, currency, webMetric, journey]
+    WebMetric:
+      type: string
+      description: The web-analytics vocabulary — counts by month, never money (clarification 046-C11).
+      enum: [sessions, visits, engagementTouches]
+    PerformanceSource:
+      type: object
+      description: Where performance data comes from (Settings › Performance data).
+      required: [id, name, description, ownerId, category, status, deliveryRoute, cadence, integrationId,
+                 freshness, factCount, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        ownerId: { type: string }
+        category: { $ref: "#/components/schemas/PerformanceCategory" }
+        status: { type: string, enum: [active, inactive] }
+        deliveryRoute: { $ref: "#/components/schemas/PerformanceDeliveryRoute" }
+        cadence: { $ref: "#/components/schemas/PerformanceCadence" }
+        integrationId: { type: string, description: "The source's own identifier, empty when it has none." }
+        freshness: { $ref: "#/components/schemas/PerformanceFreshness" }
+        lastLoadedAt:
+          type: [string, "null"]
+          format: date-time
+          description: Null when nothing has ever loaded, which is every newly created source.
+        dataThrough:
+          type: [string, "null"]
+          format: date
+          description: The date the source's data runs through; null until something loads.
+        factCount: { type: integer, description: "How many facts this source holds; it may not be deleted while above zero." }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceSourceInput:
+      type: object
+      required: [name, ownerId, category, deliveryRoute, cadence]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: string, maxLength: 2000 }
+        ownerId: { type: string }
+        category: { $ref: "#/components/schemas/PerformanceCategory" }
+        deliveryRoute: { $ref: "#/components/schemas/PerformanceDeliveryRoute" }
+        cadence: { $ref: "#/components/schemas/PerformanceCadence" }
+        integrationId: { type: string, maxLength: 200 }
+        version:
+          type: integer
+          description: The version the editor read; a save against an older one is refused (409 version_conflict).
+    PerformanceSourceList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceSource" }
+    PerformanceUpload:
+      type: object
+      additionalProperties: false
+      required: [fileName, content]
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+          maxLength: 260
+          example: eloqua_2026-10.csv
+        content:
+          type: string
+          contentEncoding: base64
+          description: The file, base64 (at most 2 MB before encoding).
+    PerformanceCounts:
+      type: object
+      description: The five outcomes of a load; they add up to rows read (046-C3).
+      required: [read, matched, held, unattributed, rejected, unmatched]
+      properties:
+        read: { type: integer }
+        matched: { type: integer }
+        held: { type: integer }
+        unattributed: { type: integer }
+        rejected: { type: integer }
+        unmatched: { type: integer }
+    PerformanceBreakdownGroup:
+      type: object
+      description: The five counts again for one measure; a row carrying two measures counts in both (046-C18).
+      required: [stage, webMetric, counts]
+      properties:
+        stage: { type: string }
+        webMetric: { type: string }
+        counts: { $ref: "#/components/schemas/PerformanceCounts" }
+    PerformanceImport:
+      type: object
+      description: One load of performance data. Never editable; undo is the only way back (FR-016).
+      required: [id, sourceId, fileName, origin, status, dataThrough, counts, breakdown, version,
+                 createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        sourceId: { type: string }
+        fileName: { type: string }
+        origin: { type: string, enum: [upload, simulated] }
+        status: { type: string, enum: [completed, failed, undone] }
+        dataThrough:
+          type: [string, "null"]
+          format: date
+        counts: { $ref: "#/components/schemas/PerformanceCounts" }
+        breakdown:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceBreakdownGroup" }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceImportList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceImport" }
+    ExternalNameAlias:
+      type: object
+      description: A superseded external name, kept so the outside world's old exports still match (FR-034).
+      required: [id, activityId, name, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        activityId: { type: string }
+        name: { type: string }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    ExternalNameAliasList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ExternalNameAlias" }
+    IntegrationId:
+      type: object
+      description: One outside system's own id for an activity; at most one per source (FR-037).
+      required: [id, activityId, sourceId, value, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        activityId: { type: string }
+        sourceId: { type: string }
+        value: { type: string }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    IntegrationIdList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/IntegrationId" }
+    IntegrationIdInput:
+      type: object
+      additionalProperties: false
+      required: [value]
+      properties:
+        value: { type: string, minLength: 1, maxLength: 120 }
+    SourceOfFacts:
+      type: object
+      required: [sourceId, sourceName, integrationId, factCount, lastFactDate]
+      properties:
+        sourceId: { type: string }
+        sourceName: { type: string }
+        integrationId: { type: string, description: "Empty when the source has no key for this activity." }
+        factCount: { type: integer }
+        lastFactDate: { type: string, description: "Empty until the source has delivered a fact." }
+    DataSourcesArea:
+      type: object
+      description: The activity's Performance - Data sources section (FR-031).
+      required: [externalName, aliases, mediaCodeCount, integrated, goalEntered, sources]
+      properties:
+        externalName: { type: string }
+        aliases:
+          type: array
+          items: { $ref: "#/components/schemas/ExternalNameAlias" }
+        mediaCodeCount: { type: integer }
+        integrated: { type: boolean }
+        goalEntered: { type: boolean }
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/SourceOfFacts" }
+    ReviewFault:
+      type: object
+      required: [column, code, message]
+      properties:
+        column: { type: string }
+        code: { type: string }
+        message: { type: string }
+    ReviewRow:
+      type: object
+      description: One row a person must fix; never created by hand (FR-023).
+      required: [id, importId, sourceId, sourceName, raw, reason, faults, candidates, status, comment,
+                 version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        importId: { type: string }
+        sourceId: { type: string }
+        sourceName: { type: string }
+        raw:
+          type: object
+          additionalProperties: { type: string }
+          description: The row exactly as the file carried it.
+        reason: { type: string, description: "The headline the queue is findable by (FR-023)." }
+        faults:
+          type: array
+          items: { $ref: "#/components/schemas/ReviewFault" }
+        candidates:
+          type: array
+          items: { type: string }
+          description: The activities named when keys disagree, filtered to the reader's scope (046-C15).
+        status: { type: string, enum: [open, resolved, dismissed] }
+        comment: { type: string }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    ReviewRowList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ReviewRow" }
+    DismissInput:
+      type: object
+      additionalProperties: false
+      required: [comment]
+      properties:
+        comment: { type: string, minLength: 1, maxLength: 500 }
+    CorrectInput:
+      type: object
+      additionalProperties: false
+      properties:
+        date: { type: [string, "null"] }
+        currency: { type: [string, "null"] }
+        keys:
+          type: [object, "null"]
+          additionalProperties: false
+          properties:
+            activityId: { type: string }
+            mediaCode: { type: string }
+            integrationId: { type: string }
+            externalName: { type: string }
+        values:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [column, value]
+            properties:
+              column: { type: string }
+              value: { type: string }
+    PerformanceFact:
+      type: object
+      description: One figure a source delivered, matched to this activity (FR-030).
+      required: [id, sourceId, sourceName, importId, sourceReference, factDate, stage, webMetric,
+                 count, amount, held, matchedOn, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        sourceId: { type: string }
+        sourceName: { type: string }
+        importId: { type: string, description: "The originating upload." }
+        sourceReference: { type: string }
+        factDate: { type: string, format: date }
+        stage: { type: string }
+        webMetric: { type: string }
+        count: { type: [integer, "null"] }
+        amount:
+          oneOf:
+            - { $ref: "#/components/schemas/Money" }
+            - { type: "null" }
+        held: { type: boolean }
+        matchedOn: { type: string, enum: ["", activityId, mediaCode, integrationId, externalName] }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceFactList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceFact" }
+    SplitMonth:
+      type: object
+      description: One month split at today (047 FR-010); the month in progress carries both figures.
+      required: [month, actual, projected, inProgress]
+      properties:
+        month: { type: string, example: "2026-02" }
+        actual: { type: [integer, "null"] }
+        projected: { type: [integer, "null"] }
+        inProgress: { type: boolean }
+    SplitMoneyMonth:
+      type: object
+      required: [month, actual, projected, inProgress]
+      properties:
+        month: { type: string, example: "2026-02" }
+        actual:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        inProgress: { type: boolean }
+    ProjectionStamp:
+      type: object
+      description: The model behind the projected figures and when its parameters last changed (047 FR-012).
+      required: [modelName, modelChangedAt]
+      properties:
+        modelName: { type: string }
+        modelChangedAt: { type: string, format: date-time }
+    StageFigure:
+      type: object
+      required: [stage, goal, actual, projected, conversion, reason, projectedReason, months]
+      properties:
+        stage: { type: string, enum: [inq, mql] }
+        goal: { type: [integer, "null"] }
+        actual: { type: [integer, "null"] }
+        projected:
+          type: [integer, "null"]
+          description: >-
+            The plan-year figure: actual to the end of the last whole month before today plus projected
+            from today, so a closed year equals the actual (047 FR-010). Null with projectedReason when
+            nothing projects. Never add this to actual — they overlap.
+        conversion:
+          type: [number, "null"]
+          description: Actual over the previous stage's actual, one decimal; null where it cannot be worked out.
+        reason: { type: string, enum: ["", noSource, noGoal, failed, stale, noData] }
+        projectedReason:
+          type: string
+          enum: ["", noGoal]
+          description: Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013).
+        months:
+          type: array
+          items: { $ref: "#/components/schemas/SplitMonth" }
+    RevenueFigure:
+      type: object
+      required: [goal, actual, projected, excludedCount, reason, projectedReason, months]
+      properties:
+        goal:
+          oneOf:
+            - { $ref: "#/components/schemas/Money" }
+            - { type: "null" }
+        actual:
+          oneOf:
+            - { $ref: "#/components/schemas/Money" }
+            - { type: "null" }
+          description: One USD total at the current rate (046-C7).
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+          description: >-
+            The plan-year figure, as StageFigure.projected, with the deals from today priced at the
+            model's average deal size (047 FR-007, FR-010).
+        excludedCount: { type: integer, description: "Facts left out because their currency has no rate (SC-010)." }
+        reason: { type: string, enum: ["", notApproved, noSource, noGoal, failed, stale, noData] }
+        projectedReason: { type: string, enum: ["", noGoal] }
+        months:
+          type: array
+          items: { $ref: "#/components/schemas/SplitMoneyMonth" }
+    MetricFigure:
+      type: object
+      required: [metric, months]
+      properties:
+        metric: { type: string, enum: [sessions, visits, engagementTouches] }
+        months:
+          type: array
+          items:
+            type: object
+            required: [month, value]
+            properties:
+              month: { type: string, example: "2026-02" }
+              value: { type: integer }
+    PanelSource:
+      type: object
+      required: [sourceId, sourceName, freshness, dataThrough]
+      properties:
+        sourceId: { type: string }
+        sourceName: { type: string }
+        freshness: { $ref: "#/components/schemas/PerformanceFreshness" }
+        dataThrough: { type: [string, "null"], format: date }
+    PerformancePanel:
+      type: object
+      description: The activity's Performance area (FR-029); gated until the activity counts as approved.
+      required: [state, stages, revenue, webMetrics, sources, projection]
+      properties:
+        state: { type: string, enum: [ok, notApproved] }
+        stages:
+          type: array
+          items: { $ref: "#/components/schemas/StageFigure" }
+        revenue: { $ref: "#/components/schemas/RevenueFigure" }
+        webMetrics:
+          type: array
+          items: { $ref: "#/components/schemas/MetricFigure" }
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/PanelSource" }
+        projection:
+          oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
+    CodeAttribute:
+      type: object
+      required: [name, required]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        required: { type: boolean }
+    MediaCode:
+      type: object
+      description: A system-generated campaign-link code; its number is never reused (FR-042).
+      required: [id, code, activityId, attributes, landingPage, status,
+                 version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        code: { type: integer, format: int64 }
+        activityId: { type: string }
+        attributes:
+          type: object
+          additionalProperties: { type: string }
+        landingPage: { type: string }
+        status: { type: string, enum: [active, inactive] }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    MediaCodeArea:
+      type: object
+      required: [requiresCodes, items]
+      properties:
+        requiresCodes:
+          type: boolean
+          description: Stated by the API (FR-040); the web app hides the section when false.
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/MediaCode" }
+    MediaCodeInput:
+      type: object
+      additionalProperties: false
+      properties:
+        attributes:
+          type: object
+          additionalProperties: { type: string }
+        landingPage: { type: string, maxLength: 2000 }
+        version: { type: integer }
+    PerformanceConfiguration:
+      type: object
+      description: Settings - Performance data's one record (046-C12), never on the activity type.
+      required: [activityTypeIds, codeAttributes, mediaCodeNext, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        activityTypeIds:
+          type: array
+          items: { type: string }
+        codeAttributes:
+          type: array
+          items: { $ref: "#/components/schemas/CodeAttribute" }
+        mediaCodeNext: { type: integer, format: int64 }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceConfigurationInput:
+      type: object
+      additionalProperties: false
+      required: [activityTypeIds, codeAttributes, mediaCodeNext, version]
+      properties:
+        activityTypeIds:
+          type: array
+          items: { type: string }
+        codeAttributes:
+          type: array
+          items: { $ref: "#/components/schemas/CodeAttribute" }
+        mediaCodeNext: { type: integer, format: int64, minimum: 1 }
+        version: { type: integer }
+    MatchKeyType:
+      type: string
+      description: Which matching key a key column carries (046-C23); empty on every other column.
+      enum: ["", activityId, mediaCode, integrationId, externalName]
+    ColumnMapping:
+      type: object
+      description: What one column of a source's file means. A change affects future loads only.
+      required: [id, sourceId, columnName, meaning, keyType, stage, webMetric, modelId, version,
+                 createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        sourceId: { type: string }
+        columnName: { type: string }
+        meaning: { $ref: "#/components/schemas/ColumnMeaning" }
+        keyType: { $ref: "#/components/schemas/MatchKeyType" }
+        stage: { type: string, description: "Set only on a stage column." }
+        webMetric: { type: string, description: "Set only on a web-metric column." }
+        modelId: { type: string, description: "Set only on a stage or revenue column, which a model supplies." }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    ColumnMappingInput:
+      type: object
+      required: [columnName, meaning]
+      properties:
+        columnName: { type: string, minLength: 1, maxLength: 120 }
+        meaning: { $ref: "#/components/schemas/ColumnMeaning" }
+        keyType: { $ref: "#/components/schemas/MatchKeyType" }
+        stage: { type: string }
+        webMetric: { $ref: "#/components/schemas/WebMetric" }
+        modelId: { type: string }
+        version: { type: integer }
+    ColumnMappingList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ColumnMapping" }
     # Feature 039 Measure foundation
     ReportKey:
       type: string
@@ -10228,6 +11926,254 @@ components:
                   $ref: "#/components/schemas/RankedEntry"
         drillLost:
           type: boolean
+    # Feature 049 Revenue and funnel-stage reports (wave B contract)
+    RevenueCardFigure:
+      type: object
+      description: A revenue card figure; null with reason when it cannot be worked out (FR-009).
+      required: [value, reason]
+      properties:
+        value:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+    RevenueCards:
+      type: object
+      required: [goal, actual, projected, performance]
+      properties:
+        goal: { $ref: "#/components/schemas/RevenueCardFigure" }
+        actual: { $ref: "#/components/schemas/RevenueCardFigure" }
+        projected: { $ref: "#/components/schemas/RevenueCardFigure" }
+        performance:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [number, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+    RevenuePeriod:
+      type: object
+      description: One period of the series, split at today (047 FR-010); the period in progress carries both.
+      required: [key, state, actual, projected, goal, inProgress]
+      properties:
+        key: { type: string, example: "2026-03" }
+        state: { type: string, enum: [actual, inProgress, planned] }
+        actual:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        goal:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        inProgress: { type: boolean }
+    RevenueReport:
+      type: object
+      additionalProperties: false
+      required: [cards, period, periods, projection, reason]
+      properties:
+        cards: { $ref: "#/components/schemas/RevenueCards" }
+        period: { type: string, enum: [month, quarter] }
+        periods:
+          type: array
+          items: { $ref: "#/components/schemas/RevenuePeriod" }
+        projection:
+          oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
+        reason:
+          type: string
+          description: Why the report is empty, never an empty grid alone (049-C20).
+          enum: ["", noGoal, notApproved, noData, noModel]
+    RevenueFigures:
+      type: object
+      additionalProperties: false
+      required: [goal, actual, projected, performance, actualCost, roi, actualCostReason, roiReason]
+      properties:
+        goal:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        actual:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        performance: { type: [number, "null"] }
+        actualCost:
+          description: Always null until feature 050 configures attribution (049-C6).
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        roi:
+          description: Always null until feature 050 configures attribution (049-C6).
+          type: [number, "null"]
+        actualCostReason: { type: string, enum: ["", attributionNotConfigured] }
+        roiReason: { type: string, enum: ["", attributionNotConfigured] }
+    RevenueEntry:
+      type: object
+      additionalProperties: false
+      required: [id, level, name, planId, figures]
+      properties:
+        id: { type: string }
+        level: { type: string, enum: [plan, campaign, initiative, activity] }
+        name: { type: string }
+        planId: { type: string }
+        figures: { $ref: "#/components/schemas/RevenueFigures" }
+        children:
+          type: array
+          items: { $ref: "#/components/schemas/RevenueEntry" }
+    RevenueRanked:
+      type: object
+      additionalProperties: false
+      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      properties:
+        level: { type: string, enum: [plan, campaign, initiative, activity] }
+        sort: { type: string, enum: [actualRevenue, projectedRevenue] }
+        order: { type: string, enum: [desc, asc] }
+        group: { type: string }
+        page: { type: integer }
+        size: { type: integer }
+        total: { type: integer }
+        trail:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, level, name]
+            properties:
+              id: { type: string }
+              level: { type: string }
+              name: { type: string }
+        groups:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [key, label, totals, entries]
+            properties:
+              key: { type: string }
+              label: { type: string }
+              totals: { $ref: "#/components/schemas/RevenueFigures" }
+              entries:
+                type: array
+                items: { $ref: "#/components/schemas/RevenueEntry" }
+        drillLost: { type: boolean }
+    FunnelCards:
+      type: object
+      required: [goal, actual, projected, performance, conversion]
+      properties:
+        goal:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [integer, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+        actual:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [integer, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+        projected:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [integer, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+        performance:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [number, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+        conversion:
+          description: The selected stage's actual over the previous stage's actual (049-C13).
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [number, "null"] }
+            reason: { type: string, enum: ["", noPreviousStage] }
+    FunnelPeriod:
+      type: object
+      required: [key, state, actual, projected, goal, inProgress]
+      properties:
+        key: { type: string, example: "2026-03" }
+        state: { type: string, enum: [actual, inProgress, planned] }
+        actual: { type: [integer, "null"] }
+        projected: { type: [integer, "null"] }
+        goal: { type: [integer, "null"] }
+        inProgress: { type: boolean }
+    FunnelReport:
+      type: object
+      additionalProperties: false
+      required: [stage, availableStages, uncoveredCount, cards, period, periods, projection, reason]
+      properties:
+        stage: { type: string, enum: [inq, mql] }
+        availableStages:
+          type: array
+          description: Every stage any model in view allows, in funnel order (049-C11).
+          items: { type: string, enum: [inq, mql] }
+        uncoveredCount:
+          type: integer
+          description: Plans whose model does not allow the selected stage (049-C11, FR-018).
+        cards: { $ref: "#/components/schemas/FunnelCards" }
+        period: { type: string, enum: [month, quarter] }
+        periods:
+          type: array
+          items: { $ref: "#/components/schemas/FunnelPeriod" }
+        projection:
+          oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
+        reason:
+          type: string
+          enum: ["", noGoal, notApproved, noData, noModel]
+    FunnelFigures:
+      type: object
+      additionalProperties: false
+      required: [goal, actual, projected, performance, conversion]
+      properties:
+        goal: { type: [integer, "null"] }
+        actual: { type: [integer, "null"] }
+        projected: { type: [integer, "null"] }
+        performance: { type: [number, "null"] }
+        conversion: { type: [number, "null"] }
+    FunnelEntry:
+      type: object
+      additionalProperties: false
+      required: [id, level, name, planId, figures]
+      properties:
+        id: { type: string }
+        level: { type: string, enum: [plan, campaign, initiative, activity] }
+        name: { type: string }
+        planId: { type: string }
+        figures: { $ref: "#/components/schemas/FunnelFigures" }
+        children:
+          type: array
+          items: { $ref: "#/components/schemas/FunnelEntry" }
+    FunnelRanked:
+      type: object
+      additionalProperties: false
+      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      properties:
+        level: { type: string, enum: [plan, campaign, initiative, activity] }
+        sort: { type: string, enum: [actual, projected] }
+        order: { type: string, enum: [desc, asc] }
+        group: { type: string }
+        page: { type: integer }
+        size: { type: integer }
+        total: { type: integer }
+        trail:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, level, name]
+            properties:
+              id: { type: string }
+              level: { type: string }
+              name: { type: string }
+        groups:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [key, label, totals, entries]
+            properties:
+              key: { type: string }
+              label: { type: string }
+              totals: { $ref: "#/components/schemas/FunnelFigures" }
+              entries:
+                type: array
+                items: { $ref: "#/components/schemas/FunnelEntry" }
+        drillLost: { type: boolean }
     # Feature 043 Plan details report
     PlanDetailsLevel:
       type: string
@@ -12881,7 +14827,9 @@ components:
             - dependentAttribute
             - condition
             - linkedOption
-          description: What uses the record (the purchase request levels since 032).
+            - activityType
+            - activityCategory
+          description: What uses the record (the purchase request levels since 032, activity types and categories since 047).
         text:
           type: string
           description: The part as people read it, for example Used by 12 activities (1 in the recycle bin).
@@ -13017,6 +14965,9 @@ components:
         - mqlToDealRate
         - averageDealSize
         - activityTypes
+        - inqToMqlVelocityMonths
+        - mqlToDealVelocityMonths
+        - allowedGoalStages
         - active
         - usage
         - version
@@ -13042,6 +14993,20 @@ components:
           description: The allowed activity types, sorted by name.
           items:
             $ref: "#/components/schemas/SettingRef"
+        inqToMqlVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+          description: Whole months a conversion takes (047-C1).
+        mqlToDealVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+        allowedGoalStages:
+          type: array
+          minItems: 1
+          description: The stages a goal may be set against, in funnel order (047-C2).
+          items: { type: string, enum: [inq, mql, revenue] }
         active:
           type: boolean
         usage:
@@ -13100,6 +15065,20 @@ components:
           type: array
           items:
             type: string
+        inqToMqlVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+          description: Whole months; 0 when left out (047-C2).
+        mqlToDealVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+        allowedGoalStages:
+          type: array
+          minItems: 1
+          description: Every stage when left out (047-C2).
+          items: { type: string, enum: [inq, mql, revenue] }
     ModelUpdate:
       type: object
       additionalProperties: false
@@ -13113,6 +15092,18 @@ components:
           type: string
         mqlToDealRate:
           type: string
+        inqToMqlVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+        mqlToDealVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+        allowedGoalStages:
+          type: array
+          minItems: 1
+          items: { type: string, enum: [inq, mql, revenue] }
         averageDealSize:
           oneOf:
             - $ref: "#/components/schemas/MoneyInput"
@@ -13123,6 +15114,106 @@ components:
             type: string
         version:
           type: integer
+    ActivityCategory:
+      type: object
+      additionalProperties: false
+      description: A group of activity types; a type belongs to at most one category (047-C7).
+      required:
+        - id
+        - name
+        - isDefault
+        - activityTypes
+        - active
+        - usage
+        - version
+        - createdAt
+        - createdBy
+        - updatedAt
+        - updatedBy
+      properties:
+        id:
+          type: string
+          example: CAT-1001
+        name:
+          type: string
+          example: Digital
+        isDefault:
+          type: boolean
+          description: At most one category is the default the reports open on.
+        activityTypes:
+          type: array
+          description: The activity types in this category, sorted by name.
+          items:
+            $ref: "#/components/schemas/SettingRef"
+        active:
+          type: boolean
+        usage:
+          $ref: "#/components/schemas/Usage"
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/ActorRef"
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          $ref: "#/components/schemas/ActorRef"
+    ActivityCategoryPage:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityCategory"
+        total:
+          type: integer
+    ActivityCategoryCreate:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - isDefault
+        - activityTypeIds
+      properties:
+        name:
+          type: string
+        isDefault:
+          type: boolean
+          description: True takes the default away from the category that had it.
+        activityTypeIds:
+          type: array
+          description: The activity types to put in the new category; each leaves the category it was in.
+          items:
+            type: string
+    ActivityCategoryUpdate:
+      type: object
+      additionalProperties: false
+      description: >-
+        Only the fields to change, and the version. activityTypeIds is the complete new list of activity types in
+        the category: a type listed here leaves the category it was in, one left out becomes Uncategorised.
+      required:
+        - version
+      properties:
+        name:
+          type: string
+        isDefault:
+          type: boolean
+        activityTypeIds:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
+        version:
+          type: integer
     ActivityType:
       type: object
       additionalProperties: false
@@ -13131,6 +15222,7 @@ components:
         - name
         - defaultPlannedCost
         - models
+        - category
         - active
         - usage
         - version
@@ -13155,6 +15247,11 @@ components:
           description: The models that allow this type, sorted by name.
           items:
             $ref: "#/components/schemas/SettingRef"
+        category:
+          description: The activity category grouping this type; null when it is uncategorised (047 FR-022).
+          oneOf:
+            - $ref: "#/components/schemas/SettingRef"
+            - type: "null"
         active:
           type: boolean
         usage:
@@ -22063,6 +24160,8 @@ components:
         - finance.view
         - finance.link
         - finance.import
+        - performance.import
+        - performance.link
         - purchaseRequests.edit
         - purchaseRequests.delete
         - purchaseRequests.submit
