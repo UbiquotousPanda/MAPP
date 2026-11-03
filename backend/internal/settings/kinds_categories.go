@@ -3,7 +3,9 @@ package settings
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"slices"
+	"strings"
 
 	"mapp/internal/history"
 )
@@ -11,6 +13,7 @@ import (
 const (
 	defaultReleasedNote = "No longer the default because another category is now the default."
 	typesGoneNote       = "Activity types deleted since are no longer in it."
+	takenBackNote       = "Took back %s from '%s'."
 )
 
 const (
@@ -96,5 +99,26 @@ func (s *Service) settleRestoredCategory(ctx context.Context, c *ActivityCategor
 		notes = append(notes, typesGoneNote)
 		c.ActivityTypeIDs = kept
 	}
-	return notes, nil
+	return append(notes, takenBackNotes(*c, categories, types)...), nil
+}
+
+// takenBackNotes names the types c takes back from the categories that hold them now: the assignment is keyed by
+// the type, so restoring c moves them.
+func takenBackNotes(c ActivityCategory, categories []ActivityCategory, types []ActivityType) []string {
+	var notes []string
+	for _, other := range categories {
+		if other.ID == c.ID {
+			continue
+		}
+		var names []string
+		for _, t := range types {
+			if slices.Contains(c.ActivityTypeIDs, t.ID) && slices.Contains(other.ActivityTypeIDs, t.ID) {
+				names = append(names, "'"+t.Name+"'")
+			}
+		}
+		if len(names) > 0 {
+			notes = append(notes, fmt.Sprintf(takenBackNote, strings.Join(names, ", "), other.Name))
+		}
+	}
+	return notes
 }
