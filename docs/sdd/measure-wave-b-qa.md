@@ -11,6 +11,13 @@ package (`projection_test.go`, `restated_test.go`, `categories_test.go`), all gr
 and one medium (Findings 5–7). No `TestWaveB_CategoriesSeeded_047_T062`: `seed/measure_categories_test.go` proves it
 through the same API on the same harness; `TestWaveB_CategoryRecords_047_FR018_FR022` adds the activity types' view.
 
+**049 part ran 2026-11-03 against `measure-module` 3df7cc7d** (#82, `ActivitySeries` #99, the reason enum #104 and the
+export's own parameters #105 merged; **#97, the web's Sort by (FR-006), still open**, so the Sort by checks wait):
+thirteen API checks in the same package (`report*_test.go`), all green on the demo fakes, one medium and six low
+findings (Findings 8–14). Summary (#106 open) and ROI with attribution (050 T007–T008) are not run. On the fakes the
+reports never see an uploaded fact (How to run): every report figure here is goal and projection, and the report half
+of `TestWaveB_HeldFactsCountNowhere_046_SC002` and cross-report checks 5 and 6 need PostgreSQL.
+
 The same pass as wave A (#46, PR #87 `qa/wave-a-pass`: `docs/sdd/measure-wave-a-qa.md`,
 `backend/internal/measure/waveaqa/qa_test.go`), now for Performance data, Projections, Summary, Revenue, Funnel stages
 and Attribution: every screen on the demo data **with the Measure demo plan** under the demo roles (every scope, no
@@ -22,8 +29,8 @@ financial access), findings raised as issues on the owning feature, critical and
 |---|---|---|
 | Performance data (046) | PR #62; integrator's `/settings/performance-data` web route (046 `contracts/api.md`:107) and the approvals call to 046's release port (note 2) | Open. Upload, imports, undo and review queue have no web yet (046 T052, T094) |
 | Projections (047) | PR #75 (stacked on #62); `/settings/activity-categories` web route (047 T056); category seed (047 T062, lane D) | Merged: #75 887311c8, T062 a23f382a; the route is in `settings-routes.tsx`:32, the T056 e2e still open |
-| Revenue, Funnel stages (049) | PR #82 (stacked on #75, retargeted); lane B's `ActivitySeries` follow-up with 048-C1's words (048-C10) | Open |
-| Summary (048) | 048 built (T001–T023 all open, no PR) after #82 and `ActivitySeries` | Spec, plan, contract, tasks only |
+| Revenue, Funnel stages (049) | PR #82 (stacked on #75, retargeted); lane B's `ActivitySeries` follow-up with 048-C1's words (048-C10) | Merged: #82 c6ca9913, `ActivitySeries` #99 4c1f93e0, #104, #105 (3df7cc7d); #97 (Sort by) open |
+| Summary (048) | 048 built (T001–T023 all open, no PR) after #82 and `ActivitySeries` | #106 open (2026-11-03) |
 | Attribution (050) | T001–T006 are on `measure-module` (Settings › Attribution, `RoiValue`); T007–T008 need #62 | Figures on 048/049 blocked (050-Q1) |
 | Any actual figure | Performance facts in the demo (046 T110; build guide §4.7) | None seeded: load them by hand (How to run) |
 | Automated checks | PR #87 (waveaqa, its helpers) | Open |
@@ -60,18 +67,22 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 
 | Test | Asserts | Endpoints | Source |
 |---|---|---|---|
-| `TestWaveB_ScopePerRole_FR003` | Each role's frame names only the plans above; ranked lists at `show=plan` name no other plan | `/reports/frame?report={summary,revenue,funnel}`, `/reports/{revenue,funnel}/ranked` | 039 FR-003, 049 FR-002, SC-004, 048 FR-003 |
-| `TestWaveB_CatalogueMatchesAccess_FR001` | Summary, Revenue, Funnel stages listed and available; each opens 200 for all seven | `/reports`, `/reports/{summary,revenue,funnel}?year=2026` | 039 FR-001, FR-003 |
+| `TestWaveB_ScopePerRole_FR003` | Each role's frame names only the plans above; ranked lists at `show=plan` name no other plan. 049: green, children and `show=activity` too; Daniel's reports reach Lubricants Europe alone (finding 4 is the activity read); the Measure plan's ID in Priya's address is dropped and counted (`leftOut` 1). Summary waits for 048 | `/reports/frame?report={summary,revenue,funnel}`, `/reports/{revenue,funnel}/ranked` | 039 FR-003, 049 FR-002, SC-004, 048 FR-003 |
+| `TestWaveB_CatalogueMatchesAccess_FR001` | Summary, Revenue, Funnel stages listed and available; each opens 200 for all seven. 049: green, the two ranked lists too; Summary is listed, not available, until #106 | `/reports`, `/reports/{summary,revenue,funnel}?year=2026` | 039 FR-001, FR-003 |
 | `TestWaveB_NoFinancialAccess_Summary_048_FR003` | Lea: cost and ROI league rows and totals null, `financeCovers` 0 of >0; revenue league and funnel not null | `/reports/summary`, `/reports/summary/league/{cost,roi,revenue}` | 048 FR-003, US2-5 |
-| `TestWaveB_NoFinancialAccess_Revenue_039_FR004` | Lea: ranked `actualCost` null; revenue cards' rule to confirm (open question 4) | `/reports/revenue`, `/reports/revenue/ranked` | 039 FR-004, 049 FR-013 |
-| `TestWaveB_ExportRights_FR022` | Alex 200, Lea 403 on every wave B export; the 046 part runs now (facts export: Alex's file holds Helix's five facts) | `/reports/{summary,revenue,funnel}/export`, `/activities/{id}/performance/facts/export` | 039 FR-022, 048 FR-003, 046 contract |
-| `TestWaveB_ExportsKeepOwnParams_FR022` | `category`, `stage=mql`, `revenueBy`, `sort=actualRevenue` each give 200 and a file different from the default | `/reports/{revenue,funnel}/export?widget=ranked`, `/reports/summary/export?widget=leagueRevenue` | 039 FR-022, 049 FR-019, 048 FR-004, FR-021 (open question 6) |
+| `TestWaveB_NoFinancialAccess_Revenue_039_FR004` | Lea: ranked `actualCost` null; revenue cards' rule to confirm (open question 4). Green: both frames say finance 0 of 3, every `actualCost` and `roi` null at every level; revenue is served to her in full, not asserted (open question 4) | `/reports/revenue`, `/reports/revenue/ranked` | 039 FR-004, 049 FR-013 |
+| `TestWaveB_ExportRights_FR022` | Alex 200, Lea 403 on every wave B export; the 046 part runs now (facts export: Alex's file holds Helix's five facts). 049's is `TestWaveB_ExportRights_049_FR022`: the six with `data.export` 200, Lea 403, workbook and widget CSV; sheets Cards, Periods, Ranked list, In view, About this export; named "SP&A One – Revenue – 2026 – 12 Mar 2026.xlsx", "… – Ranked list – ….csv". Summary waits for 048 | `/reports/{summary,revenue,funnel}/export`, `/activities/{id}/performance/facts/export` | 039 FR-022, 048 FR-003, 046 contract |
+| `TestWaveB_ExportsKeepOwnParams_FR022` | `category`, `stage=mql`, `revenueBy`, `sort=actualRevenue` each give 200 and a file different from the default. Green for Digital, `stage=mql`, `stage=mql` with Uncategorised, `sort=actualRevenue`, `sort=actual` (the API's sort; #97 is the web's menu): each file holds the report's own figure or first row. *About this export* names none of them (finding 14). `revenueBy` waits for 048 | `/reports/{revenue,funnel}/export?widget=ranked`, `/reports/summary/export?widget=leagueRevenue` | 039 FR-022, 049 FR-019, 048 FR-004, FR-021 (open question 6) |
 | `TestWaveB_SummaryEqualsRevenueAndFunnel_048_SC002` | Same filters and category: Summary revenue = Revenue cards; Summary stages = Funnel cards per `stage` | `/reports/summary`, `/reports/revenue`, `/reports/funnel?stage=` | 048 FR-008, SC-002, 048-C3 |
-| `TestWaveB_RankedTotalsEqualSeries_049_SC002` | Ungrouped top-level totals equal the series totals, both reports | `/reports/{revenue,funnel}{,/ranked}` | 049 SC-002 |
+| `TestWaveB_RankedTotalsEqualSeries_049_SC002` | Ungrouped top-level totals equal the series totals, both reports. Green: Revenue, INQ, MQL at all four Show levels, actual or projected and actual against the series, goal against the goal card; plan groups add to their entries. The series' goal against the card: finding 10, kept out | `/reports/{revenue,funnel}{,/ranked}` | 049 SC-002 |
 | `TestWaveB_LeagueTotalEqualsSection_048_SC003` | Revenue league Total = Summary revenue for every segment offered | `/reports/summary/league/revenue?segment=` | 048 SC-003, 048-C4 |
-| `TestWaveB_CategoriesLoseNothing_049_FR020` | Sum over each category + `uncategorised` = all categories, on all three reports | `?category=` | 049 FR-019, FR-020, 048-C8 (needs 047 T062) |
-| `TestWaveB_MissingIsNeverZero_FR009` | Without facts: actual null with a reason, conversion null, no 0 where a figure is missing | the three reports, `/activities/{id}/performance` | 049 FR-008, FR-009, 048 FR-017, 047 FR-013 |
-| `TestWaveB_RoiNotConfigured_049_FR013` | Every `actualCost`, `roi` null with "Attribution is not configured yet" until 050 T007; then model and basis | `/reports/revenue/ranked`, `/reports/summary/league/roi` | 049 FR-013, 048 FR-015, 050 FR-008 |
+| `TestWaveB_CategoriesLoseNothing_049_FR020` | Sum over each category + `uncategorised` = all categories, on all three reports. Green on Revenue and Funnel stages (INQ, MQL): cards and every month; each activity in exactly one, Fleet card launch (MOBILITY – Long-term contract) Uncategorised. Summary waits for 048 | `?category=` | 049 FR-019, FR-020, 048-C8 (needs 047 T062) |
+| `TestWaveB_MissingIsNeverZero_FR009` | Without facts: actual null with a reason, conversion null, no 0 where a figure is missing. Green for what holds: the Revenue list's actual null, the no-goal activities null in both lists, conversion null (`noPreviousStage`), 2025 `noData`; the cards', months' and Funnel list's actual 0: finding 8, kept out | the three reports, `/activities/{id}/performance` | 049 FR-008, FR-009, 048 FR-017, 047 FR-013 |
+| `TestWaveB_RoiNotConfigured_049_FR013` | Every `actualCost`, `roi` null with "Attribution is not configured yet" until 050 T007; then model and basis. The base (050 T001–T006): green, null with `attributionNotConfigured` at every level, ungrouped, by plan, by owner, and "—" in the export, though `/settings/attribution` answers Equally distributed. A category's empty records have no reason: finding 11 | `/reports/revenue/ranked`, `/reports/summary/league/roi` | 049 FR-013, 048 FR-015, 050 FR-008 |
+| `TestWaveB_SeriesSplitAtToday_049_FR003_FR004` | Twelve months split at 12 March (January–February actual, nothing projected; March in progress; April on projected only), the actual or projected card = the series; four quarters, Q1 in progress, each its months' sum, the cards unchanged. Green, Revenue and both stages | `/reports/{revenue,funnel}?period=` | 049 FR-003, FR-004, 049-C4 |
+| `TestWaveB_FunnelStageSelector_049_FR015` | `availableStages` INQ, MQL; opens on INQ, `stage=mql` shows MQL; no plan uncovered (both demo models allow both). Green | `/reports/funnel?stage=` | 049 FR-015, FR-018, 049-C11, 049-C12 |
+| `TestWaveB_ProjectionNamesItsModel_049_FR022` | Mobility China names Mobility 1.0, the Measure plan Lubricants 1.0, each with the model's `updatedAt`; Alex's velocity save an hour later moves both reports' stamp. Green; a view of both models names one (finding 13) | `/reports/{revenue,funnel}`, `/models/{modelId}` | 049 FR-022, SC-006, 047 FR-012 |
+| `TestWaveB_ViewsKeepOwnParams_049_FR019` | A Revenue view keeps `category`, `group`, `sort`; a Funnel view `category=uncategorised`, `sort`, `stage=mql`; both listed as saved. Green | `/reports/{revenue,funnel}/views` | 049 FR-019, 049-C10, US3-3 |
 | `TestWaveB_ProjectionShape_047_FR008_FR010` | Helix … first half (with `loadFacts`), second half, Tellus webinar series: twelve months of 2026, none negative, January–February actual only, April on projected only, March both; `projected` = actual to February + projected from March (3,458 = 700 + 2,758 on Helix … first half INQ); stamp Lubricants 1.0 with the model's `updatedAt`; goal stages the model allows. Retargeting test, Tellus case studies `noGoal`, no months, no stamp; Fleet expo gated. Months without a source say 0 (finding 6), kept out | `/activities/{id}/performance`, `/models/{modelId}` | 047 FR-008, FR-010, FR-012, FR-013, SC-005 |
 | `TestWaveB_ProjectionsRestated_047_SC002` | Two reads, and one an hour later the same day, byte for byte the same; Alex's velocity 1 and 2 shifts Helix … second half's MQL one month and revenue three, drops what lands after December and moves the stamp; Helix … first half (typed) unmoved | `/activities/{id}/performance`, `PATCH /models/{modelId}` | 047 FR-008, FR-009, FR-011, FR-012, SC-002 |
 | `TestWaveB_StagesProjectTheirGoals_047_FR007_FR009` | Tellus webinar series' months add to its typed 1,500 INQ, 300 MQL, 120,000.00 USD; Helix … second half's INQ months to 4,000, each MQL month 2 % of its INQ, half-up. Revenue against the goal: finding 7, not asserted | `/activities/{id}/performance` | 047 FR-006, FR-007, FR-009, SC-003 |
@@ -81,7 +92,7 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | `TestWaveB_PerformanceRights_046_FR043` | Every change answers 403 to the six demo roles but Alex, who can make each in turn (delete of a source with facts 409, upload to a deactivated one 409); sources, mappings, template, configuration 200 for all seven | `/performance/...`, `/activities/{id}/integration-ids/{sourceId}`, `/activities/{id}/media-codes`, `/media-codes/{id}` | 046 FR-002, FR-004, FR-043, contract |
 | `TestWaveB_UndoNeedsSettingsManage_046_FR043` | Mei with a custom role (`plans.view`, `performance.import`) loads and reads her load; undo of hers or Alex's 403, integration ID 403 | uploads, `/performance/imports/{id}{,/undo}`, `/roles`, `/people/{id}/roles` | 046 FR-043, 046-C16, open question 8 |
 | `TestWaveB_LoadReconciles_046_SC001` | One row in each of the five outcomes, adding to rows read, again under INQ and in the stored summary; same file again changes no figure; a repeated reference replaces; each undo restores the figure before it and the loads stay listed *Undone* | `POST /performance/sources/{id}/uploads`, `/performance/imports/{id}{,/undo}`, `/activities/{id}/performance` (`/reports/revenue` after 049) | 046 FR-013, FR-017, FR-022, SC-001, SC-004 |
-| `TestWaveB_HeldFactsCountNowhere_046_SC002` | Fleet expo (Submitted), Workshop roadshow (Declined), Dealer summit (Created) rows held, listed as held, their panels gated with no figure; Helix's actual only its own; Daniel's approval releases Fleet expo's. The report half waits for 049 | upload, `/activities/{id}/performance{,/facts}`, `/activities/{id}/approval/approve`; `/reports/funnel` after 049 | 046 FR-020, FR-027, FR-028, SC-002, 049 FR-021 |
+| `TestWaveB_HeldFactsCountNowhere_046_SC002` | Fleet expo (Submitted), Workshop roadshow (Declined), Dealer summit (Created) rows held, listed as held, their panels gated with no figure; Helix's actual only its own; Daniel's approval releases Fleet expo's. The report half needs PostgreSQL: on the fakes no report reads an uploaded fact (How to run) | upload, `/activities/{id}/performance{,/facts}`, `/activities/{id}/approval/approve`; `/reports/funnel` after 049 | 046 FR-020, FR-027, FR-028, SC-002, 049 FR-021 |
 | `TestWaveB_PersonalDataRefused_046_FR012` | `E-mail` and `Phone` columns: 409 `not_allowed` naming both; no import, no row to review, no figure | uploads, `/performance/imports`, `/performance/review-rows` | 046 FR-012, SC-007, 046-C17 |
 | `TestWaveB_ReviewQueue_046_FR023` | Unknown key, keys disagree (both candidates named) and a two-fault row listed with reasons; findable by reason, key, source, status, date; no POST; dismiss without comment refused (contract 422, served 400: finding 1); dismiss, reopen, correct → *Resolved* and counted; Mei with `performance.import` sees no candidate (046-C15) | `/performance/review-rows{,/{rowId}{,/dismiss,/reopen,/correct}}` | 046 FR-011, FR-019, FR-023, FR-024, SC-003 |
 | `TestWaveB_SettingsRights_047_050` | Category create, edit, delete, model edit and impact, attribution PUT: Alex 2xx in turn, the six others 403; categories, models, attribution and activity types 200 for all seven; stale attribution save 409. 050's PUT is on 9c1ce8b6, so its half runs too | `/settings/activity-categories{,/{categoryId}}`, `/models{,/{modelId}{,/impact}}`, `/settings/attribution`, `/activity-types` | 047 FR-023, 050 FR-002, US1-4 |
@@ -151,20 +162,20 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | Breadcrumb, title, "Figures as of …", Saved views, Export; no primary action | 039 FR-006 | Alex | | | | |
 | "In view" equals All work's counts for the same filters | 039 FR-007, SC-001 | Alex, Priya | | | | |
 | Panel changes wait for Apply; year, period, currency, Show and chips apply at once | 039 FR-013, FR-014 | Alex | | | | |
-| Address keeps filters and own parameters; Back and a pasted link reproduce the page | 039 FR-015, SC-005; 048 FR-004; 049 FR-019 | Alex | | | | category, stage, sort, drill, `revenueBy`… |
-| A value no longer available is left out with the count | 039 FR-015, FR-029 | Priya | | | | Measure plan's ID in Priya's address |
-| Saved views: save, update, star, rename, delete with Undo; own parameters kept | 039 FR-024–FR-028, 049 US3-3 | Alex | | | | |
+| Address keeps filters and own parameters; Back and a pasted link reproduce the page | 039 FR-015, SC-005; 048 FR-004; 049 FR-019 | Alex | | Pass (API, views) | Pass (API, views) | category, stage, sort, drill, `revenueBy`…; a saved view keeps category, stage, sort, group (`ViewsKeepOwnParams`); Back and a pasted link are web |
+| A value no longer available is left out with the count | 039 FR-015, FR-029 | Priya | | Pass (API) | Pass (API) | Measure plan's ID in Priya's address: dropped from the filter, `leftOut` 1, her ranked list names Lubricants Europe alone |
+| Saved views: save, update, star, rename, delete with Undo; own parameters kept | 039 FR-024–FR-028, 049 US3-3 | Alex | | Pass (API, save) | Pass (API, save) | Saved and listed with their own parameters; update, star, rename, delete with Undo not run |
 | Opens on current year, all plans, Months, display currency | 039 FR-030 | Alex | | | | |
-| Every chart has Table with the same values and totals; ⓘ names each figure | 039 FR-020, FR-021 | Alex | | | | |
-| Widget CSV/Excel; report Export with widget sheets, *In view*, *About this export* (filters in words, exporter, rates used) | 039 FR-022, `exportReport` | Alex | | | | |
-| File name "SP&A One – <report> [– <widget>] – <year> – <date>" | 039 FR-022 | Alex | | | | |
-| Export holds exactly what is shown: filters, category, stage, sort | 039 FR-022 | Alex | | | | open question 6 |
-| No Export offered; export URL answers 403 | 039 FR-022 | Lea | | | | |
+| Every chart has Table with the same values and totals; ⓘ names each figure | 039 FR-020, FR-021 | Alex | | | | Web; the Revenue series' goal adds to 4,130,000.00 against the 4,120,000.00 card (finding 10) |
+| Widget CSV/Excel; report Export with widget sheets, *In view*, *About this export* (filters in words, exporter, rates used) | 039 FR-022, `exportReport` | Alex | | Pass (API) | Pass (API) | Sheets Cards, Periods, Ranked list, In view, About this export (asserted); a widget CSV opens with the notes, exporter and rates (seen); own parameters in words: finding 14 |
+| File name "SP&A One – <report> [– <widget>] – <year> – <date>" | 039 FR-022 | Alex | | Pass (API) | Pass (API) | "SP&A One – Revenue – 2026 – 12 Mar 2026.xlsx", "SP&A One – Funnel stages – Ranked list – 2026 – 12 Mar 2026.csv" |
+| Export holds exactly what is shown: filters, category, stage, sort | 039 FR-022 | Alex | | Fail (low) | Fail (low) | Open question 6: the rows follow category, stage and sort (#105); *About this export* says "Filters: None" (finding 14) |
+| No Export offered; export URL answers 403 | 039 FR-022 | Lea | | Pass (API) | Pass (API) | Lea 403 on the workbook and a widget CSV; no Export offered is web |
 | Skeleton while loading; one failed widget says so with Try again, others stay | 039 FR-023, 048 state 10 | Alex | | | | block one request in devtools |
-| "No plans you may see for 2025"; "Your filters exclude everything" with Reset | 039 FR-031 | Alex, Mei | | | | |
+| "No plans you may see for 2025"; "Your filters exclude everything" with Reset | 039 FR-031 | Alex, Mei | | Fail (medium) | Fail (medium) | 2025 answers `reason: noData`, but its actual and projected cards and every month say 0 (finding 8); the words are web |
 | Keyboard only: panel, selectors, Chart/Table, ranked drill, export; Escape and focus return | 039 FR-033, 048 SC-005 | Alex | | | | |
 | Below 1024 px the panel becomes "Filters (n)" | 039 FR-033 | Alex | | | | |
-| axe clean (RankedList "Open …" target size: open question 13) | 039 SC-007, 049 SC-005, 048 SC-005 | Alex, Lea | | | | |
+| axe clean (RankedList "Open …" target size: open question 13) | 039 SC-007, 049 SC-005, 048 SC-005 | Alex, Lea | | | | Browser; open question 13 |
 | Dark theme: chart tokens, no yellow or red series, contrast | 039 FR-021, constitution X | Alex | | | | |
 | No "Measure", "Tactic", "HUD" on screen | 039 FR-032 | Alex | | | | |
 | Frame within 2 s at the 028 volume | 039 SC-003 | — | | | | benchmark |
@@ -196,35 +207,35 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 
 | Check | Source | Role(s) | Pass/fail | Notes |
 |---|---|---|---|---|
-| Past months actual, later projected, current both; card = actual to last month + projected from today | US1-1, FR-004 | Alex | | |
-| Cards: goal, actual, actual or projected, performance | FR-010, 049-C9 | Alex | | |
-| Ranked by projected revenue, grouped by plan: ordered within groups, group totals, level below | US1-2, FR-005, FR-006 | Alex | | |
-| Entry: name, level, owner, goal, actual, projected, performance, actual cost, ROI | FR-012 | Alex | | |
-| No goal: projected "—" with the reason | US1-3, FR-009 | Alex | | Show Activity, Retargeting test |
-| Actual cost and ROI "—", "Attribution is not configured yet" | US1-4, FR-013 | all | | until 050 T007 |
-| One-team viewer: only their plans anywhere; left-out count stated | US1-5, FR-002 | Priya, Mei | | |
+| Past months actual, later projected, current both; card = actual to last month + projected from today | US1-1, FR-004 | Alex | Pass (API) | 12 Mar: January, February actual with nothing projected, March in progress, April on projected only; the actual or projected card is the series' (`SeriesSplitAtToday`). The actuals say 0 with no fact (finding 8) |
+| Cards: goal, actual, actual or projected, performance | FR-010, 049-C9 | Alex | Fail (medium) | Goal 4,120,000.00, actual or projected 3,860,169.50 USD, performance 94; actual "0.00" with no fact loaded, never "—" (finding 8) |
+| Ranked by projected revenue, grouped by plan: ordered within groups, group totals, level below | US1-2, FR-005, FR-006 | Alex | Pass (API, totals) | Plan groups' totals are their entries' and each entry lists the level below (`RankedTotals`); the order is a Sort by check: after #97 |
+| Entry: name, level, owner, goal, actual, projected, performance, actual cost, ROI | FR-012 | Alex | Fail (low) | No owner on any entry, in the contract, the web or the export (finding 12) |
+| No goal: projected "—" with the reason | US1-3, FR-009 | Alex | Pass (API) | Show Activity, Retargeting test and Tellus case studies: goal, projected, performance null; the entry has no reason field, so the words are web |
+| Actual cost and ROI "—", "Attribution is not configured yet" | US1-4, FR-013 | all | Pass (API) | Until 050 T007. Alex at every level and grouping, and Lea: null with `attributionNotConfigured`, "—" in the export; a category's empty records carry no reason (finding 11) |
+| One-team viewer: only their plans anywhere; left-out count stated | US1-5, FR-002 | Priya, Mei | Pass (API) | Also Daniel, Sara: frame, ranked lists and children name only their plans; the Measure plan's ID left out and counted |
 | ⓘ on the goal card explains model, rates, velocity and the comparison | FR-014 | Alex | | |
-| Quarters are sums of their months; in-progress rule per quarter | FR-003, 049-C4 | Alex | | |
+| Quarters are sums of their months; in-progress rule per quarter | FR-003, 049-C4 | Alex | Pass (API) | Q1 in progress, Q2–Q4 planned, each its months' sum; the cards as in months |
 | Drill with trail and Back; drilled record filtered away falls back with a note | FR-005, edge cases | Alex | | |
 | Name search; "Open in Plan" link | FR-005 | Alex | | |
-| EUR display: one conversion at the current rate; facts without a rate excluded and counted | FR-024, 046-C7 | Alex | | 047 T058 risk |
-| Empty: no goals · not approved (held) · no data loaded, each stated | FR-008, 049-C20 | Alex, Mei | | |
-| Model and its last change beside projected figures | FR-022, SC-006 | Alex | | |
-| Performance whole per cent with 048's words | FR-023, 049-C15 | Alex | | after `ActivitySeries` |
-| Category narrows cards, series, ranked; Uncategorised; saved view keeps it | US3-1–3, FR-019, FR-020 | Alex | | needs 047 T062 |
+| EUR display: one conversion at the current rate; facts without a rate excluded and counted | FR-024, 046-C7 | Alex | | 047 T058 risk; facts reach the reports on PostgreSQL only (How to run) |
+| Empty: no goals · not approved (held) · no data loaded, each stated | FR-008, 049-C20 | Alex, Mei | Fail (medium) | Nothing in view (2025) says `noData`, with zeros; only Submitted activities in view say nothing (finding 9); no fact loaded is never stated, actual says 0 (finding 8) |
+| Model and its last change beside projected figures | FR-022, SC-006 | Alex | Fail (low) | One plan: its own model and last change, moving with Alex's save (`ProjectionNamesItsModel`); all three plans: Lubricants 1.0 alone (finding 13) |
+| Performance whole per cent with 048's words | FR-023, 049-C15 | Alex | | Served whole (94 for Alex), not asserted; the word waits for a contract change (049-C21) |
+| Category narrows cards, series, ranked; Uncategorised; saved view keeps it | US3-1–3, FR-019, FR-020 | Alex | Fail (low) | Cards, months and activities add up with Uncategorised, each activity once; a saved view keeps it; the ranked list keeps records with nothing in the category (finding 11) |
 
 ### Funnel stages (049)
 
 | Check | Source | Role(s) | Pass/fail | Notes |
 |---|---|---|---|---|
-| Stage selector: allowed stages in funnel order, opens on the first; no Deals | US2-1, FR-015, 049-C12 | Alex | | |
-| Entry: goal, actual, projected, performance, conversion from the previous stage | US2-2, FR-017 | Alex | | |
-| Plan whose model lacks the stage: "—" and uncovered plans counted | US2-3, FR-018 | Alex | | |
-| Previous stage without actual: conversion "—", never 0 % | US2-4, FR-017 | Alex | | |
-| Series named from the stage; goal, actual, projected by period | FR-016 | Alex | | |
-| Ranked sorts by the stage's actual and projected volume | FR-006 | Alex | | |
-| Stage kept in the address, saved views and Summary's Details link | contract `stage`, 048 FR-016 | Alex | | |
-| Category as on Revenue | US3, FR-019 | Alex | | |
+| Stage selector: allowed stages in funnel order, opens on the first; no Deals | US2-1, FR-015, 049-C12 | Alex | Pass (API) | INQ, MQL; opens on INQ (`FunnelStageSelector`) |
+| Entry: goal, actual, projected, performance, conversion from the previous stage | US2-2, FR-017 | Alex | Pass (API) | Every field, as the contract has them; actual 0 where nothing is loaded (finding 8) |
+| Plan whose model lacks the stage: "—" and uncovered plans counted | US2-3, FR-018 | Alex | Not run | Both demo models allow INQ and MQL: `uncoveredCount` 0 |
+| Previous stage without actual: conversion "—", never 0 % | US2-4, FR-017 | Alex | Pass (API) | No INQ actual: the conversion card null with `noPreviousStage`, every entry's conversion null |
+| Series named from the stage; goal, actual, projected by period | FR-016 | Alex | Pass (API) | `stage` answered; the export says "MQL goal", "MQL actual or projected"; split as Revenue |
+| Ranked sorts by the stage's actual and projected volume | FR-006 | Alex | | Sort by: after #97; the API's `sort=actual` reaches the export (`ExportsKeepOwnParams`) |
+| Stage kept in the address, saved views and Summary's Details link | contract `stage`, 048 FR-016 | Alex | Pass (API) | A saved view and the export keep `stage=mql`; Summary's link waits for 048 |
+| Category as on Revenue | US3, FR-019 | Alex | Fail (low) | As Revenue (finding 11) |
 
 ### Attribution (050) — Settings › Attribution and ROI on Summary and Revenue
 
@@ -255,6 +266,10 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | 10 | Summary's Cost league Total = Plan budget's Actual (paid), same filters | 048-C5, measure-metrics §1 *Actual* |
 | 11 | Credited + unattributed = revenue; facts without a journey credit the same under every model | 050 SC-001, FR-004, FR-005 |
 | 12 | Performance and variance words identical on Summary and Revenue | 049-C15, 048-C1, 048-C10 |
+
+049 part, on the fakes: 4 and 8 hold for Revenue and Funnel stages (`RankedTotalsEqualSeries`, `CategoriesLoseNothing`;
+the series' goal: finding 10); 5 and 6 need PostgreSQL (How to run), and 6 can hold for approved activities only
+(finding 9).
 
 ## Measure demo data
 
@@ -292,12 +307,23 @@ E2e literals on the wave B branches (049's e2e ran on `seed -reset`, without `-m
 | 5 | 047 Projections | Low | `POST /models/MOD-1001/impact` with `{"allowedGoalStages": ["mql", "revenue"], "version": 1}` answers 200 `{"warnings": [{"kind": "goalStageRemoved", "message": "3 plans set their goal at a stage this model would no longer allow. …", "count": 3}]}`; `openapi.yaml`:14848 (`ImpactWarning.kind`) has no `goalStageRemoved`, so the answer breaks the served contract (apitest: "value must be one of 'goalsRecalculated', …") and the web's generated types lack the kind. 047 `contracts/api.md`:12-13 adds the stranded goals to the impact answer (FR-003). | Open, #102; `TestWaveB_ModelProjectionFields_047_FR001_FR003` skips that answer's contract check |
 | 6 | 047 Projections | Low | `GET /activities/{id}/performance` on an approved activity with a goal and no source (Helix … second half, as seeded): each stage `actual: null`, `reason: noSource`, yet `months` January–March carry `actual: 0` and revenue `"0.00"` USD. `measure-metrics.md`:7 ("never 0"), 047 `spec.md`:211 ("no facts at all: actual months are empty"), FR-013. No screen draws these months yet (the panel shows only web metrics' months); a chart of them would show zeros. | Open, #102; kept out of the committed tests |
 | 7 | 047 Projections | Medium | Per-month rounding of deals over-projects revenue. Helix … second half: 4,000 INQ July–December, Lubricants 1.0 at 2 %, 5 %, 10,000 USD, velocity 0, no facts. Its revenue goal is 40,000 USD (80 MQL, 4 deals, `settings.Waterfall`), but the panel's `revenue.projected` is 60,000.00 USD: each month's 13 MQL × 5 % = 0.65 deals rounds up to 1, six times. 049's `GET /reports/revenue/ranked?year=2026&show=activity` shows it at performance 150 with no data loaded. FR-007 and 047-C4 (`spec.md`:37-43, 234-236) round half-up per month, and SC-003 (`spec.md`:305-308) allows "less than one unit per month"; here one unit is 10,000 USD. A rule for 047 to decide (e.g. carry the remainder, as FR-006's phasing does) before 048 and 049 show it. | Open, #102 (rule decision): 047-C4, FR-007; not asserted either way |
+| 8 | 049 Revenue, Funnel stages | Medium | A missing actual is served as 0. With no fact loaded, `GET /reports/revenue?year=2026` answers `cards.actual` `{"value": {"amount": "0.00", "currency": "USD"}, "reason": ""}` and January–March `actual` "0.00"; `GET /reports/funnel?year=2026` `cards.actual.value` 0, months 0, and `actual: 0` on every entry of `/reports/funnel/ranked` with a goal, where `/reports/revenue/ranked` answers `actual: null` for the same activities. `?year=2025` (no plan in view) answers `reason: noData` with actual and projected cards "0.00" and twelve months of actual 0: the grid of zeros FR-008 forbids. 049 FR-009 (`spec.md`:250), the edge case "actual is empty … with the reason stated" (`spec.md`:217), `contracts/api.md`:31 ("never a zero"). `cards.go`:12 and `cards_funnel.go`:8 serve actual once the year has begun, `funnel_figures.go`:34 for every covered activity, `periods.go`:84 by month position. | Open, #110; kept out of `TestWaveB_MissingIsNeverZero_FR009` |
+| 9 | 049 Revenue, Funnel stages | Low | `reason: notApproved` is never served (`ReasonNotApproved`, `model.go`:16, is unused). `GET /reports/revenue?year=2026&activityStatus=submitted` (Fleet card launch, Trade magazine ads, Fleet expo Rotterdam, gated on their panels) answers `reason: ""`, actual "0.00", actual or projected 590,000.00 USD; Funnel stages the same. 049-C20 (`spec.md`:118-121) and the edge case (`spec.md`:219-220): the report says the activities are not approved, their facts held. The reports also count the goals and projections of activities whose panel is gated: Launch film (Created) is 2,500,000.00 of Alex's 3,860,169.50 USD while its panel says `notApproved` with no figure, so cross-report check 6 holds for approved activities only. 049 does not say which (FR-022 against 046 FR-027). | Open, #110; not asserted |
+| 10 | 049 Revenue, Funnel stages | Low | The series' goal does not add up to the goal card or the ranked total (SC-002, `spec.md`:307). Alex, `GET /reports/revenue?year=2026`: the months' `goal` add to 4,130,000.00 USD, `cards.goal` and the top entries to 4,120,000.00 (the Measure plan 640,000.00 against 620,000.00, Helix … second half's 60,000 against its 40,000, finding 7; Lubricants Europe 3,090,000.00 against 3,100,000.00); Funnel stages MQL 9,393 against 9,392, INQ agrees (380,100). 047's month-by-month rounding (finding 7) shows through 049-C21's month goal, so a Table of the series totals differently from its card (039 FR-020). | Open, #110, with 7; `TestWaveB_RankedTotalsEqualSeries_049_SC002` checks goal against the card |
+| 11 | 049 Revenue, Funnel stages | Low | A category leaves records with nothing in it in the ranked list. `GET /reports/revenue/ranked?year=2026&show=campaign&category=CAT-1001` (Digital): `total` 5, Rimula fleet and Tellus industrial 2026 (no Digital activity) listed with every figure null and `actualCostReason`, `roiReason` "", besides the three that `activityType=AT-1003` (Digital media) lists; the export's Ranked list the same. US3-1 ("only activities whose type belongs to it are counted in … the ranked list"), FR-019 ("narrows every part"), `contracts/api.md`:38 (always the reason). `indexInView` (`ranked.go`:49) narrows the activities, not the records above them. | Open, #110; `TestWaveB_RoiNotConfigured_049_FR013` runs without a category |
+| 12 | 049 Revenue | Low | No owner on a ranked entry. FR-012 (`spec.md`:258) lists owner among an entry's figures; `RevenueEntry` (`openapi.yaml`, `additionalProperties: false`) has id, level, name, planId, figures and children, and neither the web's columns (`RevenueReport.tsx`:34) nor the export's Ranked list has one. Owner is a grouping only. | Open, #110 |
+| 13 | 049 Revenue, Funnel stages | Low | A view of plans on two models names one. Alex, `GET /reports/revenue?year=2026`: `projection` names Lubricants 1.0 alone, though Mobility China (400,000.00 USD of it) projects through Mobility 1.0, and ranked entries carry no stamp. `contracts/api.md`:42 ("every projected figure is served with the model's name and `modelChangedAt`"), SC-006; `report_revenue.go`:51 says "the ranked list's own entries carry the rest", but `RevenueEntry` has no such field. One plan names its own model (`TestWaveB_ProjectionNamesItsModel_049_FR022`). | Open, #110; not asserted |
+| 14 | 039 export, 049 | Low | *About this export* says nothing of 049's own parameters. `GET /reports/revenue/export?year=2026&widget=ranked&format=csv&category=CAT-1001`: the rows are Digital's, the notes say `Filters,None` and nothing of the category; the same for `stage=mql` (only the cards' labels say "MQL") and `sort=actualRevenue`. 039 FR-022 (filters in words) and this checklist's "Export holds exactly what is shown". Revenue and Funnel stages implement no `measure.Described` (only User access does, `useraccess/sheets.go`:107). | Open, #110; open question 6's other half |
 
 ## How to run
 
 **API harness**: `cd backend; go test -race ./internal/measure/wavebqa/` — fakes, `apitest.New(t, apitest.WithMeasureDemo())`.
-On the fakes 049's reports read their own store (`storestest.go`:72, `revenuetest`), not the facts a test uploads, so
-cross-report checks 5 and 6 need PostgreSQL.
+On the fakes 049's reports read their own store (`storestest.go`:72, `revenuetest.NewStore()`), which nothing fills;
+#99 (`ActivitySeries`) did not change that. After `loadFacts`, Helix … first half's panel says 700 INQ and the Funnel
+list 0. So every report figure on the fakes is goal and projection, and cross-report checks 5 and 6 and the report half
+of `TestWaveB_HeldFactsCountNowhere_046_SC002` need PostgreSQL. No API harness runs on it (`revenue/store_postgres_test.go`
+tests the query alone, on `dbtest`): run them in the browser pass below after loading facts, or give `apitest` a
+PostgreSQL option.
 
 **Browser**: `docker compose up -d postgres`; `cd backend; go run ./cmd/seed -reset -measure; go run ./cmd/api`
 (127.0.0.1:8080); `cd frontend; pnpm run dev` (127.0.0.1:5173). Password `mapp`. Sign in as **Alex** (every screen and
@@ -318,10 +344,15 @@ create a source with mappings, and either upload a CSV keyed by activity ID or r
    gives Lea All markets, and `seed/measure_test.go`:118 tests only Carlos and Priya.
 4. **Revenue without `finance.view`.** 039 FR-004 (`039 spec.md`:225) hides money; 048 shows revenue (`048
    spec.md`:133); 049 is silent (`spec.md`:278) and its code applies no finance rule. Same for the 046 panel's revenue.
+   Still open after the 049 part: Lea's frames say finance 0 of 3, yet Revenue serves her every revenue amount, as
+   Alex's (4,120,000.00 goal); `actualCost` and `roi` are null with `attributionNotConfigured`, not a finance reason.
+   `TestWaveB_NoFinancialAccess_Revenue_039_FR004` asserts only the coverage and the null cost and ROI.
 5. **049's actual cost after 050**: which plans it covers without `finance.view` is unstated (049 `spec.md`:247).
 6. **Exports drop wave B parameters.** `shared/api.ts`:57-65 sends no `category`, `stage` or league segments, and
    `exportReport` declares neither `category` nor `stage`; asks in 049-C19 (`spec.md`:112) and 048 T019
-   (`tasks.md`:56). Likely a finding like wave A's #2.
+   (`tasks.md`:56). Likely a finding like wave A's #2. Resolved by #105 (3df7cc7d) for the figures: `exportReport`
+   declares `category`, `stage` and Summary's segments, `shared/api.ts` forwards them, and the files follow category,
+   stage and sort (`TestWaveB_ExportsKeepOwnParams_FR022`). *About this export* names none of them: finding 14.
 7. **046 screens missing**: upload, pull, imports, undo (`tasks.md`:121) and the review queue (`tasks.md`:214); the
    `/settings/performance-data` and `/settings/activity-categories` routes are absent from
    `frontend/src/app/settings-routes.tsx` (046 `contracts/api.md`:107, 047 `tasks.md`:100). Run those on the API.
@@ -339,4 +370,6 @@ create a source with mappings, and either upload a CSV keyed by activity ID or r
 12. **Lane D's own data**: `measure.json`:87 gives Helix search and social, second half MQL 800 without a revenue,
     but `seed/activities.go`:193 keeps typed stages only with a typed revenue, so that MQL goal is dropped. Intended?
 13. **axe**: 049's e2e excludes RankedList's "Open …" links for target size (`measure-revenue.spec.ts`:15, 049
-    `contracts/api.md`:62). A finding on 040 or accepted?
+    `contracts/api.md`:62). A finding on 040 or accepted? Still open: `.open` has had a 24 × 24 px minimum since
+    78e87178 (`RankedList.module.css`:102-108), and the exclusion stays on 3df7cc7d; whether axe still fails needs that
+    e2e without it (browser pass).
