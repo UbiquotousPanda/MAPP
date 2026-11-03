@@ -22,7 +22,7 @@ widgets `revenue`, `trend`, `funnel`, `conversion`, `leagueRevenue`, `leaguePerf
 | Parameter | Meaning | Default |
 |---|---|---|
 | `category` | Activity category ID, or `uncategorised` | all categories |
-| `stage` | Conversion trend stage: `mql` or `revenue` | first conversion stage the models allow |
+| `stage` | Conversion trend stage: `mql` only (048-C12); anything else answers 400 | `mql` |
 | `segment` | League operation only: a Shell attribute ID at Plan, Campaign or Activity level | first Activity-level attribute |
 
 In the page address the four league segments are `revenueBy`, `performanceBy`, `costBy` and `roiBy`; the web sends
@@ -41,14 +41,12 @@ SummaryReport:
     goalCoverage: { stage: inq|mql|revenue, percent: int|null }[]   # 048-C2
     trend: TrendPeriod[]
   funnel:
-    stages: { stage, actualOrProjected: Figure|null, goal: Figure|null, performance: int|null, variance }[]
-    conversions: { stage, rate: string|null, goal: string|null, variance }[]   # one decimal, "12.5"
+    stages: { stage, actualOrProjected: Figure|null, goal: Figure|null, performance: int|null, variance, plansWithout: int }[]   # plansWithout: plans whose model lacks the stage (049-C11)
+    conversions: { stage, rate: string|null, goal: string|null, variance|null }[]   # one decimal, "12.5"; variance null when the rate is missing, noGoal when the goal is
     trend: { stage, periods: { key, label, state: actual|inProgress|projected, rate: string|null, goal: string|null }[] }
-    plansWithoutStage: int                    # plans whose model lacks a shown stage (049-C11)
   categories: { id, name }[]                  # with uncategorised
-  states: string[]                            # the report states that apply (FR-018)
+  states: (noPlans|notApproved|noGoals|noPerformanceData|nothingMatches|noFinancialAccess)[]   # the report states that apply (FR-018)
   financeCovers: { plans: int, of: int }
-  performanceAsOf: date-time|null             # when performance data was last loaded (client 016 FR-031)
 
 TrendPeriod: { key, label, state: actual|inProgress|projected, actual: Money|null, projected: Money|null, goal: Money|null }
 Figure: Money for revenue, an integer count for inq and mql
@@ -57,10 +55,10 @@ LeagueTable:
   table: revenue|performance|cost|roi
   segment: { id, label, level }
   segments: { id, label, level }[]            # the choices
-  rows: { key, name, value: Figure|int|null, trend: (Money|int|null)[] }[]   # the five highest; "none" key is Not filled in
+  rows: { key, name, value: Figure|int|null, trend: Money[] }[]   # the five highest; "none" key is Not filled in; trend is the segment's actual or projected revenue
   total: Figure|int|null                      # over all values, each record once (048-C4, C5)
-  roi: { model: string, basis: actual|planned }|null   # named next to ROI; null with reason when not configured
-  reason: string|null                         # "Attribution is not configured yet", "No cost recorded"
+  roi: { model: string, basis: actual|planned }|null   # null while attribution is not configured (050's crediting is not wired yet)
+  reason: string|null                         # "Attribution is not configured yet" (ROI), "Financial data of these plans is not shown to you", "No cost recorded"
 ```
 
 `Money` is `{amount, currency}` in the display currency at the current rate (D-303); `null` shows "—".
@@ -73,7 +71,7 @@ LeagueTable:
 | `trend` | Revenue trend | period, state, actual, projected, goal |
 | `funnel` | Funnel stages | stage, actual or projected, goal, performance, variance |
 | `conversion` | Conversions | stage, rate, goal, variance, then the chosen stage's trend |
-| `leagueRevenue`, `leaguePerformance`, `leagueCost`, `leagueRoi` | Top <figure> by <segment> | segment value, figure — **every** value, then Total |
+| `leagueRevenue`, `leaguePerformance`, `leagueCost`, `leagueRoi` | Top <figure> (within Excel's 31 characters; the segment heads the first column) | segment value, figure — **every** value, then Total |
 
 ## Not changed by this feature
 

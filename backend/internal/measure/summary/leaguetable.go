@@ -2,15 +2,20 @@ package summary
 
 import (
 	"context"
+	"slices"
 
 	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/measure/attribution"
+	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/money"
 )
 
-const reasonNoCost = "No cost recorded"
+const (
+	reasonNoCost                   = "No cost recorded"
+	reasonNoFinance                = "Financial data of these plans is not shown to you"
+	reasonAttributionNotConfigured = "Attribution is not configured yet"
+)
 
 type LeagueTable struct {
 	Table    string      `json:"table"`
@@ -36,11 +41,10 @@ type ROIBasis struct {
 	Basis attribution.Basis `json:"basis"`
 }
 
-// leagueView is one league request's read: the series, their costs and the designated attribution model.
+// leagueView is one league request's read: the series and their costs.
 type leagueView struct {
 	view
 	costs map[string]*int64
-	model attribution.Model
 }
 
 func (s *Service) League(ctx context.Context, a actor.Actor, f measure.Filter, table string) (LeagueTable, error) {
@@ -66,11 +70,7 @@ func (s *Service) readLeague(ctx context.Context, a actor.Actor, f measure.Filte
 		return leagueView{}, err
 	}
 	costs, err := s.costs(ctx, a, v)
-	if err != nil {
-		return leagueView{}, err
-	}
-	model, err := s.deps.Attribution.Designated(ctx)
-	return leagueView{view: v, costs: costs, model: model}, err
+	return leagueView{view: v, costs: costs}, err
 }
 
 func (lv leagueView) table(b builder, l League) LeagueTable {
@@ -92,14 +92,24 @@ func (lv leagueView) table(b builder, l League) LeagueTable {
 		out.Rows = out.every[:min(leagueSize, len(out.every))]
 	}
 	out.Total = b.shown(l.Table, figureOf(l.Table, total))
-	if l.Table == TableROI {
-		out.ROI = &ROIBasis{Model: lv.model.Name(), Basis: attribution.BasisActual}
-	}
-	if out.Total == nil && (l.Table == TableCost || l.Table == TableROI) {
-		reason := reasonNoCost
-		out.Reason = &reason
-	}
+	out.Reason = lv.reasonOf(l.Table, out.Total)
 	return out
+}
+
+// reasonOf says why a cost or ROI table shows dashes; ROI waits for 050's crediting, as Revenue's does.
+func (lv leagueView) reasonOf(table string, total any) *string {
+	reason := ""
+	switch {
+	case table == TableROI:
+		reason = reasonAttributionNotConfigured
+	case table != TableCost || total != nil:
+		return nil
+	case !slices.ContainsFunc(lv.series, func(s revenue.ActivitySeries) bool { return lv.seesFinance(s.PlanID) }):
+		reason = reasonNoFinance
+	default:
+		reason = reasonNoCost
+	}
+	return &reason
 }
 
 func chosenSegment(segments []Segment, id string) Segment {
@@ -147,9 +157,6 @@ func figureOf(table string, t tally) *int64 {
 		return &t.cost
 	case TablePerformance:
 		whole = performanceOf(t.total, t.goal).Percent
-	default:
-		cost := money.FromCents(t.cost)
-		whole = attribution.ROI(money.FromCents(t.actual), &cost)
 	}
 	if whole == nil {
 		return nil

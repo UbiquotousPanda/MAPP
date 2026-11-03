@@ -28,7 +28,7 @@ func (b builder) money(c int64) *money.Money {
 
 func (b builder) revenueSection(series []revenue.ActivitySeries, plans map[string]revenue.Goal) RevenueSection {
 	t := sumSeries(series, revenuePick())
-	out := RevenueSection{PeriodLabel: "FY " + strconv.Itoa(b.year), ActualOrProjected: b.money(t.actualOrProjected()),
+	out := RevenueSection{PeriodLabel: "FY " + strconv.Itoa(b.year), ActualOrProjected: b.total(t),
 		Performance: performanceOf(t.actualOrProjected(), t.goal), GoalCoverage: coverageOf(series, plans),
 		Trend: []TrendPeriod{}}
 	if t.anyGoal {
@@ -45,13 +45,20 @@ func (b builder) trendPeriod(p period) TrendPeriod {
 	if p.goal != 0 {
 		out.Goal = b.money(p.goal)
 	}
-	if p.state != PeriodProjected {
+	if p.counted {
 		out.Actual = b.money(p.actual)
 	}
-	if p.state != PeriodActual {
+	if p.projects {
 		out.Projected = b.money(p.projected)
 	}
 	return out
+}
+
+func (b builder) total(t totals) *money.Money {
+	if !t.anyTotal {
+		return nil
+	}
+	return b.money(t.actualOrProjected())
 }
 
 func coverageOf(series []revenue.ActivitySeries, plans map[string]revenue.Goal) []Coverage {
@@ -82,7 +89,7 @@ func (b builder) funnelSection(series []revenue.ActivitySeries) FunnelSection {
 	for _, stage := range counted {
 		t := sumSeries(series, stagePick(stage))
 		figures[stage] = Figures{Actual: t.actual(), Goal: t.goal}
-		out.Stages = append(out.Stages, StageFigures{Stage: stage, ActualOrProjected: t.actualOrProjected(),
+		out.Stages = append(out.Stages, StageFigures{Stage: stage, ActualOrProjected: figureIfAny(countOf(t)),
 			Goal: optionalCount(t), Performance: performanceOf(t.actualOrProjected(), t.goal),
 			PlansWithout: plansWithout(series, stage)})
 	}
@@ -96,12 +103,28 @@ func (b builder) funnelSection(series []revenue.ActivitySeries) FunnelSection {
 
 func (b builder) revenueStage(series []revenue.ActivitySeries) StageFigures {
 	t := sumSeries(series, revenuePick())
-	out := StageFigures{Stage: StageRevenue, ActualOrProjected: b.money(t.actualOrProjected()),
+	out := StageFigures{Stage: StageRevenue, ActualOrProjected: figureIfAny(b.total(t)),
 		Performance: performanceOf(t.actualOrProjected(), t.goal)}
 	if t.anyGoal {
 		out.Goal = b.money(t.goal)
 	}
 	return out
+}
+
+func countOf(t totals) *int64 {
+	if !t.anyTotal {
+		return nil
+	}
+	total := t.actualOrProjected()
+	return &total
+}
+
+// figureIfAny keeps a missing figure a plain nil, so a stage's "—" is null however its figure is typed.
+func figureIfAny[T any](v *T) any {
+	if v == nil {
+		return nil
+	}
+	return v
 }
 
 func optionalCount(t totals) *int64 {

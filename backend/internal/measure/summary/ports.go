@@ -5,7 +5,6 @@ import (
 
 	"mapp/internal/financials"
 	"mapp/internal/measure"
-	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/actor"
 )
@@ -29,8 +28,8 @@ type Spending interface {
 	SpendByMonth(ctx context.Context, a actor.Actor, lineItemIDs []string) (map[string]map[string]financials.Facts, error)
 }
 
-type Attribution interface {
-	Designated(ctx context.Context) (attribution.Model, error)
+type Segments interface {
+	SegmentLabel(ctx context.Context, id string) (string, error)
 }
 
 type Categories interface {
@@ -38,9 +37,9 @@ type Categories interface {
 }
 
 type Deps struct {
-	Series      Series
-	PlanGoals   PlanGoals
-	Spending    Spending
-	Attribution Attribution
-	Categories  Categories
+	Series     Series
+	PlanGoals  PlanGoals
+	Spending   Spending
+	Categories Categories
+	Segments   Segments
 }

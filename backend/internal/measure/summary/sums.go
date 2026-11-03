@@ -1,6 +1,8 @@
 package summary
 
 import (
+	"slices"
+
 	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/money"
 )
@@ -29,12 +31,15 @@ func stagePick(stage Stage) pick {
 type monthTotal struct {
 	key, state                                 string
 	actual, projected, goal, actualOrProjected int64
+	counted, projects                          bool
 }
 
+// totals keeps anyTotal apart from a zero sum, so a figure nothing counted or projected shows "—", as Revenue's does.
 type totals struct {
-	months  []monthTotal
-	goal    int64
-	anyGoal bool
+	months   []monthTotal
+	goal     int64
+	anyGoal  bool
+	anyTotal bool
 }
 
 func sumSeries(series []revenue.ActivitySeries, p pick) totals {
@@ -43,12 +48,16 @@ func sumSeries(series []revenue.ActivitySeries, p pick) totals {
 	for _, s := range series {
 		t.anyGoal = t.anyGoal || p.goal(s) != nil
 	}
+	t.anyTotal = slices.ContainsFunc(series, func(s revenue.ActivitySeries) bool {
+		return revenue.OwnFigureOf(s, p.measure).Total != nil
+	})
 	if len(series) == 0 {
 		return t
 	}
 	for i, m := range series[0].Months[:min(len(series[0].Months), len(sums.Actual))] {
 		t.months = append(t.months, monthTotal{key: m.Key, state: m.State, actual: sums.Actual[i],
-			projected: sums.Projected[i], goal: sums.Goal[i], actualOrProjected: sums.ActualOrProjected(i)})
+			projected: sums.Projected[i], goal: sums.Goal[i], actualOrProjected: sums.ActualOrProjected(i),
+			counted: sums.Counted[i], projects: sums.Projects[i]})
 	}
 	return t
 }

@@ -63,7 +63,7 @@ export function FunnelSection({ funnel }: { funnel: FunnelSectionData }) {
             key={c.stage}
             label={`${STAGE[c.stage]} conversion`}
             value={rateText(c.rate)}
-            detail={`Goal ${rateText(c.goal)} · ${varianceText(c.variance)}`}
+            detail={`Goal ${rateText(c.goal)} · ${c.variance ? varianceText(c.variance) : '—'}`}
             tip="This stage's actual ÷ the previous stage's actual, to one decimal. Its goal is the same ratio of the goals."
           />
         ))}

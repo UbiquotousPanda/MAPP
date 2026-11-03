@@ -16,6 +16,7 @@ const (
 
 const (
 	StateNoPlans          = "noPlans"
+	StateNotApproved      = "notApproved"
 	StateNoFinance        = "noFinancialAccess"
 	StateNoGoals          = "noGoals"
 	StateNoPerformance    = "noPerformanceData"
@@ -40,10 +41,10 @@ type Performance struct {
 }
 
 type Conversion struct {
-	Stage    Stage            `json:"stage"`
-	Rate     *string          `json:"rate"`
-	Goal     *string          `json:"goal"`
-	Variance revenue.Variance `json:"variance"`
+	Stage    Stage             `json:"stage"`
+	Rate     *string           `json:"rate"`
+	Goal     *string           `json:"goal"`
+	Variance *revenue.Variance `json:"variance"`
 }
 
 type Report struct {

@@ -8,7 +8,6 @@ import (
 	"mapp/internal/allwork"
 	"mapp/internal/financials"
 	"mapp/internal/measure"
-	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/revenue"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
@@ -31,7 +30,6 @@ type fakes struct {
 	plans      map[string]revenue.Goal
 	categories []revenue.Category
 	spend      map[string]map[string]financials.Facts
-	model      attribution.Model
 	asked      string
 	scopeReads int
 }
@@ -54,10 +52,8 @@ func (f *fakes) SpendByMonth(context.Context, actor.Actor, []string) (map[string
 	return f.spend, nil
 }
 
-func (f *fakes) Designated(context.Context) (attribution.Model, error) { return f.model, nil }
-
 func (f *fakes) service() *Service {
-	deps := Deps{Series: f, PlanGoals: f, Spending: f, Attribution: f, Categories: f}
+	deps := Deps{Series: f, PlanGoals: f, Spending: f, Categories: f, Segments: f}
 	return NewService(fakeRead{}, deps, func() time.Time { return time.Date(2026, 6, 15, 0, 0, 0, 0, time.UTC) })
 }
 
@@ -72,7 +68,6 @@ func newFakes() *fakes {
 		plans: map[string]revenue.Goal{planOne: {INQ: ptr[int64](200), MQL: ptr[int64](40),
 			RevenueUSD: ptr(money.FromCents(2_000_000))}},
 		categories: []revenue.Category{{ID: "CAT-1", Name: "Events"}},
-		model:      attribution.Equal,
 	}
 }
 

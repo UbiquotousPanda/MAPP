@@ -98,7 +98,10 @@ func (v view) states() []string {
 	if !slices.ContainsFunc(v.series, hasGoal) {
 		states = append(states, StateNoGoals)
 	}
-	if !slices.ContainsFunc(v.series, hasActual) {
+	switch {
+	case !slices.ContainsFunc(v.series, func(s revenue.ActivitySeries) bool { return !s.FactsHeld }):
+		states = append(states, StateNotApproved)
+	case !slices.ContainsFunc(v.series, hasActual):
 		states = append(states, StateNoPerformance)
 	}
 	if covers := v.financeCovers(); covers.Plans < covers.Of {

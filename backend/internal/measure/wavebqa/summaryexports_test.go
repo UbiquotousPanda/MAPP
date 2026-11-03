@@ -11,8 +11,8 @@ import (
 )
 
 func summarySheets() []string {
-	return []string{"Revenue against goal", "Revenue trend", "Funnel stages", "Conversions", "Top Revenue by ",
-		"Top Performance (%) by ", "Top Actual cost by ", "Top ROI (%) by ", "In view", "About this export"}
+	return []string{"Revenue against goal", "Revenue trend", "Funnel stages", "Conversions", "Top Revenue",
+		"Top Performance (%)", "Top Actual cost", "Top ROI (%)", "In view", "About this export"}
 }
 
 func checkSummaryWorkbook(t *testing.T, alexSees person) {
@@ -94,9 +94,12 @@ func checkFunnelWidget(t *testing.T, alexSees person, s summaryAnswer) {
 	}
 	expectRows(t, "funnel", widgetRows(t, alexSees, "funnel"), funnel)
 	c := s.Funnel.Conversions[0]
-	rate := strings.Replace(textOf(c.Rate), "null", "—", 1)
+	rate, variance := strings.Replace(textOf(c.Rate), "null", "—", 1), varianceWord(c.Variance)
+	if c.Variance == "" {
+		variance = "—"
+	}
 	expectRows(t, "conversion", widgetRows(t, alexSees, "conversion"), [][]string{{"Stage", "Rate (%)", "Goal (%)",
-		"Variance"}, {"MQL", rate, textOf(c.Goal), varianceWord(c.Variance)}})
+		"Variance"}, {"MQL", rate, textOf(c.Goal), variance}})
 }
 
 // TestWaveB_SummaryWidgetsExportTheirTable_048_FR021: each widget's CSV is its table, the currency named; leagues end Total.

@@ -5133,7 +5133,7 @@ export interface paths {
         };
         /**
          * One league table of the Summary report - the five highest values of a segment and the total (feature 048)
-         * @description The same frame filter and category as getSummaryReport. Each activity's figures are shared equally between its values of the segment; Not filled in has the key none. The total counts each activity once. Cost and ROI are null for plans whose financial data the person may not see. A segment that matches nothing answers 200 with no rows.
+         * @description The same frame filter and category as getSummaryReport. Each activity's figures are shared between its values of the segment, by a % split's own shares or else equally (048-C4, C14); Not filled in has the key none. The total counts each activity once. Cost and ROI are null for plans whose financial data the person may not see. ROI is null, with the reason, while attribution is not configured. A segment that matches nothing answers 200 with no rows.
          */
         get: operations["getSummaryLeague"];
         put?: never;
@@ -6289,7 +6289,8 @@ export interface components {
                     stage: components["schemas"]["SummaryStageKey"];
                     rate: components["schemas"]["SummaryRate"];
                     goal: components["schemas"]["SummaryRate"];
-                    variance: components["schemas"]["SummaryVariance"];
+                    /** @description The rate against its goal in words; null when the rate is missing, noGoal when the goal is. */
+                    variance: components["schemas"]["SummaryVariance"] | null;
                 }[];
                 trend: {
                     stage: components["schemas"]["SummaryStageKey"];
@@ -6307,7 +6308,7 @@ export interface components {
                 name: string;
             }[];
             /** @description The report states that apply (FR-018). */
-            states: ("noPlans" | "noGoals" | "noPerformanceData" | "nothingMatches" | "noFinancialAccess")[];
+            states: ("noPlans" | "notApproved" | "noGoals" | "noPerformanceData" | "nothingMatches" | "noFinancialAccess")[];
             financeCovers: {
                 plans: number;
                 of: number;

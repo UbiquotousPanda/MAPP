@@ -21,14 +21,20 @@ func conversions(stages []Stage, totals map[Stage]Figures) []Conversion {
 	return out
 }
 
-// conversionVariance compares the shown rate with the shown goal, so the word matches the two figures beside it.
-func conversionVariance(stage, previous Figures) revenue.Variance {
-	if previous.Actual <= 0 || previous.Goal <= 0 {
-		return revenue.NoGoal
+// conversionVariance compares the shown rate with the shown goal, so the word matches the two figures beside it; it
+// says No goal only when the goal is missing, and nothing when only the rate is.
+func conversionVariance(stage, previous Figures) *revenue.Variance {
+	word := revenue.NoGoal
+	switch {
+	case previous.Goal <= 0:
+		return &word
+	case previous.Actual <= 0:
+		return nil
 	}
 	rate := roundedRatio(stage.Actual, previous.Actual, tenthPercent)
 	goal := roundedRatio(stage.Goal, previous.Goal, tenthPercent)
-	return performanceOf(rate, goal).Variance
+	word = performanceOf(rate, goal).Variance
+	return &word
 }
 
 // rateOf is projection.ConversionRate, the one every report uses, written with its one decimal.

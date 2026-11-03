@@ -62,6 +62,7 @@ describe('SummaryReport (048 US1, US2)', () => {
     ['nothingMatches' as const, 'No activities match the filters.'],
     ['noGoals' as const, /have no goals yet/],
     ['noPerformanceData' as const, 'No performance data has arrived yet.'],
+    ['notApproved' as const, /not approved yet/],
   ])('names the %s state instead of showing zeros (FR-018)', async (state, text) => {
     renderPage({ body: summaryReport({ states: [state] }) });
 
@@ -107,7 +108,7 @@ describe('SummaryReport (048 US1, US2)', () => {
 
     expect(await screen.findByText('Covers 1 of 2 plans')).toBeInTheDocument();
     expect(
-      await screen.findByText('Equally distributed, on actual cost · Covers 1 of 2 plans'),
+      await screen.findByText('Attribution is not configured yet · Covers 1 of 2 plans'),
     ).toBeInTheDocument();
   });
 
@@ -131,9 +132,17 @@ describe('SummaryReport (048 US1, US2)', () => {
     ).toBeInTheDocument();
   });
 
-  it('names the ROI model and cost basis, and shows a dash with the reason when there is no cost (FR-015)', async () => {
+  it('shows a dash, not No goal, beside a goal when the rate is missing (048-C1)', async () => {
+    const report = summaryReport();
+    report.funnel.conversions = [{ stage: 'mql', rate: null, goal: '3.0', variance: null }];
+    renderPage({ body: report });
+
+    expect(await screen.findByText('Goal 3.0% · —')).toBeInTheDocument();
+  });
+
+  it('says attribution is not configured beside ROI, as Revenue does (FR-015)', async () => {
     renderPage();
 
-    expect(await screen.findByText('Equally distributed, on actual cost')).toBeInTheDocument();
+    expect(await screen.findByText('Attribution is not configured yet')).toBeInTheDocument();
   });
 });
