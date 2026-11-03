@@ -1,12 +1,10 @@
-// Feature 046's end-to-end preparation: the Measure demo seeds no performance data, so a feed and its
-// mappings are set up through the API, and every load goes through the screens.
+// 046's end-to-end preparation: every load goes through the seeded Measure demo feed and the screens.
 import { expect, type Page } from '@playwright/test';
 import { callApi, chooseOption } from './fixtures';
 
 export const ALEX = 'alex.morgan@shell.com';
 export const DANIEL = 'daniel.okoro@shell.com';
-export const FEED = 'E2E Eloqua feed';
-const LUBRICANTS_MODEL = 'MOD-1001';
+export const FEED = 'Measure demo feed';
 const HEADER = 'Ref,Date,Activity,Feed id,External name,INQ';
 
 interface Named {
@@ -30,32 +28,14 @@ export async function activityNamed(page: Page, name: string): Promise<string> {
   throw new Error(`No activity named ${name} in the demo`);
 }
 
-/** The feed every load of these tests uses: one source supplies INQ for the model (FR-003). */
+/** The feed every load of these tests uses: the Measure demo's, the one source a model's INQ may have. */
 export async function ensureFeed(page: Page): Promise<string> {
   const sources = await callApi<{ items: Named[] }>(page, 'GET', '/api/v1/performance/sources');
-  const existing = sources.items.find((s) => s.name === FEED);
-  if (existing) {
-    return existing.id;
+  const seeded = sources.items.find((s) => s.name === FEED);
+  if (!seeded) {
+    throw new Error(`No data source named ${FEED} in the Measure demo`);
   }
-  const created = await callApi<Named>(page, 'POST', '/api/v1/performance/sources', {
-    name: FEED,
-    ownerId: 'U-1001',
-    category: 'marketingAutomation',
-    deliveryRoute: 'upload',
-    cadence: 'monthly',
-  });
-  const mappings = [
-    { columnName: 'Ref', meaning: 'reference' },
-    { columnName: 'Date', meaning: 'factDate' },
-    { columnName: 'Activity', meaning: 'key', keyType: 'activityId' },
-    { columnName: 'Feed id', meaning: 'key', keyType: 'integrationId' },
-    { columnName: 'External name', meaning: 'key', keyType: 'externalName' },
-    { columnName: 'INQ', meaning: 'stage', stage: 'inq', modelId: LUBRICANTS_MODEL },
-  ];
-  for (const mapping of mappings) {
-    await callApi(page, 'POST', `/api/v1/performance/sources/${created.id}/mappings`, mapping);
-  }
-  return created.id;
+  return seeded.id;
 }
 
 export interface FeedRow {

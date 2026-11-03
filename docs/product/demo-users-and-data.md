@@ -122,3 +122,28 @@ It also groups the demo's activity types into three **activity categories** (047
 media), **Events and sponsorship** (Event, Sponsorship) and **Content and creative** (Content production, Agency
 fees – Creative). *MOBILITY – Long-term contract* is in none, so the reports' *Uncategorised* has activities too.
 The categories are Settings, so every persona sees them; the plain seed has none.
+
+Last, its **performance facts** (046 T110) arrive as a real upload: the data source **Measure demo feed** (owner Alex
+Morgan, marketing automation, upload, monthly) with ten column mappings — Ref, Date, the keys Activity, Feed id and
+External name, INQ, MQL and Revenue for Lubricants 1.0, Currency and Journey — and one file,
+*measure-demo-feed.csv*, through 046's import as MAPP at the seed time: 14 rows, all matched, 20 facts, one load
+(Undo works on it) and its one activity-log entry, after the demo history (D-188). The feed is the one active source of
+Lubricants 1.0's INQ, MQL and revenue, so a second one is refused (046 FR-003): tests and demos load through it.
+
+The facts are dated January to 9 March 2026, before the seed time under both the tests' clock (12 March 2026) and
+any later run, on three Approved activities only:
+
+| Activity | INQ by month (Jan · Feb · Mar) | MQL by month | Revenue |
+|---|---|---|---|
+| Helix search and social, first half | 600 · 650 · 200, plus 1 journey touch | 90 · 110 · 30 | 42,000.00 USD (no journey), 18,500.00 EUR (journey JRN-8E05) |
+| Tellus case studies | 60 · 120 · 40, plus 1 journey touch | 10 · 20 · 5, plus 1 journey touch | 24,000.00 USD (journey JRN-2C71) |
+| Tellus webinar series | — | 2 journey touches in March | — |
+
+Two pseudonymous **journeys** (046-C6) feed 050's attribution: **JRN-2C71** — INQ on Helix first half (14 Jan), MQL on
+Tellus webinar series (2 Mar), then 24,000.00 USD on Tellus case studies (6 Mar); **JRN-8E05** — INQ (22 Jan) and MQL
+(12 Feb) on Tellus case studies, MQL on Tellus webinar series (3 Mar), then 18,500.00 EUR on Helix first half (9 Mar).
+Each conversion is on an activity its journey did not touch, so attributed revenue differs from booked revenue under
+every model; the 42,000.00 USD has no journey and stays wholly with its own activity. Equally distributed, the seeded
+model, credits Helix first half 54,000.00, Tellus case studies 13,405.80 and Tellus webinar series 18,702.90 USD.
+Tellus webinar series carries journey MQL only, so its INQ shows no actual and its projection stays the goal's alone
+(`projections.spec.ts`).

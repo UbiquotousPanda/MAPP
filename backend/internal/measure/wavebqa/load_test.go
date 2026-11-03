@@ -3,6 +3,7 @@ package wavebqa_test
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"testing"
 
@@ -33,15 +34,15 @@ func TestWaveB_LoadReconciles_046_SC001(t *testing.T) {
 
 	first := upload(t, alexSees, facts.source, mixed)
 	reconciled(t, alexSees, first, counts{Read: 5, Matched: 1, Held: 1, Unattributed: 1, Rejected: 1, Unmatched: 1})
-	helixINQ(710, "the mixed load")
+	helixINQ(seededHelixINQ+710, "the mixed load")
 	again := upload(t, alexSees, facts.source, mixed)
-	helixINQ(710, "the identical file again")
+	helixINQ(seededHelixINQ+710, "the identical file again")
 	repeated := upload(t, alexSees, facts.source, csvOf(row("m1", helix, "60")))
-	helixINQ(760, "m1 again with 60")
+	helixINQ(seededHelixINQ+760, "m1 again with 60")
 	for _, undo := range []struct {
 		load load
 		inq  int64
-	}{{repeated, 710}, {again, 710}, {first, 700}} {
+	}{{repeated, seededHelixINQ + 710}, {again, seededHelixINQ + 710}, {first, seededHelixINQ + 700}} {
 		alexSees.expect(t, post("/performance/imports/"+undo.load.ID+"/undo", nil), http.StatusOK)
 		helixINQ(undo.inq, "undoing "+undo.load.ID)
 	}
@@ -85,8 +86,8 @@ func TestWaveB_HeldFactsCountNowhere_046_SC002(t *testing.T) {
 			facts.first.Counts.Held, more.Counts.Held)
 	}
 	gated(t, alexSees, facts.ids, fleetExpo, workshopRoadshow, dealerSummit)
-	if got := panelOf(t, alexSees, facts.ids[helixFirstHalf]).inq(); got != 700 {
-		t.Errorf("Helix's INQ actual = %d, want 700: only its own released facts", got)
+	if got := panelOf(t, alexSees, facts.ids[helixFirstHalf]).inq(); got != seededHelixINQ+700 {
+		t.Errorf("Helix's INQ actual = %d, want 1,451 seeded + 700: only its own released facts", got)
 	}
 	approveOpenRound(t, signIn(t, server, daniel), facts.ids[fleetExpo])
 	if released := panelOf(t, alexSees, facts.ids[fleetExpo]); released.State != "ok" || released.inq() != 100 {
@@ -144,11 +145,12 @@ func TestWaveB_PersonalDataRefused_046_FR012(t *testing.T) {
 		t.Errorf("a file with personal data = %d %s, want 409 not_allowed naming E-mail and Phone", refused.Status, refused.Body)
 	}
 	loads := decode[importList](t, alexSees.expect(t, get("/performance/imports?sourceId="+facts.source), http.StatusOK))
-	if len(loads.Items) != 1 || loads.Items[0].ID != facts.first.ID {
-		t.Errorf("imports = %+v, want only the first load: a refused file is no load (046-C17)", loads.Items)
+	if len(loads.Items) != 2 || !slices.ContainsFunc(loads.Items, func(l load) bool { return l.ID == facts.first.ID }) {
+		t.Errorf("imports = %+v, want the seeded load and the first only: a refused file is no load (046-C17)", loads.Items)
 	}
 	rows := decode[struct{ Items []any }](t, alexSees.expect(t, get("/performance/review-rows?sourceId="+facts.source), http.StatusOK))
-	if got := panelOf(t, alexSees, tellus).inq(); got != 150 || len(rows.Items) != 0 {
-		t.Errorf("Tellus case studies' INQ = %d, rows to review %d; want 150 and none: nothing of the file stored", got, len(rows.Items))
+	if got := panelOf(t, alexSees, tellus).inq(); got != seededTellusINQ+150 || len(rows.Items) != 0 {
+		t.Errorf("Tellus case studies' INQ = %d, rows to review %d; want 221 seeded + 150 and none: nothing of the file stored",
+			got, len(rows.Items))
 	}
 }

@@ -31,6 +31,7 @@ type measureFile struct {
 	SwbsCodes        []measureSwbs
 	PurchaseRequests []measurePR
 	Categories       []measureCategory
+	Feed             measureFeed
 }
 
 type measureSwbs struct {

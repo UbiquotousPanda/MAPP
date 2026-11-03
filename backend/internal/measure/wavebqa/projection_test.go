@@ -226,9 +226,9 @@ func TestWaveB_ProjectionShape_047_FR008_FR010(t *testing.T) {
 		t.Errorf("%s = %+v, want gated with nothing projected: Submitted", fleetExpo, held)
 	}
 	inq := projectionOf(t, alexSees, facts.ids[helixFirstHalf]).stage("inq")
-	if inq.Projected == nil || *inq.Projected != 400+300+(4000-1242) {
-		t.Errorf("%s INQ projected = %v, want 3,458: 700 actual to February and 2,758 of 4,000 from March", helixFirstHalf,
-			inq.Projected)
+	if got := shown(inq.Projected); got != strconv.Itoa(601+650+400+300+(4000-1242)) {
+		t.Errorf("%s INQ projected = %s, want 4,709: 1,951 actual to February (1,251 seeded) and 2,758 of 4,000 from March",
+			helixFirstHalf, got)
 	}
 }
 

@@ -34,6 +34,11 @@ const (
 	grandOpening      = "Grand opening Shanghai"
 
 	factsHeader = "Ref,Date,Activity,Feed id,INQ,MQL,Revenue,Currency"
+	measureFeed = "Measure demo feed"
+
+	// The seed's INQ (seed/measure.json, feed): Helix first half 600 + 650 + 200 + 1, Tellus case studies 60 + 120 + 40 + 1.
+	seededHelixINQ  = 1451
+	seededTellusINQ = 221
 )
 
 type person struct {
@@ -135,25 +140,24 @@ type demoFacts struct {
 	first  load
 }
 
-// loadFacts gives the Measure demo the facts it lacks (open question 1): three rows for approved activities
-// and one for Fleet expo Rotterdam, Submitted.
+// demoFeed is the seeded Measure demo feed, the one active source of Lubricants 1.0's INQ, MQL and revenue: 046
+// refuses a second, so every check loads its own rows through it, beside the seeded ones.
+func demoFeed(t *testing.T, who person) string {
+	t.Helper()
+	sources := decode[struct{ Items []struct{ ID, Name string } }](t, who.expect(t, get("/performance/sources"), http.StatusOK))
+	for _, s := range sources.Items {
+		if s.Name == measureFeed {
+			return s.ID
+		}
+	}
+	t.Fatalf("no source %q in %+v", measureFeed, sources.Items)
+	return ""
+}
+
+// loadFacts adds four rows to the seeded facts: three for approved activities, one for Fleet expo Rotterdam, Submitted.
 func loadFacts(t *testing.T, alexSees person) demoFacts {
 	t.Helper()
-	ids := demoIDs(t, alexSees)
-	source := decode[struct{ ID string }](t, alexSees.expect(t, post("/performance/sources", map[string]any{
-		"name": "Eloqua", "ownerId": "U-1001", "category": "marketingAutomation", "deliveryRoute": "upload",
-		"cadence": "monthly"}), http.StatusCreated)).ID
-	for _, m := range []map[string]any{
-		{"columnName": "Ref", "meaning": "reference"}, {"columnName": "Date", "meaning": "factDate"},
-		{"columnName": "Activity", "meaning": "key", "keyType": "activityId"},
-		{"columnName": "Feed id", "meaning": "key", "keyType": "integrationId"},
-		{"columnName": "INQ", "meaning": "stage", "stage": "inq", "modelId": lubricantsModel},
-		{"columnName": "MQL", "meaning": "stage", "stage": "mql", "modelId": lubricantsModel},
-		{"columnName": "Revenue", "meaning": "revenue", "modelId": lubricantsModel},
-		{"columnName": "Currency", "meaning": "currency"},
-	} {
-		alexSees.expect(t, post("/performance/sources/"+source+"/mappings", m), http.StatusCreated)
-	}
+	ids, source := demoIDs(t, alexSees), demoFeed(t, alexSees)
 	first := upload(t, alexSees, source, csvOf(
 		fmt.Sprintf("h1,2026-01-31,%s,,400,40,25000.00,USD", ids[helixFirstHalf]),
 		fmt.Sprintf("h2,2026-02-28,%s,,300,30,,", ids[helixFirstHalf]),

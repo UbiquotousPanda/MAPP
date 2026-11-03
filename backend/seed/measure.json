@@ -270,5 +270,42 @@
     {"name": "Digital", "default": true, "types": ["Digital media"]},
     {"name": "Events and sponsorship", "types": ["Event", "Sponsorship"]},
     {"name": "Content and creative", "types": ["Content production", "Agency fees – Creative"]}
-  ]
+  ],
+  "feed": {
+    "name": "Measure demo feed",
+    "description": "The Measure demo plan's marketing-automation feed: January to March 2026, journeys included.",
+    "owner": "Alex Morgan",
+    "category": "marketingAutomation",
+    "deliveryRoute": "upload",
+    "cadence": "monthly",
+    "file": "measure-demo-feed.csv",
+    "mappings": [
+      {"column": "Ref", "meaning": "reference"},
+      {"column": "Date", "meaning": "factDate"},
+      {"column": "Activity", "meaning": "key", "keyType": "activityId"},
+      {"column": "Feed id", "meaning": "key", "keyType": "integrationId"},
+      {"column": "External name", "meaning": "key", "keyType": "externalName"},
+      {"column": "INQ", "meaning": "stage", "stage": "inq", "model": "Lubricants 1.0"},
+      {"column": "MQL", "meaning": "stage", "stage": "mql", "model": "Lubricants 1.0"},
+      {"column": "Revenue", "meaning": "revenue", "model": "Lubricants 1.0"},
+      {"column": "Currency", "meaning": "currency"},
+      {"column": "Journey", "meaning": "journey"}
+    ],
+    "facts": [
+      {"ref": "MD-001", "date": "2026-01-31", "activity": "Helix search and social, first half", "inq": "600", "mql": "90"},
+      {"ref": "MD-002", "date": "2026-02-28", "activity": "Helix search and social, first half", "inq": "650", "mql": "110"},
+      {"ref": "MD-003", "date": "2026-03-08", "activity": "Helix search and social, first half", "inq": "200", "mql": "30"},
+      {"ref": "MD-004", "date": "2026-01-31", "activity": "Tellus case studies", "inq": "60", "mql": "10"},
+      {"ref": "MD-005", "date": "2026-02-28", "activity": "Tellus case studies", "inq": "120", "mql": "20"},
+      {"ref": "MD-006", "date": "2026-03-08", "activity": "Tellus case studies", "inq": "40", "mql": "5"},
+      {"ref": "MD-007", "date": "2026-01-14", "activity": "Helix search and social, first half", "inq": "1", "journey": "JRN-2C71"},
+      {"ref": "MD-008", "date": "2026-03-02", "activity": "Tellus webinar series", "mql": "1", "journey": "JRN-2C71"},
+      {"ref": "MD-009", "date": "2026-03-06", "activity": "Tellus case studies", "revenue": "24000.00", "currency": "USD", "journey": "JRN-2C71"},
+      {"ref": "MD-010", "date": "2026-01-22", "activity": "Tellus case studies", "inq": "1", "journey": "JRN-8E05"},
+      {"ref": "MD-011", "date": "2026-02-12", "activity": "Tellus case studies", "mql": "1", "journey": "JRN-8E05"},
+      {"ref": "MD-012", "date": "2026-03-03", "activity": "Tellus webinar series", "mql": "1", "journey": "JRN-8E05"},
+      {"ref": "MD-013", "date": "2026-03-09", "activity": "Helix search and social, first half", "revenue": "18500.00", "currency": "EUR", "journey": "JRN-8E05"},
+      {"ref": "MD-014", "date": "2026-02-20", "activity": "Helix search and social, first half", "revenue": "42000.00", "currency": "USD"}
+    ]
+  }
 }

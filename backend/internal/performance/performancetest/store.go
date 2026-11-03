@@ -29,6 +29,8 @@ type Store struct {
 	NextCode int64
 	// Currencies stands in for the currencies table; tests set what the organisation has configured.
 	Currencies map[string]bool
+	// CurrencyLookup, when set, answers CurrencyCodes from the shared settings fake instead (storestest wires it).
+	CurrencyLookup func(ctx context.Context) (map[string]bool, error)
 	// Activities stands in for the activities table: key facts by activity id, visible to every scope.
 	Activities map[string]performance.KeyFacts
 	// ActivityLookup, when set, answers ActivityKeyFacts from the shared fakes instead (storestest wires it).
