@@ -120,7 +120,7 @@ func (lv leagueView) reasonOf(table string, shown any, t tally) *string {
 	dashable := table == TableCost || table == TableROI
 	reason := ""
 	switch {
-	case !dashable || shown != nil:
+	case !dashable || shown != nil || len(lv.series) == 0:
 		return nil
 	case !slices.ContainsFunc(lv.series, func(s revenue.ActivitySeries) bool { return lv.seesFinance(s.PlanID) }):
 		reason = reasonNoFinance
