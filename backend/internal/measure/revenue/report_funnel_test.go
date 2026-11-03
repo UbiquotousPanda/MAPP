@@ -1,6 +1,7 @@
 package revenue_test
 
 import (
+	"slices"
 	"testing"
 
 	"mapp/internal/allwork"
@@ -27,6 +28,36 @@ func TestFunnelReport_SelectsTheFirstAvailableStageAndCountsUncovered_FR015_049C
 	}
 	if got.UncoveredCount != 0 {
 		t.Errorf("uncoveredCount = %d, want 0: the one plan in view is covered", got.UncoveredCount)
+	}
+}
+
+// Both models project INQ and MQL, but the selector offers only what a goal may be set against.
+func TestFunnelReport_TheSelectorListsTheStagesTheModelsAllow_FR015_049C11_049C12(t *testing.T) {
+	t.Parallel()
+	cases := map[string]struct {
+		p1, p2 []string
+		want   []string
+	}{
+		"one model allows only MQL":      {p1: []string{"revenue", "mql"}, p2: []string{"revenue"}, want: []string{"mql"}},
+		"the union in funnel order":      {p1: []string{"mql"}, p2: []string{"inq"}, want: []string{"inq", "mql"}},
+		"no model allows a funnel stage": {p1: []string{"revenue"}, p2: []string{"revenue"}, want: []string{}},
+		"deals is never offered":         {p1: []string{"deals", "mql"}, p2: []string{"mql"}, want: []string{"mql"}},
+	}
+	for name, c := range cases {
+		goals := fakeGoals{
+			"A-1": revenue.ActivityGoals{Model: lubricantsModel(), AllowedStages: c.p1},
+			"A-2": revenue.ActivityGoals{Model: lubricantsModel(), AllowedStages: c.p2},
+		}
+		got, err := newFixtureWith(twoPlansScope(), goals, nil).FunnelReport(t.Context(), priya, measure.Filter{}, "")
+		if err != nil {
+			t.Fatalf("%s: FunnelReport: %v", name, err)
+		}
+		if !slices.Equal(got.AvailableStages, c.want) {
+			t.Errorf("%s: availableStages = %v, want %v", name, got.AvailableStages, c.want)
+		}
+		if len(c.want) > 0 && got.Stage != c.want[0] {
+			t.Errorf("%s: stage = %q, want %q, the first allowed", name, got.Stage, c.want[0])
+		}
 	}
 }
 

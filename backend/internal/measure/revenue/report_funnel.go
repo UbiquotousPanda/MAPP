@@ -30,7 +30,7 @@ func (s *Service) FunnelReport(ctx context.Context, a actor.Actor, f measure.Fil
 func availableStages(series []ActivitySeries) []string {
 	stages := make([]string, 0, 2)
 	for _, stage := range []string{StageINQ, StageMQL} {
-		if slices.ContainsFunc(series, stageMeasure(stage).covers) {
+		if slices.ContainsFunc(series, func(a ActivitySeries) bool { return slices.Contains(a.AllowedStages, stage) }) {
 			stages = append(stages, stage)
 		}
 	}
