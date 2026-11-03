@@ -194,7 +194,7 @@ export function funnelRanked(overrides: Partial<FunnelRanked> = {}): FunnelRanke
   };
 }
 
-/** One case per word 048-C1 names: the API's performance, its variance, and the words on screen. */
+/** One case per variance word: the API's performance, its variance, and the words on screen. */
 export const VARIANCE_CASES: [number | null, SummaryVariance, string][] = [
   [101, 'abovePlan', 'Above plan'],
   [100, 'onPlan', 'On plan'],

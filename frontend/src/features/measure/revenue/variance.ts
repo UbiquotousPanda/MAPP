@@ -2,7 +2,7 @@ import type { components } from '@/api/generated/schema';
 
 type Variance = components['schemas']['SummaryVariance'];
 
-/** 048-C1's words for the API's variance; the word comes from the server, never from the number. */
+/** The words for the API's variance; the word comes from the server, never from the number. */
 const VARIANCE_WORDS: Record<Variance, string> = {
   abovePlan: 'Above plan',
   onPlan: 'On plan',

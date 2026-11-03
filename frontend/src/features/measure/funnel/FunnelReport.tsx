@@ -37,18 +37,20 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
   const show = address.show ?? 'campaign';
   const whole = (value: number | null) => (value === null ? '—' : value.toLocaleString());
   const columns: RankedColumn<FunnelFigures>[] = [
-    { key: 'goal', label: 'Goal', value: (f) => whole(f.goal) },
+    { key: 'goal', label: 'Goal', value: (f) => whole(f.goal), sortable: false },
     { key: 'actual', label: 'Actual', value: (f) => whole(f.actual) },
     { key: 'projected', label: 'Projected', value: (f) => whole(f.projected) },
     {
       key: 'performance',
       label: 'Performance',
       value: (f) => performanceText(f.performance, f.variance),
+      sortable: false,
     },
     {
       key: 'conversion',
       label: 'Conversion',
       value: (f) => (f.conversion !== null ? `${f.conversion}%` : '—'),
+      sortable: false,
     },
   ];
   const groups = [
