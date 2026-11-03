@@ -10,5 +10,8 @@ func ConversionRate(actual, previous int64) (float64, bool) {
 	numerator := new(big.Int).Mul(big.NewInt(actual), big.NewInt(2000))
 	numerator.Add(numerator, big.NewInt(previous))
 	tenths := numerator.Quo(numerator, new(big.Int).Mul(big.NewInt(previous), big.NewInt(2)))
+	if !tenths.IsInt64() {
+		return 0, false
+	}
 	return float64(tenths.Int64()) / 10, true
 }

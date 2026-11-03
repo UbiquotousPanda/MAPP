@@ -23,6 +23,7 @@ func TestConversionRate_RoundsHalfUpToOneDecimalInWholeNumbers_FR017(t *testing.
 		{name: "more than the stage before", actual: 3, previous: 2, want: 150, ok: true},
 		{name: "no previous stage", actual: 5, previous: 0, ok: false},
 		{name: "huge counts do not overflow", actual: math.MaxInt64 / 2, previous: math.MaxInt64, want: 50, ok: true},
+		{name: "a rate past what tenths can hold is no figure", actual: math.MaxInt64, previous: 1, ok: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
