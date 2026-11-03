@@ -2,6 +2,7 @@ package performance
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	"mapp/internal/platform/date"
@@ -32,6 +33,9 @@ func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput
 		split := projection.SplitCounts(monthlyCounts(in.totals, figure.Stage, year), series.Months, today, year)
 		total := split.Total
 		panel.Stages[i].Projected, panel.Stages[i].Months = &total, split.Months
+		if figure.Actual == nil {
+			panel.Stages[i].Months = withoutCountActuals(split.Months)
+		}
 	}
 	panel.Revenue = s.projectedRevenue(ctx, panel.Revenue, forecast, in)
 	return panel
@@ -54,7 +58,27 @@ func (s *Service) projectedRevenue(ctx context.Context, figure RevenueFigure, fo
 	split := projection.SplitAmounts(s.monthlyRevenue(ctx, in.totals, year), forecast.Revenue, today, year)
 	projected := split.Total
 	figure.Projected, figure.Months = &projected, split.Months
+	if figure.Actual == nil {
+		figure.Months = withoutMoneyActuals(split.Months)
+	}
 	return figure
+}
+
+// withoutCountActuals leaves a figure without an actual null in every month, never 0.
+func withoutCountActuals(months []projection.SplitMonth) []projection.SplitMonth {
+	out := slices.Clone(months)
+	for i := range out {
+		out[i].Actual = nil
+	}
+	return out
+}
+
+func withoutMoneyActuals(months []projection.SplitMoneyMonth) []projection.SplitMoneyMonth {
+	out := slices.Clone(months)
+	for i := range out {
+		out[i].Actual = nil
+	}
+	return out
 }
 
 // monthlyCounts lays counted facts out in the engine's shape, so actual and projected line up by month.

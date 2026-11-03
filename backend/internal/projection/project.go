@@ -54,11 +54,16 @@ func calculated(out Projection, in Inputs, start, end date.Date) Projection {
 	return out
 }
 
-// atRate rounds half-up within each month, so every month's figure is one a reader can check by hand.
+// atRate rounds the running total half-up and places the difference, as phase does, so each month's
+// remainder carries into the next and the months add up to the rounded total, never one unit a month more.
 func atRate(months []MonthFigure, rate money.Percent) []MonthFigure {
 	converted := make([]MonthFigure, len(months))
+	var running, placed int64
 	for i, m := range months {
-		converted[i] = MonthFigure{Month: m.Month, Value: rate.OfWhole(m.Value)}
+		running += m.Value
+		share := rate.OfWhole(running)
+		converted[i] = MonthFigure{Month: m.Month, Value: share - placed}
+		placed = share
 	}
 	return converted
 }

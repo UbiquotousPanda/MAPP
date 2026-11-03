@@ -200,7 +200,7 @@ other with a comment and reopen it.
 - [X] T083 [P] [US5] Write `backend/internal/performance/correct_test.go`: a corrected row re-checks and becomes *Resolved* on a match; dismissal **requires** a comment; reopening restores it, with both actions in the history (FR-024)
 - [X] T084 [P] [US5] Write `backend/internal/performance/recheck_test.go`: open rows and held facts re-check on demand and automatically at each load from the same source (FR-025), in a **constant** query count regardless of queue size
 - [X] T085 [P] [US5] Write `backend/internal/performance/precedence_test.go`: a later load with the same source and reference replaces a corrected row — **the source wins** (FR-026)
-- [X] T086 [P] [US5] Write `backend/internal/performance/handler_review_test.go` as a contract test for the six review operations, including the **422** on dismissal without a comment
+- [X] T086 [P] [US5] Write `backend/internal/performance/handler_review_test.go` as a contract test for the six review operations, including the **400** `validation_failed` on dismissal without a comment
 - [ ] T087 [P] [US5] Write `frontend/src/features/performance/review/ReviewQueue.test.tsx`: the states data, empty, no access, filtered to nothing, and the required-comment dialog
 
 ### Implementation
