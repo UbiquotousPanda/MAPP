@@ -101,4 +101,34 @@ describe('ModelForm (FR-009, FR-010)', () => {
 
     expect(await screen.findByRole('checkbox', { name: 'Event' })).toBeInTheDocument();
   });
+
+  it('047 FR-001 US1 scenario 2 refuses a velocity that is not whole months, never truncating or dropping it', async () => {
+    const { user, api } = renderForm({ kind: 'new' });
+
+    await user.clear(field(/^INQ→MQL velocity/));
+    await user.type(field(/^INQ→MQL velocity/), '1.5');
+    await user.clear(field(/^MQL→deal velocity/));
+    await user.type(field(/^MQL→deal velocity/), 'abc');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByText('2 problems need your attention')).toBeInTheDocument();
+    expect(field(/^INQ→MQL velocity/)).toHaveAccessibleDescription(
+      /Enter a whole number of months from 0 to 24\./,
+    );
+    expect(field(/^MQL→deal velocity/)).toHaveAccessibleDescription(
+      /Enter a whole number of months from 0 to 24\./,
+    );
+    expect(api.requests.filter((request) => request.method !== 'GET')).toEqual([]);
+  });
+
+  it('047 FR-001 refuses an emptied velocity on edit instead of ignoring it', async () => {
+    const { user, api } = renderForm({ kind: 'edit', model: LUBRICANTS });
+
+    await screen.findByRole('checkbox', { name: 'Event' });
+    await user.clear(field(/^INQ→MQL velocity/));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByText('1 problem needs your attention')).toBeInTheDocument();
+    expect(api.requests.filter((request) => request.method !== 'GET')).toEqual([]);
+  });
 });
