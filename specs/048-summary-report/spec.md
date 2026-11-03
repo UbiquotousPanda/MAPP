@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-02
 
-**Status**: Built (3 Nov; open: T029 benchmark on PostgreSQL, T031 an ask to lane B)
+**Status**: Built (3 Nov; open: T029 benchmark on PostgreSQL)
 
 **Input**: User description: "Summary report of the Measure module (wave B, lane C, issue #41): projected against
 goal with the variance word, the trend split at today, four league tables (top by revenue, performance, cost and
