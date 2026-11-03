@@ -30,14 +30,10 @@ func (s *Service) buildRevenueReport(series []ActivitySeries, period string, sc 
 	display := money.DisplayIn(sc.Currency.Code, sc.Currency.Rate.String())
 	sums := sumMonths(series, revenueMeasure())
 	anyGoal := slices.ContainsFunc(series, func(a ActivitySeries) bool { return a.HasProjection })
-	out := RevenueReport{Cards: revenueCards(sums, w, anyGoal, display), Period: periodShown(period),
-		Periods: revenuePeriods(sums, period, w, display), Projection: stampOf(series)}
-	if len(series) == 0 {
-		out.Reason = ReasonNoData
-	} else if !anyGoal {
-		out.Reason = ReasonNoGoal
-	}
-	return out
+	cards := revenueCards(sums, anyGoal, display)
+	cards.Actual = actualMoneyCard(series, display, sums)
+	return RevenueReport{Cards: cards, Period: periodShown(period), Periods: revenuePeriods(sums, period, w, display),
+		Projection: stampOf(series), Reason: reportReason(series, anyGoal)}
 }
 
 func periodShown(period string) string {

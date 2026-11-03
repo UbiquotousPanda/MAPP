@@ -2,14 +2,15 @@ package app
 
 import (
 	"context"
+	"slices"
 
 	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/measure/revenue"
+	"mapp/internal/performance"
 	"mapp/internal/plan"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
-	"mapp/internal/projection"
 	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
@@ -28,7 +29,8 @@ func registerFunnel(w *wiring, r *measure.Registry) error {
 func revenueService(w *wiring) *revenue.Service {
 	deps := revenue.Deps{
 		Scoper: w.reports, Facts: w.set.Revenue,
-		Goals:      revenueGoals{plans: w.set.Plans, activities: w.set.Activities, settings: w.settings},
+		Goals: revenueGoals{plans: w.set.Plans, activities: w.set.Activities, settings: w.settings,
+			suppliers: w.set.Performance},
 		Categories: revenueCategories{settings: w.settings},
 		Rates:      w.settings,
 	}
@@ -41,6 +43,9 @@ type revenueGoals struct {
 	plans      stores.PlanStore
 	activities stores.ActivityStore
 	settings   *settings.Service
+	suppliers  interface {
+		ActiveSuppliers(ctx context.Context, modelID string) ([]performance.Supplier, error)
+	}
 }
 
 func (g revenueGoals) ActivityGoals(ctx context.Context, scope authz.Scope, nodes []allwork.Node) (map[string]revenue.ActivityGoals, error) {
@@ -60,14 +65,16 @@ func (g revenueGoals) ActivityGoals(ctx context.Context, scope authz.Scope, node
 	}
 	out := make(map[string]revenue.ActivityGoals, len(found))
 	for _, a := range found {
-		out[a.ID] = revenue.ActivityGoals{SetLaterStagesMyself: a.SetLaterStagesMyself, Model: models[planOf[a.ID]]}
+		goals := models[planOf[a.ID]]
+		goals.SetLaterStagesMyself = a.SetLaterStagesMyself
+		out[a.ID] = goals
 	}
 	return out, nil
 }
 
 // modelsByPlan reads every plan, then every distinct model, once each: bounded by plans and models in view,
 // never by activity count (SC-003).
-func (g revenueGoals) modelsByPlan(ctx context.Context, planOf map[string]string) (map[string]projection.Model, error) {
+func (g revenueGoals) modelsByPlan(ctx context.Context, planOf map[string]string) (map[string]revenue.ActivityGoals, error) {
 	planIDs := uniqueValues(planOf)
 	plans := make(map[string]plan.Plan, len(planIDs))
 	for _, id := range planIDs {
@@ -79,23 +86,48 @@ func (g revenueGoals) modelsByPlan(ctx context.Context, planOf map[string]string
 			plans[id] = p
 		}
 	}
-	models := make(map[string]projection.Model, len(plans))
-	cache := map[string]projection.Model{}
+	models := make(map[string]revenue.ActivityGoals, len(plans))
+	cache := map[string]revenue.ActivityGoals{}
 	for planID, p := range plans {
 		if cached, ok := cache[p.ModelID]; ok {
 			models[planID] = cached
 			continue
 		}
-		m, found, err := g.settings.Model(ctx, p.ModelID)
+		m, found, err := g.modelGoals(ctx, p.ModelID)
 		if err != nil {
 			return nil, err
 		}
 		if found {
-			cache[p.ModelID] = projectionModel(m)
-			models[planID] = cache[p.ModelID]
+			cache[p.ModelID] = m
+			models[planID] = m
 		}
 	}
 	return models, nil
+}
+
+// modelGoals is what a model gives each of its plans' activities, with the measures its active sources supply.
+func (g revenueGoals) modelGoals(ctx context.Context, modelID string) (revenue.ActivityGoals, bool, error) {
+	m, found, err := g.settings.Model(ctx, modelID)
+	if err != nil || !found {
+		return revenue.ActivityGoals{}, false, err
+	}
+	suppliers, err := g.suppliers.ActiveSuppliers(ctx, modelID)
+	if err != nil {
+		return revenue.ActivityGoals{}, false, err
+	}
+	return revenue.ActivityGoals{Model: projectionModel(m), AllowedStages: slices.Clone(m.AllowedGoalStages),
+		Sourced: sourcedMeasures(suppliers)}, true, nil
+}
+
+func sourcedMeasures(suppliers []performance.Supplier) []string {
+	out := []string{}
+	for _, s := range suppliers {
+		supplied := map[performance.Meaning]string{performance.MeaningRevenue: "revenue", performance.MeaningStage: s.Stage}
+		if m, supplies := supplied[s.Meaning]; supplies {
+			out = append(out, m)
+		}
+	}
+	return out
 }
 
 func uniqueValues(m map[string]string) []string {

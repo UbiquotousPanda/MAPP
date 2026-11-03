@@ -239,9 +239,11 @@ func TestReport_TotalDoesNotCountTheMonthInProgressTwice_FR010(t *testing.T) {
 		t.Fatalf("Report (with a July fact): %v", err)
 	}
 
-	if afterReport.Cards.Actual.Value == nil ||
-		afterReport.Cards.Actual.Value.Amount.Cents()-beforeReport.Cards.Actual.Value.Amount.Cents() != 5_000_000 {
-		t.Fatalf("actual card moved by %v, want exactly the 50,000.00 USD July fact", afterReport.Cards.Actual.Value)
+	if beforeReport.Cards.Actual.Value != nil {
+		t.Fatalf("actual card before = %v, want none: nothing is counted yet", beforeReport.Cards.Actual.Value)
+	}
+	if afterReport.Cards.Actual.Value == nil || afterReport.Cards.Actual.Value.Amount.Cents() != 5_000_000 {
+		t.Fatalf("actual card = %v, want exactly the 50,000.00 USD July fact", afterReport.Cards.Actual.Value)
 	}
 	if afterReport.Cards.Projected.Value.Amount.Cents() != beforeReport.Cards.Projected.Value.Amount.Cents() {
 		t.Errorf("total = %s after a July fact, want it unchanged from %s: July's model figure already covers July",

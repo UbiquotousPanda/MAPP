@@ -231,3 +231,19 @@ func addSeriesMonth(m revenue.Month, actual, total money.Amount) (money.Amount, 
 	}
 	return actual, total
 }
+
+func TestActivitySeries_CountsTheRevenueFactsLeftOutForWantOfARate_FR024_046C7(t *testing.T) {
+	t.Parallel()
+	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}
+	facts := []revenue.FactTotal{
+		{ActivityID: "A-1", Stage: "revenue", Month: "2026-02", Currency: "USD", AmountMinor: 500_000, FactCount: 2},
+		{ActivityID: "A-1", Stage: "revenue", Month: "2026-03", Currency: "EUR", AmountMinor: 900_000, FactCount: 3},
+		{ActivityID: "A-1", Stage: "revenue", Month: "2026-04", Currency: "JPY", AmountMinor: 100, FactCount: 1},
+	}
+
+	got := seriesOf(t, newFixtureWith(oneActivityScope(), goals, facts), "")
+
+	if len(got) != 1 || got[0].ExcludedFacts != 4 {
+		t.Fatalf("series = %+v, want 4 facts left out: 3 in EUR and 1 in JPY have no rate", got)
+	}
+}

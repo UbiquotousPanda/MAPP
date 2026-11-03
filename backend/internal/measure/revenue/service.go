@@ -36,6 +36,7 @@ type activityView struct {
 	node       allwork.Node
 	projection projection.Projection
 	facts      activityTotals
+	goals      ActivityGoals
 }
 
 // scopeAndActivities resolves the scope, applies the category parameter, and projects each activity.
@@ -79,7 +80,7 @@ func (s *Service) scopeAndActivities(ctx context.Context, a actor.Actor, f measu
 			StartDate: n.StartDate, EndDate: n.EndDate, Ongoing: n.Ongoing,
 			Today: today,
 		})
-		views = append(views, activityView{node: n, projection: proj, facts: facts[n.ID]})
+		views = append(views, activityView{node: n, projection: proj, facts: facts[n.ID], goals: g})
 	}
 	return sc, views, nil
 }

@@ -30,10 +30,7 @@ func TestFunnelReport_SelectsTheFirstAvailableStageAndCountsUncovered_FR015_049C
 	}
 }
 
-// A plan whose activity types only an INQ goal is uncovered for MQL, even while another
-// plan's model still offers it.
-func TestFunnelReport_AModelThatDoesNotAllowTheStageIsUncovered_FR018(t *testing.T) {
-	t.Parallel()
+func twoPlansScope() measure.Scope {
 	start, end := date.MustParse("2026-01-01"), date.MustParse("2026-12-31")
 	nodes := []allwork.Node{
 		{Level: allwork.LevelActivity, ID: "A-1", PlanID: "P-1", Name: "Launch film",
@@ -41,13 +38,18 @@ func TestFunnelReport_AModelThatDoesNotAllowTheStageIsUncovered_FR018(t *testing
 		{Level: allwork.LevelActivity, ID: "A-2", PlanID: "P-2", Name: "Direct deal",
 			INQ: inqGoal(500), StartDate: &start, EndDate: &end},
 	}
-	sc := measure.Scope{Year: 2026, Nodes: nodes, Matched: allwork.Matched{Activities: []string{"A-1", "A-2"}},
+	return measure.Scope{Year: 2026, Nodes: nodes, Matched: allwork.Matched{Activities: []string{"A-1", "A-2"}},
 		Currency: allwork.Currency{Code: "USD"}}
+}
+
+// P-2's model allows only INQ goals, so P-2 is uncovered for MQL while P-1's model still offers it.
+func TestFunnelReport_AModelThatDoesNotAllowTheStageIsUncovered_FR018(t *testing.T) {
+	t.Parallel()
 	goals := fakeGoals{
-		"A-1": revenue.ActivityGoals{Model: lubricantsModel()},
-		"A-2": revenue.ActivityGoals{Model: lubricantsModel(), SetLaterStagesMyself: true},
+		"A-1": revenue.ActivityGoals{Model: lubricantsModel(), AllowedStages: []string{"inq", "mql", "revenue"}},
+		"A-2": revenue.ActivityGoals{Model: lubricantsModel(), AllowedStages: []string{"inq"}},
 	}
-	s := newFixtureWith(sc, goals, nil)
+	s := newFixtureWith(twoPlansScope(), goals, nil)
 
 	got, err := s.FunnelReport(t.Context(), priya, measure.Filter{}, "mql")
 	if err != nil {
@@ -57,7 +59,27 @@ func TestFunnelReport_AModelThatDoesNotAllowTheStageIsUncovered_FR018(t *testing
 		t.Fatalf("stage = %q, want mql: P-1's model still offers it", got.Stage)
 	}
 	if got.UncoveredCount != 1 {
-		t.Errorf("uncoveredCount = %d, want 1: P-2 typed only an INQ goal", got.UncoveredCount)
+		t.Errorf("uncoveredCount = %d, want 1: P-2's model does not allow MQL", got.UncoveredCount)
+	}
+}
+
+func TestFunnelReport_APlanWithoutGoalsIsNotUncoveredWhenItsModelAllowsTheStage_FR018_049C11(t *testing.T) {
+	t.Parallel()
+	sc := twoPlansScope()
+	sc.Nodes[1].INQ = nil
+	allowed := []string{"inq", "mql", "revenue"}
+	goals := fakeGoals{
+		"A-1": revenue.ActivityGoals{Model: lubricantsModel(), AllowedStages: allowed},
+		"A-2": revenue.ActivityGoals{Model: lubricantsModel(), SetLaterStagesMyself: true, AllowedStages: allowed},
+	}
+	s := newFixtureWith(sc, goals, nil)
+
+	got, err := s.FunnelReport(t.Context(), priya, measure.Filter{}, "mql")
+	if err != nil {
+		t.Fatalf("FunnelReport: %v", err)
+	}
+	if got.UncoveredCount != 0 {
+		t.Errorf("uncoveredCount = %d, want 0: P-2 has no goal, but its model allows MQL", got.UncoveredCount)
 	}
 }
 
