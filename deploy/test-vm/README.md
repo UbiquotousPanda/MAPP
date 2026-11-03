@@ -1,61 +1,134 @@
-# Hosted test VM
+# Hosted test environment — deployment guide
 
 One small Azure VM runs the whole app from `compose.yaml`, so one or two business analysts or testers can
-use it without installing anything (ADR-0021). Caddy in front gets an HTTPS certificate from Let's Encrypt
-and asks for one shared tester sign-in before anything else, because the demo sign-in shows its password to
-anyone who opens it. The data is the fictitious demo seed; never put real Shell data here.
+use it in a browser without installing anything (ADR-0021, constitution 4.10.0). The data is the fictitious
+demo seed; never put real Shell data here. Set up on 2026-11-03.
 
 | | |
 |---|---|
 | URL | https://mapp-test-northstar.centralindia.cloudapp.azure.com |
-| Azure | subscription "Azure subscription - dvortex", resource group `mapp-test-rg` (Central India) |
-| VM | `mapp-test-vm`, Ubuntu 24.04, `Standard_B2als_v2` (2 vCPU, 4 GB), 32 GB StandardSSD |
-| Firewall | 80 and 443 from anywhere; 22 only from the maintainer's IP address |
-| Shuts down | every day at 15:30 UTC (21:00 IST); it does not start by itself |
+| Browser sign-in | user `tester`, password in the maintainer's `~/mapp-test-credentials.txt` (not in the repo) |
+| Then | the app's own demo sign-in: pick a demo person; the page shows the demo password |
+| Shuts down | every day at 15:30 UTC (21:00 IST); start it again with `az vm start` (below) |
+| Cost | about USD 30 a month if left on all the time, less with the nightly shutdown |
 
-## Deploy a new version
+## How a request travels
 
-From a clean checkout of the commit to test (usually `develop`):
-
-```sh
-deploy/test-vm/deploy.sh azureuser@mapp-test-northstar.centralindia.cloudapp.azure.com
+```
+browser ──HTTPS 443──▶ NSG (allow-web) ──▶ VM: Caddy ──▶ web (nginx) ──/api──▶ api (Go) ──▶ postgres
+           HTTP 80 only redirects to HTTPS     │ Let's Encrypt certificate
+                                               │ basic auth: tester sign-in
 ```
 
-The script sends the committed files (`git archive HEAD`), never uncommitted changes, rebuilds the images on
-the VM and restarts what changed. The database and `~/mapp/.env` are kept. The SSH key is
-`~/.ssh/mapp-test-vm`; add it to `ssh-agent` or `~/.ssh/config`.
+There is no VPN and no private network to join: the VM has a public IP address. Access is controlled by the
+firewall rules below, the shared tester sign-in in Caddy, and the app's demo sign-in. Only Caddy publishes
+ports on the VM; PostgreSQL and the web container listen on `127.0.0.1` of the VM only.
 
-## Everyday tasks
+## Azure resources
 
-```sh
-az vm start -g mapp-test-rg -n mapp-test-vm        # after the nightly shutdown
-az vm deallocate -g mapp-test-rg -n mapp-test-vm   # stop paying for compute
-ssh azureuser@<host> 'cd ~/mapp && docker compose -f compose.yaml -f deploy/test-vm/compose.yaml logs -f api'
-```
+Subscription **Azure subscription - dvortex** (`8f5fce97-f4fa-42ba-877f-07aba0fb8e33`), tenant Zensar
+Technologies Ltd (`207c3e32-7115-4ed3-8a55-22f7edb77dc9`). Everything is in one resource group, so deleting
+the group removes it all.
 
-SSH refused? Your IP address changed: update the `allow-ssh-me` rule of `mapp-test-vmNSG`.
+| Resource | Exact name | Details |
+|---|---|---|
+| Resource group | `mapp-test-rg` | Central India (`centralindia`) |
+| Virtual machine | `mapp-test-vm` | `Standard_B2als_v2` (2 vCPU, 4 GB), Ubuntu 24.04 LTS (`Ubuntu2404`), admin user `azureuser`, SSH key only |
+| OS disk | `mapp-test-vm_OsDisk_1_7b4bdaf7b2d24875bb7280349f1de5e3` | 32 GB, StandardSSD_LRS |
+| Public IP | `mapp-test-vmPublicIP` | `20.219.251.125`, Static, Standard SKU, DNS label `mapp-test-northstar` |
+| DNS name | `mapp-test-northstar.centralindia.cloudapp.azure.com` | from the public IP's DNS label; no custom domain |
+| Virtual network | `mapp-test-vmVNET` | `10.0.0.0/16` |
+| Subnet | `mapp-test-vmSubnet` | `10.0.0.0/24`; the VM's private IP is `10.0.0.4` |
+| Network interface | `mapp-test-vmVMNic` | the NSG below is attached here |
+| Network security group | `mapp-test-vmNSG` | rules below |
+| Auto-shutdown schedule | `shutdown-computevm-mapp-test-vm` | daily 15:30 UTC; registered the `Microsoft.DevTestLab` provider on the subscription |
 
-Start again with fresh demo data (deletes everything testers entered):
+Removed the same day: the Static Web App `SPA` (resource group `dvortex_rg`) and its workflow
+`.github/workflows/azure-static-web-apps-purple-rock-0def4000f.yml`. It served the web app without the API.
+Its GitHub secret `AZURE_STATIC_WEB_APPS_API_TOKEN_PURPLE_ROCK_0DEF4000F` is no longer used; delete it in
+the repository's Settings → Secrets and variables → Actions.
 
-```sh
-ssh azureuser@<host> 'cd ~/mapp && docker compose -f compose.yaml -f deploy/test-vm/compose.yaml down -v'
-```
+### Firewall rules (`mapp-test-vmNSG`, inbound)
 
-then deploy again.
+| Priority | Name | Port | Source | Action | Why |
+|---|---|---|---|---|---|
+| 100 | `allow-web` | TCP 80, 443 | Any | Allow | the app; Let's Encrypt must reach port 80 to issue the certificate |
+| 110 | `allow-ssh-me` | TCP 22 | `115.110.105.36/32` | Allow | SSH for the maintainer only |
+| 65000–65500 | Azure defaults | — | — | — | allow inside the virtual network and from the load balancer; deny everything else |
 
-## The VM's `.env`
+Outbound is Azure's default (everything allowed): the VM pulls images, packages and certificates.
 
-`~/mapp/.env` on the VM, never committed:
+### On the VM
+
+| What | Where |
+|---|---|
+| App files (a copy of the deployed commit) | `/home/azureuser/mapp` |
+| Secrets | `/home/azureuser/mapp/.env` (mode 600, never committed) |
+| Containers (Compose project `mapp`) | `postgres`, `seed` (runs once, then exits), `api`, `web`, `caddy` |
+| Data volumes | `mapp_postgres-data` (database), `mapp_caddy-data` (certificate) |
+| Installed by `cloud-init.yaml` | `docker.io`, `docker-compose-v2`; `azureuser` in the `docker` group |
+
+`.env` variables:
 
 | Variable | Meaning |
 |---|---|
 | `MAPP_HOST` | the VM's host name; Caddy's certificate and the API's `PUBLIC_HOSTS` |
 | `DEMO_PASSWORD` | the demo sign-in's password |
-| `TESTER_USER`, `TESTER_PASSWORD_HASH` | the shared tester sign-in; make the hash with `docker run --rm caddy:2.10-alpine caddy hash-password`, in single quotes |
+| `TESTER_USER`, `TESTER_PASSWORD_HASH` | the shared tester sign-in; make the hash with `docker run --rm caddy:2.10-alpine caddy hash-password --plaintext '<password>'` and write it in single quotes |
+
+### On the maintainer's computer
+
+| What | Where |
+|---|---|
+| SSH key | `~/.ssh/mapp-test-vm` (private) and `~/.ssh/mapp-test-vm.pub` |
+| SSH alias | `Host mapp-test` in `~/.ssh/config`, so `ssh mapp-test` works |
+| Passwords | `~/mapp-test-credentials.txt` |
+
+## Deploy a new version
+
+From a clean checkout of the commit to test (usually `develop`, after `git pull`):
+
+```sh
+deploy/test-vm/deploy.sh mapp-test
+```
+
+The script sends the committed files (`git archive HEAD`), never uncommitted changes, rebuilds the images on
+the VM and restarts what changed: about five minutes the first time, less afterwards. The database and
+`.env` are kept, so testers' data survives a redeploy. The VM must be running.
+
+## Everyday tasks
+
+```sh
+az vm start -g mapp-test-rg -n mapp-test-vm        # after the nightly shutdown; the app starts by itself
+az vm deallocate -g mapp-test-rg -n mapp-test-vm   # stop paying for compute (disk and IP still cost a little)
+az vm auto-shutdown -g mapp-test-rg -n mapp-test-vm --off   # no nightly shutdown
+ssh mapp-test 'cd ~/mapp && docker compose -f compose.yaml -f deploy/test-vm/compose.yaml ps'
+ssh mapp-test 'cd ~/mapp && docker compose -f compose.yaml -f deploy/test-vm/compose.yaml logs -f api'
+```
+
+**SSH times out?** Your IP address changed. Allow the new one:
+
+```sh
+az network nsg rule update -g mapp-test-rg --nsg-name mapp-test-vmNSG -n allow-ssh-me \
+  --source-address-prefixes "$(curl -s https://api.ipify.org)/32"
+```
+
+**Change the tester password:** make a new hash (above), replace `TESTER_PASSWORD_HASH` in the VM's `.env`,
+then `ssh mapp-test 'cd ~/mapp && docker compose -f compose.yaml -f deploy/test-vm/compose.yaml up -d caddy'`.
+
+**Fresh demo data** (deletes everything testers entered):
+
+```sh
+ssh mapp-test 'cd ~/mapp && docker compose -f compose.yaml -f deploy/test-vm/compose.yaml down -v'
+deploy/test-vm/deploy.sh mapp-test
+```
+
+`down -v` also deletes the certificate volume; Caddy gets a new certificate on the next start.
 
 ## Building it again from nothing
 
 ```sh
+ssh-keygen -t ed25519 -f ~/.ssh/mapp-test-vm -N "" -C mapp-test-vm
 az group create -n mapp-test-rg -l centralindia
 az vm create -g mapp-test-rg -n mapp-test-vm --image Ubuntu2404 --size Standard_B2als_v2 \
   --admin-username azureuser --ssh-key-values ~/.ssh/mapp-test-vm.pub \
@@ -64,8 +137,27 @@ az vm create -g mapp-test-rg -n mapp-test-vm --image Ubuntu2404 --size Standard_
 az network nsg rule create -g mapp-test-rg --nsg-name mapp-test-vmNSG -n allow-web --priority 100 \
   --protocol Tcp --destination-port-ranges 80 443 --access Allow
 az network nsg rule create -g mapp-test-rg --nsg-name mapp-test-vmNSG -n allow-ssh-me --priority 110 \
-  --protocol Tcp --destination-port-ranges 22 --source-address-prefixes <your-ip>/32 --access Allow
+  --protocol Tcp --destination-port-ranges 22 --source-address-prefixes "$(curl -s https://api.ipify.org)/32" --access Allow
 az vm auto-shutdown -g mapp-test-rg -n mapp-test-vm --time 1530
 ```
 
-Write `~/mapp/.env` as above, then deploy. Remove it all with `az group delete -n mapp-test-rg`.
+Add the `mapp-test` SSH alias, write the VM's `.env` (above), then deploy.
+
+## Removing it all
+
+```sh
+az group delete -n mapp-test-rg --yes
+```
+
+This deletes every resource listed above, data included, and cannot be undone. Then remove the
+`mapp-test` entry from `~/.ssh/config` and the key files.
+
+## Known limits
+
+- Not a production environment: Shell's release gates (CSPM scanning, ServiceNow) apply when MAPP moves to
+  Shell's environment.
+- The session cookie is not marked `Secure` behind the proxy (the browser still only reaches the site over
+  HTTPS).
+- All testers reach the API through the same proxy address, so the sign-in attempt limit counts them
+  together: repeated wrong passwords from one tester can briefly block the other.
+- Deploying is a manual step; pushing to `develop` does not deploy.
