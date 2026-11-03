@@ -174,8 +174,10 @@ const activityPerformance: Screen = async (page, role, testInfo) => {
     ),
   );
   if (seesMeasure(role)) {
-    await check('the projection names its model and last change (047 FR-012)', () =>
-      expect(panel.getByText(/^Projected from .+, last changed .+\.$/)).toBeVisible(),
+    // signInAs sets the date format DD MMM YYYY, so the last change reads "03 Nov 2026".
+    const stamp = /^Projected from .+, last changed \d{2} [A-Z][a-z]{2} \d{4}\.$/;
+    await check('the projection names its model and the date of its last change (047 FR-012)', () =>
+      expect(panel.getByText(stamp)).toBeVisible(),
     );
   }
   await check('a missing actual states its reason, never 0 (047 FR-013)', async () => {

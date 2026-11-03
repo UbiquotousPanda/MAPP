@@ -13,6 +13,8 @@ const databaseURL =
 const apiPort = process.env.BROWSER_PASS_API_PORT || '18110';
 const webPort = process.env.BROWSER_PASS_WEB_PORT || '14110';
 const VITE = 'node_modules/vite/bin/vite.js';
+// BROWSER_PASS_SLOW multiplies every timeout, for a machine other runs are loading.
+const slow = Number(process.env.BROWSER_PASS_SLOW) || 1;
 const results = path.resolve(
   process.env.BROWSER_PASS_RESULTS || path.join(os.tmpdir(), 'mapp-wave-b-browser-pass'),
 );
@@ -31,8 +33,8 @@ export default defineConfig({
     ['json', { outputFile: path.join(results, 'results.json') }],
     ['html', { outputFolder: path.join(results, 'report'), open: 'never' }],
   ],
-  timeout: 120_000,
-  expect: { timeout: 10_000 },
+  timeout: 120_000 * slow,
+  expect: { timeout: 10_000 * slow },
   use: {
     baseURL: `http://127.0.0.1:${webPort}`,
     trace: 'retain-on-failure',
@@ -48,7 +50,7 @@ export default defineConfig({
       cwd: '../backend',
       env: { ...process.env, DATABASE_URL: databaseURL, APP_PORT: apiPort, APP_ENV: 'local' },
       url: `http://127.0.0.1:${apiPort}/healthz`,
-      timeout: 300_000,
+      timeout: 300_000 * slow,
       reuseExistingServer: false,
     },
     {
@@ -57,7 +59,7 @@ export default defineConfig({
       cwd: '../frontend',
       env: { ...process.env, MAPP_API_URL: `http://127.0.0.1:${apiPort}` },
       url: `http://127.0.0.1:${webPort}`,
-      timeout: 300_000,
+      timeout: 300_000 * slow,
       reuseExistingServer: false,
     },
   ],
