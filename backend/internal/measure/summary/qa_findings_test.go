@@ -128,3 +128,23 @@ func TestDescribe_NamesSummarysOwnParameters_039_FR022(t *testing.T) {
 		t.Errorf("Describe() (-want +got)\n%s", diff)
 	}
 }
+
+func TestLeague_EmptyViewGivesNoFinanceReason_048_FR003(t *testing.T) {
+	t.Parallel()
+	empty := withSegments()
+	empty.series = nil
+
+	got := league(t, empty, TableCost, nil)
+
+	if got.Total != nil || len(got.Rows) != 0 || got.Reason != nil {
+		t.Errorf("cost with nothing in view = total %v, %d rows, reason %v; want no reason, as the other leagues give",
+			got.Total, len(got.Rows), deref(got.Reason))
+	}
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return "<nil>"
+	}
+	return *s
+}
