@@ -25,5 +25,7 @@
 
 ## Phase 4: After 046 merges (blocked: 050-Q1)
 
-- [ ] T007 Read 046's revenue facts and journeys into `attribution.Conversion`; attributed revenue for 048 and 049
-- [ ] T008 e2e `frontend/e2e/attribution.spec.ts`; restated figures after a model change (US4, SC-002)
+- [X] T007 Read 046's revenue facts and journeys into `attribution.Conversion` (050-C3, 050-C4): `Crediting.Credit`
+  for 048 and 049, the facts reader in the attribution store and its fake, `TestCrediting_*`, scope-isolation test
+- [ ] T008 e2e `frontend/e2e/attribution.spec.ts`; restated figures after a model change (US4, SC-002). Waits for
+  049 (#82) or 048 to show attributed revenue through `Crediting.Credit` and for demo facts with journeys

@@ -128,6 +128,36 @@ Software Design & Construction Policy and SEMS, which are mandatory.
 - Test names mention the requirement ID they prove.
 - Shell environment: Windows; Spec Kit scripts are PowerShell (`.specify/scripts/powershell/`).
 
+## Before a pull request
+
+What reviews keep sending back. Check each before asking for review and before replying "fixed".
+
+- **Run `pwsh ./scripts/check-changed.ps1`** (comment budget of every touched file, file length, no
+  `-- +goose Down`, no requirement IDs in new comments, then format, lint and tests). CI runs the same rules. A
+  failure on a line this branch added is yours, whatever the file. Write "green" only when CI is green on that
+  commit; otherwise say what you ran.
+- **Fakes are not PostgreSQL.** pgx sends a nil slice as NULL (`= ANY(NULL)` matches nothing) and JSON gets
+  `null` (send `[]` where the contract says array). Every foreign key gets an `ON DELETE` decision and an
+  in-use check; every CHECK, length and unique constraint has a service validation that answers a field error,
+  never a 500; a `LIMIT` never decides correctness. Make the fakes refuse what PostgreSQL refuses.
+- **The record's whole life:** in-use check (counting binned records that point at it), what the bin snapshot
+  holds, restore and Undo when something it references is gone.
+- **Fix the class, not the example.** Reproduce through a path users take (a state change the app can make),
+  then fix every sibling: the other report, month and quarter view, every sort option, delete and restore,
+  every currency. Reply per finding with the commit, the test and the siblings checked; say plainly what is
+  not fixed.
+- **Figures** come from `docs/product/measure-metrics.md`; a spec that defines one differently goes to the
+  integrator first. The month in progress counts once, and cards, chart, ranked list and export agree (test it
+  with facts in that month, in month and quarter view). Test money in a non-USD currency and convert parts with
+  `money.ConvertParts`; no data is "—", never 0.00.
+- **Reuse, don't copy.** Export a rule from its package and call it; never re-implement it in `app/` wiring. A
+  shared file that needs a change is asked for in the pull request.
+- **Required tests ship with the code** (non-negotiable 8): a contract test per endpoint, a scope-isolation
+  test per scoped read, every state a view renders, a test that each control changes the request and survives
+  the address and the export, and an end-to-end test per P1 story that asserts a figure.
+- **The description says what is in it:** stories and tasks done, tasks left open, shared files touched and
+  why, a reason for each 301–400 line file, and what was not run.
+
 ## Active technologies
 
 ### Target (constitution 2.x) — new code, and each package or screen once aligned

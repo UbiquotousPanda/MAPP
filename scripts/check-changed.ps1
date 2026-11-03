@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Checks only what changed since a base: format, lint, comment budget, file length and the tests of the changed Go
+  Checks only what changed since a base: format, lint, the rules of check-rules.ps1 and the tests of the changed Go
   packages and frontend folders (Measure build guide §6, issue #M0). Prints only failures; exits 1 when any check fails.
 .EXAMPLE
   ./scripts/check-changed.ps1                 # against origin/measure-module
@@ -29,21 +29,7 @@ $changed = @(git -C $root diff --name-only --diff-filter=ACMR "$Base" -- backend
 $goFiles = @($changed | Where-Object { $_ -like 'backend/*.go' })
 $webFiles = @($changed | Where-Object { $_ -match '^frontend/(src|e2e)/.*\.(ts|tsx|css)$' })
 
-# Constitution V and VIII: at most 300 non-blank lines, comments at most 5% of them, rounded up.
-foreach ($file in @($goFiles + $webFiles)) {
-  $lines = @(Get-Content (Join-Path $root $file) | Where-Object { $_.Trim() -ne '' })
-  $inBlock = $false
-  $comments = 0
-  foreach ($line in $lines) {
-    $text = $line.Trim()
-    if ($inBlock) { $comments++; if ($text.Contains('*/')) { $inBlock = $false }; continue }
-    if ($text.StartsWith('/*')) { $comments++; $inBlock = -not $text.Contains('*/'); continue }
-    if ($text -match '^//(?!nolint|go:)' -and $text -notmatch 'eslint') { $comments++ }
-  }
-  $budget = [math]::Ceiling($lines.Count * 0.05)
-  if ($comments -gt $budget) { $failures.Add("== Comment budget == $file has $comments comment lines, $budget allowed") }
-  if ($lines.Count -gt 300) { $failures.Add("== File length == $file has $($lines.Count) non-blank lines, 300 allowed") }
-}
+Invoke-Check 'Rules' $root { & "$PSScriptRoot/check-rules.ps1" -Base $Base }
 
 if ($goFiles.Count -gt 0) {
   $packages = @($goFiles | ForEach-Object { './' + (Split-Path ($_ -replace '^backend/', '') -Parent).Replace('\', '/') } |

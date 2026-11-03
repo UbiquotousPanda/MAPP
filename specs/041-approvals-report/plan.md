@@ -72,6 +72,23 @@ Lane A adds the rule with the wave A contract.
 `internal/platform/apibench/measure_approvals_test.go` (a new file beside 039's `reports_test.go`; lane A to
 confirm it may live there, otherwise in the package).
 
+Recorded 3 Nov 2026 on a Windows laptop with PostgreSQL 17 (CI runs 18 on Linux), time and statements per request:
+
+| Request | Demo | 028 volume |
+|---|---|---|
+| Report | 25 ms · 43 | 2.4 s · 43 (2.2 s on a second run) |
+| Report, one market | 22 ms · 44 | 2.7 s · 44 |
+| Purchase requests tab | 22 ms · 43 | 4.3 s · 43 |
+| Grid searched and sorted | 22 ms · 43 | 4.0 s · 43 |
+| Grid filtered | 23 ms · 43 | 3.9 s · 43 |
+| Grid export | 39 ms · 68 | 5.0 s · 68 |
+
+- **Statements:** fixed at both sizes, as planned.
+- **Time:** over SC-006's 2 s at volume. A CPU profile of the report puts most of the request in the frame's scope
+  read, `measure.Scope` → `allWorkSource.Year`, which builds every plan's campaign tree with each activity's summary,
+  completeness, attribute values and line-item facts. That part is the hub's and is raised with lane A; 041's own
+  code is a small share.
+
 ## Constitution check
 
 Spec first ✔ (C1–C7) · server works out every figure ✔ · reuses 017/031/032/036 definitions ✔ · money exact

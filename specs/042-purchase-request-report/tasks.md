@@ -37,8 +37,8 @@ and `notYetServed` line that lane A delegated (T013).
 
 - [X] T018 `BenchmarkPurchaseRequestsReport` (needs PostgreSQL to run)
 - [X] T019 Comment budget and file length of every file touched
-- [ ] T020 Contract problems found while building, written in the pull request for lane A
-- [ ] T021 `/speckit-converge`; spec status Built; merge `measure-module`; pull request with "042 Built"
+- [x] T020 (in #84, "For lane A") Contract problems found while building, written in the pull request for lane A
+- [x] T021 (spec Built; merged as #84) `/speckit-converge`; spec status Built; merge `measure-module`; pull request with "042 Built"
 
 ## Coverage of the requirements
 
