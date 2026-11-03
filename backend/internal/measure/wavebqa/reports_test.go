@@ -147,14 +147,16 @@ func (s shape) actualTotal() int64 {
 }
 
 type revenueFigures struct {
-	Goal             *amount  `json:"goal"`
-	Actual           *amount  `json:"actual"`
-	Projected        *amount  `json:"projected"`
-	Performance      *float64 `json:"performance"`
-	ActualCost       *amount  `json:"actualCost"`
-	ROI              *float64 `json:"roi"`
-	ActualCostReason string   `json:"actualCostReason"`
-	ROIReason        string   `json:"roiReason"`
+	Goal                    *amount  `json:"goal"`
+	Actual                  *amount  `json:"actual"`
+	Projected               *amount  `json:"projected"`
+	Performance             *float64 `json:"performance"`
+	AttributedRevenue       *amount  `json:"attributedRevenue"`
+	ActualCost              *amount  `json:"actualCost"`
+	ROI                     *float64 `json:"roi"`
+	AttributedRevenueReason string   `json:"attributedRevenueReason"`
+	ActualCostReason        string   `json:"actualCostReason"`
+	ROIReason               string   `json:"roiReason"`
 }
 
 func (f revenueFigures) whole() figures {
@@ -181,8 +183,9 @@ type rankedGroup[F any] struct {
 }
 
 type ranked[F any] struct {
-	Total  int              `json:"total"`
-	Groups []rankedGroup[F] `json:"groups"`
+	Total       int              `json:"total"`
+	Groups      []rankedGroup[F] `json:"groups"`
+	Attribution *basisStamp      `json:"attribution"`
 }
 
 func (r ranked[F]) tops() []entry[F] {

@@ -164,13 +164,13 @@ type leagueEntry struct {
 }
 
 type leagueAnswer struct {
-	Table    string                         `json:"table"`
-	Segment  *segment                       `json:"segment"`
-	Segments []segment                      `json:"segments"`
-	Rows     []leagueEntry                  `json:"rows"`
-	Total    json.RawMessage                `json:"total"`
-	ROI      *struct{ Model, Basis string } `json:"roi"`
-	Reason   *string                        `json:"reason"`
+	Table    string          `json:"table"`
+	Segment  *segment        `json:"segment"`
+	Segments []segment       `json:"segments"`
+	Rows     []leagueEntry   `json:"rows"`
+	Total    json.RawMessage `json:"total"`
+	ROI      *basisStamp     `json:"roi"`
+	Reason   *string         `json:"reason"`
 }
 
 func leagueOf(t *testing.T, who person, table, query string) leagueAnswer {
@@ -254,11 +254,11 @@ func costHidden(t *testing.T, who person, label string) {
 	t.Helper()
 	for _, table := range []string{"cost", "roi"} {
 		l := leagueOf(t, who, table, "")
-		modelNamed := (l.ROI != nil) == (table == "roi")
+		named := sameStamp(l.ROI, &basisStamp{equalShares, actualBasis})
 		if units(l.Total) != nil || slices.ContainsFunc(l.Rows, func(r leagueEntry) bool { return units(r.Value) != nil }) ||
-			textOf(l.Reason) != noFinanceReason || !modelNamed {
+			textOf(l.Reason) != noFinanceReason || named != (table == "roi") {
 			t.Errorf("%s's %s league = %s, reason %s, model %+v; want every value and the total null with %q, the model "+
-				"named beside ROI only (FR-003)", label, table, l.values(), textOf(l.Reason), l.ROI, noFinanceReason)
+				"named on ROI alone (FR-003)", label, table, l.values(), textOf(l.Reason), l.ROI, noFinanceReason)
 		}
 	}
 }
