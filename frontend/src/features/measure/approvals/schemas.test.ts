@@ -47,3 +47,13 @@ describe('the report address of Approvals (041 FR-005, FR-015)', () => {
     expect(readApprovalsParams(bad)).toEqual(DEFAULT_PARAMS);
   });
 });
+
+describe('the Approvals search (041 FR-015)', () => {
+  it('reads a search of at most 100 characters, as the export takes it (FR-015)', () => {
+    const at = (length: number) =>
+      readApprovalsParams(new URLSearchParams({ q: 'a'.repeat(length) })).q;
+
+    expect(at(100)).toBe('a'.repeat(100));
+    expect(at(101)).toBe('');
+  });
+});

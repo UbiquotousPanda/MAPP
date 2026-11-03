@@ -11,7 +11,7 @@ import (
 
 // A real defect: ListMappings(ctx, nil) is how mapping.go looks a mapping up by id, but on PostgreSQL
 // ANY(NULL) matches no row, so every edit or delete answered "not found".
-func TestPostgresStore_ListMappingsWithNoSourceIDsListsEveryMapping(t *testing.T) {
+func TestPostgresStore_ListMappingsWithNoSourceIDsListsEveryMapping_FR006(t *testing.T) {
 	t.Parallel()
 	db := dbtest.NewDB(t)
 	store := performance.NewPostgresStore(db)

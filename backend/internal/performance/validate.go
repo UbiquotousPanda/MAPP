@@ -4,13 +4,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"mapp/internal/platform/money"
 )
 
 const maxReferenceLength = 200
 
-// Fault: a row carries every fault it has, not the first (FR-011); the review row's reason is the headline.
+// Fault: a row carries every fault it has, not the first; the review row's reason is the headline.
 type Fault struct {
 	Column  string `json:"column"`
 	Code    string `json:"code"`
@@ -26,6 +27,7 @@ type Cell struct {
 func Validate(row Row, today time.Time, currencies map[string]bool) []Fault {
 	faults := referenceFaults(row.Reference)
 	faults = append(faults, dateFaults(row.Date, today)...)
+	faults = append(faults, journeyFaults(row.Journey)...)
 	return append(faults, readingFaults(row, currencies)...)
 }
 
@@ -36,6 +38,13 @@ func referenceFaults(c Cell) []Fault {
 		return []Fault{{Column: c.Column, Code: faultMissingReference, Message: msgReferenceNeeded}}
 	case len(raw) > maxReferenceLength:
 		return []Fault{{Column: c.Column, Code: faultReferenceTooLong, Message: msgReferenceTooLong}}
+	}
+	return nil
+}
+
+func journeyFaults(c Cell) []Fault {
+	if utf8.RuneCountInString(strings.TrimSpace(c.Value)) > maxReferenceLength {
+		return []Fault{{Column: c.Column, Code: faultJourneyTooLong, Message: msgJourneyTooLong}}
 	}
 	return nil
 }
@@ -86,7 +95,7 @@ func firstColumn(readings []Reading) string {
 	return readings[0].Column
 }
 
-// countFaults reports negative and fractional separately, because "-1.5" is both (FR-011). The count is read
+// countFaults reports negative and fractional separately, because "-1.5" is both. The count is read
 // as an integer, never a float, so a value the bigint column cannot hold is refused here rather than there.
 func countFaults(c Cell) []Fault {
 	whole, fraction, hasPoint := strings.Cut(strings.TrimSpace(c.Value), ".")

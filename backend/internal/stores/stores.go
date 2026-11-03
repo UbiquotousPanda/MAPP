@@ -54,5 +54,6 @@ type Finance struct {
 
 	PurchaseRequests PurchaseRequestStore
 	Performance      PerformanceStore
+	Revenue          RevenueStore
 	GsapLink         GsapLinkStore
 }

@@ -54,6 +54,9 @@ func (u *usageIndex) activityType(id string) Usage {
 	if t := u.modelsByType[id]; t != nil {
 		parts = append(parts, part(usedByModel, *t, "Allowed in "+plural(t.count, "model", "models")))
 	}
+	if t := u.categoriesByType[id]; t != nil {
+		parts = append(parts, part(usedByCategory, *t, "Grouped by "+plural(t.count, "category", "categories")))
+	}
 	return newUsage(parts, nil)
 }
 

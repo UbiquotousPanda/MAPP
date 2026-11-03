@@ -229,3 +229,24 @@ func TestPostgresStore_KeyFactsOutsideTheScopeAnswerAsMissing_FR044(t *testing.T
 		t.Error("an activity outside the scope was readable, want it answered as missing")
 	}
 }
+
+func TestPostgresStore_ActivityTotalsOutsideTheScopeAreEmpty_FR044(t *testing.T) {
+	t.Parallel()
+	store := pgPerformance(t)
+
+	mine, err := store.ActivityTotals(t.Context(), team1Only, "A-1001", 2026)
+	if err != nil {
+		t.Fatalf("ActivityTotals(A-1001) error: %v", err)
+	}
+	if len(mine) != 1 || mine[0].Counts != 5 {
+		t.Fatalf("in my own team the totals are %+v, want one month of 5 INQs: without them the test proves nothing", mine)
+	}
+
+	theirs, err := store.ActivityTotals(t.Context(), team1Only, "A-1002", 2026)
+	if err != nil {
+		t.Fatalf("ActivityTotals(A-1002) error: %v", err)
+	}
+	if len(theirs) != 0 {
+		t.Errorf("outside my scope the totals are %+v, want none", theirs)
+	}
+}

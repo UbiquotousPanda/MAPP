@@ -16,13 +16,10 @@ import (
 	"mapp/internal/platform/record"
 )
 
-// The limits of a model (data model §2, D-053).
 const maxModelName = 80
 
-// maxDealSize is the largest average deal size: 100,000,000.00 USD.
 var maxDealSize = money.FromCents(10_000_000_000)
 
-// Messages of the plan's "User-visible messages" table about models.
 const (
 	modelGoneMessage         = "This model no longer exists — someone may have deleted it."
 	modelNameTakenMessage    = "A model called '%s' already exists."
@@ -40,14 +37,18 @@ const (
 	goalsDetails          = "Used by %s (%s): calculated goals recalculated."
 )
 
-// CreateModel creates an active model (FR-009, US1-1): a name of at most 80 characters that no other model
-// has, two rates above 0 % and at most 100 %, an average deal size in USD above 0 and at most
-// 100,000,000.00, and at least one active activity type. Every problem is reported at once (US1-5).
 func (s *Service) CreateModel(ctx context.Context, a actor.Actor, input ModelInput) (ModelView, error) {
 	typeIDs := input.ActivityTypeIDs
+	stages := input.AllowedGoalStages
+	if stages == nil {
+		stages = allGoalStages()
+	}
 	all := ModelUpdate{
 		Name: &input.Name, InqToMqlRate: &input.InqToMqlRate, MqlToDealRate: &input.MqlToDealRate,
 		AverageDealSize: OptionalMoney{Set: true, Value: input.AverageDealSize}, ActivityTypeIDs: &typeIDs,
+		InqToMqlVelocityMonths:  valueOrZero(input.InqToMqlVelocityMonths),
+		MqlToDealVelocityMonths: valueOrZero(input.MqlToDealVelocityMonths),
+		AllowedGoalStages:       &stages,
 	}
 	var view ModelView
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
@@ -75,11 +76,8 @@ func (s *Service) CreateModel(ctx context.Context, a actor.Actor, input ModelInp
 	return view, err
 }
 
-// UpdateModel changes the fields of the model id that update sends (FR-009, FR-011, FR-012, D-203), from
-// the version the person started at (FR-007). Activity types newly allowed must be active; an inactive type
-// already allowed may stay (FR-004). A save that changes nothing writes no version and no log entry;
-// otherwise one "changed" entry lists every old and new value and, when the rates or the deal size of a
-// model in use changed, says the goals were recalculated (US1-4).
+// UpdateModel lets an inactive type already allowed stay. A save that changes nothing writes no version and no
+// log entry.
 func (s *Service) UpdateModel(ctx context.Context, a actor.Actor, id string, update ModelUpdate) (ModelView, error) {
 	var view ModelView
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
@@ -129,9 +127,6 @@ func (s *Service) UpdateModel(ctx context.Context, a actor.Actor, id string, upd
 	return view, err
 }
 
-// applyModel returns m with the fields update sends, and adds every problem with them to problems (data
-// model §2): the name, the rates, the deal size and the allowed activity types, which it checks against the
-// stored models and activity types. Fields not sent stay as they are.
 func (s *Service) applyModel(ctx context.Context, m Model, update ModelUpdate, problems *errs.Problems) (Model, error) {
 	if update.Name != nil {
 		name := strings.TrimSpace(*update.Name)
@@ -163,11 +158,10 @@ func (s *Service) applyModel(ctx context.Context, m Model, update ModelUpdate, p
 		}
 		m.ActivityTypeIDs = typeIDs
 	}
-	return m, nil
+	return applyProjectionFields(m, update, problems), nil
 }
 
-// parseModelRate reads a conversion rate: a percentage above 0 and at most 100.00 with at most two
-// decimals (FR-009). Above 0, because plan goals are worked backwards from it.
+// parseModelRate refuses 0 because plan goals are worked backwards from the rate.
 func parseModelRate(problems *errs.Problems, field, text string) money.Percent {
 	rate, err := money.ParsePercent(strings.TrimSpace(text))
 	if err != nil || rate.IsZero() || rate.Cmp(money.Hundred) > 0 {
@@ -177,7 +171,6 @@ func parseModelRate(problems *errs.Problems, field, text string) money.Percent {
 	return rate
 }
 
-// parseDealSize reads the average deal size: USD, above 0 and at most 100,000,000.00 (FR-009, D-053).
 func parseDealSize(problems *errs.Problems, in *money.Input) money.Money {
 	if in == nil {
 		problems.Add("averageDealSize", dealSizeMessage)
@@ -199,9 +192,7 @@ func parseDealSize(problems *errs.Problems, in *money.Input) money.Money {
 	return money.Money{}
 }
 
-// allowedTypes checks the activity types a model is to allow (FR-009, FR-004): at least one, each still
-// stored, and each active unless the model already allowed it (previous). It returns them once each, in the
-// order of the activity-type list (by name).
+// allowedTypes lets an inactive type stay when the model already allowed it (previous).
 func (s *Service) allowedTypes(ctx context.Context, typeIDs, previous []string, problems *errs.Problems) ([]string, error) {
 	typeIDs = unique(typeIDs)
 	if len(typeIDs) == 0 {

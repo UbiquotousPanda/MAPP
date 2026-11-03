@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"mapp/internal/platform/money"
+	"mapp/internal/projection"
 )
 
 func stageFigures(goals GoalFacts, totals []StageTotals, suppliers []Supplier, words troubleWords) []StageFigure {
@@ -18,8 +19,8 @@ func stageFigures(goals GoalFacts, totals []StageTotals, suppliers []Supplier, w
 			actuals[total.Stage] = sumInto(actuals[total.Stage], counts)
 		}
 	}
-	inq := StageFigure{Stage: "inq", Goal: goals.INQ, Actual: actuals["inq"]}
-	mql := StageFigure{Stage: "mql", Goal: goals.MQL, Actual: actuals["mql"]}
+	inq := StageFigure{Stage: "inq", Goal: goals.INQ, Actual: actuals["inq"], Months: []projection.SplitMonth{}}
+	mql := StageFigure{Stage: "mql", Goal: goals.MQL, Actual: actuals["mql"], Months: []projection.SplitMonth{}}
 	mql.Conversion = conversionOf(mql.Actual, inq.Actual)
 	inq.Reason = stageReason(inq, "inq", suppliers, words)
 	mql.Reason = stageReason(mql, "mql", suppliers, words)
@@ -77,7 +78,7 @@ type panelInput struct {
 
 func (s *Service) revenueFigure(ctx context.Context, in panelInput) RevenueFigure {
 	goals, totals, suppliers, words := in.goals, in.totals, in.suppliers, in.words
-	figure := RevenueFigure{Goal: goals.Revenue}
+	figure := RevenueFigure{Goal: goals.Revenue, Months: []projection.SplitMoneyMonth{}}
 	rates := s.currentRates(ctx)
 	sum := money.Amount{}
 	counted := false

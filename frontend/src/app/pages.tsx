@@ -17,6 +17,7 @@ const lineItems = () => import('@/features/line-items');
 const measure = () => import('@/features/measure');
 const overspend = () => import('@/features/overspend');
 const people = () => import('@/features/people');
+const performanceData = () => import('@/features/performance');
 const plans = () => import('@/features/plans');
 const workbook = () => import('@/features/workbook');
 const purchaseRequests = () => import('@/features/purchase-requests');
@@ -110,6 +111,18 @@ export const NewCampaignPanel = lazy(() =>
 export const NewInitiativePanel = lazy(() =>
   plans().then((feature) => ({ default: feature.NewInitiativePanel })),
 );
+export const PerformanceDataPage = lazy(() =>
+  performanceData().then((feature) => ({ default: feature.SourceListPage })),
+);
+export const PerformanceImportsPage = lazy(() =>
+  performanceData().then((feature) => ({ default: feature.ImportsPage })),
+);
+export const PerformanceImportPage = lazy(() =>
+  performanceData().then((feature) => ({ default: feature.ImportSummaryPage })),
+);
+export const PerformanceReviewPage = lazy(() =>
+  performanceData().then((feature) => ({ default: feature.ReviewQueuePage })),
+);
 export const PlanCreatePage = lazy(() =>
   plans().then((feature) => ({ default: feature.PlanCreatePage })),
 );
@@ -120,6 +133,9 @@ export const PlanPage = lazy(() => plans().then((feature) => ({ default: feature
 export const PlansPage = lazy(() => plans().then((feature) => ({ default: feature.PlansPage })));
 export const RecycleBinPage = lazy(() =>
   recycleBin().then((feature) => ({ default: feature.RecycleBinPage })),
+);
+export const ActivityCategoriesPage = lazy(() =>
+  settings().then((feature) => ({ default: feature.ActivityCategoriesPage })),
 );
 export const ActivityTypesPage = lazy(() =>
   settings().then((feature) => ({ default: feature.ActivityTypesPage })),

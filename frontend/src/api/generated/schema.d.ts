@@ -412,6 +412,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings/activity-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every activity category (active and inactive), sorted by name ignoring letter case (FR-018, FR-022) */
+        get: operations["listActivityCategories"];
+        put?: never;
+        /** Create an activity category grouping activity types (FR-018) */
+        post: operations["createActivityCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/activity-categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        /** One activity category with the activity types it groups */
+        get: operations["getActivityCategory"];
+        put?: never;
+        post?: never;
+        /** Delete an activity category; its activity types become Uncategorised (FR-021) */
+        delete: operations["deleteActivityCategory"];
+        options?: never;
+        head?: never;
+        /** Change an activity category and the activity types it groups (FR-018, FR-019, FR-020) */
+        patch: operations["updateActivityCategory"];
+        trace?: never;
+    };
     "/api/v1/activity-types": {
         parameters: {
             query?: never;
@@ -4944,6 +4984,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/revenue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Revenue against goal by period, as cards and a series, for the records in view (feature 049)
+         * @description Records match as the report frame matches them, in the person's reports.view scope (039). Actual is 046's counted facts; projected comes from 047's engine run per activity and summed (049-C3). ROI and actual cost are always null with reason "Attribution is not configured yet" until feature 050 lands (049-C6). Exported through exportReport with the widget keys cards, periods and ranked.
+         */
+        get: operations["getRevenueReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/revenue/ranked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The records of the Show level ranked by revenue, each with its children, grouped and paged (feature 049) */
+        get: operations["getRevenueRanked"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/funnel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One funnel stage against goal by period, as cards and a series, for the records in view (feature 049)
+         * @description The stage selector lists every stage the models in view allow (049-C11); a plan whose model does not allow the selected stage shows null with reason and is counted in uncoveredCount. Deals is not selectable (049-C12).
+         */
+        get: operations["getFunnelReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/funnel/ranked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The records of the Show level ranked by the selected stage, each with its children, grouped and paged (feature 049) */
+        get: operations["getFunnelRanked"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/plan-details": {
         parameters: {
             query?: never;
@@ -5384,24 +5498,58 @@ export interface components {
         PerformanceFactList: {
             items: components["schemas"]["PerformanceFact"][];
         };
+        /** @description One month split at today (047 FR-010); the month in progress carries both figures. */
+        SplitMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: number | null;
+            projected: number | null;
+            inProgress: boolean;
+        };
+        SplitMoneyMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            inProgress: boolean;
+        };
+        /** @description The model behind the projected figures and when its parameters last changed (047 FR-012). */
+        ProjectionStamp: {
+            modelName: string;
+            /** Format: date-time */
+            modelChangedAt: string;
+        };
         StageFigure: {
             /** @enum {string} */
             stage: "inq" | "mql";
             goal: number | null;
             actual: number | null;
+            /** @description The plan-year figure: actual to the end of the last whole month before today plus projected from today, so a closed year equals the actual (047 FR-010). Null with projectedReason when nothing projects. Never add this to actual — they overlap. */
+            projected: number | null;
             /** @description Actual over the previous stage's actual, one decimal; null where it cannot be worked out. */
             conversion: number | null;
             /** @enum {string} */
             reason: "" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /**
+             * @description Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013).
+             * @enum {string}
+             */
+            projectedReason: "" | "noGoal";
+            months: components["schemas"]["SplitMonth"][];
         };
         RevenueFigure: {
             goal: components["schemas"]["Money"] | null;
             /** @description One USD total at the current rate (046-C7). */
             actual: components["schemas"]["Money"] | null;
+            /** @description The plan-year figure, as StageFigure.projected, with the deals from today priced at the model's average deal size (047 FR-007, FR-010). */
+            projected: components["schemas"]["Money"] | null;
             /** @description Facts left out because their currency has no rate (SC-010). */
             excludedCount: number;
             /** @enum {string} */
             reason: "" | "notApproved" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /** @enum {string} */
+            projectedReason: "" | "noGoal";
+            months: components["schemas"]["SplitMoneyMonth"][];
         };
         MetricFigure: {
             /** @enum {string} */
@@ -5427,6 +5575,7 @@ export interface components {
             revenue: components["schemas"]["RevenueFigure"];
             webMetrics: components["schemas"]["MetricFigure"][];
             sources: components["schemas"]["PanelSource"][];
+            projection: components["schemas"]["ProjectionStamp"] | null;
         };
         CodeAttribute: {
             name: string;
@@ -5755,6 +5904,185 @@ export interface components {
                 label: string;
                 totals: components["schemas"]["PlanBudgetFigures"];
                 entries: components["schemas"]["RankedEntry"][];
+            }[];
+            drillLost: boolean;
+        };
+        /** @description A revenue card figure; null with reason when it cannot be worked out (FR-009). */
+        RevenueCardFigure: {
+            value: components["schemas"]["Money"] | null;
+            /** @enum {string} */
+            reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+        };
+        RevenueCards: {
+            goal: components["schemas"]["RevenueCardFigure"];
+            actual: components["schemas"]["RevenueCardFigure"];
+            projected: components["schemas"]["RevenueCardFigure"];
+            performance: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+        };
+        /** @description One period of the series, split at today (047 FR-010); the period in progress carries both. */
+        RevenuePeriod: {
+            /** @example 2026-03 */
+            key: string;
+            /** @enum {string} */
+            state: "actual" | "inProgress" | "planned";
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            goal: components["schemas"]["Money"] | null;
+            inProgress: boolean;
+        };
+        RevenueReport: {
+            cards: components["schemas"]["RevenueCards"];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            periods: components["schemas"]["RevenuePeriod"][];
+            projection: components["schemas"]["ProjectionStamp"] | null;
+            /**
+             * @description Why the report is empty, never an empty grid alone (049-C20).
+             * @enum {string}
+             */
+            reason: "" | "noGoal" | "notApproved" | "noData" | "noModel";
+        };
+        RevenueFigures: {
+            goal: components["schemas"]["Money"] | null;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            performance: number | null;
+            /** @description Always null until feature 050 configures attribution (049-C6). */
+            actualCost: components["schemas"]["Money"] | null;
+            /** @description Always null until feature 050 configures attribution (049-C6). */
+            roi: number | null;
+            /** @enum {string} */
+            actualCostReason: "" | "attributionNotConfigured";
+            /** @enum {string} */
+            roiReason: "" | "attributionNotConfigured";
+        };
+        RevenueEntry: {
+            id: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            name: string;
+            planId: string;
+            figures: components["schemas"]["RevenueFigures"];
+            children?: components["schemas"]["RevenueEntry"][];
+        };
+        RevenueRanked: {
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            /** @enum {string} */
+            sort: "actualRevenue" | "projectedRevenue";
+            /** @enum {string} */
+            order: "desc" | "asc";
+            group: string;
+            page: number;
+            size: number;
+            total: number;
+            trail: {
+                id: string;
+                level: string;
+                name: string;
+            }[];
+            groups: {
+                key: string;
+                label: string;
+                totals: components["schemas"]["RevenueFigures"];
+                entries: components["schemas"]["RevenueEntry"][];
+            }[];
+            drillLost: boolean;
+        };
+        FunnelCards: {
+            goal: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            actual: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            projected: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            performance: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            /** @description The selected stage's actual over the previous stage's actual (049-C13). */
+            conversion: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noPreviousStage";
+            };
+        };
+        FunnelPeriod: {
+            /** @example 2026-03 */
+            key: string;
+            /** @enum {string} */
+            state: "actual" | "inProgress" | "planned";
+            actual: number | null;
+            projected: number | null;
+            goal: number | null;
+            inProgress: boolean;
+        };
+        FunnelReport: {
+            /** @enum {string} */
+            stage: "inq" | "mql";
+            /** @description Every stage any model in view allows, in funnel order (049-C11). */
+            availableStages: ("inq" | "mql")[];
+            /** @description Plans whose model does not allow the selected stage (049-C11, FR-018). */
+            uncoveredCount: number;
+            cards: components["schemas"]["FunnelCards"];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            periods: components["schemas"]["FunnelPeriod"][];
+            projection: components["schemas"]["ProjectionStamp"] | null;
+            /** @enum {string} */
+            reason: "" | "noGoal" | "notApproved" | "noData" | "noModel";
+        };
+        FunnelFigures: {
+            goal: number | null;
+            actual: number | null;
+            projected: number | null;
+            performance: number | null;
+            conversion: number | null;
+        };
+        FunnelEntry: {
+            id: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            name: string;
+            planId: string;
+            figures: components["schemas"]["FunnelFigures"];
+            children?: components["schemas"]["FunnelEntry"][];
+        };
+        FunnelRanked: {
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            /** @enum {string} */
+            sort: "actual" | "projected";
+            /** @enum {string} */
+            order: "desc" | "asc";
+            group: string;
+            page: number;
+            size: number;
+            total: number;
+            trail: {
+                id: string;
+                level: string;
+                name: string;
+            }[];
+            groups: {
+                key: string;
+                label: string;
+                totals: components["schemas"]["FunnelFigures"];
+                entries: components["schemas"]["FunnelEntry"][];
             }[];
             drillLost: boolean;
         };
@@ -6926,10 +7254,10 @@ export interface components {
         };
         UsagePart: {
             /**
-             * @description What uses the record (the purchase request levels since 032).
+             * @description What uses the record (the purchase request levels since 032, activity types and categories since 047).
              * @enum {string}
              */
-            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption";
+            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption" | "activityType" | "activityCategory";
             /** @description The part as people read it, for example Used by 12 activities (1 in the recycle bin). */
             text: string;
             /** @description Records using it, those in the recycle bin included. */
@@ -6994,6 +7322,11 @@ export interface components {
             averageDealSize: components["schemas"]["Money"];
             /** @description The allowed activity types, sorted by name. */
             activityTypes: components["schemas"]["SettingRef"][];
+            /** @description Whole months a conversion takes (047-C1). */
+            inqToMqlVelocityMonths: number;
+            mqlToDealVelocityMonths: number;
+            /** @description The stages a goal may be set against, in funnel order (047-C2). */
+            allowedGoalStages: ("inq" | "mql" | "revenue")[];
             active: boolean;
             usage: components["schemas"]["Usage"];
             version: number;
@@ -7020,14 +7353,61 @@ export interface components {
             /** @description USD; null when not filled in. */
             averageDealSize: components["schemas"]["MoneyInput"] | null;
             activityTypeIds: string[];
+            /** @description Whole months; 0 when left out (047-C2). */
+            inqToMqlVelocityMonths?: number;
+            mqlToDealVelocityMonths?: number;
+            /** @description Every stage when left out (047-C2). */
+            allowedGoalStages?: ("inq" | "mql" | "revenue")[];
         };
         /** @description Only the fields to change, and the version. Also the body of the impact check. */
         ModelUpdate: {
             name?: string;
             inqToMqlRate?: string;
             mqlToDealRate?: string;
+            inqToMqlVelocityMonths?: number;
+            mqlToDealVelocityMonths?: number;
+            allowedGoalStages?: ("inq" | "mql" | "revenue")[];
             averageDealSize?: components["schemas"]["MoneyInput"] | null;
             activityTypeIds?: string[];
+            version: number;
+        };
+        /** @description A group of activity types; a type belongs to at most one category (047-C7). */
+        ActivityCategory: {
+            /** @example CAT-1001 */
+            id: string;
+            /** @example Digital */
+            name: string;
+            /** @description At most one category is the default the reports open on. */
+            isDefault: boolean;
+            /** @description The activity types in this category, sorted by name. */
+            activityTypes: components["schemas"]["SettingRef"][];
+            active: boolean;
+            usage: components["schemas"]["Usage"];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ActivityCategoryPage: {
+            items: components["schemas"]["ActivityCategory"][];
+            total: number;
+        };
+        ActivityCategoryCreate: {
+            name: string;
+            /** @description True takes the default away from the category that had it. */
+            isDefault: boolean;
+            /** @description The activity types to put in the new category; each leaves the category it was in. */
+            activityTypeIds: string[];
+        };
+        /** @description Only the fields to change, and the version. activityTypeIds is the complete new list of activity types in the category: a type listed here leaves the category it was in, one left out becomes Uncategorised. */
+        ActivityCategoryUpdate: {
+            name?: string;
+            isDefault?: boolean;
+            activityTypeIds?: string[];
+            active?: boolean;
             version: number;
         };
         ActivityType: {
@@ -7039,6 +7419,8 @@ export interface components {
             defaultPlannedCost: components["schemas"]["Money"] | null;
             /** @description The models that allow this type, sorted by name. */
             models: components["schemas"]["SettingRef"][];
+            /** @description The activity category grouping this type; null when it is uncategorised (047 FR-022). */
+            category: components["schemas"]["SettingRef"] | null;
             active: boolean;
             usage: components["schemas"]["Usage"];
             version: number;
@@ -12259,6 +12641,18 @@ export interface components {
         ReportOwnStatus: string[];
         /** @description A grid's chosen columns, comma-separated in order, which the report validates (042). */
         ReportOwnColumns: string;
+        /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
+        ReportOwnCategory: string;
+        /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
+        ReportOwnStage: "inq" | "mql";
+        /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnRevenueBy: string;
+        /** @description The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnPerformanceBy: string;
+        /** @description The Summary report's Actual cost league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnCostBy: string;
+        /** @description The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnRoiBy: string;
         RankedSort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
         RankedOrder: "desc" | "asc";
         /** @description none, plan, owner or attr:<attribute ID>. */
@@ -12266,6 +12660,12 @@ export interface components {
         RankedSearch: string;
         /** @description The record whose children the list shows under it. */
         RankedDrill: string;
+        /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+        RevenueCategory: string;
+        /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
+        FunnelStage: "inq" | "mql";
+        RevenueRankedSort: "actualRevenue" | "projectedRevenue";
+        FunnelRankedSort: "actual" | "projected";
         /** @example RV-1001 */
         ReportViewId: string;
         /** @description Time widgets by month (default) or quarter of the plan year. */
@@ -12351,6 +12751,8 @@ export interface components {
         ModelId: string;
         /** @example AT-1001 */
         ActivityTypeId: string;
+        /** @example CAT-1001 */
+        ActivityCategoryId: string;
         /** @example SA-1001 */
         AttributeId: string;
         /** @example SO-1001 */
@@ -13264,6 +13666,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Model"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listActivityCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The activity categories with the activity types they group. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategoryPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Created, active. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The activity category. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Moved to the recycle bin. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCategoryUpdate"];
+            };
+        };
+        responses: {
+            /** @description The activity category after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -21575,6 +22115,18 @@ export interface operations {
                 status?: components["parameters"]["ReportOwnStatus"];
                 /** @description A grid's chosen columns, comma-separated in order, which the report validates (042). */
                 columns?: components["parameters"]["ReportOwnColumns"];
+                /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
+                category?: components["parameters"]["ReportOwnCategory"];
+                /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
+                stage?: components["parameters"]["ReportOwnStage"];
+                /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
+                revenueBy?: components["parameters"]["ReportOwnRevenueBy"];
+                /** @description The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048). */
+                performanceBy?: components["parameters"]["ReportOwnPerformanceBy"];
+                /** @description The Summary report's Actual cost league segment, a Shell attribute ID, which the report validates (048). */
+                costBy?: components["parameters"]["ReportOwnCostBy"];
+                /** @description The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048). */
+                roiBy?: components["parameters"]["ReportOwnRoiBy"];
             };
             header?: never;
             path: {
@@ -21834,6 +22386,248 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanBudgetRanked"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getRevenueReport: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The cards and the periods of the year. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevenueReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getRevenueRanked: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+                sort?: components["parameters"]["RevenueRankedSort"];
+                order?: components["parameters"]["RankedOrder"];
+                /** @description none, plan, owner or attr:<attribute ID>. */
+                group?: components["parameters"]["RankedGroup"];
+                size?: 10 | 25 | 50;
+                page?: number;
+                q?: components["parameters"]["RankedSearch"];
+                /** @description The record whose children the list shows under it. */
+                drill?: components["parameters"]["RankedDrill"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of top entries with their children, in groups. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevenueRanked"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getFunnelReport: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+                /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
+                stage?: components["parameters"]["FunnelStage"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The cards and the periods of the year, for the selected stage. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunnelReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getFunnelRanked: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+                category?: components["parameters"]["RevenueCategory"];
+                /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
+                stage?: components["parameters"]["FunnelStage"];
+                sort?: components["parameters"]["FunnelRankedSort"];
+                order?: components["parameters"]["RankedOrder"];
+                /** @description none, plan, owner or attr:<attribute ID>. */
+                group?: components["parameters"]["RankedGroup"];
+                size?: 10 | 25 | 50;
+                page?: number;
+                q?: components["parameters"]["RankedSearch"];
+                /** @description The record whose children the list shows under it. */
+                drill?: components["parameters"]["RankedDrill"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of top entries with their children, in groups. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunnelRanked"];
                 };
             };
             400: components["responses"]["BadRequest"];

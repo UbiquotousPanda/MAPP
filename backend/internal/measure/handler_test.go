@@ -81,6 +81,9 @@ func TestReportsExport_FR022(t *testing.T) {
 
 	admin := server.SignIn(t, alexEmail)
 	call(t, admin, "/api/v1/reports/user-access/export?format=csv&widget=people&status=inactive&q=priya", http.StatusOK)
+	call(t, admin, "/api/v1/reports/funnel/export?year=2026&format=xlsx&category=uncategorised&stage=mql", http.StatusOK)
+	call(t, admin, "/api/v1/reports/summary/export?year=2026&format=xlsx&category=uncategorised&stage=mql"+
+		"&revenueBy=ATTR-1&performanceBy=ATTR-1&costBy=ATTR-1&roiBy=ATTR-1", http.StatusOK)
 	var created struct{ ID string }
 	admin.Do(t, http.MethodPost, "/api/v1/roles", map[string]any{"name": "No export", "defaultScope": "myTeams",
 		"permissions": []string{"plans.view", "reports.view"}}).Decode(t, &created)

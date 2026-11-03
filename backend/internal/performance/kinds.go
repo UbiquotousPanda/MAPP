@@ -3,18 +3,19 @@ package performance
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"mapp/internal/history"
 )
 
-// Only the data source reaches the recycle bin: a fact is replaced or undone with its import (FR-042).
+// A data source reaches the recycle bin with its mappings; a fact is replaced or undone with its import.
 func (s *Service) Kinds() []history.Kind {
 	return append([]history.Kind{{
 		Name: sourceKind, Singular: sourceKindSingular, Plural: sourceKindPlural,
 		Snapshot: s.snapshotSource, Remove: s.removeSource, Put: s.restoreSource,
 	}, {
-		Name: mappingKind, Singular: mappingKindSingular, Plural: mappingKindPlural,
-		Snapshot: s.snapshotMapping, Remove: s.removeMapping, Put: s.restoreMapping,
+		Name: mappingKind, Singular: mappingKindSingular, Plural: mappingKindPlural, Parent: sourceKind,
+		Snapshot: s.snapshotMapping, ChildIDs: s.mappingIDsOf, Remove: s.removeMapping, Put: s.restoreMapping,
 	}, {
 		Name: importKind, Singular: importKindSingular, Plural: importKindPlural,
 		Snapshot: neverBinned, Remove: noRemove, Put: noPut,
@@ -48,7 +49,10 @@ func (s *Service) snapshotSource(ctx context.Context, id string) (history.Snapsh
 }
 
 func (s *Service) removeSource(ctx context.Context, id string) error {
-	_, err := s.repo.DeleteSource(ctx, id)
+	deleted, err := s.repo.DeleteSource(ctx, id)
+	if err == nil && !deleted {
+		return fmt.Errorf("performance source %s is still in use", id)
+	}
 	return err
 }
 
@@ -69,7 +73,19 @@ func (s *Service) snapshotMapping(ctx context.Context, id string) (history.Snaps
 	if err != nil {
 		return history.Snapshot{}, false, err
 	}
-	return history.Snapshot{ID: found.ID, Name: found.ColumnName, Data: data}, true, nil
+	return history.Snapshot{ID: found.ID, Name: found.ColumnName, ParentID: found.SourceID, Data: data}, true, nil
+}
+
+func (s *Service) mappingIDsOf(ctx context.Context, sourceID string) ([]string, error) {
+	mappings, err := s.repo.ListMappings(ctx, []string{sourceID})
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]string, 0, len(mappings))
+	for _, m := range mappings {
+		ids = append(ids, m.ID)
+	}
+	return ids, nil
 }
 
 func (s *Service) removeMapping(ctx context.Context, id string) error {

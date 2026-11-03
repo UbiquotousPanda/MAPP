@@ -10,13 +10,14 @@ import (
 	"mapp/internal/plan"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
+	"mapp/internal/projection"
 	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 
 const feedSeed = 46
 
-// performanceApprovals answers 046-C1: In progress and Complete are display forms of approved.
+// performanceApprovals: In progress and Complete are display forms of approved.
 type performanceApprovals struct {
 	activities interface {
 		ListByIDs(ctx context.Context, ids []string) ([]activity.Activity, error)
@@ -48,7 +49,7 @@ func (r *heldRelease) activityApproved(ctx context.Context, a actor.Actor, activ
 	return err
 }
 
-// activityUnapproved is activityApproved's reverse: an activity recalled from Approved holds its facts again.
+// activityUnapproved is activityApproved's reverse, for an activity that a change sends back to Created.
 func (r *heldRelease) activityUnapproved(ctx context.Context, a actor.Actor, activityID string) error {
 	if r.service == nil {
 		return nil
@@ -92,7 +93,16 @@ func (p performanceFigures) GoalFacts(ctx context.Context, activityID string) (p
 		return performance.GoalFacts{}, false, err
 	}
 	facts := performance.GoalFacts{INQ: act.INQ, ModelID: owning.ModelID,
-		ActivityTypeID: act.ActivityTypeID, PlanYear: owning.Year}
+		ActivityTypeID: act.ActivityTypeID, PlanYear: owning.Year,
+		SetLaterStagesMyself: act.SetLaterStagesMyself,
+		StartDate:            act.StartDate, EndDate: act.EndDate, Ongoing: act.Ongoing}
+	model, found, err := p.settings.Model(ctx, facts.ModelID)
+	if err != nil {
+		return facts, false, err
+	}
+	if found {
+		facts.Model = projectionModel(model)
+	}
 	if act.SetLaterStagesMyself {
 		facts.MQL, facts.Revenue = act.MQL, act.Revenue
 		return facts, true, nil
@@ -116,6 +126,15 @@ func (p performanceFigures) calculated(ctx context.Context, facts performance.Go
 	usd := money.USD(goals.Revenue)
 	facts.MQL, facts.Revenue = &goals.MQL, &usd
 	return facts, true, nil
+}
+
+func projectionModel(m settings.Model) projection.Model {
+	return projection.Model{
+		Name: m.Name, InqToMqlRate: m.InqToMqlRate, MqlToDealRate: m.MqlToDealRate,
+		AverageDealSize:        m.AverageDealSize,
+		InqToMqlVelocityMonths: m.InqToMqlVelocityMonths, MqlToDealVelocityMonths: m.MqlToDealVelocityMonths,
+		ModelChangedAt: m.UpdatedAt,
+	}
 }
 
 func (p performanceFigures) planOf(ctx context.Context, initiativeID string) (plan.Plan, bool, error) {

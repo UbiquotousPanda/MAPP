@@ -88,7 +88,7 @@ backend/
 │   ├── migrations/00030_performance_sources.sql
 │   │                00031_performance_facts.sql
 │   │                00032_media_codes.sql
-│   └── queries/performance.sql
+│   └── queries/performance_*.sql   # sources, matching, facts, imports, keys
 └── seed/measure.go                # wave B demo facts — see Risk below
 
 frontend/
