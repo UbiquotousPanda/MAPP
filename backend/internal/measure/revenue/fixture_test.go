@@ -51,7 +51,11 @@ type fakeGoals map[string]revenue.ActivityGoals
 func (f fakeGoals) ActivityGoals(_ context.Context, _ authz.Scope, nodes []allwork.Node) (map[string]revenue.ActivityGoals, error) {
 	out := map[string]revenue.ActivityGoals{}
 	for _, n := range nodes {
-		out[n.ID] = f[n.ID]
+		g := f[n.ID]
+		if g.Model.Name != "" && g.AllowedStages == nil {
+			g.AllowedStages = []string{"inq", "mql", "revenue"}
+		}
+		out[n.ID] = g
 	}
 	return out, nil
 }

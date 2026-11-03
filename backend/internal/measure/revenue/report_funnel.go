@@ -30,7 +30,7 @@ func (s *Service) FunnelReport(ctx context.Context, a actor.Actor, f measure.Fil
 func availableStages(series []ActivitySeries) []string {
 	stages := make([]string, 0, 2)
 	for _, stage := range []string{StageINQ, StageMQL} {
-		if slices.ContainsFunc(series, stageMeasure(stage).covers) {
+		if slices.ContainsFunc(series, func(a ActivitySeries) bool { return slices.Contains(a.AllowedStages, stage) }) {
 			stages = append(stages, stage)
 		}
 	}
@@ -58,21 +58,23 @@ type funnelReportInput struct {
 
 func buildFunnelReport(in funnelReportInput) FunnelReport {
 	m := stageMeasure(in.stage)
-	sums := sumMonths(in.series, m)
-	anyGoal := slices.ContainsFunc(in.series, func(a ActivitySeries) bool { return m.covers(a) && a.HasProjection })
-	out := FunnelReport{Stage: in.stage, AvailableStages: in.available, UncoveredCount: uncoveredCount(in.series, m),
-		Period: periodShown(in.period), Periods: funnelPeriods(sums, in.period, in.w), Projection: stampOf(in.series)}
-	out.Cards = funnelCards(sums, anyGoal, previousStageTotal(in.series, in.stage))
-	out.Cards.Actual = intCard(sums.actualTotal(), counted(in.series, m), actualReason(in.series, m))
+	series := withoutExcludedStage(in.series, in.stage)
+	sums := sumMonths(series, m)
+	anyGoal := slices.ContainsFunc(series, func(a ActivitySeries) bool { return m.covers(a) && a.HasProjection })
+	out := FunnelReport{Stage: in.stage, AvailableStages: in.available, UncoveredCount: uncoveredCount(series, in.stage),
+		Period: periodShown(in.period), Periods: funnelPeriods(sums, in.period, in.w), Projection: stampOf(series)}
+	projected := sumMonths(allowingStage(series, in.stage), m).total()
+	out.Cards = funnelCards(sums, projected, anyGoal, previousStageTotal(in.series, in.stage))
+	out.Cards.Actual = intCard(sums.actualTotal(), counted(series, m), actualReason(series, m))
 	out.Reason = reportReason(in.series, anyGoal)
 	return out
 }
 
 // uncoveredCount counts the plans whose model does not allow the stage; a plan without a model is not counted.
-func uncoveredCount(series []ActivitySeries, m measureOf) int {
+func uncoveredCount(series []ActivitySeries, stage string) int {
 	uncovered := map[string]bool{}
 	for _, a := range series {
-		if len(a.AllowedStages) > 0 && !slices.Contains(a.AllowedStages, m.key) {
+		if excludesStage(a, stage) {
 			uncovered[a.PlanID] = true
 		}
 	}
