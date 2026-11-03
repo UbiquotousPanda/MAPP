@@ -10,6 +10,7 @@ import {
   h1,
   HELIX_FIRST,
   LEA,
+  NO_FINANCE,
   opened,
   REPORT_ROLES,
   seesMeasure,
@@ -29,13 +30,38 @@ const FIGURES = {
   march: '$44,108.70',
   helix: '$62,108.70',
   mqlConversion: '16.0%',
+  roi: '36%',
 };
+const MODEL = 'Equally distributed';
+/** 050's credits under Equally distributed (#149); without finance.view the cost and ROI give way to NO_FINANCE. */
+const CREDITS = [
+  { name: HELIX_FIRST, credited: '$54,000.00', cost: '$0.00', roi: 'No actual cost yet.' },
+  { name: 'Tellus case studies', credited: '$13,405.80', cost: '$32,608.70', roi: '-59%' },
+];
+/** The ranked row's cells after its name: goal, actual, projected, performance, attributed revenue, cost, ROI. */
+const CELL = { actual: 1, credited: 4, cost: 5, roi: 6 };
+/** Summary's ROI "—" with the API's reason: Mobility China has no payment, Lubricants Europe no credited revenue. */
+const DASHED_ROI = [
+  { plan: 'P-1002', reason: 'No cost recorded' },
+  { plan: 'P-1001', reason: 'No revenue is credited to these activities' },
+];
 
 type FactCheck = (page: Page, role: Role) => Promise<void>;
 
 const cards = (page: Page) => page.locator('[aria-label="Summary"]');
 const monthRow = (page: Page, table: string | RegExp, month: string) =>
   page.getByRole('table', { name: table }).getByRole('row', { name: new RegExp(`^${month}`) });
+const rankedRow = (page: Page, name: string) =>
+  page
+    .getByRole('region', { name: 'Ranked list' })
+    .getByRole('row', { name: new RegExp(`^${escapeRegExp(name)}`) });
+const roiLeague = (page: Page) => page.getByRole('region', { name: /^Top ROI by/ });
+const leagueValue = (page: Page, row: string) =>
+  roiLeague(page)
+    .getByRole('table')
+    .getByRole('row', { name: new RegExp(`^${row}`) })
+    .locator('td')
+    .last();
 
 const sourceListed: FactCheck = async (page) => {
   await opened(page, '/settings/performance-data', h1(page, 'Performance data'), test.info());
@@ -107,18 +133,32 @@ const revenueFigures: FactCheck = async (page) => {
       await expect(actual('Mar')).toHaveText(FIGURES.march);
     },
   );
-  const query = `year=2026&show=activity&q=${encodeURIComponent(HELIX_FIRST)}`;
-  await opened(page, `/reports/revenue?${query}`, h1(page, 'Revenue'), test.info());
-  const helix = page
-    .getByRole('region', { name: 'Ranked list' })
-    .getByRole('row', { name: new RegExp(`^${escapeRegExp(HELIX_FIRST)}`) });
-  await check(
-    `ranked: ${HELIX_FIRST} actual ${FIGURES.helix}, ROI not configured (049 FR-012, FR-013)`,
-    async () => {
-      await expect(helix.locator('td').nth(1)).toHaveText(FIGURES.helix);
-      await expect(helix.locator('td').nth(5)).toHaveText('Attribution is not configured yet.');
-    },
-  );
+};
+
+/** Revenue's ranked list at Show Activity: 050's credited revenue for all, cost and ROI only with finance.view. */
+const revenueCredits: FactCheck = async (page, role) => {
+  for (const want of CREDITS) {
+    const query = `year=2026&show=activity&q=${encodeURIComponent(want.name)}`;
+    await opened(page, `/reports/revenue?${query}`, h1(page, 'Revenue'), test.info());
+    const cells = rankedRow(page, want.name).locator('td');
+    const [cost, roi] = role.finance ? [want.cost, want.roi] : [NO_FINANCE, NO_FINANCE];
+    await check(
+      `ranked: ${want.name} attributed ${want.credited}, cost ${cost}, ROI ${roi} (050 FR-007)`,
+      async () => {
+        if (want.name === HELIX_FIRST) {
+          await expect(cells.nth(CELL.actual)).toHaveText(FIGURES.helix);
+        }
+        await expect(cells.nth(CELL.credited)).toHaveText(want.credited);
+        await expect(cells.nth(CELL.cost)).toHaveText(cost);
+        await expect(cells.nth(CELL.roi)).toHaveText(roi);
+      },
+    );
+  }
+  await check(`the columns name ${MODEL} and the actual cost (050 FR-008, SC-003)`, async () => {
+    const heads = page.getByRole('region', { name: 'Ranked list' }).getByRole('columnheader');
+    await expect(heads.filter({ hasText: `Attributed revenue (${MODEL})` })).toHaveCount(1);
+    await expect(heads.filter({ hasText: `ROI (${MODEL}, on actual cost)` })).toHaveCount(1);
+  });
 };
 
 const summaryFigures: FactCheck = async (page) => {
@@ -152,16 +192,30 @@ const summaryFigures: FactCheck = async (page) => {
     },
   );
   await check(
-    'ROI league "—" while attribution is not configured, as Revenue says (048 FR-015)',
+    `ROI league: External and Total ${FIGURES.roi}, ${MODEL} on actual cost, as Revenue (048 FR-015)`,
     async () => {
-      const league = page.getByRole('table', { name: /^Top ROI by/ });
-      const rows = await league.locator('tbody tr').allInnerTexts();
+      const rows = await roiLeague(page).locator('tbody tr').allInnerTexts();
       const description = `Summary ROI league: ${rows.map((r) => r.replace(/\s+/g, ' ')).join('; ')}`;
       test.info().annotations.push({ type: 'observed', description });
-      const values = await league.locator('tbody td:nth-of-type(2)').allInnerTexts();
-      expect(values.filter((value) => value.trim() !== '—')).toEqual([]);
+      await expect(leagueValue(page, 'External')).toHaveText(FIGURES.roi);
+      await expect(leagueValue(page, 'Total')).toHaveText(FIGURES.roi);
+      await expect(roiLeague(page)).toContainText(`${MODEL}, on actual cost`);
     },
   );
+};
+
+const summaryRoiDash: FactCheck = async (page) => {
+  for (const { plan, reason } of DASHED_ROI) {
+    const query = `year=2026&plan=${plan}&table=leagueRoi`;
+    await opened(page, `/reports/summary?${query}`, h1(page, 'Summary'), test.info());
+    await check(
+      `ROI league of ${plan}: Total "—" with "${reason}" (048 FR-015, 050 US3-2)`,
+      async () => {
+        await expect(leagueValue(page, 'Total')).toHaveText('—');
+        await expect(roiLeague(page)).toContainText(reason);
+      },
+    );
+  }
 };
 
 const summaryHasData: FactCheck = async (page) => {
@@ -192,7 +246,9 @@ const FACT_CHECKS: { title: string; roles: Role[]; run: FactCheck }[] = [
   },
   { title: 'Reports › Revenue actual', roles: REPORT_ROLES, run: revenueActual },
   { title: 'Reports › Revenue figures on PostgreSQL', roles: [ALEX], run: revenueFigures },
+  { title: 'Reports › Revenue credited revenue and ROI', roles: [ALEX, LEA], run: revenueCredits },
   { title: 'Reports › Summary figures on PostgreSQL', roles: [ALEX], run: summaryFigures },
+  { title: 'Reports › Summary ROI "—" says why', roles: [ALEX], run: summaryRoiDash },
   { title: 'Reports › Summary with data', roles: [CARLOS, LEA], run: summaryHasData },
   { title: 'Reports › Funnel stages actual', roles: [ALEX], run: funnelActual },
 ];
