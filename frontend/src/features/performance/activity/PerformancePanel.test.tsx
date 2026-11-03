@@ -230,3 +230,39 @@ it('047 FR-013 says why nothing projects even when the stage has an actual', asy
   expect(await screen.findByText('40')).toBeInTheDocument();
   expect(screen.getByText('No goal is set for this figure.')).toBeInTheDocument();
 });
+
+it('047 FR-013 FR-016 still shows the projection of a stage with a goal and no actual yet', async () => {
+  renderPanel(
+    panel({
+      stages: [
+        {
+          stage: 'inq',
+          goal: 4000,
+          actual: null,
+          projected: 1327,
+          conversion: null,
+          reason: 'noSource',
+          projectedReason: '',
+          months: [],
+        },
+      ],
+      revenue: {
+        goal: null,
+        actual: null,
+        excludedCount: 0,
+        reason: 'noSource',
+        projected: { amount: '20000.00', currency: 'USD' },
+        projectedReason: '',
+        months: [],
+      },
+    }),
+  );
+
+  const inq = await screen.findByRole('row', { name: /^INQ/ });
+  expect(inq).toHaveTextContent('4,000');
+  expect(inq).toHaveTextContent('No active data source supplies this figure.');
+  expect(inq).toHaveTextContent('1,327');
+  const revenue = screen.getByRole('row', { name: /^Revenue/ });
+  expect(revenue).toHaveTextContent('No active data source supplies this figure.');
+  expect(revenue).toHaveTextContent(/20,000\.00/);
+});

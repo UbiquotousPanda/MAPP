@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -17,7 +18,7 @@ import styles from './DataSourcesArea.module.css';
 
 const GATE = 'Approve the activity to see performance data.';
 
-/** Why a figure is empty (FR-032): the API's stated reason, never inferred and never a sample value. */
+/** Why a figure is empty: the API's stated reason, never inferred and never a sample value. */
 const REASON_WORDS: Record<string, string> = {
   noSource: 'No active data source supplies this figure.',
   noGoal: 'No goal is set for this figure.',
@@ -40,7 +41,7 @@ const FRESHNESS_TONE: Record<string, StatusTone> = {
   inactive: 'neutral',
 };
 
-/** The activity's Performance area (046 FR-027, FR-029): figures gated until it counts as approved. */
+/** The activity's Performance area: figures gated until the activity counts as approved. */
 export function PerformancePanel({ activityId }: { activityId: string }) {
   const panel = usePerformancePanel(activityId);
   return (
@@ -86,28 +87,20 @@ function StageTable({ stages, revenue }: { stages: StageFigure[]; revenue: Reven
         {stages.map((stage) => (
           <tr key={stage.stage}>
             <th scope="row">{STAGE_WORDS[stage.stage] ?? stage.stage}</th>
-            {stage.reason ? (
-              <td colSpan={4} className={styles.reason}>
-                {REASON_WORDS[stage.reason] ?? stage.reason}
-              </td>
-            ) : (
-              <>
-                <td className={styles.numeric}>
-                  {stage.goal === null ? '—' : formatWhole(stage.goal)}
-                </td>
-                <td className={styles.numeric}>
-                  {stage.actual === null ? '—' : formatWhole(stage.actual)}
-                </td>
-                <td className={styles.numeric}>
-                  {stage.projected === null
-                    ? (REASON_WORDS[stage.projectedReason] ?? '—')
-                    : formatWhole(stage.projected)}
-                </td>
-                <td className={styles.numeric}>
-                  {stage.conversion === null ? '—' : `${stage.conversion.toFixed(1)} %`}
-                </td>
-              </>
-            )}
+            <td className={styles.numeric}>
+              {stage.goal === null ? '—' : formatWhole(stage.goal)}
+            </td>
+            <ActualCell reason={stage.reason}>
+              {stage.actual === null ? '—' : formatWhole(stage.actual)}
+            </ActualCell>
+            <td className={styles.numeric}>
+              {stage.projected === null
+                ? (REASON_WORDS[stage.projectedReason] ?? '—')
+                : formatWhole(stage.projected)}
+            </td>
+            <td className={styles.numeric}>
+              {stage.conversion === null ? '—' : `${stage.conversion.toFixed(1)} %`}
+            </td>
           </tr>
         ))}
         <RevenueRow revenue={revenue} />
@@ -118,26 +111,16 @@ function StageTable({ stages, revenue }: { stages: StageFigure[]; revenue: Reven
 
 function RevenueRow({ revenue }: { revenue: RevenueFigure }) {
   const { money } = useFormatters();
-  if (revenue.reason) {
-    return (
-      <tr>
-        <th scope="row">Revenue</th>
-        <td colSpan={4} className={styles.reason}>
-          {REASON_WORDS[revenue.reason] ?? revenue.reason}
-        </td>
-      </tr>
-    );
-  }
   return (
     <tr>
       <th scope="row">Revenue</th>
       <td className={styles.numeric}>{revenue.goal ? money(revenue.goal) : '—'}</td>
-      <td className={styles.numeric}>
+      <ActualCell reason={revenue.reason}>
         {revenue.actual ? money(revenue.actual) : '—'}
         {revenue.excludedCount > 0 && (
           <span className={styles.reason}> · {revenue.excludedCount} excluded without a rate</span>
         )}
-      </td>
+      </ActualCell>
       <td className={styles.numeric}>
         {revenue.projected
           ? money(revenue.projected)
@@ -146,6 +129,14 @@ function RevenueRow({ revenue }: { revenue: RevenueFigure }) {
       <td className={styles.numeric}>—</td>
     </tr>
   );
+}
+
+/** A missing actual states its own reason; the goal and the projection beside it still show. */
+function ActualCell({ reason, children }: { reason: string; children: ReactNode }) {
+  if (reason) {
+    return <td className={styles.reason}>{REASON_WORDS[reason] ?? reason}</td>;
+  }
+  return <td className={styles.numeric}>{children}</td>;
 }
 
 /** Every projected figure names the model behind it and when its parameters last changed. */
