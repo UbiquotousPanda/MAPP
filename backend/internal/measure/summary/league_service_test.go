@@ -64,6 +64,13 @@ func TestLeague_Revenue_048_C4_C5(t *testing.T) {
 	if diff := cmp.Diff([]string{"North", "South", "Not filled in"}, rowSummary(got.Rows)); diff != "" {
 		t.Errorf("rows (-want +got)\n%s", diff)
 	}
+}
+
+func TestLeague_RevenueValuesAndTrend_048_C5(t *testing.T) {
+	t.Parallel()
+
+	got := league(t, withSegments(), TableRevenue, nil)
+
 	if !cmp.Equal(usd(60_000), got.Rows[0].Value, amounts()) || !cmp.Equal(usd(120_000), got.Total, amounts()) {
 		t.Errorf("North %v and total %v, want 600.00 of 1200.00", got.Rows[0].Value, got.Total)
 	}

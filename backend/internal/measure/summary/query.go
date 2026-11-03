@@ -94,13 +94,12 @@ func categoryOf(own url.Values, problems *errs.Problems) string {
 }
 
 func stageOf(own url.Values, problems *errs.Problems) Stage {
-	switch raw := Stage(own.Get(paramStage)); raw {
-	case "", StageMQL, StageRevenue:
+	raw := Stage(own.Get(paramStage))
+	if raw == "" || raw == StageMQL {
 		return raw
-	default:
-		problems.Add(paramStage, msgChooseListed)
-		return ""
 	}
+	problems.Add(paramStage, msgChooseListed)
+	return ""
 }
 
 func identifierOf(own url.Values, param string, problems *errs.Problems) string {

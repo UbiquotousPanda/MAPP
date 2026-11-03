@@ -36,15 +36,23 @@ function SummaryBody({ address }: { address: ReportAddress }) {
     <div className={styles.body}>
       <div className={styles.controls}>
         <CategorySelect value={params.category} onChange={(category) => change({ category })} />
-        <Link to={details('revenue')}>Revenue details</Link>
-        <Link to={details('funnel')}>Funnel details</Link>
+        <Link className={styles.link} to={details('revenue')}>
+          Revenue details
+        </Link>
+        <Link className={styles.link} to={details('funnel')}>
+          Funnel details
+        </Link>
       </div>
       {report.data ? (
         <>
           {report.data.states.map((state) => (
             <p key={state} className={styles.state} role="status">
               {STATE_TEXT[state] ?? state}{' '}
-              {state === 'nothingMatches' && <Link to="/reports/summary">Reset the filters</Link>}
+              {state === 'nothingMatches' && (
+                <Link className={styles.link} to="/reports/summary">
+                  Reset the filters
+                </Link>
+              )}
             </p>
           ))}
           <RevenueSection revenue={report.data.revenue} />

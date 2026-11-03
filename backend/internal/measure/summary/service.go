@@ -35,13 +35,13 @@ func (s *Service) Report(ctx context.Context, a actor.Actor, f measure.Filter) (
 	}
 	var out Report
 	err = s.tx.Read(ctx, func(ctx context.Context) error {
-		v, err := s.read(ctx, a, f, q.Category)
-		if err != nil {
-			return err
+		v, readErr := s.read(ctx, a, f, q.Category)
+		if readErr != nil {
+			return readErr
 		}
-		categories, err := s.deps.Categories.ListCategories(ctx)
-		if err != nil {
-			return err
+		categories, readErr := s.deps.Categories.ListCategories(ctx)
+		if readErr != nil {
+			return readErr
 		}
 		out = v.report(newBuilder(v.scope, f.Period), categories)
 		return nil

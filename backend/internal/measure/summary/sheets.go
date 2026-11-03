@@ -5,7 +5,10 @@ import (
 	"mapp/internal/platform/sheet"
 )
 
-const dash = "—"
+const (
+	dash        = "—"
+	wordRevenue = "Revenue"
+)
 
 func heads(names ...string) []sheet.Cell {
 	row := make([]sheet.Cell, 0, len(names))
@@ -131,7 +134,7 @@ func varianceWord(v string) string {
 }
 
 func stageWord(s Stage) string {
-	return map[Stage]string{StageINQ: "INQ", StageMQL: "MQL", StageRevenue: "Revenue"}[s]
+	return map[Stage]string{StageINQ: "INQ", StageMQL: "MQL", StageRevenue: wordRevenue}[s]
 }
 
 func stateWord(s string) string {
@@ -139,6 +142,6 @@ func stateWord(s string) string {
 }
 
 func tableWord(t string) string {
-	return map[string]string{TableRevenue: "Revenue", TablePerformance: "Performance (%)", TableCost: "Actual cost",
+	return map[string]string{TableRevenue: wordRevenue, TablePerformance: "Performance (%)", TableCost: "Actual cost",
 		TableROI: "ROI (%)"}[t]
 }

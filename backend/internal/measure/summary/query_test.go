@@ -13,11 +13,11 @@ import (
 
 func TestParseQuery_048_FR004(t *testing.T) {
 	t.Parallel()
-	own := url.Values{"category": {"CAT-1"}, "stage": {"revenue"}, "revenueBy": {"ATTR-1"}, "roiBy": {"ATTR-2"}}
+	own := url.Values{"category": {"CAT-1"}, "stage": {"mql"}, "revenueBy": {"ATTR-1"}, "roiBy": {"ATTR-2"}}
 
 	got, err := ParseQuery(own)
 
-	want := Query{Category: "CAT-1", Stage: StageRevenue,
+	want := Query{Category: "CAT-1", Stage: StageMQL,
 		Segments: map[string]string{TableRevenue: "ATTR-1", TableROI: "ATTR-2"}}
 	if err != nil {
 		t.Fatalf("ParseQuery() error = %v", err)
@@ -29,7 +29,7 @@ func TestParseQuery_048_FR004(t *testing.T) {
 
 func TestParseQuery_RefusesEveryMalformedParameter_048_FR004(t *testing.T) {
 	t.Parallel()
-	own := url.Values{"category": {"cat 1"}, "stage": {"inq"}, "costBy": {strings.Repeat("a", 41)}}
+	own := url.Values{"category": {"cat 1"}, "stage": {"revenue"}, "costBy": {strings.Repeat("a", 41)}}
 
 	_, err := ParseQuery(own)
 

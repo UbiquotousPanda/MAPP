@@ -50,9 +50,9 @@ func (s *Service) League(ctx context.Context, a actor.Actor, f measure.Filter, t
 	}
 	var out LeagueTable
 	err = s.tx.Read(ctx, func(ctx context.Context) error {
-		lv, err := s.readLeague(ctx, a, f, l.Category)
-		if err != nil {
-			return err
+		lv, readErr := s.readLeague(ctx, a, f, l.Category)
+		if readErr != nil {
+			return readErr
 		}
 		out = lv.table(newBuilder(lv.scope, f.Period), l)
 		return nil

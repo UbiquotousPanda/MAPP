@@ -66,6 +66,6 @@ func leagueFilter(f measure.Filter, q Query, table string) measure.Filter {
 }
 
 func tableKey(table string) string {
-	return map[string]string{TableRevenue: "Revenue", TablePerformance: "Performance", TableCost: "Cost",
+	return map[string]string{TableRevenue: wordRevenue, TablePerformance: "Performance", TableCost: "Cost",
 		TableROI: "Roi"}[table]
 }
