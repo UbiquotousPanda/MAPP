@@ -105,5 +105,14 @@ func performanceStore(db *fake.DB) *performancetest.Store {
 		}
 		return found, nil
 	}
+	currencies := settingstest.NewStore(db)
+	store.CurrencyLookup = func(ctx context.Context) (map[string]bool, error) {
+		list, err := currencies.ListCurrencies(ctx)
+		known := make(map[string]bool, len(list))
+		for _, c := range list {
+			known[c.Code] = true
+		}
+		return known, err
+	}
 	return store
 }

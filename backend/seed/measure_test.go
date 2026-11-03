@@ -57,6 +57,7 @@ func TestLoad_MeasureOnlyAddsRecords_D354(t *testing.T) {
 	plainGSAP, measuredGSAP := gsapIn(t, plainDB), gsapIn(t, measuredDB)
 	kept(t, "financial transactions", plainGSAP.transactions, measuredGSAP.transactions)
 	kept(t, "financial imports", plainGSAP.imports, measuredGSAP.imports)
+	kept(t, "activity-log entries", logIn(t, plainDB), logIn(t, measuredDB))
 }
 
 func kept[T any](t *testing.T, kind string, plain, measured []T) {
@@ -92,6 +93,14 @@ func TestMeasureLoaded_SaysWhatIsAdded(t *testing.T) {
 		len(measured.purchaseRequests)-len(plain.purchaseRequests),
 		len(gsapIn(t, measuredDB).transactions)-len(gsapIn(t, plainDB).transactions),
 		len(categoriesIn(t, measuredDB))-len(categoriesIn(t, plainDB)))
+	facts := performanceIn(t, measuredDB)
+	rows := 0
+	for _, run := range facts.imports {
+		rows += run.Counts.Read
+	}
+	got += fmt.Sprintf(", %d performance data source with %d column mappings, %d performance import of %d rows with "+
+		"%d facts and %d journeys, %d activity-log entry", len(facts.sources), len(facts.mappings), len(facts.imports), rows,
+		len(facts.facts), len(facts.journeys()), len(logIn(t, measuredDB))-len(logIn(t, plainDB)))
 	if got != seed.MeasureLoaded {
 		t.Errorf("added: %s\nseed.MeasureLoaded: %s", got, seed.MeasureLoaded)
 	}

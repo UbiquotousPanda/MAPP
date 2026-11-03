@@ -72,8 +72,8 @@ func TestWaveB_ExportRights_FR022(t *testing.T) {
 
 	file := signIn(t, server, alex).expect(t, export, http.StatusOK)
 	lines := strings.Split(strings.TrimSpace(string(file.Body)), "\n")
-	if !strings.HasPrefix(lines[0], "Date,Source,Stage or metric,Value,Currency") || len(lines) != 1+5 {
-		t.Errorf("Alex's facts export = %q, want the header and Helix's five facts (two INQ, two MQL, one revenue)", lines)
+	if !strings.HasPrefix(lines[0], "Date,Source,Stage or metric,Value,Currency") || len(lines) != 1+9+5 {
+		t.Errorf("Alex's facts export = %q, want the header, Helix's nine seeded facts and the five loaded here", lines)
 	}
 	if r := signIn(t, server, lea).send(t, export); r.Status != http.StatusForbidden {
 		t.Errorf("Lea exporting the facts = %d %s, want 403: no data.export", r.Status, r.Body)

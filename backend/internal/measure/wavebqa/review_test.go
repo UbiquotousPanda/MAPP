@@ -121,7 +121,8 @@ func workTheRow(t *testing.T, alexSees person, path, helix string) {
 	}
 	fixed := decode[reviewRow](t, alexSees.expect(t, post(path+"/correct",
 		map[string]any{"keys": map[string]string{"activityId": helix}}), http.StatusOK))
-	if got := panelOf(t, alexSees, helix).inq(); fixed.Status != "resolved" || got != 705 {
-		t.Errorf("corrected to %s: row %s, Helix's INQ %d; want resolved and its 5 INQ counted (700 + 5)", helix, fixed.Status, got)
+	if got := panelOf(t, alexSees, helix).inq(); fixed.Status != "resolved" || got != seededHelixINQ+705 {
+		t.Errorf("corrected to %s: row %s, Helix's INQ %d; want resolved and its 5 INQ counted (1,451 + 700 + 5)", helix,
+			fixed.Status, got)
 	}
 }

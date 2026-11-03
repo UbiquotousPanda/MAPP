@@ -32,7 +32,7 @@ financial access), findings raised as issues on the owning feature, critical and
 | Revenue, Funnel stages (049) | PR #82 (stacked on #75, retargeted); lane B's `ActivitySeries` follow-up with 048-C1's words (048-C10) | Merged: #82 c6ca9913, `ActivitySeries` #99 4c1f93e0, #104, #105 (3df7cc7d); #97 (Sort by) open |
 | Summary (048) | 048 built (T001–T023 all open, no PR) after #82 and `ActivitySeries` | #106 open (2026-11-03) |
 | Attribution (050) | T001–T006 are on `measure-module` (Settings › Attribution, `RoiValue`); T007–T008 need #62 | Figures on 048/049 blocked (050-Q1) |
-| Any actual figure | Performance facts in the demo (046 T110; build guide §4.7) | None seeded: load them by hand (How to run) |
+| Any actual figure | Performance facts in the demo (046 T110; build guide §4.7) | Seeded by T110: *Measure demo feed*, 20 facts, two journeys (`docs/product/demo-users-and-data.md`) |
 | Automated checks | PR #87 (waveaqa, its helpers) | Open |
 
 ## Roles and what they must see
@@ -61,8 +61,8 @@ Grants from `backend/seed/access.go`:11-57. Eight = wave A's five + Summary, Rev
 ## Automated checks to add — `backend/internal/measure/wavebqa`
 
 Mirror waveaqa: `apitest.New(t, apitest.WithMeasureDemo())` (`apitest.go`:74), the seven e-mails, `measurePlan =
-"FY2026 Measure demo – Lubricants Benelux"`, a `loadFacts(t, alex)` helper (source with activity-ID, reference, date,
-INQ, MQL, revenue + currency mappings; one CSV for approved Measure activities and one row for Fleet expo Rotterdam,
+"FY2026 Measure demo – Lubricants Benelux"`, a `loadFacts(t, alex)` helper (one CSV through the seeded *Measure demo feed*, the one active
+supplier FR-003 allows, beside its facts: rows for approved Measure activities and one for Fleet expo Rotterdam,
 Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 
 | Test | Asserts | Endpoints | Source |
@@ -71,7 +71,7 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | `TestWaveB_CatalogueMatchesAccess_FR001` | Summary, Revenue, Funnel stages listed and available; each opens 200 for all seven. 049: green, the two ranked lists too; Summary is listed, not available, until #106 | `/reports`, `/reports/{summary,revenue,funnel}?year=2026` | 039 FR-001, FR-003 |
 | `TestWaveB_NoFinancialAccess_Summary_048_FR003` | Lea: cost and ROI league rows and totals null, `financeCovers` 0 of >0; revenue league and funnel not null | `/reports/summary`, `/reports/summary/league/{cost,roi,revenue}` | 048 FR-003, US2-5 |
 | `TestWaveB_NoFinancialAccess_Revenue_039_FR004` | Lea: ranked `actualCost` null; revenue cards' rule to confirm (open question 4). Green: both frames say finance 0 of 3, every `actualCost` and `roi` null at every level; revenue is served to her in full, not asserted (open question 4) | `/reports/revenue`, `/reports/revenue/ranked` | 039 FR-004, 049 FR-013 |
-| `TestWaveB_ExportRights_FR022` | Alex 200, Lea 403 on every wave B export; the 046 part runs now (facts export: Alex's file holds Helix's five facts). 049's is `TestWaveB_ExportRights_049_FR022`: the six with `data.export` 200, Lea 403, workbook and widget CSV; sheets Cards, Periods, Ranked list, In view, About this export; named "SP&A One – Revenue – 2026 – 12 Mar 2026.xlsx", "… – Ranked list – ….csv". Summary waits for 048 | `/reports/{summary,revenue,funnel}/export`, `/activities/{id}/performance/facts/export` | 039 FR-022, 048 FR-003, 046 contract |
+| `TestWaveB_ExportRights_FR022` | Alex 200, Lea 403 on every wave B export; the 046 part runs now (facts export: Alex's file holds Helix's 14 facts, 9 seeded). 049's is `TestWaveB_ExportRights_049_FR022`: the six with `data.export` 200, Lea 403, workbook and widget CSV; sheets Cards, Periods, Ranked list, In view, About this export; named "SP&A One – Revenue – 2026 – 12 Mar 2026.xlsx", "… – Ranked list – ….csv". Summary waits for 048 | `/reports/{summary,revenue,funnel}/export`, `/activities/{id}/performance/facts/export` | 039 FR-022, 048 FR-003, 046 contract |
 | `TestWaveB_ExportsKeepOwnParams_FR022` | `category`, `stage=mql`, `revenueBy`, `sort=actualRevenue` each give 200 and a file different from the default. Green for Digital, `stage=mql`, `stage=mql` with Uncategorised, `sort=actualRevenue`, `sort=actual` (the API's sort; #97 is the web's menu): each file holds the report's own figure or first row. *About this export* names none of them (finding 14). `revenueBy` waits for 048 | `/reports/{revenue,funnel}/export?widget=ranked`, `/reports/summary/export?widget=leagueRevenue` | 039 FR-022, 049 FR-019, 048 FR-004, FR-021 (open question 6) |
 | `TestWaveB_SummaryEqualsRevenueAndFunnel_048_SC002` | Same filters and category: Summary revenue = Revenue cards; Summary stages = Funnel cards per `stage` | `/reports/summary`, `/reports/revenue`, `/reports/funnel?stage=` | 048 FR-008, SC-002, 048-C3 |
 | `TestWaveB_RankedTotalsEqualSeries_049_SC002` | Ungrouped top-level totals equal the series totals, both reports. Green: Revenue, INQ, MQL at all four Show levels, actual or projected and actual against the series, goal against the goal card; plan groups add to their entries. The series' goal against the card: finding 10, kept out | `/reports/{revenue,funnel}{,/ranked}` | 049 SC-002 |
@@ -83,7 +83,7 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | `TestWaveB_FunnelStageSelector_049_FR015` | `availableStages` INQ, MQL; opens on INQ, `stage=mql` shows MQL; no plan uncovered (both demo models allow both). Green | `/reports/funnel?stage=` | 049 FR-015, FR-018, 049-C11, 049-C12 |
 | `TestWaveB_ProjectionNamesItsModel_049_FR022` | Mobility China names Mobility 1.0, the Measure plan Lubricants 1.0, each with the model's `updatedAt`; Alex's velocity save an hour later moves both reports' stamp. Green; a view of both models names one (finding 13) | `/reports/{revenue,funnel}`, `/models/{modelId}` | 049 FR-022, SC-006, 047 FR-012 |
 | `TestWaveB_ViewsKeepOwnParams_049_FR019` | A Revenue view keeps `category`, `group`, `sort`; a Funnel view `category=uncategorised`, `sort`, `stage=mql`; both listed as saved. Green | `/reports/{revenue,funnel}/views` | 049 FR-019, 049-C10, US3-3 |
-| `TestWaveB_ProjectionShape_047_FR008_FR010` | Helix … first half (with `loadFacts`), second half, Tellus webinar series: twelve months of 2026, none negative, January–February actual only, April on projected only, March both; `projected` = actual to February + projected from March (3,458 = 700 + 2,758 on Helix … first half INQ); stamp Lubricants 1.0 with the model's `updatedAt`; goal stages the model allows. Retargeting test, Tellus case studies `noGoal`, no months, no stamp; Fleet expo gated. Months without a source say 0 (finding 6), kept out | `/activities/{id}/performance`, `/models/{modelId}` | 047 FR-008, FR-010, FR-012, FR-013, SC-005 |
+| `TestWaveB_ProjectionShape_047_FR008_FR010` | Helix … first half (with `loadFacts`), second half, Tellus webinar series: twelve months of 2026, none negative, January–February actual only, April on projected only, March both; `projected` = actual to February + projected from March (4,709 = 1,951 + 2,758 on Helix … first half INQ, 1,251 of the 1,951 seeded); stamp Lubricants 1.0 with the model's `updatedAt`; goal stages the model allows. Retargeting test, Tellus case studies `noGoal`, no months, no stamp; Fleet expo gated. Months without a source say 0 (finding 6), kept out | `/activities/{id}/performance`, `/models/{modelId}` | 047 FR-008, FR-010, FR-012, FR-013, SC-005 |
 | `TestWaveB_ProjectionsRestated_047_SC002` | Two reads, and one an hour later the same day, byte for byte the same; Alex's velocity 1 and 2 shifts Helix … second half's MQL one month and revenue three, drops what lands after December and moves the stamp; Helix … first half (typed) unmoved | `/activities/{id}/performance`, `PATCH /models/{modelId}` | 047 FR-008, FR-009, FR-011, FR-012, SC-002 |
 | `TestWaveB_StagesProjectTheirGoals_047_FR007_FR009` | Tellus webinar series' months add to its typed 1,500 INQ, 300 MQL, 120,000.00 USD; Helix … second half's INQ months to 4,000, each MQL month 2 % of its INQ, half-up. Revenue against the goal: finding 7, not asserted | `/activities/{id}/performance` | 047 FR-006, FR-007, FR-009, SC-003 |
 | `TestWaveB_ModelProjectionFields_047_FR001_FR003` | −1, 25 and no stage in one 400 naming all three; velocity 1 and 2 saved at version 2, one log entry, a stale save 409 naming Alex; unticking INQ names the plans first (contract check skipped: finding 5), saved, the plan keeps its INQ goal and Helix … second half projects | `PATCH /models/{modelId}`, `/models/{modelId}/impact`, `/activity-log`, `/plans/{planId}` | 047 FR-001–FR-003, FR-005, US1-1–4 |
@@ -122,7 +122,7 @@ Submitted), files split to stay under 300 lines. Paths under `/api/v1`.
 | Not approved: "Approve the activity to see performance data", no figures | US3-1, FR-027, FR-028 | all | Pass (API) | Fleet expo Rotterdam, Workshop roadshow Benelux, Dealer summit: `notApproved`, no stage, no revenue; wording is web |
 | Approved: per stage goal, actual, projected, conversion; revenue names its model | US3-2, FR-029 | Alex | | |
 | No source for a stage: the reason, never a sample figure | US3-3, FR-032, SC-008 | Alex | | |
-| Facts list: date, source, measure, value, currency, key, upload; search; export | US3-4, FR-030 | Alex; Lea no export | Pass (export) | Alex's CSV has the columns and Helix's five facts; Lea 403. Search not run |
+| Facts list: date, source, measure, value, currency, key, upload; search; export | US3-4, FR-030 | Alex; Lea no export | Pass (export) | Alex's CSV has the columns and Helix's 14 facts (9 seeded); Lea 403. Search not run |
 | Stale source shows the date its data runs through | US3-5, FR-005 | Alex | Not run | The fakes never derive the last load or data-through date (`performancetest` `ListSources`); PostgreSQL does (`store_postgres.go`:89): browser pass |
 | Restored and re-approved: held facts released | US3-6, FR-021 | Alex | | |
 | Data sources area: name, aliases, code count, *Is integrated*, *Goal entered*, per-source ID, count, last date | FR-031 | Alex | | |
@@ -319,8 +319,8 @@ E2e literals on the wave B branches (049's e2e ran on `seed -reset`, without `-m
 
 **API harness**: `cd backend; go test -race ./internal/measure/wavebqa/` — fakes, `apitest.New(t, apitest.WithMeasureDemo())`.
 On the fakes 049's reports read their own store (`storestest.go`:72, `revenuetest.NewStore()`), which nothing fills;
-#99 (`ActivitySeries`) did not change that. After `loadFacts`, Helix … first half's panel says 700 INQ and the Funnel
-list 0. So every report figure on the fakes is goal and projection, and cross-report checks 5 and 6 and the report half
+#99 (`ActivitySeries`) did not change that. After `loadFacts`, Helix … first half's panel says 2,151 INQ (1,451 seeded) and the
+Funnel list 0. So every report figure on the fakes is goal and projection, and cross-report checks 5 and 6 and the report half
 of `TestWaveB_HeldFactsCountNowhere_046_SC002` need PostgreSQL. No API harness runs on it (`revenue/store_postgres_test.go`
 tests the query alone, on `dbtest`): run them in the browser pass below after loading facts, or give `apitest` a
 PostgreSQL option.

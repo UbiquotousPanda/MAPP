@@ -270,7 +270,10 @@ func (s *Store) Breakdowns(_ context.Context, importIDs []string) (map[string][]
 	return groups, nil
 }
 
-func (s *Store) CurrencyCodes(_ context.Context) (map[string]bool, error) {
+func (s *Store) CurrencyCodes(ctx context.Context) (map[string]bool, error) {
+	if s.CurrencyLookup != nil {
+		return s.CurrencyLookup(ctx)
+	}
 	if s.Currencies == nil {
 		return map[string]bool{"USD": true}, nil
 	}
