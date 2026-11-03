@@ -1,6 +1,7 @@
 package projection_test
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -75,6 +76,7 @@ func FuzzProject_SeriesStayInsideTheYearAndReconcile_SC003(f *testing.F) {
 	f.Add(int64(1), 6, 6, 0, 0)
 	f.Add(int64(0), 1, 12, 24, 24)
 	f.Add(int64(1_000_000_000), 12, 1, 3, 4)
+	f.Add(int64(math.MaxInt64), 1, 12, 0, 0)
 
 	f.Fuzz(func(t *testing.T, goal int64, startMonth, endMonth, inqVelocity, mqlVelocity int) {
 		in := inputs(goal)
