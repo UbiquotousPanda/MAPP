@@ -7,7 +7,7 @@ const id = fc.stringMatching(/^[A-Za-z0-9-]{1,40}$/);
 const segment = fc.option(id, { nil: '' });
 const params: fc.Arbitrary<SummaryParams> = fc.record({
   category: fc.oneof(fc.constant(''), fc.constant('uncategorised'), id),
-  stage: fc.constantFrom('', 'mql', 'revenue'),
+  stage: fc.constantFrom('', 'mql'),
   revenueBy: segment,
   performanceBy: segment,
   costBy: segment,

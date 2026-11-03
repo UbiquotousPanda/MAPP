@@ -11,7 +11,7 @@ type SegmentParam = (typeof TABLES)[number]['param'];
 
 export type SummaryParams = {
   category: string;
-  stage: '' | 'mql' | 'revenue';
+  stage: '' | 'mql';
 } & Record<SegmentParam, string>;
 
 export const DEFAULT_PARAMS: SummaryParams = {
@@ -33,7 +33,7 @@ function pick<T>(params: URLSearchParams, name: string, schema: z.ZodType<T>, fa
 export function readSummaryParams(params: URLSearchParams): SummaryParams {
   return {
     category: pick(params, 'category', z.union([z.literal('uncategorised'), idSchema]), ''),
-    stage: pick(params, 'stage', z.enum(['mql', 'revenue']), ''),
+    stage: pick(params, 'stage', z.enum(['mql']), ''),
     revenueBy: pick(params, 'revenueBy', idSchema, ''),
     performanceBy: pick(params, 'performanceBy', idSchema, ''),
     costBy: pick(params, 'costBy', idSchema, ''),
