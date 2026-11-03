@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"mapp/internal/measure/gsaplink"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
@@ -50,4 +52,38 @@ func financialsOf(t *testing.T, c *apitest.Client, row gsaplink.OrderRow) []mone
 		}
 	}
 	return []money.Amount{sums["purchaseOrder"], sums["invoice"], sums["payment"]}
+}
+
+// TestOwnPass_OrdersInEuros_EqualFinancials_SC003: in EUR each row is its PO's sums on Financials, the totals the rows'.
+func TestOwnPass_OrdersInEuros_EqualFinancials_SC003(t *testing.T) {
+	t.Parallel()
+	carlosSees := apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, carlos)
+	euros := map[string]any{"displayCurrency": "EUR"}
+	if r := carlosSees.Do(t, http.MethodPatch, "/api/v1/me/preferences", euros); r.Status != http.StatusOK {
+		t.Fatalf("display currency = %d %s", r.Status, r.Body)
+	}
+
+	r := reportOf(t, carlosSees, report+"&tab=orders&currency=EUR&pageSize=500")
+	sums := make([]money.Amount, 3)
+	for _, row := range r.Orders.Rows {
+		got := []money.Amount{row.PoAmount.Amount, row.Invoiced.Amount, row.Paid.Amount}
+		if diff := cmp.Diff(amountTexts(financialsOf(t, carlosSees, row)), amountTexts(got)); diff != "" {
+			t.Errorf("%s PO %s in EUR (-Financials +row):\n%s", row.LineItemID, row.PoNumber, diff)
+		}
+		for i := range got {
+			sums[i] = sums[i].Add(got[i])
+		}
+	}
+	totals := []money.Amount{r.Orders.Totals.PoAmount.Amount, r.Orders.Totals.Invoiced.Amount, r.Orders.Totals.Paid.Amount}
+	if diff := cmp.Diff(amountTexts(sums), amountTexts(totals)); len(r.Orders.Rows) == 0 || diff != "" {
+		t.Errorf("totals of %d rows in EUR (-rows +totals):\n%s", len(r.Orders.Rows), diff)
+	}
+}
+
+func amountTexts(amounts []money.Amount) []string {
+	text := []string{}
+	for _, a := range amounts {
+		text = append(text, a.String())
+	}
+	return text
 }
