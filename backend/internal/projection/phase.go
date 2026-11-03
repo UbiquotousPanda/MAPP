@@ -1,6 +1,7 @@
 package projection
 
 import (
+	"math/big"
 	"time"
 
 	"mapp/internal/platform/date"
@@ -33,11 +34,18 @@ func phase(goal int64, start, end date.Date) []MonthFigure {
 	var elapsed, placed int64
 	for i := range months {
 		elapsed += daysOfMonth(start.Year(), time.Month(i+1), start, end)
-		share := goal * elapsed / totalDays
+		share := shareOf(goal, elapsed, totalDays)
 		months[i].Value = share - placed
 		placed = share
 	}
 	return months
+}
+
+// shareOf is goal × elapsed ÷ total without overflow: the product of a large goal and a day count passes
+// int64, the quotient never does, because elapsed never exceeds total.
+func shareOf(goal, elapsed, total int64) int64 {
+	product := new(big.Int).Mul(big.NewInt(goal), big.NewInt(elapsed))
+	return product.Quo(product, big.NewInt(total)).Int64()
 }
 
 func emptyMonths(year int) []MonthFigure {

@@ -20,7 +20,7 @@ import { checkModelImpact, fetchModel, useCreateModel, useUpdateModel } from './
 import type { ChangeImpact, Model, ModelUpdate } from './api';
 import { affectsOthers, changedFields, createBody, startValues } from './model-values';
 import type { ModelFormMode } from './model-values';
-import { modelSchema } from './schemas';
+import { modelSchema, velocityMonths } from './schemas';
 import type { ModelValues } from './schemas';
 import { WaterfallExample } from './WaterfallExample';
 
@@ -49,17 +49,9 @@ interface PendingImpact {
 }
 
 /**
- * New model, Edit model and Duplicate (FR-009 – FR-012) in a side panel: name, both rates, the
- * average deal size, the allowed activity types and the live worked example. Every problem shows at
- * once; a change that affects plans or activities is confirmed first; a conflict keeps what was
- * typed and names who saved first.
+ * New model, Edit model and Duplicate in a side panel. A change that affects plans or activities is
+ * confirmed first; a conflict keeps what was typed and names who saved first.
  */
-/** A typed velocity, or null while it is not a whole number — the example then shows no lag. */
-function wholeMonths(typed: string): number | null {
-  const months = Number.parseInt(typed.trim(), 10);
-  return Number.isInteger(months) && months >= 0 ? months : null;
-}
-
 export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
   const { show } = useToast();
   const { dateFormat } = useFormatters();
@@ -246,8 +238,8 @@ export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
             inqToMqlRate={parseDecimalInput(inqToMqlRate, 2)}
             mqlToDealRate={parseDecimalInput(mqlToDealRate, 2)}
             averageDealSize={parseMoneyInput(averageDealSize)?.amount ?? null}
-            inqToMqlVelocityMonths={wholeMonths(inqVelocity)}
-            mqlToDealVelocityMonths={wholeMonths(mqlVelocity)}
+            inqToMqlVelocityMonths={velocityMonths(inqVelocity)}
+            mqlToDealVelocityMonths={velocityMonths(mqlVelocity)}
           />
         </div>
       </FormPanel>
