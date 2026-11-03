@@ -96,14 +96,15 @@ func findable(t *testing.T, alexSees person, sourceID string) {
 	}
 }
 
-// dismissNeedsComment keeps out the contract's 422: 046 answers 400 validation_failed (finding 1).
+// dismissNeedsComment skips request validation only: the contract's own schema refuses the empty comment first.
 func dismissNeedsComment(t *testing.T, alexSees person, path string) {
 	t.Helper()
 	bare := alexSees.send(t, call{method: http.MethodPost, path: path + "/dismiss", body: map[string]string{"comment": ""},
 		opts: []apitest.RequestOption{apitest.SkipRequestValidation()}})
-	if bare.Status < http.StatusBadRequest || bare.Status >= http.StatusInternalServerError ||
+	if bare.Status != http.StatusBadRequest || !strings.Contains(string(bare.Body), `"validation_failed"`) ||
 		!strings.Contains(string(bare.Body), `"comment"`) {
-		t.Errorf("dismiss without a comment = %d %s, want refused naming the comment (FR-024)", bare.Status, bare.Body)
+		t.Errorf("dismiss without a comment = %d %s, want 400 validation_failed naming the comment (FR-024)",
+			bare.Status, bare.Body)
 	}
 	if row := decode[reviewRow](t, alexSees.expect(t, get(path), http.StatusOK)); row.Status != "open" {
 		t.Errorf("after a refused dismissal the row is %s, want open", row.Status)

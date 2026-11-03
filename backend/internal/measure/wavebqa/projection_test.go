@@ -49,6 +49,7 @@ type moneyMonth struct {
 type projectedStage struct {
 	Stage           string       `json:"stage"`
 	Goal            *int64       `json:"goal"`
+	Actual          *int64       `json:"actual"`
 	Projected       *int64       `json:"projected"`
 	ProjectedReason string       `json:"projectedReason"`
 	Months          []splitMonth `json:"months"`
@@ -56,6 +57,7 @@ type projectedStage struct {
 
 type projectedRevenue struct {
 	Goal            *amount      `json:"goal"`
+	Actual          *amount      `json:"actual"`
 	Projected       *amount      `json:"projected"`
 	ProjectedReason string       `json:"projectedReason"`
 	Months          []moneyMonth `json:"months"`
@@ -126,13 +128,20 @@ func negative(v *int64) bool {
 	return v != nil && *v < 0
 }
 
-func monthProblem(i int, m splitMonth) string {
-	behind, ahead := i <= inProgress, i >= inProgress
+type splitCheck struct {
+	label     string
+	months    []splitMonth
+	planYear  *int64
+	hasActual bool
+}
+
+func monthProblem(i int, m splitMonth, hasActual bool) string {
+	wantActual, ahead := i <= inProgress && hasActual, i >= inProgress
 	switch want := fmt.Sprintf("2026-%02d", i+1); {
 	case m.Month != want:
 		return "want " + want + ": twelve months of the plan year, none after December"
-	case (m.Actual != nil) != behind || (m.Projected != nil) != ahead || m.InProgress != (i == inProgress):
-		return "want actual only before March, projected only after it, both in March, in progress"
+	case (m.Actual != nil) != wantActual || (m.Projected != nil) != ahead || m.InProgress != (i == inProgress):
+		return "want actual only to March and null without facts, projected from March, March in progress"
 	case negative(m.Actual) || negative(m.Projected):
 		return "want no negative figure"
 	}
@@ -146,15 +155,16 @@ func counted(v *int64, counts bool) int64 {
 	return *v
 }
 
-func checkSplit(t *testing.T, label string, months []splitMonth, planYear *int64) {
+func checkSplit(t *testing.T, c splitCheck) {
 	t.Helper()
+	label, months, planYear := c.label, c.months, c.planYear
 	if len(months) != 12 || planYear == nil {
 		t.Errorf("%s: %d months, projected %v, want twelve and a plan-year figure", label, len(months), planYear)
 		return
 	}
 	sum := int64(0)
 	for i, m := range months {
-		if problem := monthProblem(i, m); problem != "" {
+		if problem := monthProblem(i, m, c.hasActual); problem != "" {
 			t.Errorf("%s %s, %s", label, m, problem)
 		}
 		sum += counted(m.Actual, i < inProgress) + counted(m.Projected, i >= inProgress)
@@ -172,12 +182,13 @@ func checkProjected(t *testing.T, name string, got projectedPanel, model servedM
 			lubricantsName, model.UpdatedAt)
 	}
 	for _, s := range got.Stages {
-		checkSplit(t, name+" "+s.Stage, s.Months, s.Projected)
+		checkSplit(t, splitCheck{name + " " + s.Stage, s.Months, s.Projected, s.Actual != nil})
 		if s.Goal != nil && !slices.Contains(model.AllowedGoalStages, s.Stage) {
 			t.Errorf("%s: a goal at %s, which the model's stages %v do not allow", name, s.Stage, model.AllowedGoalStages)
 		}
 	}
-	checkSplit(t, name+" revenue", asCounts(got.Revenue.Months), cents(got.Revenue.Projected))
+	checkSplit(t, splitCheck{name + " revenue", asCounts(got.Revenue.Months), cents(got.Revenue.Projected),
+		got.Revenue.Actual != nil})
 }
 
 func checkNoGoal(t *testing.T, name string, got projectedPanel) {
@@ -231,16 +242,19 @@ func projectedSum(months []splitMonth) int64 {
 
 func checkAtRate(t *testing.T, inq, mql []splitMonth, rate int64) {
 	t.Helper()
+	var running, placed int64
 	for i := range min(len(inq), len(mql)) {
-		from, got := counted(inq[i].Projected, true), counted(mql[i].Projected, true)
-		if want := (from*rate + 50) / 100; got != want {
-			t.Errorf("%s MQL %s = %d, want %d: %d %% of %d INQ, rounded half-up in the month", helixSecondHalf,
-				mql[i].Month, got, want, rate, from)
+		running += counted(inq[i].Projected, true)
+		share := (running*rate + 50) / 100
+		if got := counted(mql[i].Projected, true); got != share-placed {
+			t.Errorf("%s MQL %s = %d, want %d: %d %% of the INQ to date rounded half-up, less the months before",
+				helixSecondHalf, mql[i].Month, got, share-placed, rate)
 		}
+		placed = share
 	}
 }
 
-// TestWaveB_StagesProjectTheirGoals_047_FR007_FR009: typed stages phase their own goals; a calculated MQL is 2 % a month.
+// TestWaveB_StagesProjectTheirGoals_047_FR007_FR009: typed stages phase their own goals; calculated ones carry remainders.
 func TestWaveB_StagesProjectTheirGoals_047_FR007_FR009(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t, apitest.WithMeasureDemo())
@@ -262,4 +276,8 @@ func TestWaveB_StagesProjectTheirGoals_047_FR007_FR009(t *testing.T) {
 		t.Errorf("%s INQ months total %d, want the whole goal of 4,000 (SC-003)", helixSecondHalf, got)
 	}
 	checkAtRate(t, inq, second.stage("mql").Months, 2)
+	if got := cents(second.Revenue.Projected); got == nil || *got != 40_000_00 {
+		t.Errorf("%s revenue projected %v cents, want its 40,000.00 goal: 4 deals, the remainder carried", helixSecondHalf,
+			shown(got))
+	}
 }

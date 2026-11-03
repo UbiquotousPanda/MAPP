@@ -25,7 +25,7 @@ func (s *Service) PullFeed(ctx context.Context, a actor.Actor, sourceID string) 
 	}
 	file, err := ReadFile(content, mappings)
 	if err != nil {
-		return Import{}, fmt.Errorf("read the feed of %s: %w", sourceID, err)
+		return Import{}, errs.Validation(errs.FieldError{Field: fieldContent, Message: msgFeedUnreadable})
 	}
 	return s.RunImport(ctx, a, ImportInput{
 		SourceID: sourceID, FileName: fileName, Origin: OriginSimulated,

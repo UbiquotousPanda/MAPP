@@ -12,6 +12,10 @@ import {
   OverspendSettingsPage,
   AttributionSettingsPage,
   PeoplePage,
+  PerformanceDataPage,
+  PerformanceImportPage,
+  PerformanceImportsPage,
+  PerformanceReviewPage,
   PurchaseRequestSettingsPage,
   RoleFormPage,
   RolePage,
@@ -32,6 +36,26 @@ export const SETTINGS_ROUTES: RouteObject[] = [
     path: '/settings/activity-categories',
     element: <ActivityCategoriesPage />,
     ...titled('Activity categories'),
+  },
+  {
+    path: '/settings/performance-data',
+    element: <PerformanceDataPage />,
+    ...titled('Performance data'),
+  },
+  {
+    path: '/settings/performance-data/imports',
+    element: gated('performance.import', <PerformanceImportsPage />),
+    ...titled('Imports'),
+  },
+  {
+    path: '/settings/performance-data/imports/:importId',
+    element: gated('performance.import', <PerformanceImportPage />),
+    ...titled('Import'),
+  },
+  {
+    path: '/settings/performance-data/review',
+    element: gated('performance.import', <PerformanceReviewPage />),
+    ...titled('Rows to review'),
   },
   {
     path: '/settings/shell-attributes',
