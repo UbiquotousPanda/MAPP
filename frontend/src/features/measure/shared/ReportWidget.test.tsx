@@ -138,6 +138,18 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
     expect(sent.getAll('requestOwner')).toEqual(['P-1002']);
     expect(sent.getAll('status')).toEqual(['approved', 'closed']);
   });
+
+  it('exports the activity category, the funnel stage and the Summary league segments (049-C10, 048-C6, FR-022)', async () => {
+    const sent = await exported(
+      '/reports/plan-details?category=uncategorised&stage=mql&revenueBy=ATTR-1&performanceBy=ATTR-2&costBy=ATTR-3&roiBy=ATTR-4',
+    );
+
+    expect(
+      ['category', 'stage', 'revenueBy', 'performanceBy', 'costBy', 'roiBy'].map((name) =>
+        sent.get(name),
+      ),
+    ).toEqual(['uncategorised', 'mql', 'ATTR-1', 'ATTR-2', 'ATTR-3', 'ATTR-4']);
+  });
 });
 
 /** The widget's export as requested from the API, from a page at route. */
