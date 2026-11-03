@@ -14,7 +14,6 @@ func Spread(first, last string) []purchasereport.Request {
 	return []purchasereport.Request{r}
 }
 
-// Vendors is n approved requests, each of its own vendor, V01 with 10.00, V02 with 20.00 and so on.
 func Vendors(n int) []purchasereport.Request {
 	list := make([]purchasereport.Request, 0, n)
 	for i := 1; i <= n; i++ {
