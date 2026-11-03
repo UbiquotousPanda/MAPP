@@ -17,7 +17,7 @@ import (
 func registerSummary(w *wiring, r *measure.Registry) error {
 	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
 	service := summary.NewService(w.set.Tx, summary.Deps{
-		Scope: w.reports, Series: revenueService(w), PlanGoals: summaryPlanGoals{plans: w.set.Plans, settings: w.settings},
+		Series: revenueService(w), PlanGoals: summaryPlanGoals{plans: w.set.Plans, settings: w.settings},
 		Spending: w.financials, Attribution: attribution.NewService(tools, w.set.Attribution),
 		Categories: revenueCategories{settings: w.settings},
 	}, w.now)

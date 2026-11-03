@@ -33,15 +33,15 @@ type fakes struct {
 	spend      map[string]map[string]financials.Facts
 	model      attribution.Model
 	asked      string
+	scopeReads int
 }
 
-func (f *fakes) Scope(context.Context, actor.Actor, measure.Filter, []string) (measure.Scope, error) {
-	return f.scope, nil
-}
-
-func (f *fakes) ActivitySeries(_ context.Context, _ actor.Actor, _ measure.Filter, category string) ([]revenue.ActivitySeries, error) {
+func (f *fakes) ActivitySeriesIn(_ context.Context, _ actor.Actor, _ measure.Filter, category string) (
+	measure.Scope, []revenue.ActivitySeries, error,
+) {
 	f.asked = category
-	return f.series, nil
+	f.scopeReads++
+	return f.scope, f.series, nil
 }
 
 func (f *fakes) PlanGoals(context.Context, []string) (map[string]revenue.Goal, error) {
@@ -57,7 +57,7 @@ func (f *fakes) SpendByMonth(context.Context, actor.Actor, []string) (map[string
 func (f *fakes) Designated(context.Context) (attribution.Model, error) { return f.model, nil }
 
 func (f *fakes) service() *Service {
-	deps := Deps{Scope: f, Series: f, PlanGoals: f, Spending: f, Attribution: f, Categories: f}
+	deps := Deps{Series: f, PlanGoals: f, Spending: f, Attribution: f, Categories: f}
 	return NewService(fakeRead{}, deps, func() time.Time { return time.Date(2026, 6, 15, 0, 0, 0, 0, time.UTC) })
 }
 

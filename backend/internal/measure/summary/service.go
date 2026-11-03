@@ -59,11 +59,7 @@ func (s *Service) read(ctx context.Context, a actor.Actor, f measure.Filter, cat
 }
 
 func (s *Service) readSeries(ctx context.Context, a actor.Actor, f measure.Filter, category string) (view, error) {
-	sc, err := s.deps.Scope.Scope(ctx, a, f, nil)
-	if err != nil {
-		return view{}, err
-	}
-	series, err := s.deps.Series.ActivitySeries(ctx, a, f, category)
+	sc, series, err := s.deps.Series.ActivitySeriesIn(ctx, a, f, category)
 	return view{scope: sc, series: series}, err
 }
 

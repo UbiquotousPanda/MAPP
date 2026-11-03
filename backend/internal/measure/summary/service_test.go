@@ -127,6 +127,19 @@ func TestStates_NoPlansInScope_048_FR018(t *testing.T) {
 	}
 }
 
+func TestReport_ReadsTheScopeOnce_048_FR020(t *testing.T) {
+	t.Parallel()
+	forReport, forLeague := newFakes(), withSegments()
+
+	report(t, forReport, measure.Filter{})
+	league(t, forLeague, TableRevenue, nil)
+
+	if forReport.scopeReads != 1 || forLeague.scopeReads != 1 {
+		t.Errorf("scope reads: report %d, league %d; want 1 each, the one ActivitySeriesIn makes",
+			forReport.scopeReads, forLeague.scopeReads)
+	}
+}
+
 func TestNoFinanceView_048_FR003(t *testing.T) {
 	t.Parallel()
 	onePlan := newFakes()
