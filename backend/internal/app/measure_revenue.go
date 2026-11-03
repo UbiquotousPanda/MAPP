@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"slices"
 
 	"mapp/internal/allwork"
 	"mapp/internal/measure"
@@ -114,7 +115,8 @@ func (g revenueGoals) modelGoals(ctx context.Context, modelID string) (revenue.A
 	if err != nil {
 		return revenue.ActivityGoals{}, false, err
 	}
-	return revenue.ActivityGoals{Model: projectionModel(m), Sourced: sourcedMeasures(suppliers)}, true, nil
+	return revenue.ActivityGoals{Model: projectionModel(m), AllowedStages: slices.Clone(m.AllowedGoalStages),
+		Sourced: sourcedMeasures(suppliers)}, true, nil
 }
 
 func sourcedMeasures(suppliers []performance.Supplier) []string {

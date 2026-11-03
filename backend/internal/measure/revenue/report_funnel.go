@@ -68,16 +68,15 @@ func buildFunnelReport(in funnelReportInput) FunnelReport {
 	return out
 }
 
-// uncoveredCount is the number of plans in view whose model does not allow the stage at all.
+// uncoveredCount counts the plans whose model does not allow the stage; a plan without a model is not counted.
 func uncoveredCount(series []ActivitySeries, m measureOf) int {
-	coveredPlans, allPlans := map[string]bool{}, map[string]bool{}
+	uncovered := map[string]bool{}
 	for _, a := range series {
-		allPlans[a.PlanID] = true
-		if m.covers(a) {
-			coveredPlans[a.PlanID] = true
+		if len(a.AllowedStages) > 0 && !slices.Contains(a.AllowedStages, m.key) {
+			uncovered[a.PlanID] = true
 		}
 	}
-	return len(allPlans) - len(coveredPlans)
+	return len(uncovered)
 }
 
 // previousStageTotal is the actual total of the stage before the selected one, for conversion.

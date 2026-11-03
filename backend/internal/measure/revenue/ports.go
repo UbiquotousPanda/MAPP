@@ -38,6 +38,7 @@ type FactTotal struct {
 type ActivityGoals struct {
 	SetLaterStagesMyself bool
 	Model                projection.Model
+	AllowedStages        []string
 	Sourced              []string
 }
 
