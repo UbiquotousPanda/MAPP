@@ -28,11 +28,9 @@ func (b builder) money(c int64) *money.Money {
 
 func (b builder) revenueSection(series []revenue.ActivitySeries, plans map[string]revenue.Goal) RevenueSection {
 	t := sumSeries(series, revenuePick())
-	out := RevenueSection{PeriodLabel: "FY " + strconv.Itoa(b.year), Performance: performanceOf(t.actualOrProjected(), t.goal),
-		GoalCoverage: coverageOf(series, plans), Trend: []TrendPeriod{}}
-	if len(series) > 0 {
-		out.ActualOrProjected = b.money(t.actualOrProjected())
-	}
+	out := RevenueSection{PeriodLabel: "FY " + strconv.Itoa(b.year), ActualOrProjected: b.money(t.actualOrProjected()),
+		Performance: performanceOf(t.actualOrProjected(), t.goal), GoalCoverage: coverageOf(series, plans),
+		Trend: []TrendPeriod{}}
 	if t.anyGoal {
 		out.Goal = b.money(t.goal)
 	}

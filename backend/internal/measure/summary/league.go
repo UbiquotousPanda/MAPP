@@ -32,9 +32,14 @@ func shares(cents int64, values []string) map[string]int64 {
 }
 
 func topFive(rows []leagueRow) []leagueRow {
+	sorted := ranked(rows)
+	return sorted[:min(leagueSize, len(sorted))]
+}
+
+func ranked(rows []leagueRow) []leagueRow {
 	sorted := slices.Clone(rows)
 	slices.SortStableFunc(sorted, compareRows)
-	return sorted[:min(leagueSize, len(sorted))]
+	return sorted
 }
 
 func compareRows(a, b leagueRow) int {
