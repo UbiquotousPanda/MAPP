@@ -6,8 +6,8 @@ import (
 
 // revenueFiguresOfActivities is each activity's own figures: Goal its own goal, Actual what was counted to today,
 // Projected the same "actual or projected" total the cards show, and 050's credited revenue and actual cost.
-func revenueFiguresOfActivities(series []ActivitySeries, r returns) map[string]RevenueFigures {
-	out := make(map[string]RevenueFigures, len(series))
+func revenueFiguresOfActivities(series []ActivitySeries, r returns) map[string]revenueSums {
+	out := make(map[string]revenueSums, len(series))
 	for _, a := range series {
 		own := ownFigureOf(a, revenueMeasure())
 		out[a.ID] = r.withOwn(a.ID, RevenueFigures{Goal: usdOf(own.goal), Actual: usdOf(own.actual),
@@ -16,9 +16,8 @@ func revenueFiguresOfActivities(series []ActivitySeries, r returns) map[string]R
 	return out
 }
 
-// withPerformance works the ROI out in dollars, converts f to the display currency, then derives Performance.
+// withPerformance converts f into the display currency, then derives Performance and its word from Projected ÷ Goal.
 func withPerformance(f RevenueFigures, display money.Display) RevenueFigures {
-	f = withROI(f)
 	f.Goal, f.Actual, f.Projected = display.Optional(f.Goal), display.Optional(f.Actual), display.Optional(f.Projected)
 	f.AttributedRevenue, f.ActualCost = display.Optional(f.AttributedRevenue), display.Optional(f.ActualCost)
 	performance := percentCard(nil)
@@ -46,16 +45,17 @@ func addRevenueFigures(a, b RevenueFigures) RevenueFigures {
 
 // revenueTimes is the share of f a % split gives, each amount rounded half up to the cent.
 func revenueTimes(f RevenueFigures, part money.Percent) RevenueFigures {
-	scale := func(m *money.Money) *money.Money {
-		if m == nil {
-			return nil
-		}
-		shown := money.USD(money.FromCents(part.OfWhole(m.Amount.Cents())))
-		return &shown
-	}
-	f.Goal, f.Actual, f.Projected = scale(f.Goal), scale(f.Actual), scale(f.Projected)
-	f.AttributedRevenue, f.ActualCost = scale(f.AttributedRevenue), scale(f.ActualCost)
+	f.Goal, f.Actual, f.Projected = partOf(f.Goal, part), partOf(f.Actual, part), partOf(f.Projected, part)
+	f.AttributedRevenue, f.ActualCost = partOf(f.AttributedRevenue, part), partOf(f.ActualCost, part)
 	return f
+}
+
+func partOf(m *money.Money, part money.Percent) *money.Money {
+	if m == nil {
+		return nil
+	}
+	shown := money.USD(money.FromCents(part.OfWhole(m.Amount.Cents())))
+	return &shown
 }
 
 func addMoneyPtr(a, b *money.Money) *money.Money {

@@ -26,7 +26,7 @@ func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Fi
 			return err
 		}
 		x := indexInView(sc, series, categoryOf(f.Own))
-		figures := &revenueRanking{x: x, own: revenueFiguresOfActivities(series, r), memo: map[string]RevenueFigures{},
+		figures := &revenueRanking{x: x, own: revenueFiguresOfActivities(series, r), memo: map[string]revenueSums{},
 			display: money.DisplayIn(sc.Currency.Code, sc.Currency.Rate.String())}
 		out = RevenueRanked{List: ranking.Build(x, showLevel(f.Show), q.shared(), figures),
 			Attribution: attribution.ActualStamp(r.credited.Model)}
@@ -95,30 +95,32 @@ func showLevel(show string) string {
 
 type revenueRanking struct {
 	x       *ranking.Index
-	own     map[string]RevenueFigures
-	memo    map[string]RevenueFigures
+	own     map[string]revenueSums
+	memo    map[string]revenueSums
 	display money.Display
 }
 
-func (r *revenueRanking) Of(id string) RevenueFigures {
-	if f, done := r.memo[id]; done {
-		return f
+func (r *revenueRanking) Of(id string) revenueSums {
+	if s, done := r.memo[id]; done {
+		return s
 	}
-	f, isActivity := r.own[id]
+	s, isActivity := r.own[id]
 	if !isActivity {
 		for _, child := range r.x.ChildrenInView(id) {
-			f = addRevenueFigures(f, r.Of(child))
+			s = addRevenueSums(s, r.Of(child))
 		}
 	}
-	r.memo[id] = f
-	return f
+	r.memo[id] = s
+	return s
 }
 
-func (*revenueRanking) Part(f RevenueFigures, share money.Percent) RevenueFigures {
-	return revenueTimes(f, share)
+func (*revenueRanking) Part(s revenueSums, share money.Percent) revenueSums {
+	return revenueSums{figures: revenueTimes(s.figures, share), roiCredited: partOf(s.roiCredited, share)}
 }
-func (*revenueRanking) Plus(a, b RevenueFigures) RevenueFigures { return addRevenueFigures(a, b) }
-func (r *revenueRanking) Shown(f RevenueFigures) RevenueFigures { return withPerformance(f, r.display) }
+func (*revenueRanking) Plus(a, b revenueSums) revenueSums { return addRevenueSums(a, b) }
+func (r *revenueRanking) Shown(s revenueSums) RevenueFigures {
+	return withPerformance(withROI(s.figures, s.roiCredited), r.display)
+}
 
 func (*revenueRanking) Key(f RevenueFigures, sort string) (int64, bool) {
 	m := f.Projected

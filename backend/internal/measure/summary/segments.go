@@ -83,7 +83,7 @@ func tallyOf(s revenue.ActivitySeries, cost, credited *int64) tally {
 	if cost != nil {
 		out.cost, out.costSeen = *cost, true
 	}
-	if credited != nil {
+	if credited != nil && cost != nil {
 		out.credited, out.creditedSeen = *credited, true
 	}
 	return out
