@@ -126,13 +126,33 @@ func exportedCostColumns(t *testing.T, alexSees person) {
 func TestWaveB_RoiNotConfigured_049_FR013(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
+	digital := "category=" + categoryNamed(t, alexSees, "Digital")
 	for _, show := range levels() {
 		for _, group := range []string{"none", "plan", "owner"} {
-			list := revenueRankedOf(t, alexSees, joined("show="+show, "group="+group))
-			costless(t, "Revenue at show="+show+" by "+group, list, notConfigured)
+			for _, category := range []string{"", digital} {
+				list := revenueRankedOf(t, alexSees, joined("show="+show, "group="+group, category))
+				costless(t, "Revenue at show="+show+" by "+group+" "+category, list, notConfigured)
+			}
 		}
 	}
 	exportedCostColumns(t, alexSees)
+}
+
+// TestWaveB_CategoryNarrowsTheRecordsAbove_049_FR019: a category lists only the records holding one of its activities.
+func TestWaveB_CategoryNarrowsTheRecordsAbove_049_FR019(t *testing.T) {
+	t.Parallel()
+	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)
+	digital := "category=" + categoryNamed(t, alexSees, "Digital")
+	for _, show := range []string{"plan", "campaign", "initiative"} {
+		byType := listingOf(revenueRankedOf(t, alexSees, joined("show="+show, "activityType=AT-1003")))
+		for _, r := range reportsUnderTest() {
+			got := r.listOf(t, alexSees, joined("show="+show, digital))
+			if got.total != byType.total || !slices.Equal(slices.Sorted(slices.Values(got.ids)), slices.Sorted(slices.Values(byType.ids))) {
+				t.Errorf("%s at show=%s, Digital: %d entries %v, want the %d of Digital media %v", r.name, show,
+					got.total, got.ids, byType.total, byType.ids)
+			}
+		}
+	}
 }
 
 // TestWaveB_FunnelStageSelector_049_FR015: INQ then MQL, opening on INQ, never deals; every plan covered.
