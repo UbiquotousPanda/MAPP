@@ -12641,6 +12641,18 @@ export interface components {
         ReportOwnStatus: string[];
         /** @description A grid's chosen columns, comma-separated in order, which the report validates (042). */
         ReportOwnColumns: string;
+        /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
+        ReportOwnCategory: string;
+        /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
+        ReportOwnStage: "inq" | "mql";
+        /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnRevenueBy: string;
+        /** @description The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnPerformanceBy: string;
+        /** @description The Summary report's Actual cost league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnCostBy: string;
+        /** @description The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnRoiBy: string;
         RankedSort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
         RankedOrder: "desc" | "asc";
         /** @description none, plan, owner or attr:<attribute ID>. */
@@ -22103,6 +22115,18 @@ export interface operations {
                 status?: components["parameters"]["ReportOwnStatus"];
                 /** @description A grid's chosen columns, comma-separated in order, which the report validates (042). */
                 columns?: components["parameters"]["ReportOwnColumns"];
+                /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
+                category?: components["parameters"]["ReportOwnCategory"];
+                /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
+                stage?: components["parameters"]["ReportOwnStage"];
+                /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
+                revenueBy?: components["parameters"]["ReportOwnRevenueBy"];
+                /** @description The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048). */
+                performanceBy?: components["parameters"]["ReportOwnPerformanceBy"];
+                /** @description The Summary report's Actual cost league segment, a Shell attribute ID, which the report validates (048). */
+                costBy?: components["parameters"]["ReportOwnCostBy"];
+                /** @description The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048). */
+                roiBy?: components["parameters"]["ReportOwnRoiBy"];
             };
             header?: never;
             path: {
