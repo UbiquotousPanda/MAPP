@@ -18,8 +18,9 @@ interface FilterGroupProps {
 }
 
 const SEARCH_ABOVE = 10;
+const ACTIONS_ABOVE = 4;
 
-/** One filter group: "(selected / all)", Select all, Clear all and, above ten values, a search. */
+/** One filter group: "(selected / all)"; above four values Select all and Clear all; above ten, a search. */
 export function FilterGroup({ title, options, ticked, onChange }: FilterGroupProps) {
   const [search, setSearch] = useState('');
   const id = useId();
@@ -41,14 +42,16 @@ export function FilterGroup({ title, options, ticked, onChange }: FilterGroupPro
           ({count} / {options.length})
         </span>
       </legend>
-      <div className={styles.groupActions}>
-        <Button type="button" size="sm" variant="tertiary" onClick={() => onChange(null)}>
-          Select all
-        </Button>
-        <Button type="button" size="sm" variant="tertiary" onClick={() => onChange([])}>
-          Clear all
-        </Button>
-      </div>
+      {options.length > ACTIONS_ABOVE && (
+        <div className={styles.groupActions}>
+          <Button type="button" size="sm" variant="tertiary" onClick={() => onChange(null)}>
+            Select all
+          </Button>
+          <Button type="button" size="sm" variant="tertiary" onClick={() => onChange([])}>
+            Clear all
+          </Button>
+        </div>
+      )}
       {options.length > SEARCH_ABOVE && (
         <SearchField label={`Search ${title}`} value={search} onChange={setSearch} />
       )}

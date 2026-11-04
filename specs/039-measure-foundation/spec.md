@@ -64,6 +64,9 @@ Proposed for Shell to choose at the demo of 6 November; the tech lead confirms t
   says "Tick at least one value in …" as before. The year, Period, Currency, Show, the chart or table choice and
   removing a chip apply at once in both modes. Shell picks one behaviour at the demo; the other is then removed,
   or the switch stays as a preference.
+- **039-C8** Q: Does every group need Select all and Clear all? → A: only a group with more than four values, where
+  they save clicks; a smaller group is ticked value by value. Each level tab keeps its own pair for all its groups.
+  Fewer identical button pairs make a long panel calmer (Principle IX, restraint).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -97,8 +100,9 @@ filters and compare the "In view" counts with All work's counts for the same yea
    filled in**, the period is **Months**, the currency is her display currency, and the "In view" line counts
    exactly the records All work shows for the same year with no filters.
 4. **Given** the filter panel, **When** Priya opens the **Activity** tab, **Then** it lists one group per active
-   choice or yes/no Shell attribute of the activity level, each with "(selected / all)", **Select all**, **Clear
-   all**, its values and **Not filled in**, and a search box when the group has more than ten values.
+   choice or yes/no Shell attribute of the activity level, each with "(selected / all)", its values and **Not
+   filled in**, **Select all** and **Clear all** when the group has more than four values, and a search box when
+   it has more than ten.
 5. **Given** a Shell attribute with the same label at two levels, **When** the panel is shown, **Then** it
    appears as two separate groups, one in each level's tab.
 6. **Given** Priya changes filters, **When** she has not pressed **Apply** yet, **Then** the report keeps its
@@ -264,8 +268,8 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   values still used by a record in view labelled "(inactive)", and **Not filled in**; text, long-text and number
   attributes are not offered.
 - **FR-010**: Every group with choices MUST show "(selected / all)" counting **Not filled in**, **Select all** and
-  **Clear all**, and a search box when it has more than ten values; each level tab MUST offer **Select all** and
-  **Clear all** for its groups.
+  **Clear all** when it has more than four values (039-C8), and a search box when it has more than ten; each level
+  tab MUST offer **Select all** and **Clear all** for its groups.
 - **FR-011**: The Plans list MUST follow the year; plans of the old year are dropped and the panel says how many.
   Owner and Activity type MUST list only choices present in the selected plans.
 - **FR-012**: A record MUST match when it meets every filter tested on its level, with All work's rules (010
