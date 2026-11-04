@@ -41,6 +41,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .filtersToggle {
@@ -52,15 +53,19 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  min-width: 0;
   padding: var(--space-4);
+  overflow-wrap: anywhere;
   border: 1px solid var(--card-border);
   border-radius: var(--radius-card);
   background-color: var(--surface);
 }
 
+/* A fieldset is as wide as its longest line unless told otherwise: it must never push past the panel. */
 .group {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
@@ -105,14 +110,17 @@
 }
 
 .groupName {
-  flex: 1;
+  flex: none;
   font-weight: var(--weight-bold);
 }
 
+/* The name never shrinks; the summary takes the rest and ends in an ellipsis (its title holds the whole value). */
 .summary {
+  flex: 1 1 0;
+  min-width: 0;
   overflow: hidden;
-  max-width: 50%;
   color: var(--ink-2);
+  text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -189,6 +197,12 @@
   padding: 0;
   overflow-y: auto;
   list-style: none;
+}
+
+.values li,
+.values label {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .field {

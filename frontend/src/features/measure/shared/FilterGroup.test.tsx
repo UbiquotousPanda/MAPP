@@ -47,10 +47,9 @@ describe('FilterGroup (039-C9, FR-010)', () => {
 
   it('says what is chosen: the one value, or n of m, and opens when it restricts', () => {
     renderGroup(['V-2']);
-    expect(screen.getByRole('button', { name: 'Brand Value 2' })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
+    const header = screen.getByRole('button', { name: 'Brand Value 2' });
+    expect(header).toHaveAttribute('aria-expanded', 'true');
+    expect(header).toContainElement(screen.getByTitle('Value 2'));
 
     cleanup();
     renderGroup(['V-1', 'V-3']);

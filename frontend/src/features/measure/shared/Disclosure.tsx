@@ -32,7 +32,9 @@ export function Disclosure(props: DisclosureProps) {
           onClick={() => setOpen(!open)}
         >
           <span className={styles.groupName}>{title}</span>{' '}
-          <span className={styles.summary}>{summary}</span>
+          <span className={styles.summary} title={summary}>
+            {summary}
+          </span>
           <ChevronDown className={styles.chevron} aria-hidden="true" />
         </button>
       </legend>
