@@ -108,6 +108,25 @@ touches those files, and the build plan assigns it to lane B.
 - **Performance and conversion are shown here but defined by 048** (049-C13, 049-C15); if 048 words them
   differently, this feature follows it rather than the other way round.
 
+## Benchmark
+
+`BenchmarkRevenueReports` in `internal/platform/apibench/measure_revenue_test.go`. Recorded 4 Nov 2026 on a
+macOS laptop with PostgreSQL (CI runs 18 on Linux), on `measure-module` after #135's lean year read; time and
+statements per request:
+
+| Request | Demo | 028 volume |
+|---|---|---|
+| Revenue report | 10 ms · 41 | 675 ms · 41 |
+| Revenue, one market (Priya) | 8 ms · 41 | 1,078 ms · 41 |
+| Revenue by quarter, uncategorised | 7 ms · 41 | 805 ms · 41 |
+| Revenue ranked list, by campaign | 8 ms · 44 | 937 ms · 44 |
+| Funnel stages, MQL | 7 ms · 41 | 754 ms · 41 |
+| Funnel ranked, by activity | 7 ms · 41 | 814 ms · 41 |
+| Export, every widget | 19 ms · 96 | 2,229 ms · 96 |
+
+SC-003 holds: the statements are the same at the 028 volume as on the demo. Every report read is within 039's
+two seconds; the export is not bound by it and serves every widget in one request.
+
 ## Complexity Tracking
 
 Nothing outside the constitution's acceptable bands is planned. The ranked list's `compare` and `grouped`
