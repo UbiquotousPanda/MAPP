@@ -142,6 +142,7 @@ export function RequestsGrid({
   const empty: ReportTableData = { columns: [{ label: 'Name' }], rows: [] };
   return (
     <ReportWidget
+      wide
       report="purchaseRequests"
       widget="grid"
       title="Purchase requests"

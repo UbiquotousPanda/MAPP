@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
+import { cx } from '@/ui/cx';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import type { ReportKey } from '../reports';
@@ -10,6 +11,7 @@ import { ExportMenu } from './ExportMenu';
 import { ReportTable } from './ReportTable';
 import type { ReportTableData } from './ReportTable';
 import { useReportAddress } from './useReportAddress';
+import frame from './ReportFrame.module.css';
 import styles from './ReportWidget.module.css';
 
 export interface ReportWidgetProps {
@@ -28,11 +30,13 @@ export interface ReportWidgetProps {
   loading?: boolean;
   failed?: boolean;
   onRetry?: () => void;
+  wide?: boolean;
 }
 
 /** A widget with its tip, Chart · Table switch in the address, export, and its own loading and failure. */
 export function ReportWidget(props: ReportWidgetProps) {
-  const { report, widget, title, tip, chart, table, note, empty, loading, failed, onRetry } = props;
+  const { report, widget, title, tip, chart, table, note, empty, loading, failed, onRetry, wide } =
+    props;
   const [address, setAddress] = useReportAddress();
   const [params] = useSearchParams();
   const asTable = address.tables.includes(widget);
@@ -68,24 +72,26 @@ export function ReportWidget(props: ReportWidgetProps) {
     </div>
   );
   return (
-    <Card title={title} actions={actions}>
-      {note && <p className={styles.note}>{note}</p>}
-      {failed ? (
-        <div className={styles.failed} role="alert">
-          <p>This part of the report couldn&apos;t be loaded</p>
-          <Button type="button" variant="secondary" size="sm" onClick={onRetry}>
-            Try again
-          </Button>
-        </div>
-      ) : loading ? (
-        <Skeleton lines={5} height="20px" />
-      ) : empty ? (
-        <p className={styles.empty}>{empty}</p>
-      ) : asTable ? (
-        <ReportTable title={title} data={table} />
-      ) : (
-        chart
-      )}
-    </Card>
+    <div className={cx(frame.cell, wide && frame.wide)}>
+      <Card title={title} actions={actions}>
+        {note && <p className={styles.note}>{note}</p>}
+        {failed ? (
+          <div className={styles.failed} role="alert">
+            <p>This part of the report couldn&apos;t be loaded</p>
+            <Button type="button" variant="secondary" size="sm" onClick={onRetry}>
+              Try again
+            </Button>
+          </div>
+        ) : loading ? (
+          <Skeleton lines={5} height="20px" />
+        ) : empty ? (
+          <p className={styles.empty}>{empty}</p>
+        ) : table && asTable ? (
+          <ReportTable title={title} data={table} />
+        ) : (
+          chart
+        )}
+      </Card>
+    </div>
   );
 }

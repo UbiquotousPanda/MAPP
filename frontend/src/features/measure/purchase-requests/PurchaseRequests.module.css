@@ -99,6 +99,12 @@
   margin-bottom: var(--space-4);
 }
 
+/* The search gives way first, down to 200 px, so the controls share one row where they can. */
+.toolbar > :first-child {
+  flex: 1 1 200px;
+  max-width: 320px;
+}
+
 .field {
   display: flex;
   flex-direction: column;

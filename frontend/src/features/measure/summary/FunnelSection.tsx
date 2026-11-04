@@ -103,6 +103,7 @@ function ConversionTrend({ periods, stage }: { periods: Rate[]; stage: string })
   };
   return (
     <ReportWidget
+      wide
       report="summary"
       widget="conversion"
       title={`${stage} conversion trend`}

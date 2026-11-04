@@ -15,8 +15,26 @@
 
 .widgets {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: var(--space-4);
+}
+
+/* A child of the widget grid spans every column unless it is a small widget (.cell); .wide spans again. */
+.widgets > * {
+  grid-column: 1 / -1;
+}
+
+.widgets > .cell {
+  grid-column: auto;
+}
+
+.widgets > .wide {
+  grid-column: 1 / -1;
+}
+
+.cell {
+  display: grid;
+  min-width: 0;
 }
 
 .filters {
@@ -150,7 +168,8 @@
   outline: none;
 }
 
-@media (width < 1024px) {
+/* Below 1200 px the 300 px panel would leave the widgets a single cramped column: it becomes the Filters (n) drawer. */
+@media (width < 1200px) {
   .layout {
     grid-template-columns: minmax(0, 1fr);
   }

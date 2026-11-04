@@ -67,6 +67,7 @@ function TrendWidget({ trend }: { trend: SummaryTrendPeriod[] }) {
   };
   return (
     <ReportWidget
+      wide
       report="summary"
       widget="trend"
       title="Revenue trend"

@@ -173,6 +173,7 @@ export function ApprovalsGrid({
   return (
     <>
       <ReportWidget
+        wide
         report="approvals"
         widget="approvals"
         title="Approvals"

@@ -172,6 +172,7 @@
 
   /* Media queries cannot read custom properties, so they write the breakpoints 600 and 960 px. */
   --content-max: 1300px;
+  --content-wide: 1800px;
   --form-max: 720px;
   --grid-gap: 20px;
   --gutter: 24px;

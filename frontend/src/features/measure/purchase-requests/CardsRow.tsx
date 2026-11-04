@@ -29,6 +29,7 @@ export function CardsRow({ data, failed, onRetry }: CardsRowProps) {
   };
   return (
     <ReportWidget
+      wide
       report="purchaseRequests"
       widget="cards"
       title="Summary"
