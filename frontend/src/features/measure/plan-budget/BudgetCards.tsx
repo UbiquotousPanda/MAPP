@@ -1,5 +1,6 @@
 import { useFormatters } from '@/format/useFormatters';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
+import { SeriesCard } from '../shared';
 import type { PlanBudgetCards } from './api';
 import styles from './PlanBudget.module.css';
 
@@ -14,14 +15,25 @@ export function BudgetCards({ cards }: { cards: PlanBudgetCards }) {
   const overAllocated = cards.leftToPlan !== null && cards.leftToPlan.amount.startsWith('-');
   return (
     <div className={styles.cards} aria-label="Summary">
-      <SummaryCard label="Budget" {...amount(cards.budget)} tip="Counted once per branch." />
-      <SummaryCard label="Planned cost" {...amount(cards.planned)} />
-      <SummaryCard
+      <SeriesCard
+        series="budget"
+        label="Budget"
+        {...amount(cards.budget)}
+        tip="Counted once per branch."
+      />
+      <SeriesCard series="planned" label="Planned cost" {...amount(cards.planned)} />
+      <SeriesCard
+        series="committed"
         label="Committed"
         {...amount(cards.committed)}
         tip="Purchase-order lines of the year."
       />
-      <SummaryCard label="Actual" {...amount(cards.actual)} tip="Payments posted in the year." />
+      <SeriesCard
+        series="actual"
+        label="Actual"
+        {...amount(cards.actual)}
+        tip="Payments posted in the year."
+      />
       <SummaryCard
         label="Budget used"
         value={percent(cards.budgetUsed)}

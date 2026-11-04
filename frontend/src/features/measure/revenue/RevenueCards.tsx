@@ -1,5 +1,6 @@
 import { useFormatters } from '@/format/useFormatters';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
+import { SeriesCard } from '../shared';
 import { reasonText } from './reasons';
 import { varianceText } from './variance';
 import type { RevenueCards as RevenueCardsData, RevenueReport } from './api';
@@ -17,17 +18,20 @@ export function RevenueCards({
   const { money, date } = useFormatters();
   return (
     <div className={styles.cards} aria-label="Summary">
-      <SummaryCard
+      <SeriesCard
+        series="goal"
         label="Revenue goal"
         value={cards.goal.value ? money(cards.goal.value) : reasonText(cards.goal.reason)}
         tip="Each plan's model sets its stages, rates and velocity. A goal projects the later stages within the plan year, and this report compares actual and projected against it."
       />
-      <SummaryCard
+      <SeriesCard
+        series="actual"
         label="Actual revenue"
         value={cards.actual.value ? money(cards.actual.value) : reasonText(cards.actual.reason)}
         tip="Revenue facts matched to the activities in view, to today."
       />
-      <SummaryCard
+      <SeriesCard
+        series="projected"
         label="Actual or projected"
         value={
           cards.projected.value ? money(cards.projected.value) : reasonText(cards.projected.reason)

@@ -9,12 +9,12 @@ import type { RecordType } from './schemas';
 import styles from './ApprovalsReport.module.css';
 
 const BAR_COLOURS: Record<string, string> = {
-  waiting: 'var(--chart-planned)',
-  approved: 'var(--chart-actual)',
-  declined: 'var(--chart-budget)',
-  recalled: 'var(--chart-committed)',
-  replaced: 'var(--chart-committed)',
-  autoApproved: 'var(--chart-actual)',
+  waiting: 'var(--chart-cat-1)',
+  approved: 'var(--chart-cat-4)',
+  autoApproved: 'var(--chart-cat-2)',
+  declined: 'var(--chart-cat-5)',
+  recalled: 'var(--chart-cat-3)',
+  replaced: 'var(--chart-cat-7)',
 };
 
 const TIP =

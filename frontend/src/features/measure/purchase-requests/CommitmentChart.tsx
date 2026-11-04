@@ -1,15 +1,12 @@
 import { useFormatters } from '@/format/useFormatters';
-import { ReportWidget } from '../shared';
+import { categoryFill, OTHER_COLOUR, ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { ChartData } from './api';
 import styles from './PurchaseRequests.module.css';
 
-const TOKENS = [
-  'var(--chart-planned)',
-  'var(--chart-committed)',
-  'var(--chart-actual)',
-  'var(--chart-budget)',
-];
+function seriesFill(key: string, index: number): string {
+  return key === 'other' ? OTHER_COLOUR : categoryFill(index);
+}
 
 const TIP =
   'Committed value of the Approved and Closed lines in the calendar month of their delivery date, from the ' +
@@ -40,7 +37,7 @@ function Bars({ data, label }: { data: ChartData; label: (key: string) => string
       <ul className={styles.legend} aria-label="Series">
         {data.chartSeries.map((s, i) => (
           <li key={s.key}>
-            <span className={styles.swatch} style={{ background: TOKENS[i % TOKENS.length] }} />
+            <span className={styles.swatch} style={{ background: seriesFill(s.key, i) }} />
             {s.name}
           </li>
         ))}
@@ -57,7 +54,7 @@ function Bars({ data, label }: { data: ChartData; label: (key: string) => string
                   title={`${s.name}: ${money(s.values[mi])}`}
                   style={{
                     width: `${(amountOf(s.values[mi]) / peak) * 100}%`,
-                    background: TOKENS[i % TOKENS.length],
+                    background: seriesFill(s.key, i),
                   }}
                 />
               ))}

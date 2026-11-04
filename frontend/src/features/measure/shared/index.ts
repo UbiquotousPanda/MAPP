@@ -4,6 +4,8 @@ export type { ReportFrameProps } from './ReportFrame';
 export { ReportWidget } from './ReportWidget';
 export type { ReportWidgetProps } from './ReportWidget';
 export { ReportTable } from './ReportTable';
+export { categoryFill, OTHER_COLOUR } from './chart-colours';
+export { SeriesCard } from './SeriesCard';
 export type { ReportTableData, ReportTableColumn, ReportTableRow } from './ReportTable';
 export { periodStates } from './periods';
 export type { PeriodState } from './periods';

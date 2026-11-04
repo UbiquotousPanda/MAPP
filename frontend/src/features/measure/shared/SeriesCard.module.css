@@ -1,0 +1,33 @@
+.card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+}
+
+.card::before {
+  position: absolute;
+  top: var(--space-5);
+  bottom: var(--space-5);
+  left: 0;
+  width: 4px;
+  border-radius: 0 2px 2px 0;
+  content: '';
+}
+
+.budget::before,
+.goal::before {
+  background: var(--chart-budget);
+}
+
+.planned::before,
+.projected::before {
+  background: var(--chart-planned);
+}
+
+.committed::before {
+  background: var(--chart-committed);
+}
+
+.actual::before {
+  background: var(--chart-actual);
+}

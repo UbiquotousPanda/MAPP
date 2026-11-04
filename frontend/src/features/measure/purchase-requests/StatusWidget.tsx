@@ -6,12 +6,12 @@ import { statusWord } from './words';
 import styles from './PurchaseRequests.module.css';
 
 const COLOURS: Record<string, string> = {
-  created: 'var(--chart-budget)',
-  submitted: 'var(--chart-planned)',
-  inReview: 'var(--chart-planned)',
-  declined: 'var(--chart-budget)',
-  approved: 'var(--chart-actual)',
-  closed: 'var(--chart-committed)',
+  created: 'var(--chart-cat-7)',
+  submitted: 'var(--chart-cat-1)',
+  inReview: 'var(--chart-cat-3)',
+  declined: 'var(--chart-cat-5)',
+  approved: 'var(--chart-cat-4)',
+  closed: 'var(--chart-cat-2)',
 };
 
 const TIP =

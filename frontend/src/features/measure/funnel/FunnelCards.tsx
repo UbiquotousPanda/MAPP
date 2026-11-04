@@ -1,5 +1,6 @@
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { useFormatters } from '@/format/useFormatters';
+import { SeriesCard } from '../shared';
 import { varianceText } from '../revenue/variance';
 import { reasonText } from './reasons';
 import type { FunnelCards as FunnelCardsData, FunnelReport } from '../revenue/api';
@@ -24,16 +25,19 @@ export function FunnelCards({
     value === null ? null : Math.round(value).toLocaleString();
   return (
     <div className={styles.cards} aria-label="Summary">
-      <SummaryCard
+      <SeriesCard
+        series="goal"
         label={`${name} goal`}
         value={whole(cards.goal.value) ?? reasonText(cards.goal.reason)}
       />
-      <SummaryCard
+      <SeriesCard
+        series="actual"
         label={`${name} actual`}
         value={whole(cards.actual.value) ?? reasonText(cards.actual.reason)}
         tip="Facts matched to the activities in view, to today."
       />
-      <SummaryCard
+      <SeriesCard
+        series="projected"
         label={`${name} actual or projected`}
         value={whole(cards.projected.value) ?? reasonText(cards.projected.reason)}
         detail={projectionLine(projections, date)}
