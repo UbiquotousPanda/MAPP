@@ -35,8 +35,8 @@ type entry struct {
 }
 
 type frameControls struct {
-	noFilters, period bool
-	showOpensOn       string
+	noPlanFilters, period bool
+	showOpensOn           string
 }
 
 func entries() []entry {
@@ -55,7 +55,7 @@ func entries() []entry {
 			"SWBS codes not received, purchase requests waiting for GSAP, and the purchase orders of each line item.", "",
 			frameControls{}},
 		{KeyUserAccess, "user-access", "User access",
-			"Who has which role and teams, and when they last signed in.", authz.AccessManage, frameControls{noFilters: true}},
+			"Who has which role and teams, and when they last signed in.", authz.AccessManage, frameControls{noPlanFilters: true}},
 		{KeySummary, "summary", "Summary",
 			"Whether the year is on track: projected against goal, the leading segments and the funnel.", "",
 			frameControls{period: true}},

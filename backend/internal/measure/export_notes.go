@@ -12,14 +12,15 @@ import (
 )
 
 // notes are the lines of About this export, and of a CSV before its rows: the report, then the controls its frame
-// shows (the year, the filters in words, the period, the level, the currency), and who exported it and when.
+// shows (the year, the filters in words, the period, the level, the currency), and who exported it and when. A
+// report without plan filters keeps only its filters in words, such as User access's team.
 func (s *Service) notes(a actor.Actor, e entry, f Filter, sc Scope) [][2]string {
 	now := s.now().UTC()
 	exported := [][2]string{{"Exported by", a.Name},
 		{"Exported at", date.Format(date.Today(now)) + " " + now.Format("15:04") + " UTC"}}
 	c := e.controls
-	if c.noFilters {
-		return append([][2]string{{labelReport, e.name}}, exported...)
+	if c.noPlanFilters {
+		return append([][2]string{{labelReport, e.name}, {labelFilters, filterWords(sc)}}, exported...)
 	}
 	notes := [][2]string{{labelReport, e.name}, {"Year", strconv.Itoa(sc.Year)}, {labelFilters, filterWords(sc)}}
 	if c.period {

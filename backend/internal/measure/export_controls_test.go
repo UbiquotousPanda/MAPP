@@ -13,8 +13,8 @@ import (
 	"mapp/internal/platform/sheet"
 )
 
-// About this export names a control only when the report has it, as its frame shows; User access has no filters, so
-// its export has no In view and no filter, period, show, currency or rate lines.
+// About this export names a control only when the report has it, as its frame shows; User access has no plan filters,
+// so its export has no In view and no year, period, show, currency or rate lines, but still names its team.
 func TestExport_NotesNameOnlyTheReportsOwnControls_039_FR022(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -27,7 +27,8 @@ func TestExport_NotesNameOnlyTheReportsOwnControls_039_FR022(t *testing.T) {
 			{"Year", "2026"}, {"Filters", "None"}, {"Period", "Months"}, {"Show", "Campaign"}, {"Currency", "GBP"}}, true},
 		{measure.KeyApprovals, nil, [][2]string{{"Report", "Approvals"}, {"Year", "2026"}, {"Filters", "None"},
 			{"Currency", "GBP"}}, true},
-		{measure.KeyUserAccess, nil, [][2]string{{"Report", "User access"}}, false},
+		{measure.KeyUserAccess, url.Values{"team": {"T-1"}}, [][2]string{{"Report", "User access"},
+			{"Filters", "Team: Lubricants Europe"}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.report, func(t *testing.T) {

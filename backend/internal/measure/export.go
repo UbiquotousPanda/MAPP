@@ -72,7 +72,7 @@ func (s *Service) Export(ctx context.Context, a actor.Actor, report string, req 
 	}
 	stamp := strconv.Itoa(sc.Year) + " – " + date.Format(date.Today(s.now()))
 	file := File{Name: fileName(e.name, sheets, req, stamp)}
-	if e.controls.noFilters {
+	if e.controls.noPlanFilters {
 		return write(file, sheets, afterFilters(s.notes(a, e, req.Filter, sc), own), nil)
 	}
 	notes := append(afterFilters(s.notes(a, e, req.Filter, sc), own), rateNotes(rates)...)
