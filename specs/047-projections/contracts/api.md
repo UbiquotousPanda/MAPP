@@ -54,7 +54,7 @@ No new permission keys (FR-023).
    plan's model does not allow is a one-line check on those forms, against `model.allowedGoalStages`.
    Nothing in 047 rewrites or invalidates a goal already set.
 2. **The three new `Model` fields are additive and defaulted** (`inqToMqlVelocityMonths`,
-   `mqlToDealVelocityMonths`, `allowedGoalStages`), so every existing client keeps working; migration 00033
+   `mqlToDealVelocityMonths`, `allowedGoalStages`), so every existing client keeps working; migration 00035
    backfills zero lag and all three stages, which is exactly what those models meant before.
 3. **The panel's `projected` fields and `projection` stamp** fill what 046's contract reserved. 048–050
    read the engine in Go (`internal/projection`), not over HTTP: there is no projection endpoint.

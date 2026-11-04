@@ -6,7 +6,7 @@ How to check the report end to end once 039's hub and 045 are on the branch. Rul
 ## Prerequisites
 
 - `measure-module` with 039 merged; this branch rebased on it; `sqlc generate` run (build guide §4.6)
-- Demo data: `cd backend && go run ./cmd/seed` (it applies migration 00029 through `database.Migrate`)
+- Demo data: `cd backend && go run ./cmd/seed` (it applies migration 00031 through `database.Migrate`)
 - Once, by hand: `goose -dir internal/platform/database/migrations postgres "$env:DATABASE_URL" down-to 28`, then
   `up` again — the column goes and comes back
 

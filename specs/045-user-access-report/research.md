@@ -20,7 +20,7 @@ query file for 045; it would copy 014's scope text rule).
 
 ## R2 — Last sign-in: one column, written by auth in the session's step
 
-**Decision**: migration **00029** adds `people.last_signed_in_at timestamptz NULL` (no default, no backfill). A new
+**Decision**: migration **00031** adds `people.last_signed_in_at timestamptz NULL` (no default, no backfill). A new
 query file `queries/sign_ins.sql` (auth's) holds `RecordSignIn` — `UPDATE people SET last_signed_in_at = $2 WHERE
 id = $1` — and `ListLastSignIns` — `SELECT id, last_signed_in_at FROM people WHERE last_signed_in_at IS NOT NULL`.
 `auth.Store` gains `RecordSignIn(ctx, personID, at)` and `LastSignIns(ctx) (map[string]time.Time, error)`;
@@ -68,13 +68,13 @@ roles and 4,000 assignments through fakes. Target: under 100 ms, keeping SC-001'
 
 ## R2 addendum (implementation) — a table of its own, and when recording started
 
-**Decision**: migration 00029 creates `sign_ins (person_id, last_signed_in_at)`, one row per person upserted by sign-in,
+**Decision**: migration 00031 creates `sign_ins (person_id, last_signed_in_at)`, one row per person upserted by sign-in,
 instead of a `people` column: a new `people` column changes the rows sqlc generates for 003's people queries, and so
 the people package, which is outside issue #38's paths. Apart from the person, the time cannot move their version or
 "last changed" (FR-010) by construction. It also creates `sign_in_recording`, one row stamped with the moment the migration runs;
 `GetSignInsRecordedSince` reads it for the contract's `recordedSince` ("Never" means "not since this date").
 
-**Rationale**: the true start is when 00029 ran in that database. goose's own version table is outside the schema
+**Rationale**: the true start is when 00031 ran in that database. goose's own version table is outside the schema
 sqlc reads, and the earliest stored sign-in moves forward as people sign in again.
 
 **Rejected**: a date in code (wrong for every later environment); the earliest `last_signed_in_at` (moves).

@@ -7,7 +7,7 @@ import (
 	"mapp/internal/performance"
 )
 
-// One child kind per table whose foreign key points at activities: 00031's performance_facts, and 00032's
+// One child kind per table whose foreign key points at activities: 00033's performance_facts, and 00034's
 // media_codes, activity_external_name_aliases and activity_integration_ids.
 var activityChildren = []string{"performanceFact", "mediaCode", "externalNameAlias", "integrationId"}
 

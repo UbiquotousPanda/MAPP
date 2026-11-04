@@ -1,6 +1,6 @@
 # Data model: Projections
 
-Migration **00033** (reserved for 047). The migrations are the truth; this file describes them. The
+Migration **00035** (reserved for 047). The migrations are the truth; this file describes them. The
 projection itself is derived at read time and stores nothing (047-C8).
 
 ## models — three new columns (extends feature 002's table, 00006)

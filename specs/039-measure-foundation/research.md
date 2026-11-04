@@ -42,7 +42,7 @@ administrator narrows `reports.view`).
 ## R3 — The permission
 
 **Decision**: `reports.view` ("See reports", refusal noun "Seeing reports", scoped) joins `authz`'s catalogue in
-the Plans and planning group after `data.export`. Migration 00028 widens `roles_permissions_check` and appends
+the Plans and planning group after `data.export`. Migration 00030 widens `roles_permissions_check` and appends
 `reports.view` to every role that holds `plans.view`; the seed gives it to the built-in roles that hold
 `plans.view` (D-367). Route rules: `need(authz.ReportsView)` for the catalogue, the frame and saved views;
 `need(authz.DataExport)` for exports (as 036's dashboard exports, D-343); each report adds its own rule.

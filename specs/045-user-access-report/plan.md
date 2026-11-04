@@ -10,7 +10,7 @@
 
 ## Summary
 
-1. **Last sign-in** (R2): migration **00029** adds `people.last_signed_in_at` (timestamptz, null); auth records
+1. **Last sign-in** (R2): migration **00031** adds `people.last_signed_in_at` (timestamptz, null); auth records
    it in `startSession`'s existing `Write`, after the credentials pass, through a new auth query file
    `sign_ins.sql` — no version bump, no "changed by", no activity-log entry (045-C4).
 2. **A read-only `measure/useraccess` package** builds the list from 014's People tab read
@@ -32,7 +32,7 @@ about hour 16), as lane D's instructions say, although the migration and the aut
 **Primary Dependencies**: none new — 039's `measure` package, `access`, `people`, `auth`, `platform/sheet`, sqlc,
 goose; web: TanStack Query, Zod, MSW, vitest-axe, Playwright, 039's `features/measure/shared`, 036's SVG bars
 
-**Storage**: PostgreSQL. Migration 00029, forward only: `sign_ins` (one row per person) and the one-row
+**Storage**: PostgreSQL. Migration 00031, forward only: `sign_ins` (one row per person) and the one-row
 `sign_in_recording` (research R2 addendum). New sqlc queries in `queries/sign_ins.sql`; existing reads of people,
 teams, memberships, roles and assignments.
 
@@ -129,7 +129,7 @@ lay them out, wired through 039's stubs; auth changed only where it starts a ses
 | A successful sign-in records its moment in UTC in the session's step (FR-009) | `auth/service.go` | `TestSignIn_RecordsLastSignIn_FR009` |
 | Wrong password, inactive person, locked attempt record nothing (FR-009) | `auth/service.go` | `TestSignIn_RefusedRecordsNothing_FR009` |
 | Recording changes only `last_signed_in_at`: version and `updated_*` unchanged, no log entry (FR-010) | `sign_ins`, a table apart from `people` | By construction: sign-in writes only `sign_ins` (R2 addendum) |
-| Migration 00029 applies through `database.Migrate` (testdb); existing people read "Never" (FR-011) | migration, `auth/store_postgres.go` | `TestSignIn_ShowsInReport_SC002` (Never for who has not signed in); migrations are forward only (B5) |
+| Migration 00031 applies through `database.Migrate` (testdb); existing people read "Never" (FR-011) | migration, `auth/store_postgres.go` | `TestSignIn_ShowsInReport_SC002` (Never for who has not signed in); migrations are forward only (B5) |
 | Rows = People tab roles, scopes and teams, plus e-mail, status, last sign-in (FR-003, FR-005, SC-003) | `service.go` | `TestRows_EqualPeopleTab_SC003`, `TestRows_NoRole_FR005`, `TestRows_InactiveTeamMarked_FR005` |
 | Search, Team, Status (default Active), sort ("Never" last), paging 5–500 (FR-006) | `query.go`, `service.go` | `TestQuery_Allowlist_FR006`, `TestFilter_SearchTeamStatus_FR006`, `TestSort_NeverLast_FR006`, `TestPage_FR006` |
 | Cards and bands over the filtered rows, adding up (FR-007) | `bands.go` | `TestBands_Boundaries_FR007` (30, 31, 90, 91 days, never), `TestCards_FR007` |
@@ -164,8 +164,8 @@ the time per request (both runs), then the number of statements; the volume brin
 - **039 (lane A)** — used as merged: `measure.Report` with `measure.Parameterised` (`q`, `team`, `status`, `sort`
   through `Filter.Own`), `access.manage` checked once in `openable` for the frame and the export, saved views, and
   `ReportFrame filters={false}` (added by 045 as lane A agreed; the frame body is unchanged).
-- **Integrator** — record 045-C1–C4 in the decision log. Migration 00029 is 045's; a database that already applied
-  00034 (050) refuses an older number unless the migration provider allows out-of-order versions. Issue #38's
+- **Integrator** — record 045-C1–C4 in the decision log. Migration 00031 is 045's; a database that already applied
+  00036 (050) refuses an older number unless the migration provider allows out-of-order versions. Issue #38's
   references are corrected; the stored value is `sign_ins` rather than a `people` column (research R2 addendum).
   `sqlcdb/models.go` gains `SignIn` and `SignInRecording` when regenerated (build guide §4.6).
 - **#DEMO (lane D)** — none: the demo people are not changed (demo data is additive); the e2e test signs in to

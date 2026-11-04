@@ -21,7 +21,7 @@ and ADR-0022.
 **Primary Dependencies**: Gin (handler layer only), pgx/v5, sqlc, goose; TanStack Query, React Hook Form + Zod,
 Radix primitives, `openapi-fetch` with generated types
 
-**Storage**: PostgreSQL 18 behind store interfaces; migrations **00030–00032** (reserved for this feature)
+**Storage**: PostgreSQL 18 behind store interfaces; migrations **00032–00034** (reserved for this feature)
 
 **Testing**: Go `testing` + `httptest` + `go-cmp`; contract tests through `internal/platform/apitest`;
 scope-isolation store tests on a real database; every other Go test on fakes. Vitest + Testing Library +
@@ -69,7 +69,7 @@ specs/046-performance-data/
 ├── spec.md
 ├── plan.md              # this file
 ├── research.md          # the four real choices
-├── data-model.md        # eleven tables across migrations 00030-00032
+├── data-model.md        # eleven tables across migrations 00032-00034
 ├── contracts/api.md     # operations for the wave B contract
 ├── checklists/requirements.md
 └── tasks.md             # /speckit-tasks output, not created here

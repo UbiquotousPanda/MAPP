@@ -13,7 +13,7 @@ input so they are tested now.
 ## Technical Context
 
 **Language/Version**: Go (pinned), TypeScript 5.9 / React 19 · **Storage**: one row in `attribution_settings`
-(migration 00034, reserved for 050) · **Testing**: unit tests on fakes, contract tests, component tests; e2e in the
+(migration 00036, reserved for 050) · **Testing**: unit tests on fakes, contract tests, component tests; e2e in the
 end-of-day batch · **Constraints**: money in minor units; figures defined once (measure-metrics §2)
 
 ## Constitution Check

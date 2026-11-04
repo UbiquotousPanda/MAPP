@@ -3,7 +3,7 @@
 039 adds **one table** and **one permission**. Everything else a report frame shows is worked out on read from
 the records the Plan module already stores (D-041).
 
-## 1. Saved report view — table `report_views` (migration 00028)
+## 1. Saved report view — table `report_views` (migration 00030)
 
 A person's named report filter for one report (spec FR-024–FR-029; research R4, R5).
 
@@ -83,7 +83,7 @@ Each entry has a one-line purpose (contracts/ui.md) and `available` from the reg
 ## 4. Permission
 
 `reports.view` — "See reports", group Plans and planning, scoped, refusal noun "Seeing reports" (014 Table A).
-Migration 00028: `roles_permissions_check` gains `'reports.view'`; `UPDATE roles SET permissions =
+Migration 00030: `roles_permissions_check` gains `'reports.view'`; `UPDATE roles SET permissions =
 array_append(permissions, 'reports.view'), version = version + 1, updated_at = now(), updated_by_id = 'system',
 updated_by_name = 'SP&A One' WHERE 'plans.view' = ANY (permissions) AND NOT 'reports.view' = ANY (permissions)`.
 The seed gives it to the built-in roles that hold `plans.view` (`seed/access.go`).

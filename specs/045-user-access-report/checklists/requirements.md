@@ -35,7 +35,7 @@
 - Read-only report: the scenarios are states (data, empty, no access, no financial access, filters exclude
   everything), as the build guide asks. The one write, the sign-in time, is made by signing in and is specified
   as FR-009 – FR-011.
-- `access.manage`, `people.last_signed_in_at` and "migration 00029" appear only where issue #38 names them; the
+- `access.manage`, `people.last_signed_in_at` and "migration 00031" appear only where issue #38 names them; the
   requirements state behaviour.
 - The issue's client citation FR-040 – FR-044 is corrected in the spec header to 019 FR-034 and FR-035.
 - Four questions settled with the recommended answer (045-C1 – C4) at the developer's request. 045-C1 (the plan

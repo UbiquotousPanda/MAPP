@@ -7,7 +7,7 @@
 **Status**: Built
 
 **Input**: User description: "People with role, teams, job title and last sign-in; search, sort, export; opens
-with `access.manage`. Demo sign-in records the time of a successful sign-in (migration 00029,
+with `access.manage`. Demo sign-in records the time of a successful sign-in (migration 00031,
 `people.last_signed_in_at`, UTC). Stories: US1 the report with last sign-in (P1) · US2 export (P2)." (GitHub
 issue #38, `docs/sdd/measure-issues.md` §#045)
 
@@ -97,7 +97,7 @@ check both last sign-in times, the "Never" of the others, the band widget and th
 9. **Given** no person matches the team or status chosen, **Then** the page shows "No people match these
    filters" with **Reset filters**, and the cards show 0.
 10. **Given** nobody has signed in since sign-in times were first recorded, **Then** every Last sign-in shows
-    "Never" and the widget says "Sign-in times are recorded from <date of migration 00029> on".
+    "Never" and the widget says "Sign-in times are recorded from <date of migration 00031> on".
 
 *No access*
 

@@ -21,7 +21,7 @@ US7, client 016 FR-033–FR-039, FA §E3.2.6 and §E7.5.1, MA §5–§6, domain 
   exact under the shift.
 
 - **047-C2** — Q: Where do velocity and the allowed stages live? → A: **On the model record**, like the two
-  conversion rates they belong with: migration 00033 adds `inq_to_mql_velocity_months` and
+  conversion rates they belong with: migration 00035 adds `inq_to_mql_velocity_months` and
   `mql_to_deal_velocity_months` (integer, NOT NULL, CHECK 0–24, backfilled 0 = Hive9's observable
   same-month behaviour) and `allowed_goal_stages` (text[], CHECK ⊆ {inq, mql, revenue}, NOT NULL,
   backfilled to all three so nothing existing changes meaning). The contract adds them as optional inputs
@@ -54,7 +54,7 @@ US7, client 016 FR-033–FR-039, FA §E3.2.6 and §E7.5.1, MA §5–§6, domain 
   from INQ through the model exactly as 047-C4 says.
 
 - **047-C7** — Q: What is an activity category, exactly? → A: **A Settings record grouping activity
-  types** (Hive9 "Tactic Category", FA L89): own table `activity_categories` (00033), name unique ignoring
+  types** (Hive9 "Tactic Category", FA L89): own table `activity_categories` (00035), name unique ignoring
   case, active flag, full record rules. **An activity type belongs to at most one category**; types in no
   category count under the implicit *Uncategorised* bucket, so report totals never lose activities
   (016 FR-022 counts "only activities whose type belongs to it" — Uncategorised is a selectable bucket, not

@@ -41,7 +41,7 @@ lookups.
 ## R3 — What identifies a fact for replacement
 
 **Decision**: the triple **(data source, source reference, measure)** (046-C21), carried as a unique
-constraint in the database rather than enforced only in the service — migration 00031's partial unique index
+constraint in the database rather than enforced only in the service — migration 00033's partial unique index
 on (source_id, source_reference, stage, web_metric) WHERE replaced_by_id IS NULL. The pair (data source,
 source reference) was the first cut (046-C4); 046-C21 corrected it, because one file row produces one fact
 per measure column it fills, and under the pair a row's second measure could never be stored.

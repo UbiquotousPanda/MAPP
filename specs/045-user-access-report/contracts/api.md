@@ -34,7 +34,7 @@ UserAccessReport:
       required: [people, signedInWithin30Days, neverSignedIn]
       properties: { people: integer, signedInWithin30Days: integer, neverSignedIn: integer }
     bands:    { type: array, items: { key: { enum: [within30Days, days31to90, over90Days, never] }, label: string, count: integer } }
-    recordedSince: { type: string, format: date }   # when sign-in times started to be recorded (migration 00029)
+    recordedSince: { type: string, format: date }   # when sign-in times started to be recorded (migration 00031)
     rows:     { type: array, items: { $ref: UserAccessRow } }
 
 UserAccessRow:

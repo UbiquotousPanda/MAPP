@@ -10,7 +10,7 @@ export).
 changes only its time, contract tests, an end-to-end test for US1. Write each test first and see it fail.
 
 **Lane rules** (build guide §4): only issue #38's "Owns" paths — `measure/useraccess`, `app/measure_useraccess.go`,
-the sign-in change in `auth`, migration 00029 (and `queries/sign_ins.sql` with its generated `sqlcdb` file),
+the sign-in change in `auth`, migration 00031 (and `queries/sign_ins.sql` with its generated `sqlcdb` file),
 `features/measure/user-access/`, `e2e/measure-user-access.spec.ts` — plus removing 045's line from
 `notYetServed`, and the optional `ReportFrame` prop lane A agreed to (pinged before the edit). Commit and push after
 each story.

@@ -1,10 +1,10 @@
 # Data model: Performance Data from a Simulated Feed
 
-Three migrations are reserved for this feature: **00030–00032**. The build guide §2 names the four headline
+Three migrations are reserved for this feature: **00032–00034**. The build guide §2 names the four headline
 tables (`performance_sources`, `performance_imports`, `performance_facts`, `media_codes`); the seven
 supporting tables below carry the mappings, the per-measure breakdown, the review queue, the two matching
 keys that live on an activity and the media-code configuration — **eleven tables in all**. They are grouped
-into the reserved migrations rather than taking further numbers another lane may hold. 00030 also widens
+into the reserved migrations rather than taking further numbers another lane may hold. 00032 also widens
 the `roles` permissions CHECK with D-367's two keys (`performance.import`, `performance.link`).
 
 Every table embeds `record.Meta` (version, created/updated) where its records are edited by people, registers
@@ -12,7 +12,7 @@ a `history.Kind`, and writes one activity-log entry per change inside the same t
 text column is `NOT NULL` with `''` meaning *not set* — the schema's empty-string sentinel — so CHECKs
 and partial indexes compare with `<> ''` instead of juggling NULLs.
 
-## 00030 — sources, mappings and the permission keys
+## 00032 — sources, mappings and the permission keys
 
 ### `performance_sources`
 
@@ -48,10 +48,10 @@ CHECKs tie each shaping column to its meaning, `key_type` included (046-C23), an
 **Not a constraint**: FR-003 (at most one *active* source per model stage, and per model revenue) spans
 this table and `performance_sources.status`, and an index predicate may not contain a subquery. A plain
 unique index would wrongly refuse a mapping whose only rival is inactive, which FR-004 allows. The rule is
-enforced in the service and recorded in **ADR-0021**; 00030 carries two plain non-unique indexes that only
+enforced in the service and recorded in **ADR-0021**; 00032 carries two plain non-unique indexes that only
 make that check a single indexed read.
 
-## 00031 — imports, facts and the review queue
+## 00033 — imports, facts and the review queue
 
 ### `performance_imports`
 
@@ -117,7 +117,7 @@ source reference.
 | `status` | text | `open`, `resolved`, `dismissed` |
 | `comment` | text | `''` unless dismissed — a CHECK requires it exactly when `dismissed` (FR-024) |
 
-## 00032 — media codes, the two activity-level keys and the configuration
+## 00034 — media codes, the two activity-level keys and the configuration
 
 ### `media_codes`
 

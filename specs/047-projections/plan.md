@@ -9,7 +9,7 @@
 Three deliverables: (1) the model gains its two velocities and allowed goal stages in Settings; (2) a pure
 projection engine turns an activity's goal, its model and today into monthly projected INQ, MQL and
 revenue, served on 046's activity panel in its reserved fields; (3) activity categories as a Settings
-record for 048/049 to group by. No report page (047-C11), no new permission keys, migration 00033.
+record for 048/049 to group by. No report page (047-C11), no new permission keys, migration 00035.
 
 ## Technical Context
 

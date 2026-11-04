@@ -17,7 +17,7 @@
 2. **One filter engine.** A new exported `allwork.Match` (new file `allwork/match.go`) runs All work's own
    matching on the year's nodes, so a report and All work with the same filters cover the same records (R1,
    SC-001). The nodes are narrowed to the `reports.view` scope (R2).
-3. **Access.** A new scoped permission `reports.view`, granted by migration 00028 to every role holding
+3. **Access.** A new scoped permission `reports.view`, granted by migration 00030 to every role holding
    `plans.view` and by the seed to the built-in ones (R3, D-367); `access/routes_measure.go` holds every rule of
    wave A; `app/measure.go` registers one stub per report from its own `app/measure_<report>.go` (D-369).
 4. **Web app** (`features/measure`): the Reports page, the shared frame (`shared/`: ReportFrame, FilterPanel,
@@ -31,7 +31,7 @@
 **Primary Dependencies**: none new — `platform/sheet` for the files; the existing web stack (TanStack Query, Zod,
 Radix, lucide-react, CSS Modules)
 
-**Storage**: PostgreSQL; migration **00028**: table `report_views` (data-model §1), `roles_permissions_check`
+**Storage**: PostgreSQL; migration **00030**: table `report_views` (data-model §1), `roles_permissions_check`
 widened and `reports.view` granted (data-model §4). One new scoped store read: `measure.Store.ListViews(person,
 report)` — person-isolation test on PostgreSQL. Plans come from the existing scoped reads `plan.Store.ListInScope`
 and All work's `Source.Year` (both already scope-tested).

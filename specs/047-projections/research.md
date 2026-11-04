@@ -24,7 +24,7 @@ month carries both series, which is all 016 FR-028 needs).
 
 ## R2 — Velocity and allowed stages are model columns; categories are a Settings record
 
-**Decision**: migration 00033 adds `inq_to_mql_velocity_months`, `mql_to_deal_velocity_months`
+**Decision**: migration 00035 adds `inq_to_mql_velocity_months`, `mql_to_deal_velocity_months`
 (integer NOT NULL CHECK 0–24, backfilled 0) and `allowed_goal_stages` (text[] NOT NULL, each element in
 inq·mql·revenue, non-empty, backfilled all three) to `models`; `activity_categories` is a new table with
 the full record rules plus `activity_category_types` assigning each activity type to at most one category

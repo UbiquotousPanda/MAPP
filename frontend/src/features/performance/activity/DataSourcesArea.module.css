@@ -23,6 +23,7 @@
   padding: 0 var(--space-2);
   border-radius: var(--radius-chip);
   background: var(--chip);
+  color: var(--ink);
 }
 
 .remove {
