@@ -118,8 +118,13 @@
   font-size: var(--text-sm);
 }
 
-.inView {
+/* The notes sit on the grey page, where text is --ink; .pending and .muted stay in the white filter panel. */
+.inView,
+.note {
   color: var(--ink);
+}
+
+.inView {
   font-weight: var(--weight-bold);
 }
 

@@ -141,3 +141,54 @@ func TestRankedRevenue_AZeroCreditIsMinusOneHundredPerCent_050_FR007(t *testing.
 		t.Errorf("A-1 credited nothing by the model (-want +got):\n%s", diff)
 	}
 }
+
+// mixedScope hides P-2's finances and puts both activities under one owner and one 60/40 region split, so every group
+// spans a plan whose cost is seen and one whose cost is not.
+func mixedScope() measure.Scope {
+	sc := roiScope()
+	sc.Choices.FinancePlans = []string{"P-1"}
+	sc.Attributes = []allwork.Attribute{{ID: "AT-1", Label: "Region",
+		Options: []allwork.Option{{ID: "O-1", Label: "EMEA"}, {ID: "O-2", Label: "APAC"}}}}
+	split := allwork.AttrValue{OptionIDs: []string{"O-1", "O-2"},
+		Shares: map[string]money.Percent{"O-1": money.PercentFromHundredths(6000), "O-2": money.PercentFromHundredths(4000)}}
+	for i, n := range sc.Nodes {
+		if n.Level == allwork.LevelActivity {
+			sc.Nodes[i].Owner = &allwork.Owner{ID: "U-2", Name: "Priya Raman"}
+			sc.Nodes[i].Attrs = map[string]allwork.AttrValue{"AT-1": split}
+		}
+	}
+	return sc
+}
+
+// A-2's 500.00 credit still shows, but ROI divides only A-1's 3,000.00 credit by A-1's 2,000.00 cost: 50%, not 75%,
+// in the total, the owner group and each share of the % split, by month and by quarter.
+func TestRankedRevenue_ROICountsOnlyTheCreditWhoseCostIsSeen_049_FR013_050_FR007(t *testing.T) {
+	t.Parallel()
+	service := newFixtureWithReturns(mixedScope(), twoPlanGoals(), roiReturns())
+
+	for _, period := range []string{measure.PeriodMonth, measure.PeriodQuarter} {
+		for _, group := range []string{"", "owner", "attr:AT-1"} {
+			q := revenue.RankedQuery{Sort: revenue.SortProjectedRevenue, Order: revenue.OrderDesc, Group: group, Size: 10, Page: 1}
+			got, err := service.RankedRevenue(t.Context(), priya, measure.Filter{Show: "activity", Period: period}, q)
+			if err != nil {
+				t.Fatalf("RankedRevenue(%s, group %q): %v", period, group, err)
+			}
+			for _, g := range got.Groups {
+				if roi := g.Totals.ROI; roi == nil || *roi != 50 {
+					t.Errorf("%s by %q, %q: ROI %v, want 50 on the part whose cost is seen", period, group, g.Label, roi)
+				}
+			}
+		}
+	}
+}
+
+func TestRankedRevenue_AHiddenPlansCreditStillShows_049_FR013(t *testing.T) {
+	t.Parallel()
+
+	got := rankedROI(t, mixedScope(), roiReturns())
+
+	want := roiRow{Credited: ptrTo[int64](350_000), Cost: ptrTo[int64](200_000), ROI: ptrTo(50.0)}
+	if diff := cmp.Diff(want, roiRowOf(got.Groups[0].Totals)); diff != "" {
+		t.Errorf("totals with P-2's finances hidden (-want +got):\n%s", diff)
+	}
+}

@@ -17,6 +17,16 @@ type returns struct {
 	paid     map[string]money.Amount
 }
 
+// revenueSums carries beside the figures the credit of the activities whose cost is seen: all ROI may divide.
+type revenueSums struct {
+	figures     RevenueFigures
+	roiCredited *money.Money
+}
+
+func addRevenueSums(a, b revenueSums) revenueSums {
+	return revenueSums{figures: addRevenueFigures(a.figures, b.figures), roiCredited: addMoneyPtr(a.roiCredited, b.roiCredited)}
+}
+
 func (s *Service) returnsOf(ctx context.Context, a actor.Actor, sc measure.Scope, series []ActivitySeries) (returns, error) {
 	ids := make([]string, 0, len(series))
 	var seen []string
@@ -35,34 +45,35 @@ func (s *Service) returnsOf(ctx context.Context, a actor.Actor, sc measure.Scope
 	return returns{credited: credited, paid: paid}, err
 }
 
-func (r returns) withOwn(activityID string, f RevenueFigures) RevenueFigures {
+func (r returns) withOwn(activityID string, f RevenueFigures) revenueSums {
 	if amount, found := r.credited.ByActivity[activityID]; found {
 		credited := money.USD(amount)
 		f.AttributedRevenue = &credited
 	} else {
 		f.AttributedRevenueReason = ReasonNoData
 	}
-	if amount, sees := r.paid[activityID]; sees {
-		cost := money.USD(amount)
-		f.ActualCost = &cost
-	} else {
+	paid, sees := r.paid[activityID]
+	if !sees {
 		f.ActualCostReason = ReasonNoFinancialAccess
+		return revenueSums{figures: f}
 	}
-	return f
+	cost := money.USD(paid)
+	f.ActualCost = &cost
+	return revenueSums{figures: f, roiCredited: f.AttributedRevenue}
 }
 
 // withROI works the ROI out on the entry's own sums through 050's ROI, so a parent is never an average of children.
-func withROI(f RevenueFigures) RevenueFigures {
+func withROI(f RevenueFigures, credited *money.Money) RevenueFigures {
 	f.ROI, f.ROIReason = nil, ""
 	switch {
 	case f.ActualCost == nil:
 		f.ROIReason = f.ActualCostReason
 	case f.ActualCost.Amount.Sign() <= 0:
 		f.ROIReason = ReasonNoActualCost
-	case f.AttributedRevenue == nil:
+	case credited == nil:
 		f.ROIReason = ReasonNoData
 	default:
-		whole := float64(*attribution.ROI(f.AttributedRevenue.Amount, &f.ActualCost.Amount))
+		whole := float64(*attribution.ROI(credited.Amount, &f.ActualCost.Amount))
 		f.ROI = &whole
 	}
 	return f

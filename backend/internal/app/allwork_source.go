@@ -106,17 +106,9 @@ func (y *yearReader) addPlans(ctx context.Context, yearPlans []plan.Plan, missin
 	return y.addLineItems(ctx, tree.lineItems)
 }
 
-// planMissing counts each plan's own needed-to-publish fields still empty, from 004's Plans list in one call.
+// planMissing counts each plan's own needed-to-publish fields still empty, without the roll-ups the Plans list builds.
 func (s allWorkSource) planMissing(ctx context.Context, year int) (map[string]int, error) {
-	list, err := s.plans.List(ctx, actor.System, plan.ListFilter{Scope: plan.ScopeAll, Year: &year})
-	if err != nil {
-		return nil, err
-	}
-	missing := make(map[string]int, len(list.Items))
-	for _, p := range list.Items {
-		missing[p.ID] = len(p.Completeness.Missing)
-	}
-	return missing, nil
+	return s.plans.OwnMissing(ctx, actor.System, year)
 }
 
 // addPlan adds the plan p with its own missing fields, its campaigns and initiatives as 005's plan tree

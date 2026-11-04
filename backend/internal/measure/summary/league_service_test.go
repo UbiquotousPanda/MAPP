@@ -145,3 +145,30 @@ func TestLeague_NoSegmentsIsAnEmptyList_048_C4(t *testing.T) {
 			got.Segments, got.Segment, len(got.Rows))
 	}
 }
+
+// Plan two's finances are hidden: A-2's 300.00 credit must not reach ROI, whose cost it never sees. With A-1 split
+// 75/25 between North and South, the total and both shares stay (450.00 − 300.00) ÷ 300.00 = 50%, not 150%, by month
+// and by quarter; A-2's Not filled in row has no cost, so "—".
+func TestLeague_ROICountsOnlyTheCreditWhoseCostIsSeen_048_FR015_050_FR007(t *testing.T) {
+	t.Parallel()
+	f := withSegments()
+	f.scope.Choices.FinancePlans = []string{planOne}
+	f.credits["A-2"] = money.FromCents(30_000)
+	f.series[0].Attributes[regionAttr] = allwork.AttrValue{OptionIDs: []string{"O-1", "O-2"},
+		Shares: map[string]money.Percent{"O-1": money.PercentFromHundredths(7500), "O-2": money.PercentFromHundredths(2500)}}
+
+	for _, period := range []string{measure.PeriodMonth, measure.PeriodQuarter} {
+		got, err := f.service().League(t.Context(), actor.System, measure.Filter{Period: period}, TableROI)
+		if err != nil {
+			t.Fatalf("League(%s): %v", period, err)
+		}
+		values := map[string]any{"total": got.Total}
+		for _, r := range got.every {
+			values[r.Name] = r.Value
+		}
+		want := map[string]any{"total": int64(50), "North": int64(50), "South": int64(50), notFilledInLabel: nil}
+		if diff := cmp.Diff(want, values); diff != "" {
+			t.Errorf("ROI by %s with plan two's finances hidden (-want +got):\n%s", period, diff)
+		}
+	}
+}

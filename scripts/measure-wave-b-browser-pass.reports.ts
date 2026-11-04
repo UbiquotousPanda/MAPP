@@ -7,6 +7,7 @@ import {
   h1,
   keyboardOn,
   menuOpensAndCloses,
+  NO_FINANCE,
   opened,
   pageHeader,
   settle,
@@ -63,14 +64,14 @@ async function finance(page: Page, role: Role, key: ReportKey) {
   if (role.finance || key === 'funnel') {
     return;
   }
-  await check('cost and ROI hidden as "—", never 0.00 (039 FR-004, 048 FR-003)', async () => {
+  await check('cost and ROI hidden, never 0.00 (039 FR-004, 048 FR-003)', async () => {
     if (key === 'revenue') {
       const cells = ranked(page)
         .locator('tbody tr')
-        .locator('td:nth-of-type(5), td:nth-of-type(6)');
+        .locator('td:nth-of-type(6), td:nth-of-type(7)');
       const costAndRoi = await cells.allInnerTexts();
       expect(costAndRoi.length).toBeGreaterThan(0);
-      expect(costAndRoi.filter((text) => /\d/.test(text))).toEqual([]);
+      expect(costAndRoi.filter((text) => text.trim() !== NO_FINANCE)).toEqual([]);
     }
     if (key === 'summary') {
       await expect(

@@ -7,6 +7,18 @@ facts tests' dark copies). The 26 come from six checks: findings B1 and B3 of th
 screen. B2 showed on a screenshot the check let through; with the check made to want a date, its six tests were rerun
 and fail on it alone. No step timed out; no slowness is recorded from this machine.
 
+**050 part, 2026-11-03, on #149** (e8ae9a2e merged onto `measure-module` 3e6424ca, branch `qa/wave-b-050`), with
+`MEASURE_FACTS=1` on PostgreSQL 18 in Docker (`mapp_qa050_browser`, API 18110, web 14110): the facts checks follow #149
+(Revenue's credited revenue, cost and ROI, Summary's ROI league), 23 tests, 22 passed twice (98 s, 72 s); the failure is
+finding 25 of `measure-wave-b-qa.md` (a "—" ROI on Summary does not say why). Summary and Revenue for all six in both
+themes, 24 tests in 366 s: 22 passed, and Lea's Summary and Revenue in the light theme failed on axe
+`color-contrast` alone (B3, still open); nothing new.
+
+**Rerun 2026-11-04 on #149's 156e9e45** (Yash's fixes of findings 24–26, merged with `measure-module` 570df525,
+branch `qa/wave-b-050-check`), same setup: the "—" check now wants the reason beside the model, in the web's words
+("Equally distributed, on actual cost · No cost recorded"), and adds Lea ("… · Financial data of these plans is not
+shown to you · Covers 0 of 3 plans"). All 24 facts tests passed in 58 s; finding 25 is fixed on screen.
+
 The browser rows of `measure-wave-b-qa.md` ("Roles and what they must see", "Per screen checklist", the rows left
 *Not run* or *browser pass*), as a repeatable Playwright run instead of wave A's pass by hand
 (`measure-wave-a-qa.md`, "Browser pass, 3 Nov 2026"): `scripts/measure-wave-b-browser-pass.spec.ts` and its modules,
@@ -23,7 +35,7 @@ while the next one still runs.
 | Activity › Performance | all six; Priya, Mei, Sara also another team's | figures or the gate, model and last change, never 0.00, integration IDs only for Alex, another team's activity *not found*; keyboard |
 | Settings › Models, Activity categories, Attribution | Alex, Carlos, Priya, Sara, Lea | opens, axe, the seeded records, changes only for Alex, the lock's reason; keyboard |
 | Reports › Summary, Revenue, Funnel stages | all six | breadcrumb and "Figures as of", axe without exclusions (open question 13), plans in scope, financial notice, Export only with `data.export`, cost and ROI "—" never 0.00 without `finance.view` (revenue is served in full: open question 4), no "Measure", "Tactic", "HUD" beyond the demo's names, each report's widgets, the model beside projected figures, Show Plan in scope; keyboard: Saved views, Export, Apply, Period, selectors, a widget's Table, Group by |
-| With facts (`MEASURE_FACTS=1`) | per check | the seeded source and load, the panel's actual and data-through date, Revenue's and Summary's figures on PostgreSQL, Summary's ROI league, the Funnel's INQ actual |
+| With facts (`MEASURE_FACTS=1`) | per check | the seeded source and load, the panel's actual and data-through date, Revenue's and Summary's figures on PostgreSQL, Revenue's credited revenue, cost and ROI (Alex, Lea) and their column headings, Summary's ROI league and the reason of its "—", the Funnel's INQ actual |
 
 Keyboard checks run in the light project only; the facts checks run in light only and skip without
 `MEASURE_FACTS=1`. A screenshot of every screen, person and theme is saved before the checks.
@@ -87,22 +99,30 @@ Both themes unless the theme says light (keyboard and facts checks). "All five" 
 | Summary, Revenue, Funnel stages | all six | both | axe, the ranked list's Open links included | **Fail** for Lea, light | B3; no target-size violation anywhere (open question 13) |
 | Summary, Revenue, Funnel stages | all six | both | plans in scope, in the filter and *In view* | Pass | 039 FR-003 |
 | Summary, Revenue, Funnel stages | Lea; the others | both | financial notice, Export disabled with the reason; neither | Pass | 039 FR-004, FR-022 |
-| Summary, Revenue | Lea | both | cost and ROI "—", never 0.00 | Pass | Summary's cost league says "No cost recorded" (finding 19) |
+| Summary, Revenue | Lea | both | cost and ROI hidden, never 0.00 | Pass | Summary's cost league says "No cost recorded" (finding 19). On #149: Revenue's cost and ROI cells "Financial data not shown to you.", Summary's "—" with "Covers 0 of 3 plans" (Pass, both themes) |
 | Summary, Revenue, Funnel stages | all six | both | no "Measure", "Tactic", "HUD" beyond the demo's names | Pass | 039 FR-032 |
 | Summary, Revenue, Funnel stages | all six | both | each report's widgets; Funnel stage INQ, MQL, opens on INQ | Pass | |
 | Revenue, Funnel stages | all six | both | the model beside projected figures | **Fail** | B1 |
 | Revenue, Funnel stages | all six | both | Show Plan ranks only the plans in scope | Pass | 049 FR-002 |
 | Summary, Revenue, Funnel stages | all six | light | keyboard: Saved views and Export menus (Enter, Escape, focus back), Apply, Period, selectors, a widget's Table, Group by | Pass | Export for the five with `data.export` |
 | Revenue | Alex | light | Actual revenue $86,108.70; February $42,000.00, March $44,108.70 | Pass | facts |
-| Revenue | Alex | light | Show Activity: Helix … first half actual $62,108.70, ROI "Attribution is not configured yet." | Pass | facts |
+| Revenue | Alex | light | Show Activity: Helix … first half actual $62,108.70, ROI "Attribution is not configured yet." | Pass | facts; until #149 |
+| Revenue | Alex | light | Show Activity: Helix … first half actual $62,108.70, attributed $54,000.00, cost $0.00, ROI "No actual cost yet."; Tellus case studies $13,405.80, $32,608.70, -59% | Pass | facts, #149; 050 FR-007, US3-2 |
+| Revenue | Lea | light | the same rows: actual $62,108.70, attributed $54,000.00 and $13,405.80, cost and ROI "Financial data not shown to you." | Pass | facts, #149 |
+| Revenue | Alex, Lea | light | the columns "Attributed revenue (Equally distributed)" and "ROI (Equally distributed, on actual cost)" | Pass | facts, #149; 050 FR-008, SC-003 |
 | Revenue | all six | light | actual revenue an amount with the Measure plan, its reason without | Pass | facts |
 | Summary | Alex | light | no state; actual or projected = Revenue's $216,549.97; MQL conversion 16.0 %, Above plan; trend February, March as Revenue | Pass | facts; cross-report 1 |
 | Summary | Carlos, Lea | light | no "No performance data" state | Pass | facts |
-| Summary | Alex | light | ROI league "—" while attribution is not configured | **Fail** | finding 15: External 36 %, Total 36 %, "Equally distributed, on actual cost"; fixed by #139 in the API, the screen not rerun |
+| Summary | Alex | light | ROI league External and Total 36%, "Equally distributed, on actual cost", as Revenue's 36 % | Pass | facts, #149 (the check below replaces it) |
+| Summary | Alex | light | ROI league of Mobility China (`plan=P-1002`) and Lubricants Europe (`P-1001`): Total "—" with "No cost recorded" and "No revenue is credited to these activities" | **Fail** on e8ae9a2e; Pass on 156e9e45 | facts, #149: the Total "—", beside it only "Equally distributed, on actual cost" (finding 25 of `measure-wave-b-qa.md`); since 156e9e45 "Equally distributed, on actual cost · No cost recorded", "… · No revenue is credited to these activities" |
+| Summary | Lea | light | ROI league: Total "—", "Equally distributed, on actual cost · Financial data of these plans is not shown to you · Covers 0 of 3 plans" | Pass | facts, 156e9e45 |
+| Summary | Alex | light | ROI league "—" while attribution is not configured | **Fail** | until #149; finding 15: External 36 %, Total 36 %, "Equally distributed, on actual cost"; fixed by #139 in the API, the screen not rerun |
 | Funnel stages | Alex | light | the INQ actual card is a figure | Pass | facts |
 
-Not run: 050's crediting (Helix 54,000.00, Tellus case studies 13,405.80, Tellus webinar series 18,702.90 under Equally
-distributed): no screen or endpoint serves `attribution.Crediting` (finding 15). Not in this pass: Daniel; changes
+050's crediting (Helix 54,000.00, Tellus case studies 13,405.80, Tellus webinar series 18,702.90 under Equally
+distributed) was not run before #149, no screen serving `attribution.Crediting` (finding 15); on #149 it is (rows marked
+#149). Not run: the screens after a model change (the API checks every model, `TestWaveB_ModelChangeRestates_050_SC002`).
+Not in this pass: Daniel; changes
 (uploads, undo, mappings, review actions, model and category edits, saved-view edits, attribution save), drill, Sort
 by (#97), below 1024 px, loading and failed widgets, EUR display.
 
@@ -126,10 +146,11 @@ by (#97), below 1024 px, loading and failed widgets, EUR display.
 | Shared frame | Dark theme | Pass (axe) |
 | Shared frame | No "Measure", "Tactic", "HUD" | Pass |
 | Summary | Cost and ROI "—" with plans left out; revenue, performance, volumes shown | Pass |
-| Summary | ROI "—" with the reason until configured | Fail (finding 15); fixed by #139 in the API, the screen not rerun |
+| Summary | ROI "—" with the reason until configured | Fail (finding 15); fixed by #139 in the API, the screen not rerun. On #149: the model and basis named, 36 % as Revenue (Pass); a "—" total without its reason (Fail, finding 25), with it beside the model since 156e9e45 (Pass) |
 | Revenue | Cards: goal, actual, actual or projected, performance | Pass |
 | Revenue | One-team viewer: only their plans | Pass |
-| Revenue | Actual cost and ROI "—", "Attribution is not configured yet" | Pass |
+| Revenue | Actual cost and ROI "—", "Attribution is not configured yet" | Pass; on #149 the figures: credited, cost, ROI, Lea's "Financial data not shown to you." (Pass) |
+| Attribution | ROI with its model and basis; no payments "—", "No actual cost yet" | On #149: Pass on Revenue (headings, Helix … first half "No actual cost yet.", Tellus case studies -59%); on Summary Fail (finding 25), Pass since 156e9e45 |
 | Revenue, Funnel stages | Model and its last change beside projected figures | Fail (B1) |
 | Funnel stages | Stage selector: allowed stages, opens on the first | Pass |
 | Attribution | Equally distributed designated; five models | Pass |
@@ -144,4 +165,4 @@ by (#97), below 1024 px, loading and failed widgets, EUR display.
 | B1 | 049 Revenue, Funnel stages | Medium | No model is named beside projected figures. Any of the six, either theme, `/reports/revenue?year=2026` or `/reports/funnel?year=2026`: no "Projected from …" or model name anywhere on the page, though the API serves `projection` (model name, `modelChangedAt`) on both reports. Expected: the model and its last change beside the figure (049 FR-022, SC-006; 047 FR-012); `RevenueCards.tsx` and `FunnelCards.tsx` read no `projection`. Finding 13 is the API's half (one model named for two plans). | Open, #140 |
 | B2 | 047 activity Performance | Medium | The model's last change is not a date. Alex, Carlos or Lea, an activity with a projection (Tellus webinar series): "Projected from Lubricants 1.0, last changed 03T14:40:44.211Z Nov 2026." Expected "… last changed 03 Nov 2026." in the person's date format (047 FR-012). `PerformancePanel.tsx`:149 gives `date()` the timestamp `modelChangedAt`; Settings › Attribution passes `localDate(…)` first. 047's e2e checks only the start of the line. | Open, #140 |
 | B3 | 039 frame (Summary, Revenue, Funnel stages) | Medium | The financial notice fails text contrast. Lea, light theme, any of the three reports: axe `color-contrast` on "You can't see the financial data of these plans" (`._note_…`). `.note` (`ReportFrame.module.css`:113-118) is `--ink-2` #757575 on `--page-bg` #f5f5f5, about 4.2:1 against WCAG 1.4.3's 4.5:1 for small text; `tokens.css`:2 says text on grey uses `--ink`. The same rule styles the left-out note, "Changes not applied yet" and `.muted`. Dark theme passes. Constitution X, 039 SC-007. | Open, #140 |
-| 15 | 048 Summary | Medium | Confirmed on screen with T110's facts: Alex's Summary ROI league shows External 36 %, Total 36 %, "Equally distributed, on actual cost", while Revenue's ranked list says "Attribution is not configured yet." for the same activities. | Fixed by #139 (048-C15): on PostgreSQL with T110's facts every ROI value and the total are null with "Attribution is not configured yet" and no model is named; `TestWaveB_SummaryRoiIsADashUntilCrediting_048_FR015` asserts it on the demo fakes. The screen is not rerun |
+| 15 | 048 Summary | Medium | Confirmed on screen with T110's facts: Alex's Summary ROI league shows External 36 %, Total 36 %, "Equally distributed, on actual cost", while Revenue's ranked list says "Attribution is not configured yet." for the same activities. | Fixed by #139 (048-C15): on PostgreSQL with T110's facts every ROI value and the total are null with "Attribution is not configured yet" and no model is named; `TestWaveB_SummaryRoiIsADashUntilCrediting_048_FR015` asserts it on the demo fakes. The screen is not rerun. #149 replaces the dash with 050's ROI, credited revenue over the payments: External and Total 36 % again, now the same as Revenue's (86,108.70 credited against 63,260.87 paid), passed on screen in the 050 part |

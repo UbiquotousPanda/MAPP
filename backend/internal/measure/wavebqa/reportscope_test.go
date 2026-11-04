@@ -161,17 +161,26 @@ func costless(t *testing.T, label string, r ranked[revenueFigures], reason strin
 	}
 }
 
-// TestWaveB_NoFinancialAccess_Revenue_039_FR004: Lea's frame covers no plan's finances; no actual cost or ROI.
+// TestWaveB_NoFinancialAccess_Revenue_039_FR004: Lea's frame covers no plan's finances; no actual cost or ROI, each
+// saying so, while she sees Alex's credited revenue.
 func TestWaveB_NoFinancialAccess_Revenue_039_FR004(t *testing.T) {
 	t.Parallel()
-	leaSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), lea)
+	server := apitest.New(t, apitest.WithMeasureDemo())
+	leaSees, alexSees := signIn(t, server, lea), signIn(t, server, alex)
 	for _, report := range []string{"revenue", "funnel"} {
 		if f := frameOf(t, leaSees, report); f.Finance.Plans != 0 || f.Finance.Of != 3 {
 			t.Errorf("Lea's %s frame: finance covers %d of %d plans, want 0 of 3", report, f.Finance.Plans, f.Finance.Of)
 		}
 	}
 	for _, show := range levels() {
-		costless(t, "Lea's Revenue at show="+show, revenueRankedOf(t, leaSees, "show="+show), "")
+		for _, group := range []string{"none", "plan", "owner"} {
+			query := joined("show="+show, "group="+group)
+			list := revenueRankedOf(t, leaSees, query)
+			costless(t, "Lea's Revenue at "+query, list, noFinance)
+			if got, want := creditsOf(list), creditsOf(revenueRankedOf(t, alexSees, query)); !slices.Equal(got, want) {
+				t.Errorf("Lea's credited revenue at %s = %v, want Alex's %v", query, got, want)
+			}
+		}
 	}
 	revenueOf(t, leaSees, "")
 }

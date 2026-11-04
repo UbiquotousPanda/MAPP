@@ -15,6 +15,7 @@ export const HELIX_FIRST = 'Helix search and social, first half';
 export const FLEET_CARD_LAUNCH = 'Fleet card launch';
 export const GATE = 'Approve the activity to see performance data.';
 export const GONE = 'This activity no longer exists — someone may have deleted it.';
+export const NO_FINANCE = 'Financial data not shown to you.';
 /** A cell that is a bare zero ("0", "$0.00", "0.00 USD"), where a missing figure must state its reason. */
 export const ZERO_FIGURE = /^[^\d\s]{0,3}0(\.0+)?( [A-Z]{3})?$/;
 
