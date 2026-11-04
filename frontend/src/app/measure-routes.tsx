@@ -47,6 +47,6 @@ export const MEASURE_ROUTES: RouteObject[] = [
         <ReportPage reportKey={report.key} />
       </RequirePermission>
     ),
-    handle: { title: report.title } satisfies PageHandle,
+    handle: { title: report.title, wide: true } satisfies PageHandle,
   })),
 ];

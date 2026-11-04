@@ -40,6 +40,7 @@ export function RevenueChart({ report }: { report: RevenueReport }) {
   };
   return (
     <ReportWidget
+      wide
       report="revenue"
       widget="periods"
       title={report.period === 'quarter' ? 'Revenue by quarter' : 'Revenue by month'}

@@ -120,6 +120,7 @@ export function RequestsGrid({
   const reset = () => onParams({ q: '', vendors: [], requestOwners: [], statuses: [] });
   return (
     <ReportWidget
+      wide
       report="purchaseRequests"
       widget="grid"
       title="Purchase requests"

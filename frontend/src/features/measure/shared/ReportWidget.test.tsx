@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { testUser } from '@/testing/fixtures/users';
@@ -156,6 +156,19 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
         sent.get(name),
       ),
     ).toEqual(['uncategorised', 'mql', 'ATTR-1', 'ATTR-2', 'ATTR-3', 'ATTR-4']);
+  });
+
+  it('spans every column of the widget grid only when wide (039 contracts/ui.md)', () => {
+    const cellOf = () =>
+      screen.getByRole('region', { name: 'Activities by Company code' }).parentElement?.className;
+    renderWidget({ wide: true });
+    expect(cellOf()).toMatch(/wide/);
+
+    cleanup();
+    renderWidget();
+
+    expect(cellOf()).toMatch(/cell/);
+    expect(cellOf()).not.toMatch(/wide/);
   });
 });
 

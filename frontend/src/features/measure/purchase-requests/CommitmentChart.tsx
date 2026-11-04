@@ -91,6 +91,7 @@ export function CommitmentChart({
   };
   return (
     <ReportWidget
+      wide
       report="purchaseRequests"
       widget={widget}
       title={title}

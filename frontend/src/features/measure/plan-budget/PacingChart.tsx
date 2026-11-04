@@ -58,6 +58,7 @@ export function PacingChart({ report }: { report: PlanBudgetReport }) {
   };
   return (
     <ReportWidget
+      wide
       report="planBudget"
       widget="periods"
       title={report.period === 'quarter' ? 'Spend by quarter' : 'Spend by month'}
