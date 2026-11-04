@@ -7,6 +7,7 @@ export { defaultGrouping } from './breakdown-state';
 export { NO_PLANNED_COST, PLANNED_COST_BY } from './breakdown-text';
 export { BreakdownTable } from './BreakdownTable';
 export { GroupingPickers } from './GroupingPickers';
+export { Switch } from './Switch';
 export type {
   AllWorkCell,
   AllWorkColumn,
