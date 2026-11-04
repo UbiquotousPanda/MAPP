@@ -91,6 +91,33 @@ describe('MediaCodesSection', () => {
     expect(await screen.findByText('Give the code its Channel.')).toBeInTheDocument();
     expect(screen.getByText('Give the code its Market.')).toBeInTheDocument();
   });
+
+  it.each([
+    { refusal: 'not_allowed', status: 409, deactivates: true },
+    { refusal: 'internal_error', status: 500, deactivates: false },
+  ] as const)(
+    '046 FR-040 deactivates a code only when its delete is refused as used ($refusal)',
+    async ({ refusal, status, deactivates }) => {
+      const DELETE = 'DELETE /api/v1/media-codes/{codeId}';
+      const DEACTIVATE = 'POST /api/v1/media-codes/{codeId}/deactivate';
+      const { user } = renderSection({ requiresCodes: true, items: [code()] }, [
+        reply(DELETE, { status, body: apiError(refusal, 'Refused.') }, { codeId: 'MC-1001' }),
+        reply(DEACTIVATE, { body: { ...code(), status: 'inactive' } }, { codeId: 'MC-1001' }),
+      ]);
+
+      await user.click(await screen.findByRole('button', { name: 'Delete' }));
+      await user.click(await screen.findByRole('button', { name: 'Delete code' }));
+
+      expect(await screen.findByText('Refused.')).toBeInTheDocument();
+      const deactivated = 'Code 9000001 deactivated — matching stops, its history stays';
+      if (deactivates) {
+        expect(await screen.findByText(deactivated)).toBeInTheDocument();
+      } else {
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(screen.queryByText(deactivated)).not.toBeInTheDocument();
+      }
+    },
+  );
 });
 
 describe('taggedLink', () => {

@@ -130,7 +130,12 @@ function CodeRows({
                   setRemoving(null);
                 },
                 onError: (error) => {
-                  show({ message: asApiError(error).message });
+                  const refused = asApiError(error);
+                  show({ message: refused.message });
+                  if (refused.kind !== 'notAllowed') {
+                    setRemoving(null);
+                    return;
+                  }
                   deactivate.mutate(removing.id, {
                     onSuccess: () => {
                       show({

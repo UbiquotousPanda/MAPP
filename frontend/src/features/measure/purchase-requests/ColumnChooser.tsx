@@ -9,6 +9,8 @@ export interface ColumnChooserProps {
   onChange: (columns: ColumnKey[]) => void;
 }
 
+const LAST_COLUMN_HINT = 'columns-last-one';
+
 function moved(columns: ColumnKey[], index: number, by: number): ColumnKey[] {
   const next = [...columns];
   const target = index + by;
@@ -23,9 +25,15 @@ function moved(columns: ColumnKey[], index: number, by: number): ColumnKey[] {
 /** Shows, hides and reorders the grid's columns; the choice goes to the page address. */
 export function ColumnChooser({ columns, onChange }: ColumnChooserProps) {
   const hidden = COLUMN_KEYS.filter((k) => !columns.includes(k));
+  const lastOne = columns.length === 1;
   return (
     <details className={styles.chooser}>
       <summary>Columns</summary>
+      {lastOne && (
+        <p id={LAST_COLUMN_HINT} className={styles.note}>
+          At least one column stays shown.
+        </p>
+      )}
       <ul className={styles.chooserList}>
         {columns.map((key, i) => (
           <li key={key}>
@@ -33,7 +41,8 @@ export function ColumnChooser({ columns, onChange }: ColumnChooserProps) {
               <input
                 type="checkbox"
                 checked
-                disabled={columns.length === 1}
+                disabled={lastOne}
+                aria-describedby={lastOne ? LAST_COLUMN_HINT : undefined}
                 onChange={() => onChange(columns.filter((c) => c !== key))}
               />{' '}
               {COLUMN_WORDS[key]}

@@ -78,6 +78,16 @@ describe('RequestsGrid (042 US2)', () => {
     expect(onParams.mock.calls.at(-1)?.[0].columns).toHaveLength(13);
   });
 
+  it('042 FR-016: says why the last shown column cannot be hidden', async () => {
+    const { user } = renderGrid({ params: { ...DEFAULT_PARAMS, columns: ['name'] } });
+
+    await user.click(screen.getByText('Columns'));
+
+    const last = screen.getByRole('checkbox', { name: 'Name' });
+    expect(last).toBeDisabled();
+    expect(last).toHaveAccessibleDescription('At least one column stays shown.');
+  });
+
   it('sorts by a heading, the second click turning the order round', async () => {
     const { user, onParams } = renderGrid({
       params: { ...DEFAULT_PARAMS, sort: 'amount', order: 'asc' },
