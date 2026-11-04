@@ -10,8 +10,9 @@ func revenueFiguresOfActivities(series []ActivitySeries, r returns) map[string]r
 	out := make(map[string]revenueSums, len(series))
 	for _, a := range series {
 		own := ownFigureOf(a, revenueMeasure())
-		out[a.ID] = r.withOwn(a.ID, RevenueFigures{Goal: usdOf(own.goal), Actual: usdOf(own.actual),
-			Projected: usdOf(own.total)})
+		s := r.withOwn(a.ID, RevenueFigures{Goal: usdOf(own.goal), Actual: usdOf(own.actual), Projected: usdOf(own.total)})
+		s.models = activityStamps(a)
+		out[a.ID] = s
 	}
 	return out
 }

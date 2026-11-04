@@ -63,11 +63,12 @@ type RevenuePeriod struct {
 }
 
 type RevenueReport struct {
-	Cards      RevenueCards    `json:"cards"`
-	Period     string          `json:"period"`
-	Periods    []RevenuePeriod `json:"periods"`
-	Projection *Stamp          `json:"projection"`
-	Reason     string          `json:"reason"`
+	Cards       RevenueCards    `json:"cards"`
+	Period      string          `json:"period"`
+	Periods     []RevenuePeriod `json:"periods"`
+	Projection  *Stamp          `json:"projection"`
+	Projections []Stamp         `json:"projections"`
+	Reason      string          `json:"reason"`
 }
 
 // RevenueFigures is one entry's figures; AttributedRevenue, ActualCost and ROI come from 050, each with its reason.
@@ -81,6 +82,7 @@ type RevenueFigures struct {
 	ActualCost              *money.Money `json:"actualCost"`
 	ROI                     *float64     `json:"roi"`
 	AttributedRevenueReason string       `json:"attributedRevenueReason"`
+	Projection              *Stamp       `json:"projection,omitempty"`
 	ActualCostReason        string       `json:"actualCostReason"`
 	ROIReason               string       `json:"roiReason"`
 }
@@ -111,6 +113,7 @@ type FunnelReport struct {
 	Period          string         `json:"period"`
 	Periods         []FunnelPeriod `json:"periods"`
 	Projection      *Stamp         `json:"projection"`
+	Projections     []Stamp        `json:"projections"`
 	Reason          string         `json:"reason"`
 }
 
@@ -121,6 +124,7 @@ type FunnelFigures struct {
 	Performance *float64 `json:"performance"`
 	Variance    Variance `json:"variance"`
 	Conversion  *float64 `json:"conversion"`
+	Projection  *Stamp   `json:"projection,omitempty"`
 }
 
 type (

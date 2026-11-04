@@ -52,6 +52,7 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
       value: (f) => (f.conversion !== null ? `${f.conversion}%` : '—'),
       sortable: false,
     },
+    { key: 'model', label: 'Model', value: (f) => f.projection?.modelName ?? '—', sortable: false },
   ];
   const groups = [
     { value: 'none', label: 'None' },
@@ -76,7 +77,7 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
           <FunnelCards
             stage={report.data.stage}
             cards={report.data.cards}
-            projection={report.data.projection}
+            projections={report.data.projections}
           />
           <FunnelChart report={report.data} />
           {report.data.uncoveredCount > 0 && (
@@ -97,6 +98,7 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
       )}
       <RankedList
         report="funnel"
+        owner
         data={ranked.data}
         error={ranked.isError ? ranked.error : null}
         onRetry={() => void ranked.refetch()}

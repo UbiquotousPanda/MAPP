@@ -69,7 +69,9 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       value: (f) => (f.roi !== null ? `${f.roi}%` : reasonText(f.roiReason)),
       sortable: false,
     },
+    { key: 'model', label: 'Model', value: (f) => f.projection?.modelName ?? '—', sortable: false },
   ];
+  const { plans, of } = frame.finance;
   const groups = [
     { value: 'none', label: 'None' },
     { value: 'plan', label: 'Plan' },
@@ -85,7 +87,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       </div>
       {report.data ? (
         <>
-          <RevenueCards cards={report.data.cards} projection={report.data.projection} />
+          <RevenueCards cards={report.data.cards} projections={report.data.projections} />
           <RevenueChart report={report.data} />
         </>
       ) : report.isError ? (
@@ -97,6 +99,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       )}
       <RankedList
         report="revenue"
+        owner
         data={ranked.data}
         error={ranked.isError ? ranked.error : null}
         onRetry={() => void ranked.refetch()}
@@ -104,6 +107,11 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
         groups={groups}
         defaultSort={DEFAULT_SORT}
       />
+      {plans > 0 && plans < of && (
+        <p className={styles.note}>
+          Actual cost and ROI leave out the plans whose financial data you may not see.
+        </p>
+      )}
     </div>
   );
 }

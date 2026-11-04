@@ -40,6 +40,7 @@ export function revenueReport(overrides: Partial<RevenueReport> = {}): RevenueRe
     period: 'month',
     periods: revenuePeriods(),
     projection: { modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' },
+    projections: [{ modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' }],
     reason: '',
     ...overrides,
   };
@@ -146,6 +147,7 @@ export function funnelReport(overrides: Partial<FunnelReport> = {}): FunnelRepor
     period: 'month',
     periods: funnelPeriods(),
     projection: { modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' },
+    projections: [{ modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' }],
     reason: '',
     ...overrides,
   };

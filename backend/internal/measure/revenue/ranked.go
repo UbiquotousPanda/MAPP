@@ -46,7 +46,7 @@ func (s *Service) RankedFunnel(ctx context.Context, a actor.Actor, f measure.Fil
 		stage := stageOf(q.Stage, availableStages(series))
 		x := indexInView(sc, series, categoryOf(f.Own))
 		figures := &funnelRanking{x: x, own: funnelFiguresOfActivities(series, stage),
-			previous: previousActualsOfActivities(series, stage), memo: map[string]funnelSums{}}
+			previous: previousActualsOfActivities(series, stage), models: stampsOfActivities(series), memo: map[string]funnelSums{}}
 		out = ranking.Build(x, showLevel(f.Show), q.shared(), figures)
 		return nil
 	})
@@ -115,11 +115,13 @@ func (r *revenueRanking) Of(id string) revenueSums {
 }
 
 func (*revenueRanking) Part(s revenueSums, share money.Percent) revenueSums {
-	return revenueSums{figures: revenueTimes(s.figures, share), roiCredited: partOf(s.roiCredited, share)}
+	return revenueSums{figures: revenueTimes(s.figures, share), roiCredited: partOf(s.roiCredited, share), models: s.models}
 }
 func (*revenueRanking) Plus(a, b revenueSums) revenueSums { return addRevenueSums(a, b) }
 func (r *revenueRanking) Shown(s revenueSums) RevenueFigures {
-	return withPerformance(withROI(s.figures, s.roiCredited), r.display)
+	f := withPerformance(withROI(s.figures, s.roiCredited), r.display)
+	f.Projection = singleStamp(s.models)
+	return f
 }
 
 func (*revenueRanking) Key(f RevenueFigures, sort string) (int64, bool) {
@@ -134,12 +136,14 @@ func (*revenueRanking) Key(f RevenueFigures, sort string) (int64, bool) {
 type funnelSums struct {
 	figures  FunnelFigures
 	previous int64
+	models   []Stamp
 }
 
 type funnelRanking struct {
 	x        *ranking.Index
 	own      map[string]FunnelFigures
 	previous map[string]int64
+	models   map[string][]Stamp
 	memo     map[string]funnelSums
 }
 
@@ -148,7 +152,7 @@ func (r *funnelRanking) Of(id string) funnelSums {
 		return s
 	}
 	f, isActivity := r.own[id]
-	s := funnelSums{figures: f, previous: r.previous[id]}
+	s := funnelSums{figures: f, previous: r.previous[id], models: r.models[id]}
 	if !isActivity {
 		for _, child := range r.x.ChildrenInView(id) {
 			s = r.Plus(s, r.Of(child))
@@ -159,15 +163,18 @@ func (r *funnelRanking) Of(id string) funnelSums {
 }
 
 func (*funnelRanking) Part(s funnelSums, share money.Percent) funnelSums {
-	return funnelSums{figures: funnelTimes(s.figures, share), previous: share.OfWhole(s.previous)}
+	return funnelSums{figures: funnelTimes(s.figures, share), previous: share.OfWhole(s.previous), models: s.models}
 }
 
 func (*funnelRanking) Plus(a, b funnelSums) funnelSums {
-	return funnelSums{figures: addFunnelFigures(a.figures, b.figures), previous: a.previous + b.previous}
+	return funnelSums{figures: addFunnelFigures(a.figures, b.figures), previous: a.previous + b.previous,
+		models: unionStamps(a.models, b.models)}
 }
 
 func (*funnelRanking) Shown(s funnelSums) FunnelFigures {
-	return withFunnelDerived(s.figures, s.previous)
+	f := withFunnelDerived(s.figures, s.previous)
+	f.Projection = singleStamp(s.models)
+	return f
 }
 
 func (*funnelRanking) Key(f FunnelFigures, sort string) (int64, bool) {

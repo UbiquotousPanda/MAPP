@@ -122,7 +122,7 @@ func (b builder[S, F]) part(s S, share *money.Percent) S {
 
 func (b builder[S, F]) entryOf(id string, s S) Entry[F] {
 	n := b.x.byID[id]
-	return Entry[F]{ID: id, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID, Figures: b.fig.Shown(s)}
+	return Entry[F]{ID: id, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID, Owner: n.Owner, Figures: b.fig.Shown(s)}
 }
 
 // compare ranks by the sort's key in the chosen order, entries without one last, then by name.

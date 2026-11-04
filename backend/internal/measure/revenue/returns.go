@@ -21,10 +21,12 @@ type returns struct {
 type revenueSums struct {
 	figures     RevenueFigures
 	roiCredited *money.Money
+	models      []Stamp
 }
 
 func addRevenueSums(a, b revenueSums) revenueSums {
-	return revenueSums{figures: addRevenueFigures(a.figures, b.figures), roiCredited: addMoneyPtr(a.roiCredited, b.roiCredited)}
+	return revenueSums{figures: addRevenueFigures(a.figures, b.figures), roiCredited: addMoneyPtr(a.roiCredited, b.roiCredited),
+		models: unionStamps(a.models, b.models)}
 }
 
 func (s *Service) returnsOf(ctx context.Context, a actor.Actor, sc measure.Scope, series []ActivitySeries) (returns, error) {

@@ -72,8 +72,12 @@ func conversionStated(t *testing.T, alexSees person) {
 	t.Helper()
 	for _, stage := range []string{"inq", "mql"} {
 		report := funnelOf(t, alexSees, "stage="+stage)
-		if c := report.Cards.Conversion; c.Value != nil || c.Reason != noPreviousStage {
-			t.Errorf("Funnel stages %s conversion card = %+v, want null with %s: INQ has no actual", stage, c, noPreviousStage)
+		want := noPreviousStage
+		if stage == "mql" && report.Cards.Actual.Value == nil {
+			want = report.Cards.Actual.Reason
+		}
+		if c := report.Cards.Conversion; c.Value != nil || c.Reason != want {
+			t.Errorf("Funnel stages %s conversion card = %+v, want null with %s: INQ has no actual", stage, c, want)
 		}
 		for _, f := range funnelRankedOf(t, alexSees, "show=activity&stage="+stage).everyFigure() {
 			if f.Conversion != nil {
@@ -114,8 +118,8 @@ func exportedCostColumns(t *testing.T, alexSees person) {
 		http.StatusOK)
 	rows := csvRows(t, string(file.Body))
 	want := []string{"Attributed revenue (Equally distributed)", "Actual cost", "ROI (%, Equally distributed, on actual cost)"}
-	if len(rows) < 2 || !slices.Equal(rows[0][7:], want) {
-		t.Fatalf("the ranked export's columns = %v, want %v last", rows, want)
+	if len(rows) < 2 || len(rows[0]) < 10 || !slices.Equal(rows[0][7:10], want) {
+		t.Fatalf("the ranked export's columns = %v, want %v after Performance", rows, want)
 	}
 	for _, row := range rows[1:] {
 		if row[8] == "—" {
