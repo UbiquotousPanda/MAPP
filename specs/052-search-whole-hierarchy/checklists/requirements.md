@@ -17,7 +17,7 @@
 - [x] Success criteria are measurable
 - [x] Acceptance scenarios cover both stories; edge cases cover empty text, length, loading, failure and scope
 - [x] Scope is bounded: All work's search is unchanged; matching stays on name and ID
-- [x] Dependencies stated: amends 004 FR-003, FR-013, FR-014 (D-366)
+- [x] Dependencies stated: amends 004 FR-003, FR-013, FR-014 (D-380)
 
 ## Feature Readiness
 

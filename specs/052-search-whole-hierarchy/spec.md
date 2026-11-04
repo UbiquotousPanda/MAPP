@@ -12,7 +12,7 @@ till line items, not just till what I can view."
 
 Amends [004 FR-013, FR-014](../004-plans/spec.md) (the plan tree's search) and [004 FR-003](../004-plans/spec.md)
 (the Plans list's search). All work's search already matches line items (010 FR-006) and is unchanged. Decision
-D-366.
+D-380.
 
 ## User Scenarios & Testing *(mandatory)*
 
