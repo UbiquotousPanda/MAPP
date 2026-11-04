@@ -12,6 +12,7 @@ export type { PeriodState } from './periods';
 export { toQuery, writeAddress } from './report-address';
 export type { ReportAddress, ReportQuery, Show, Period } from './report-address';
 export { useReportAddress } from './useReportAddress';
+export { useReportParams } from './report-params';
 export { downloadReport } from './api';
 export type { ReportFrame as ReportFrameData, Money } from './api';
 export { ExportMenu } from './ExportMenu';

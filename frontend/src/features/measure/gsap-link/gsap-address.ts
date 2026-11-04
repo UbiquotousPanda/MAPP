@@ -1,5 +1,4 @@
-import { useSearchParams } from 'react-router';
-
+import { useReportParams } from '../shared';
 export type GsapTab = 'swbs' | 'waiting' | 'orders';
 
 export const GSAP_TABS: GsapTab[] = ['swbs', 'waiting', 'orders'];
@@ -61,7 +60,7 @@ function setOrDrop(params: URLSearchParams, name: string, value: string, fallbac
 
 /** The tab, its sort and its page in the address; a new tab, sort or page size starts at page 1. */
 export function useGsapTable() {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useReportParams();
   const tab = GSAP_TABS.find((t) => t === params.get('tab')) ?? 'swbs';
   const sort = params.get('sort');
   const page = Number(params.get('page'));

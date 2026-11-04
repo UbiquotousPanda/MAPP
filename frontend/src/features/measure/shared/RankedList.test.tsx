@@ -68,7 +68,7 @@ describe('RankedList (040 US2, US3)', () => {
     await expectNoAxeViolations();
   });
 
-  it('keeps sort, group and page in the address, a change starting again at page 1 (FR-013, FR-014)', async () => {
+  it('keeps sort, group and page in the address without moving the page, a change starting again at page 1 (FR-013, FR-014)', async () => {
     const { user, router } = renderList(
       planBudgetRanked({ total: 30 }),
       '/reports/plan-budget?year=2026',
@@ -76,6 +76,8 @@ describe('RankedList (040 US2, US3)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Next' }));
     expect(search(router).get('page')).toBe('2');
+    expect(router.state.preventScrollReset).toBe(true);
+    expect(router.state.historyAction).toBe('REPLACE');
     await user.selectOptions(screen.getByRole('combobox', { name: 'Sort by' }), 'budget');
     await user.selectOptions(screen.getByRole('combobox', { name: 'Group by' }), 'owner');
 

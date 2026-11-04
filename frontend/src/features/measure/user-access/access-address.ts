@@ -1,5 +1,5 @@
-import { useSearchParams } from 'react-router';
 import type { components } from '@/api/generated/schema';
+import { useReportParams } from '../shared';
 
 export type AccessSort = components['parameters']['UserAccessSort'];
 export type AccessStatus = 'active' | 'inactive' | 'all';
@@ -41,7 +41,7 @@ export function sortOf(value: string | null): AccessSort {
 
 /** Search, teams, status, sort and page in the address; any change but the page goes back to page 1. */
 export function useAccessTable() {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useReportParams();
   const page = Number(params.get('page'));
   const size = Number(params.get('pageSize'));
   const table: AccessTable = {
@@ -74,7 +74,7 @@ export function useAccessTable() {
       written.append('team', team);
     }
     // Typing a search replaces its address, so Back skips the keystrokes.
-    setParams(written, { replace: Object.keys(patch).length === 1 && patch.q !== undefined });
+    setParams(written);
   };
   return { table, change };
 }

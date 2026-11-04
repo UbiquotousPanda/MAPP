@@ -1,5 +1,4 @@
-import { useSearchParams } from 'react-router';
-
+import { useReportParams } from './report-params';
 export interface RankedState {
   sort: string;
   order: 'desc' | 'asc';
@@ -26,7 +25,7 @@ function sizeOf(text: string | null): RankedState['size'] {
 
 /** The ranked list's part of the address; any change but the page goes back to page 1. */
 export function useRankedState(defaultSort: string) {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useReportParams();
   const page = Number(params.get('page'));
   const state: RankedState = {
     sort: params.get('sort') ?? defaultSort,

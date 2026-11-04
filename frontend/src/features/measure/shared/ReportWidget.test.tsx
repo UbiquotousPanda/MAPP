@@ -40,7 +40,7 @@ function renderWidget(
 describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('shows its title, ⓘ tip and chart, and switches to the table kept in the address', async () => {
+  it('shows its title, ⓘ tip and chart, and switches to the table kept in the address without moving the page', async () => {
     const { user, router } = renderWidget();
 
     expect(screen.getByRole('heading', { name: 'Activities by Company code' })).toBeInTheDocument();
@@ -55,6 +55,8 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
         'attr12Count',
       ]),
     );
+    expect(router.state.preventScrollReset).toBe(true);
+    expect(router.state.historyAction).toBe('REPLACE');
     expect(screen.getByRole('table', { name: 'Activities by Company code' })).toBeInTheDocument();
     expect(screen.getAllByRole('row').map((row) => row.textContent)).toEqual([
       'ValueActivities',

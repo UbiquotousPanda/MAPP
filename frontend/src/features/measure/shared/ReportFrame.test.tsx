@@ -65,7 +65,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
     await waitFor(() => expect(search(router).toString()).toBe(''));
   });
 
-  it('applies Period, Show and Currency at once (FR-016 – FR-018)', async () => {
+  it('applies Period, Show and Currency at once, without moving the page (FR-016 – FR-018)', async () => {
     const { user, router } = renderFrame(reportFrame());
 
     await user.click(await screen.findByRole('button', { name: 'Quarters' }));
@@ -73,6 +73,8 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
 
     await waitFor(() => expect(search(router).get('period')).toBe('quarter'));
     expect(search(router).get('currency')).toBe('USD');
+    expect(router.state.preventScrollReset).toBe(true);
+    expect(router.state.historyAction).toBe('REPLACE');
   });
 
   it('says how many values were left out, never naming them (FR-015)', async () => {

@@ -1,7 +1,7 @@
-import { Link, useSearchParams } from 'react-router';
+import { Link } from 'react-router';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { ReportFrame } from '../shared';
+import { ReportFrame, useReportParams } from '../shared';
 import type { ReportAddress } from '../shared';
 import { CategorySelect } from '../revenue/CategorySelect';
 import { useSummaryReport } from './api';
@@ -23,7 +23,7 @@ export function SummaryReport() {
 }
 
 function SummaryBody({ address }: { address: ReportAddress }) {
-  const [search, setSearch] = useSearchParams();
+  const [search, setSearch] = useReportParams();
   const params = readSummaryParams(search);
   const change = (changes: Partial<SummaryParams>) =>
     setSearch(writeSummaryParams(search, { ...params, ...changes }));
