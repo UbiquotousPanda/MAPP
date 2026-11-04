@@ -81,8 +81,8 @@ func checkModelNamed(t *testing.T, alexSees person, list ranked[revenueFigures],
 	file := alexSees.expect(t, get(reportPath("/reports/revenue/export", "widget=ranked", "format=csv", "show=activity")),
 		http.StatusOK)
 	headings := []string{"Attributed revenue (" + name + ")", "Actual cost", "ROI (%, " + name + ", on actual cost)"}
-	if rows := csvRows(t, string(file.Body)); len(rows) == 0 || len(rows[0]) < 7 || !slices.Equal(rows[0][7:], headings) {
-		t.Errorf("under %s: the ranked export's headings %v, want %v last", name, rows[:min(1, len(rows))], headings)
+	if rows := csvRows(t, string(file.Body)); len(rows) == 0 || len(rows[0]) < 10 || !slices.Equal(rows[0][7:10], headings) {
+		t.Errorf("under %s: the ranked export's headings %v, want %v after Performance", name, rows[:min(1, len(rows))], headings)
 	}
 	checkSummaryExportNamed(t, alexSees, league, name)
 }

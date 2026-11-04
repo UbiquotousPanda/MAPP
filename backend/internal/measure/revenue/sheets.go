@@ -5,6 +5,7 @@ import (
 	"math"
 	"net/url"
 
+	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/actor"
@@ -22,6 +23,8 @@ const (
 	sheetPeriods     = "Periods"
 	sheetRanked      = "Ranked list"
 	labelPerformance = "Performance (%)"
+	labelOwner       = "Owner"
+	labelModel       = "Model"
 )
 
 func levelWords() map[string]string {
@@ -79,7 +82,7 @@ func revenuePeriodsSheet(periods []RevenuePeriod) sheet.Sheet {
 
 func revenueRankedSheet(r RevenueRanked) sheet.Sheet {
 	rows := [][]sheet.Cell{boldRow("Group", "Level", "Name", "Goal", "Actual", "Projected", labelPerformance,
-		"Attributed revenue ("+r.Attribution.Model+")", "Actual cost", "ROI (%, "+r.Attribution.Words()+")")}
+		"Attributed revenue ("+r.Attribution.Model+")", "Actual cost", "ROI (%, "+r.Attribution.Words()+")", labelOwner, labelModel)}
 	for _, g := range r.Groups {
 		for _, e := range g.Entries {
 			rows = append(rows, revenueEntryRow(g.Label, e, ""))
@@ -95,7 +98,7 @@ func revenueEntryRow(group string, e RevenueEntry, indent string) []sheet.Cell {
 	f := e.Figures
 	return []sheet.Cell{sheet.Text(group), sheet.Text(levelWords()[e.Level]), sheet.Text(indent + e.Name),
 		moneyCell(f.Goal), moneyCell(f.Actual), moneyCell(f.Projected), numberCell(f.Performance),
-		moneyCell(f.AttributedRevenue), moneyCell(f.ActualCost), numberCell(f.ROI)}
+		moneyCell(f.AttributedRevenue), moneyCell(f.ActualCost), numberCell(f.ROI), ownerCell(e.Owner), modelCell(f.Projection)}
 }
 
 func boldRow(labels ...string) []sheet.Cell {
@@ -176,7 +179,7 @@ func funnelPeriodsSheet(periods []FunnelPeriod) sheet.Sheet {
 
 func funnelRankedSheet(r FunnelRanked) sheet.Sheet {
 	rows := [][]sheet.Cell{boldRow("Group", "Level", "Name", "Goal", "Actual", "Projected", labelPerformance,
-		"Conversion (%)")}
+		"Conversion (%)", labelOwner, labelModel)}
 	for _, g := range r.Groups {
 		for _, e := range g.Entries {
 			rows = append(rows, funnelEntryRow(g.Label, e, ""))
@@ -191,7 +194,22 @@ func funnelRankedSheet(r FunnelRanked) sheet.Sheet {
 func funnelEntryRow(group string, e FunnelEntry, indent string) []sheet.Cell {
 	f := e.Figures
 	return []sheet.Cell{sheet.Text(group), sheet.Text(levelWords()[e.Level]), sheet.Text(indent + e.Name),
-		int64Cell(f.Goal), int64Cell(f.Actual), int64Cell(f.Projected), numberCell(f.Performance), numberCell(f.Conversion)}
+		int64Cell(f.Goal), int64Cell(f.Actual), int64Cell(f.Projected), numberCell(f.Performance), numberCell(f.Conversion),
+		ownerCell(e.Owner), modelCell(f.Projection)}
+}
+
+func ownerCell(o *allwork.Owner) sheet.Cell {
+	if o == nil {
+		return sheet.Text(noValue)
+	}
+	return sheet.Text(o.Name)
+}
+
+func modelCell(s *Stamp) sheet.Cell {
+	if s == nil {
+		return sheet.Text(noValue)
+	}
+	return sheet.Text(s.ModelName)
 }
 
 func int64Cell(n *int64) sheet.Cell {
