@@ -27,8 +27,8 @@
 
 - [X] T007 Read 046's revenue facts and journeys into `attribution.Conversion` (050-C3, 050-C4): `Crediting.Credit`
   for 048 and 049, the facts reader in the attribution store and its fake, `TestCrediting_*`, scope-isolation test
-- [ ] T008 e2e `frontend/e2e/attribution.spec.ts`; restated figures after a model change (US4, SC-002). Waits for
-  049 (#82) or 048 to show attributed revenue through `Crediting.Credit` and for demo facts with journeys
+- [X] T008 e2e `frontend/e2e/attribution.spec.ts`: Revenue credits the seeded journeys and names the model and
+  cost basis (US1–US3); Last touch chosen in Settings restates Revenue, its CSV export and Summary (US4, SC-002)
 
 ## Phase 5: Credited revenue and ROI in 048 and 049 (FR-007, FR-008, FR-010)
 
