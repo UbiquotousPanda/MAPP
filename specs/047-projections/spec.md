@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-01
 
-**Status**: Draft
+**Status**: Built (4 Nov 2026)
 
 **Input**: Feature 047 of the Measure module (docs/sdd/measure-module-build.md): velocity and allowed goal
 stages on models, activity categories in Settings, and projected INQ, MQL and revenue per period from the

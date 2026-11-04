@@ -54,7 +54,7 @@ In progress · Built (merged on `plan-module`, or on `measure-module` for 039–
 Read-only reports, shown as **Reports**. Built on the `measure-module` branch by four lanes (A–D) following
 [measure-module-build.md](measure-module-build.md); the figures are defined once in
 [measure-metrics.md](../product/measure-metrics.md); the GitHub issues are in [measure-issues.md](measure-issues.md).
-**Wave A** uses only data MAPP holds; **wave B** adds performance data from a simulated feed (D-370). Statuses as of 2 November 2026: wave A is built on `measure-module` (D-381–D-388 record its clarifications); 046, 047 and 049 are open pull requests; 050 has 6 of its 8 tasks on `measure-module`, and its last two wait for 046.
+**Wave A** uses only data MAPP holds; **wave B** adds performance data from a simulated feed (D-370). Statuses as of 4 November 2026: waves A and B are built on `measure-module`; D-381–D-388 record wave A's clarifications and D-389–D-400 wave B's.
 
 | # | Folder | Feature | Wave · lane · hours | Depends on | Status |
 |---|---|---|---|---|---|
@@ -65,11 +65,11 @@ Read-only reports, shown as **Reports**. Built on the `measure-module` branch by
 | 043 | `043-plan-details-report` | Per Shell attribute and level: records and planned cost per value, Not filled in; Planned cost entered, Goal entered | A · D · 10 | 039, 002, 006 | Built |
 | 044 | `044-gsap-link-reports` | SWBS not received, purchase requests waiting for GSAP, purchase orders per line item | A · D · 10 | 039, 030, 032, 033 | Built |
 | 045 | `045-user-access-report` | People with role, teams and last sign-in; the sign-in time recorded | A · D · 6 | 039, 003, 014 | Built |
-| 046 | `046-performance-data` | Data sources and mappings, performance facts from a simulated feed or file, matching to activities, rows to review, media codes, external names, Is integrated | B · B · 30 | 006, 008, 015 | In progress |
-| 047 | `047-projections` | Velocity and allowed goal stages on models, activity categories, projected INQ, MQL and revenue per period | B · B · 14 | 002, 046 | In progress |
-| 048 | `048-summary-report` | Projected against goal, four league tables, funnel stages and conversion against goal | B · C · 14 | 039, 046, 047 | Planned |
-| 049 | `049-revenue-and-funnel-reports` | Summary cards per stage and category, actual, projected and goal split at today, the ranked list by revenue or a stage | B · B · 14 | 040, 046, 047 | In progress |
-| 050 | `050-attribution-roi` | A chosen attribution model credits revenue to activities; ROI with its model and cost basis named | B · A · 16 | 046, 048, 049 | In progress |
+| 046 | `046-performance-data` | Data sources and mappings, performance facts from a simulated feed or file, matching to activities, rows to review, media codes, external names, Is integrated | B · B · 30 | 006, 008, 015 | Built — #62 (API, matching, imports, activity panel), #108 (Settings screens), #136 (demo facts) |
+| 047 | `047-projections` | Velocity and allowed goal stages on models, activity categories, projected INQ, MQL and revenue per period | B · B · 14 | 002, 046 | Built — #75, #109, #156; categories seeded by #98; goal entry not yet checked against the allowed stages (D-394) |
+| 048 | `048-summary-report` | Projected against goal, four league tables, funnel stages and conversion against goal | B · C · 14 | 039, 046, 047 | Built — #106, #139, #148 |
+| 049 | `049-revenue-and-funnel-reports` | Summary cards per stage and category, actual, projected and goal split at today, the ranked list by revenue or a stage | B · B · 14 | 040, 046, 047 | Built — #82, #99, #115, #118, #157; owner and model on ranked entries in #158 (open) |
+| 050 | `050-attribution-roi` | A chosen attribution model credits revenue to activities; ROI with its model and cost basis named | B · A · 16 | 046, 048, 049 | Built — #71, #119, #149, #153 |
 
 **Wave C (out of scope, future integration points):** the Finance budget report (needs the Finance budgets
 module), AR invoice details (accrual requests), the China budget pack (budget release figures), vendor delivery

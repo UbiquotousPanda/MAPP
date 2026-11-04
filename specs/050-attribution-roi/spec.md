@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-01
 
-**Status**: Draft
+**Status**: Built (4 Nov 2026)
 
 **Input**: User description: "Attribution and ROI (lane A, issue #50): Settings › Attribution chooses the model that
 credits revenue facts to activities (first touch, last touch, equally distributed, linear time decay, U-shaped — the
