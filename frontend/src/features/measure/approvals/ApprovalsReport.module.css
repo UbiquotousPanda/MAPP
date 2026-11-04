@@ -22,7 +22,7 @@
 .track {
   height: 12px;
   border-radius: 6px;
-  background: var(--surface-2, transparent);
+  background: var(--gray-bg);
 }
 
 .fill {

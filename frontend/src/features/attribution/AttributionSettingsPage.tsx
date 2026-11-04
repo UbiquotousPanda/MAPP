@@ -112,7 +112,7 @@ function ModelForm({ settings }: { settings: AttributionSettings }) {
       <p className={styles.note}>
         {settings.updatedBy && settings.updatedAt
           ? `Last changed by ${settings.updatedBy.name} on ${date(localDate(settings.updatedAt))}.`
-          : 'Never changed: Equally distributed is the model MAPP starts with.'}
+          : 'Never changed: Equally distributed is the model SP&A One starts with.'}
       </p>
       {!locked && (
         <div className={styles.actions}>

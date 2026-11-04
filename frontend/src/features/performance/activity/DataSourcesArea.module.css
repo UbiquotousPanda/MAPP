@@ -21,8 +21,8 @@
   align-items: center;
   gap: var(--space-1);
   padding: 0 var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  border-radius: var(--radius-chip);
+  background: var(--chip);
 }
 
 .remove {
@@ -42,7 +42,7 @@
 .table th,
 .table td {
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--row-divider);
   text-align: left;
 }
 
