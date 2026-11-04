@@ -52,6 +52,19 @@ integrator moves them into the decision log.
   so a shared link shows the sharer's filters (US1 scenario 7) and nobody can open another person's view
   (FR-025, US2 scenario 6).
 
+### Session 2026-11-04 (demo option)
+
+Proposed for Shell to choose at the demo of 6 November; the tech lead confirms the pick (D-401, *Proposed*).
+
+- **039-C7** Q: Must every change in the filter panel wait for Apply? → A: Apply stays the default (039-C1), in a
+  bar that stays in view at the foot of the panel, so a long panel never hides it. A switch at the top of the
+  panel, **Update as I choose**, off until the viewer turns it on and remembered in their browser, applies each
+  change on its own a moment (400 ms) after the last one, so a burst of ticks is still one request; Apply then
+  gives way to a quiet "Updating…" / "Up to date" status. A group with nothing ticked is never applied: the panel
+  says "Tick at least one value in …" as before. The year, Period, Currency, Show, the chart or table choice and
+  removing a chip apply at once in both modes. Shell picks one behaviour at the demo; the other is then removed,
+  or the switch stays as a preference.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Open a report and narrow it to what I care about (Priority: P1)
@@ -261,7 +274,8 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   with every choice ticked does not filter. Records in the recycle bin never match.
 - **FR-013**: Changes in the filter panel MUST take effect on **Apply** (039-C1); until then the report keeps its
   figures and the panel says "Changes not applied yet". The year, Period, Currency, Show, the chart or table
-  choice and removing a chip apply at once.
+  choice and removing a chip apply at once. With **Update as I choose** on (039-C7), each change applies a moment
+  after the last one instead, and Apply is not shown; a group with nothing ticked never applies in either mode.
 - **FR-014**: The applied filters MUST appear above the widgets as removable chips naming each restricted filter
   ("Brand: Helix, Pennzoil"); removing a chip applies at once; **Reset filters** returns every filter but the year
   to its default.

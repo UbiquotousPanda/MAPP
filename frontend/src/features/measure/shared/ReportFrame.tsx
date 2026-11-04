@@ -19,7 +19,7 @@ import { downloadReport } from './api';
 import { ExportMenu } from './ExportMenu';
 import { FilterPanel } from './FilterPanel';
 import { PlainReportFrame } from './PlainReportFrame';
-import { DEFAULT_ADDRESS, isRestricted, resetFilters, writeAddress } from './report-address';
+import { isRestricted, resetFilters } from './report-address';
 import type { ReportAddress, Show } from './report-address';
 import { chipsOf, coverageText, inViewText, leftOutText, withoutChip } from './report-text';
 import { CurrencyControl, InViewLine, PeriodControl, ShowControl } from './ReportControls';
@@ -39,9 +39,15 @@ export interface ReportFrameProps {
   filters?: boolean;
 }
 
-/** The address as the frame applied it: the resolved year and currency, left-out values dropped. */
-function appliedAddress(address: ReportAddress, frame: Frame): ReportAddress {
+/**
+ * The address as the frame applied it: the resolved year and currency, left-out values dropped.
+ * While an older frame stands in for the one loading, the address itself is what was applied.
+ */
+function appliedAddress(address: ReportAddress, frame: Frame, loading: boolean): ReportAddress {
   const f = frame.filter;
+  if (loading) {
+    return { ...address, year: address.year ?? f.year };
+  }
   return {
     ...address,
     year: f.year,
@@ -50,12 +56,6 @@ function appliedAddress(address: ReportAddress, frame: Frame): ReportAddress {
     owners: f.owners,
     activityTypes: f.activityTypes,
   };
-}
-
-/** The panel starts a new draft when the applied filters change, not when Period, Show or Currency do. */
-function panelKey(applied: ReportAddress): string {
-  const { period, show, currency, tables } = DEFAULT_ADDRESS;
-  return writeAddress({ ...applied, period, show, currency, tables }).toString();
 }
 
 export function ReportFrame(props: ReportFrameProps) {
@@ -79,6 +79,7 @@ function FilteredReportFrame({ report, period, show, children, comingSoon }: Rep
     return <NoAccess />;
   }
   const data = frame.data;
+  const applied = data && appliedAddress(address, data, frame.isPlaceholderData);
   return (
     <>
       <PageHeader
@@ -98,20 +99,20 @@ function FilteredReportFrame({ report, period, show, children, comingSoon }: Rep
           )
         }
       />
-      {data ? (
+      {data && applied ? (
         <div className={styles.layout} aria-busy={frame.isFetching || undefined}>
           <FilterPanel
-            key={panelKey(appliedAddress(address, data))}
             choices={data.choices}
-            applied={appliedAddress(address, data)}
-            year={data.filter.year}
+            applied={applied}
+            year={applied.year ?? data.filter.year}
+            busy={frame.isFetching}
             onApply={setAddress}
           />
           <section className={styles.content} aria-label={name}>
             <InViewLine text={inViewText(data.inView)} />
             <div className={styles.chipsRow}>
               <FilterChips
-                chips={chipsOf(appliedAddress(address, data), data.choices)}
+                chips={chipsOf(applied, data.choices)}
                 onRemove={(key) => setAddress(withoutChip(address, key))}
               />
               {isRestricted(address) && (

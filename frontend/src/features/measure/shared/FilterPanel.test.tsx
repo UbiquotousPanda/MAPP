@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
+import { closestTo } from '@/testing/dom';
 import { reportFrame } from '@/testing/fixtures/reports';
 import { renderWithProviders } from '@/testing/render';
 import { FilterPanel } from './FilterPanel';
@@ -39,14 +40,20 @@ describe('FilterPanel (039 FR-008 – FR-013)', () => {
     await expectNoAxeViolations();
   });
 
-  it('changes nothing until Apply, then applies the values ticked', async () => {
+  it('changes nothing until Apply, in a bar that stays in view, then applies the values ticked (FR-013)', async () => {
     const { user, onApply } = renderPanel();
 
     await user.click(screen.getByRole('checkbox', { name: 'FY2026 Mobility' }));
 
     expect(screen.getByRole('status')).toHaveTextContent('Changes not applied yet');
     expect(onApply).not.toHaveBeenCalled();
-    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    const apply = screen.getByRole('button', { name: 'Apply' });
+    expect(closestTo(apply, '[class*="applyBar"]')).toContainElement(screen.getByRole('status'));
+    expect(screen.getByRole('switch', { name: 'Update as I choose' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+    await user.click(apply);
     expect(onApply).toHaveBeenCalledWith(
       expect.objectContaining({ plans: ['P-1001'], year: 2026 }),
     );
