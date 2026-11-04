@@ -1,21 +1,26 @@
 <!--
 Sync Impact Report
-- Version change: 4.7.0 → 4.8.0 (MINOR: scope materially expanded; no principle removed or redefined)
-- Modified principles: II and IV — a simulated performance feed stands in for the CRM, marketing-automation and
-  web-analytics connectors behind an adapter, as the simulated GSAP does for GSAP (D-370)
-- Modified sections: Current Phase & Scope — in scope: the Measure module, SP&A One's read-only reports shown as
-  Reports, in two waves (039–045 from data MAPP holds; 046–050 performance reporting from a simulated feed);
-  out of scope narrowed from "Measure's performance reporting" to live performance connectors, the Finance
-  budget report, AR invoice details, the China budget pack, vendor delivery reliability, a dashboard builder
-  and report sharing by e-mail; the Now/Later table gains the performance feed; Amendment History
+- Version change: 4.7.0 → 4.9.0 (MINOR: scope materially expanded; no principle removed or redefined). 4.8.0 is
+  the Measure-module amendment on the `measure-module` branch (D-366–D-370 there); this amendment is made on
+  `develop` and skips that number so the two merge without renumbering. When `measure-module` merges, its
+  out-of-scope "a dashboard builder" is dropped in favour of this text (D-371).
+- Modified principles: none
+- Modified sections: Current Phase & Scope — in scope: the self-service dashboard builder (051): people build
+  their own dashboards of charts from the Plan-module data they may see and from CSV or Excel files they upload,
+  view them at Dashboards next to 036's built-in dashboards, and share them view-only with their teams; out of
+  scope gains dashboards shared outside SP&A One teams, scheduled or e-mailed dashboards and live data
+  connectors for uploaded data. F1: charts — Apache ECharts (ADR-0020), with 036's hand-drawn SVG charts kept
+  until a later change moves them. Amendment History.
 - Added sections: none
 - Removed sections: none
-- Impact on existing code: none until 039 lands (a new `reports.view` permission, D-367); build organisation in
-  docs/sdd/measure-module-build.md (D-369); CI runs on pull requests into `measure-module`
+- Impact on existing code: none until 051 lands — two new permissions in 014 Table A (`dashboards.view`,
+  `dashboards.build`, D-374) granted to the built-in roles by migration; `/dashboards` becomes a list instead of
+  a redirect to the Executive dashboard (D-372); the `echarts` dependency (ADR-0020)
 - Templates: no change needed (plan-template.md reads its gates from this file)
 - Follow-up TODOs:
   - TODO(DARK_TOKENS): dark-theme values for Disabled Text, Link Hover and an error-text red
-  - ADR-0020 (simulated performance feed) is written with feature 046's plan
+  - ADR-0020 is taken by the dashboard builder on `develop`; the Measure module's simulated performance feed ADR,
+    written as 0020 on `measure-module`, is ADR-0022 since the merge (D-378)
 -->
 
 
@@ -85,7 +90,7 @@ cheapest place to fix a defect. Traceability lets a maintainer find why any beha
 - **Performance data comes from a simulated feed.** The reports' performance facts (inquiries,
   MQLs, deals, revenue, web metrics) arrive by file upload or a simulated pull behind an adapter
   interface that the live CRM, marketing-automation and web-analytics connectors will implement
-  later (D-370, ADR-0020); they are labelled as simulated like everything the simulated GSAP produces.
+  later (D-370, ADR-0022); they are labelled as simulated like everything the simulated GSAP produces.
 
 **Rationale:** users already know Shell's words and process; they must not have to learn Hive9's
 screens.
@@ -143,7 +148,7 @@ recovered from code alone, so they are written down where maintainers look.
   file-import endpoints (check, then import), a simulated GSAP that answers SWBS requests and
   creates GSAP PRs and POs, a simulated performance feed for the reports (D-370), and demo seed
   data. **Later:** the real feed implements the same
-  interface, with no change to services or the web app (ADR-0009, ADR-0016, ADR-0020).
+  interface, with no change to services or the web app (ADR-0009, ADR-0016, ADR-0022).
 
 **Rationale:** a small, predictable structure is easy for new developers and AI agents to follow,
 and keeps the moves to Azure and Shell's live systems cheap.
@@ -506,15 +511,19 @@ both be non-negotiable without conflict.
   040; Approvals, 041; Purchase requests, 042; Plan details, 043; GSAP link, 044; User access, 045) and
   **wave B** performance reporting (performance facts from a simulated feed behind an adapter, 046; projections
   from the models, 047; Summary, 048; Revenue and funnel stages, 049; attribution and ROI, 050). Every figure
-  is defined once in `docs/product/measure-metrics.md`. The feature list and build order are in
-  `docs/sdd/feature-map.md`.
+  is defined once in `docs/product/measure-metrics.md`. Since 4.9.0 also a **self-service dashboard builder**
+  (051, D-371): people build their own dashboards of charts, tables and figures from the Plan-module data they
+  may see and from CSV or Excel files they upload as datasets, view them under Dashboards next to 036's
+  built-in dashboards, and share them view-only with their teams; every figure stays scoped to the person who
+  looks at it. The feature list and build order are in `docs/sdd/feature-map.md`.
 - **Out of scope for now:** the Finance budgets module, accrual calculation, invoice approval,
   supporting documents on purchase requests, the Measure reports that need them (the Finance budget report,
-  AR invoice details, the China budget pack, vendor delivery reliability from goods receipts), a custom
-  dashboard engine or self-service dashboard builder, report sharing and scheduling by e-mail, live
-  performance connectors (CRM, marketing automation, web analytics), sharing to e-mail, Outlook or Teams,
-  live GSAP integration, real sign-in (Microsoft Entra ID single sign-on), e-mail (purchase requests are
-  routed inside MAPP), AI features. Specs may mention these only as future integration points.
+  AR invoice details, the China budget pack, vendor delivery reliability from goods receipts), report sharing
+  and scheduling by e-mail, live performance connectors (CRM, marketing automation, web analytics), sharing to
+  e-mail, Outlook or Teams, live GSAP integration, real sign-in (Microsoft Entra ID single sign-on), e-mail
+  (purchase requests are routed inside MAPP), dashboards shared outside SP&A One's teams, scheduled or
+  e-mailed dashboards, live data connectors for uploaded data, AI features. Specs may mention these only as
+  future integration points.
 - **Running locally:** the application runs on a developer laptop: the Go API, a local PostgreSQL
   database, and the web app's development server. Servers listen on `127.0.0.1` only. **Docker is
   optional:** a developer installs PostgreSQL natively or starts it with the repository's
@@ -532,7 +541,7 @@ both be non-negotiable without conflict.
 | Storage | PostgreSQL behind store interfaces (B5): installed natively or through the optional `compose.yaml` | Azure Database for PostgreSQL, same major version |
 | Sign-in and access | Demo sign-in with seeded users; roles, permissions and team scopes kept in MAPP (ADR-0008) | Microsoft Entra ID single sign-on; roles may come from Entra app roles or groups |
 | Shell integrations | Simulated GSAP feeds and a simulated GSAP for SWBS codes, GSAP PRs and POs, behind adapters (ADR-0009, ADR-0016) | Live GSAP feeds implementing the same adapters |
-| Performance data | A simulated performance feed (file upload or simulated pull) behind an adapter, matched to activities (D-370, ADR-0020) | Live CRM, marketing-automation and web-analytics connectors implementing the same adapter |
+| Performance data | A simulated performance feed (file upload or simulated pull) behind an adapter, matched to activities (D-370, ADR-0022) | Live CRM, marketing-automation and web-analytics connectors implementing the same adapter |
 | Visual design | Shell palette (Principle X), Jost and Arial, MAPP's own mark | Shell's typeface and pecten once Shell supplies them and consents |
 | Containers | Optional: `compose.yaml` runs PostgreSQL, or builds and runs the whole app locally for reviewers (ADR-0012), with Docker or Podman | Production images, registry and scanning, chosen by ADR before hosting |
 | Hosting | Local laptop | Azure Container Apps behind Azure Front Door (see `docs/reference/README.md`) |
@@ -708,7 +717,7 @@ These rules apply to everything under `frontend/` and refine the Core Principles
 | Server state | TanStack Query for every read and write of API data |
 | Forms and validation | React Hook Form with Zod schemas |
 | API access | `fetch`, directly or through the thin typed wrapper `openapi-fetch`, used only inside the client module in `src/api/`; types generated from `backend/api/openapi.yaml` with `openapi-typescript` |
-| Component primitives, icons, styling, data grid, charts | One library or approach for each, chosen by ADR that records accessibility conformance, maintenance activity, licence and bundle size. Current: Radix primitives, lucide-react icons, CSS Modules with the design tokens |
+| Component primitives, icons, styling, data grid, charts | One library or approach for each, chosen by ADR that records accessibility conformance, maintenance activity, licence and bundle size. Current: Radix primitives, lucide-react icons, CSS Modules with the design tokens, Apache ECharts for charts (ADR-0020; feature 036's hand-drawn SVG charts stay until a later change moves them, ADR-0017) |
 | Testing | Vitest, React Testing Library with `user-event`, Mock Service Worker (`msw`), Playwright, `axe-core` (through `vitest-axe` and `@axe-core/playwright`), `fast-check` |
 | Static analysis | ESLint with a flat config in `frontend/eslint.config.js`, using `typescript-eslint`, `eslint-plugin-react-hooks` and `eslint-plugin-jsx-a11y`; Prettier; `pnpm audit`; SonarQube |
 
@@ -1183,5 +1192,6 @@ amended to match.
 | 4.6.0 | 2026-10-28 | Current Phase & Scope: bulk actions and Excel import (012), the SP&A view and BCPIR marker of Shell's spec 006 (013), executive and regional planning dashboards from plan and finance data with PowerPoint and PDF export (036), and overspend control per budget owner (037) come into scope; out of scope narrowed to Measure's performance reporting | D-333; product owner instruction of 2026-10-28 (sandbox readiness) |
 | 4.7.0 | 2026-10-29 | X: a field required to save is marked by a Secondary Red asterisk after its label, bold and at least 19 px (large text), with "required" still given to screen readers; "Needed to publish" and "Needed to submit" stay words | D-364; product owner instruction of 2026-10-29 |
 | 4.8.0 | 2026-10-30 | Current Phase & Scope: the Measure module — SP&A One's read-only reports, shown as Reports — in two waves: 039–045 from data MAPP holds, 046–050 performance reporting from a simulated feed; II and IV: a simulated performance feed stands in for the CRM, marketing-automation and web-analytics connectors behind an adapter; out of scope narrowed to live connectors and the reports that need the Finance budgets module, accruals, goods receipts, a dashboard builder or e-mail | D-366–D-370; Measure kick-off instruction of 2026-10-30 |
+| 4.9.0 | 2026-11-01 | Current Phase & Scope: the self-service dashboard builder (051) — dashboards people build from the Plan-module data they may see and from CSV or Excel datasets they upload, shown under Dashboards next to 036's built-in dashboards and shared view-only with their teams; out of scope gains dashboards shared outside SP&A One teams, scheduled or e-mailed dashboards and live data connectors. F1: Apache ECharts is the chart library (ADR-0020). 4.8.0 is the Measure-module amendment on `measure-module` | D-371–D-378; ADR-0020; product owner instruction of 2026-11-01 |
 
-**Version**: 4.8.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-10-30
+**Version**: 4.9.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-11-01

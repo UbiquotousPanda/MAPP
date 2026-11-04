@@ -10,7 +10,7 @@ import (
 )
 
 // PullFeed runs the simulated feed once, by explicit action (046-C13), and hands what it produced to the
-// identical pipeline an upload takes: the service cannot tell the routes apart (ADR-0020).
+// identical pipeline an upload takes: the service cannot tell the routes apart (ADR-0022).
 func (s *Service) PullFeed(ctx context.Context, a actor.Actor, sourceID string) (Import, error) {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return Import{}, err

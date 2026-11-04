@@ -8,6 +8,7 @@ const activityLog = () => import('@/features/activity-log');
 const allWork = () => import('@/features/all-work');
 const approvalWorkflows = () => import('@/features/approval-workflows');
 const approvals = () => import('@/features/approvals');
+const customDashboards = () => import('@/features/custom-dashboards');
 const dashboards = () => import('@/features/dashboards');
 const dev = () => import('@/features/dev');
 const financials = () => import('@/features/financials');
@@ -60,6 +61,21 @@ export const ReportPage = lazy(() =>
       return <Report />;
     },
   })),
+);
+export const DashboardListPage = lazy(() =>
+  customDashboards().then((feature) => ({ default: feature.DashboardListPage })),
+);
+export const DashboardViewerPage = lazy(() =>
+  customDashboards().then((feature) => ({ default: feature.DashboardViewerPage })),
+);
+export const DashboardBuilderPage = lazy(() =>
+  customDashboards().then((feature) => ({ default: feature.DashboardBuilderPage })),
+);
+export const DatasetsPage = lazy(() =>
+  customDashboards().then((feature) => ({ default: feature.DatasetsPage })),
+);
+export const DatasetPage = lazy(() =>
+  customDashboards().then((feature) => ({ default: feature.DatasetPage })),
 );
 export const ComponentGalleryPage = lazy(() =>
   dev().then((feature) => ({ default: feature.ComponentGalleryPage })),

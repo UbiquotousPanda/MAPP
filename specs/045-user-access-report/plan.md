@@ -92,7 +92,7 @@ specs/045-user-access-report/
 ### Source Code (repository root) — only issue #38's "Owns" paths
 
 ```text
-backend/internal/platform/database/migrations/00029_last_sign_in.sql   # sign_ins and sign_in_recording, forward only (B5)
+backend/internal/platform/database/migrations/00031_last_sign_in.sql   # sign_ins and sign_in_recording, forward only (B5)
 backend/internal/platform/database/queries/sign_ins.sql                # RecordSignIn, ListLastSignIns (sqlc output generated)
 backend/internal/auth/                     # the sign-in change only
 ├── store.go          # Store += RecordSignIn, LastSignIns

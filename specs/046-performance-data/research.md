@@ -7,7 +7,7 @@ Only decisions with a real alternative are recorded here, per the build guide §
 **Decision**: an adapter package `internal/performance/simulatedfeed` sits behind a port owned by the service.
 It produces rows on demand for a source whose delivery route says so, and those rows enter the **same**
 validation → matching → review path as an uploaded file. A pull is started only by an explicit action on the
-source, behind `performance.import` (046-C13). Recorded as **ADR-0020**.
+source, behind `performance.import` (046-C13). Recorded as **ADR-0022**.
 
 **Why**: constitution non-negotiable 13 and D-370 put live performance connectors out of scope, and ADR-0016
 already set this shape for the simulated GSAP. Feature 033 is the precedent in working code: the user opens

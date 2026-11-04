@@ -17,7 +17,7 @@ func (s *Service) UseApprovals(a Approvals) {
 	s.approvals = a
 }
 
-// Feed stands in for a live connector (ADR-0020): one pull becomes a CSV that takes an upload's path.
+// Feed stands in for a live connector (ADR-0022): one pull becomes a CSV that takes an upload's path.
 type Feed interface {
 	Pull(source Source, mappings []Mapping, today time.Time) (string, []byte, error)
 }

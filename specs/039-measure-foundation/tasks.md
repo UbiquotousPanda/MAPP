@@ -30,7 +30,7 @@ rules, the wiring hub with one stub per report, the migration, the routes and st
   `backend/internal/platform/authz/catalogue.go`; test `TestCatalogue_ReportsView_039_FR002` in
   `catalogue_test.go`
 - [X] T004 [P] Add `PrefixReportView = "RV"` in `backend/internal/platform/ids/ids.go`
-- [X] T005 Migration `backend/internal/platform/database/migrations/00028_reports.sql`: table `report_views`
+- [X] T005 Migration `backend/internal/platform/database/migrations/00030_reports.sql`: table `report_views`
   exactly as data-model §1 — `id` "`^RV-[0-9]+$`", `person_id` "references people (id), deferrable",
   `report` "one of the report keys of §3", `name` "`name <> ''` and `char_length(name) <= 60`", `is_default`
   not null, `query` "at most 4,000 characters", `version` "at least 1", `created_at`, `created_by_id`,

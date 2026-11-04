@@ -65,7 +65,7 @@ backend/internal/projection/            # pure: no Gin, no SQL, no clock (R3, FR
 │   └── store (postgres + fakes) + queries/settings_categories.sql
 ├── backend/internal/performance/       # ports.go gains dates; panel fills projected (FR-016)
 ├── backend/internal/access/routes_activity_categories.go
-├── backend/internal/platform/database/migrations/00033_projections.sql
+├── backend/internal/platform/database/migrations/00035_projections.sql
 ├── frontend/src/features/settings/models/        # velocity + stages fields, example extended
 ├── frontend/src/features/settings/activity-categories/
 └── frontend/src/features/performance/activity/   # the panel's projected column and model note

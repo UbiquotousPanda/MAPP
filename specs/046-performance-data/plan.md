@@ -12,7 +12,7 @@ and a Performance section on an approved activity. The approach follows two patt
 rather than inventing: feature 015's import/validate/review shape (`internal/bulk`) and feature 030/033's
 simulated adapter behind a port (`internal/simulatedgsap`, ADR-0016). The one genuinely new decision — how a
 simulated feed produces rows without becoming a live connector — is recorded in [research.md](./research.md)
-and ADR-0020.
+and ADR-0022.
 
 ## Technical Context
 
@@ -47,7 +47,7 @@ rows; 6 user stories, 45 functional requirements
 |---|---|
 | **I. Spec-First** | Every item below traces to an FR in [spec.md](./spec.md); test names carry the FR they prove |
 | **II. Plain Language** | Shell vocabulary only: Activity, not Tactic; *data source*, *performance fact*, *row to review*, *media code*. No Hive9 interface terms |
-| **III. Documented Design** | ADR-0020 records the simulated-feed decision; `contracts/api.md` feeds the wave B contract; `data-model.md` covers the eleven tables |
+| **III. Documented Design** | ADR-0022 records the simulated-feed decision; `contracts/api.md` feeds the wave B contract; `data-model.md` covers the eleven tables |
 | **IV. Two Parts, Server Authoritative** | Matching, validation and every count happen in the service layer; the web app renders what the API returns and recomputes no figure |
 | **V. Simplicity** | One package `internal/performance` with the standard `model · store · store_postgres · service · handler` split, each file within 300 non-blank lines; no new framework |
 | **VI. Meaningful Tests** | A unit test per rule, a contract test per operation, a scope-isolation test per scoped store read, one test per rendered state, an e2e per P1 story. Fixed clock and seed |
@@ -81,13 +81,13 @@ specs/046-performance-data/
 backend/
 ├── internal/performance/          # model.go · store.go · store_postgres.go · service.go · handler.go
 │   ├── source.go  mapping.go  importer.go  matcher.go  review.go  mediacode.go  externalname.go
-│   ├── simulatedfeed/             # the adapter behind a port (ADR-0020)
+│   ├── simulatedfeed/             # the adapter behind a port (ADR-0022)
 │   └── performancetest/           # the fake store for other packages
 ├── internal/app/performance.go    # wiring only
 ├── internal/platform/database/
-│   ├── migrations/00030_performance_sources.sql
-│   │                00031_performance_facts.sql
-│   │                00032_media_codes.sql
+│   ├── migrations/00032_performance_sources.sql
+│   │                00033_performance_facts.sql
+│   │                00034_media_codes.sql
 │   └── queries/performance_*.sql   # sources, matching, facts, imports, keys
 └── seed/measure.go                # wave B demo facts — see Risk below
 
@@ -195,7 +195,7 @@ start** (build order step 7). This lane never edits `backend/api/openapi.yaml`.
    presently possible. Raised in the pull request.
 2. **ADR-0019 is already taken.** Issue #39 reserves ADR-0019 for the simulated performance feed, but
    `0019-overspend-guard-unscoped-budget-read.md` was written by feature 037 on 2026-10-29, the day before the
-   measure kick-off. This feature therefore writes **ADR-0020**, per the ADR README's "add a new ADR (next
+   measure kick-off. This feature therefore writes **ADR-0022**, per the ADR README's "add a new ADR (next
    number)". The integrator should correct the number in issue #39 and the build guide.
 
 ## Complexity Tracking

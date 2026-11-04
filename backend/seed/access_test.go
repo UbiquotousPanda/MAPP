@@ -31,12 +31,12 @@ func TestSeed_RolesAssignmentsAndRules_FR040(t *testing.T) {
 		}
 	}
 	wantRoles := []role{
-		{"RL-1001", "Administrator", authz.BuiltInAdministrator, 32, authz.ScopeAll},
-		{"RL-1002", "Global planner", authz.BuiltInGlobalPlanner, 20, authz.ScopeAll},
-		{"RL-1003", "Planner", authz.BuiltInPlanner, 15, authz.ScopeMyTeams},
-		{"RL-1004", "Approver", authz.BuiltInApprover, 5, authz.ScopeMyTeams},
-		{"RL-1005", "Viewer", authz.BuiltInViewer, 4, authz.ScopeMyTeams},
-		{"RL-1006", "Requisitioner", "", 4, authz.ScopeAll},
+		{"RL-1001", "Administrator", authz.BuiltInAdministrator, 34, authz.ScopeAll},
+		{"RL-1002", "Global planner", authz.BuiltInGlobalPlanner, 22, authz.ScopeAll},
+		{"RL-1003", "Planner", authz.BuiltInPlanner, 17, authz.ScopeMyTeams},
+		{"RL-1004", "Approver", authz.BuiltInApprover, 6, authz.ScopeMyTeams},
+		{"RL-1005", "Viewer", authz.BuiltInViewer, 5, authz.ScopeMyTeams},
+		{"RL-1006", "Requisitioner", "", 5, authz.ScopeAll},
 	}
 	if !slices.Equal(roles, wantRoles) {
 		t.Errorf("roles =\n%v\nwant\n%v", roles, wantRoles)
@@ -63,6 +63,8 @@ func TestSeed_RolesAssignmentsAndRules_FR040(t *testing.T) {
 		{authz.ApprovalsDecide, true, true, false, true, false},
 		{authz.ApprovalsDecideOnBehalf, true, false, false, false, false},
 		{authz.GlobalBudgetsManage, true, true, false, false, false},
+		{authz.DashboardsView, true, true, true, true, true},
+		{authz.DashboardsBuild, true, true, true, false, false},
 		{authz.SettingsManage, true, false, false, false, false},
 		{authz.AccessManage, true, false, false, false, false},
 	}

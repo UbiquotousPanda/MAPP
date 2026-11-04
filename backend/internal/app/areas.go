@@ -25,7 +25,7 @@ func (w *wiring) areas() error {
 	steps := []func() error{
 		w.settingsArea, w.overspendArea, w.plansArea, w.planningArea, w.budgetsArea, w.samplesArea,
 		func() error { return w.approvalsArea(release) }, w.financialsArea,
-		w.swbsArea, w.purchaseRequestsArea, w.bulkArea, w.workbookArea,
+		w.swbsArea, w.purchaseRequestsArea, w.customDashboardsArea, w.datasetsArea, w.bulkArea, w.workbookArea,
 		func() error { return w.performanceArea(release) },
 	}
 	for _, step := range steps {
@@ -40,6 +40,7 @@ func (w *wiring) areas() error {
 	if err := w.measureArea(); err != nil {
 		return err
 	}
+	w.widgetData()
 	w.usesOfPeople()
 	w.usesInSettings()
 	return nil
@@ -70,11 +71,13 @@ func (w *wiring) rates() error {
 func (w *wiring) plansArea() error {
 	tools := history.Tools{Tx: w.guard, IDs: w.generator, Log: w.history, Now: w.now}
 	w.plans = plan.NewService(tools, w.set.Plans, w.settings, w.people)
+	w.plans.UseSearcher(planSearcher{campaigns: w.set.Campaigns, activities: w.set.Activities, lineItems: w.set.LineItems})
 	if err := w.register(overspend.Described(w.plans.Kinds())); err != nil {
 		return err
 	}
 	mount(w.signedIn, plan.NewHandler(w.plans))
-	w.history.UseAccess(historyAccess{plans: w.set.Plans, history: w.history, purchaseRequests: w.set.PurchaseRequests})
+	w.history.UseAccess(historyAccess{plans: w.set.Plans, history: w.history, purchaseRequests: w.set.PurchaseRequests,
+		dashboards: w.set.CustomDashboards, datasets: w.set.Datasets})
 	return nil
 }
 

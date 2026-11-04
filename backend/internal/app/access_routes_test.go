@@ -56,12 +56,12 @@ func TestPublicRules_OnlyTheSixWithoutSession_FR010(t *testing.T) {
 }
 
 // The role check comes before anything else of the request. Sara Novak holds plans.view, data.export,
-// reports.view and finance.view only.
+// reports.view, finance.view and dashboards.view only.
 func TestEveryNeedRule_RefusesWithoutThePermission_FR009_FR010(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	sara := server.SignIn(t, "sara.novak@shell.com")
-	viewer := []string{"plans.view", "data.export", "reports.view", "finance.view"}
+	viewer := []string{"plans.view", "data.export", "reports.view", "finance.view", "dashboards.view"}
 	checked := 0
 	for _, op := range contractOperations(t) {
 		rule, _ := access.RuleFor(op.route)

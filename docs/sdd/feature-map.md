@@ -48,6 +48,8 @@ In progress · Built (merged on `plan-module`, or on `measure-module` for 039–
 | 036 | [036-planning-dashboards-and-export](../../specs/036-planning-dashboards-and-export/spec.md) | Executive and regional planning dashboards from plan and finance data (budget, planned, committed, actual by region, market, campaign and month; approvals, purchase requests, completeness), and export of plans and dashboards to PowerPoint and PDF (D-333) | P2 | 009, 010, 014, 015, 032 | Built — Executive and Regional dashboards, plan and dashboard export to .pptx and .pdf (ADR-0017); all gates and the full e2e suite green; open: widen the data.export label, Q-022, Q-023 |
 | 037 | [037-overspend-control](../../specs/037-overspend-control/spec.md) | Overspend control: each budget owner chooses whether going over a plan, campaign, initiative or global budget warns (default) or is refused, enforced by the API for every save that adds cost; Settings › Overspend control; purchase requests refused while line items exceed the activity's planned cost (D-333, D-346 – D-349) | P2 | 004, 005, 014, 016, 032 | Built — Go, unit, contract and e2e tests green (D-346 – D-349; Q-024, Q-025 open for Shell) |
 | 038 | [038-qa-findings](../../specs/038-qa-findings/spec.md) | QA findings: fixes for the 54 findings of exploratory QA on `develop@85a3d495` — purchase-request reservation during a change, financial-transaction scope and the link permission, workbook import at 5,000 rows, dashboard link fallback, delete with Undo, sign-in limit and security headers, approval over planned cost (warn or refuse), money grids that add up, and the medium and low fixes (D-359 – D-363) | P1 | 012, 013, 015, 032, 036, 037 | Built |
+| 051 | [051-dashboard-builder](../../specs/051-dashboard-builder/spec.md) | Dashboard builder: people build their own dashboards of ECharts charts, figure tiles, tables and notes from the Plan-module data they may see and from CSV or Excel datasets they upload; one Dashboards list with 036's built-ins, viewing at `/dashboards/:id`, building at `/builder`, view-only sharing with teams (constitution 4.9.0, D-371–D-378, ADR-0020) | P2 | 014, 036, 012 | Planned |
+| 052 | [052-search-whole-hierarchy](../../specs/052-search-whole-hierarchy/spec.md) | Search the whole hierarchy: the plan tree's search finds line items as rows under their activity, and the Plans list's search finds a plan by any campaign, initiative, activity or line item in it, saying where it matched (D-366) | P2 | 004, 005, 006, 007 | Built |
 
 ## Measure module (features 039–050, constitution 4.8.0, D-366)
 
@@ -105,6 +107,7 @@ report sharing and scheduling by e-mail.
 | Performance facts, data sources, matching, review, media codes, external names | 046 | Projections (047), attribution (050) |
 | Model velocity, activity categories, projection calculation | 047 | Goals themselves (004, 006) |
 | Attribution model and ROI | 050 | Revenue facts (046) |
+| Custom dashboards, their widgets and sharing; datasets uploaded from CSV or Excel; the data catalogue and widget data; the Dashboards list | 051 | The Executive and Regional dashboards themselves (036); the figures' definitions (their owning features) |
 
 ## Cross-cutting rules every spec follows
 
@@ -122,7 +125,8 @@ report sharing and scheduling by e-mail.
    Teams, real sign-in (SSO), AI. Purchase requests on
    MAPP's side and a simulated GSAP for SWBS codes, GSAP PRs and POs are in scope since constitution 4.4.0
    (features 030–034); planning dashboards, PowerPoint/PDF export and overspend control since 4.6.0 (036, 037);
-   the Measure reports since 4.8.0 (039–050, D-366), with performance data only from a simulated feed (D-370).
+   the Measure reports since 4.8.0 (039–050, D-366), with performance data only from a simulated feed (D-370); the
+   self-service dashboard builder with uploaded datasets since 4.9.0 (051).
    GSAP transactions and daily rates come from simulated feeds
    behind adapters (015, 016; D-242, D-259, D-308). Mention the rest only as future integration points.
 

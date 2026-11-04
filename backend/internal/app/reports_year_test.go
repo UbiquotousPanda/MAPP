@@ -17,8 +17,8 @@ var sameAmounts = cmp.Options{
 	cmpopts.EquateComparable(date.Date{}, money.Percent{}),
 }
 
-// yearsOf reads the seeded 2026 year with columns twice: through All work's source and through the reports' year.
-func yearsOf(t *testing.T, columns []string) (full, reports allwork.YearData) {
+// fullAndReportsYear reads the seeded 2026 year with columns twice: through All work's source and through the reports' year.
+func fullAndReportsYear(t *testing.T, columns []string) (full, reports allwork.YearData) {
 	t.Helper()
 	built, db := newSeededApp(t)
 	source := built.allWork.(allWorkSource)
@@ -42,7 +42,7 @@ func TestReportsYear_LeanReadKeepsEveryOtherValue_039_FR007_132(t *testing.T) {
 	for name, columns := range map[string][]string{"no columns": nil, "goals": {"inq", "mql", "revenue"}} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			full, lean := yearsOf(t, columns)
+			full, lean := fullAndReportsYear(t, columns)
 			if len(lean.Nodes) != len(full.Nodes) {
 				t.Fatalf("lean read: %d nodes, full read: %d", len(lean.Nodes), len(full.Nodes))
 			}
@@ -80,7 +80,7 @@ func compareLean(t *testing.T, f, l allwork.Node) int {
 
 func TestReportsYear_CompletenessAskedReadsTheFullYear_043_132(t *testing.T) {
 	t.Parallel()
-	full, reports := yearsOf(t, []string{columnCompleteness, "inq", "mql", "revenue"})
+	full, reports := fullAndReportsYear(t, []string{columnCompleteness, "inq", "mql", "revenue"})
 	if diff := cmp.Diff(full, reports, sameAmounts); diff != "" {
 		t.Errorf("year (-All work +reports):\n%s", diff)
 	}

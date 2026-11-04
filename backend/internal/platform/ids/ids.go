@@ -72,6 +72,9 @@ const (
 	PrefixIntegrationID        = "IID"
 
 	PrefixReportView = "RV"
+
+	PrefixDashboard = "DB"
+	PrefixDataset   = "DS"
 )
 
 var Prefixes = []string{
@@ -91,6 +94,7 @@ var Prefixes = []string{
 	PrefixPerformanceSource, PrefixPerformanceMapping, PrefixPerformanceImport, PrefixPerformanceFact,
 	PrefixPerformanceReviewRow, PrefixMediaCode, PrefixExternalNameAlias, PrefixIntegrationID,
 	PrefixReportView,
+	PrefixDashboard, PrefixDataset,
 }
 
 const firstNumber = 1001

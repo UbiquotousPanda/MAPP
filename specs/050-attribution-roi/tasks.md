@@ -10,7 +10,7 @@
 
 ## Phase 2: The designated model (US1)
 
-- [X] T003 Migration `00034_attribution_settings.sql`, `queries/measure_attribution.sql`, sqlc; store, PostgreSQL store,
+- [X] T003 Migration `00036_attribution_settings.sql`, `queries/measure_attribution.sql`, sqlc; store, PostgreSQL store,
   fake, store set
 - [X] T004 Tests first `TestSettings_FR001_FR002`; `service.go`, `kinds.go` (logged, never removed), `handler.go`;
   `openapi.yaml`; route rules; `history_access` (Manage settings); wiring `app/measure_attribution.go`;

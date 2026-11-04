@@ -22,7 +22,7 @@ each story.
 
 ## Phase 2: Foundational — the sign-in time (blocks US1)
 
-- [X] T002 `backend/internal/platform/database/migrations/00029_last_sign_in.sql`: `sign_ins (person_id, last_signed_in_at)`
+- [X] T002 `backend/internal/platform/database/migrations/00031_last_sign_in.sql`: `sign_ins (person_id, last_signed_in_at)`
   (research R2 addendum); a one-row `sign_in_recording (since)` stamped when the migration runs (research R2,
   `recordedSince`); Down drops both
 - [X] T003 `backend/internal/platform/database/queries/sign_ins.sql`: `RecordSignIn` (the column only),

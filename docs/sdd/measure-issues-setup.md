@@ -491,7 +491,7 @@ activity page shows the activity's facts once it is approved. Permissions `perfo
 
 **Owns.** `backend/internal/performance`, the `simulatedfeed` adapter, `app/performance.go`, migrations
 00030–00032, `features/performance/`, the Performance section slot in `features/activities/ActivityPage.tsx`,
-`e2e/performance-data.spec.ts`, wave B demo facts in `seed/measure.go`. Writes ADR-0020 (simulated performance
+`e2e/performance-data.spec.ts`, wave B demo facts in `seed/measure.go`. Writes ADR-0022 (simulated performance
 feed) with its plan and, with 047, the **wave B contract**.
 
 **References.** FA §E4.1, §E7.2–E7.4, §G7; client 020 US1–US6, FR-001–FR-040; 015 import, matching and review
@@ -902,7 +902,7 @@ Read [measure-module-build.md](https://github.com/anup-zensar/MAPP/blob/measure-
 
 ### Timing (hours from the start of wave A)
 
-1. **Hour 0:** start 046 at once — it needs nothing from 039. Its plan writes ADR-0020 (simulated performance feed).
+1. **Hour 0:** start 046 at once — it needs nothing from 039. Its plan writes ADR-0022 (simulated performance feed).
 2. Seed the wave B performance facts in `seed/measure.go`'s wave B part early, so lanes A and C can build on them.
 3. Then 047; with it, write the **wave B contract** into `openapi.yaml` before 048–050 start.
 4. Then 049 on lane A's `RankedList` (040), then wave B integration.

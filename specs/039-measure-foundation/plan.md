@@ -113,7 +113,7 @@ backend/
 ├── internal/allwork/match.go              # NEW exported Match (R1)
 ├── internal/platform/authz/catalogue.go   # ReportsView
 ├── internal/platform/ids/ids.go           # PrefixReportView "RV"
-├── internal/platform/database/migrations/00028_reports.sql
+├── internal/platform/database/migrations/00030_reports.sql
 ├── internal/platform/database/queries/measure_views.sql
 ├── internal/access/routes_measure.go      # every wave A rule; routes.go gains measureRoutes()
 ├── internal/app/history_access.go         # reportView entries: the owner and activityLog.viewAll (R5)

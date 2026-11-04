@@ -1,5 +1,6 @@
 import {
   ChartColumnIncreasing,
+  ChartNoAxesCombined,
   CircleCheckBig,
   ClipboardList,
   FileText,
@@ -36,8 +37,8 @@ export interface NavItem {
   Badge?: ComponentType<{ collapsed: boolean }>;
   /** Other address beginnings under which the section is current too (Plans: line items). */
   alsoCurrentOn?: string[];
-  /** Shown only to people who hold it; the address checks it too (RequirePermission). */
-  permission?: Permission;
+  /** Shown only to people who hold one of them; the address checks it too (RequirePermission). */
+  permissions?: Permission[];
   /** Wraps the item, which it may leave out (Purchase requests while Purchase Support is off). */
   Shown?: ComponentType<{ children: ReactNode }>;
 }
@@ -59,7 +60,7 @@ const GLOBAL_BUDGETS: NavItem = {
   label: 'Global budgets',
   path: '/budgets',
   icon: Landmark,
-  permission: 'globalBudgets.view',
+  permissions: ['globalBudgets.view'],
 };
 
 const APPROVALS: NavItem = {
@@ -75,28 +76,36 @@ const DASHBOARDS: NavItem = {
   label: 'Dashboards',
   path: '/dashboards',
   icon: LayoutDashboard,
-  permission: 'plans.view',
+  permissions: ['plans.view', 'dashboards.view'],
+};
+
+const DASHBOARD_BUILDER: NavItem = {
+  label: 'Dashboard builder',
+  path: '/builder',
+  icon: ChartNoAxesCombined,
+  alsoCurrentOn: ['/datasets'],
+  permissions: ['dashboards.build'],
 };
 
 const REPORTS: NavItem = {
   label: 'Reports',
   path: '/reports',
   icon: ChartColumnIncreasing,
-  permission: 'reports.view',
+  permissions: ['reports.view'],
 };
 
 const FINANCIALS: NavItem = {
   label: 'Financials',
   path: '/financials',
   icon: ReceiptText,
-  permission: 'finance.view',
+  permissions: ['finance.view'],
 };
 
 const PURCHASE_REQUESTS: NavItem = {
   label: 'Purchase requests',
   path: '/purchase-requests',
   icon: FileText,
-  permission: 'purchaseRequests.list',
+  permissions: ['purchaseRequests.list'],
   Shown: PurchaseSupportOnly,
 };
 
@@ -123,8 +132,13 @@ export const MAIN_ITEMS: NavItem[] = [
   PURCHASE_REQUESTS,
   DASHBOARDS,
   REPORTS,
+  DASHBOARD_BUILDER,
 ];
 
 export const MORE_ITEMS: NavItem[] = [SETTINGS, RECYCLE_BIN, ACTIVITY_LOG];
 
 export const COMING_SOON_SECTIONS: ComingSoonSection[] = [];
+
+export function navItemsFor(items: NavItem[], has: (permission: Permission) => boolean): NavItem[] {
+  return items.filter((item) => !item.permissions || item.permissions.some(has));
+}

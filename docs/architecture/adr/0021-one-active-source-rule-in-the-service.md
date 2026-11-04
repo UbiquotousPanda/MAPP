@@ -45,5 +45,5 @@ row — and both stay in the service with the reasoning written down.
 
 ## Related
 Constitution B5, IV and Governance → Exceptions · ADR-0019 (the overspend guard's unscoped read) ·
-client 020 FR-002, FR-003, FR-004 · migration `00030_performance_sources.sql` ·
+client 020 FR-002, FR-003, FR-004 · migration `00032_performance_sources.sql` ·
 `specs/046-performance-data/plan.md` rule R9.

@@ -32,7 +32,7 @@ end-of-day batch · **Constraints**: money in minor units; figures defined once 
 ```text
 backend/internal/measure/attribution/   model.go · credit.go · roi.go · store.go · store_postgres.go ·
                                         service.go · handler.go · kinds.go · attributiontest/ · *_test.go
-backend/internal/platform/database/migrations/00034_attribution_settings.sql
+backend/internal/platform/database/migrations/00036_attribution_settings.sql
 backend/internal/platform/database/queries/measure_attribution.sql
 backend/internal/app/measure_attribution.go
 frontend/src/features/attribution/            AttributionSettingsPage.tsx (+ test), Settings card and route

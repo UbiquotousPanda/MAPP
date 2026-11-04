@@ -1,4 +1,4 @@
-# ADR-0020: Performance data arrives only by upload or a simulated feed behind an adapter
+# ADR-0022: Performance data arrives only by upload or a simulated feed behind an adapter
 
 **Status:** Proposed (awaiting the product owner's approval) · **Date:** 2026-10-30
 

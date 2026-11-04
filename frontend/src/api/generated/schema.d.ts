@@ -412,46 +412,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/settings/activity-categories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Every activity category (active and inactive), sorted by name ignoring letter case (FR-018, FR-022) */
-        get: operations["listActivityCategories"];
-        put?: never;
-        /** Create an activity category grouping activity types (FR-018) */
-        post: operations["createActivityCategory"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/settings/activity-categories/{categoryId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @example CAT-1001 */
-                categoryId: components["parameters"]["ActivityCategoryId"];
-            };
-            cookie?: never;
-        };
-        /** One activity category with the activity types it groups */
-        get: operations["getActivityCategory"];
-        put?: never;
-        post?: never;
-        /** Delete an activity category; its activity types become Uncategorised (FR-021) */
-        delete: operations["deleteActivityCategory"];
-        options?: never;
-        head?: never;
-        /** Change an activity category and the activity types it groups (FR-018, FR-019, FR-020) */
-        patch: operations["updateActivityCategory"];
-        trace?: never;
-    };
     "/api/v1/activity-types": {
         parameters: {
             query?: never;
@@ -1298,6 +1258,26 @@ export interface paths {
          * @description The reason is recorded in the activity log. Unpublishing a Draft plan changes nothing.
          */
         post: operations["unpublishPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plans/{planId}/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The campaigns, initiatives, activities and line items of the plan whose name or ID holds the text
+         * @description 052 FR-005. Top-down (campaign, initiative, activity, line item), then by name and ID. A plan outside the person's scope answers 404, like a missing one.
+         */
+        get: operations["searchPlan"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3591,24 +3571,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/settings/attribution": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Settings › Attribution — the designated model that credits revenue to activities (050 FR-001) */
-        get: operations["getAttributionSettings"];
-        /** Change the designated attribution model; needs Manage settings, versioned and logged (050 FR-002) */
-        put: operations["saveAttributionSettings"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/overspend-configuration": {
         parameters: {
             query?: never;
@@ -4296,6 +4258,314 @@ export interface paths {
         /** A plan as a PowerPoint or PDF file — summary, campaigns, budget against planned and actual, activities (feature 036, FR-023) */
         get: operations["exportPlan"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/custom-dashboards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The person's own dashboards and those shared with their teams, each by name (feature 051, FR-003)
+         * @description Needs dashboards.view. The built-in Executive and Regional dashboards (036) are not listed: the web app shows them to holders of plans.view.
+         */
+        get: operations["listCustomDashboards"];
+        put?: never;
+        /**
+         * Create a dashboard owned by the person, shared with nobody (feature 051, FR-008, FR-013 – FR-025)
+         * @description Needs dashboards.build. Every problem of the name, the filters and every widget is answered at once (validation_failed, fields such as widgets[2].query.measures); a name the person already uses answers 409 name_taken.
+         */
+        post: operations["createCustomDashboard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/custom-dashboards/{dashboardId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * One dashboard with its widgets, filters and sharing (feature 051, FR-005, FR-036)
+         * @description Needs dashboards.view; visible to its owner and to members of the teams it is shared with. Any other dashboard answers 404 not_found, exactly like a missing one.
+         */
+        get: operations["getCustomDashboard"];
+        put?: never;
+        post?: never;
+        /** Delete a dashboard to the recycle bin — owner only (feature 051, FR-010) */
+        delete: operations["deleteCustomDashboard"];
+        options?: never;
+        head?: never;
+        /**
+         * Change a dashboard's name, description, filters or widgets — owner only (feature 051, FR-006, FR-012, FR-033)
+         * @description Needs dashboards.build and ownership (403 forbidden for a dashboard the person sees but does not own). Only the fields sent change; widgets, when sent, replace the whole list. An out-of-date version answers 409 version_conflict.
+         */
+        patch: operations["updateCustomDashboard"];
+        trace?: never;
+    };
+    "/api/v1/custom-dashboards/{dashboardId}/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make a copy owned by the person, shared with nobody (feature 051, FR-011)
+         * @description Needs dashboards.build and sight of the dashboard. The name defaults to "Copy of <name>", shortened to 80 characters and numbered ("Copy of X (2)") when taken.
+         */
+        post: operations["copyCustomDashboard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/custom-dashboards/{dashboardId}/sharing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set the teams a dashboard is shared with, view-only — owner only (feature 051, FR-046)
+         * @description Each team must be one the owner belongs to now or one already shared (validation_failed on teamIds otherwise). An out-of-date version answers 409 version_conflict.
+         */
+        put: operations["shareCustomDashboard"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The person's datasets and those shared with their teams, each by name (feature 051, FR-040)
+         * @description Needs dashboards.build.
+         */
+        get: operations["listDatasets"];
+        put?: never;
+        /**
+         * Store an uploaded CSV or .xlsx file as a dataset with the chosen column names and types (feature 051, FR-042, FR-043)
+         * @description Needs dashboards.build. The file is read again and every cell checked against its column's type; every problem is answered at once (validation_failed, fields such as columns[2] with "Row 14: 'n/a' is not a number", at most 50 listed and a last one saying how many more). Limits: 5 MB file, 10,000 rows, 50 columns, 50 datasets per person (validation_failed on content or name).
+         */
+        post: operations["createDataset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check an uploaded file and propose its columns and types; nothing is stored (feature 051, FR-041)
+         * @description Needs dashboards.build. Reads the first sheet of an .xlsx file or a UTF-8 CSV file (comma, semicolon or tab); the first row holds the column names. A file that cannot be read, has no header row or breaks a limit answers 400 validation_failed on content with the reason.
+         */
+        post: operations["previewDataset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets/{datasetId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * One dataset with its columns, sharing and the visible dashboards that use it (feature 051, FR-040)
+         * @description Needs dashboards.build; a dataset the person may not see answers 404 not_found.
+         */
+        get: operations["getDataset"];
+        put?: never;
+        post?: never;
+        /** Delete a dataset to the recycle bin — owner only (feature 051, FR-045) */
+        delete: operations["deleteDataset"];
+        options?: never;
+        head?: never;
+        /**
+         * Rename a dataset, change its description or its column names — owner only (feature 051, FR-040, FR-044)
+         * @description Column types never change. An out-of-date version answers 409 version_conflict.
+         */
+        patch: operations["updateDataset"];
+        trace?: never;
+    };
+    "/api/v1/datasets/{datasetId}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        /** A page of a dataset's rows, as stored (feature 051, FR-040) */
+        get: operations["listDatasetRows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets/{datasetId}/sharing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the teams a dataset is shared with, view-only — owner only (feature 051, FR-046) */
+        put: operations["shareDataset"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/data-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The data catalogue — the built-in sources and datasets the person may read, with their fields (feature 051, FR-016)
+         * @description Needs dashboards.view or dashboards.build (checked by the service). Built-in sources need their own permission (plans.view; finance.view for financialTransactions; globalBudgets.view for globalBudgets) and are left out without it. Datasets: those the person owns or that are shared with their teams.
+         */
+        get: operations["listDataSources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/data-sources/query": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Work out one widget's figures for the person asking, in their scope (feature 051, FR-007, FR-016 – FR-023)
+         * @description Needs dashboards.view or dashboards.build (checked by the service). A built-in source the person may not read answers 403 forbidden; a dataset they may not see, or a deleted one, answers 404 not_found — the web app shows both as "You don't have access to this data" (or, to the owner of a deleted dataset, "This data is no longer available"). Fields not in the source, or a query that breaks the rules of its use, answer 400 validation_failed listing every problem (fields such as query.measures[1].field). Nothing is stored.
+         */
+        post: operations["queryWidgetData"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/activity-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every activity category (active and inactive), sorted by name ignoring letter case (FR-018, FR-022) */
+        get: operations["listActivityCategories"];
+        put?: never;
+        /** Create an activity category grouping activity types (FR-018) */
+        post: operations["createActivityCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/activity-categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        /** One activity category with the activity types it groups */
+        get: operations["getActivityCategory"];
+        put?: never;
+        post?: never;
+        /** Delete an activity category; its activity types become Uncategorised (FR-021) */
+        delete: operations["deleteActivityCategory"];
+        options?: never;
+        head?: never;
+        /** Change an activity category and the activity types it groups (FR-018, FR-019, FR-020) */
+        patch: operations["updateActivityCategory"];
+        trace?: never;
+    };
+    "/api/v1/settings/attribution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Settings › Attribution — the designated model that credits revenue to activities (050 FR-001) */
+        get: operations["getAttributionSettings"];
+        /** Change the designated attribution model; needs Manage settings, versioned and logged (050 FR-002) */
+        put: operations["saveAttributionSettings"];
         post?: never;
         delete?: never;
         options?: never;
@@ -5289,1378 +5559,6 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
-         * @description The kind of system a data source is, which decides what it can supply (FA §E7.2).
-         * @enum {string}
-         */
-        PerformanceCategory: "webAnalytics" | "marketingAutomation" | "crm" | "leadProgression";
-        /**
-         * @description How rows arrive — a file someone uploads, or a pull from the simulated feed (ADR-0020).
-         * @enum {string}
-         */
-        PerformanceDeliveryRoute: "upload" | "simulated";
-        /**
-         * @description How often the source is expected to deliver; it decides when freshness reads Stale.
-         * @enum {string}
-         */
-        PerformanceCadence: "daily" | "weekly" | "monthly" | "onDemand";
-        /**
-         * @description Derived from the last load and the cadence, never stored. Inactive when the source is deactivated, Stale when nothing has loaded within one extra cadence period, Failed when the last load failed.
-         * @enum {string}
-         */
-        PerformanceFreshness: "current" | "stale" | "failed" | "inactive";
-        /**
-         * @description What one column of a source's file means (client 020 FR-006).
-         * @enum {string}
-         */
-        ColumnMeaning: "key" | "reference" | "factDate" | "stage" | "revenue" | "currency" | "webMetric" | "journey";
-        /**
-         * @description The web-analytics vocabulary — counts by month, never money (clarification 046-C11).
-         * @enum {string}
-         */
-        WebMetric: "sessions" | "visits" | "engagementTouches";
-        /** @description Where performance data comes from (Settings › Performance data). */
-        PerformanceSource: {
-            id: string;
-            name: string;
-            description: string;
-            ownerId: string;
-            category: components["schemas"]["PerformanceCategory"];
-            /** @enum {string} */
-            status: "active" | "inactive";
-            deliveryRoute: components["schemas"]["PerformanceDeliveryRoute"];
-            cadence: components["schemas"]["PerformanceCadence"];
-            /** @description The source's own identifier, empty when it has none. */
-            integrationId: string;
-            freshness: components["schemas"]["PerformanceFreshness"];
-            /**
-             * Format: date-time
-             * @description Null when nothing has ever loaded, which is every newly created source.
-             */
-            lastLoadedAt?: string | null;
-            /**
-             * Format: date
-             * @description The date the source's data runs through; null until something loads.
-             */
-            dataThrough?: string | null;
-            /** @description How many facts this source holds; it may not be deleted while above zero. */
-            factCount: number;
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        PerformanceSourceInput: {
-            name: string;
-            description?: string;
-            ownerId: string;
-            category: components["schemas"]["PerformanceCategory"];
-            deliveryRoute: components["schemas"]["PerformanceDeliveryRoute"];
-            cadence: components["schemas"]["PerformanceCadence"];
-            integrationId?: string;
-            /** @description The version the editor read; a save against an older one is refused (409 version_conflict). */
-            version?: number;
-        };
-        PerformanceSourceList: {
-            items: components["schemas"]["PerformanceSource"][];
-        };
-        PerformanceUpload: {
-            /** @example eloqua_2026-10.csv */
-            fileName: string;
-            /** @description The file, base64 (at most 2 MB before encoding). */
-            content: string;
-        };
-        /** @description The five outcomes of a load; they add up to rows read (046-C3). */
-        PerformanceCounts: {
-            read: number;
-            matched: number;
-            held: number;
-            unattributed: number;
-            rejected: number;
-            unmatched: number;
-        };
-        /** @description The five counts again for one measure; a row carrying two measures counts in both (046-C18). */
-        PerformanceBreakdownGroup: {
-            stage: string;
-            webMetric: string;
-            counts: components["schemas"]["PerformanceCounts"];
-        };
-        /** @description One load of performance data. Never editable; undo is the only way back (FR-016). */
-        PerformanceImport: {
-            id: string;
-            sourceId: string;
-            fileName: string;
-            /** @enum {string} */
-            origin: "upload" | "simulated";
-            /** @enum {string} */
-            status: "completed" | "failed" | "undone";
-            /** Format: date */
-            dataThrough: string | null;
-            counts: components["schemas"]["PerformanceCounts"];
-            breakdown: components["schemas"]["PerformanceBreakdownGroup"][];
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        PerformanceImportList: {
-            items: components["schemas"]["PerformanceImport"][];
-        };
-        /** @description A superseded external name, kept so the outside world's old exports still match (FR-034). */
-        ExternalNameAlias: {
-            id: string;
-            activityId: string;
-            name: string;
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        ExternalNameAliasList: {
-            items: components["schemas"]["ExternalNameAlias"][];
-        };
-        /** @description One outside system's own id for an activity; at most one per source (FR-037). */
-        IntegrationId: {
-            id: string;
-            activityId: string;
-            sourceId: string;
-            value: string;
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        IntegrationIdList: {
-            items: components["schemas"]["IntegrationId"][];
-        };
-        IntegrationIdInput: {
-            value: string;
-        };
-        SourceOfFacts: {
-            sourceId: string;
-            sourceName: string;
-            /** @description Empty when the source has no key for this activity. */
-            integrationId: string;
-            factCount: number;
-            /** @description Empty until the source has delivered a fact. */
-            lastFactDate: string;
-        };
-        /** @description The activity's Performance - Data sources section (FR-031). */
-        DataSourcesArea: {
-            externalName: string;
-            aliases: components["schemas"]["ExternalNameAlias"][];
-            mediaCodeCount: number;
-            integrated: boolean;
-            goalEntered: boolean;
-            sources: components["schemas"]["SourceOfFacts"][];
-        };
-        ReviewFault: {
-            column: string;
-            code: string;
-            message: string;
-        };
-        /** @description One row a person must fix; never created by hand (FR-023). */
-        ReviewRow: {
-            id: string;
-            importId: string;
-            sourceId: string;
-            sourceName: string;
-            /** @description The row exactly as the file carried it. */
-            raw: {
-                [key: string]: string;
-            };
-            /**
-             * @description The headline the queue is findable by (FR-023): no key at all, keys that found no activity, several or disagreeing activities, or rejected with the code of the row's first fault.
-             * @enum {string}
-             */
-            reason: "unattributed:noKey" | "unmatched:unknown" | "unmatched:ambiguous" | "unmatched:disagree" | "rejected:emptyColumn" | "rejected:invalidDate" | "rejected:futureDate" | "rejected:negativeCount" | "rejected:fractionalCount" | "rejected:invalidCount" | "rejected:invalidAmount" | "rejected:unconfiguredCurrency" | "rejected:missingReference" | "rejected:referenceTooLong" | "rejected:journeyTooLong" | "rejected:repeatedReference" | "rejected:noMeasure" | "rejected:duplicateMeasure";
-            faults: components["schemas"]["ReviewFault"][];
-            /** @description The activities named when keys disagree, filtered to the reader's scope (046-C15). */
-            candidates: string[];
-            /** @enum {string} */
-            status: "open" | "resolved" | "dismissed";
-            comment: string;
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        ReviewRowList: {
-            items: components["schemas"]["ReviewRow"][];
-        };
-        DismissInput: {
-            comment: string;
-        };
-        CorrectInput: {
-            date?: string | null;
-            currency?: string | null;
-            keys?: {
-                activityId?: string;
-                mediaCode?: string;
-                integrationId?: string;
-                externalName?: string;
-            } | null;
-            values?: {
-                column: string;
-                value: string;
-            }[];
-        };
-        /** @description One figure a source delivered, matched to this activity (FR-030). */
-        PerformanceFact: {
-            id: string;
-            sourceId: string;
-            sourceName: string;
-            /** @description The originating upload. */
-            importId: string;
-            sourceReference: string;
-            /** Format: date */
-            factDate: string;
-            stage: string;
-            webMetric: string;
-            count: number | null;
-            amount: components["schemas"]["Money"] | null;
-            /** @description The row's pseudonymous journey reference (046-C6), absent when it had none; 050 credits by it. */
-            journeyRef?: string;
-            held: boolean;
-            /** @enum {string} */
-            matchedOn: "" | "activityId" | "mediaCode" | "integrationId" | "externalName";
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        PerformanceFactList: {
-            items: components["schemas"]["PerformanceFact"][];
-        };
-        /** @description One month split at today (047 FR-010); the month in progress carries both figures. */
-        SplitMonth: {
-            /** @example 2026-02 */
-            month: string;
-            actual: number | null;
-            projected: number | null;
-            inProgress: boolean;
-        };
-        SplitMoneyMonth: {
-            /** @example 2026-02 */
-            month: string;
-            actual: components["schemas"]["Money"] | null;
-            projected: components["schemas"]["Money"] | null;
-            inProgress: boolean;
-        };
-        /** @description The model behind the projected figures and when its parameters last changed (047 FR-012). */
-        ProjectionStamp: {
-            modelName: string;
-            /** Format: date-time */
-            modelChangedAt: string;
-        };
-        StageFigure: {
-            /** @enum {string} */
-            stage: "inq" | "mql";
-            goal: number | null;
-            actual: number | null;
-            /** @description The plan-year figure: actual to the end of the last whole month before today plus projected from today, so a closed year equals the actual (047 FR-010). Null with projectedReason when nothing projects. Never add this to actual — they overlap. */
-            projected: number | null;
-            /** @description Actual over the previous stage's actual, one decimal; null where it cannot be worked out. */
-            conversion: number | null;
-            /** @enum {string} */
-            reason: "" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
-            /**
-             * @description Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013): no goal at this stage, or the activity lies outside its plan's year.
-             * @enum {string}
-             */
-            projectedReason: "" | "noGoal" | "outsidePlanYear";
-            months: components["schemas"]["SplitMonth"][];
-        };
-        RevenueFigure: {
-            goal: components["schemas"]["Money"] | null;
-            /** @description One USD total at the current rate (046-C7). */
-            actual: components["schemas"]["Money"] | null;
-            /** @description The plan-year figure, as StageFigure.projected, with the deals from today priced at the model's average deal size (047 FR-007, FR-010). */
-            projected: components["schemas"]["Money"] | null;
-            /** @description Facts left out because their currency has no rate (SC-010). */
-            excludedCount: number;
-            /** @enum {string} */
-            reason: "" | "notApproved" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
-            /**
-             * @description Why nothing projects (047 FR-013): no revenue goal, the activity lies outside its plan's year, or the projection would leave the money range.
-             * @enum {string}
-             */
-            projectedReason: "" | "noGoal" | "outsidePlanYear" | "outOfRange";
-            months: components["schemas"]["SplitMoneyMonth"][];
-        };
-        MetricFigure: {
-            /** @enum {string} */
-            metric: "sessions" | "visits" | "engagementTouches";
-            months: {
-                /** @example 2026-02 */
-                month: string;
-                value: number;
-            }[];
-        };
-        PanelSource: {
-            sourceId: string;
-            sourceName: string;
-            freshness: components["schemas"]["PerformanceFreshness"];
-            /** Format: date */
-            dataThrough: string | null;
-        };
-        /** @description The activity's Performance area (FR-029); gated until the activity counts as approved. */
-        PerformancePanel: {
-            /** @enum {string} */
-            state: "ok" | "notApproved";
-            stages: components["schemas"]["StageFigure"][];
-            revenue: components["schemas"]["RevenueFigure"];
-            webMetrics: components["schemas"]["MetricFigure"][];
-            sources: components["schemas"]["PanelSource"][];
-            projection: components["schemas"]["ProjectionStamp"] | null;
-        };
-        CodeAttribute: {
-            name: string;
-            required: boolean;
-        };
-        /** @description A system-generated campaign-link code; its number is never reused (FR-042). */
-        MediaCode: {
-            id: string;
-            /** Format: int64 */
-            code: number;
-            activityId: string;
-            attributes: {
-                [key: string]: string;
-            };
-            landingPage: string;
-            /** @enum {string} */
-            status: "active" | "inactive";
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        MediaCodeArea: {
-            /** @description Stated by the API (FR-040); the web app hides the section when false. */
-            requiresCodes: boolean;
-            items: components["schemas"]["MediaCode"][];
-        };
-        MediaCodeInput: {
-            attributes?: {
-                [key: string]: string;
-            };
-            landingPage?: string;
-            version?: number;
-        };
-        /** @description Settings - Performance data's one record (046-C12), never on the activity type. */
-        PerformanceConfiguration: {
-            activityTypeIds: string[];
-            codeAttributes: components["schemas"]["CodeAttribute"][];
-            /** Format: int64 */
-            mediaCodeNext: number;
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        PerformanceConfigurationInput: {
-            activityTypeIds: string[];
-            codeAttributes: components["schemas"]["CodeAttribute"][];
-            /** Format: int64 */
-            mediaCodeNext: number;
-            version: number;
-        };
-        /**
-         * @description Which matching key a key column carries (046-C23); empty on every other column.
-         * @enum {string}
-         */
-        MatchKeyType: "" | "activityId" | "mediaCode" | "integrationId" | "externalName";
-        /** @description What one column of a source's file means. A change affects future loads only. */
-        ColumnMapping: {
-            id: string;
-            sourceId: string;
-            columnName: string;
-            meaning: components["schemas"]["ColumnMeaning"];
-            keyType: components["schemas"]["MatchKeyType"];
-            /** @description Set only on a stage column. */
-            stage: string;
-            /** @description Set only on a web-metric column. */
-            webMetric: string;
-            /** @description Set only on a stage or revenue column, which a model supplies. */
-            modelId: string;
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        ColumnMappingInput: {
-            columnName: string;
-            meaning: components["schemas"]["ColumnMeaning"];
-            keyType?: components["schemas"]["MatchKeyType"];
-            stage?: string;
-            webMetric?: components["schemas"]["WebMetric"];
-            modelId?: string;
-            version?: number;
-        };
-        ColumnMappingList: {
-            items: components["schemas"]["ColumnMapping"][];
-        };
-        /** @enum {string} */
-        ReportKey: "planBudget" | "approvals" | "purchaseRequests" | "planDetails" | "gsapLink" | "userAccess" | "summary" | "revenue" | "funnel";
-        ReportEntry: {
-            key: components["schemas"]["ReportKey"];
-            /** @example plan-budget */
-            path: string;
-            /** @example Plan budget */
-            name: string;
-            purpose: string;
-            /** @description False while the report is not built ("Coming soon"). */
-            available: boolean;
-        };
-        ReportCatalogue: {
-            items: components["schemas"]["ReportEntry"][];
-        };
-        /** @enum {string} */
-        ReportLevel: "plan" | "campaign" | "initiative" | "activity" | "lineItem";
-        ReportAttributeFilter: {
-            /** @example SA-1022 */
-            attributeId: string;
-            /** @description Option IDs, yes, no, or none (Not filled in). */
-            values: string[];
-        };
-        ReportFilter: {
-            year: number;
-            plans: string[];
-            planTypes: components["schemas"]["PlanType"][];
-            teams: string[];
-            owners: string[];
-            activityTypes: string[];
-            activityStatuses: ("created" | "submitted" | "declined" | "approved" | "inProgress" | "complete")[];
-            attributes: components["schemas"]["ReportAttributeFilter"][];
-            /** @enum {string} */
-            period: "month" | "quarter";
-            /** @enum {string|null} */
-            show: "plan" | "campaign" | "initiative" | "activity" | null;
-            currency: string;
-            tables: string[];
-        };
-        ReportNamedChoice: {
-            id: string;
-            name: string;
-        };
-        ReportPlanChoice: {
-            id: string;
-            name: string;
-            planType: components["schemas"]["PlanType"];
-            teamIds: string[];
-        };
-        ReportTeamChoice: {
-            id: string;
-            name: string;
-            mine: boolean;
-        };
-        ReportAttributeValue: {
-            /** @description An option ID, yes, no, or none (Not filled in). */
-            id: string;
-            label: string;
-            active: boolean;
-        };
-        ReportAttributeGroup: {
-            level: components["schemas"]["ReportLevel"];
-            attributeId: string;
-            label: string;
-            values: components["schemas"]["ReportAttributeValue"][];
-        };
-        ReportCurrencyChoice: {
-            code: string;
-            name: string;
-        };
-        ReportChoices: {
-            years: number[];
-            plans: components["schemas"]["ReportPlanChoice"][];
-            planTypes: components["schemas"]["PlanType"][];
-            teams: components["schemas"]["ReportTeamChoice"][];
-            owners: components["schemas"]["ReportNamedChoice"][];
-            activityTypes: components["schemas"]["ReportNamedChoice"][];
-            activityStatuses: ("created" | "submitted" | "declined" | "approved" | "inProgress" | "complete")[];
-            attributeGroups: components["schemas"]["ReportAttributeGroup"][];
-            currencies: components["schemas"]["ReportCurrencyChoice"][];
-        };
-        ReportInView: {
-            plans: number;
-            campaigns: number;
-            initiatives: number;
-            activities: number;
-            lineItems: number;
-        };
-        ReportFinanceCoverage: {
-            /** @description Plans in view whose financial data the person may see. */
-            plans: number;
-            /** @description Plans in view. */
-            of: number;
-        };
-        ReportFrame: {
-            report: components["schemas"]["ReportKey"];
-            filter: components["schemas"]["ReportFilter"];
-            choices: components["schemas"]["ReportChoices"];
-            inView: components["schemas"]["ReportInView"];
-            finance: components["schemas"]["ReportFinanceCoverage"];
-            /** @description Filter values left out because they no longer exist, are inactive or are out of scope. */
-            leftOut: number;
-            displayCurrency: string;
-            /** Format: date-time */
-            generatedAt: string;
-            /** Format: date-time */
-            financeAsOf: string | null;
-        };
-        ReportView: {
-            /** @example RV-1001 */
-            id: string;
-            report: components["schemas"]["ReportKey"];
-            name: string;
-            isDefault: boolean;
-            /** @description The report's canonical address query. */
-            query: string;
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        ReportViewPage: {
-            items: components["schemas"]["ReportView"][];
-            total: number;
-        };
-        ReportViewCreate: {
-            name: string;
-            query: string;
-            isDefault?: boolean;
-        };
-        ReportViewUpdate: {
-            version: number;
-            name?: string;
-            query?: string;
-            isDefault?: boolean;
-        };
-        /** @enum {string} */
-        AttributionModel: "firstTouch" | "lastTouch" | "equallyDistributed" | "linearTimeDecay" | "uShaped";
-        AttributionSettings: {
-            model: components["schemas"]["AttributionModel"];
-            models: {
-                key: components["schemas"]["AttributionModel"];
-                name: string;
-                description: string;
-            }[];
-            version: number;
-            /** @description Null while the setting has never been saved. */
-            updatedAt: string | null;
-            updatedBy: components["schemas"]["ActorRef"] | null;
-            canChange: components["schemas"]["ActionAvailability"];
-        };
-        AttributionSettingsInput: {
-            version: number;
-            model: components["schemas"]["AttributionModel"];
-        };
-        PlanBudgetFigures: {
-            budget: components["schemas"]["Money"] | null;
-            planned: components["schemas"]["Money"] | null;
-            committed: components["schemas"]["Money"] | null;
-            actual: components["schemas"]["Money"] | null;
-            leftToPlan: components["schemas"]["Money"] | null;
-            unspent: components["schemas"]["Money"] | null;
-            overAllocated: boolean;
-        };
-        PlanBudgetCards: {
-            budget: components["schemas"]["Money"] | null;
-            planned: components["schemas"]["Money"] | null;
-            committed: components["schemas"]["Money"] | null;
-            actual: components["schemas"]["Money"] | null;
-            leftToPlan: components["schemas"]["Money"] | null;
-            unspent: components["schemas"]["Money"] | null;
-            overAllocated: boolean;
-            budgetUsed: number | null;
-            budgetSpent: number | null;
-            committedShare: number | null;
-            notYetCommitted: components["schemas"]["Money"] | null;
-        };
-        PlanBudgetPeriod: {
-            /** @example 2026-03 */
-            key: string;
-            /** @enum {string} */
-            state: "actual" | "inProgress" | "planned";
-            budget: components["schemas"]["Money"];
-            planned: components["schemas"]["Money"];
-            actual: components["schemas"]["Money"] | null;
-            budgetToDate: components["schemas"]["Money"];
-            plannedToDate: components["schemas"]["Money"];
-            actualToDate: components["schemas"]["Money"] | null;
-        };
-        PlanBudgetReport: {
-            cards: components["schemas"]["PlanBudgetCards"];
-            /** @enum {string} */
-            period: "month" | "quarter";
-            periods: components["schemas"]["PlanBudgetPeriod"][];
-            notes: {
-                notPhased: components["schemas"]["Money"] | null;
-                noDates: components["schemas"]["Money"] | null;
-                otherYears: components["schemas"]["Money"] | null;
-                actualOtherYears: components["schemas"]["Money"] | null;
-            };
-        };
-        RankedEntry: {
-            id: string;
-            /** @enum {string} */
-            level: "plan" | "campaign" | "initiative" | "activity" | "lineItem";
-            name: string;
-            planId: string;
-            /** @description The record's owner (049 FR-012); absent for a line item or a record with no owner. */
-            owner?: components["schemas"]["AllWorkOwner"];
-            figures: components["schemas"]["PlanBudgetFigures"];
-            children?: components["schemas"]["RankedEntry"][];
-        };
-        PlanBudgetRanked: {
-            /** @enum {string} */
-            level: "plan" | "campaign" | "initiative" | "activity";
-            /** @enum {string} */
-            sort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
-            /** @enum {string} */
-            order: "desc" | "asc";
-            group: string;
-            page: number;
-            size: number;
-            total: number;
-            trail: {
-                id: string;
-                level: string;
-                name: string;
-            }[];
-            groups: {
-                key: string;
-                label: string;
-                totals: components["schemas"]["PlanBudgetFigures"];
-                entries: components["schemas"]["RankedEntry"][];
-            }[];
-            drillLost: boolean;
-        };
-        /**
-         * @description Performance in words (048-C1); noGoal when the goal is zero or missing.
-         * @enum {string}
-         */
-        SummaryVariance: "abovePlan" | "onPlan" | "belowPlan" | "noGoal";
-        /** @description A revenue card figure; null with reason when it cannot be worked out (FR-009). */
-        RevenueCardFigure: {
-            value: components["schemas"]["Money"] | null;
-            /** @enum {string} */
-            reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
-        };
-        RevenueCards: {
-            goal: components["schemas"]["RevenueCardFigure"];
-            actual: components["schemas"]["RevenueCardFigure"];
-            projected: components["schemas"]["RevenueCardFigure"];
-            performance: {
-                value: number | null;
-                /** @enum {string} */
-                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
-                variance: components["schemas"]["SummaryVariance"];
-            };
-        };
-        /** @description One period of the series, split at today (047 FR-010); the period in progress carries both. */
-        RevenuePeriod: {
-            /** @example 2026-03 */
-            key: string;
-            /** @enum {string} */
-            state: "actual" | "inProgress" | "planned";
-            actual: components["schemas"]["Money"] | null;
-            projected: components["schemas"]["Money"] | null;
-            goal: components["schemas"]["Money"] | null;
-            inProgress: boolean;
-        };
-        RevenueReport: {
-            cards: components["schemas"]["RevenueCards"];
-            /** @enum {string} */
-            period: "month" | "quarter";
-            periods: components["schemas"]["RevenuePeriod"][];
-            /** @description The first model in view, kept for compatibility; projections names every one. */
-            projection: components["schemas"]["ProjectionStamp"] | null;
-            /** @description Every model behind a projected figure in view, by name (049 SC-006). */
-            projections: components["schemas"]["ProjectionStamp"][];
-            /**
-             * @description Why the report is empty, never an empty grid alone (049-C20).
-             * @enum {string}
-             */
-            reason: "" | "noGoal" | "notApproved" | "noData" | "noModel";
-        };
-        RevenueFigures: {
-            goal: components["schemas"]["Money"] | null;
-            actual: components["schemas"]["Money"] | null;
-            projected: components["schemas"]["Money"] | null;
-            performance: number | null;
-            variance: components["schemas"]["SummaryVariance"];
-            /** @description The revenue the list's attribution model credits to the entry's activities in the year (050 FR-003, FR-010); 0.00 when a fact in view concerns them but the model credits them nothing, and null, with the reason, when no revenue fact in view concerns them. */
-            attributedRevenue: components["schemas"]["Money"] | null;
-            /** @description The payments booked in the year on the entry's line items (050 FR-007); null, with the reason, for plans whose financial data the person may not see. */
-            actualCost: components["schemas"]["Money"] | null;
-            /** @description (attributedRevenue − actualCost) ÷ actualCost as a whole per cent, halves away from zero (050 FR-007); the list's attribution names its model and cost basis. */
-            roi: number | null;
-            /** @enum {string} */
-            attributedRevenueReason: "" | "noData";
-            /** @description The model behind the row's projected figure (049 SC-006); absent when nothing in it projects or its activities' plans use different models. */
-            projection?: components["schemas"]["ProjectionStamp"];
-            /**
-             * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
-             * @enum {string}
-             */
-            actualCostReason: "" | "attributionNotConfigured" | "noFinancialAccess";
-            /**
-             * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
-             * @enum {string}
-             */
-            roiReason: "" | "attributionNotConfigured" | "noFinancialAccess" | "noActualCost" | "noData";
-        };
-        RevenueEntry: {
-            id: string;
-            /** @enum {string} */
-            level: "plan" | "campaign" | "initiative" | "activity";
-            name: string;
-            planId: string;
-            /** @description The record's owner (049 FR-012); absent for a line item or a record with no owner. */
-            owner?: components["schemas"]["AllWorkOwner"];
-            figures: components["schemas"]["RevenueFigures"];
-            children?: components["schemas"]["RevenueEntry"][];
-        };
-        /** @description What an attributed revenue and an ROI rest on, named beside them (050 FR-008). */
-        AttributionStamp: {
-            /** @example Equally distributed */
-            model: string;
-            /** @enum {string} */
-            basis: "actual" | "planned";
-        };
-        RevenueRanked: {
-            attribution: components["schemas"]["AttributionStamp"];
-            /** @enum {string} */
-            level: "plan" | "campaign" | "initiative" | "activity";
-            /** @enum {string} */
-            sort: "actualRevenue" | "projectedRevenue";
-            /** @enum {string} */
-            order: "desc" | "asc";
-            group: string;
-            page: number;
-            size: number;
-            total: number;
-            trail: {
-                id: string;
-                level: string;
-                name: string;
-            }[];
-            groups: {
-                key: string;
-                label: string;
-                totals: components["schemas"]["RevenueFigures"];
-                entries: components["schemas"]["RevenueEntry"][];
-            }[];
-            drillLost: boolean;
-        };
-        FunnelCards: {
-            goal: {
-                value: number | null;
-                /** @enum {string} */
-                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
-            };
-            actual: {
-                value: number | null;
-                /** @enum {string} */
-                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
-            };
-            projected: {
-                value: number | null;
-                /** @enum {string} */
-                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
-            };
-            performance: {
-                value: number | null;
-                /** @enum {string} */
-                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
-                variance: components["schemas"]["SummaryVariance"];
-            };
-            /** @description The selected stage's actual over the previous stage's actual (049-C13); when nothing is counted in the stage, the actual's own reason. */
-            conversion: {
-                value: number | null;
-                /** @enum {string} */
-                reason: "" | "noPreviousStage" | "noData" | "noSource" | "notApproved";
-            };
-        };
-        FunnelPeriod: {
-            /** @example 2026-03 */
-            key: string;
-            /** @enum {string} */
-            state: "actual" | "inProgress" | "planned";
-            actual: number | null;
-            projected: number | null;
-            goal: number | null;
-            inProgress: boolean;
-        };
-        FunnelReport: {
-            /** @enum {string} */
-            stage: "inq" | "mql";
-            /** @description Every stage any model in view allows, in funnel order (049-C11). */
-            availableStages: ("inq" | "mql")[];
-            /** @description Plans whose model does not allow the selected stage (049-C11, FR-018). */
-            uncoveredCount: number;
-            cards: components["schemas"]["FunnelCards"];
-            /** @enum {string} */
-            period: "month" | "quarter";
-            periods: components["schemas"]["FunnelPeriod"][];
-            /** @description The first model in view, kept for compatibility; projections names every one. */
-            projection: components["schemas"]["ProjectionStamp"] | null;
-            /** @description Every model behind a projected figure in view, by name (049 SC-006). */
-            projections: components["schemas"]["ProjectionStamp"][];
-            /** @enum {string} */
-            reason: "" | "noGoal" | "notApproved" | "noData" | "noModel";
-        };
-        FunnelFigures: {
-            goal: number | null;
-            actual: number | null;
-            projected: number | null;
-            performance: number | null;
-            variance: components["schemas"]["SummaryVariance"];
-            conversion: number | null;
-            /** @description The model behind the row's projected figure (049 SC-006); absent when nothing in it projects or its activities' plans use different models. */
-            projection?: components["schemas"]["ProjectionStamp"];
-        };
-        FunnelEntry: {
-            id: string;
-            /** @enum {string} */
-            level: "plan" | "campaign" | "initiative" | "activity";
-            name: string;
-            planId: string;
-            /** @description The record's owner (049 FR-012); absent for a line item or a record with no owner. */
-            owner?: components["schemas"]["AllWorkOwner"];
-            figures: components["schemas"]["FunnelFigures"];
-            children?: components["schemas"]["FunnelEntry"][];
-        };
-        FunnelRanked: {
-            /** @enum {string} */
-            level: "plan" | "campaign" | "initiative" | "activity";
-            /** @enum {string} */
-            sort: "actual" | "projected";
-            /** @enum {string} */
-            order: "desc" | "asc";
-            group: string;
-            page: number;
-            size: number;
-            total: number;
-            trail: {
-                id: string;
-                level: string;
-                name: string;
-            }[];
-            groups: {
-                key: string;
-                label: string;
-                totals: components["schemas"]["FunnelFigures"];
-                entries: components["schemas"]["FunnelEntry"][];
-            }[];
-            drillLost: boolean;
-        };
-        /** @enum {string} */
-        PlanDetailsLevel: "plan" | "campaign" | "initiative" | "activity";
-        /** @description An amount in the display currency, or null where the person may not see the plan's financial data. */
-        PrReportMoney: components["schemas"]["Money"] | null;
-        PrReportSeries: {
-            key: string;
-            name: string;
-            /** @description One value per month of the chart. */
-            values: components["schemas"]["PrReportMoney"][];
-            total: components["schemas"]["PrReportMoney"];
-        };
-        PrReportChart: {
-            /** @description Each month between the first and the last as 2026-03, then none for a line without a delivery date. */
-            months: string[];
-            /** @description The ten largest, then Other. */
-            chartSeries: components["schemas"]["PrReportSeries"][];
-            allSeries: components["schemas"]["PrReportSeries"][];
-            totals: components["schemas"]["PrReportMoney"][];
-            committed: components["schemas"]["PrReportMoney"];
-        };
-        PrReportLine: {
-            id: string;
-            lineItem: {
-                id: string;
-                name: string;
-            };
-            activity: string | null;
-            amount: components["schemas"]["PrReportMoney"];
-            /** Format: date */
-            deliveryDate: string | null;
-            /** Format: date */
-            sentOn: string | null;
-            poNumber: string | null;
-            poLine: string | null;
-            poLineStatus: string | null;
-            invoiced: components["schemas"]["PrReportMoney"];
-        };
-        PrReportRequest: {
-            id: string;
-            name: string;
-            status: components["schemas"]["PurchaseRequestStatus"];
-            amount: components["schemas"]["PrReportMoney"];
-            invoiced: components["schemas"]["PrReportMoney"];
-            owner: components["schemas"]["ApprovalsPerson"];
-            /** Format: date */
-            createdOn: string;
-            /** Format: date */
-            sentOn: string | null;
-            /** Format: date */
-            deliveryDate: string | null;
-            poNumber: string | null;
-            workflow: string | null;
-            gsapNumber: string | null;
-            waitingForGsap: boolean;
-            lines: components["schemas"]["PrReportLine"][];
-        };
-        PrReportVendor: {
-            vendor: string;
-            label: string;
-            purchaseRequests: number;
-            lines: number;
-            committed: components["schemas"]["PrReportMoney"];
-            invoiced: components["schemas"]["PrReportMoney"];
-            requests: components["schemas"]["PrReportRequest"][];
-        };
-        PrReportGrid: {
-            vendors: components["schemas"]["PrReportVendor"][];
-            total: number;
-            page: number;
-            pageSize: number;
-            columns: string[];
-            choices: {
-                vendors: string[];
-                owners: components["schemas"]["ApprovalsPerson"][];
-                statuses: string[];
-            };
-        };
-        PurchaseRequestsReport: {
-            purchaseSupport: boolean;
-            cards: {
-                purchaseRequests: number;
-                lines: number;
-                vendors: number;
-                committed: components["schemas"]["PrReportMoney"];
-                invoiced: components["schemas"]["PrReportMoney"];
-            };
-            statusMix: {
-                total: number;
-                totalAmount: components["schemas"]["PrReportMoney"];
-                waitingForGsap: number;
-                items: {
-                    status: components["schemas"]["PurchaseRequestStatus"];
-                    count: number;
-                    amount: components["schemas"]["PrReportMoney"];
-                    sharePercent: number;
-                }[];
-            };
-            byVendor: components["schemas"]["PrReportChart"];
-            byOwner: components["schemas"]["PrReportChart"];
-            grid: components["schemas"]["PrReportGrid"];
-            financeCovers: {
-                plans: number;
-                of: number;
-            };
-        };
-        /** @enum {string} */
-        SummaryStageKey: "inq" | "mql" | "revenue";
-        /** @enum {string} */
-        SummaryPeriodState: "actual" | "inProgress" | "projected";
-        /** @description Money for the revenue stage, a whole count for inq and mql, or null where there is no figure. */
-        SummaryFigure: components["schemas"]["Money"] | number | null;
-        /** @description A percentage with one decimal, as "12.5", or null on a zero denominator. */
-        SummaryRate: string | null;
-        SummaryReport: {
-            revenue: {
-                periodLabel: string;
-                actualOrProjected: components["schemas"]["PrReportMoney"];
-                goal: components["schemas"]["PrReportMoney"];
-                performance: number | null;
-                variance: components["schemas"]["SummaryVariance"];
-                goalCoverage: {
-                    stage: components["schemas"]["SummaryStageKey"];
-                    percent: number | null;
-                }[];
-                trend: components["schemas"]["SummaryTrendPeriod"][];
-            };
-            funnel: {
-                stages: {
-                    stage: components["schemas"]["SummaryStageKey"];
-                    /** @description Plans whose model does not allow the stage, so it does not count them. */
-                    plansWithout: number;
-                    actualOrProjected: components["schemas"]["SummaryFigure"];
-                    goal: components["schemas"]["SummaryFigure"];
-                    performance: number | null;
-                    variance: components["schemas"]["SummaryVariance"];
-                }[];
-                conversions: {
-                    stage: components["schemas"]["SummaryStageKey"];
-                    rate: components["schemas"]["SummaryRate"];
-                    goal: components["schemas"]["SummaryRate"];
-                    /** @description The rate against its goal in words; null when the rate is missing, noGoal when the goal is. */
-                    variance: components["schemas"]["SummaryVariance"] | null;
-                }[];
-                trend: {
-                    stage: components["schemas"]["SummaryStageKey"];
-                    periods: {
-                        key: string;
-                        label: string;
-                        state: components["schemas"]["SummaryPeriodState"];
-                        rate: components["schemas"]["SummaryRate"];
-                        goal: components["schemas"]["SummaryRate"];
-                    }[];
-                };
-            };
-            categories: {
-                id: string;
-                name: string;
-            }[];
-            /** @description The report states that apply (FR-018). */
-            states: ("noPlans" | "notApproved" | "noGoals" | "noPerformanceData" | "nothingMatches" | "noFinancialAccess")[];
-            financeCovers: {
-                plans: number;
-                of: number;
-            };
-        };
-        SummaryTrendPeriod: {
-            key: string;
-            label: string;
-            state: components["schemas"]["SummaryPeriodState"];
-            actual: components["schemas"]["PrReportMoney"];
-            projected: components["schemas"]["PrReportMoney"];
-            goal: components["schemas"]["PrReportMoney"];
-        };
-        SummarySegment: {
-            id: string;
-            label: string;
-            /** @enum {string} */
-            level: "plan" | "campaign" | "activity";
-        };
-        /** @description Money for revenue and cost, a whole per cent for performance and ROI, or null for "—". */
-        SummaryLeagueValue: components["schemas"]["Money"] | number | null;
-        SummaryLeague: {
-            /** @enum {string} */
-            table: "revenue" | "performance" | "cost" | "roi";
-            segment: components["schemas"]["SummarySegment"] | null;
-            segments: components["schemas"]["SummarySegment"][];
-            rows: {
-                key: string;
-                name: string;
-                value: components["schemas"]["SummaryLeagueValue"];
-                /** @description The segment's actual or projected revenue by month, whatever the table's figure. */
-                trend: components["schemas"]["Money"][];
-            }[];
-            total: components["schemas"]["SummaryLeagueValue"];
-            roi: {
-                model: string;
-                /** @enum {string} */
-                basis: "actual" | "planned";
-            } | null;
-            reason: string | null;
-        };
-        ApprovalsPerson: {
-            id: string;
-            name: string;
-        };
-        ApprovalsReport: {
-            statusMix: components["schemas"]["ApprovalStatusMix"];
-            average: components["schemas"]["ApprovalAverage"];
-            grid: components["schemas"]["ApprovalGrid"];
-            /** @description Plans with approval rounds whose amounts the person sees, of the plans with rounds. */
-            financeCovers: {
-                plans: number;
-                of: number;
-            };
-        };
-        ApprovalStatusMix: {
-            recordType: string;
-            /** @description The record types that have rounds in the plans in view. */
-            recordTypes: string[];
-            total: number;
-            waiting: {
-                count: number;
-                /** Format: date-time */
-                oldestSince: string | null;
-            };
-            items: {
-                /** @enum {string} */
-                outcome: "waiting" | "approved" | "declined" | "recalled" | "replaced" | "autoApproved";
-                count: number;
-                sharePercent: number;
-            }[];
-        };
-        ApprovalAverage: {
-            /** @description Days to a decision with one decimal; null when nothing was decided. */
-            days: string | null;
-            decisions: number;
-            /** @description Slowest first. */
-            approvers: {
-                person: components["schemas"]["ApprovalsPerson"];
-                days: string;
-                decisions: number;
-            }[];
-        };
-        ApprovalGrid: {
-            items: components["schemas"]["ApprovalsRow"][];
-            total: number;
-            page: number;
-            pageSize: number;
-            choices: {
-                recordTypes: string[];
-                outcomes: string[];
-                approvers: components["schemas"]["ApprovalsPerson"][];
-            };
-        };
-        ApprovalsRow: {
-            itemId: string;
-            itemName: string;
-            recordType: string;
-            canOpen: boolean;
-            approver: components["schemas"]["ApprovalsPerson"] | null;
-            /** Format: date */
-            decidedOn: string | null;
-            /** @enum {string} */
-            outcome: "waiting" | "approved" | "declined" | "recalled" | "replaced" | "autoApproved" | "notNeeded";
-            /** Format: date */
-            submittedOn: string;
-            level: number;
-            levelName: string;
-            purchaseOrderNumber: string | null;
-            amount: components["schemas"]["Money"] | null;
-            owner: components["schemas"]["ApprovalsPerson"];
-            comments: string;
-        };
-        PlanDetailsReport: {
-            show: components["schemas"]["PlanDetailsLevel"];
-            currency: string;
-            cards: components["schemas"]["PlanDetailsCards"];
-            /** @description Activity: by activity type (count and planned cost), by status, by start period, planned cost entered and goal entered. Plan: by status. Campaign and initiative: by approval progress and by timing. Empty when no record matches. */
-            builtIn: components["schemas"]["PlanDetailsWidget"][];
-            /** @description One row per active Shell attribute of the level, in Settings' display order. */
-            attributes: components["schemas"]["PlanDetailsAttributeRow"][];
-            /** @description False when the level has no active Shell attribute. */
-            attributesSetUp: boolean;
-        };
-        PlanDetailsCards: {
-            /** @description Matching records of the level; equals the frame's In view count for it. */
-            records: number;
-            plannedCost: components["schemas"]["Money"];
-            /** @description Records whose every needed field is filled in (domain model §2.6). */
-            allFilledIn: number;
-            /** @description Whole per cent, half up; null when there is no record. */
-            allFilledInPercent: number | null;
-        };
-        PlanDetailsAttributeRow: {
-            attributeId: string;
-            label: string;
-            /** @enum {string} */
-            type: "singleChoice" | "multipleChoice" | "multipleChoiceSplit" | "yesNo" | "text" | "longText" | "number";
-            /** @description Count, planned cost and filled in for choice and yes/no attributes; filled in only otherwise. */
-            widgets: components["schemas"]["PlanDetailsWidget"][];
-        };
-        PlanDetailsWidget: {
-            /**
-             * @description The widget's key for table and widget: activityTypeCount, activityTypePlannedCost, statusCount, progressCount, timingCount, startPeriodCount, plannedCostEntered, goalEntered, and for a Shell attribute attr<number>Count, attr<number>PlannedCost and attr<number>FilledIn (SA-12 → attr12Count).
-             * @example attr12Count
-             */
-            key: string;
-            /** @example Activities by Company code */
-            title: string;
-            /** @enum {string} */
-            measure: "count" | "plannedCost" | "filledIn";
-            /** @description Every value, largest first, then none (Not filled in) and doesNotApply; filled in: filled, none, doesNotApply; start periods in time order. */
-            values: components["schemas"]["PlanDetailsValue"][];
-            /** @description The values after the ten largest, summed, for the chart; null with ten values or fewer. */
-            other: components["schemas"]["PlanDetailsValue"] | null;
-            total: components["schemas"]["PlanDetailsValue"];
-            /** @description Filled in only - filled ÷ (filled + none), whole per cent half up. */
-            filledInPercent: number | null;
-            /** @description Records with several values count in each group; the total counts them once. */
-            countsInEach: boolean;
-            /** @description The filter parameter a value opens in All work; null when the values open nothing. */
-            filterParam: ("attr" | "activityType" | "activityStatus") | null;
-        };
-        PlanDetailsValue: {
-            /** @description A filter value where there is one (option ID, yes, no, none, activity type ID, activity status); otherwise a period (2026-04, 2026-Q2), doesNotApply, noDates, outsideYear, filled, other or total. */
-            key: string;
-            label: string;
-            inactive: boolean;
-            count: number;
-            /** @description Set when the widget's measure is plannedCost. */
-            plannedCost: components["schemas"]["Money"] | null;
-            /** @description True when the value opens All work filtered by it. */
-            linkable: boolean;
-        };
-        /** @description Where a line item or purchase request sits; an empty string for a level it has not. */
-        GsapPath: {
-            planId: string;
-            plan: string;
-            campaign: string;
-            initiative: string;
-            activityId: string;
-            activity: string;
-        };
-        GsapLinkReport: {
-            /** @enum {string} */
-            tab: "swbs" | "waiting" | "orders";
-            currency: string;
-            /** @description Rows of the tab across all pages. */
-            total: number;
-            page: number;
-            pageSize: number;
-            sort: string;
-            /** @description Plans whose financial data the amounts cover; null on the swbs tab. */
-            finance: components["schemas"]["ReportFinanceCoverage"] | null;
-            swbs: components["schemas"]["GsapSwbsTab"] | null;
-            waiting: components["schemas"]["GsapWaitingTab"] | null;
-            orders: components["schemas"]["GsapOrdersTab"] | null;
-        };
-        GsapBand: {
-            /** @enum {string} */
-            key: "under48h" | "days2to5" | "days5to10" | "over10days";
-            label: string;
-            count: number;
-        };
-        GsapSwbsTab: {
-            waiting: number;
-            /** @description Rows waiting over 48 hours. */
-            overTurnaround: number;
-            bands: components["schemas"]["GsapBand"][];
-            rows: components["schemas"]["GsapSwbsRow"][];
-        };
-        GsapSwbsRow: {
-            lineItemId: string;
-            lineItem: string;
-            path: components["schemas"]["GsapPath"];
-            owner: string;
-            /** @description The activity's Company code, empty when not filled in. */
-            companyCode: string;
-            /** Format: date-time */
-            approvedAt: string;
-            waitingHours: number;
-            overTurnaround: boolean;
-        };
-        GsapWaitingTab: {
-            waiting: number;
-            /** @description Plans with finance.view only; null when the person holds it in none. */
-            amount: components["schemas"]["Money"] | null;
-            /** @description Rows waiting over 2 working days. */
-            overTurnaround: number;
-            rows: components["schemas"]["GsapWaitingRow"][];
-        };
-        GsapWaitingRow: {
-            purchaseRequestId: string;
-            name: string;
-            vendor: string;
-            owner: string;
-            path: components["schemas"]["GsapPath"];
-            /**
-             * Format: date-time
-             * @description The routing GSAP has not answered; Resend PR form does not restart it.
-             */
-            routedAt: string;
-            /** @enum {string} */
-            routing: "original" | "modification";
-            gsapPrNumber: string;
-            /** @description Null without finance.view in its plan ("—"). */
-            amount: components["schemas"]["Money"] | null;
-            waitingWorkingDays: number;
-            overTurnaround: boolean;
-        };
-        GsapOrdersTab: {
-            rows: components["schemas"]["GsapOrderRow"][];
-            totals: components["schemas"]["GsapOrderTotals"];
-        };
-        /** @description Every row of every page; each amount is null when the person may see no plan's financial data in view (039 FR-004), never 0.00. */
-        GsapOrderTotals: {
-            poAmount: components["schemas"]["Money"] | null;
-            invoiced: components["schemas"]["Money"] | null;
-            paid: components["schemas"]["Money"] | null;
-        };
-        GsapOrderRow: {
-            lineItemId: string;
-            lineItem: string;
-            path: components["schemas"]["GsapPath"];
-            /** @description Empty when the purchase order was not raised from a purchase request in MAPP. */
-            purchaseRequestId: string;
-            gsapPrNumber: string;
-            poNumber: string;
-            poLines: string[];
-            /**
-             * Format: date
-             * @description The earliest posting date of its lines.
-             */
-            poDate: string;
-            vendor: string;
-            poAmount: components["schemas"]["Money"];
-            invoiced: components["schemas"]["Money"];
-            paid: components["schemas"]["Money"];
-        };
-        UserAccessReport: {
-            total: number;
-            page: number;
-            pageSize: number;
-            sort: string;
-            cards: components["schemas"]["UserAccessCards"];
-            bands: components["schemas"]["UserAccessBand"][];
-            /**
-             * Format: date
-             * @description When sign-in times started to be recorded.
-             */
-            recordedSince: string;
-            rows: components["schemas"]["UserAccessRow"][];
-        };
-        UserAccessCards: {
-            people: number;
-            signedInWithin30Days: number;
-            neverSignedIn: number;
-        };
-        UserAccessBand: {
-            /** @enum {string} */
-            key: "within30Days" | "days31to90" | "over90Days" | "never";
-            label: string;
-            count: number;
-        };
-        UserAccessRow: {
-            person: components["schemas"]["PersonRef"];
-            email: string;
-            /** @description Each role with its scope, as Settings › Roles and access › People shows them. */
-            roles: components["schemas"]["RoleAssignment"][];
-            /** @description Alphabetical; an inactive team has active false. */
-            teams: components["schemas"]["TeamRef"][];
-            /**
-             * Format: date-time
-             * @description UTC; null when the person has not signed in since times were recorded ("Never").
-             */
-            lastSignedInAt: string | null;
-        };
-        /**
          * @description What happens when planned cost goes over a budget — warn (save and show it) or refuse the save.
          * @enum {string}
          */
@@ -7564,45 +6462,6 @@ export interface components {
             activityTypeIds?: string[];
             version: number;
         };
-        /** @description A group of activity types; a type belongs to at most one category (047-C7). */
-        ActivityCategory: {
-            /** @example CAT-1001 */
-            id: string;
-            /** @example Digital */
-            name: string;
-            /** @description At most one category is the default the reports open on. */
-            isDefault: boolean;
-            /** @description The activity types in this category, sorted by name. */
-            activityTypes: components["schemas"]["SettingRef"][];
-            active: boolean;
-            usage: components["schemas"]["Usage"];
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["ActorRef"];
-            /** Format: date-time */
-            updatedAt: string;
-            updatedBy: components["schemas"]["ActorRef"];
-        };
-        ActivityCategoryPage: {
-            items: components["schemas"]["ActivityCategory"][];
-            total: number;
-        };
-        ActivityCategoryCreate: {
-            name: string;
-            /** @description True takes the default away from the category that had it. */
-            isDefault: boolean;
-            /** @description The activity types to put in the new category; each leaves the category it was in. */
-            activityTypeIds: string[];
-        };
-        /** @description Only the fields to change, and the version. activityTypeIds is the complete new list of activity types in the category: a type listed here leaves the category it was in, one left out becomes Uncategorised. */
-        ActivityCategoryUpdate: {
-            name?: string;
-            isDefault?: boolean;
-            activityTypeIds?: string[];
-            active?: boolean;
-            version: number;
-        };
         ActivityType: {
             /** @example AT-1002 */
             id: string;
@@ -8413,6 +7272,28 @@ export interface components {
             planBudget?: components["schemas"]["Money"] | null;
             /** @description 016. Optional in the contract; always sent once its feature is built (D-298). */
             planPlannedCost?: components["schemas"]["Money"] | null;
+            foundIn?: components["schemas"]["PlanFoundIn"];
+        };
+        /** @description 052 FR-007. Only on a plan listed because a record below it holds the search, not its own name or ID: the first match top-down and how many more. */
+        PlanFoundIn: {
+            match: components["schemas"]["PlanSearchMatch"];
+            more: number;
+        };
+        PlanSearch: {
+            items: components["schemas"]["PlanSearchMatch"][];
+        };
+        PlanSearchMatch: {
+            /** @enum {string} */
+            level: "campaign" | "initiative" | "activity" | "lineItem";
+            /** @example L-1006 */
+            id: string;
+            /** @example Stand build */
+            name: string;
+            /**
+             * @description The plan's ID for a campaign, the campaign's for an initiative, the initiative's for an activity, the activity's for a line item.
+             * @example A-1004
+             */
+            parentId: string;
         };
         /** @description The summary cards of the Plans page, over the team scope and the chosen year. */
         PlanListSummary: {
@@ -11137,7 +10018,7 @@ export interface components {
          * @description A permission of spec Table A.
          * @enum {string}
          */
-        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "reports.view" | "finance.view" | "finance.link" | "finance.import" | "performance.import" | "performance.link" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge";
+        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "reports.view" | "finance.view" | "finance.link" | "finance.import" | "performance.import" | "performance.link" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "dashboards.view" | "dashboards.build" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge";
         PermissionInfo: {
             key: components["schemas"]["PermissionKey"];
             /** @example Edit plan details */
@@ -11147,7 +10028,7 @@ export interface components {
         };
         PermissionGroup: {
             /** @enum {string} */
-            name: "Plans and planning" | "Financial data" | "Purchase requests" | "Approvals" | "Global budgets" | "Administration";
+            name: "Plans and planning" | "Financial data" | "Purchase requests" | "Approvals" | "Global budgets" | "Dashboards" | "Administration";
             permissions: components["schemas"]["PermissionInfo"][];
         };
         PermissionCatalogue: {
@@ -12720,6 +11601,1906 @@ export interface components {
             plannedCost: components["schemas"]["Money"];
             overAllocated: boolean;
         };
+        /**
+         * @description An exact decimal number with up to 4 decimal places, as text (never a float).
+         * @example 1234.5
+         */
+        Decimal: string;
+        /**
+         * @description A share in percent with one decimal, worked out by the API (half up).
+         * @example 37.5
+         */
+        SharePercent: string;
+        /**
+         * @description bar (vertical or horizontal; grouped, stacked or 100 %), line, area, combo (bars and lines on one or two value axes), pie, donut, scatter, funnel, gauge, heatmap, treemap, radar, kpi (key figure), table, text (plain-text note).
+         * @enum {string}
+         */
+        WidgetType: "bar" | "line" | "area" | "combo" | "pie" | "donut" | "scatter" | "funnel" | "gauge" | "heatmap" | "treemap" | "radar" | "kpi" | "table" | "text";
+        /** @description Position on the 12-column grid, zero-based (the Layout tab shows x+1 and y+1). x + w is at most 12, y + h at most 200, and no two widgets of a dashboard share a cell. */
+        WidgetLayout: {
+            x: number;
+            y: number;
+            w: number;
+            h: number;
+        };
+        /**
+         * @description How a date field is grouped; weeks are ISO weeks starting on Monday. Required for date fields, refused for others.
+         * @enum {string}
+         */
+        WidgetDateGroup: "day" | "week" | "month" | "quarter" | "year";
+        WidgetGroupBy: {
+            /**
+             * @description A groupable field key of the source (data catalogue).
+             * @example activityType
+             */
+            field: string;
+            dateGroup: components["schemas"]["WidgetDateGroup"] | null;
+        };
+        /**
+         * @description count (records, or non-empty values of a field), countDistinct (distinct non-empty values), sum and avg (number and money fields), min and max (number, money and date fields).
+         * @enum {string}
+         */
+        WidgetAggregation: "count" | "countDistinct" | "sum" | "avg" | "min" | "max";
+        WidgetMeasure: {
+            aggregation: components["schemas"]["WidgetAggregation"];
+            /**
+             * @description The field measured; null only with count, which then counts records.
+             * @example plannedCost
+             */
+            field: string | null;
+            /** @description The measure's name on the chart; empty uses "Sum of Planned cost" and the like. */
+            label: string;
+        };
+        /**
+         * @description eq is, ne is not, in is one of (1–50 values), contains (text, ignoring case), gt greater than, gte at least, lt less than, lte at most (number, money, date), between (2 values, both included), isEmpty and notEmpty (no values). eq, ne, contains, gt, gte, lt and lte take exactly one value.
+         * @enum {string}
+         */
+        WidgetFilterOperator: "eq" | "ne" | "in" | "contains" | "gt" | "gte" | "lt" | "lte" | "between" | "isEmpty" | "notEmpty";
+        WidgetFilter: {
+            field: string;
+            operator: components["schemas"]["WidgetFilterOperator"];
+            /** @description Typed by the field — text 1–200 characters, numbers as Decimal, money as a decimal with up to 2 places in USD, dates YYYY-MM-DD. */
+            values: string[];
+        };
+        WidgetSort: {
+            /** @enum {string} */
+            by: "dimension" | "measure";
+            /** @description The measure sorted by (by = measure); 0 otherwise. Below the number of measures. */
+            measureIndex: number;
+            /** @enum {string} */
+            direction: "asc" | "desc";
+        };
+        /** @description What a widget shows, worked out by the API in the viewer's scope. Which parts a type needs is in the feature's data model §2.3 (for example pie: a dimension, no series, one measure); the API refuses others. */
+        WidgetQuery: {
+            /**
+             * @description A built-in source key or a dataset ID.
+             * @example activities
+             */
+            source: string;
+            /** @description The group (categories or x axis); null for gauge, kpi and an ungrouped table. */
+            dimension: components["schemas"]["WidgetGroupBy"] | null;
+            /** @description The breakdown (series); not the same field and date group as the dimension. */
+            series: components["schemas"]["WidgetGroupBy"] | null;
+            measures: components["schemas"]["WidgetMeasure"][];
+            /** @description All must hold. */
+            filters: components["schemas"]["WidgetFilter"][];
+            sort: components["schemas"]["WidgetSort"];
+            /** @description The most dimension groups answered (top N by the sort). */
+            limit: number;
+            /** @description The groups after the limit are answered as one group "Other". */
+            groupRest: boolean;
+        };
+        /**
+         * @description The design-system chart palettes (§4.7); never Primary Yellow or Secondary Red.
+         * @enum {string}
+         */
+        ChartPalette: "categorical" | "planning" | "levels" | "sequential";
+        WidgetLegend: {
+            show: boolean;
+            /** @enum {string} */
+            position: "top" | "bottom" | "left" | "right";
+        };
+        WidgetAxisTitles: {
+            x: string;
+            y: string;
+            /** @description The right value axis (combo). */
+            y2: string;
+        };
+        WidgetMeasureStyle: {
+            /** @enum {string} */
+            as: "bar" | "line";
+            /** @enum {string} */
+            axis: "left" | "right";
+        };
+        WidgetReferenceLine: {
+            value: components["schemas"]["Decimal"];
+            label: string;
+        };
+        /** @description min below max; max null means the value rounded up to a round number. */
+        WidgetGaugeOptions: {
+            min: components["schemas"]["Decimal"];
+            max: components["schemas"]["Decimal"] | null;
+        };
+        /** @description target is required when comparison is target. */
+        WidgetKpiOptions: {
+            /** @enum {string} */
+            comparison: "none" | "target" | "previousPeriod";
+            target: components["schemas"]["Decimal"] | null;
+            higherIsBetter: boolean;
+        };
+        WidgetTableOptions: {
+            /** @description The columns shown, in order, each once; empty shows every column. */
+            columns: string[];
+            totals: boolean;
+        };
+        /** @description Display options; every property is optional and its default is in the feature's data model §3. An option a type does not draw is refused (validation_failed), so a stored widget holds only what it uses. */
+        WidgetDisplay: {
+            palette?: components["schemas"]["ChartPalette"];
+            legend?: components["schemas"]["WidgetLegend"];
+            dataLabels?: boolean;
+            axisTitles?: components["schemas"]["WidgetAxisTitles"];
+            gridlines?: boolean;
+            smooth?: boolean;
+            /** @enum {string} */
+            stack?: "none" | "stacked" | "percent";
+            /** @enum {string} */
+            orientation?: "vertical" | "horizontal";
+            /**
+             * @description compact writes 1.2K, 3.4M; percent writes the value with "%" without multiplying it.
+             * @enum {string}
+             */
+            numberFormat?: "number" | "money" | "percent" | "compact";
+            decimals?: number;
+            zoom?: boolean;
+            referenceLine?: components["schemas"]["WidgetReferenceLine"] | null;
+            /** @description combo only, one per measure, in order. */
+            measureStyles?: components["schemas"]["WidgetMeasureStyle"][];
+            gauge?: components["schemas"]["WidgetGaugeOptions"];
+            kpi?: components["schemas"]["WidgetKpiOptions"];
+            table?: components["schemas"]["WidgetTableOptions"];
+        };
+        Widget: {
+            /**
+             * @description Made by the web app; unique in its dashboard.
+             * @example w1
+             */
+            id: string;
+            type: components["schemas"]["WidgetType"];
+            title: string;
+            subtitle: string;
+            layout: components["schemas"]["WidgetLayout"];
+            /** @description null exactly when type is text. */
+            query: components["schemas"]["WidgetQuery"] | null;
+            display: components["schemas"]["WidgetDisplay"];
+            /** @description The text of a text widget, plain text (never HTML); empty for other types. */
+            note: string;
+        };
+        /** @description Applied to every built-in source that has the field, never to datasets (D-373). Plans and teams the viewer cannot see are ignored. dateFrom is not after dateTo. */
+        CustomDashboardFilters: {
+            /** Format: date */
+            dateFrom: string | null;
+            /** Format: date */
+            dateTo: string | null;
+            planIds: string[];
+            teamIds: string[];
+        };
+        CustomDashboardAccess: {
+            edit: components["schemas"]["ActionAvailability"];
+            share: components["schemas"]["ActionAvailability"];
+            delete: components["schemas"]["ActionAvailability"];
+            copy: components["schemas"]["ActionAvailability"];
+        };
+        CustomDashboard: {
+            /** @example DB-1001 */
+            id: string;
+            name: string;
+            description: string;
+            owner: components["schemas"]["PersonRef"];
+            isOwner: boolean;
+            /** @description Sorted by name. */
+            sharedWith: components["schemas"]["TeamRef"][];
+            /** @description The teams the owner may tick in Sharing (their teams and those already shared), by name; empty for others. */
+            shareableTeams: components["schemas"]["TeamRef"][];
+            filters: components["schemas"]["CustomDashboardFilters"];
+            widgets: components["schemas"]["Widget"][];
+            access: components["schemas"]["CustomDashboardAccess"];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        CustomDashboardSummary: {
+            id: string;
+            name: string;
+            description: string;
+            owner: components["schemas"]["PersonRef"];
+            sharedWith: components["schemas"]["TeamRef"][];
+            widgetCount: number;
+            /** Format: date-time */
+            updatedAt: string;
+            access: components["schemas"]["CustomDashboardAccess"];
+        };
+        CustomDashboardList: {
+            mine: components["schemas"]["CustomDashboardSummary"][];
+            /** @description Dashboards of other owners shared with one of the person's teams, by name. */
+            sharedWithMe: components["schemas"]["CustomDashboardSummary"][];
+        };
+        CustomDashboardCreate: {
+            /** @description Required, trimmed, at most 80 characters (validation_failed names the limit). */
+            name: string;
+            description: string;
+            filters: components["schemas"]["CustomDashboardFilters"];
+            widgets: components["schemas"]["Widget"][];
+        };
+        /** @description Only the fields to change, and the version. widgets, when sent, replace the whole list. */
+        CustomDashboardUpdate: {
+            version: number;
+            name?: string;
+            description?: string;
+            filters?: components["schemas"]["CustomDashboardFilters"];
+            widgets?: components["schemas"]["Widget"][];
+        };
+        CustomDashboardCopy: {
+            /** @description The copy's name; left out gives "Copy of <name>". */
+            name?: string;
+        };
+        CustomDashboardRef: {
+            id: string;
+            name: string;
+        };
+        SharingUpdate: {
+            version: number;
+            /** @description Every team it is shared with after the change; empty makes it private. */
+            teamIds: string[];
+        };
+        /** @enum {string} */
+        DataFieldKind: "text" | "number" | "money" | "date";
+        DataField: {
+            /** @example plannedCost */
+            key: string;
+            /** @example Planned cost */
+            label: string;
+            kind: components["schemas"]["DataFieldKind"];
+            /** @description The field can hold several values (a plan's teams); a record counts in each group. */
+            multi: boolean;
+            groupable: boolean;
+            /** @description The aggregations allowed on this field (count is always allowed without a field). */
+            aggregations: components["schemas"]["WidgetAggregation"][];
+            /** @description Empty outside the plans where the person sees financial data. */
+            finance: boolean;
+        };
+        /** @description Which dashboard filters apply to the source; datasets never take any. */
+        DataSourceFilters: {
+            /** @description The field the date range applies to, or null. */
+            date: string | null;
+            plan: boolean;
+            team: boolean;
+        };
+        DataSource: {
+            /**
+             * @description A built-in key, or the dataset's ID.
+             * @example activities
+             */
+            key: string;
+            /** @example Activities */
+            label: string;
+            description: string;
+            /** @enum {string} */
+            kind: "builtIn" | "dataset";
+            fields: components["schemas"]["DataField"][];
+            filters: components["schemas"]["DataSourceFilters"];
+            /** @description The dataset's owner; null for built-in sources. */
+            owner: components["schemas"]["PersonRef"] | null;
+        };
+        DataSourceList: {
+            items: components["schemas"]["DataSource"][];
+        };
+        /** @description kpi only. previousPeriod needs the filters' dateFrom and dateTo; target needs target. */
+        WidgetComparisonRequest: {
+            /** @enum {string} */
+            kind: "target" | "previousPeriod";
+            target: components["schemas"]["Decimal"] | null;
+        };
+        WidgetDataRequest: {
+            type: components["schemas"]["WidgetType"];
+            query: components["schemas"]["WidgetQuery"];
+            filters: components["schemas"]["CustomDashboardFilters"] | null;
+            comparison: components["schemas"]["WidgetComparisonRequest"] | null;
+        };
+        WidgetDataColumn: {
+            key: string;
+            /** @example Sum of Planned cost */
+            label: string;
+            kind: components["schemas"]["DataFieldKind"];
+            dateGroup: components["schemas"]["WidgetDateGroup"] | null;
+        };
+        /** @description A group. value is the text, the decimal, or the first day of a date bucket (YYYY-MM-DD); null for "Not set" and "Other". The web app writes date buckets in the person's date format. */
+        WidgetKey: {
+            value: string | null;
+            /** @example Event */
+            label: string;
+            /** @enum {string} */
+            kind: "value" | "empty" | "other";
+        };
+        /** @description One measure's value: exactly one of number, money and date is set for the measure's kind, all null when there is no value (an average of nothing). share is the value's percent of its dimension group (with a series) or of the total (without), for count, countDistinct and sum of non-negative values; else null. */
+        WidgetValue: {
+            number: components["schemas"]["Decimal"] | null;
+            money: components["schemas"]["Money"] | null;
+            /** Format: date */
+            date: string | null;
+            share: components["schemas"]["SharePercent"] | null;
+        };
+        WidgetDataRow: {
+            dimension: components["schemas"]["WidgetKey"] | null;
+            series: components["schemas"]["WidgetKey"] | null;
+            /** @description One per measure, in the query's order. */
+            values: components["schemas"]["WidgetValue"][];
+        };
+        WidgetComparison: {
+            /** @enum {string} */
+            kind: "target" | "previousPeriod";
+            value: components["schemas"]["WidgetValue"];
+            /** @description The value's change against the comparison in percent (previousPeriod) or the share of the target reached (target); null when the comparison is zero or empty. */
+            change: components["schemas"]["SharePercent"] | null;
+            /** @description The previous period compared with (previousPeriod), else null. */
+            period: {
+                /** Format: date */
+                from: string;
+                /** Format: date */
+                to: string;
+            } | null;
+        };
+        WidgetFiltersApplied: {
+            date: boolean;
+            plan: boolean;
+            team: boolean;
+        };
+        WidgetData: {
+            source: string;
+            /** @description dimension (when grouped), series (when broken down), then m0… one per measure. */
+            columns: components["schemas"]["WidgetDataColumn"][];
+            /** @description In the query's sort order; at most limit groups (+ Other) per series. */
+            rows: components["schemas"]["WidgetDataRow"][];
+            /** @description One per measure over every group, also those beyond the limit. */
+            totals: components["schemas"]["WidgetValue"][];
+            /** @description Dimension groups before the limit ("Showing 10 of 37"). */
+            groupCount: number;
+            /** @description Plain sentences for the widget's foot ("Not filtered by date", "Financial figures cover 1 of 2 plans"). */
+            notes: string[];
+            filtersApplied: components["schemas"]["WidgetFiltersApplied"];
+            comparison: components["schemas"]["WidgetComparison"] | null;
+        };
+        DatasetUpload: {
+            /** @example event-leads-2026.xlsx */
+            fileName: string;
+            /** @description The .xlsx or .csv file, base64-encoded (at most 5 MB before encoding). */
+            content: string;
+        };
+        DatasetPreviewColumn: {
+            position: number;
+            /** @description From the first row, trimmed and cut to 60 characters; "Column 3" when empty. */
+            label: string;
+            proposedKind: components["schemas"]["DataFieldKind"];
+            /** @description USD for a proposed money column, else null. */
+            proposedCurrency: string | null;
+            samples: string[];
+            emptyCount: number;
+        };
+        DatasetPreview: {
+            fileName: string;
+            /** @description The sheet read (the first); empty for a CSV file. */
+            sheetName: string;
+            rowCount: number;
+            columns: components["schemas"]["DatasetPreviewColumn"][];
+            /** @description The first 20 rows as text, one string per column ("" empty). */
+            rows: string[][];
+            /** @description What will stop the save or is worth knowing (duplicate column names, merged cells, empty columns). */
+            problems: string[];
+        };
+        DatasetColumnInput: {
+            position: number;
+            /** @description Required, at most 60 characters, unique in the dataset ignoring case. */
+            label: string;
+            kind: components["schemas"]["DataFieldKind"];
+            /** @description An active currency for a money column; null for others. */
+            currency: string | null;
+        };
+        DatasetCreate: {
+            fileName: string;
+            /** @description The same file as checked, base64-encoded (at most 5 MB before encoding). */
+            content: string;
+            /** @description Required, at most 80 characters, unique among the person's datasets ignoring case. */
+            name: string;
+            description: string;
+            /** @description One per column of the file, positions 0… in order. */
+            columns: components["schemas"]["DatasetColumnInput"][];
+        };
+        DatasetColumn: {
+            /** @description The field key in the data catalogue and in widget queries. */
+            key: string;
+            position: number;
+            label: string;
+            kind: components["schemas"]["DataFieldKind"];
+            currency: string | null;
+        };
+        DatasetAccess: {
+            edit: components["schemas"]["ActionAvailability"];
+            share: components["schemas"]["ActionAvailability"];
+            delete: components["schemas"]["ActionAvailability"];
+        };
+        Dataset: {
+            /** @example DS-1001 */
+            id: string;
+            name: string;
+            description: string;
+            owner: components["schemas"]["PersonRef"];
+            isOwner: boolean;
+            sharedWith: components["schemas"]["TeamRef"][];
+            shareableTeams: components["schemas"]["TeamRef"][];
+            fileName: string;
+            sheetName: string;
+            rowCount: number;
+            columns: components["schemas"]["DatasetColumn"][];
+            /** @description Dashboards the person may see whose widgets read this dataset, by name. */
+            usedBy: components["schemas"]["CustomDashboardRef"][];
+            access: components["schemas"]["DatasetAccess"];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        DatasetSummary: {
+            id: string;
+            name: string;
+            description: string;
+            owner: components["schemas"]["PersonRef"];
+            sharedWith: components["schemas"]["TeamRef"][];
+            rowCount: number;
+            columnCount: number;
+            /** Format: date-time */
+            updatedAt: string;
+            access: components["schemas"]["DatasetAccess"];
+        };
+        DatasetList: {
+            mine: components["schemas"]["DatasetSummary"][];
+            sharedWithMe: components["schemas"]["DatasetSummary"][];
+        };
+        /** @description Only the fields to change, and the version. Column types never change. */
+        DatasetUpdate: {
+            version: number;
+            name?: string;
+            description?: string;
+            /** @description New names of the columns given; the others keep theirs. */
+            columns?: {
+                position: number;
+                label: string;
+            }[];
+        };
+        DatasetRowPage: {
+            columns: components["schemas"]["DatasetColumn"][];
+            /** @description One array per row, one cell per column: null for empty; text as written, numbers as Decimal, dates YYYY-MM-DD, money as a decimal in the column's currency. */
+            rows: (string | null)[][];
+            offset: number;
+            limit: number;
+            total: number;
+        };
+        /**
+         * @description The kind of system a data source is, which decides what it can supply (FA §E7.2).
+         * @enum {string}
+         */
+        PerformanceCategory: "webAnalytics" | "marketingAutomation" | "crm" | "leadProgression";
+        /**
+         * @description How rows arrive — a file someone uploads, or a pull from the simulated feed (ADR-0022).
+         * @enum {string}
+         */
+        PerformanceDeliveryRoute: "upload" | "simulated";
+        /**
+         * @description How often the source is expected to deliver; it decides when freshness reads Stale.
+         * @enum {string}
+         */
+        PerformanceCadence: "daily" | "weekly" | "monthly" | "onDemand";
+        /**
+         * @description Derived from the last load and the cadence, never stored. Inactive when the source is deactivated, Stale when nothing has loaded within one extra cadence period, Failed when the last load failed.
+         * @enum {string}
+         */
+        PerformanceFreshness: "current" | "stale" | "failed" | "inactive";
+        /**
+         * @description What one column of a source's file means (client 020 FR-006).
+         * @enum {string}
+         */
+        ColumnMeaning: "key" | "reference" | "factDate" | "stage" | "revenue" | "currency" | "webMetric" | "journey";
+        /**
+         * @description The web-analytics vocabulary — counts by month, never money (clarification 046-C11).
+         * @enum {string}
+         */
+        WebMetric: "sessions" | "visits" | "engagementTouches";
+        /** @description Where performance data comes from (Settings › Performance data). */
+        PerformanceSource: {
+            id: string;
+            name: string;
+            description: string;
+            ownerId: string;
+            category: components["schemas"]["PerformanceCategory"];
+            /** @enum {string} */
+            status: "active" | "inactive";
+            deliveryRoute: components["schemas"]["PerformanceDeliveryRoute"];
+            cadence: components["schemas"]["PerformanceCadence"];
+            /** @description The source's own identifier, empty when it has none. */
+            integrationId: string;
+            freshness: components["schemas"]["PerformanceFreshness"];
+            /**
+             * Format: date-time
+             * @description Null when nothing has ever loaded, which is every newly created source.
+             */
+            lastLoadedAt?: string | null;
+            /**
+             * Format: date
+             * @description The date the source's data runs through; null until something loads.
+             */
+            dataThrough?: string | null;
+            /** @description How many facts this source holds; it may not be deleted while above zero. */
+            factCount: number;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceSourceInput: {
+            name: string;
+            description?: string;
+            ownerId: string;
+            category: components["schemas"]["PerformanceCategory"];
+            deliveryRoute: components["schemas"]["PerformanceDeliveryRoute"];
+            cadence: components["schemas"]["PerformanceCadence"];
+            integrationId?: string;
+            /** @description The version the editor read; a save against an older one is refused (409 version_conflict). */
+            version?: number;
+        };
+        PerformanceSourceList: {
+            items: components["schemas"]["PerformanceSource"][];
+        };
+        PerformanceUpload: {
+            /** @example eloqua_2026-10.csv */
+            fileName: string;
+            /** @description The file, base64 (at most 2 MB before encoding). */
+            content: string;
+        };
+        /** @description The five outcomes of a load; they add up to rows read (046-C3). */
+        PerformanceCounts: {
+            read: number;
+            matched: number;
+            held: number;
+            unattributed: number;
+            rejected: number;
+            unmatched: number;
+        };
+        /** @description The five counts again for one measure; a row carrying two measures counts in both (046-C18). */
+        PerformanceBreakdownGroup: {
+            stage: string;
+            webMetric: string;
+            counts: components["schemas"]["PerformanceCounts"];
+        };
+        /** @description One load of performance data. Never editable; undo is the only way back (FR-016). */
+        PerformanceImport: {
+            id: string;
+            sourceId: string;
+            fileName: string;
+            /** @enum {string} */
+            origin: "upload" | "simulated";
+            /** @enum {string} */
+            status: "completed" | "failed" | "undone";
+            /** Format: date */
+            dataThrough: string | null;
+            counts: components["schemas"]["PerformanceCounts"];
+            breakdown: components["schemas"]["PerformanceBreakdownGroup"][];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceImportList: {
+            items: components["schemas"]["PerformanceImport"][];
+        };
+        /** @description A superseded external name, kept so the outside world's old exports still match (FR-034). */
+        ExternalNameAlias: {
+            id: string;
+            activityId: string;
+            name: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ExternalNameAliasList: {
+            items: components["schemas"]["ExternalNameAlias"][];
+        };
+        /** @description One outside system's own id for an activity; at most one per source (FR-037). */
+        IntegrationId: {
+            id: string;
+            activityId: string;
+            sourceId: string;
+            value: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        IntegrationIdList: {
+            items: components["schemas"]["IntegrationId"][];
+        };
+        IntegrationIdInput: {
+            value: string;
+        };
+        SourceOfFacts: {
+            sourceId: string;
+            sourceName: string;
+            /** @description Empty when the source has no key for this activity. */
+            integrationId: string;
+            factCount: number;
+            /** @description Empty until the source has delivered a fact. */
+            lastFactDate: string;
+        };
+        /** @description The activity's Performance - Data sources section (FR-031). */
+        DataSourcesArea: {
+            externalName: string;
+            aliases: components["schemas"]["ExternalNameAlias"][];
+            mediaCodeCount: number;
+            integrated: boolean;
+            goalEntered: boolean;
+            sources: components["schemas"]["SourceOfFacts"][];
+        };
+        ReviewFault: {
+            column: string;
+            code: string;
+            message: string;
+        };
+        /** @description One row a person must fix; never created by hand (FR-023). */
+        ReviewRow: {
+            id: string;
+            importId: string;
+            sourceId: string;
+            sourceName: string;
+            /** @description The row exactly as the file carried it. */
+            raw: {
+                [key: string]: string;
+            };
+            /**
+             * @description The headline the queue is findable by (FR-023): no key at all, keys that found no activity, several or disagreeing activities, or rejected with the code of the row's first fault.
+             * @enum {string}
+             */
+            reason: "unattributed:noKey" | "unmatched:unknown" | "unmatched:ambiguous" | "unmatched:disagree" | "rejected:emptyColumn" | "rejected:invalidDate" | "rejected:futureDate" | "rejected:negativeCount" | "rejected:fractionalCount" | "rejected:invalidCount" | "rejected:invalidAmount" | "rejected:unconfiguredCurrency" | "rejected:missingReference" | "rejected:referenceTooLong" | "rejected:journeyTooLong" | "rejected:repeatedReference" | "rejected:noMeasure" | "rejected:duplicateMeasure";
+            faults: components["schemas"]["ReviewFault"][];
+            /** @description The activities named when keys disagree, filtered to the reader's scope (046-C15). */
+            candidates: string[];
+            /** @enum {string} */
+            status: "open" | "resolved" | "dismissed";
+            comment: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ReviewRowList: {
+            items: components["schemas"]["ReviewRow"][];
+        };
+        DismissInput: {
+            comment: string;
+        };
+        CorrectInput: {
+            date?: string | null;
+            currency?: string | null;
+            keys?: {
+                activityId?: string;
+                mediaCode?: string;
+                integrationId?: string;
+                externalName?: string;
+            } | null;
+            values?: {
+                column: string;
+                value: string;
+            }[];
+        };
+        /** @description One figure a source delivered, matched to this activity (FR-030). */
+        PerformanceFact: {
+            id: string;
+            sourceId: string;
+            sourceName: string;
+            /** @description The originating upload. */
+            importId: string;
+            sourceReference: string;
+            /** Format: date */
+            factDate: string;
+            stage: string;
+            webMetric: string;
+            count: number | null;
+            amount: components["schemas"]["Money"] | null;
+            /** @description The row's pseudonymous journey reference (046-C6), absent when it had none; 050 credits by it. */
+            journeyRef?: string;
+            held: boolean;
+            /** @enum {string} */
+            matchedOn: "" | "activityId" | "mediaCode" | "integrationId" | "externalName";
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceFactList: {
+            items: components["schemas"]["PerformanceFact"][];
+        };
+        /** @description One month split at today (047 FR-010); the month in progress carries both figures. */
+        SplitMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: number | null;
+            projected: number | null;
+            inProgress: boolean;
+        };
+        SplitMoneyMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            inProgress: boolean;
+        };
+        /** @description The model behind the projected figures and when its parameters last changed (047 FR-012). */
+        ProjectionStamp: {
+            modelName: string;
+            /** Format: date-time */
+            modelChangedAt: string;
+        };
+        StageFigure: {
+            /** @enum {string} */
+            stage: "inq" | "mql";
+            goal: number | null;
+            actual: number | null;
+            /** @description The plan-year figure: actual to the end of the last whole month before today plus projected from today, so a closed year equals the actual (047 FR-010). Null with projectedReason when nothing projects. Never add this to actual — they overlap. */
+            projected: number | null;
+            /** @description Actual over the previous stage's actual, one decimal; null where it cannot be worked out. */
+            conversion: number | null;
+            /** @enum {string} */
+            reason: "" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /**
+             * @description Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013): no goal at this stage, or the activity lies outside its plan's year.
+             * @enum {string}
+             */
+            projectedReason: "" | "noGoal" | "outsidePlanYear";
+            months: components["schemas"]["SplitMonth"][];
+        };
+        RevenueFigure: {
+            goal: components["schemas"]["Money"] | null;
+            /** @description One USD total at the current rate (046-C7). */
+            actual: components["schemas"]["Money"] | null;
+            /** @description The plan-year figure, as StageFigure.projected, with the deals from today priced at the model's average deal size (047 FR-007, FR-010). */
+            projected: components["schemas"]["Money"] | null;
+            /** @description Facts left out because their currency has no rate (SC-010). */
+            excludedCount: number;
+            /** @enum {string} */
+            reason: "" | "notApproved" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /**
+             * @description Why nothing projects (047 FR-013): no revenue goal, the activity lies outside its plan's year, or the projection would leave the money range.
+             * @enum {string}
+             */
+            projectedReason: "" | "noGoal" | "outsidePlanYear" | "outOfRange";
+            months: components["schemas"]["SplitMoneyMonth"][];
+        };
+        MetricFigure: {
+            /** @enum {string} */
+            metric: "sessions" | "visits" | "engagementTouches";
+            months: {
+                /** @example 2026-02 */
+                month: string;
+                value: number;
+            }[];
+        };
+        PanelSource: {
+            sourceId: string;
+            sourceName: string;
+            freshness: components["schemas"]["PerformanceFreshness"];
+            /** Format: date */
+            dataThrough: string | null;
+        };
+        /** @description The activity's Performance area (FR-029); gated until the activity counts as approved. */
+        PerformancePanel: {
+            /** @enum {string} */
+            state: "ok" | "notApproved";
+            stages: components["schemas"]["StageFigure"][];
+            revenue: components["schemas"]["RevenueFigure"];
+            webMetrics: components["schemas"]["MetricFigure"][];
+            sources: components["schemas"]["PanelSource"][];
+            projection: components["schemas"]["ProjectionStamp"] | null;
+        };
+        CodeAttribute: {
+            name: string;
+            required: boolean;
+        };
+        /** @description A system-generated campaign-link code; its number is never reused (FR-042). */
+        MediaCode: {
+            id: string;
+            /** Format: int64 */
+            code: number;
+            activityId: string;
+            attributes: {
+                [key: string]: string;
+            };
+            landingPage: string;
+            /** @enum {string} */
+            status: "active" | "inactive";
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        MediaCodeArea: {
+            /** @description Stated by the API (FR-040); the web app hides the section when false. */
+            requiresCodes: boolean;
+            items: components["schemas"]["MediaCode"][];
+        };
+        MediaCodeInput: {
+            attributes?: {
+                [key: string]: string;
+            };
+            landingPage?: string;
+            version?: number;
+        };
+        /** @description Settings - Performance data's one record (046-C12), never on the activity type. */
+        PerformanceConfiguration: {
+            activityTypeIds: string[];
+            codeAttributes: components["schemas"]["CodeAttribute"][];
+            /** Format: int64 */
+            mediaCodeNext: number;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceConfigurationInput: {
+            activityTypeIds: string[];
+            codeAttributes: components["schemas"]["CodeAttribute"][];
+            /** Format: int64 */
+            mediaCodeNext: number;
+            version: number;
+        };
+        /**
+         * @description Which matching key a key column carries (046-C23); empty on every other column.
+         * @enum {string}
+         */
+        MatchKeyType: "" | "activityId" | "mediaCode" | "integrationId" | "externalName";
+        /** @description What one column of a source's file means. A change affects future loads only. */
+        ColumnMapping: {
+            id: string;
+            sourceId: string;
+            columnName: string;
+            meaning: components["schemas"]["ColumnMeaning"];
+            keyType: components["schemas"]["MatchKeyType"];
+            /** @description Set only on a stage column. */
+            stage: string;
+            /** @description Set only on a web-metric column. */
+            webMetric: string;
+            /** @description Set only on a stage or revenue column, which a model supplies. */
+            modelId: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ColumnMappingInput: {
+            columnName: string;
+            meaning: components["schemas"]["ColumnMeaning"];
+            keyType?: components["schemas"]["MatchKeyType"];
+            stage?: string;
+            webMetric?: components["schemas"]["WebMetric"];
+            modelId?: string;
+            version?: number;
+        };
+        ColumnMappingList: {
+            items: components["schemas"]["ColumnMapping"][];
+        };
+        /** @enum {string} */
+        ReportKey: "planBudget" | "approvals" | "purchaseRequests" | "planDetails" | "gsapLink" | "userAccess" | "summary" | "revenue" | "funnel";
+        ReportEntry: {
+            key: components["schemas"]["ReportKey"];
+            /** @example plan-budget */
+            path: string;
+            /** @example Plan budget */
+            name: string;
+            purpose: string;
+            /** @description False while the report is not built ("Coming soon"). */
+            available: boolean;
+        };
+        ReportCatalogue: {
+            items: components["schemas"]["ReportEntry"][];
+        };
+        /** @enum {string} */
+        ReportLevel: "plan" | "campaign" | "initiative" | "activity" | "lineItem";
+        ReportAttributeFilter: {
+            /** @example SA-1022 */
+            attributeId: string;
+            /** @description Option IDs, yes, no, or none (Not filled in). */
+            values: string[];
+        };
+        ReportFilter: {
+            year: number;
+            plans: string[];
+            planTypes: components["schemas"]["PlanType"][];
+            teams: string[];
+            owners: string[];
+            activityTypes: string[];
+            activityStatuses: ("created" | "submitted" | "declined" | "approved" | "inProgress" | "complete")[];
+            attributes: components["schemas"]["ReportAttributeFilter"][];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            /** @enum {string|null} */
+            show: "plan" | "campaign" | "initiative" | "activity" | null;
+            currency: string;
+            tables: string[];
+        };
+        ReportNamedChoice: {
+            id: string;
+            name: string;
+        };
+        ReportPlanChoice: {
+            id: string;
+            name: string;
+            planType: components["schemas"]["PlanType"];
+            teamIds: string[];
+        };
+        ReportTeamChoice: {
+            id: string;
+            name: string;
+            mine: boolean;
+        };
+        ReportAttributeValue: {
+            /** @description An option ID, yes, no, or none (Not filled in). */
+            id: string;
+            label: string;
+            active: boolean;
+        };
+        ReportAttributeGroup: {
+            level: components["schemas"]["ReportLevel"];
+            attributeId: string;
+            label: string;
+            values: components["schemas"]["ReportAttributeValue"][];
+        };
+        ReportCurrencyChoice: {
+            code: string;
+            name: string;
+        };
+        ReportChoices: {
+            years: number[];
+            plans: components["schemas"]["ReportPlanChoice"][];
+            planTypes: components["schemas"]["PlanType"][];
+            teams: components["schemas"]["ReportTeamChoice"][];
+            owners: components["schemas"]["ReportNamedChoice"][];
+            activityTypes: components["schemas"]["ReportNamedChoice"][];
+            activityStatuses: ("created" | "submitted" | "declined" | "approved" | "inProgress" | "complete")[];
+            attributeGroups: components["schemas"]["ReportAttributeGroup"][];
+            currencies: components["schemas"]["ReportCurrencyChoice"][];
+        };
+        ReportInView: {
+            plans: number;
+            campaigns: number;
+            initiatives: number;
+            activities: number;
+            lineItems: number;
+        };
+        ReportFinanceCoverage: {
+            /** @description Plans in view whose financial data the person may see. */
+            plans: number;
+            /** @description Plans in view. */
+            of: number;
+        };
+        ReportFrame: {
+            report: components["schemas"]["ReportKey"];
+            filter: components["schemas"]["ReportFilter"];
+            choices: components["schemas"]["ReportChoices"];
+            inView: components["schemas"]["ReportInView"];
+            finance: components["schemas"]["ReportFinanceCoverage"];
+            /** @description Filter values left out because they no longer exist, are inactive or are out of scope. */
+            leftOut: number;
+            displayCurrency: string;
+            /** Format: date-time */
+            generatedAt: string;
+            /** Format: date-time */
+            financeAsOf: string | null;
+        };
+        ReportView: {
+            /** @example RV-1001 */
+            id: string;
+            report: components["schemas"]["ReportKey"];
+            name: string;
+            isDefault: boolean;
+            /** @description The report's canonical address query. */
+            query: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ReportViewPage: {
+            items: components["schemas"]["ReportView"][];
+            total: number;
+        };
+        ReportViewCreate: {
+            name: string;
+            query: string;
+            isDefault?: boolean;
+        };
+        ReportViewUpdate: {
+            version: number;
+            name?: string;
+            query?: string;
+            isDefault?: boolean;
+        };
+        /** @enum {string} */
+        AttributionModel: "firstTouch" | "lastTouch" | "equallyDistributed" | "linearTimeDecay" | "uShaped";
+        AttributionSettings: {
+            model: components["schemas"]["AttributionModel"];
+            models: {
+                key: components["schemas"]["AttributionModel"];
+                name: string;
+                description: string;
+            }[];
+            version: number;
+            /** @description Null while the setting has never been saved. */
+            updatedAt: string | null;
+            updatedBy: components["schemas"]["ActorRef"] | null;
+            canChange: components["schemas"]["ActionAvailability"];
+        };
+        AttributionSettingsInput: {
+            version: number;
+            model: components["schemas"]["AttributionModel"];
+        };
+        PlanBudgetFigures: {
+            budget: components["schemas"]["Money"] | null;
+            planned: components["schemas"]["Money"] | null;
+            committed: components["schemas"]["Money"] | null;
+            actual: components["schemas"]["Money"] | null;
+            leftToPlan: components["schemas"]["Money"] | null;
+            unspent: components["schemas"]["Money"] | null;
+            overAllocated: boolean;
+        };
+        PlanBudgetCards: {
+            budget: components["schemas"]["Money"] | null;
+            planned: components["schemas"]["Money"] | null;
+            committed: components["schemas"]["Money"] | null;
+            actual: components["schemas"]["Money"] | null;
+            leftToPlan: components["schemas"]["Money"] | null;
+            unspent: components["schemas"]["Money"] | null;
+            overAllocated: boolean;
+            budgetUsed: number | null;
+            budgetSpent: number | null;
+            committedShare: number | null;
+            notYetCommitted: components["schemas"]["Money"] | null;
+        };
+        PlanBudgetPeriod: {
+            /** @example 2026-03 */
+            key: string;
+            /** @enum {string} */
+            state: "actual" | "inProgress" | "planned";
+            budget: components["schemas"]["Money"];
+            planned: components["schemas"]["Money"];
+            actual: components["schemas"]["Money"] | null;
+            budgetToDate: components["schemas"]["Money"];
+            plannedToDate: components["schemas"]["Money"];
+            actualToDate: components["schemas"]["Money"] | null;
+        };
+        PlanBudgetReport: {
+            cards: components["schemas"]["PlanBudgetCards"];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            periods: components["schemas"]["PlanBudgetPeriod"][];
+            notes: {
+                notPhased: components["schemas"]["Money"] | null;
+                noDates: components["schemas"]["Money"] | null;
+                otherYears: components["schemas"]["Money"] | null;
+                actualOtherYears: components["schemas"]["Money"] | null;
+            };
+        };
+        RankedEntry: {
+            id: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity" | "lineItem";
+            name: string;
+            planId: string;
+            /** @description The record's owner (049 FR-012); absent for a line item or a record with no owner. */
+            owner?: components["schemas"]["AllWorkOwner"];
+            figures: components["schemas"]["PlanBudgetFigures"];
+            children?: components["schemas"]["RankedEntry"][];
+        };
+        PlanBudgetRanked: {
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            /** @enum {string} */
+            sort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
+            /** @enum {string} */
+            order: "desc" | "asc";
+            group: string;
+            page: number;
+            size: number;
+            total: number;
+            trail: {
+                id: string;
+                level: string;
+                name: string;
+            }[];
+            groups: {
+                key: string;
+                label: string;
+                totals: components["schemas"]["PlanBudgetFigures"];
+                entries: components["schemas"]["RankedEntry"][];
+            }[];
+            drillLost: boolean;
+        };
+        /**
+         * @description Performance in words (048-C1); noGoal when the goal is zero or missing.
+         * @enum {string}
+         */
+        SummaryVariance: "abovePlan" | "onPlan" | "belowPlan" | "noGoal";
+        /** @description A revenue card figure; null with reason when it cannot be worked out (FR-009). */
+        RevenueCardFigure: {
+            value: components["schemas"]["Money"] | null;
+            /** @enum {string} */
+            reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+        };
+        RevenueCards: {
+            goal: components["schemas"]["RevenueCardFigure"];
+            actual: components["schemas"]["RevenueCardFigure"];
+            projected: components["schemas"]["RevenueCardFigure"];
+            performance: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+                variance: components["schemas"]["SummaryVariance"];
+            };
+        };
+        /** @description One period of the series, split at today (047 FR-010); the period in progress carries both. */
+        RevenuePeriod: {
+            /** @example 2026-03 */
+            key: string;
+            /** @enum {string} */
+            state: "actual" | "inProgress" | "planned";
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            goal: components["schemas"]["Money"] | null;
+            inProgress: boolean;
+        };
+        RevenueReport: {
+            cards: components["schemas"]["RevenueCards"];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            periods: components["schemas"]["RevenuePeriod"][];
+            /** @description The first model in view, kept for compatibility; projections names every one. */
+            projection: components["schemas"]["ProjectionStamp"] | null;
+            /** @description Every model behind a projected figure in view, by name (049 SC-006). */
+            projections: components["schemas"]["ProjectionStamp"][];
+            /**
+             * @description Why the report is empty, never an empty grid alone (049-C20).
+             * @enum {string}
+             */
+            reason: "" | "noGoal" | "notApproved" | "noData" | "noModel";
+        };
+        RevenueFigures: {
+            goal: components["schemas"]["Money"] | null;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            performance: number | null;
+            variance: components["schemas"]["SummaryVariance"];
+            /** @description The revenue the list's attribution model credits to the entry's activities in the year (050 FR-003, FR-010); 0.00 when a fact in view concerns them but the model credits them nothing, and null, with the reason, when no revenue fact in view concerns them. */
+            attributedRevenue: components["schemas"]["Money"] | null;
+            /** @description The payments booked in the year on the entry's line items (050 FR-007); null, with the reason, for plans whose financial data the person may not see. */
+            actualCost: components["schemas"]["Money"] | null;
+            /** @description (attributedRevenue − actualCost) ÷ actualCost as a whole per cent, halves away from zero (050 FR-007); the list's attribution names its model and cost basis. */
+            roi: number | null;
+            /** @enum {string} */
+            attributedRevenueReason: "" | "noData";
+            /** @description The model behind the row's projected figure (049 SC-006); absent when nothing in it projects or its activities' plans use different models. */
+            projection?: components["schemas"]["ProjectionStamp"];
+            /**
+             * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
+             * @enum {string}
+             */
+            actualCostReason: "" | "attributionNotConfigured" | "noFinancialAccess";
+            /**
+             * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
+             * @enum {string}
+             */
+            roiReason: "" | "attributionNotConfigured" | "noFinancialAccess" | "noActualCost" | "noData";
+        };
+        RevenueEntry: {
+            id: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            name: string;
+            planId: string;
+            /** @description The record's owner (049 FR-012); absent for a line item or a record with no owner. */
+            owner?: components["schemas"]["AllWorkOwner"];
+            figures: components["schemas"]["RevenueFigures"];
+            children?: components["schemas"]["RevenueEntry"][];
+        };
+        /** @description What an attributed revenue and an ROI rest on, named beside them (050 FR-008). */
+        AttributionStamp: {
+            /** @example Equally distributed */
+            model: string;
+            /** @enum {string} */
+            basis: "actual" | "planned";
+        };
+        RevenueRanked: {
+            attribution: components["schemas"]["AttributionStamp"];
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            /** @enum {string} */
+            sort: "actualRevenue" | "projectedRevenue";
+            /** @enum {string} */
+            order: "desc" | "asc";
+            group: string;
+            page: number;
+            size: number;
+            total: number;
+            trail: {
+                id: string;
+                level: string;
+                name: string;
+            }[];
+            groups: {
+                key: string;
+                label: string;
+                totals: components["schemas"]["RevenueFigures"];
+                entries: components["schemas"]["RevenueEntry"][];
+            }[];
+            drillLost: boolean;
+        };
+        FunnelCards: {
+            goal: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            actual: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            projected: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
+            performance: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+                variance: components["schemas"]["SummaryVariance"];
+            };
+            /** @description The selected stage's actual over the previous stage's actual (049-C13); when nothing is counted in the stage, the actual's own reason. */
+            conversion: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noPreviousStage" | "noData" | "noSource" | "notApproved";
+            };
+        };
+        FunnelPeriod: {
+            /** @example 2026-03 */
+            key: string;
+            /** @enum {string} */
+            state: "actual" | "inProgress" | "planned";
+            actual: number | null;
+            projected: number | null;
+            goal: number | null;
+            inProgress: boolean;
+        };
+        FunnelReport: {
+            /** @enum {string} */
+            stage: "inq" | "mql";
+            /** @description Every stage any model in view allows, in funnel order (049-C11). */
+            availableStages: ("inq" | "mql")[];
+            /** @description Plans whose model does not allow the selected stage (049-C11, FR-018). */
+            uncoveredCount: number;
+            cards: components["schemas"]["FunnelCards"];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            periods: components["schemas"]["FunnelPeriod"][];
+            /** @description The first model in view, kept for compatibility; projections names every one. */
+            projection: components["schemas"]["ProjectionStamp"] | null;
+            /** @description Every model behind a projected figure in view, by name (049 SC-006). */
+            projections: components["schemas"]["ProjectionStamp"][];
+            /** @enum {string} */
+            reason: "" | "noGoal" | "notApproved" | "noData" | "noModel";
+        };
+        FunnelFigures: {
+            goal: number | null;
+            actual: number | null;
+            projected: number | null;
+            performance: number | null;
+            variance: components["schemas"]["SummaryVariance"];
+            conversion: number | null;
+            /** @description The model behind the row's projected figure (049 SC-006); absent when nothing in it projects or its activities' plans use different models. */
+            projection?: components["schemas"]["ProjectionStamp"];
+        };
+        FunnelEntry: {
+            id: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            name: string;
+            planId: string;
+            /** @description The record's owner (049 FR-012); absent for a line item or a record with no owner. */
+            owner?: components["schemas"]["AllWorkOwner"];
+            figures: components["schemas"]["FunnelFigures"];
+            children?: components["schemas"]["FunnelEntry"][];
+        };
+        FunnelRanked: {
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            /** @enum {string} */
+            sort: "actual" | "projected";
+            /** @enum {string} */
+            order: "desc" | "asc";
+            group: string;
+            page: number;
+            size: number;
+            total: number;
+            trail: {
+                id: string;
+                level: string;
+                name: string;
+            }[];
+            groups: {
+                key: string;
+                label: string;
+                totals: components["schemas"]["FunnelFigures"];
+                entries: components["schemas"]["FunnelEntry"][];
+            }[];
+            drillLost: boolean;
+        };
+        /** @enum {string} */
+        PlanDetailsLevel: "plan" | "campaign" | "initiative" | "activity";
+        /** @description An amount in the display currency, or null where the person may not see the plan's financial data. */
+        PrReportMoney: components["schemas"]["Money"] | null;
+        PrReportSeries: {
+            key: string;
+            name: string;
+            /** @description One value per month of the chart. */
+            values: components["schemas"]["PrReportMoney"][];
+            total: components["schemas"]["PrReportMoney"];
+        };
+        PrReportChart: {
+            /** @description Each month between the first and the last as 2026-03, then none for a line without a delivery date. */
+            months: string[];
+            /** @description The ten largest, then Other. */
+            chartSeries: components["schemas"]["PrReportSeries"][];
+            allSeries: components["schemas"]["PrReportSeries"][];
+            totals: components["schemas"]["PrReportMoney"][];
+            committed: components["schemas"]["PrReportMoney"];
+        };
+        PrReportLine: {
+            id: string;
+            lineItem: {
+                id: string;
+                name: string;
+            };
+            activity: string | null;
+            amount: components["schemas"]["PrReportMoney"];
+            /** Format: date */
+            deliveryDate: string | null;
+            /** Format: date */
+            sentOn: string | null;
+            poNumber: string | null;
+            poLine: string | null;
+            poLineStatus: string | null;
+            invoiced: components["schemas"]["PrReportMoney"];
+        };
+        PrReportRequest: {
+            id: string;
+            name: string;
+            status: components["schemas"]["PurchaseRequestStatus"];
+            amount: components["schemas"]["PrReportMoney"];
+            invoiced: components["schemas"]["PrReportMoney"];
+            owner: components["schemas"]["ApprovalsPerson"];
+            /** Format: date */
+            createdOn: string;
+            /** Format: date */
+            sentOn: string | null;
+            /** Format: date */
+            deliveryDate: string | null;
+            poNumber: string | null;
+            workflow: string | null;
+            gsapNumber: string | null;
+            waitingForGsap: boolean;
+            lines: components["schemas"]["PrReportLine"][];
+        };
+        PrReportVendor: {
+            vendor: string;
+            label: string;
+            purchaseRequests: number;
+            lines: number;
+            committed: components["schemas"]["PrReportMoney"];
+            invoiced: components["schemas"]["PrReportMoney"];
+            requests: components["schemas"]["PrReportRequest"][];
+        };
+        PrReportGrid: {
+            vendors: components["schemas"]["PrReportVendor"][];
+            total: number;
+            page: number;
+            pageSize: number;
+            columns: string[];
+            choices: {
+                vendors: string[];
+                owners: components["schemas"]["ApprovalsPerson"][];
+                statuses: string[];
+            };
+        };
+        PurchaseRequestsReport: {
+            purchaseSupport: boolean;
+            cards: {
+                purchaseRequests: number;
+                lines: number;
+                vendors: number;
+                committed: components["schemas"]["PrReportMoney"];
+                invoiced: components["schemas"]["PrReportMoney"];
+            };
+            statusMix: {
+                total: number;
+                totalAmount: components["schemas"]["PrReportMoney"];
+                waitingForGsap: number;
+                items: {
+                    status: components["schemas"]["PurchaseRequestStatus"];
+                    count: number;
+                    amount: components["schemas"]["PrReportMoney"];
+                    sharePercent: number;
+                }[];
+            };
+            byVendor: components["schemas"]["PrReportChart"];
+            byOwner: components["schemas"]["PrReportChart"];
+            grid: components["schemas"]["PrReportGrid"];
+            financeCovers: {
+                plans: number;
+                of: number;
+            };
+        };
+        /** @enum {string} */
+        SummaryStageKey: "inq" | "mql" | "revenue";
+        /** @enum {string} */
+        SummaryPeriodState: "actual" | "inProgress" | "projected";
+        /** @description Money for the revenue stage, a whole count for inq and mql, or null where there is no figure. */
+        SummaryFigure: components["schemas"]["Money"] | number | null;
+        /** @description A percentage with one decimal, as "12.5", or null on a zero denominator. */
+        SummaryRate: string | null;
+        SummaryReport: {
+            revenue: {
+                periodLabel: string;
+                actualOrProjected: components["schemas"]["PrReportMoney"];
+                goal: components["schemas"]["PrReportMoney"];
+                performance: number | null;
+                variance: components["schemas"]["SummaryVariance"];
+                goalCoverage: {
+                    stage: components["schemas"]["SummaryStageKey"];
+                    percent: number | null;
+                }[];
+                trend: components["schemas"]["SummaryTrendPeriod"][];
+            };
+            funnel: {
+                stages: {
+                    stage: components["schemas"]["SummaryStageKey"];
+                    /** @description Plans whose model does not allow the stage, so it does not count them. */
+                    plansWithout: number;
+                    actualOrProjected: components["schemas"]["SummaryFigure"];
+                    goal: components["schemas"]["SummaryFigure"];
+                    performance: number | null;
+                    variance: components["schemas"]["SummaryVariance"];
+                }[];
+                conversions: {
+                    stage: components["schemas"]["SummaryStageKey"];
+                    rate: components["schemas"]["SummaryRate"];
+                    goal: components["schemas"]["SummaryRate"];
+                    /** @description The rate against its goal in words; null when the rate is missing, noGoal when the goal is. */
+                    variance: components["schemas"]["SummaryVariance"] | null;
+                }[];
+                trend: {
+                    stage: components["schemas"]["SummaryStageKey"];
+                    periods: {
+                        key: string;
+                        label: string;
+                        state: components["schemas"]["SummaryPeriodState"];
+                        rate: components["schemas"]["SummaryRate"];
+                        goal: components["schemas"]["SummaryRate"];
+                    }[];
+                };
+            };
+            categories: {
+                id: string;
+                name: string;
+            }[];
+            /** @description The report states that apply (FR-018). */
+            states: ("noPlans" | "notApproved" | "noGoals" | "noPerformanceData" | "nothingMatches" | "noFinancialAccess")[];
+            financeCovers: {
+                plans: number;
+                of: number;
+            };
+        };
+        SummaryTrendPeriod: {
+            key: string;
+            label: string;
+            state: components["schemas"]["SummaryPeriodState"];
+            actual: components["schemas"]["PrReportMoney"];
+            projected: components["schemas"]["PrReportMoney"];
+            goal: components["schemas"]["PrReportMoney"];
+        };
+        SummarySegment: {
+            id: string;
+            label: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "activity";
+        };
+        /** @description Money for revenue and cost, a whole per cent for performance and ROI, or null for "—". */
+        SummaryLeagueValue: components["schemas"]["Money"] | number | null;
+        SummaryLeague: {
+            /** @enum {string} */
+            table: "revenue" | "performance" | "cost" | "roi";
+            segment: components["schemas"]["SummarySegment"] | null;
+            segments: components["schemas"]["SummarySegment"][];
+            rows: {
+                key: string;
+                name: string;
+                value: components["schemas"]["SummaryLeagueValue"];
+                /** @description The segment's actual or projected revenue by month, whatever the table's figure. */
+                trend: components["schemas"]["Money"][];
+            }[];
+            total: components["schemas"]["SummaryLeagueValue"];
+            roi: {
+                model: string;
+                /** @enum {string} */
+                basis: "actual" | "planned";
+            } | null;
+            reason: string | null;
+        };
+        ApprovalsPerson: {
+            id: string;
+            name: string;
+        };
+        ApprovalsReport: {
+            statusMix: components["schemas"]["ApprovalStatusMix"];
+            average: components["schemas"]["ApprovalAverage"];
+            grid: components["schemas"]["ApprovalGrid"];
+            /** @description Plans with approval rounds whose amounts the person sees, of the plans with rounds. */
+            financeCovers: {
+                plans: number;
+                of: number;
+            };
+        };
+        ApprovalStatusMix: {
+            recordType: string;
+            /** @description The record types that have rounds in the plans in view. */
+            recordTypes: string[];
+            total: number;
+            waiting: {
+                count: number;
+                /** Format: date-time */
+                oldestSince: string | null;
+            };
+            items: {
+                /** @enum {string} */
+                outcome: "waiting" | "approved" | "declined" | "recalled" | "replaced" | "autoApproved";
+                count: number;
+                sharePercent: number;
+            }[];
+        };
+        ApprovalAverage: {
+            /** @description Days to a decision with one decimal; null when nothing was decided. */
+            days: string | null;
+            decisions: number;
+            /** @description Slowest first. */
+            approvers: {
+                person: components["schemas"]["ApprovalsPerson"];
+                days: string;
+                decisions: number;
+            }[];
+        };
+        ApprovalGrid: {
+            items: components["schemas"]["ApprovalsRow"][];
+            total: number;
+            page: number;
+            pageSize: number;
+            choices: {
+                recordTypes: string[];
+                outcomes: string[];
+                approvers: components["schemas"]["ApprovalsPerson"][];
+            };
+        };
+        ApprovalsRow: {
+            itemId: string;
+            itemName: string;
+            recordType: string;
+            canOpen: boolean;
+            approver: components["schemas"]["ApprovalsPerson"] | null;
+            /** Format: date */
+            decidedOn: string | null;
+            /** @enum {string} */
+            outcome: "waiting" | "approved" | "declined" | "recalled" | "replaced" | "autoApproved" | "notNeeded";
+            /** Format: date */
+            submittedOn: string;
+            level: number;
+            levelName: string;
+            purchaseOrderNumber: string | null;
+            amount: components["schemas"]["Money"] | null;
+            owner: components["schemas"]["ApprovalsPerson"];
+            comments: string;
+        };
+        PlanDetailsReport: {
+            show: components["schemas"]["PlanDetailsLevel"];
+            currency: string;
+            cards: components["schemas"]["PlanDetailsCards"];
+            /** @description Activity: by activity type (count and planned cost), by status, by start period, planned cost entered and goal entered. Plan: by status. Campaign and initiative: by approval progress and by timing. Empty when no record matches. */
+            builtIn: components["schemas"]["PlanDetailsWidget"][];
+            /** @description One row per active Shell attribute of the level, in Settings' display order. */
+            attributes: components["schemas"]["PlanDetailsAttributeRow"][];
+            /** @description False when the level has no active Shell attribute. */
+            attributesSetUp: boolean;
+        };
+        PlanDetailsCards: {
+            /** @description Matching records of the level; equals the frame's In view count for it. */
+            records: number;
+            plannedCost: components["schemas"]["Money"];
+            /** @description Records whose every needed field is filled in (domain model §2.6). */
+            allFilledIn: number;
+            /** @description Whole per cent, half up; null when there is no record. */
+            allFilledInPercent: number | null;
+        };
+        PlanDetailsAttributeRow: {
+            attributeId: string;
+            label: string;
+            /** @enum {string} */
+            type: "singleChoice" | "multipleChoice" | "multipleChoiceSplit" | "yesNo" | "text" | "longText" | "number";
+            /** @description Count, planned cost and filled in for choice and yes/no attributes; filled in only otherwise. */
+            widgets: components["schemas"]["PlanDetailsWidget"][];
+        };
+        PlanDetailsWidget: {
+            /**
+             * @description The widget's key for table and widget: activityTypeCount, activityTypePlannedCost, statusCount, progressCount, timingCount, startPeriodCount, plannedCostEntered, goalEntered, and for a Shell attribute attr<number>Count, attr<number>PlannedCost and attr<number>FilledIn (SA-12 → attr12Count).
+             * @example attr12Count
+             */
+            key: string;
+            /** @example Activities by Company code */
+            title: string;
+            /** @enum {string} */
+            measure: "count" | "plannedCost" | "filledIn";
+            /** @description Every value, largest first, then none (Not filled in) and doesNotApply; filled in: filled, none, doesNotApply; start periods in time order. */
+            values: components["schemas"]["PlanDetailsValue"][];
+            /** @description The values after the ten largest, summed, for the chart; null with ten values or fewer. */
+            other: components["schemas"]["PlanDetailsValue"] | null;
+            total: components["schemas"]["PlanDetailsValue"];
+            /** @description Filled in only - filled ÷ (filled + none), whole per cent half up. */
+            filledInPercent: number | null;
+            /** @description Records with several values count in each group; the total counts them once. */
+            countsInEach: boolean;
+            /** @description The filter parameter a value opens in All work; null when the values open nothing. */
+            filterParam: ("attr" | "activityType" | "activityStatus") | null;
+        };
+        PlanDetailsValue: {
+            /** @description A filter value where there is one (option ID, yes, no, none, activity type ID, activity status); otherwise a period (2026-04, 2026-Q2), doesNotApply, noDates, outsideYear, filled, other or total. */
+            key: string;
+            label: string;
+            inactive: boolean;
+            count: number;
+            /** @description Set when the widget's measure is plannedCost. */
+            plannedCost: components["schemas"]["Money"] | null;
+            /** @description True when the value opens All work filtered by it. */
+            linkable: boolean;
+        };
+        /** @description Where a line item or purchase request sits; an empty string for a level it has not. */
+        GsapPath: {
+            planId: string;
+            plan: string;
+            campaign: string;
+            initiative: string;
+            activityId: string;
+            activity: string;
+        };
+        GsapLinkReport: {
+            /** @enum {string} */
+            tab: "swbs" | "waiting" | "orders";
+            currency: string;
+            /** @description Rows of the tab across all pages. */
+            total: number;
+            page: number;
+            pageSize: number;
+            sort: string;
+            /** @description Plans whose financial data the amounts cover; null on the swbs tab. */
+            finance: components["schemas"]["ReportFinanceCoverage"] | null;
+            swbs: components["schemas"]["GsapSwbsTab"] | null;
+            waiting: components["schemas"]["GsapWaitingTab"] | null;
+            orders: components["schemas"]["GsapOrdersTab"] | null;
+        };
+        GsapBand: {
+            /** @enum {string} */
+            key: "under48h" | "days2to5" | "days5to10" | "over10days";
+            label: string;
+            count: number;
+        };
+        GsapSwbsTab: {
+            waiting: number;
+            /** @description Rows waiting over 48 hours. */
+            overTurnaround: number;
+            bands: components["schemas"]["GsapBand"][];
+            rows: components["schemas"]["GsapSwbsRow"][];
+        };
+        GsapSwbsRow: {
+            lineItemId: string;
+            lineItem: string;
+            path: components["schemas"]["GsapPath"];
+            owner: string;
+            /** @description The activity's Company code, empty when not filled in. */
+            companyCode: string;
+            /** Format: date-time */
+            approvedAt: string;
+            waitingHours: number;
+            overTurnaround: boolean;
+        };
+        GsapWaitingTab: {
+            waiting: number;
+            /** @description Plans with finance.view only; null when the person holds it in none. */
+            amount: components["schemas"]["Money"] | null;
+            /** @description Rows waiting over 2 working days. */
+            overTurnaround: number;
+            rows: components["schemas"]["GsapWaitingRow"][];
+        };
+        GsapWaitingRow: {
+            purchaseRequestId: string;
+            name: string;
+            vendor: string;
+            owner: string;
+            path: components["schemas"]["GsapPath"];
+            /**
+             * Format: date-time
+             * @description The routing GSAP has not answered; Resend PR form does not restart it.
+             */
+            routedAt: string;
+            /** @enum {string} */
+            routing: "original" | "modification";
+            gsapPrNumber: string;
+            /** @description Null without finance.view in its plan ("—"). */
+            amount: components["schemas"]["Money"] | null;
+            waitingWorkingDays: number;
+            overTurnaround: boolean;
+        };
+        GsapOrdersTab: {
+            rows: components["schemas"]["GsapOrderRow"][];
+            totals: components["schemas"]["GsapOrderTotals"];
+        };
+        /** @description Every row of every page; each amount is null when the person may see no plan's financial data in view (039 FR-004), never 0.00. */
+        GsapOrderTotals: {
+            poAmount: components["schemas"]["Money"] | null;
+            invoiced: components["schemas"]["Money"] | null;
+            paid: components["schemas"]["Money"] | null;
+        };
+        GsapOrderRow: {
+            lineItemId: string;
+            lineItem: string;
+            path: components["schemas"]["GsapPath"];
+            /** @description Empty when the purchase order was not raised from a purchase request in MAPP. */
+            purchaseRequestId: string;
+            gsapPrNumber: string;
+            poNumber: string;
+            poLines: string[];
+            /**
+             * Format: date
+             * @description The earliest posting date of its lines.
+             */
+            poDate: string;
+            vendor: string;
+            poAmount: components["schemas"]["Money"];
+            invoiced: components["schemas"]["Money"];
+            paid: components["schemas"]["Money"];
+        };
+        UserAccessReport: {
+            total: number;
+            page: number;
+            pageSize: number;
+            sort: string;
+            cards: components["schemas"]["UserAccessCards"];
+            bands: components["schemas"]["UserAccessBand"][];
+            /**
+             * Format: date
+             * @description When sign-in times started to be recorded.
+             */
+            recordedSince: string;
+            rows: components["schemas"]["UserAccessRow"][];
+        };
+        UserAccessCards: {
+            people: number;
+            signedInWithin30Days: number;
+            neverSignedIn: number;
+        };
+        UserAccessBand: {
+            /** @enum {string} */
+            key: "within30Days" | "days31to90" | "over90Days" | "never";
+            label: string;
+            count: number;
+        };
+        UserAccessRow: {
+            person: components["schemas"]["PersonRef"];
+            email: string;
+            /** @description Each role with its scope, as Settings › Roles and access › People shows them. */
+            roles: components["schemas"]["RoleAssignment"][];
+            /** @description Alphabetical; an inactive team has active false. */
+            teams: components["schemas"]["TeamRef"][];
+            /**
+             * Format: date-time
+             * @description UTC; null when the person has not signed in since times were recorded ("Never").
+             */
+            lastSignedInAt: string | null;
+        };
+        /** @description A group of activity types; a type belongs to at most one category (047-C7). */
+        ActivityCategory: {
+            /** @example CAT-1001 */
+            id: string;
+            /** @example Digital */
+            name: string;
+            /** @description At most one category is the default the reports open on. */
+            isDefault: boolean;
+            /** @description The activity types in this category, sorted by name. */
+            activityTypes: components["schemas"]["SettingRef"][];
+            active: boolean;
+            usage: components["schemas"]["Usage"];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ActivityCategoryPage: {
+            items: components["schemas"]["ActivityCategory"][];
+            total: number;
+        };
+        ActivityCategoryCreate: {
+            name: string;
+            /** @description True takes the default away from the category that had it. */
+            isDefault: boolean;
+            /** @description The activity types to put in the new category; each leaves the category it was in. */
+            activityTypeIds: string[];
+        };
+        /** @description Only the fields to change, and the version. activityTypeIds is the complete new list of activity types in the category: a type listed here leaves the category it was in, one left out becomes Uncategorised. */
+        ActivityCategoryUpdate: {
+            name?: string;
+            isDefault?: boolean;
+            activityTypeIds?: string[];
+            active?: boolean;
+            version: number;
+        };
     };
     responses: {
         /** @description The request is not valid (validation_failed lists every field problem; bad_request when the body cannot be read). */
@@ -12810,114 +13591,10 @@ export interface components {
         };
     };
     parameters: {
-        /** @description A data source's readable ID, such as PS-1001. */
-        SourceId: string;
-        /** @description A media code's readable ID, such as MC-1001. */
-        MediaCodeId: string;
-        /** @description A review row's readable ID, such as PRV-1001. */
-        ReviewRowId: string;
-        /** @description A column mapping's readable ID, such as PSM-1001. */
-        MappingId: string;
-        /** @description The report the frame is for. */
-        ReportKey: components["schemas"]["ReportKey"];
-        /** @description The report's path in the web app's address. */
-        ReportPath: "plan-budget" | "approvals" | "purchase-requests" | "plan-details" | "gsap-link" | "user-access" | "summary" | "revenue" | "funnel";
-        /** @description The report's own sort, which the report validates (039 FR-022); a leading minus sorts descending. */
-        ReportOwnSort: string;
-        /** @description The report's own tab, which the report validates (044). */
-        ReportOwnTab: string;
-        /** @description A grid's vendor filter, which the report validates (042); repeat for several. */
-        ReportOwnVendor: string[];
-        /** @description A grid's purchase request owner filter, which the report validates (042); repeat for several. */
-        ReportOwnRequestOwner: string[];
-        /** @description The report's own status filter, which the report validates (042 several statuses, 045 one); repeat for several. */
-        ReportOwnStatus: string[];
-        /** @description A grid's chosen columns, comma-separated in order, which the report validates (042). */
-        ReportOwnColumns: string;
-        /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
-        ReportOwnCategory: string;
-        /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
-        ReportOwnStage: "inq" | "mql";
-        /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
-        ReportOwnRevenueBy: string;
-        /** @description The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048). */
-        ReportOwnPerformanceBy: string;
-        /** @description The Summary report's Actual cost league segment, a Shell attribute ID, which the report validates (048). */
-        ReportOwnCostBy: string;
-        /** @description The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048). */
-        ReportOwnRoiBy: string;
-        RankedSort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
-        RankedOrder: "desc" | "asc";
-        /** @description none, plan, owner or attr:<attribute ID>. */
-        RankedGroup: string;
-        RankedSearch: string;
-        /** @description The record whose children the list shows under it. */
-        RankedDrill: string;
-        /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
-        RevenueCategory: string;
-        /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
-        FunnelStage: "inq" | "mql";
-        RevenueRankedSort: "actualRevenue" | "projectedRevenue";
-        FunnelRankedSort: "actual" | "projected";
-        /** @example RV-1001 */
-        ReportViewId: string;
-        /** @description Time widgets by month (default) or quarter of the plan year. */
-        ReportPeriod: "month" | "quarter";
-        /** @description The level a report that ranks records shows. */
-        ReportShow: "plan" | "campaign" | "initiative" | "activity";
-        /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
-        ReportCurrency: string;
-        /** @description Keys of the widgets shown as a table instead of a chart. */
-        ReportTable: string[];
-        /** @description The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12). */
-        SummaryStage: "mql";
-        /** @description A Shell attribute ID at Plan, Campaign or Activity level; the default is the first Activity-level attribute. */
-        SummarySegment: string;
-        ReportFormat: "xlsx" | "csv";
-        /** @description One widget of the report; required for CSV. */
-        ReportWidget: string;
-        /** @description The page of the report's table, from 1. */
-        ReportPage: number;
-        /** @description Rows per page of the report's table. */
-        ReportPageSize: number;
-        GsapLinkTab: "swbs" | "waiting" | "orders";
-        /** @description A column of the tab, "-" for descending; default -waiting (swbs, waiting) and lineItem (orders). swbs: lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, plan, routedAt, gsapPrNumber, amount, waiting; orders: lineItem, plan, purchaseRequest, gsapPrNumber, poNumber, poDate, vendor, poAmount, invoiced, paid. Ties break by ID. */
-        GsapLinkSort: string;
-        /** @description Name, e-mail, job title, role or team, ignoring case. */
-        UserAccessSearch: string;
-        /** @description Members of any of these teams. */
-        UserAccessTeam: string[];
-        UserAccessStatus: "active" | "inactive" | "all";
-        /** @description name (default), email, jobTitle, roles, teams, status or lastSignedIn, "-" for descending; Never is always last. Ties break by person ID. */
-        UserAccessSort: "name" | "-name" | "email" | "-email" | "jobTitle" | "-jobTitle" | "roles" | "-roles" | "teams" | "-teams" | "status" | "-status" | "lastSignedIn" | "-lastSignedIn";
-        /** @description Vendor name as entered, or none for no vendor; repeat for several. A value that matches nothing gives empty figures. */
-        PrReportVendor: string[];
-        /** @description Person ID of the purchase request's owner; repeat for several. */
-        PrReportRequestOwner: string[];
-        /** @description Purchase request status; repeat for several. */
-        PrReportStatus: string[];
-        /** @description The grid column each level is ordered by. */
-        PrReportSort: "name" | "status" | "amount" | "invoiced" | "created" | "delivery";
-        PrReportOrder: "asc" | "desc";
-        /** @description Vendors per page of the grid. */
-        PrReportPageSize: 5 | 10 | 25 | 50 | 100;
-        /** @description The grid's columns, comma-separated, in order. */
-        PrReportColumns: string;
-        /** @description The record type of the status widget. A value that matches nothing answers with empty figures. */
-        ApprovalsStatusType: string;
-        /** @description Grid filter by record type; repeat for several. A value that matches nothing gives an empty grid. */
-        ApprovalsRecordType: string[];
-        /** @description Grid filter by approver ID; repeat for several. The widgets are not narrowed by it. */
-        ApprovalsApprover: string[];
-        /** @description Grid filter by status; repeat for several. */
-        ApprovalsOutcome: string[];
-        /** @description Free text over the grid's text columns. */
-        ApprovalsSearch: string;
-        /** @description The grid column to sort by. Ties break by item ID, then level. */
-        ApprovalsSort: "itemId" | "itemName" | "recordType" | "approver" | "decidedOn" | "outcome" | "submittedOn" | "level" | "purchaseOrder" | "amount" | "owner" | "comments";
-        ApprovalsOrder: "asc" | "desc";
-        /** @description Rows per page of the grid. */
-        ApprovalsPageSize: 5 | 10 | 25 | 50 | 100;
+        /** @example DB-1001 */
+        CustomDashboardId: string;
+        /** @example DS-1001 */
+        DatasetId: string;
         /** @example PR-1001 */
         PurchaseRequestId: string;
         /** @example PRR-1001 */
@@ -12948,8 +13625,6 @@ export interface components {
         ModelId: string;
         /** @example AT-1001 */
         ActivityTypeId: string;
-        /** @example CAT-1001 */
-        ActivityCategoryId: string;
         /** @example SA-1001 */
         AttributeId: string;
         /** @example SO-1001 */
@@ -13110,6 +13785,116 @@ export interface components {
         /** @description A plan of the dashboard whose campaigns to show; ignored when the plan is not on the dashboard. */
         DashboardPlan: string;
         ExportFormat: "pptx" | "pdf";
+        /** @description A data source's readable ID, such as PS-1001. */
+        SourceId: string;
+        /** @description A media code's readable ID, such as MC-1001. */
+        MediaCodeId: string;
+        /** @description A review row's readable ID, such as PRV-1001. */
+        ReviewRowId: string;
+        /** @description A column mapping's readable ID, such as PSM-1001. */
+        MappingId: string;
+        /** @description The report the frame is for. */
+        ReportKey: components["schemas"]["ReportKey"];
+        /** @description The report's path in the web app's address. */
+        ReportPath: "plan-budget" | "approvals" | "purchase-requests" | "plan-details" | "gsap-link" | "user-access" | "summary" | "revenue" | "funnel";
+        /** @description The report's own sort, which the report validates (039 FR-022); a leading minus sorts descending. */
+        ReportOwnSort: string;
+        /** @description The report's own tab, which the report validates (044). */
+        ReportOwnTab: string;
+        /** @description A grid's vendor filter, which the report validates (042); repeat for several. */
+        ReportOwnVendor: string[];
+        /** @description A grid's purchase request owner filter, which the report validates (042); repeat for several. */
+        ReportOwnRequestOwner: string[];
+        /** @description The report's own status filter, which the report validates (042 several statuses, 045 one); repeat for several. */
+        ReportOwnStatus: string[];
+        /** @description A grid's chosen columns, comma-separated in order, which the report validates (042). */
+        ReportOwnColumns: string;
+        /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
+        ReportOwnCategory: string;
+        /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
+        ReportOwnStage: "inq" | "mql";
+        /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnRevenueBy: string;
+        /** @description The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnPerformanceBy: string;
+        /** @description The Summary report's Actual cost league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnCostBy: string;
+        /** @description The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048). */
+        ReportOwnRoiBy: string;
+        RankedSort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
+        RankedOrder: "desc" | "asc";
+        /** @description none, plan, owner or attr:<attribute ID>. */
+        RankedGroup: string;
+        RankedSearch: string;
+        /** @description The record whose children the list shows under it. */
+        RankedDrill: string;
+        /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
+        RevenueCategory: string;
+        /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
+        FunnelStage: "inq" | "mql";
+        RevenueRankedSort: "actualRevenue" | "projectedRevenue";
+        FunnelRankedSort: "actual" | "projected";
+        /** @example RV-1001 */
+        ReportViewId: string;
+        /** @description Time widgets by month (default) or quarter of the plan year. */
+        ReportPeriod: "month" | "quarter";
+        /** @description The level a report that ranks records shows. */
+        ReportShow: "plan" | "campaign" | "initiative" | "activity";
+        /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+        ReportCurrency: string;
+        /** @description Keys of the widgets shown as a table instead of a chart. */
+        ReportTable: string[];
+        /** @description The stage whose conversion trend is shown; MQL, the one stage counted from the stage before it (048-C12). */
+        SummaryStage: "mql";
+        /** @description A Shell attribute ID at Plan, Campaign or Activity level; the default is the first Activity-level attribute. */
+        SummarySegment: string;
+        ReportFormat: "xlsx" | "csv";
+        /** @description One widget of the report; required for CSV. */
+        ReportWidget: string;
+        /** @description The page of the report's table, from 1. */
+        ReportPage: number;
+        /** @description Rows per page of the report's table. */
+        ReportPageSize: number;
+        GsapLinkTab: "swbs" | "waiting" | "orders";
+        /** @description A column of the tab, "-" for descending; default -waiting (swbs, waiting) and lineItem (orders). swbs: lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, plan, routedAt, gsapPrNumber, amount, waiting; orders: lineItem, plan, purchaseRequest, gsapPrNumber, poNumber, poDate, vendor, poAmount, invoiced, paid. Ties break by ID. */
+        GsapLinkSort: string;
+        /** @description Name, e-mail, job title, role or team, ignoring case. */
+        UserAccessSearch: string;
+        /** @description Members of any of these teams. */
+        UserAccessTeam: string[];
+        UserAccessStatus: "active" | "inactive" | "all";
+        /** @description name (default), email, jobTitle, roles, teams, status or lastSignedIn, "-" for descending; Never is always last. Ties break by person ID. */
+        UserAccessSort: "name" | "-name" | "email" | "-email" | "jobTitle" | "-jobTitle" | "roles" | "-roles" | "teams" | "-teams" | "status" | "-status" | "lastSignedIn" | "-lastSignedIn";
+        /** @description Vendor name as entered, or none for no vendor; repeat for several. A value that matches nothing gives empty figures. */
+        PrReportVendor: string[];
+        /** @description Person ID of the purchase request's owner; repeat for several. */
+        PrReportRequestOwner: string[];
+        /** @description Purchase request status; repeat for several. */
+        PrReportStatus: string[];
+        /** @description The grid column each level is ordered by. */
+        PrReportSort: "name" | "status" | "amount" | "invoiced" | "created" | "delivery";
+        PrReportOrder: "asc" | "desc";
+        /** @description Vendors per page of the grid. */
+        PrReportPageSize: 5 | 10 | 25 | 50 | 100;
+        /** @description The grid's columns, comma-separated, in order. */
+        PrReportColumns: string;
+        /** @description The record type of the status widget. A value that matches nothing answers with empty figures. */
+        ApprovalsStatusType: string;
+        /** @description Grid filter by record type; repeat for several. A value that matches nothing gives an empty grid. */
+        ApprovalsRecordType: string[];
+        /** @description Grid filter by approver ID; repeat for several. The widgets are not narrowed by it. */
+        ApprovalsApprover: string[];
+        /** @description Grid filter by status; repeat for several. */
+        ApprovalsOutcome: string[];
+        /** @description Free text over the grid's text columns. */
+        ApprovalsSearch: string;
+        /** @description The grid column to sort by. Ties break by item ID, then level. */
+        ApprovalsSort: "itemId" | "itemName" | "recordType" | "approver" | "decidedOn" | "outcome" | "submittedOn" | "level" | "purchaseOrder" | "amount" | "owner" | "comments";
+        ApprovalsOrder: "asc" | "desc";
+        /** @description Rows per page of the grid. */
+        ApprovalsPageSize: 5 | 10 | 25 | 50 | 100;
+        /** @example CAT-1001 */
+        ActivityCategoryId: string;
     };
     requestBodies: never;
     headers: never;
@@ -13863,144 +14648,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Model"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
-            default: components["responses"]["Error"];
-        };
-    };
-    listActivityCategories: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The activity categories with the activity types they group. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActivityCategoryPage"];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
-            default: components["responses"]["Error"];
-        };
-    };
-    createActivityCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ActivityCategoryCreate"];
-            };
-        };
-        responses: {
-            /** @description Created, active. */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActivityCategory"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
-            default: components["responses"]["Error"];
-        };
-    };
-    getActivityCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @example CAT-1001 */
-                categoryId: components["parameters"]["ActivityCategoryId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The activity category. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActivityCategory"];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-            default: components["responses"]["Error"];
-        };
-    };
-    deleteActivityCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @example CAT-1001 */
-                categoryId: components["parameters"]["ActivityCategoryId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Moved to the recycle bin. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DeleteResult"];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-            default: components["responses"]["Error"];
-        };
-    };
-    updateActivityCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @example CAT-1001 */
-                categoryId: components["parameters"]["ActivityCategoryId"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ActivityCategoryUpdate"];
-            };
-        };
-        responses: {
-            /** @description The activity category after the change. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActivityCategory"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -15667,7 +16314,7 @@ export interface operations {
                  * @example 2026
                  */
                 year?: number;
-                /** @description Part of the name or of the ID, ignoring letter case and surrounding spaces. */
+                /** @description Part of the name or of the ID, ignoring letter case and surrounding spaces; a plan is also listed when a campaign, initiative, activity or line item below it holds the text (052 FR-006). */
                 q?: string;
                 /** @description BCPIR plans (013 FR-003). */
                 bcpir?: components["parameters"]["AllWorkBcpir"];
@@ -15865,6 +16512,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Plan"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    searchPlan: {
+        parameters: {
+            query: {
+                /**
+                 * @description Part of a name or ID, ignoring letter case and surrounding spaces; 1–200 characters.
+                 * @example venue
+                 */
+                q: string;
+            };
+            header?: never;
+            path: {
+                /** @example P-1001 */
+                planId: components["parameters"]["PlanId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The matching records below the plan. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanSearch"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -20089,57 +20770,6 @@ export interface operations {
             default: components["responses"]["Error"];
         };
     };
-    getAttributionSettings: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The designated model, the five models and whether the person may change it. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AttributionSettings"];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            default: components["responses"]["Error"];
-        };
-    };
-    saveAttributionSettings: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AttributionSettingsInput"];
-            };
-        };
-        responses: {
-            /** @description The setting as saved. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AttributionSettings"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
-            409: components["responses"]["Conflict"];
-            default: components["responses"]["Error"];
-        };
-    };
     getOverspendConfiguration: {
         parameters: {
             query?: never;
@@ -21263,6 +21893,687 @@ export interface operations {
             default: components["responses"]["Error"];
         };
     };
+    listCustomDashboards: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The dashboards. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboardList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomDashboardCreate"];
+            };
+        };
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            413: components["responses"]["TooLarge"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The dashboard. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Moved to the recycle bin. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomDashboardUpdate"];
+            };
+        };
+        responses: {
+            /** @description The dashboard after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            413: components["responses"]["TooLarge"];
+            default: components["responses"]["Error"];
+        };
+    };
+    copyCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CustomDashboardCopy"];
+            };
+        };
+        responses: {
+            /** @description The copy. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    shareCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SharingUpdate"];
+            };
+        };
+        responses: {
+            /** @description The dashboard after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listDatasets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The datasets. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DatasetCreate"];
+            };
+        };
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dataset"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            413: components["responses"]["TooLarge"];
+            default: components["responses"]["Error"];
+        };
+    };
+    previewDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DatasetUpload"];
+            };
+        };
+        responses: {
+            /** @description The proposal. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetPreview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            413: components["responses"]["TooLarge"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The dataset. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dataset"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Moved to the recycle bin. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DatasetUpdate"];
+            };
+        };
+        responses: {
+            /** @description The dataset after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dataset"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listDatasetRows: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rows. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetRowPage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    shareDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SharingUpdate"];
+            };
+        };
+        responses: {
+            /** @description The dataset after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dataset"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listDataSources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The sources, built-in first in a fixed order, then datasets by name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataSourceList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    queryWidgetData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WidgetDataRequest"];
+            };
+        };
+        responses: {
+            /** @description The widget's rows, totals and notes. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WidgetData"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listActivityCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The activity categories with the activity types they group. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategoryPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Created, active. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The activity category. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Moved to the recycle bin. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCategoryUpdate"];
+            };
+        };
+        responses: {
+            /** @description The activity category after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getAttributionSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The designated model, the five models and whether the person may change it. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttributionSettings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            default: components["responses"]["Error"];
+        };
+    };
+    saveAttributionSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttributionSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description The setting as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttributionSettings"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
     listPerformanceSources: {
         parameters: {
             query?: never;
@@ -21640,7 +22951,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The completed load; its rows took the same path as an uploaded file (ADR-0020). */
+            /** @description The completed load; its rows took the same path as an uploaded file (ADR-0022). */
             201: {
                 headers: {
                     [name: string]: unknown;

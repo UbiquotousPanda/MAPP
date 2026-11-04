@@ -16,11 +16,14 @@ import (
 
 // historyAccess implements history.Access (014, D-238, D-304): entries about planning records follow the plan's
 // visibility; administration kinds need the whole activity log, GSAP imports and SWBS runs also finance.import,
-// global budgets globalBudgets.view for All markets; any other kind the whole log (fail closed).
+// global budgets globalBudgets.view for All markets, dashboards and datasets their owner; any other kind the
+// whole log (fail closed).
 type historyAccess struct {
 	plans            stores.PlanStore
 	history          *history.Service
 	purchaseRequests stores.PurchaseRequestStore
+	dashboards       ownerStore
+	datasets         ownerStore
 }
 
 var managedBy = map[string]authz.Permission{
@@ -62,6 +65,9 @@ func (h historyAccess) CanSeeEntry(ctx context.Context, e history.Entry) bool {
 	if e.RecordType == measure.KindReportView {
 		return ownOrWholeLog(ctx, e.Actor.ID)
 	}
+	if isOwnedKind(e.RecordType) {
+		return h.seesOwnedLog(ctx, entryRecord{kind: e.RecordType, id: e.RecordID})
+	}
 	return h.canSee(ctx, e.RecordType, e.RecordID, e.Path, nil)
 }
 
@@ -73,10 +79,16 @@ func ownOrWholeLog(ctx context.Context, personID string) bool {
 }
 
 func (h historyAccess) CanSeeBinEntry(ctx context.Context, e history.BinEntry) bool {
+	if isOwnedKind(e.RecordType) {
+		return h.seesOwnedBin(ctx, e)
+	}
 	return h.canSee(ctx, e.RecordType, e.RecordID, e.Path, e.Snapshots)
 }
 
 func (h historyAccess) CanRestore(ctx context.Context, e history.BinEntry) error {
+	if isOwnedKind(e.RecordType) {
+		return h.mayRestoreOwned(ctx, e)
+	}
 	g, restricted := authz.From(ctx)
 	if !restricted || openToAll[e.RecordType] {
 		return nil

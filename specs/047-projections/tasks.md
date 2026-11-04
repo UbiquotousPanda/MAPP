@@ -5,7 +5,7 @@ marks tasks that can run in parallel. The migrations are the truth the documents
 
 ## Phase 1 — Schema and shared setup
 
-- [X] T001 Migration `00033_projections.sql`: the three `models` columns with their CHECKs and backfills,
+- [X] T001 Migration `00035_projections.sql`: the three `models` columns with their CHECKs and backfills,
   `activity_categories`, `activity_category_types`, the case-insensitive name index and the single-default
   partial unique index, per [data-model.md](./data-model.md); applies to an empty database
 - [X] T002 Queries `settings_categories.sql` (list/get/put/delete, assignments) and the models queries

@@ -1,5 +1,5 @@
 // Package simulatedfeed produces performance rows on demand, standing in for the live connectors the
-// constitution puts out of scope (ADR-0020, D-370).
+// constitution puts out of scope (ADR-0022, D-370).
 package simulatedfeed
 
 import (
