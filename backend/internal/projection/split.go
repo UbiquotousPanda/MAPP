@@ -1,6 +1,10 @@
 package projection
 
 import (
+	"errors"
+	"fmt"
+	"slices"
+
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 )
@@ -94,9 +98,14 @@ type SplitMoney struct {
 	Total     money.Money       `json:"total"`
 }
 
-func SplitAmounts(actual, projected []MoneyFigure, today date.Date, planYear int) SplitMoney {
+var ErrMixedCurrencies = errors.New("actual and projected revenue are in different currencies")
+
+func SplitAmounts(actual, projected []MoneyFigure, today date.Date, planYear int) (SplitMoney, error) {
 	at := splitAt(today, planYear)
-	currency := currencyOf(actual, projected)
+	currency, err := currencyOf(actual, projected)
+	if err != nil {
+		return SplitMoney{}, err
+	}
 	out := SplitMoney{Months: make([]SplitMoneyMonth, 0, Months),
 		Actual: money.Money{Currency: currency}, Projected: money.Money{Currency: currency}}
 	for i := range Months {
@@ -116,7 +125,7 @@ func SplitAmounts(actual, projected []MoneyFigure, today date.Date, planYear int
 		out.Months = append(out.Months, month)
 	}
 	out.Total = money.Money{Amount: out.Actual.Amount.Add(out.Projected.Amount), Currency: currency}
-	return out
+	return out, nil
 }
 
 func amountAt(months []MoneyFigure, i int, currency string) money.Money {
@@ -126,15 +135,23 @@ func amountAt(months []MoneyFigure, i int, currency string) money.Money {
 	return money.Money{Currency: currency}
 }
 
-func currencyOf(actual, projected []MoneyFigure) string {
-	for _, months := range [][]MoneyFigure{projected, actual} {
-		for _, m := range months {
-			if m.Value.Currency != "" {
-				return m.Value.Currency
-			}
+// currencyOf is the one currency both series are in; the split has no rates to convert between two.
+func currencyOf(actual, projected []MoneyFigure) (string, error) {
+	found := ""
+	for _, m := range slices.Concat(projected, actual) {
+		code := m.Value.Currency
+		if code == "" || code == found {
+			continue
 		}
+		if found != "" {
+			return "", fmt.Errorf("%w: %s and %s", ErrMixedCurrencies, found, code)
+		}
+		found = code
 	}
-	return money.BaseCurrency
+	if found == "" {
+		return money.BaseCurrency, nil
+	}
+	return found, nil
 }
 
 func moneyLabel(actual, projected []MoneyFigure, i int) string {

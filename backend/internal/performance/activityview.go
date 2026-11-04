@@ -133,7 +133,7 @@ func (s *Service) buildPanel(ctx context.Context, activityID string) (Panel, err
 		WebMetrics: metricFigures(totals),
 		Sources:    sources,
 	}
-	return s.withProjection(ctx, panel, in), nil
+	return s.withProjection(ctx, panel, in)
 }
 
 func (s *Service) goalFacts(ctx context.Context, activityID string) (GoalFacts, error) {

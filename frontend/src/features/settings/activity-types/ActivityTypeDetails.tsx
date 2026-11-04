@@ -9,7 +9,7 @@ import { CanChange } from '@/ui/CanChange/CanChange';
 import { MetaLine } from '../MetaLine';
 import { SETTING_NOUNS } from '../settings-nouns';
 import { UsageLine } from '../UsageLine';
-import { moreActions } from './activity-type-actions';
+import { categoryName, moreActions } from './activity-type-actions';
 import type { ActivityTypeActions } from './activity-type-actions';
 import type { ActivityType } from './api';
 
@@ -22,7 +22,7 @@ export interface ActivityTypeDetailsProps {
 
 /**
  * An activity type's details in a side panel (US5 scenario 2): its default planned cost, the
- * models allowing it, where it is used and who created and last changed it; **Edit** and ⋯ (Set
+ * models allowing it, its category, where it is used and who created and last changed it; **Edit** and ⋯ (Set
  * inactive or Reactivate, Delete).
  */
 export function ActivityTypeDetails({ type, actions, onClose }: ActivityTypeDetailsProps) {
@@ -88,6 +88,10 @@ export function ActivityTypeDetails({ type, actions, onClose }: ActivityTypeDeta
                 </ul>
               )}
             </dd>
+          </div>
+          <div>
+            <dt>Category</dt>
+            <dd>{categoryName(type)}</dd>
           </div>
           <div>
             <dt>Used by</dt>

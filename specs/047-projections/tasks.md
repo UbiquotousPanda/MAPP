@@ -97,17 +97,27 @@ marks tasks that can run in parallel. The migrations are the truth the documents
   Done 2026-11-02: both pass against the real API and a seeded database, axe included. The journey proved
   the stranded-goal warning end to end, in its own words: "1 plan set their goal at a stage this model
   would no longer allow. They keep it and it keeps projecting; new goals can't choose it." 
-- [ ] T056 Extend `frontend/e2e/projections.spec.ts` to **US3**: create an activity category, assign a type
+- [X] T056 Extend `frontend/e2e/projections.spec.ts` to **US3**: create an activity category, assign a type
   that is already in another, mark it the default, delete it and undo. Needs the integrator's two route
   lines first (contracts/api.md, ask 1) per US3 (missing)
-- [ ] T057 Note the activity types a restore takes back from other categories, as a released default is
+  Done 2026-11-03: the journey moves seeded Sponsorship out of "Events and sponsorship", takes the default
+  from Digital, is refused a duplicate name ignoring case, deletes and undoes, then puts the seed back; it
+  passes on PostgreSQL alone and with `performance-data` and `measure-revenue`.
+- [X] T057 Note the activity types a restore takes back from other categories, as a released default is
   already noted, per FR-021 and 047-C14 (partial)
-- [ ] T058 Convert or refuse a currency mismatch in `projection.SplitAmounts` instead of stamping the
+  Done 2026-11-03: Restore and Undo note "Took back 'Webinar' from 'Promotion'." for each category losing a type.
+- [X] T058 Convert or refuse a currency mismatch in `projection.SplitAmounts` instead of stamping the
   projected currency onto converted actuals, per FR-007 and 047-C6 (missing)
-- [ ] T059 Decide whether a goal of exactly zero is a goal, record it as a clarification, and make
+  Done 2026-11-03: refused — the split has no rates, so it answers `ErrMixedCurrencies` and the panel passes
+  the refusal on; models and typed revenue goals are USD-only, so no user path reaches it today.
+- [X] T059 Decide whether a goal of exactly zero is a goal, record it as a clarification, and make
   `hasGoal` agree, per FR-013 (partial)
-- [ ] T060 Show each activity type's category on the Activity types Settings page, per FR-022 (missing)
+  Done 2026-11-03: 047-C17 — zero is no goal; `projection.IsGoal` decides it for the engine and the panel, and
+  the Revenue and Funnel reports follow through the engine.
+- [X] T060 Show each activity type's category on the Activity types Settings page, per FR-022 (missing)
+  Done 2026-11-03: a Category column and details fact; "Uncategorised" for a type in none.
 - [ ] T061 [integrator] Fold the goal-entry ask into `docs/sdd/decision-log.md` at wave end — a lane never
   edits it — per FR-005 (missing)
-- [ ] T062 [lane D] Seed activity categories with the wave B demo data, so the list does not open empty,
+- [X] T062 [lane D] Seed activity categories with the wave B demo data, so the list does not open empty,
   per plan: demo data (missing)
+  Done by lane D in #98: three categories, Digital the default, one type left Uncategorised.

@@ -18,7 +18,7 @@ import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
 import { useCanChange } from '@/ui/useCanChange';
 import { SettingDeleteDialog } from '../SettingDeleteDialog';
 import { useSettingStatus } from '../useSettingStatus';
-import { modelNames, moreActions } from './activity-type-actions';
+import { categoryName, modelNames, moreActions } from './activity-type-actions';
 import type { ActivityTypeActions } from './activity-type-actions';
 import { ActivityTypeDetails } from './ActivityTypeDetails';
 import { ActivityTypeForm } from './ActivityTypeForm';
@@ -184,6 +184,7 @@ function ActivityTypesCard({ types, filters, actions, onNew }: ActivityTypesCard
                   Default planned cost
                 </th>
                 <th scope="col">Allowed in</th>
+                <th scope="col">Category</th>
                 <th scope="col">Used by</th>
                 <th scope="col">Status</th>
                 <th scope="col">
@@ -217,6 +218,7 @@ function ActivityTypeRow({ type, actions }: { type: ActivityType; actions: Activ
         {type.defaultPlannedCost ? money(type.defaultPlannedCost) : '—'}
       </td>
       <td>{modelNames(type)}</td>
+      <td>{categoryName(type)}</td>
       <td>{type.usage.summary}</td>
       <td className={styles.nowrap}>
         <StatusChip tone={type.active ? 'positive' : 'neutral'}>

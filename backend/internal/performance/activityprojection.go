@@ -2,6 +2,7 @@ package performance
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 )
 
 // withProjection fills the fields 046 reserved; with no series at all, no model stands behind a figure.
-func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput) Panel {
+func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput) (Panel, error) {
 	forecast := projection.Project(projection.Inputs{
 		Goals: projection.Goals{INQ: in.goals.INQ, MQL: in.goals.MQL, Revenue: in.goals.Revenue,
 			SetLaterStagesMyself: in.goals.SetLaterStagesMyself},
@@ -20,7 +21,7 @@ func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput
 		Today: date.Today(s.now()),
 	})
 	if !forecast.Present || (len(forecast.Stages) == 0 && len(forecast.Revenue) == 0) {
-		return noProjection(panel)
+		return noProjection(panel), nil
 	}
 	stamp := forecast.Stamp
 	panel.Projection = &stamp
@@ -38,8 +39,12 @@ func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput
 			panel.Stages[i].Months = withoutCountActuals(split.Months)
 		}
 	}
-	panel.Revenue = s.projectedRevenue(ctx, panel.Revenue, forecast, in)
-	return panel
+	revenue, err := s.projectedRevenue(ctx, panel.Revenue, forecast, in)
+	if err != nil {
+		return Panel{}, err
+	}
+	panel.Revenue = revenue
+	return panel, nil
 }
 
 // noProjection says why each figure has no projection, which an actual alone would otherwise swallow: the
@@ -54,19 +59,22 @@ func noProjection(panel Panel) Panel {
 
 func (s *Service) projectedRevenue(ctx context.Context, figure RevenueFigure, forecast projection.Projection,
 	in panelInput,
-) RevenueFigure {
+) (RevenueFigure, error) {
 	if len(forecast.Revenue) == 0 {
 		figure.ProjectedReason = reasonNoGoal
-		return figure
+		return figure, nil
 	}
 	today, year := date.Today(s.now()), in.goals.PlanYear
-	split := projection.SplitAmounts(s.monthlyRevenue(ctx, in.totals, year), forecast.Revenue, today, year)
+	split, err := projection.SplitAmounts(s.monthlyRevenue(ctx, in.totals, year), forecast.Revenue, today, year)
+	if err != nil {
+		return figure, fmt.Errorf("split the projected revenue: %w", err)
+	}
 	projected := split.Total
 	figure.Projected, figure.Months = &projected, split.Months
 	if figure.Actual == nil {
 		figure.Months = withoutMoneyActuals(split.Months)
 	}
-	return figure
+	return figure, nil
 }
 
 // withoutCountActuals leaves a figure without an actual null in every month, never 0.

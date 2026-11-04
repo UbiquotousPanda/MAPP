@@ -1,7 +1,14 @@
-import { expect, test } from '@playwright/test';
-import { escapeRegExp, expectNoAxeViolations, expectToast, signInAs } from './fixtures';
+import { expect, test, type Locator, type Page } from '@playwright/test';
+import {
+  callApi,
+  escapeRegExp,
+  expectNoAxeViolations,
+  expectToast,
+  signInAs,
+  uniqueName,
+} from './fixtures';
 import { MEASURE_PLAN } from './measure';
-import { idOf } from './planning';
+import { idOf, type ListOf, type Named } from './planning';
 
 const ALEX = 'alex.morgan@shell.com';
 
@@ -85,3 +92,103 @@ test('047 US2: an approved activity shows its projected figures, split at today,
   await expect(months.getByText(/this month/)).toHaveCount(at >= 0 && at < 12 ? 1 : 0);
   await expectNoAxeViolations(page);
 });
+
+// The Measure demo seeds three categories (047 T062): Digital is the default, Sponsorship sits in Events and sponsorship.
+const SEEDED_DEFAULT = 'Digital';
+const SEEDED_HOLDER = 'Events and sponsorship';
+const MOVED_TYPE = 'Sponsorship';
+
+interface Category extends Named {
+  isDefault: boolean;
+  version: number;
+  activityTypes: Named[];
+}
+
+function rowOf(page: Page, name: string): Locator {
+  return page.getByRole('row').filter({ has: page.getByRole('rowheader', { name, exact: true }) });
+}
+
+test('047 US3: categories group activity types — a moved type, one default, delete and Undo', async ({
+  page,
+}) => {
+  test.slow();
+  await signInAs(page, ALEX);
+  const name = uniqueName('Promotion');
+
+  await page.goto('/settings');
+  await page.getByRole('link', { name: 'Activity categories', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Activity categories', level: 1 })).toBeVisible();
+  await expect(rowOf(page, SEEDED_HOLDER)).toContainText('2 activity types');
+  await expectNoAxeViolations(page);
+
+  await page.getByRole('button', { name: 'New category' }).first().click();
+  const form = page.getByRole('dialog', { name: 'New activity category' });
+  await form.getByRole('textbox', { name: /^Name/ }).fill(name);
+  await form.getByRole('checkbox', { name: 'Default category' }).check();
+  const types = form.getByRole('group', { name: /^Activity types/ });
+  await types.getByRole('checkbox', { name: MOVED_TYPE, exact: true }).check();
+  await form.getByRole('button', { name: 'Save', exact: true }).click();
+  await expectToast(page, `Activity category '${name}' created`);
+
+  await expect(rowOf(page, name)).toContainText('1 activity type');
+  await expect(rowOf(page, name)).toContainText('Default');
+  await expect(rowOf(page, SEEDED_HOLDER)).toContainText('1 activity type');
+  await expect(rowOf(page, SEEDED_DEFAULT)).not.toContainText('Default');
+
+  await page.getByRole('button', { name: 'New category' }).first().click();
+  const again = page.getByRole('dialog', { name: 'New activity category' });
+  await again.getByRole('textbox', { name: /^Name/ }).fill(name.toLowerCase());
+  await again.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(
+    again.getByText(`An activity category called '${name}' already exists.`).first(),
+  ).toBeVisible();
+  await again.getByRole('button', { name: 'Cancel' }).click();
+  await page
+    .getByRole('alertdialog', { name: 'Discard changes?' })
+    .getByRole('button', { name: 'Discard changes' })
+    .click();
+
+  await page.getByRole('button', { name: `Actions for ${name}` }).click();
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  const confirm = page.getByRole('alertdialog', { name: `Delete activity category '${name}'?` });
+  await expect(confirm).toContainText('Its activity types become Uncategorised.');
+  await confirm.getByRole('button', { name: 'Delete activity category' }).click();
+  await expectToast(page, `Activity category '${name}' deleted`);
+  await expect(rowOf(page, name)).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expectToast(page, `Activity category '${name}' restored`);
+  await expect(rowOf(page, name)).toContainText('1 activity type');
+  await expect(rowOf(page, name)).toContainText('Default');
+  await expectNoAxeViolations(page);
+
+  await page.goto('/settings/activity-types');
+  await expect(rowOf(page, MOVED_TYPE)).toContainText(name);
+
+  await restoreSeededCategories(page, name);
+});
+
+/** Puts the demo's categories back as seeded, so the reports' journeys that follow see them unchanged. */
+async function restoreSeededCategories(page: Page, created: string): Promise<void> {
+  const url = '/api/v1/settings/activity-categories';
+  const { items } = await callApi<ListOf<Category>>(page, 'GET', url);
+  const find = (name: string) => items.find((c) => c.name === name);
+  const holder = find(SEEDED_HOLDER);
+  const mine = find(created);
+  const digital = find(SEEDED_DEFAULT);
+  const moved = mine?.activityTypes.find((t) => t.name === MOVED_TYPE);
+  if (!holder || !mine || !digital || !moved) {
+    throw new Error(
+      `The categories to put back are missing: ${items.map((c) => c.name).join(', ')}`,
+    );
+  }
+  await callApi(page, 'PATCH', `${url}/${holder.id}`, {
+    activityTypeIds: [...holder.activityTypes.map((t) => t.id), moved.id],
+    version: holder.version,
+  });
+  await callApi(page, 'DELETE', `${url}/${mine.id}`);
+  await callApi(page, 'PATCH', `${url}/${digital.id}`, {
+    isDefault: true,
+    version: digital.version,
+  });
+}

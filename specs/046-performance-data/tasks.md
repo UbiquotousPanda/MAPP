@@ -251,7 +251,8 @@ to delete it after a fact has used it.
 ## Phase 9: Polish and cross-cutting
 
 - [X] T109 Extend `frontend/e2e/performance-data.spec.ts` to cover **every P1 story** (US1, US2, US3, US4) with axe included. Done: US1–US4 with axe in `frontend/e2e/performance-data.spec.ts`; facts are loaded through the Imports screen because none are seeded (T110). US4-2 (an old name matching through its alias) is not covered: nothing in the API keeps an alias yet (046-C14, feature 006's lane)
-- [ ] T110 Seed the wave B demo facts under `backend/cmd/seed/` — **blocked**: the measure seed file is lane D's to create and 039 wires its call in. Raise in the pull request if it still does not exist (plan *Risks*)
+- [X] T110 Seed the wave B demo facts under `backend/cmd/seed/` — **blocked**: the measure seed file is lane D's to create and 039 wires its call in. Raise in the pull request if it still does not exist (plan *Risks*)
+  Done by lane D in #136: the Measure demo loads its performance facts through 046's import (`backend/seed/measure_facts.go`).
 - [X] T111 [P] Confirm every file changed is within 300 non-blank lines and every file's comments are within 5% of its non-blank lines (constitution V, VIII)
 - [X] T112 [P] Confirm every test name carries the requirement ID it proves, and that no test restates the code, tests generated code or exists only for coverage (constitution VI)
 - [X] T113 Check every FR of [spec.md](./spec.md) against plan.md: each has a passing test named with it; tick the tasks above

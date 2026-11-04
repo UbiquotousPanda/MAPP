@@ -54,7 +54,7 @@ func stageReason(figure StageFigure, stage string, suppliers []Supplier, words t
 	if !supplied(suppliers, MeaningStage, stage) {
 		return reasonNoSource
 	}
-	if figure.Goal == nil {
+	if !projection.IsGoal(figure.Goal) {
 		return reasonNoGoal
 	}
 	return words.emptyReason()
@@ -122,7 +122,7 @@ func revenueReason(figure RevenueFigure, suppliers []Supplier, words troubleWord
 	if !supplied(suppliers, MeaningRevenue, "") {
 		return reasonNoSource
 	}
-	if figure.Goal == nil {
+	if !projection.IsRevenueGoal(figure.Goal) {
 		return reasonNoGoal
 	}
 	return words.emptyReason()

@@ -1,10 +1,13 @@
 package performance_test
 
 import (
+	"errors"
 	"testing"
 
 	"mapp/internal/performance"
 	"mapp/internal/platform/date"
+	"mapp/internal/platform/money"
+	"mapp/internal/projection"
 )
 
 func useGoals(t *testing.T, goals performance.GoalFacts) performance.Panel {
@@ -60,6 +63,37 @@ func TestActivityPanel_AnActivityOutsideThePlanYearClaimsNoProjection_FR013(t *t
 
 	if panel.Projection != nil {
 		t.Errorf("stamp = %+v, want none: nothing projects, so no model stands behind a figure", panel.Projection)
+	}
+	for _, stage := range panel.Stages {
+		assertNoProjection(t, stage.Stage, served{stage.Projected != nil, stage.ProjectedReason, len(stage.Months)})
+	}
+	revenue := panel.Revenue
+	assertNoProjection(t, "revenue", served{revenue.Projected != nil, revenue.ProjectedReason, len(revenue.Months)})
+}
+
+// The panel's actuals are in US dollars; a revenue goal in another currency is refused, never relabelled.
+func TestActivityPanel_RefusesARevenueGoalInAnotherCurrency_FR007(t *testing.T) {
+	t.Parallel()
+	f, _ := panelFixture(t)
+	eur := money.Money{Amount: money.FromCents(4_000_000), Currency: "EUR"}
+	f.service.UseFigures(figuresStub{known: true, goals: performance.GoalFacts{Revenue: &eur,
+		SetLaterStagesMyself: true, PlanYear: 2026, ModelID: "MOD-1", Model: projectingModel()}})
+
+	panel, err := f.service.ActivityPanel(t.Context(), alex, "A-1")
+
+	if !errors.Is(err, projection.ErrMixedCurrencies) {
+		t.Errorf("ActivityPanel = %+v, %v, want ErrMixedCurrencies", panel.Revenue.Projected, err)
+	}
+}
+
+func TestActivityPanel_AGoalOfZeroProjectsNothing_FR013_047C17(t *testing.T) {
+	t.Parallel()
+	zero := int64(0)
+
+	panel := useGoals(t, performance.GoalFacts{INQ: &zero, PlanYear: 2026, ModelID: "MOD-1", Model: projectingModel()})
+
+	if panel.Projection != nil {
+		t.Errorf("stamp = %+v, want none: a goal of zero is no goal, so no model stands behind a figure", panel.Projection)
 	}
 	for _, stage := range panel.Stages {
 		assertNoProjection(t, stage.Stage, served{stage.Projected != nil, stage.ProjectedReason, len(stage.Months)})
