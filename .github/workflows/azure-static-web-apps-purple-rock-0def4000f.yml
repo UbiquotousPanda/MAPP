@@ -1,17 +1,14 @@
 name: Azure Static Web Apps CI/CD
 
+# Push to develop only, until the team decides whether MAPP deploys to Azure at all (constitution: no
+# cloud services at run time). A pull request into develop no longer runs this job.
 on:
   push:
-    branches:
-      - develop
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
     branches:
       - develop
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     permissions:
@@ -45,14 +42,3 @@ jobs:
           output_location: "build" # Built app content directory - optional
           github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
-
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request Job
-    steps:
-      - name: Close Pull Request
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          action: "close"
