@@ -66,7 +66,9 @@ func (y year) ordersTab(transactions []Transaction, rates money.Rates) OrdersTab
 			Paid: y.reportMoney(o.paid)})
 		total.po, total.invoiced, total.paid = total.po.Add(o.po), total.invoiced.Add(o.invoiced), total.paid.Add(o.paid)
 	}
-	tab.Totals = OrderTotals{PoAmount: y.reportMoney(total.po), Invoiced: y.reportMoney(total.invoiced),
-		Paid: y.reportMoney(total.paid)}
+	if y.coverage().Plans > 0 {
+		po, invoiced, paid := y.reportMoney(total.po), y.reportMoney(total.invoiced), y.reportMoney(total.paid)
+		tab.Totals = OrderTotals{PoAmount: &po, Invoiced: &invoiced, Paid: &paid}
+	}
 	return tab
 }

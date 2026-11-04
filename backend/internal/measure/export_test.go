@@ -86,7 +86,7 @@ func TestExport_Excel_FR022(t *testing.T) {
 		about[row.Cells[0]] = row.Cells[1]
 	}
 	wantAbout := map[string]string{"Report": "Plan details", "Year": "2026", "Filters": "Owner: Daniel Okoro",
-		"Period": "Months", "Currency": "GBP", "Exported by": "Priya Raman", "Exported at": "18 Oct 2026 14:05 UTC"}
+		"Period": "Months", "Show": "Activity", "Currency": "GBP", "Exported by": "Priya Raman", "Exported at": "18 Oct 2026 14:05 UTC"}
 	if diff := cmp.Diff(wantAbout, about); diff != "" {
 		t.Errorf("About this export (-want +got):\n%s", diff)
 	}

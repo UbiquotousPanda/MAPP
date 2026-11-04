@@ -104,9 +104,9 @@ type OrdersTab struct {
 }
 
 type OrderTotals struct {
-	PoAmount money.Money `json:"poAmount"`
-	Invoiced money.Money `json:"invoiced"`
-	Paid     money.Money `json:"paid"`
+	PoAmount *money.Money `json:"poAmount"`
+	Invoiced *money.Money `json:"invoiced"`
+	Paid     *money.Money `json:"paid"`
 }
 
 type OrderRow struct {

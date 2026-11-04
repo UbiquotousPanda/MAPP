@@ -73,6 +73,7 @@ export function OrdersTab({ tab, finance, total, table, onChange }: OrdersTabPro
     { key: 'paid', label: 'Paid', ...amount, cell: (r) => money(r.paid) },
   ];
   const { poAmount, invoiced, paid } = tab.totals;
+  const shown = (m: typeof poAmount) => (m ? money(m) : '—');
   const note = coverageText(finance);
   return (
     <div className={styles.body}>
@@ -86,7 +87,7 @@ export function OrdersTab({ tab, finance, total, table, onChange }: OrdersTabPro
         table={table}
         total={total}
         empty="No purchase order is linked to a line item in view."
-        totals={['Total', '', '', '', '', '', '', money(poAmount), money(invoiced), money(paid)]}
+        totals={['Total', '', '', '', '', '', '', shown(poAmount), shown(invoiced), shown(paid)]}
         onChange={onChange}
       />
     </div>

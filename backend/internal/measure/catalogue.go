@@ -31,28 +31,40 @@ type (
 type entry struct {
 	key, path, name, purpose string
 	requires                 authz.Permission // beyond reports.view; "" for none
+	controls                 frameControls
+}
+
+type frameControls struct {
+	noFilters, period bool
+	showOpensOn       string
 }
 
 func entries() []entry {
 	return []entry{
 		{KeyPlanBudget, "plan-budget", "Plan budget",
-			"Budget, planned cost, committed and actual by month, and which plans, campaigns or activities lead or lag.", ""},
+			"Budget, planned cost, committed and actual by month, and which plans, campaigns or activities lead or lag.", "",
+			frameControls{period: true, showOpensOn: ShowCampaign}},
 		{KeyApprovals, "approvals", "Approvals",
-			"How many approvals wait, how long decisions take, and every approval round.", ""},
+			"How many approvals wait, how long decisions take, and every approval round.", "", frameControls{}},
 		{KeyPurchaseRequests, "purchase-requests", "Purchase requests",
-			"What is committed to each vendor and owner by delivery month, and what has been invoiced.", ""},
+			"What is committed to each vendor and owner by delivery month, and what has been invoiced.", "", frameControls{}},
 		{KeyPlanDetails, "plan-details", "Plan details",
-			"How activities and planned cost spread across each Shell attribute, and what is not filled in.", ""},
+			"How activities and planned cost spread across each Shell attribute, and what is not filled in.", "",
+			frameControls{period: true, showOpensOn: ShowActivity}},
 		{KeyGsapLink, "gsap-link", "GSAP link",
-			"SWBS codes not received, purchase requests waiting for GSAP, and the purchase orders of each line item.", ""},
+			"SWBS codes not received, purchase requests waiting for GSAP, and the purchase orders of each line item.", "",
+			frameControls{}},
 		{KeyUserAccess, "user-access", "User access",
-			"Who has which role and teams, and when they last signed in.", authz.AccessManage},
+			"Who has which role and teams, and when they last signed in.", authz.AccessManage, frameControls{noFilters: true}},
 		{KeySummary, "summary", "Summary",
-			"Whether the year is on track: projected against goal, the leading segments and the funnel.", ""},
+			"Whether the year is on track: projected against goal, the leading segments and the funnel.", "",
+			frameControls{period: true}},
 		{KeyRevenue, "revenue", "Revenue",
-			"Revenue against goal by month, and the plans, campaigns or activities behind it.", ""},
+			"Revenue against goal by month, and the plans, campaigns or activities behind it.", "",
+			frameControls{period: true, showOpensOn: ShowCampaign}},
 		{KeyFunnel, "funnel", "Funnel stages",
-			"One funnel stage against goal by month, and where the funnel leaks.", ""},
+			"One funnel stage against goal by month, and where the funnel leaks.", "",
+			frameControls{period: true, showOpensOn: ShowCampaign}},
 	}
 }
 
