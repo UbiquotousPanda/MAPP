@@ -116,8 +116,9 @@ marks tasks that can run in parallel. The migrations are the truth the documents
   the Revenue and Funnel reports follow through the engine.
 - [X] T060 Show each activity type's category on the Activity types Settings page, per FR-022 (missing)
   Done 2026-11-03: a Category column and details fact; "Uncategorised" for a type in none.
-- [ ] T061 [integrator] Fold the goal-entry ask into `docs/sdd/decision-log.md` at wave end — a lane never
+- [X] T061 [integrator] Fold the goal-entry ask into `docs/sdd/decision-log.md` at wave end — a lane never
   edits it — per FR-005 (missing)
+  Done 2026-11-04 by the integrator: D-394, with the rest of 047's clarifications in D-391–D-393.
 - [X] T062 [lane D] Seed activity categories with the wave B demo data, so the list does not open empty,
   per plan: demo data (missing)
   Done by lane D in #98: three categories, Digital the default, one type left Uncategorised.

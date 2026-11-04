@@ -63,7 +63,7 @@ func valueOrZero(months *int) *int {
 }
 
 const stageRemovedMessage = "%s set their goal at a stage this model would no longer allow. They keep it " +
-	"and it keeps projecting; new goals can't choose it."
+	"and it keeps projecting."
 
 // stageRemovedWarnings warns, per goal stage the change removes, of the live plans whose goal sits there.
 // Existing goals are never rewritten; the warning is the whole effect.

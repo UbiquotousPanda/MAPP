@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-02
 
-**Status**: Draft
+**Status**: Built (4 Nov 2026)
 
 **Input**: Feature 049 of the Measure module (docs/sdd/measure-module-build.md): two reports — **Revenue**
 and **Funnel stages** — each with summary cards, a series of actual, projected and goal by period split at
