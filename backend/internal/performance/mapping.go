@@ -76,7 +76,7 @@ func (s *Service) CreateMapping(ctx context.Context, a actor.Actor, sourceID str
 }
 
 // mappableSource refuses a mapping on a source that is gone or deactivated, and a second active supplier
-// for the model's stage or revenue (FR-003, FR-004).
+// for the model's stage or revenue.
 func (s *Service) mappableSource(ctx context.Context, sourceID string, in MappingInput) error {
 	sources, err := s.repo.ListSources(ctx, sourceID)
 	if err != nil {
@@ -109,7 +109,7 @@ func (s *Service) DeleteMapping(ctx context.Context, a actor.Actor, id string) e
 	})
 }
 
-// checkMapping reports every fault at once, as every form in MAPP does (FR-001).
+// checkMapping reports every fault at once, as every form in MAPP does.
 func checkMapping(in MappingInput) error {
 	problems := namingFaults(in)
 	problems = append(problems, consistencyFaults(in)...)

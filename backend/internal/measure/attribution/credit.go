@@ -30,7 +30,7 @@ func Attribute(c Conversion, m Model) []Credit {
 	return slices.DeleteFunc(credits, func(c Credit) bool { return c.Amount.IsZero() && c.ActivityID != "" })
 }
 
-// weights are the touches' relative weights, earliest first (FR-003).
+// weights are the touches' relative weights, earliest first.
 func weights(m Model, n int) []int64 {
 	w := make([]int64, n)
 	switch {
@@ -56,7 +56,7 @@ func weights(m Model, n int) []int64 {
 }
 
 // allocate splits total cents by the weights, rounding down; the residual goes to the largest weight, the newest
-// touch on a tie, so nothing is lost or made up (FR-005).
+// touch on a tie, so nothing is lost or made up.
 func allocate(total int64, w []int64) []int64 {
 	var sum int64
 	for _, x := range w {

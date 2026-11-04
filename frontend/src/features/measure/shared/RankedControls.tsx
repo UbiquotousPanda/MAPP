@@ -22,7 +22,7 @@ const ORDERS: { value: RankedState['order']; label: string }[] = [
   { value: 'asc', label: 'Low to high' },
 ];
 
-/** Sort by, Order, Group by, page size and the name search; each applies at once (040 FR-009, FR-013, FR-014). */
+/** Sort by, Order, Group by, page size and the name search; each applies at once. */
 export function RankedControls({ state, sorts, groups, onChange }: RankedControlsProps) {
   const id = useId();
   return (

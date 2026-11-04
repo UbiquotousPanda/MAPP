@@ -73,7 +73,7 @@ func (x *Index) LevelIDs(level string) []string {
 	return ids
 }
 
-// Trail is the record and its ancestors, from the plan down (040 FR-010).
+// Trail is the record and its ancestors, from the plan down.
 func (x *Index) Trail(id string) []TrailStep {
 	var trail []TrailStep
 	for n, ok := x.byID[id]; ok; n, ok = x.byID[n.ParentID] {

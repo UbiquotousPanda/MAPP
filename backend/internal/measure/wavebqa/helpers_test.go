@@ -183,7 +183,7 @@ func panelOf(t *testing.T, who person, activityID string) panel {
 	return decode[panel](t, who.expect(t, get("/activities/"+activityID+"/performance"), http.StatusOK))
 }
 
-// inq is the INQ actual, -1 when the panel has none: a missing figure is never 0 (FR-032).
+// inq is the INQ actual, -1 when the panel has none: a missing figure is never 0.
 func (p panel) inq() int64 {
 	for _, s := range p.Stages {
 		if s.Stage == "inq" && s.Actual != nil {

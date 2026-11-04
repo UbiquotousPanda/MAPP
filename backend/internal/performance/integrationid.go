@@ -34,7 +34,7 @@ func (s *Service) IntegrationIDs(ctx context.Context, _ actor.Actor, activityID 
 }
 
 // SetIntegrationID registers the outside system's own id for this activity: at most one per source, and a
-// second is refused rather than replaced, so a swap is a deliberate delete and set (FR-037).
+// second is refused rather than replaced, so a swap is a deliberate delete and set.
 func (s *Service) SetIntegrationID(ctx context.Context, a actor.Actor, ref KeyRef, in IntegrationIDInput) (IntegrationID, error) {
 	if err := authz.Require(ctx, PermissionLink); err != nil {
 		return IntegrationID{}, err
@@ -96,7 +96,7 @@ func (s *Service) writeIntegrationID(ctx context.Context, a actor.Actor, ref Key
 	return saved, err
 }
 
-// DeleteIntegrationID stops the source's rows matching this activity through that key (FR-037).
+// DeleteIntegrationID stops the source's rows matching this activity through that key.
 func (s *Service) DeleteIntegrationID(ctx context.Context, a actor.Actor, ref KeyRef) error {
 	if err := authz.Require(ctx, PermissionLink); err != nil {
 		return err

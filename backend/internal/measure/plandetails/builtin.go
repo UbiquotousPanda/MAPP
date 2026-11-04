@@ -11,7 +11,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// builtIn is the level's section of fields every record has (FR-006, FR-007, 043-C1); empty with no record.
+// builtIn is the level's section of fields every record has (043-C1); empty with no record.
 func (v view) builtIn() []Widget {
 	if len(v.records) == 0 {
 		return []Widget{}
@@ -78,7 +78,7 @@ func (v view) typePart(typeID string) part {
 	return p
 }
 
-// periods are the months or quarters of the plan year, in order (039 FR-016).
+// periods are the months or quarters of the plan year, in order.
 func (v view) periods() []part {
 	count := 12
 	if v.period == measure.PeriodQuarter {

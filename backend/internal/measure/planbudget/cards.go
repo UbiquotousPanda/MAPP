@@ -5,7 +5,7 @@ import (
 	"mapp/internal/rollup"
 )
 
-// total adds up the plans in view, with the budget counted once per branch (FR-002, FR-003).
+// total adds up the plans in view, with the budget counted once per branch.
 func (r *records) total() sums {
 	var t sums
 	for _, id := range r.Matched().Plans {

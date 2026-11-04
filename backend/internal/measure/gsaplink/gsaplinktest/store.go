@@ -74,7 +74,7 @@ func (s Store) WaitingForGsap(_ context.Context, lineItemIDs []string) ([]gsapli
 	return list, nil
 }
 
-// request is pr with its lines and routings when it waits for GSAP on one of the line items (032 FR-032).
+// request is pr with its lines and routings when it waits for GSAP on one of the line items.
 func (s Store) request(pr purchaserequest.PurchaseRequest, lineItemIDs []string) (gsaplink.Request, bool, error) {
 	lines, err := s.linesOf(pr.ID)
 	if err != nil {

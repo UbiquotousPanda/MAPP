@@ -21,7 +21,7 @@ interface OrdersTabProps {
   onChange: (patch: Partial<GsapTable>) => void;
 }
 
-/** Purchase orders (044 US3): one row per line item and PO with its amount, invoiced and paid (FR-011 – FR-013). */
+/** Purchase orders (044 US3): one row per line item and PO with its amount, invoiced and paid. */
 export function OrdersTab({ tab, finance, total, table, onChange }: OrdersTabProps) {
   const { date, money } = useFormatters();
   if (finance?.plans === 0) {

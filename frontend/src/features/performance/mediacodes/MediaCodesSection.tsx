@@ -14,7 +14,7 @@ import { useDeactivateMediaCode, useDeleteMediaCode, useMediaCodes } from './api
 import { taggedLink } from './tagged-link';
 import type { MediaCode } from './api';
 
-/** The activity's Media codes section (FR-040): absent wherever the activity's type does not use codes. */
+/** The activity's Media codes section: absent wherever the activity's type does not use codes. */
 export function MediaCodesSection({ activityId }: { activityId: string }) {
   const area = useMediaCodes(activityId);
   if (area.data && !area.data.requiresCodes) {

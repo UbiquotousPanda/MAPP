@@ -15,7 +15,7 @@ type Deps struct {
 	Rates  Rates
 }
 
-// Service works out the GSAP link report: read-only, nothing on it changes a record (FR-002).
+// Service works out the GSAP link report: read-only, nothing on it changes a record.
 type Service struct {
 	tx   Transactor
 	deps Deps

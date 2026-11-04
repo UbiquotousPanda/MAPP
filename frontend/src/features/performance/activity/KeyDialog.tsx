@@ -8,7 +8,7 @@ import { usePerformanceSources } from '../api';
 import { useSetIntegrationId } from './api';
 import styles from './DataSourcesArea.module.css';
 
-/** Registers one source's own id for the activity (FR-037); a second for the same source answers 409. */
+/** Registers one source's own id for the activity; a second for the same source answers 409. */
 export function KeyDialog({ activityId, onClose }: { activityId: string; onClose: () => void }) {
   const { show } = useToast();
   const sources = usePerformanceSources();

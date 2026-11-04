@@ -60,7 +60,7 @@ function isRecordType(level: string): level is PlanningRecordType {
   return DRILLS_TO.has(level) || level === 'lineItem';
 }
 
-/** The ranked list (040 FR-008 – FR-015): top entries with their children, drill with a trail, shared with 049. */
+/** The ranked list: top entries with their children, drill with a trail, shared with 049. */
 export function RankedList<F>(props: RankedListProps<F>) {
   const { report, data, error, onRetry, columns, groups, defaultSort, flag, owner = false } = props;
   const { state, change } = useRankedState(defaultSort);

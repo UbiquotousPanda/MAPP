@@ -12,7 +12,7 @@ interface ReportRoute {
   permission: Permission;
 }
 
-// Every report's address from the start (039 FR-001, D-369), listed here so the feature loads only when opened.
+// Every report's address from the start (D-369), listed here so the feature loads only when opened.
 const REPORTS: ReportRoute[] = [
   { key: 'planBudget', path: 'plan-budget', title: 'Plan budget', permission: 'reports.view' },
   { key: 'approvals', path: 'approvals', title: 'Approvals', permission: 'reports.view' },

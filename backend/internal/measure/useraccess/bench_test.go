@@ -9,7 +9,7 @@ import (
 	"mapp/internal/platform/authz"
 )
 
-// The client's scale (SC-001, research R5).
+// The client's scale (research R5).
 const (
 	benchPeople = 2_000
 	benchTeams  = 200

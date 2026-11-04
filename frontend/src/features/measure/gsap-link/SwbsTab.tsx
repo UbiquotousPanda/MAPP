@@ -96,7 +96,7 @@ export function SwbsTab({ tab, total, table, onChange }: SwbsTabProps) {
   );
 }
 
-/** The bands as bars, each with its count in words, so colour is never the only signal (FR-007). */
+/** The bands as bars, each with its count in words, so colour is never the only signal. */
 function BandBars({ bands }: { bands: GsapBand[] }) {
   const largest = Math.max(1, ...bands.map((b) => b.count));
   return (

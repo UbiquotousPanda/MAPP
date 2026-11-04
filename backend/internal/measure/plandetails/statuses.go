@@ -48,7 +48,7 @@ func wordPart(value string, words []word) part {
 	return p
 }
 
-// wordsWidget counts the level's records by a status value, in lifecycle order (FR-007).
+// wordsWidget counts the level's records by a status value, in lifecycle order.
 func (v view) wordsWidget(key, what string, words []word, valueOf func(*allwork.Node) string) Widget {
 	t := newTally()
 	for _, r := range v.records {

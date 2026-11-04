@@ -6,7 +6,7 @@ import (
 	"mapp/internal/platform/record"
 )
 
-// SourceResponse is the contract's shape: freshness is derived at the moment of answering (FR-005).
+// SourceResponse is the contract's shape: freshness is derived at the moment of answering.
 type SourceResponse struct {
 	ID            string        `json:"id"`
 	Name          string        `json:"name"`

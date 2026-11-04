@@ -33,7 +33,7 @@ func frameOf(t *testing.T, s *measure.Service, values url.Values) measure.Frame 
 	return frame
 }
 
-// In view counts the matching records and the line items of the matching activities only (FR-007).
+// In view counts the matching records and the line items of the matching activities only.
 func TestFrame_InView_FR007(t *testing.T) {
 	t.Parallel()
 	frame := frameOf(t, frameService(fakePlanning{}), url.Values{"activityType": {"AT-1"}})
@@ -72,7 +72,7 @@ func TestFrame_FinanceCoverage_FR004(t *testing.T) {
 	}
 }
 
-// Values that are unknown or out of scope are left out and counted, never named (FR-015).
+// Values that are unknown or out of scope are left out and counted, never named.
 func TestFrame_LeftOutCountedNotNamed_FR015(t *testing.T) {
 	t.Parallel()
 	frame := frameOf(t, frameService(fakePlanning{}), url.Values{"plan": {"P-1", "P-2"}, "owner": {"U-404"}})

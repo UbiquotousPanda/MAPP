@@ -13,7 +13,7 @@ type Matched struct {
 	LeftOut     []LeftOut
 }
 
-// Match runs All work's own filters on the year's nodes, so a report and All work cover the same records (039 FR-012).
+// Match runs All work's own filters on the year's nodes, so a report and All work cover the same records.
 func Match(nodes []Node, q Query, attributes []Attribute, c Choices) Matched {
 	q, leftOut := knownValues(withDefaults(q), YearData{Nodes: nodes}, c)
 	q.attrs = resolveAttrs(q.Attributes, attributes, nodes)
@@ -64,7 +64,7 @@ func (m *Matched) add(n *tnode) {
 	}
 }
 
-// PlanTypeWord and ActivityStatusWord name a plan type and an activity status as All work shows them (039 FR-022).
+// PlanTypeWord and ActivityStatusWord name a plan type and an activity status as All work shows them.
 func PlanTypeWord(code string) string { return cmp.Or(planTypeWords[code], code) }
 
 func ActivityStatusWord(code string) string { return cmp.Or(activityStatuses[code].label, code) }

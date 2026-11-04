@@ -33,7 +33,7 @@ func lowered(keys []string) []string {
 	return out
 }
 
-// grouped keeps every activity a key reached: more than one is ambiguous, and FR-019 forbids guessing.
+// grouped keeps every activity a key reached: more than one is ambiguous, and the spec forbids guessing.
 func grouped[T any](rows []T, pair func(T) (string, string)) map[string][]string {
 	found := make(map[string][]string, len(rows))
 	for _, r := range rows {

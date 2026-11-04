@@ -11,7 +11,7 @@ func filledPart() part {
 	return part{key: KeyFilled, label: "Filled in", order: 0, counted: true}
 }
 
-// rows returns one row per active Shell attribute of the level, in Settings' order (FR-008).
+// rows returns one row per active Shell attribute of the level, in Settings' order.
 func (v view) rows(attributes []allwork.Attribute) []AttributeRow {
 	rows := []AttributeRow{}
 	for _, a := range attributes {
@@ -37,8 +37,8 @@ func choiceKind(kind string) bool {
 	return false
 }
 
-// choiceWidgets are the records and the planned cost per value and the filled-in widget (FR-009). The planned cost
-// is divided activity by activity, as All work's Breakdown divides it (FR-011, SC-002).
+// choiceWidgets are the records and the planned cost per value and the filled-in widget. The planned cost
+// is divided activity by activity, as All work's Breakdown divides it.
 func (v view) choiceWidgets(a allwork.Attribute) []Widget {
 	values, filled := newTally(), newTally()
 	values.seed(notFilledInPart())
@@ -71,7 +71,7 @@ func filledIn(p part) part {
 	return filledPart()
 }
 
-// fieldFilledIn is the only widget of a text, long text or number attribute (FR-010, 043-C3).
+// fieldFilledIn is the only widget of a text, long text or number attribute (043-C3).
 func (v view) fieldFilledIn(a allwork.Attribute) Widget {
 	filled := newTally()
 	filled.seed(filledPart(), notFilledInPart())

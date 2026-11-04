@@ -13,7 +13,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// The volume of 028 and SC-001: 5,000 activities, 20,000 line items and requests' lines, 100,000 transactions.
+// The volume of 028: 5,000 activities, 20,000 line items and requests' lines, 100,000 transactions.
 const (
 	benchPlans        = 50
 	benchActivities   = 100
@@ -94,7 +94,7 @@ func (v *volume) activity(id, initiative, plan string, n int) {
 	v.requests = append(v.requests, request)
 }
 
-// BenchmarkGsapLink_SC001 times each tab's first page, sorted, at the 028 volume; SC-001 leaves it under 300 ms.
+// BenchmarkGsapLink_SC001 times each tab's first page, sorted, at the 028 volume, to stay under 300 ms.
 func BenchmarkGsapLink_SC001(b *testing.B) {
 	v := newVolume()
 	s := NewService(fakeTx{}, Deps{Scoped: v, Store: v, Rates: v}, func() time.Time { return now })

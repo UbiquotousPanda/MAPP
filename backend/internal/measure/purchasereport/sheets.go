@@ -81,7 +81,7 @@ func chartSheet(name, first string, c Chart) sheet.Sheet {
 	return sheet.Sheet{Name: name, Rows: append(rows, append(totals, moneyCell(c.Committed)))}
 }
 
-// gridSheet is every matching line as one row, under its vendor, purchase request and line item (FR-027).
+// gridSheet is every matching line as one row, under its vendor, purchase request and line item.
 func (d data) gridSheet(rs []Request, q Query) sheet.Sheet {
 	columns := slices.DeleteFunc(slices.Clone(columnsOr(q.Columns)), func(c string) bool { return c == colName })
 	head := append([]string{"Vendor", "Purchase request", "Line item"}, columnHeads(columns, d.shown.code)...)

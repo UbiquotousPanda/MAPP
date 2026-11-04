@@ -11,7 +11,7 @@ interface AccessControlsProps {
   onChange: (patch: Partial<AccessTable>) => void;
 }
 
-/** Search, Team and Status, the report's own controls instead of the plan filters (FR-006, 045-C1). */
+/** Search, Team and Status, the report's own controls instead of the plan filters (045-C1). */
 export function AccessControls({ table, teams, onChange }: AccessControlsProps) {
   return (
     <div className={styles.controls}>

@@ -29,7 +29,7 @@ const (
 	TypeSingleChoice        AttributeType = "singleChoice"
 	TypeMultipleChoice      AttributeType = "multipleChoice"
 	TypeMultipleChoiceSplit AttributeType = "multipleChoiceSplit" // only at activity and line-item level (D-029)
-	TypeYesNo               AttributeType = "yesNo"               // always optional; missing reads as No
+	TypeYesNo               AttributeType = "yesNo"
 	TypeText                AttributeType = "text"
 	TypeLongText            AttributeType = "longText"
 	TypeNumber              AttributeType = "number"
@@ -39,7 +39,7 @@ type Marking string
 
 const (
 	MarkingOptional        Marking = "optional"
-	MarkingNeededToPublish Marking = "neededToPublish" // plan, campaign and initiative only
+	MarkingNeededToPublish Marking = "neededToPublish"
 	MarkingNeededToSubmit  Marking = "neededToSubmit"
 )
 
@@ -56,7 +56,7 @@ type Model struct {
 	AverageDealSize         money.Money   `json:"averageDealSize"`
 	ActivityTypeIDs         []string      `json:"activityTypeIds"`
 	InqToMqlVelocityMonths  int           `json:"inqToMqlVelocityMonths"`
-	MqlToDealVelocityMonths int           `json:"mqlToDealVelocityMonths"` // whole months, 0–24
+	MqlToDealVelocityMonths int           `json:"mqlToDealVelocityMonths"`
 	AllowedGoalStages       []string      `json:"allowedGoalStages"`
 	Active                  bool          `json:"active"`
 	record.Meta
@@ -91,7 +91,7 @@ type Goals struct {
 type ActivityType struct {
 	ID                 string       `json:"id"`
 	Name               string       `json:"name"`
-	DefaultPlannedCost *money.Money `json:"defaultPlannedCost"` // USD, 0.00 or more; nil when none
+	DefaultPlannedCost *money.Money `json:"defaultPlannedCost"`
 	Active             bool         `json:"active"`
 	record.Meta
 }
@@ -99,9 +99,9 @@ type ActivityType struct {
 type ActivityCategory struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
-	IsDefault       bool     `json:"isDefault"` // at most one category is the default
+	IsDefault       bool     `json:"isDefault"`
 	Active          bool     `json:"active"`
-	ActivityTypeIDs []string `json:"activityTypeIds"` // by id; a type is in at most one category
+	ActivityTypeIDs []string `json:"activityTypeIds"`
 	record.Meta
 }
 
@@ -114,7 +114,7 @@ type Attribute struct {
 	Marking           Marking       `json:"marking"`
 	Section           string        `json:"section"`
 	Position          int           `json:"position"`
-	ParentAttributeID string        `json:"parentAttributeId"` // the attribute it depends on; "" when none
+	ParentAttributeID string        `json:"parentAttributeId"`
 	Condition         []string      `json:"condition"`
 	Role              string        `json:"role"`
 	Active            bool          `json:"active"`
@@ -134,7 +134,7 @@ type Option struct {
 	AttributeID     string   `json:"attributeId"`
 	Label           string   `json:"label"`
 	Position        int      `json:"position"`
-	ParentOptionIDs []string `json:"parentOptionIds"` // options of the parent attribute it is linked to; empty when the attribute depends on nothing
+	ParentOptionIDs []string `json:"parentOptionIds"`
 	Active          bool     `json:"active"`
 	record.Meta
 }
@@ -146,8 +146,8 @@ type Currency struct {
 	Name          string      `json:"name"`
 	Symbol        string      `json:"symbol"`
 	Rate          money.Rate  `json:"rate,omitzero"`
-	RateChangedAt time.Time   `json:"rateChangedAt,omitzero"` // legacy when stored; when the current rate was recorded when read
-	RateChangedBy actor.Actor `json:"rateChangedBy,omitzero"` // legacy when stored; who recorded it when read
+	RateChangedAt time.Time   `json:"rateChangedAt,omitzero"`
+	RateChangedBy actor.Actor `json:"rateChangedBy,omitzero"`
 	Active        bool        `json:"active"`
 	record.Meta
 }
@@ -156,17 +156,17 @@ type RateSource string
 
 const (
 	RateManual     RateSource = "manual"
-	RateGSAPImport RateSource = "gsapImport" // written by a GSAP rate import
+	RateGSAPImport RateSource = "gsapImport"
 )
 
 // ExchangeRate is units of the currency per 1 USD from its date on; USD has none (always 1).
 type ExchangeRate struct {
 	ID       string     `json:"id"`
-	Currency string     `json:"currency"` // an existing currency other than USD; never changes
+	Currency string     `json:"currency"`
 	Date     date.Date  `json:"date"`
 	Rate     money.Rate `json:"rate"`
 	Source   RateSource `json:"source"`
-	ImportID string     `json:"importId"` // the RI-… import that wrote it; "" for manual
+	ImportID string     `json:"importId"`
 	record.Meta
 }
 
@@ -174,7 +174,7 @@ type RateImport struct {
 	ID        string     `json:"id"`
 	FileName  string     `json:"fileName"`
 	Feed      string     `json:"feed"`
-	FirstDate *date.Date `json:"firstDate"` // the earliest date among the rates added or replaced; nil when none
+	FirstDate *date.Date `json:"firstDate"`
 	LastDate  *date.Date `json:"lastDate"`
 	Added     int        `json:"added"`
 	Replaced  int        `json:"replaced"`
@@ -186,21 +186,21 @@ type RateImport struct {
 
 type FieldHelpText struct {
 	Key  string `json:"key"`
-	Text string `json:"text"` // 0–300 characters, plain text; "" hides the ⓘ
+	Text string `json:"text"`
 	record.Meta
 }
 
 // FinanceBudget is created with its first item and never deleted on its own.
 type FinanceBudget struct {
 	ID   string `json:"id"`
-	Year int    `json:"year"` // never changes
-	Name string `json:"name"` // 1–120 characters, unique within its year
+	Year int    `json:"year"`
+	Name string `json:"name"`
 	record.Meta
 }
 
 type FinanceBudgetItem struct {
 	ID       string `json:"id"`
-	BudgetID string `json:"budgetId"` // its finance budget; the item's year is the budget's
+	BudgetID string `json:"budgetId"`
 	Name     string `json:"name"`
 	Code     string `json:"code"`
 	Active   bool   `json:"active"`

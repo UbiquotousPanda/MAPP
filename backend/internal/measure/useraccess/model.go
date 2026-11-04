@@ -53,7 +53,7 @@ type Row struct {
 	LastSignedInAt *time.Time             `json:"lastSignedInAt"`
 }
 
-// Query is the report's own parameters: search, teams, status, sort and page (FR-006).
+// Query is the report's own parameters: search, teams, status, sort and page.
 type Query struct {
 	Search   string
 	Teams    []string

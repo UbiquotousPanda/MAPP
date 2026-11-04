@@ -2,7 +2,7 @@ import styles from './Funnel.module.css';
 
 const STAGE_WORDS: Record<string, string> = { inq: 'INQ', mql: 'MQL' };
 
-/** The funnel stage selector: every stage any model in view allows, in funnel order (049-C11, FR-015). */
+/** The funnel stage selector: every stage any model in view allows, in funnel order (049-C11). */
 export function StageSelect({
   stage,
   available,

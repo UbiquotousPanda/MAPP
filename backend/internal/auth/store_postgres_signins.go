@@ -11,7 +11,7 @@ import (
 	"mapp/internal/platform/database/sqlcdb"
 )
 
-// RecordSignIn writes only the person's sign-in row, never the person (045 FR-010).
+// RecordSignIn writes only the person's sign-in row, never the person.
 func (s *PostgresStore) RecordSignIn(ctx context.Context, personID string, at time.Time) error {
 	if err := s.db.Queries(ctx).RecordSignIn(ctx, sqlcdb.RecordSignInParams{PersonID: personID, At: at}); err != nil {
 		return fmt.Errorf("record the sign-in of %s: %w", personID, err)

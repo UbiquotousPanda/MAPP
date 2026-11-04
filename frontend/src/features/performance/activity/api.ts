@@ -1,4 +1,4 @@
-/** The activity's Data sources area (046 FR-031): keys in, figures out. */
+/** The activity's Data sources area: keys in, figures out. */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';

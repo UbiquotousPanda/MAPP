@@ -75,7 +75,7 @@ type FinanceCoverage struct {
 	Of    int `json:"of"`
 }
 
-// Frame is the contract's ReportFrame: what every report page shares (FR-006 – FR-019).
+// Frame is the contract's ReportFrame: what every report page shares.
 type Frame struct {
 	Report          string          `json:"report"`
 	Filter          AppliedFilter   `json:"filter"`

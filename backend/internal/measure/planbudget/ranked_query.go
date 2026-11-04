@@ -17,7 +17,7 @@ const (
 
 type RankedQuery = ranking.Query
 
-// ParseRanked reads the ranked list's parameters; every problem is answered at once (FR-014).
+// ParseRanked reads the ranked list's parameters; every problem is answered at once.
 func ParseRanked(values url.Values) (RankedQuery, error) {
 	return ranking.Parse(values, []string{SortBudget, SortPlanned, SortCommitted, SortActual, SortLeftToPlan, SortUnspent},
 		SortPlanned)

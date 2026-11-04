@@ -10,7 +10,7 @@ import { usePageTitle } from '@/ui/usePageTitle';
 import { useReportCatalogue } from './shared/api';
 import styles from './ReportsPage.module.css';
 
-/** The reports the person may open, in the catalogue's order, each with its one-line purpose (039 FR-001). */
+/** The reports the person may open, in the catalogue's order, each with its one-line purpose. */
 export function ReportsPage() {
   usePageTitle('Reports');
   const catalogue = useReportCatalogue();

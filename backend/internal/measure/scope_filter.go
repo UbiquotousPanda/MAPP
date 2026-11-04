@@ -13,7 +13,7 @@ const (
 
 // narrowed matches f in sc with only the values the report offers, so the frame, the chips and the export never
 // name what was dropped: an owner or team outside the scope, an unknown, inactive or unfilterable attribute, an
-// unknown option and an unknown currency are left out and counted (FR-015, SC-002).
+// unknown option and an unknown currency are left out and counted.
 func narrowed(sc Scope, f Filter) Scope {
 	q, left := knownAttributes(f.Query, sc.Attributes)
 	sc.Matched = allwork.Match(sc.Nodes, q, sc.Attributes, inReportScope(sc.Choices, sc.Nodes))

@@ -1,4 +1,4 @@
-/** Why a figure is empty (FR-009, 049-C20): the API's stated reason, never inferred and never a sample value. */
+/** Why a figure is empty (049-C20): the API's stated reason, never inferred and never a sample value. */
 const REASON_WORDS: Record<string, string> = {
   noGoal: 'No goal set.',
   notApproved: 'Not approved yet.',

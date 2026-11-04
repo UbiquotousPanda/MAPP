@@ -17,7 +17,7 @@ interface ManageViewsPanelProps {
   views: ReportView[];
 }
 
-/** Your saved views (FR-027, FR-028): star one as the default, rename, delete at once with Undo. */
+/** Your saved views: star one as the default, rename, delete at once with Undo. */
 export function ManageViewsPanel({ report, open, onOpenChange, views }: ManageViewsPanelProps) {
   const [renaming, setRenaming] = useState<ReportView | null>(null);
   const update = useUpdateReportView(report);

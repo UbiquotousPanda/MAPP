@@ -7,7 +7,7 @@ import (
 	"mapp/internal/allwork"
 )
 
-// swbsReady is All work's SWBS status of a line item Ready to send to GSAP (030 FR-001, 044-C1).
+// swbsReady is All work's SWBS status of a line item Ready to send to GSAP (044-C1).
 const swbsReady = "readyToSend"
 
 func (y year) readyToSend() []allwork.Node {
@@ -24,7 +24,7 @@ func activitiesOf(lineItems []allwork.Node) []string {
 	return ids
 }
 
-// swbsTab lists the line items Ready to send, each waiting since its activity's latest approval (FR-005 – FR-007).
+// swbsTab lists the line items Ready to send, each waiting since its activity's latest approval.
 func (y year) swbsTab(ready []allwork.Node, approved map[string]time.Time) SwbsTab {
 	tab := SwbsTab{Bands: bands(), Rows: make([]SwbsRow, 0, len(ready))}
 	for _, li := range ready {

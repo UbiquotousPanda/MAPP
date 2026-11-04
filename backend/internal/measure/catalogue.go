@@ -136,7 +136,7 @@ func (s stub) Sheets(context.Context, actor.Actor, Filter) ([]WidgetSheet, error
 	return []WidgetSheet{}, nil
 }
 
-// openable refuses a report the person's roles do not open, as the catalogue leaves it out (FR-003).
+// openable refuses a report the person's roles do not open, as the catalogue leaves it out.
 func openable(ctx context.Context, report string) error {
 	i := slices.IndexFunc(entries(), func(e entry) bool { return e.key == report })
 	if i < 0 {

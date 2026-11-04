@@ -9,7 +9,7 @@ import (
 	"mapp/internal/platform/actor"
 )
 
-// benchYear is the 028 volume (SC-001): 50 plans of 4 campaigns, 5,000 activities with 4 line items each, and 30
+// benchYear is the 028 volume: 50 plans of 4 campaigns, 5,000 activities with 4 line items each, and 30
 // active activity attributes of every kind, half of them filled in on each activity.
 func benchYear(b *testing.B) (*year, []allwork.Attribute) {
 	b.Helper()

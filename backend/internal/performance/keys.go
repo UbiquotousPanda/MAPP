@@ -28,7 +28,7 @@ type MediaCode struct {
 	record.Meta
 }
 
-// firstMediaCode starts above Hive9's numbers so a new code cannot collide (FR-042).
+// firstMediaCode starts above Hive9's numbers so a new code cannot collide.
 const firstMediaCode = 9000001
 
 type CodeAttribute struct {

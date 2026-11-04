@@ -49,7 +49,7 @@ func (sc Scope) SeesFinanceOf(planID string) bool {
 	return sc.Choices.SeesFinance && (sc.Choices.FinancePlans == nil || slices.Contains(sc.Choices.FinancePlans, planID))
 }
 
-// Scope reads the scope of f inside the caller's Read, so a report and the frame cover the same records (FR-007).
+// Scope reads the scope of f inside the caller's Read, so a report and the frame cover the same records.
 func (s *Service) Scope(ctx context.Context, a actor.Actor, f Filter, columns []string) (Scope, error) {
 	today := date.Today(s.now())
 	year := cmp.Or(f.Query.Year, today.Year())
@@ -77,7 +77,7 @@ func (s *Service) Scope(ctx context.Context, a actor.Actor, f Filter, columns []
 		FinanceAsOf: data.FinanceAsOf}, f), err
 }
 
-// currency is the chosen active currency at its current rate, or else the person's display currency (FR-018).
+// currency is the chosen active currency at its current rate, or else the person's display currency.
 func (s *Service) currency(ctx context.Context, a actor.Actor, code string) (allwork.Currency, error) {
 	if code != "" {
 		active, err := s.deps.Currencies.Active(ctx)

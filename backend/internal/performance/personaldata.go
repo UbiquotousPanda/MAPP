@@ -2,7 +2,7 @@ package performance
 
 import "strings"
 
-// A file holding any of these is refused in full, no row stored (FR-012); journeys use a pseudonym.
+// A file holding any of these is refused in full, no row stored; journeys use a pseudonym.
 func personalDataColumns() []string {
 	return []string{"email", "e-mail", "firstname", "first name", "lastname", "last name",
 		"fullname", "full name", "phone", "telephone", "mobile", "address", "postcode", "ipaddress", "ip address"}

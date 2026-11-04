@@ -148,7 +148,7 @@ func (s *Service) goalFacts(ctx context.Context, activityID string) (GoalFacts, 
 }
 
 // sourceWords ranks the contributing sources' troubles: failed beats stale, and both only matter to a
-// figure that has nothing to show (FR-032); otherwise they stay source annotations.
+// figure that has nothing to show; otherwise they stay source annotations.
 type troubleWords struct {
 	failed bool
 	stale  bool

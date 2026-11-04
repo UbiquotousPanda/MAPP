@@ -12,7 +12,7 @@ export interface Bar {
   muted?: boolean;
 }
 
-/** Horizontal bars with their labels and figures in words, so colour is never the only signal (D-345, FR-021). */
+/** Horizontal bars with their labels and figures in words, so colour is never the only signal (D-345). */
 export function BarList({ title, bars }: { title: string; bars: Bar[] }) {
   const largest = Math.max(1, ...bars.map((bar) => Math.abs(bar.size)));
   return (

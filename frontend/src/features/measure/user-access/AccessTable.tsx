@@ -28,7 +28,7 @@ interface AccessTableProps {
   onChange: (patch: Partial<Table>) => void;
 }
 
-/** Everyone matching, sorted by any column with Never always last, a row opening Settings › People (FR-005 – FR-008). */
+/** Everyone matching, sorted by any column with Never always last, a row opening Settings › People. */
 export function AccessTable({ rows, total, table, onChange }: AccessTableProps) {
   const headingId = useId();
   const [address] = useReportAddress();

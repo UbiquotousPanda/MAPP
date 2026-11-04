@@ -7,7 +7,7 @@ import (
 	"mapp/internal/platform/apibench"
 )
 
-// BenchmarkPurchaseRequestsReport measures feature 042's SC-006: statements that stay fixed whatever the number of requests.
+// BenchmarkPurchaseRequestsReport measures feature 042's performance target: statements that stay fixed whatever the number of requests.
 func BenchmarkPurchaseRequestsReport(b *testing.B) {
 	for _, data := range []apibench.Data{apibench.Demo, apibench.Volume} {
 		b.Run(string(data), func(b *testing.B) {

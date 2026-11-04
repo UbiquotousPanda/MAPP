@@ -129,7 +129,7 @@ func approveOpenRound(t *testing.T, danielSees person, activityID string) {
 	t.Fatalf("%s has no open approval round for Daniel to approve: %+v", activityID, state)
 }
 
-// TestWaveB_PersonalDataRefused_046_FR012: the whole file refused, its columns named, nothing stored (SC-007).
+// TestWaveB_PersonalDataRefused_046_FR012: the whole file refused, its columns named, nothing stored.
 func TestWaveB_PersonalDataRefused_046_FR012(t *testing.T) {
 	t.Parallel()
 	alexSees := signIn(t, apitest.New(t, apitest.WithMeasureDemo()), alex)

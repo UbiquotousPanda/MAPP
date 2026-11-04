@@ -55,7 +55,7 @@ export interface SourceFormProps {
 }
 
 /**
- * New data source and Edit data source (046 FR-001) in a side panel: name, owner, category, how
+ * New data source and Edit data source in a side panel: name, owner, category, how
  * its data arrives and how often, and the source's own identifier for integration-ID matching.
  */
 export function SourceForm({ source, onClose }: SourceFormProps) {

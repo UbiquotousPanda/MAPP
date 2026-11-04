@@ -12,7 +12,7 @@ import (
 )
 
 // persist writes what Classify decided: facts for the rows that carry data, replacing the version a
-// repeated reference supersedes (FR-013), and review rows for the rejected and unmatched ones (FR-023).
+// repeated reference supersedes, and review rows for the rejected and unmatched ones.
 func (s *Service) persist(ctx context.Context, a actor.Actor, run Import, results []RowResult) error {
 	current, err := s.currentByIdentity(ctx, run.SourceID, results)
 	if err != nil {
@@ -126,7 +126,7 @@ func factOfResult(run Import, result RowResult, measured Measured, meta record.M
 	}
 }
 
-// unchanged compares the fields that make a fact, so re-uploading an identical file writes nothing (SC-004).
+// unchanged compares the fields that make a fact, so re-uploading an identical file writes nothing.
 func unchanged(stored, next Fact) bool {
 	return stored.ActivityID == next.ActivityID && stored.Held == next.Held &&
 		stored.FactDate.Equal(next.FactDate) && stored.JourneyRef == next.JourneyRef &&
@@ -184,8 +184,8 @@ func (r RowResult) reference() string {
 }
 
 // supersedeAnsweredRows closes the open rows a load answers, whatever the load's own verdicts: the source
-// wins over a correction in progress (FR-026). An uncorrected row the file re-sent byte-identically stays
-// waiting, so an identical re-upload still changes nothing (SC-004).
+// wins over a correction in progress. An uncorrected row the file re-sent byte-identically stays
+// waiting, so an identical re-upload still changes nothing.
 func (s *Service) supersedeAnsweredRows(ctx context.Context, a actor.Actor, sourceID string, results []RowResult) error {
 	incoming := map[string]bool{}
 	identical := map[string]bool{}

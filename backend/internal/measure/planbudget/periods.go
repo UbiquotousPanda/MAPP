@@ -72,7 +72,7 @@ func (r *records) monthIndex(month string) int {
 	return i - 1
 }
 
-// periods groups the months by month or quarter; actual stops at today's period (FR-004, FR-007).
+// periods groups the months by month or quarter; actual stops at today's period.
 func (r *records) periods(period string, today date.Date) ([]Period, Notes) {
 	m := r.months()
 	size := 1
@@ -107,7 +107,7 @@ func (r *records) periodKey(first, size int) string {
 	return fmt.Sprintf("%04d-%02d", r.year, first+1)
 }
 
-// stateOf is past, today's or future for the period starting at month index first (039 FR-019).
+// stateOf is past, today's or future for the period starting at month index first.
 func (r *records) stateOf(first, size int, today date.Date) string {
 	switch {
 	case r.year < today.Year():

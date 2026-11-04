@@ -36,7 +36,7 @@ func (x *Index) groupsOf(id, group string) []share {
 }
 
 // attributeGroups follow the value of the record or of its nearest ancestor that has one, as a campaign's value
-// applies to what is below it (client 016 FR-066); a % split counts by share (D-270).
+// applies to what is below it (client spec 016); a % split counts by share (D-270).
 func (x *Index) attributeGroups(id, attributeID string) []share {
 	value, found := x.attributeValue(id, attributeID)
 	if !found {

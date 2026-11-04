@@ -56,7 +56,7 @@ type Import struct {
 	record.Meta
 }
 
-// MatchedOn is the key a fact matched on, in the order they are tried (FR-018).
+// MatchedOn is the key a fact matched on, in the order they are tried.
 type MatchedOn string
 
 const (
@@ -67,7 +67,7 @@ const (
 	MatchedExternalName  MatchedOn = "externalName"
 )
 
-// MatchOrder is the strict precedence: the first key present in a row decides the match (FR-018).
+// MatchOrder is the strict precedence: the first key present in a row decides the match.
 func MatchOrder() []MatchedOn {
 	return []MatchedOn{MatchedActivityID, MatchedMediaCode, MatchedIntegrationID, MatchedExternalName}
 }
@@ -92,7 +92,7 @@ type Fact struct {
 }
 
 // Counts reports whether this fact may appear in a figure: a held fact counts nowhere until its activity
-// is approved (FR-020), and a replaced one has been superseded (FR-013).
+// is approved, and a replaced one has been superseded.
 func (f Fact) Counts() bool {
 	return !f.Held && f.ActivityID != "" && f.ReplacedByID == ""
 }
@@ -106,7 +106,7 @@ const (
 )
 
 // Interpreted is the row as the load read it through that day's mappings, kept so a correction and a
-// re-check never restate it through later mappings (FR-007).
+// re-check never restate it through later mappings.
 type Interpreted struct {
 	Reference string    `json:"reference"`
 	Date      string    `json:"date"`

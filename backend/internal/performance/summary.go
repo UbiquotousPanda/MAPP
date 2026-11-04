@@ -17,7 +17,7 @@ type Summary struct {
 }
 
 // add is the only way a count rises, and Read rises only beside one of the five, so a Counts that fails
-// Reconciles cannot be built (FR-022).
+// Reconciles cannot be built.
 func (c *Counts) add(outcome Outcome) {
 	switch outcome {
 	case OutcomeMatched:

@@ -11,7 +11,7 @@ import (
 )
 
 // Template is the blank file a source's mappings define, in their own order: a header row and nothing else,
-// so what a loader fills in is exactly what the mappings expect (FR-008).
+// so what a loader fills in is exactly what the mappings expect.
 func (s *Service) Template(ctx context.Context, _ actor.Actor, sourceID string) (string, error) {
 	if err := authz.Require(ctx, authz.PlansView); err != nil {
 		return "", err

@@ -8,7 +8,7 @@ import (
 	"mapp/internal/platform/date"
 )
 
-// Service works out the User access report: read-only, nothing on it changes a record (FR-004).
+// Service works out the User access report: read-only, nothing on it changes a record.
 type Service struct {
 	tx      Transactor
 	people  People

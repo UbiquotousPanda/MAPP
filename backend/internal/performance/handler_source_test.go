@@ -13,7 +13,7 @@ func TestSources_Contract_FR001_FR002_FR003(t *testing.T) {
 	alex := apitest.New(t).SignIn(t, alexsEmail)
 	sourceID := preparedSource(t, alex)
 
-	// FR-003: a second active source may not supply the same model stage.
+	// A second active source may not supply the same model stage.
 	rival := alex.Do(t, http.MethodPost, "/api/v1/performance/sources", map[string]any{
 		"name": "Marketo", "ownerId": "U-1001", "category": "marketingAutomation",
 		"deliveryRoute": "upload", "cadence": "monthly", "description": "", "integrationId": "",
@@ -29,7 +29,7 @@ func TestSources_Contract_FR001_FR002_FR003(t *testing.T) {
 		t.Fatalf("a second stage supplier = %d %s, want 409 naming Eloqua", duplicate.Status, duplicate.Body)
 	}
 
-	// FR-002: once facts exist the source cannot be deleted, and Deactivate is offered.
+	// Once facts exist the source cannot be deleted, and Deactivate is offered.
 	file := "Ref,Date,Activity,INQs\nr1,2026-02-01,A-1001,5\n"
 	if upload := alex.Do(t, http.MethodPost, "/api/v1/performance/sources/"+sourceID+"/uploads",
 		uploadBody(file)); upload.Status != http.StatusCreated {
@@ -43,7 +43,7 @@ func TestSources_Contract_FR001_FR002_FR003(t *testing.T) {
 	assertDeactivateAndCleanDelete(t, alex, sourceID, rivalID)
 }
 
-// FR-004: deactivation flips the source at once; the rival without facts deletes cleanly.
+// Deactivation flips the source at once; the rival without facts deletes cleanly.
 func assertDeactivateAndCleanDelete(t *testing.T, alex *apitest.Client, sourceID, rivalID string) {
 	t.Helper()
 	if off := alex.Do(t, http.MethodPost, "/api/v1/performance/sources/"+sourceID+"/deactivate", nil); off.Status != http.StatusOK ||

@@ -7,7 +7,7 @@ export interface RoiValueProps {
   basis: 'actual' | 'planned';
 }
 
-/** An ROI with what it rests on (050 FR-008): the model that credited the revenue and the cost it divides by. */
+/** An ROI with what it rests on: the model that credited the revenue and the cost it divides by. */
 export function RoiValue({ roi, model, basis }: RoiValueProps) {
   const cost = basis === 'planned' ? 'on planned cost' : 'on actual cost';
   return (

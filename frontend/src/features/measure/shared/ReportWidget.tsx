@@ -17,20 +17,20 @@ export interface ReportWidgetProps {
   /** The widget's key: in the address's table choice and the export's widget (039 contracts). */
   widget: string;
   title: string;
-  /** The ⓘ tip naming each figure and its definition (FR-020). */
+  /** The ⓘ tip naming each figure and its definition. */
   tip: string;
   chart: ReactNode;
   table: ReportTableData;
   /** A line under the title: "Covers 1 of 2 plans", "8 activities where it does not apply are not counted". */
   note?: string;
-  /** "No data yet: …" naming what would fill it, shown instead of a chart of zeros (FR-031). */
+  /** "No data yet: …" naming what would fill it, shown instead of a chart of zeros. */
   empty?: string;
   loading?: boolean;
   failed?: boolean;
   onRetry?: () => void;
 }
 
-/** A widget with its tip, Chart · Table switch in the address, export, and its own loading and failure (FR-020 – FR-023). */
+/** A widget with its tip, Chart · Table switch in the address, export, and its own loading and failure. */
 export function ReportWidget(props: ReportWidgetProps) {
   const { report, widget, title, tip, chart, table, note, empty, loading, failed, onRetry } = props;
   const [address, setAddress] = useReportAddress();

@@ -23,7 +23,7 @@ func NewHandler(s *Service) *Handler {
 	return &Handler{service: s}
 }
 
-// RegisterRoutes mounts the one read of the report: nothing on it writes (FR-002).
+// RegisterRoutes mounts the one read of the report: nothing on it writes.
 func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.GET("/reports/gsap-link", h.report)
 }
@@ -49,7 +49,7 @@ func (h *Handler) report(c *gin.Context) {
 }
 
 // ParseTable reads tab, sort, page and pageSize from the report's own parameters (measure.Filter.Own), each against
-// its allowed values (FR-015); the export gives the same parameters to Sheets.
+// its allowed values; the export gives the same parameters to Sheets.
 func ParseTable(values url.Values) (Table, error) {
 	var problems errs.Problems
 	t := Table{Tab: values.Get(paramTab), Sort: values.Get(paramSort)}

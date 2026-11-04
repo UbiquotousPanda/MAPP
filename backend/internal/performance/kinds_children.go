@@ -9,7 +9,7 @@ import (
 
 // childSpec builds the history.Kind of a record that hangs off an activity. Registering these is what lets
 // the recycle bin collect them before it deletes the activity: without them the activity's DELETE fails on
-// their foreign key, and binning an activity that has performance data is refused (FR-021).
+// their foreign key, and binning an activity that has performance data is refused.
 type childSpec[T any] struct {
 	name, singular, plural string
 	ids                    func(ctx context.Context, activityIDs []string) ([]string, error)
@@ -77,7 +77,7 @@ func (s *Service) childKinds() []history.Kind {
 			name: factKind, singular: "performance fact", plural: "performance facts",
 			ids: s.repo.FactIDsOf, get: s.repo.GetFact, remove: s.repo.DeleteFacts, put: s.repo.PutFact,
 			parts: func(f Fact) (string, string, string) { return f.ID, f.ActivityID, f.SourceReference },
-			// A restore returns the activity to Created, so facts must come back held (FR-020, FR-021).
+			// A restore returns the activity to Created, so facts must come back held.
 			restore: func(f Fact) Fact { f.Held = true; return f },
 		}.kind(),
 		childSpec[MediaCode]{

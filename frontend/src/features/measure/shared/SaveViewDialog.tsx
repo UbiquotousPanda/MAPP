@@ -26,7 +26,7 @@ interface SaveViewDialogProps {
   onSaved: (view: ReportView) => void;
 }
 
-/** Save current filters (FR-024, FR-027): a name in use is replaced only after asking. Mounted while open. */
+/** Save current filters: a name in use is replaced only after asking. Mounted while open. */
 export function SaveViewDialog({
   report,
   views,

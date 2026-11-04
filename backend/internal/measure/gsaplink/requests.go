@@ -7,8 +7,8 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// waitingTab lists the purchase requests waiting for GSAP on line items in view (FR-008 – FR-010); amounts only
-// for plans whose financial data the person may see (FR-004).
+// waitingTab lists the purchase requests waiting for GSAP on line items in view; amounts only
+// for plans whose financial data the person may see.
 func (y year) waitingTab(requests []Request, rates money.Rates) WaitingTab {
 	tab := WaitingTab{Rows: make([]WaitingRow, 0, len(requests))}
 	var total money.Amount
@@ -58,7 +58,7 @@ func requestUSD(r Request, rates money.Rates) money.Amount {
 	return usd
 }
 
-// unansweredRouting is the latest original or modification routing; Resend PR form never restarts the wait (FR-009).
+// unansweredRouting is the latest original or modification routing; Resend PR form never restarts the wait.
 func unansweredRouting(routings []Routing) (Routing, bool) {
 	var latest Routing
 	found := false

@@ -28,7 +28,7 @@ func (s *Service) Key() string      { return measure.KeyGsapLink }
 func (s *Service) Available() bool  { return true }
 func (s *Service) Params() []string { return []string{paramTab, paramSort} }
 
-// Sheets gives each widget with every row, the table of the address's tab in its sort, the others in theirs (FR-019).
+// Sheets gives each widget with every row, the table of the address's tab in its sort, the others in theirs.
 func (s *Service) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
 	t, err := ParseTable(f.Own)
 	if err != nil {
@@ -77,7 +77,7 @@ func tabNames() map[string]string {
 	return map[string]string{TabSwbs: "SWBS not received", TabWaiting: "Waiting for GSAP", TabOrders: "Purchase orders"}
 }
 
-// Describe says the address's tab and its sort in About this export, after Filters (039 FR-022).
+// Describe says the address's tab and its sort in About this export, after Filters.
 func (s *Service) Describe(_ context.Context, _ actor.Actor, own url.Values) ([][2]string, error) {
 	t, err := ParseTable(own)
 	if err != nil {
@@ -173,7 +173,7 @@ func routingWords(routing string) string {
 	return "Original"
 }
 
-// ordersTable ends with the totals of every row (FR-013): empty cells, as "—", when no plan's may be seen (FR-004).
+// ordersTable ends with the totals of every row: empty cells, as "—", when no plan's may be seen.
 func ordersTable(tab OrdersTab, code string, seen bool) [][]sheet.Cell {
 	table := [][]sheet.Cell{boldRow("Line item ID", "Line item", "Plan", "Campaign", "Initiative", "Activity",
 		"Purchase request", "GSAP PR number", "PO number", "PO lines", "PO date", "Vendor", "PO amount ("+code+")",

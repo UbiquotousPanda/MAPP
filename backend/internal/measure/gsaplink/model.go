@@ -9,7 +9,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// The report's tabs (FR-001).
+// The report's tabs.
 const (
 	TabSwbs    = "swbs"
 	TabWaiting = "waiting"
@@ -22,7 +22,7 @@ const (
 	RoutingModification = "modification"
 )
 
-// The bands of the Waiting by time chart (FR-007).
+// The bands of the Waiting by time chart.
 const (
 	BandUnder48h   = "under48h"
 	BandDays2to5   = "days2to5"
@@ -124,7 +124,7 @@ type OrderRow struct {
 	Paid              money.Money `json:"paid"`
 }
 
-// Table is the tab asked for, its sort ("-" for descending, "" for the default) and its page (FR-015).
+// Table is the tab asked for, its sort ("-" for descending, "" for the default) and its page.
 type Table struct {
 	Tab      string
 	Sort     string

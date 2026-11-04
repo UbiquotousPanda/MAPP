@@ -29,7 +29,6 @@ func DemoDB(tb testing.TB, noHistory bool) *fake.DB {
 	return copyOf(tb, &withHistory)
 }
 
-// MeasureDemoDB is DemoDB with the Measure demo plan (seed.WithMeasure), for Measure's tests.
 func MeasureDemoDB(tb testing.TB) *fake.DB {
 	tb.Helper()
 	return copyOf(tb, &withMeasure, seed.WithMeasure())

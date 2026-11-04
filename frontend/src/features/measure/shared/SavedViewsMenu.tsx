@@ -16,7 +16,7 @@ import styles from './SavedViews.module.css';
 type Dialog = 'save' | 'update' | 'manage' | null;
 
 /**
- * Saved views (FR-024 – FR-029): the person's views of the report, the active one ticked, "Modified" when the
+ * Saved views: the person's views of the report, the active one ticked, "Modified" when the
  * address differs from it. A view is an address, so applying one is a navigation and Back returns.
  */
 export function SavedViewsMenu({ report }: { report: ReportKey }) {
@@ -148,7 +148,7 @@ export function SavedViewsMenu({ report }: { report: ReportKey }) {
   );
 }
 
-/** Opening the report with nothing in its address applies the default view, once per visit (FR-027). */
+/** Opening the report with nothing in its address applies the default view, once per visit. */
 function useDefaultView(
   views: ReportView[] | undefined,
   query: string,

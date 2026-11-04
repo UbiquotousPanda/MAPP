@@ -26,7 +26,7 @@ func (k RowKeys) valueOf(on MatchedOn) string {
 // Resolved is built once per load, one query per key type, never per row (research R2, plan R16).
 type Resolved map[MatchedOn]map[string][]string
 
-// Decision carries exactly one Outcome, so the five account for every row read (FR-022).
+// Decision carries exactly one Outcome, so the five account for every row read.
 type Decision struct {
 	ActivityID string
 	MatchedOn  MatchedOn

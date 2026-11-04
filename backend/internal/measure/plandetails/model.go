@@ -33,7 +33,7 @@ const (
 	KeyNo           = "no"
 )
 
-// The filter parameters a value opens in All work (FR-014).
+// The filter parameters a value opens in All work.
 const (
 	FilterAttr           = "attr"
 	FilterActivityType   = "activityType"

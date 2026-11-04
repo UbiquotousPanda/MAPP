@@ -17,7 +17,7 @@ interface ExportMenuProps {
   download: (format: ExportFormat) => Promise<string>;
 }
 
-/** Export, or the reason it is unavailable: "Exporting isn't part of your role" (FR-022). */
+/** Export, or the reason it is unavailable: "Exporting isn't part of your role". */
 export function ExportMenu({ label, formats, download }: ExportMenuProps) {
   const access = useAccess();
   const { show } = useToast();

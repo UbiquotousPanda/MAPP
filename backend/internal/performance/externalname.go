@@ -10,7 +10,7 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// DataSourcesArea is the activity's Performance › Data sources section (FR-031). The external name is
+// DataSourcesArea is the activity's Performance › Data sources section. The external name is
 // feature 006's field: read here, never written (046-C14).
 type DataSourcesArea struct {
 	ExternalName   string          `json:"externalName"`
@@ -123,7 +123,7 @@ func (s *Service) Aliases(ctx context.Context, _ actor.Actor, activityID string)
 	return aliases, nil
 }
 
-// DeleteAlias stops the old name matching; the confirmation wording carries that consequence (FR-034).
+// DeleteAlias stops the old name matching; the confirmation wording carries that consequence.
 func (s *Service) DeleteAlias(ctx context.Context, a actor.Actor, activityID, aliasID string) error {
 	if err := authz.Require(ctx, PermissionLink); err != nil {
 		return err

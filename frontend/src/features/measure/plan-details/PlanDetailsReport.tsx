@@ -40,7 +40,7 @@ function PlanDetails({ address }: { address: ReportAddress }) {
   return <Widgets report={report.data} address={address} />;
 }
 
-/** Why no record of the level is shown: the filters exclude them all, or there are none yet (FR-016). */
+/** Why no record of the level is shown: the filters exclude them all, or there are none yet. */
 function NoRecords({ show, address }: { show: Report['show']; address: ReportAddress }) {
   const [, setAddress] = useReportAddress();
   if (isRestricted(address)) {

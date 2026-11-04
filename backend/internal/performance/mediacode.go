@@ -14,7 +14,7 @@ import (
 )
 
 // MediaCodeArea is the activity's Media codes section: present only where the activity's type requires
-// codes (FR-040), and the API says so rather than leaving the web app to work it out.
+// codes, and the API says so rather than leaving the web app to work it out.
 type MediaCodeArea struct {
 	RequiresCodes bool        `json:"requiresCodes"`
 	Items         []MediaCode `json:"items"`
@@ -72,7 +72,7 @@ func (s *Service) requiresCodes(ctx context.Context, activityID string) (bool, C
 	return config.RequiresCodes(goals.ActivityTypeID), config, nil
 }
 
-// GenerateMediaCode works at any activity status (FR-041): a code is prepared before launch, long before
+// GenerateMediaCode works at any activity status: a code is prepared before launch, long before
 // approval, and the missing required attributes are reported together.
 func (s *Service) GenerateMediaCode(ctx context.Context, a actor.Actor, activityID string, in MediaCodeInput) (MediaCode, error) {
 	if err := authz.Require(ctx, PermissionLink); err != nil {
@@ -124,7 +124,7 @@ func (s *Service) generate(ctx context.Context, a actor.Actor, activityID string
 	return created, err
 }
 
-// attributeProblems reports every missing required attribute at once (FR-041).
+// attributeProblems reports every missing required attribute at once.
 func attributeProblems(config Configuration, given map[string]string) []errs.FieldError {
 	var problems []errs.FieldError
 	for _, name := range config.MissingAttributes(given) {

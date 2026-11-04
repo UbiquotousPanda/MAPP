@@ -11,7 +11,7 @@ interface SignInBandsProps {
   recordedSince: string;
 }
 
-/** The Last sign-in widget: the bands as bars with their counts in words, and its table view (FR-007, SC-006). */
+/** The Last sign-in widget: the bands as bars with their counts in words, and its table view. */
 export function SignInBands({ bands, people, recordedSince }: SignInBandsProps) {
   const { date } = useFormatters();
   const largest = Math.max(1, ...bands.map((b) => b.count));

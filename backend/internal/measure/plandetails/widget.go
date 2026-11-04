@@ -12,7 +12,7 @@ import (
 const (
 	labelOther  = "Other"
 	labelTotal  = "Total"
-	chartValues = 10 // the values a chart draws before Other (FR-017)
+	chartValues = 10 // the values a chart draws before Other
 )
 
 const (

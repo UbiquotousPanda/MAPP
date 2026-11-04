@@ -23,7 +23,7 @@ function height(value: bigint, top: bigint): number {
   return top > 0n && value > 0n ? Number((value * BigInt(PLOT)) / top) : 0;
 }
 
-/** Revenue goal, actual and projected by period, split at today (047 FR-010, 049-C4). */
+/** Revenue goal, actual and projected by period, split at today (049-C4). */
 export function RevenueChart({ report }: { report: RevenueReport }) {
   const { money, month } = useFormatters();
   const label = (key: string) => (key.includes('Q') ? key.slice(5) : month(key));

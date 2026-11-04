@@ -9,7 +9,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Paging of every tab (FR-015).
+// Paging of every tab.
 const (
 	DefaultPageSize = 20
 	MinPageSize     = 5
@@ -38,7 +38,7 @@ const (
 
 type compare[R any] func(a, b R) int
 
-// DefaultSort is longest waiting first on the first two tabs, line item then PO number on the third (FR-015).
+// DefaultSort is longest waiting first on the first two tabs, line item then PO number on the third.
 func DefaultSort(tab string) string {
 	if tab == TabOrders {
 		return sortLineItem
@@ -116,7 +116,7 @@ func orderID(a, b OrderRow) int {
 	return cmp.Or(compareIDs(a.LineItemID, b.LineItemID), compareIDs(a.PoNumber, b.PoNumber))
 }
 
-// sortRows orders rows by one column, "-" first for descending; ties break by ID, ascending (FR-015).
+// sortRows orders rows by one column, "-" first for descending; ties break by ID, ascending.
 func sortRows[R any](rows []R, columns map[string]compare[R], sort string, id compare[R]) {
 	by := columns[strings.TrimPrefix(sort, descending)]
 	sign := 1

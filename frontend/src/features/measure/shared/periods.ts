@@ -2,7 +2,7 @@ import type { Period } from './report-address';
 
 export type PeriodState = 'actual' | 'inProgress' | 'planned';
 
-/** Before today's period actual, today's in progress, later planned; a past year all actual (FR-019). */
+/** Before today's period actual, today's in progress, later planned; a past year all actual. */
 export function periodStates(year: number, today: Date, period: Period): PeriodState[] {
   const count = period === 'quarter' ? 4 : 12;
   const current = period === 'quarter' ? Math.floor(today.getMonth() / 3) : today.getMonth();

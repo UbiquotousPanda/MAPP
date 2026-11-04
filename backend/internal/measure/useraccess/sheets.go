@@ -24,7 +24,7 @@ func (s *Service) Available() bool { return true }
 // Params are the report's own address parameters that saved views keep and the export passes on; never the page.
 func (s *Service) Params() []string { return []string{paramSearch, paramTeam, paramStatus, paramSort} }
 
-// Sheets gives both widgets with every matching row in the address's sort (FR-013); 039 checks access.manage.
+// Sheets gives both widgets with every matching row in the address's sort; 039 checks access.manage.
 func (s *Service) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
 	q, err := ParseQuery(withTeams(f))
 	if err != nil {

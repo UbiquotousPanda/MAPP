@@ -25,7 +25,7 @@ const (
 	sheetInView     = "In view"
 )
 
-// ExportRequest is what an export asks for: the filter, the format and, for one widget, its key (FR-022).
+// ExportRequest is what an export asks for: the filter, the format and, for one widget, its key.
 type ExportRequest struct {
 	Filter Filter
 	Format string
@@ -39,7 +39,7 @@ type File struct {
 }
 
 // Export writes the report, or one widget of it, as the screen shows it: Excel holds the widgets' sheets, In view
-// and About this export; a CSV is one widget with the notes before its rows (FR-022, research R7). Nothing is kept.
+// and About this export; a CSV is one widget with the notes before its rows (research R7). Nothing is kept.
 func (s *Service) Export(ctx context.Context, a actor.Actor, report string, req ExportRequest) (File, error) {
 	if err := openable(ctx, report); err != nil {
 		return File{}, err
@@ -79,7 +79,7 @@ func (s *Service) Export(ctx context.Context, a actor.Actor, report string, req 
 	return write(file, sheets, notes, inViewRows(inViewOf(sc.Matched)))
 }
 
-// checked is the request with Excel by default; a CSV needs a widget (FR-022).
+// checked is the request with Excel by default; a CSV needs a widget.
 func checked(req ExportRequest) (ExportRequest, error) {
 	if req.Format == "" {
 		req.Format = FormatXLSX
@@ -141,7 +141,7 @@ func write(file File, sheets []WidgetSheet, notes [][2]string, inView [][]sheet.
 	return file, err
 }
 
-// fileName is "SP&A One – <report> [– <widget>] – <year> – <date>" (FR-022); stamp is "<year> – <date>".
+// fileName is "SP&A One – <report> [– <widget>] – <year> – <date>"; stamp is "<year> – <date>".
 func fileName(report string, sheets []WidgetSheet, req ExportRequest, stamp string) string {
 	parts := []string{"SP&A One", report}
 	if req.Widget != "" && len(sheets) == 1 {

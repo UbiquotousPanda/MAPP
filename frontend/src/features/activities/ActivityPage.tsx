@@ -101,7 +101,6 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
   // Who may decide and the latest decline (feature 008); shared with the Approval tab.
   const approval = useActivityApproval(activity.id);
   const [panelOpen, setPanelOpen] = useState(activity.readiness.problemCount > 0 || openReadyFirst);
-  // How many things Submit for approval found missing; null before anyone tried.
   const [submitProblems, setSubmitProblems] = useState<number | null>(null);
   const panel = useRef<HTMLElement>(null);
   // Where the focus goes once the tab that holds it shows: Ready to submit or the History heading.

@@ -11,7 +11,7 @@ const (
 	hoursInDay = 24
 )
 
-// bandOf places a last sign-in by whole days before now: within 30, 31 – 90, over 90, or never (FR-007, R4).
+// bandOf places a last sign-in by whole days before now: within 30, 31 – 90, over 90, or never (R4).
 func bandOf(at *time.Time, now time.Time) string {
 	if at == nil {
 		return BandNever

@@ -14,7 +14,7 @@ const (
 )
 
 // ROI is (revenue − cost) ÷ cost as a whole per cent, halves away from zero; nil without a cost above zero, which
-// shows as "—" (FR-007).
+// shows as "—".
 func ROI(revenue money.Amount, cost *money.Amount) *int {
 	if cost == nil || cost.Sign() <= 0 {
 		return nil

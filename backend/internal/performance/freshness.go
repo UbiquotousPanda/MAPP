@@ -17,7 +17,7 @@ func graceOf(c Cadence) time.Duration {
 	return 0
 }
 
-// FreshnessAt is derived, never stored: a stored value would go stale by itself (FR-005).
+// FreshnessAt is derived, never stored: a stored value would go stale by itself.
 func (v SourceView) FreshnessAt(now time.Time) Freshness {
 	if v.Status == StatusInactive {
 		return FreshnessInactive

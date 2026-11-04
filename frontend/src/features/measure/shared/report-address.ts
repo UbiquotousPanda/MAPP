@@ -18,7 +18,7 @@ export interface AttributeChoice {
   values: string[];
 }
 
-/** A report's state in the page address (FR-015): an empty list restricts nothing. */
+/** A report's state in the page address: an empty list restricts nothing. */
 export interface ReportAddress {
   year: number | null;
   plans: string[];
@@ -84,7 +84,7 @@ const attrSchema = z
     return { attributeId, values: rest.split(',') };
   });
 
-/** The values of a parameter the schema accepts, unique, in their order; malformed ones are dropped (FR-015). */
+/** The values of a parameter the schema accepts, unique, in their order; malformed ones are dropped. */
 function listOf<T>(params: URLSearchParams, name: string, schema: z.ZodType<T>): T[] {
   const kept: T[] = [];
   for (const raw of params.getAll(name)) {
@@ -187,7 +187,7 @@ export function toQuery(address: ReportAddress): ReportQuery {
   };
 }
 
-/** Whether any filter restricts the records, the year aside (FR-014's Reset filters). */
+/** Whether any filter restricts the records, the year aside (for Reset filters). */
 export function isRestricted(address: ReportAddress): boolean {
   return (
     address.plans.length +
@@ -201,7 +201,7 @@ export function isRestricted(address: ReportAddress): boolean {
   );
 }
 
-/** Every filter but the year back to its default; period, show, currency and tables stay (FR-014). */
+/** Every filter but the year back to its default; period, show, currency and tables stay. */
 export function resetFilters(address: ReportAddress): ReportAddress {
   return {
     ...DEFAULT_ADDRESS,

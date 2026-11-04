@@ -22,7 +22,7 @@ const SORTS: AccessSort[] = [
 ];
 const STATUSES: AccessStatus[] = ['active', 'inactive', 'all'];
 
-/** Rows per page, 5 to 500 (045 FR-006). */
+/** Rows per page, 5 to 500. */
 export const PAGE_SIZES = [5, 10, 20, 50, 100, 200, 500] as const;
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -39,7 +39,7 @@ export function sortOf(value: string | null): AccessSort {
   return SORTS.find((s) => s === value) ?? 'name';
 }
 
-/** Search, teams, status, sort and page in the address (FR-006); any change but the page goes back to page 1. */
+/** Search, teams, status, sort and page in the address; any change but the page goes back to page 1. */
 export function useAccessTable() {
   const [params, setParams] = useSearchParams();
   const page = Number(params.get('page'));

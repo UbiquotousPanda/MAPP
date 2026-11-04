@@ -18,7 +18,7 @@ interface LevelTabsProps {
   onChange: (changes: Record<string, Ticked>) => void;
 }
 
-/** One tab per level holding its Shell-attribute groups, with Select all and Clear all for the tab (FR-008, FR-010). */
+/** One tab per level holding its Shell-attribute groups, with Select all and Clear all for the tab. */
 export function LevelTabs({ groups, ticked, onChange }: LevelTabsProps) {
   const [level, setLevel] = useState<Level>('activity');
   const ofLevel = groups.filter((g) => g.level === level);

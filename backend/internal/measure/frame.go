@@ -11,7 +11,7 @@ import (
 
 const msgNoReport = "There is no such report."
 
-// Frame works out what every report page shares for the report and the filter, in one Read (FR-006 – FR-019).
+// Frame works out what every report page shares for the report and the filter, in one Read.
 func (s *Service) Frame(ctx context.Context, a actor.Actor, report string, f Filter) (Frame, error) {
 	if err := openable(ctx, report); err != nil {
 		return Frame{}, err
@@ -66,7 +66,7 @@ func orEmpty(values []string) []string {
 	return values
 }
 
-// withYear is the years with plans in scope, the year shown and the current year, in order (FR-008, FR-011).
+// withYear is the years with plans in scope, the year shown and the current year, in order.
 func withYear(years []int, shown, current int) []int {
 	all := append(slices.Clone(years), shown, current)
 	slices.Sort(all)
@@ -78,7 +78,7 @@ func inViewOf(m allwork.Matched) InView {
 		Activities: len(m.Activities), LineItems: len(m.LineItems)}
 }
 
-// financeOf counts the plans in view whose financial data the person may see (FR-004, D-301).
+// financeOf counts the plans in view whose financial data the person may see (D-301).
 func financeOf(sc Scope) FinanceCoverage {
 	coverage := FinanceCoverage{Of: len(sc.Matched.Plans)}
 	for _, id := range sc.Matched.Plans {

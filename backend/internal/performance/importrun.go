@@ -25,7 +25,7 @@ type ImportInput struct {
 }
 
 // RunImport is one load: the whole-file gates, then every row classified and persisted in one transaction,
-// so a load either lands completely or not at all (FR-009, FR-016).
+// so a load either lands completely or not at all.
 func (s *Service) RunImport(ctx context.Context, a actor.Actor, in ImportInput) (Import, error) {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return Import{}, err
@@ -43,7 +43,7 @@ func (s *Service) RunImport(ctx context.Context, a actor.Actor, in ImportInput) 
 		s.recordFailedLoad(ctx, a, in, err)
 		return Import{}, fmt.Errorf("run the import of %s: %w", in.FileName, err)
 	}
-	// Every load re-checks its source afterwards (FR-025), in its own transaction: an upload must never
+	// Every load re-checks its source afterwards, in its own transaction: an upload must never
 	// fail over old queue data, so a re-check failure is logged and the load stands.
 	if _, recheckErr := s.RecheckAfterLoad(ctx, a, in.SourceID); recheckErr != nil {
 		slog.ErrorContext(ctx, "the re-check after a load failed", "source_id", in.SourceID, "error", recheckErr)

@@ -7,7 +7,7 @@ import (
 	"mapp/internal/platform/apibench"
 )
 
-// BenchmarkApprovalsReport measures feature 041's SC-006: the Approvals report of 2026 with and without its
+// BenchmarkApprovalsReport measures feature 041's performance target: the Approvals report of 2026 with and without its
 // grid parameters, whose statements must stay the same whatever the number of rows.
 func BenchmarkApprovalsReport(b *testing.B) {
 	for _, data := range []apibench.Data{apibench.Demo, apibench.Volume} {

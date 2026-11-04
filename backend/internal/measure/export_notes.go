@@ -50,7 +50,7 @@ func rateNotes(rates []string) [][2]string {
 	return notes
 }
 
-// filterWords names every restricted filter with its values' names, never an ID left out (FR-015): "None" for none.
+// filterWords names every restricted filter with its values' names, never an ID left out: "None" for none.
 func filterWords(sc Scope) string {
 	q := sc.Query
 	plans := map[string]string{}

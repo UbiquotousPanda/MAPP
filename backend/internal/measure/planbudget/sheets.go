@@ -23,7 +23,7 @@ func levelWords() map[string]string {
 		"lineItem": "Line item"}
 }
 
-// sheets are the report's widgets as 039's export writes them; the ranked list has every page (FR-016).
+// sheets are the report's widgets as 039's export writes them; the ranked list has every page.
 func (s *Service) sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
 	q, err := ParseRanked(f.Own)
 	if err != nil {

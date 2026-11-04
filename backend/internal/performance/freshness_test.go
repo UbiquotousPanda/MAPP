@@ -31,7 +31,7 @@ func TestListSources_SourceThatHasNeverLoaded_FR005(t *testing.T) {
 	}
 }
 
-// seed/seed.go is not this lane's to change, so taking a code must create the row (FR-042).
+// seed/seed.go is not this lane's to change, so taking a code must create the row.
 func TestTakeNextCode_OnAFreshDatabase_FR042(t *testing.T) {
 	store, db := pgPerformanceDB(t)
 

@@ -95,7 +95,7 @@ function ownQuery(params?: URLSearchParams): Partial<ExportQuery> {
   return query;
 }
 
-/** The report, or one widget of it, as a file through 039's one export (FR-022). */
+/** The report, or one widget of it, as a file through 039's one export. */
 export function downloadReport(
   report: ReportKey,
   address: ReportAddress,

@@ -79,7 +79,7 @@ type DismissInput struct {
 	Comment string `json:"comment"`
 }
 
-// Dismiss parks a row with the required comment (FR-024): the queue must say why work was set aside.
+// Dismiss parks a row with the required comment: the queue must say why work was set aside.
 func (s *Service) Dismiss(ctx context.Context, a actor.Actor, rowID string, in DismissInput) (ReviewRow, error) {
 	comment := strings.TrimSpace(in.Comment)
 	if comment == "" {
@@ -140,8 +140,8 @@ func (s *Service) setReviewStatus(ctx context.Context, a actor.Actor, change rev
 	return saved, nil
 }
 
-// CorrectInput edits the row's load-time interpretation (FR-007): cells may be fixed, the reference may
-// not - a new reference is a new identity, which only a fresh upload may create (FR-013).
+// CorrectInput edits the row's load-time interpretation: cells may be fixed, the reference may
+// not - a new reference is a new identity, which only a fresh upload may create.
 type CorrectInput struct {
 	Date     *string       `json:"date"`
 	Currency *string       `json:"currency"`

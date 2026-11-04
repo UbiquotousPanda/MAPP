@@ -14,7 +14,7 @@ import (
 func (s *Service) Key() string     { return measure.KeyPlanDetails }
 func (s *Service) Available() bool { return true }
 
-// Sheets gives every widget of the level f.Show as one sheet, in screen order, with every value (FR-017).
+// Sheets gives every widget of the level f.Show as one sheet, in screen order, with every value.
 func (s *Service) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
 	r, err := s.Report(ctx, a, f)
 	if err != nil {

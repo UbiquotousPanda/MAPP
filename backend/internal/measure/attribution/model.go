@@ -69,7 +69,7 @@ type SettingsInput struct {
 	Model   Model `json:"model"`
 }
 
-// Touch is one activity of a journey; ActivityID is "" for a touch that matched no activity (client 020 FR-057).
+// Touch is one activity of a journey; ActivityID is "" for a touch that matched no activity (client spec 020).
 type Touch struct {
 	ActivityID string
 	Date       date.Date

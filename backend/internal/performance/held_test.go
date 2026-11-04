@@ -39,7 +39,7 @@ func TestRelease_ClearsOnlyTheApprovedActivitysHold_FR020(t *testing.T) {
 	}
 }
 
-// TestHold_ReHoldsAFactReleasedByAnEarlierApproval proves FR-020/FR-021's other half: an activity recalled
+// TestHold_ReHoldsAFactReleasedByAnEarlierApproval proves the hold rule's other half: an activity recalled
 // from Approved back to Submitted must hold its facts again, not leave them counting as if still approved.
 func TestHold_ReHoldsAFactReleasedByAnEarlierApproval_FR020_FR021(t *testing.T) {
 	t.Parallel()

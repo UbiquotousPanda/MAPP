@@ -39,7 +39,7 @@ function counted(count: number, one: string, many: string): string {
   return `${count.toLocaleString('en-GB')} ${count === 1 ? one : many}`;
 }
 
-/** "In view: 1 plan · 6 campaigns · 2 initiatives · 14 activities · 30 line items" (FR-007). */
+/** "In view: 1 plan · 6 campaigns · 2 initiatives · 14 activities · 30 line items". */
 export function inViewText(inView: ReportFrame['inView']): string {
   return `In view: ${[
     counted(inView.plans, 'plan', 'plans'),
@@ -73,7 +73,7 @@ export interface Chip {
 const named = (ids: string[], choices: { id: string; name: string }[]) =>
   ids.map((id) => choices.find((c) => c.id === id)?.name ?? id).join(', ');
 
-/** One chip per restricted filter, naming its values ("Brand: Helix, Not filled in") (FR-014). */
+/** One chip per restricted filter, naming its values ("Brand: Helix, Not filled in"). */
 export function chipsOf(address: ReportAddress, choices: ReportChoices): Chip[] {
   const chips: Chip[] = [];
   const add = (key: string, title: string, text: string) => {

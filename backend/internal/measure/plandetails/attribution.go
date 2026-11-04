@@ -23,7 +23,7 @@ const (
 	orderDoesNotApply
 )
 
-// part is one value a record has in a widget, with the share of the amount it brings (016 FR-041).
+// part is one value a record has in a widget, with the share of the amount it brings.
 type part struct {
 	key, label string
 	order      int

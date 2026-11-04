@@ -13,11 +13,11 @@ export interface ReportTableRow {
 export interface ReportTableData {
   columns: ReportTableColumn[];
   rows: ReportTableRow[];
-  /** The totals row, where the widget totals (FR-021). */
+  /** The totals row, where the widget totals. */
   total?: string[];
 }
 
-/** A widget's table view: every value the chart draws, with the same labels, then the totals (FR-021). */
+/** A widget's table view: every value the chart draws, with the same labels, then the totals. */
 export function ReportTable({ title, data }: { title: string; data: ReportTableData }) {
   return (
     <div className={styles.tableWrap}>

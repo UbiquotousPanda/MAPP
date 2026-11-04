@@ -13,8 +13,8 @@ import (
 	"mapp/internal/platform/authz"
 )
 
-// ActivityFacts lists an approved-or-not activity's facts (FR-030): the list itself is not gated on
-// approval - only figures are (FR-027) - but the activity must be within the reader's scope.
+// ActivityFacts lists an approved-or-not activity's facts: the list itself is not gated on
+// approval - only figures are - but the activity must be within the reader's scope.
 func (s *Service) ActivityFacts(ctx context.Context, _ actor.Actor, q FactQuery) ([]FactView, error) {
 	var facts []FactView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {

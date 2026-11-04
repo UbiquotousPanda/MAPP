@@ -9,7 +9,7 @@ export const RECORDS: Record<Level, { one: string; many: string }> = {
   activity: { one: 'activity', many: 'Activities' },
 };
 
-/** The ⓘ tip naming the widget's figure and its definition (039 FR-020; measure-metrics §1). */
+/** The ⓘ tip naming the widget's figure and its definition (measure-metrics §1). */
 export function tipOf(widget: PlanDetailsWidget, level: Level): string {
   const records = RECORDS[level].many.toLowerCase();
   switch (widget.measure) {

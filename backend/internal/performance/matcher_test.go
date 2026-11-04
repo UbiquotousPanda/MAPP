@@ -130,7 +130,7 @@ func TestDecide_DisagreementNamesBothCandidates_FR019(t *testing.T) {
 }
 
 // Every row must land in exactly one of the five outcomes, whatever it carries — that is what makes the
-// summary's five counts add up to rows read by construction rather than by a later check (FR-022).
+// summary's five counts add up to rows read by construction rather than by a later check.
 func TestDecide_AlwaysExactlyOneOfTheFiveOutcomes_FR022(t *testing.T) {
 	t.Parallel()
 	values := []string{"", "known", "ambiguous", "other", "missing"}

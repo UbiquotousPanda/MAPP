@@ -74,7 +74,7 @@ func (g revenueGoals) ActivityGoals(ctx context.Context, scope authz.Scope, node
 }
 
 // modelsByPlan reads every plan, then every distinct model, once each: bounded by plans and models in view,
-// never by activity count (SC-003).
+// never by activity count.
 func (g revenueGoals) modelsByPlan(ctx context.Context, planOf map[string]string) (map[string]revenue.ActivityGoals, error) {
 	planIDs := uniqueValues(planOf)
 	plans := make(map[string]plan.Plan, len(planIDs))

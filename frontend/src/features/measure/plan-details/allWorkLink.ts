@@ -14,7 +14,7 @@ const ALL_WORK_PARAMS = [
 
 export type FilterParam = 'attr' | 'activityType' | 'activityStatus';
 
-/** All work with the report's filters (039 R1) and one value in place of its filter's ("attr=SA-12:none", FR-014). */
+/** All work with the report's filters (039 R1) and one value in place of its filter's ("attr=SA-12:none"). */
 export function allWorkLink(
   address: ReportAddress,
   param: FilterParam,

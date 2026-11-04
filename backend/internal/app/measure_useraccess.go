@@ -18,7 +18,7 @@ func registerUserAccess(w *wiring, r *measure.Registry) error {
 	return r.Register(service)
 }
 
-// userAccessPeople is the People tab's own read (014 FR-017), with each person's e-mail (045 research R1).
+// userAccessPeople is the People tab's own read, with each person's e-mail (045 research R1).
 type userAccessPeople struct {
 	access *access.Service
 	people stores.PeopleStore

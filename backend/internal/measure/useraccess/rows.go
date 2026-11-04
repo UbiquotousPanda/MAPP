@@ -18,7 +18,7 @@ const (
 	sortSignedIn = "lastSignedIn"
 )
 
-// rows joins each person with their latest sign-in, if any since recording started (FR-005, FR-011).
+// rows joins each person with their latest sign-in, if any since recording started.
 func rows(people []Person, signIns map[string]time.Time) []Row {
 	list := make([]Row, 0, len(people))
 	for _, p := range people {
@@ -81,7 +81,7 @@ func columns() map[string]func(a, b Row) int {
 	}
 }
 
-// sortRows sorts by one column, "-" first for descending; "Never" is always last, ties by person ID (FR-006).
+// sortRows sorts by one column, "-" first for descending; "Never" is always last, ties by person ID.
 func sortRows(list []Row, sort string) {
 	key, sign := strings.TrimPrefix(sort, descending), 1
 	if strings.HasPrefix(sort, descending) {

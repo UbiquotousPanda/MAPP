@@ -11,7 +11,7 @@ import (
 	"mapp/internal/platform/authz"
 )
 
-// RecheckSource re-checks a source's open rows and held facts on demand (FR-025).
+// RecheckSource re-checks a source's open rows and held facts on demand.
 func (s *Service) RecheckSource(ctx context.Context, a actor.Actor, sourceID string) (Counts, error) {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return Counts{}, err
@@ -38,7 +38,7 @@ func (s *Service) RecheckAfterLoad(ctx context.Context, a actor.Actor, sourceID 
 	return resolved, nil
 }
 
-// releaseApprovedHolds is FR-025's second half: a release the approval hook never saw - a restore from the
+// releaseApprovedHolds is the release rule's second half: a release the approval hook never saw - a restore from the
 // bin, above all - still happens here.
 func (s *Service) releaseApprovedHolds(ctx context.Context, a actor.Actor, sourceID string) error {
 	if s.approvals == nil {
@@ -63,7 +63,7 @@ func (s *Service) releaseApprovedHolds(ctx context.Context, a actor.Actor, sourc
 	return nil
 }
 
-// recheck classifies each batch from its stored load-time interpretation, never today's mappings (FR-007).
+// recheck classifies each batch from its stored load-time interpretation, never today's mappings.
 func (s *Service) recheck(ctx context.Context, a actor.Actor, sourceID string) (Counts, error) {
 	counts := Counts{}
 	seen := map[string]bool{}
@@ -195,7 +195,7 @@ func (s *Service) newestPerReference(ctx context.Context, a actor.Actor, views [
 }
 
 // applyRecheck writes insert-only: a current fact is never replaced from here, because a later load owns
-// the identity and the source wins (FR-026); the row resolves as superseded instead.
+// the identity and the source wins; the row resolves as superseded instead.
 func (s *Service) applyRecheck(ctx context.Context, a actor.Actor, at recheckOf, result RowResult) error {
 	row := at.row
 	switch result.Outcome {
@@ -234,7 +234,7 @@ func superseded(current map[identity]Fact, result RowResult) bool {
 	return false
 }
 
-// restateRow records a changed verdict with its history entry (FR-045); an unchanged one stays quiet.
+// restateRow records a changed verdict with its history entry; an unchanged one stays quiet.
 func (s *Service) restateRow(ctx context.Context, a actor.Actor, row ReviewRow, result RowResult) error {
 	sameFaults := fmt.Sprint(row.Faults) == fmt.Sprint(result.Faults)
 	sameCandidates := fmt.Sprint(row.Candidates) == fmt.Sprint(result.Candidates)

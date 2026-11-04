@@ -36,7 +36,7 @@ func TestChoices_FR008_FR011(t *testing.T) {
 }
 
 // One group per active choice or yes/no attribute of each level, never merged by label; an inactive option only
-// while a record has it; no text, long-text or number attribute; Not filled in as none, last (FR-008, FR-010).
+// while a record has it; no text, long-text or number attribute; Not filled in as none, last.
 func TestChoices_AttributeGroups_FR008(t *testing.T) {
 	t.Parallel()
 	groups := frameOf(t, frameService(fakePlanning{}), url.Values{}).Choices.AttributeGroups
@@ -63,7 +63,7 @@ func TestChoices_AttributeGroups_FR008(t *testing.T) {
 	}
 }
 
-// Plans of another year in the address are dropped and counted (FR-011).
+// Plans of another year in the address are dropped and counted.
 func TestChoices_PlansOfAnotherYearDropped_FR011(t *testing.T) {
 	t.Parallel()
 	frame := frameOf(t, frameService(fakePlanning{}), url.Values{"plan": {"P-1", "P-2025"}})

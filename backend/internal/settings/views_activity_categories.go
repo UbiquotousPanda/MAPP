@@ -6,7 +6,7 @@ type ActivityCategoryView struct {
 	ID            string       `json:"id"`
 	Name          string       `json:"name"`
 	IsDefault     bool         `json:"isDefault"`
-	ActivityTypes []SettingRef `json:"activityTypes"` // the types in the category, by name
+	ActivityTypes []SettingRef `json:"activityTypes"`
 	Active        bool         `json:"active"`
 	Usage         Usage        `json:"usage"`
 	record.Meta

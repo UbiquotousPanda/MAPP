@@ -50,7 +50,7 @@ interface ResultsProps {
   onChange: (patch: Partial<Table>) => void;
 }
 
-/** The people, or why none match: the search, else the team and status filters (FR-012). */
+/** The people, or why none match: the search, else the team and status filters. */
 function Results({ report, table, onChange }: ResultsProps) {
   if (report.total === 0 && table.q !== '') {
     return (

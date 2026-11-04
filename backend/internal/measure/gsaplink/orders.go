@@ -12,7 +12,7 @@ type orderKey struct {
 	lineItem, po string
 }
 
-// order adds up one purchase order's transactions on one line item, each in the report currency (SC-003).
+// order adds up one purchase order's transactions on one line item, each in the report currency.
 type order struct {
 	po, invoiced, paid    money.Amount
 	lines                 []string
@@ -38,7 +38,7 @@ func (o *order) add(t Transaction, amount money.Amount) {
 }
 
 // ordersTab gives one row per line item and purchase order: its PO lines, and the invoices (credit notes
-// negative) and payments that refer to it, by 015's links (FR-011 – FR-013). Totals cover every row.
+// negative) and payments that refer to it, by 015's links. Totals cover every row.
 func (y year) ordersTab(transactions []Transaction, rates money.Rates) OrdersTab {
 	orders, keys, inReport := map[orderKey]*order{}, []orderKey{}, y.inReport(rates)
 	for _, t := range transactions {

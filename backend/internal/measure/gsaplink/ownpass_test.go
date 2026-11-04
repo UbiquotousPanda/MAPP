@@ -171,7 +171,7 @@ func TestOwnPass_ExportEqualsScreen_FR019_SC005(t *testing.T) {
 	}
 }
 
-// saysTabAndSort reports About this export without the report, the currency, or the tab and sort in words (039 FR-022).
+// saysTabAndSort reports About this export without the report, the currency, or the tab and sort in words.
 func saysTabAndSort(t *testing.T, file exportFile, currency, words string) {
 	t.Helper()
 	if file.notes["Report"] != "GSAP link" || file.notes["Currency"] != currency ||

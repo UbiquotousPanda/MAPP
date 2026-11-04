@@ -22,7 +22,7 @@ function height(value: bigint, top: bigint): number {
   return top > 0n && value > 0n ? Number((value * BigInt(PLOT)) / top) : 0;
 }
 
-/** Budget, planned cost and actual per period; actual stops at today's period, which is marked (040 FR-004). */
+/** Budget, planned cost and actual per period; actual stops at today's period, which is marked. */
 export function PacingChart({ report }: { report: PlanBudgetReport }) {
   const { money, month } = useFormatters();
   const label = (key: string) => (key.includes('Q') ? key.slice(5) : month(key));

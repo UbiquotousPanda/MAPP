@@ -87,7 +87,6 @@ func workbookXML(names []string) []byte {
 	return []byte(b.String())
 }
 
-// workbookRels returns xl/_rels/workbook.xml.rels: rId1 … rIdN the worksheets, then the styles.
 func workbookRels(n int) []byte {
 	var b strings.Builder
 	b.WriteString(xmlHeader + `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`)
@@ -99,7 +98,6 @@ func workbookRels(n int) []byte {
 	return []byte(b.String())
 }
 
-// stylesXML is xl/styles.xml: the number formats, a bold font and the cell styles of the style constants.
 const stylesXML = xmlHeader + `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
 	`<numFmts count="3"><numFmt numFmtId="164" formatCode="#,##0.00"/><numFmt numFmtId="165" formatCode="dd mmm yyyy"/>` +
 	`<numFmt numFmtId="166" formatCode="dd mmm yyyy hh:mm"/></numFmts>` +
@@ -150,7 +148,6 @@ func worksheetXML(rows [][]Cell) []byte {
 	return []byte(b.String())
 }
 
-// columnName returns the letters of the column with index i: 0 → A, 25 → Z, 26 → AA.
 func columnName(i int) string {
 	name := ""
 	for i++; i > 0; i = (i - 1) / 26 {
@@ -196,7 +193,6 @@ func uniqueName(name string, used map[string]bool) string {
 	return candidate
 }
 
-// escape returns s with the characters XML gives a meaning escaped, and those XML cannot hold replaced.
 func escape(s string) string {
 	var b bytes.Buffer
 	_ = xml.EscapeText(&b, []byte(s)) // writing to a bytes.Buffer cannot fail

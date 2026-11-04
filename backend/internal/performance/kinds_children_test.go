@@ -95,7 +95,7 @@ func binFixture(t *testing.T) (*fixture, history.Kind) {
 }
 
 // A restore from the recycle bin returns the activity to Created (activity/kinds.go R14), so its facts must
-// come back held — otherwise unapproved data counts in every figure (FR-020, FR-021).
+// come back held — otherwise unapproved data counts in every figure.
 func TestKinds_RestoredFactComesBackHeld_FR021(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)

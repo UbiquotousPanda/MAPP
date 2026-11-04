@@ -92,7 +92,7 @@ func rankedSeries(series map[string]*seriesTally) []*seriesTally {
 	return list
 }
 
-// withOther keeps the ten largest and sums the rest into Other (FR-011).
+// withOther keeps the ten largest and sums the rest into Other.
 func withOther(ranked []*seriesTally) []*seriesTally {
 	if len(ranked) <= chartNamed {
 		return ranked

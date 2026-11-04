@@ -19,7 +19,7 @@ func waitingHours(since, now time.Time) int {
 	return max(0, int(now.Sub(since)/time.Hour))
 }
 
-// band places a wait in the Waiting by time chart; Under 48 hours holds every row not flagged (FR-007).
+// band places a wait in the Waiting by time chart; Under 48 hours holds every row not flagged.
 func band(hours int) string {
 	switch {
 	case hours <= swbsTurnaroundHours:
@@ -37,7 +37,7 @@ func bands() []Band {
 		{Key: BandDays5to10, Label: "5 – 10 days"}, {Key: BandOver10Days, Label: "Over 10 days"}}
 }
 
-// workingDays counts the days Monday to Friday after since's day up to now's day, in UTC (FR-009, R5).
+// workingDays counts the days Monday to Friday after since's day up to now's day, in UTC (R5).
 func workingDays(since, now time.Time) int {
 	from, to := date.Today(since.UTC()), date.Today(now.UTC())
 	days := 0

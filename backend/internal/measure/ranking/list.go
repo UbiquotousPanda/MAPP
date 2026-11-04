@@ -36,7 +36,7 @@ type builder[S, F any] struct {
 	fig Figures[S, F]
 }
 
-// Build is one page of the level's entries in view, ranked, grouped and drilled (040 FR-008 – FR-015).
+// Build is one page of the level's entries in view, ranked, grouped and drilled.
 func Build[S, F any](x *Index, level string, q Query, fig Figures[S, F]) List[F] {
 	b := builder[S, F]{x: x, q: q, fig: fig}
 	out := List[F]{Level: level, Sort: q.Sort, Order: q.Order, Group: q.Group, Page: q.Page, Size: q.Size,
@@ -57,7 +57,7 @@ func Build[S, F any](x *Index, level string, q Query, fig Figures[S, F]) List[F]
 	return out
 }
 
-// grouped puts the entries in their groups, each group ranked, the groups ordered by their total (040 FR-013).
+// grouped puts the entries in their groups, each group ranked, the groups ordered by their total.
 func (b builder[S, F]) grouped(ids []string) []*groupAcc[S, F] {
 	var groups []*groupAcc[S, F]
 	byKey := map[string]*groupAcc[S, F]{}
@@ -83,7 +83,7 @@ func (b builder[S, F]) grouped(ids []string) []*groupAcc[S, F] {
 	return groups
 }
 
-// page keeps one page of top entries across the groups; a group's totals stay those of the whole group (040 FR-014).
+// page keeps one page of top entries across the groups; a group's totals stay those of the whole group.
 func (b builder[S, F]) page(groups []*groupAcc[S, F]) []Group[F] {
 	first, last := (b.q.Page-1)*b.q.Size, b.q.Page*b.q.Size
 	out := []Group[F]{}

@@ -161,7 +161,7 @@ func (s *PostgresStore) ListMediaCodes(ctx context.Context, scope authz.Scope, a
 }
 
 // TakeNextCode raises the stored next number and returns the one it replaced, in a single statement, so two
-// codes can never take the same number (FR-042).
+// codes can never take the same number.
 func (s *PostgresStore) TakeNextCode(ctx context.Context, by actor.Actor, at time.Time) (int64, error) {
 	code, err := s.db.Queries(ctx).TakeNextMediaCode(ctx, sqlcdb.TakeNextMediaCodeParams{
 		StartAt: firstMediaCode, UpdatedAt: at, UpdatedByID: by.ID, UpdatedByName: by.Name,

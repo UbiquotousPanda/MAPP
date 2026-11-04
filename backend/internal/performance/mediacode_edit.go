@@ -11,7 +11,7 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// EditMediaCode changes attributes and landing page only (FR-041): the number and the activity are the
+// EditMediaCode changes attributes and landing page only: the number and the activity are the
 // code's identity and never move.
 func (s *Service) EditMediaCode(ctx context.Context, a actor.Actor, codeID string, in MediaCodeInput) (MediaCode, error) {
 	if err := authz.Require(ctx, PermissionLink); err != nil {
@@ -47,7 +47,7 @@ func (s *Service) EditMediaCode(ctx context.Context, a actor.Actor, codeID strin
 }
 
 // DeleteMediaCode removes an unused code to the recycle bin; one with facts behind it deactivates instead,
-// because deleting it would orphan what already matched (FR-041).
+// because deleting it would orphan what already matched.
 func (s *Service) DeleteMediaCode(ctx context.Context, a actor.Actor, codeID string) error {
 	if err := authz.Require(ctx, PermissionLink); err != nil {
 		return err

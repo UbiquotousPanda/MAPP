@@ -4,7 +4,7 @@ export type GsapTab = 'swbs' | 'waiting' | 'orders';
 
 export const GSAP_TABS: GsapTab[] = ['swbs', 'waiting', 'orders'];
 
-/** Rows per page, 5 to 500 (044 FR-015). */
+/** Rows per page, 5 to 500. */
 export const PAGE_SIZES = [5, 10, 20, 50, 100, 200, 500] as const;
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -59,7 +59,7 @@ function setOrDrop(params: URLSearchParams, name: string, value: string, fallbac
   }
 }
 
-/** The tab, its sort and its page in the address (FR-001, FR-015); a new tab, sort or page size starts at page 1. */
+/** The tab, its sort and its page in the address; a new tab, sort or page size starts at page 1. */
 export function useGsapTable() {
   const [params, setParams] = useSearchParams();
   const tab = GSAP_TABS.find((t) => t === params.get('tab')) ?? 'swbs';

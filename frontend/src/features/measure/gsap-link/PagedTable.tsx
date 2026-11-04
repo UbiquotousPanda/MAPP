@@ -34,12 +34,12 @@ export interface PagedTableProps<R> {
   total: number;
   /** Said when the tab has no row at all. */
   empty: string;
-  /** The totals row over every page (FR-013), one cell per column. */
+  /** The totals row over every page, one cell per column. */
   totals?: ReactNode[];
   onChange: (patch: Partial<GsapTable>) => void;
 }
 
-/** A tab's table card: its title and export of every row (FR-019), then the page of rows. */
+/** A tab's table card: its title and export of every row, then the page of rows. */
 export function PagedTable<R>(props: PagedTableProps<R>) {
   const { title, widget } = props;
   const headingId = useId();
@@ -62,7 +62,7 @@ export function PagedTable<R>(props: PagedTableProps<R>) {
   );
 }
 
-/** One page of a tab's rows, sorted by any column, with the page size and the pages (044 FR-015). */
+/** One page of a tab's rows, sorted by any column, with the page size and the pages. */
 function Rows<R>(props: PagedTableProps<R>) {
   const { title, columns, rows, rowKey, table, total, empty, totals, onChange } = props;
   if (total === 0) {

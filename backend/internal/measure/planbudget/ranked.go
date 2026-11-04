@@ -9,7 +9,7 @@ func (r *records) ranked(level string, q RankedQuery) Ranked {
 	return ranking.Build(r.Index, level, q, rankedFigures{r})
 }
 
-// rankedFigures is what the shared ranked list adds up, splits, shows and sorts by for this report (FR-017).
+// rankedFigures is what the shared ranked list adds up, splits, shows and sorts by for this report.
 type rankedFigures struct{ r *records }
 
 func (f rankedFigures) Of(id string) sums {

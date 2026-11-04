@@ -103,7 +103,7 @@ func groupingOf(t *testing.T, who person) grouping {
 	return g
 }
 
-// typesNamingCategories reads each activity type's own category (FR-022); "" is Uncategorised.
+// typesNamingCategories reads each activity type's own category; "" is Uncategorised.
 func typesNamingCategories(t *testing.T, who person) (byType map[string]string, ids map[string]string) {
 	t.Helper()
 	type activityType struct {

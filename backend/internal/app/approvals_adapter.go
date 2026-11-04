@@ -199,7 +199,7 @@ func (p *approvalsActivities) facts(ctx context.Context, act activity.Activity) 
 	return facts, nil
 }
 
-// displayStatus is the status shown (006 FR-021): Complete past its end date, In progress from its start.
+// displayStatus is the status shown: Complete past its end date, In progress from its start.
 func displayStatus(act activity.Activity, today date.Date) string {
 	switch {
 	case act.Status != activity.StatusApproved || act.StartDate == nil:

@@ -20,7 +20,7 @@ func classifiedFile(rows []performance.Row) []performance.RowResult {
 	})
 }
 
-// TestSummarise_FiveOutcomesSumToRowsRead_FR022 is the property SC-001 rests on: whatever the file, the
+// TestSummarise_FiveOutcomesSumToRowsRead_FR022 is the property the import summary rests on: whatever the file, the
 // five counts account for every row read, overall and inside each measure group.
 func TestSummarise_FiveOutcomesSumToRowsRead_FR022(t *testing.T) {
 	t.Parallel()

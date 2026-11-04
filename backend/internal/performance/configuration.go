@@ -34,7 +34,7 @@ func (s *Service) PerformanceConfiguration(ctx context.Context, _ actor.Actor) (
 }
 
 // configurationOrStart answers the stored row, or the defaults a first save starts from: generation begins
-// above Hive9's numbers so a new code cannot collide (FR-042).
+// above Hive9's numbers so a new code cannot collide.
 func (s *Service) configurationOrStart(ctx context.Context) (Configuration, error) {
 	config, found, err := s.repo.GetConfiguration(ctx)
 	if err != nil {

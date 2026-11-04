@@ -8,7 +8,7 @@ import (
 
 const stageRevenue = "revenue"
 
-// Measure is what a column of a source's file holds. The mapping names it, never the cell (FR-006), so one
+// Measure is what a column of a source's file holds. The mapping names it, never the cell, so one
 // row carrying an INQ column and an MQL column produces one fact for each, under the same reference.
 type Measure struct {
 	Stage     string    `json:"stage"`

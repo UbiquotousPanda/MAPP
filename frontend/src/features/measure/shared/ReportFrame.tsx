@@ -29,7 +29,7 @@ import styles from './ReportFrame.module.css';
 
 export interface ReportFrameProps {
   report: ReportKey;
-  /** The controls the report uses (FR-016, FR-017); Currency is always offered (FR-018). */
+  /** The controls the report uses; Currency is always offered. */
   period?: boolean;
   show?: Show;
   /** The report's widgets for the frame; absent for a report not built yet. */
@@ -66,7 +66,7 @@ export function ReportFrame(props: ReportFrameProps) {
   );
 }
 
-/** What every report page shares (039 FR-006 – FR-019, FR-031; contracts/ui.md). */
+/** What every report page shares (contracts/ui.md). */
 function FilteredReportFrame({ report, period, show, children, comingSoon }: ReportFrameProps) {
   const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
   usePageTitle(name);
@@ -181,7 +181,7 @@ interface FrameBodyProps {
   children: ReportFrameProps['children'];
 }
 
-/** The widgets, or why there are none (FR-031). */
+/** The widgets, or why there are none. */
 function FrameBody({ data, address, onReset, comingSoon, children }: FrameBodyProps) {
   if (data.choices.plans.length > 0 && data.inView.plans === 0 && isRestricted(address)) {
     return (

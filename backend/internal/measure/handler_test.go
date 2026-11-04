@@ -38,7 +38,7 @@ func TestReportsCatalogue_Contract_FR001(t *testing.T) {
 	}
 }
 
-// Every demo persona sees only its markets: no plan, owner or team of another market is named (SC-002).
+// Every demo persona sees only its markets: no plan, owner or team of another market is named.
 func TestReportsFrame_ScopePerPersona_SC002(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)

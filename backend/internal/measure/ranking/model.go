@@ -1,5 +1,5 @@
 // Package ranking builds the ranked list reports share: a level's records ranked by a figure, grouped, drilled and
-// paged, each with its children one level down (040 FR-008 – FR-017). Each report supplies its own figures.
+// paged, each with its children one level down. Each report supplies its own figures.
 package ranking
 
 import "mapp/internal/allwork"

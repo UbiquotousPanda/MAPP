@@ -12,7 +12,7 @@ type RateSource interface {
 	Rates(ctx context.Context) (money.Rates, error)
 }
 
-// Crediting is how 048 and 049 read attributed revenue, worked out from the facts at each read (FR-009).
+// Crediting is how 048 and 049 read attributed revenue, worked out from the facts at each read.
 type Crediting struct {
 	settings *Service
 	facts    FactStore

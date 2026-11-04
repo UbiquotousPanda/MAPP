@@ -19,7 +19,7 @@ const (
 	paramSort   = "sort"
 )
 
-// Paging (FR-006).
+// Paging.
 const (
 	DefaultPageSize = 20
 	MinPageSize     = 5
@@ -36,7 +36,7 @@ func sortKeys() []string {
 
 func teamID() *regexp.Regexp { return regexp.MustCompile(`^T-[0-9]+$`) }
 
-// ParseQuery reads the report's parameters against their allowed values (FR-006); every problem is answered at once.
+// ParseQuery reads the report's parameters against their allowed values; every problem is answered at once.
 func ParseQuery(values url.Values) (Query, error) {
 	var problems errs.Problems
 	q := Query{Search: strings.TrimSpace(values.Get(paramSearch)), Teams: values[paramTeam],

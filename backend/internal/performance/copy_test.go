@@ -7,7 +7,7 @@ import (
 	"mapp/internal/platform/record"
 )
 
-// FR-038's exclusion itself lives in the activity area's copy path, outside this feature's folders; this
+// The exclusion itself lives in the activity area's copy path, outside this feature's folders; this
 // proves nothing in this package follows a copy on its own.
 func TestKeys_NothingFollowsACopiedActivity_FR038(t *testing.T) {
 	t.Parallel()

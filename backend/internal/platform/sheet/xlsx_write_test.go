@@ -99,9 +99,9 @@ func TestXLSX_NumbersDatesBoldHeadings(t *testing.T) {
 	for _, want := range []string{
 		`<c r="A1" s="1" t="inlineStr"><is><t xml:space="preserve">Planned cost (USD)</t></is></c>`,
 		`<c r="A2" s="2"><v>12500.50</v></c>`,
-		`<c r="B2" s="3"><v>46082</v></c>`, // 1 Mar 2026
+		`<c r="B2" s="3"><v>46082</v></c>`,
 		`<c r="C2"><v>250000</v></c>`,
-		`<c r="E2" s="4"><v>46093.25000000</v></c>`, // 12 Mar 2026 06:00
+		`<c r="E2" s="4"><v>46093.25000000</v></c>`,
 		`<row r="3"><c r="A3"><v>80</v></c><c r="C3" s="2"><v>-12500.50</v></c></row>`,
 	} {
 		if !strings.Contains(sheet, want) {

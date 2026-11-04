@@ -96,7 +96,7 @@ type Mapping struct {
 	record.Meta
 }
 
-// SuppliedBy marks what FR-003 lets only one active source do for a model.
+// SuppliedBy marks what only one active source may do for a model.
 func (m Mapping) SuppliedBy() bool {
 	return m.Meaning == MeaningStage || m.Meaning == MeaningRevenue
 }

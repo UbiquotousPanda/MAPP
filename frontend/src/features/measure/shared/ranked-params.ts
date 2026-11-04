@@ -24,7 +24,7 @@ function sizeOf(text: string | null): RankedState['size'] {
   return SIZES.find((size) => String(size) === text) ?? 10;
 }
 
-/** The ranked list's part of the address (040 FR-014); any change but the page goes back to page 1. */
+/** The ranked list's part of the address; any change but the page goes back to page 1. */
 export function useRankedState(defaultSort: string) {
   const [params, setParams] = useSearchParams();
   const page = Number(params.get('page'));

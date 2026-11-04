@@ -21,7 +21,7 @@ function height(value: number, top: number): number {
   return top > 0 && value > 0 ? (value / top) * PLOT : 0;
 }
 
-/** One funnel stage's goal, actual and projected by period, split at today (047 FR-010, 049-C4). */
+/** One funnel stage's goal, actual and projected by period, split at today (049-C4). */
 export function FunnelChart({ report }: { report: FunnelReport }) {
   const { month } = useFormatters();
   const label = (key: string) => (key.includes('Q') ? key.slice(5) : month(key));

@@ -16,7 +16,7 @@ import styles from './DataSourcesArea.module.css';
 const NO_SOURCES =
   'No data source delivers for this activity yet. Register an integration ID, or upload with its activity ID as the key.';
 
-/** The activity's Data sources area (046 FR-031): its matching keys, and what each source delivered. */
+/** The activity's Data sources area: its matching keys, and what each source delivered. */
 export function DataSourcesArea({ activityId }: { activityId: string }) {
   const area = useDataSourcesArea(activityId);
   return (

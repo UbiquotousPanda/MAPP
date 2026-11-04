@@ -19,7 +19,7 @@ func activityStatuses() []string {
 
 func planTypes() []string { return []string{"operational", "strategic", "crossMarket"} }
 
-// choicesOf are the values the filter panel offers for the scope (contract ReportChoices, FR-008 – FR-011).
+// choicesOf are the values the filter panel offers for the scope (contract ReportChoices).
 func choicesOf(sc Scope, f Filter, years []int, currencies []Currency) Choices {
 	selected := selectedPlans(sc, f)
 	teams := teamsOf(sc)
@@ -95,7 +95,7 @@ func cmpOr(first, second int) int {
 }
 
 // attributeGroups are one group per active choice or yes/no attribute of each level, never merged by label; an
-// inactive option is offered only while a record in scope has it; Not filled in comes last as none (FR-008).
+// inactive option is offered only while a record in scope has it; Not filled in comes last as none.
 func attributeGroups(attributes []allwork.Attribute, nodes []allwork.Node) []AttributeGroup {
 	groups := []AttributeGroup{}
 	for _, a := range attributes {
@@ -135,7 +135,7 @@ func usedBy(nodes []allwork.Node, attributeID, optionID string) bool {
 	})
 }
 
-// teamsOf are the teams of the plans in scope, so a market never sees another market's team names (SC-002).
+// teamsOf are the teams of the plans in scope, so a market never sees another market's team names.
 func teamsOf(sc Scope) []TeamChoice {
 	inScope := map[string]bool{}
 	for _, n := range sc.Nodes {

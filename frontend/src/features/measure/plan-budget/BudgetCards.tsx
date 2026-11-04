@@ -5,7 +5,7 @@ import styles from './PlanBudget.module.css';
 
 const NONE = '—';
 
-/** The ten cards of 040 FR-002; "—" where a figure has no value or the person may not see it. */
+/** The ten cards of feature 040; "—" where a figure has no value or the person may not see it. */
 export function BudgetCards({ cards }: { cards: PlanBudgetCards }) {
   const { money, moneyCompact } = useFormatters();
   const amount = (value: PlanBudgetCards['budget']) =>

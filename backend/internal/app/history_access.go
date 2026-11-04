@@ -71,7 +71,7 @@ func (h historyAccess) CanSeeEntry(ctx context.Context, e history.Entry) bool {
 	return h.canSee(ctx, e.RecordType, e.RecordID, e.Path, nil)
 }
 
-// ownOrWholeLog: a saved report view is personal (039 FR-025), so its entries are its owner's and the auditors'.
+// ownOrWholeLog: a saved report view is personal, so its entries are its owner's and the auditors'.
 func ownOrWholeLog(ctx context.Context, personID string) bool {
 	g, restricted := authz.From(ctx)
 	a, _ := actor.From(ctx)

@@ -1,7 +1,5 @@
 -- name: ReportFactTotals :many
--- The counted facts of the activities in view, for one plan year (049-C1). One row per activity, stage,
--- web metric, month and currency, so a caller can roll up to any level: an entry's total is the sum of
--- its activities'. Held, unmatched and replaced facts are excluded, exactly as 046's own totals are.
+-- Counted facts in view for one plan year, per activity, stage, web metric, month and currency (049-C1).
 SELECT activity_id::text AS activity_id, stage, web_metric,
     date_trunc('month', fact_date)::date AS month, coalesce(currency, '') AS currency,
     coalesce(sum(count_value), 0)::bigint AS counts, coalesce(sum(amount_minor), 0)::bigint AS amount_minor,

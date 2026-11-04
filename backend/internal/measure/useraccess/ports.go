@@ -12,7 +12,7 @@ type Transactor interface {
 	Read(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
-// People is everyone as Settings › Roles and access › People shows them (014 FR-017), with their e-mail.
+// People is everyone as Settings › Roles and access › People shows them, with their e-mail.
 type People interface {
 	PeopleAccess(ctx context.Context, a actor.Actor) ([]Person, error)
 }

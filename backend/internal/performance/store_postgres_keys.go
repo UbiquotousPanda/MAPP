@@ -13,7 +13,7 @@ import (
 	"mapp/internal/platform/database/sqlcdb"
 )
 
-// KeyFacts is what the Data sources area reads of the activity itself (FR-031); a scoped read, so an
+// KeyFacts is what the Data sources area reads of the activity itself; a scoped read, so an
 // activity outside the scope answers as missing.
 type KeyFacts struct {
 	ExternalName string

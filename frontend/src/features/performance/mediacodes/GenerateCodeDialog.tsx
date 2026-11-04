@@ -6,7 +6,7 @@ import { useToast } from '@/ui/Toast/useToast';
 import styles from '../activity/DataSourcesArea.module.css';
 import { useGenerateMediaCode, usePerformanceConfiguration } from './api';
 
-/** Generates a code with the configuration's attributes; every missing one is reported at once (FR-041). */
+/** Generates a code with the configuration's attributes; every missing one is reported at once. */
 export function GenerateCodeDialog({
   activityId,
   onClose,

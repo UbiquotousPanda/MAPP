@@ -66,7 +66,7 @@ interface FilterPanelProps {
   onApply: (next: ReportAddress) => void;
 }
 
-/** The report's filters in 039 FR-008's order; they take effect on Apply (039-C1, FR-013). */
+/** The report's filters in the order 039 lists them; they take effect on Apply (039-C1). */
 export function FilterPanel({ choices, applied, year, onApply }: FilterPanelProps) {
   const initial = draftOf(applied, year);
   const [draft, setDraft] = useState<Draft>(initial);
@@ -80,7 +80,7 @@ export function FilterPanel({ choices, applied, year, onApply }: FilterPanelProp
   const change = (changes: Record<string, Ticked>) =>
     setDraft((d) => ({ ...d, ticked: { ...d.ticked, ...changes } }));
 
-  // Escape closes the collapsed panel without changing anything (FR-013).
+  // Escape closes the collapsed panel without changing anything.
   useEffect(() => {
     if (!open) {
       return undefined;
@@ -186,7 +186,7 @@ export function FilterPanel({ choices, applied, year, onApply }: FilterPanelProp
   );
 }
 
-/** A group with nothing ticked would match nothing, so it can't be applied (FR-013). */
+/** A group with nothing ticked would match nothing, so it can't be applied. */
 function emptyGroups(draft: Draft, choices: ReportChoices): string[] {
   const lists = LIST_KEYS.filter((key) => draft.ticked[key]?.length === 0).map(
     (key) => TITLES[key],

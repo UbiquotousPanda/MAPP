@@ -41,13 +41,13 @@ func (s *Service) Settings(ctx context.Context) (SettingsView, error) {
 	return view, err
 }
 
-// Designated is the model every attributed figure uses (FR-008, FR-010); it joins the caller's transaction.
+// Designated is the model every attributed figure uses; it joins the caller's transaction.
 func (s *Service) Designated(ctx context.Context) (Model, error) {
 	st, err := s.repo.Settings(ctx)
 	return st.Model, err
 }
 
-// SaveSettings needs Manage settings; a stale version is refused and the change is logged (FR-002).
+// SaveSettings needs Manage settings; a stale version is refused and the change is logged.
 func (s *Service) SaveSettings(ctx context.Context, a actor.Actor, in SettingsInput) (SettingsView, error) {
 	if err := authz.Require(ctx, authz.SettingsManage); err != nil {
 		return SettingsView{}, err

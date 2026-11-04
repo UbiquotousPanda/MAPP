@@ -17,7 +17,7 @@ func NewHandler(s *Service) *Handler {
 	return &Handler{service: s}
 }
 
-// RegisterRoutes mounts the one read of the report; 039's route rule asks for access.manage (FR-002, FR-004).
+// RegisterRoutes mounts the one read of the report; 039's route rule asks for access.manage.
 func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.GET("/reports/user-access", h.report)
 }

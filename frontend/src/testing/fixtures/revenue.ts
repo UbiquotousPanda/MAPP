@@ -28,7 +28,7 @@ function revenuePeriods(): RevenueReport['periods'] {
   });
 }
 
-/** The fixture mirroring 047's own worked example: Lubricants 1.0, 273 deals, 2,730,000.00 USD (SC-001). */
+/** The fixture mirroring 047's own worked example: Lubricants 1.0, 273 deals, 2,730,000.00 USD. */
 export function revenueReport(overrides: Partial<RevenueReport> = {}): RevenueReport {
   return {
     cards: {

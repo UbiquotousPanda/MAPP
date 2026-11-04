@@ -26,13 +26,13 @@ type UsagePart struct {
 
 type Usage struct {
 	InUse   bool                `json:"inUse"`
-	Summary string              `json:"summary"` // the parts joined with " · ", or "Not used yet"
+	Summary string              `json:"summary"`
 	Parts   []UsagePart         `json:"parts"`
 	Records []history.RecordRef `json:"records"` // models and finance budgets: the live plans using it, by name, at most 50
 }
 
 type Lock struct {
-	Field  string `json:"field"` // type, level, code, rate, year, section, position, condition, parentAttributeId, active, delete
+	Field  string `json:"field"`
 	Reason string `json:"reason"`
 }
 
@@ -109,7 +109,7 @@ type ModelView struct {
 	InqToMqlRate            money.Percent `json:"inqToMqlRate"`
 	MqlToDealRate           money.Percent `json:"mqlToDealRate"`
 	AverageDealSize         money.Money   `json:"averageDealSize"`
-	ActivityTypes           []SettingRef  `json:"activityTypes"` // the allowed types, by name
+	ActivityTypes           []SettingRef  `json:"activityTypes"`
 	InqToMqlVelocityMonths  int           `json:"inqToMqlVelocityMonths"`
 	MqlToDealVelocityMonths int           `json:"mqlToDealVelocityMonths"`
 	AllowedGoalStages       []string      `json:"allowedGoalStages"`
@@ -130,9 +130,9 @@ type ModelInput struct {
 	MqlToDealRate           string       `json:"mqlToDealRate"`
 	AverageDealSize         *money.Input `json:"averageDealSize"`
 	ActivityTypeIDs         []string     `json:"activityTypeIds"`
-	InqToMqlVelocityMonths  *int         `json:"inqToMqlVelocityMonths"`  // nil = 0
-	MqlToDealVelocityMonths *int         `json:"mqlToDealVelocityMonths"` // nil = 0
-	AllowedGoalStages       []string     `json:"allowedGoalStages"`       // nil = every stage
+	InqToMqlVelocityMonths  *int         `json:"inqToMqlVelocityMonths"`
+	MqlToDealVelocityMonths *int         `json:"mqlToDealVelocityMonths"`
+	AllowedGoalStages       []string     `json:"allowedGoalStages"` // nil = every stage
 }
 
 type ModelUpdate struct {
@@ -150,7 +150,7 @@ type ModelUpdate struct {
 type ActivityTypeView struct {
 	ID                 string       `json:"id"`
 	Name               string       `json:"name"`
-	DefaultPlannedCost *money.Money `json:"defaultPlannedCost"` // USD; null when none
+	DefaultPlannedCost *money.Money `json:"defaultPlannedCost"`
 	Models             []SettingRef `json:"models"`
 	Category           *SettingRef  `json:"category"`
 	Active             bool         `json:"active"`
@@ -166,7 +166,7 @@ type ActivityTypePage struct {
 type ActivityTypeInput struct {
 	Name               string       `json:"name"`
 	DefaultPlannedCost *money.Input `json:"defaultPlannedCost"`
-	ModelIDs           []string     `json:"modelIds"` // the models that allow the new type
+	ModelIDs           []string     `json:"modelIds"`
 }
 
 // ActivityTypeUpdate: DefaultPlannedCost sent as null removes it; ModelIDs, when sent, is the complete new list.

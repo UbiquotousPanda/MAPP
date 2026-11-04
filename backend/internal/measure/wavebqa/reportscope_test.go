@@ -103,7 +103,7 @@ func checkReportScope(t *testing.T, who person, names []string) {
 	activitiesWithin(t, who.email+"'s Funnel stages", funnelRankedOf(t, who, "show=activity&stage=mql"), ids)
 }
 
-// TestWaveB_ScopePerRole_FR003: each role's frame and ranked lists name only the plans in its scope (049 FR-002).
+// TestWaveB_ScopePerRole_FR003: each role's frame and ranked lists name only the plans in its scope.
 func TestWaveB_ScopePerRole_FR003(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t, apitest.WithMeasureDemo())

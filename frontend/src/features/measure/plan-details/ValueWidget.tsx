@@ -22,7 +22,7 @@ interface ValueWidgetProps {
 
 type Money = (value: PlanDetailsValue['plannedCost']) => string;
 
-/** Records or planned cost per value: the ten largest drawn with Other, every value in the table (FR-009, FR-017). */
+/** Records or planned cost per value: the ten largest drawn with Other, every value in the table. */
 export function ValueWidget({ widget, level, address, attributeId, currency }: ValueWidgetProps) {
   const { money } = useFormatters();
   const href = (v: PlanDetailsValue) =>

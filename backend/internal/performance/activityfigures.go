@@ -70,7 +70,7 @@ func supplied(suppliers []Supplier, meaning Meaning, stage string) bool {
 }
 
 // revenueFigure answers one converted USD total at the current rate, with the count of facts a missing
-// rate excluded (046-C7, SC-010).
+// rate excluded (046-C7).
 type panelInput struct {
 	goals     GoalFacts
 	totals    []StageTotals
@@ -146,8 +146,8 @@ func metricFigures(totals []StageTotals) []MetricFigure {
 	return figures
 }
 
-// panelSources lists the contributing sources with their freshness, failed overlaid from the latest load
-// (FR-029); data through comes with each.
+// panelSources lists the contributing sources with their freshness, failed overlaid from the latest load;
+// data through comes with each.
 func (s *Service) panelSources(ctx context.Context, activityID string) ([]PanelSource, error) {
 	totals, err := s.repo.FactTotalsBySource(ctx, activityID)
 	if err != nil {

@@ -19,7 +19,7 @@ interface FilterGroupProps {
 
 const SEARCH_ABOVE = 10;
 
-/** One filter group: "(selected / all)", Select all, Clear all and, above ten values, a search (FR-010). */
+/** One filter group: "(selected / all)", Select all, Clear all and, above ten values, a search. */
 export function FilterGroup({ title, options, ticked, onChange }: FilterGroupProps) {
   const [search, setSearch] = useState('');
   const id = useId();
