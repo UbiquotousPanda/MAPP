@@ -76,8 +76,8 @@ func TestOrders_TotalsAllPages_FR013(t *testing.T) {
 	t.Parallel()
 	r := withOrders(twoPlans(t)).report(Table{Tab: TabOrders, PageSize: 1})
 
-	want := OrderTotals{PoAmount: amountIn(t, "295.00", "USD"), Invoiced: amountIn(t, "20.00", "USD"),
-		Paid: amountIn(t, "20.00", "USD")}
+	po, invoiced, paid := amountIn(t, "295.00", "USD"), amountIn(t, "20.00", "USD"), amountIn(t, "20.00", "USD")
+	want := OrderTotals{PoAmount: &po, Invoiced: &invoiced, Paid: &paid}
 	if diff := cmp.Diff(want, r.Orders.Totals, byValue()); diff != "" || r.Total != 3 || len(r.Orders.Rows) != 1 {
 		t.Errorf("totals of %d rows on a page of %d (-want +got):\n%s", r.Total, len(r.Orders.Rows), diff)
 	}
@@ -103,6 +103,9 @@ func TestOrders_OnlyFinanceViewPlans_FR004(t *testing.T) {
 	if r = w.report(Table{Tab: TabOrders}); r.Total != 0 || w.asked != nil || r.Finance.Plans != 0 {
 		t.Errorf("without finance.view: %d rows, reads %v, coverage %+v; want none", r.Total, w.asked, r.Finance)
 	}
+	if totals := r.Orders.Totals; totals.PoAmount != nil || totals.Invoiced != nil || totals.Paid != nil {
+		t.Errorf("without finance.view: totals %+v, want each null, never 0.00 (039 FR-004)", totals)
+	}
 }
 
 func TestAmounts_InReportCurrency_FR014(t *testing.T) {
@@ -115,7 +118,8 @@ func TestAmounts_InReportCurrency_FR014(t *testing.T) {
 	if diff := cmp.Diff(amountIn(t, "125.00", "EUR"), row.PoAmount, byValue()); diff != "" || r.Currency != "EUR" {
 		t.Errorf("L-1's PO amount in %s (-want +got):\n%s", r.Currency, diff)
 	}
-	if diff := cmp.Diff(amountIn(t, "147.50", "EUR"), r.Orders.Totals.PoAmount, byValue()); diff != "" {
+	total := amountIn(t, "147.50", "EUR")
+	if diff := cmp.Diff(&total, r.Orders.Totals.PoAmount, byValue()); diff != "" {
 		t.Errorf("total (-want +got):\n%s", diff)
 	}
 }

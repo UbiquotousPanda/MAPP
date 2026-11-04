@@ -55,8 +55,7 @@ func (y year) financeLineItems() []string {
 }
 
 func (y year) seesFinance(planID string) bool {
-	c := y.scope.Choices
-	return c.SeesFinance && (c.FinancePlans == nil || slices.Contains(c.FinancePlans, planID))
+	return y.scope.SeesFinanceOf(planID)
 }
 
 func (y year) coverage() *measure.FinanceCoverage {
@@ -91,8 +90,7 @@ func (y year) inCurrency(usd money.Amount) money.Money {
 	return money.Money{Amount: money.FromUSD(usd, y.scope.Currency.Rate), Currency: y.scope.Currency.Code}
 }
 
-// inReport converts an amount once, from its own currency to the report's at the current rate (D-303, 016 D-261):
-// one already in the report currency keeps its cents. One without a rate adds nothing, as in 015.
+// inReport converts once at the current rate (D-303): the report currency keeps its cents, no rate adds nothing.
 func (y year) inReport(rates money.Rates) func(money.Money) money.Amount {
 	display := money.DisplayIn(y.scope.Currency.Code, y.scope.Currency.Rate.String()).WithRates(rates)
 	return func(m money.Money) money.Amount {

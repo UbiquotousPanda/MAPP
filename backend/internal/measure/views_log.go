@@ -11,6 +11,7 @@ import (
 const (
 	labelDefaultView = "Default view"
 	labelFilters     = "Filters"
+	labelReport      = "Report"
 )
 
 func (s *Service) logView(ctx context.Context, a actor.Actor, v StoredView, action history.Action) error {

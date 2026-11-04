@@ -1,6 +1,7 @@
 package measure
 
 import (
+	"cmp"
 	"slices"
 	"strconv"
 	"strings"
@@ -10,14 +11,29 @@ import (
 	"mapp/internal/platform/date"
 )
 
-// notes are the lines of About this export, and of a CSV before its rows (FR-022): the report, the year, the filters
-// in words, the period, the currency, and who exported it and when; the rates used follow.
-func (s *Service) notes(a actor.Actor, report string, f Filter, sc Scope) [][2]string {
+// notes are the lines of About this export, and of a CSV before its rows: the report, then the controls its frame
+// shows (the year, the filters in words, the period, the level, the currency), and who exported it and when. A
+// report without plan filters keeps only its filters in words, such as User access's team.
+func (s *Service) notes(a actor.Actor, e entry, f Filter, sc Scope) [][2]string {
 	now := s.now().UTC()
-	return [][2]string{{"Report", report}, {"Year", strconv.Itoa(sc.Year)}, {labelFilters, filterWords(sc)},
-		{"Period", map[string]string{PeriodMonth: "Months", PeriodQuarter: "Quarters"}[f.Period]},
-		{"Currency", sc.Currency.Code}, {"Exported by", a.Name},
+	exported := [][2]string{{"Exported by", a.Name},
 		{"Exported at", date.Format(date.Today(now)) + " " + now.Format("15:04") + " UTC"}}
+	c := e.controls
+	if c.noPlanFilters {
+		return append([][2]string{{labelReport, e.name}, {labelFilters, filterWords(sc)}}, exported...)
+	}
+	notes := [][2]string{{labelReport, e.name}, {"Year", strconv.Itoa(sc.Year)}, {labelFilters, filterWords(sc)}}
+	if c.period {
+		notes = append(notes, [2]string{"Period", map[string]string{PeriodMonth: "Months", PeriodQuarter: "Quarters"}[f.Period]})
+	}
+	if c.showOpensOn != "" {
+		notes = append(notes, [2]string{"Show", levelWord(cmp.Or(f.Show, c.showOpensOn))})
+	}
+	return append(append(notes, [2]string{"Currency", sc.Currency.Code}), exported...)
+}
+
+func levelWord(level string) string {
+	return strings.ToUpper(level[:1]) + level[1:]
 }
 
 // afterFilters puts a report's own parameters in words right after the frame's filters.

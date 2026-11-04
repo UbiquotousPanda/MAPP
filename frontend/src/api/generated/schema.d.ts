@@ -6597,11 +6597,11 @@ export interface components {
             rows: components["schemas"]["GsapOrderRow"][];
             totals: components["schemas"]["GsapOrderTotals"];
         };
-        /** @description Every row of every page. */
+        /** @description Every row of every page; each amount is null when the person may see no plan's financial data in view (039 FR-004), never 0.00. */
         GsapOrderTotals: {
-            poAmount: components["schemas"]["Money"];
-            invoiced: components["schemas"]["Money"];
-            paid: components["schemas"]["Money"];
+            poAmount: components["schemas"]["Money"] | null;
+            invoiced: components["schemas"]["Money"] | null;
+            paid: components["schemas"]["Money"] | null;
         };
         GsapOrderRow: {
             lineItemId: string;

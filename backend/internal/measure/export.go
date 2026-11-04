@@ -44,7 +44,7 @@ func (s *Service) Export(ctx context.Context, a actor.Actor, report string, req 
 	if err := openable(ctx, report); err != nil {
 		return File{}, err
 	}
-	name, _ := nameOf(report)
+	e := entryOf(report)
 	req, err := checked(req)
 	if err != nil {
 		return File{}, err
@@ -70,9 +70,12 @@ func (s *Service) Export(ctx context.Context, a actor.Actor, report string, req 
 	if err != nil {
 		return File{}, err
 	}
-	notes := append(afterFilters(s.notes(a, name, req.Filter, sc), own), rateNotes(rates)...)
 	stamp := strconv.Itoa(sc.Year) + " – " + date.Format(date.Today(s.now()))
-	file := File{Name: fileName(name, sheets, req, stamp)}
+	file := File{Name: fileName(e.name, sheets, req, stamp)}
+	if e.controls.noPlanFilters {
+		return write(file, sheets, afterFilters(s.notes(a, e, req.Filter, sc), own), nil)
+	}
+	notes := append(afterFilters(s.notes(a, e, req.Filter, sc), own), rateNotes(rates)...)
 	return write(file, sheets, notes, inViewRows(inViewOf(sc.Matched)))
 }
 
@@ -129,8 +132,10 @@ func write(file File, sheets []WidgetSheet, notes [][2]string, inView [][]sheet.
 	for _, n := range notes {
 		about = append(about, []sheet.Cell{sheet.Bold(n[0]), sheet.Text(n[1])})
 	}
-	wb.Sheets = append(wb.Sheets, sheet.Sheet{Name: sheetInView, Rows: inView},
-		sheet.Sheet{Name: sheetAbout, Rows: about})
+	if inView != nil {
+		wb.Sheets = append(wb.Sheets, sheet.Sheet{Name: sheetInView, Rows: inView})
+	}
+	wb.Sheets = append(wb.Sheets, sheet.Sheet{Name: sheetAbout, Rows: about})
 	err := sheet.WriteXLSX(&body, wb)
 	file.ContentType, file.Body = contentTypeXLSX, body.Bytes()
 	return file, err
@@ -152,11 +157,11 @@ func inViewRows(v InView) [][]sheet.Cell {
 		row("Line items", v.LineItems)}
 }
 
-func nameOf(report string) (string, bool) {
+func entryOf(report string) entry {
 	for _, e := range entries() {
 		if e.key == report {
-			return e.name, true
+			return e
 		}
 	}
-	return "", false
+	return entry{}
 }

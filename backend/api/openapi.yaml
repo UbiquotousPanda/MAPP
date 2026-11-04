@@ -13390,15 +13390,17 @@ components:
     GsapOrderTotals:
       type: object
       additionalProperties: false
-      description: Every row of every page.
+      description: >-
+        Every row of every page; each amount is null when the person may see no plan's financial data in view
+        (039 FR-004), never 0.00.
       required: [poAmount, invoiced, paid]
       properties:
         poAmount:
-          $ref: "#/components/schemas/Money"
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         invoiced:
-          $ref: "#/components/schemas/Money"
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         paid:
-          $ref: "#/components/schemas/Money"
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
     GsapOrderRow:
       type: object
       additionalProperties: false

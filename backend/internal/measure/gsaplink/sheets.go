@@ -186,9 +186,8 @@ func ordersTable(tab OrdersTab, code string, seen bool) [][]sheet.Cell {
 			sheet.Money(r.PoAmount.Amount), sheet.Money(r.Invoiced.Amount), sheet.Money(r.Paid.Amount)})
 	}
 	amounts := make([]sheet.Cell, 3)
-	if seen {
-		amounts = []sheet.Cell{sheet.Money(tab.Totals.PoAmount.Amount), sheet.Money(tab.Totals.Invoiced.Amount),
-			sheet.Money(tab.Totals.Paid.Amount)}
+	if t := tab.Totals; seen && t.PoAmount != nil && t.Invoiced != nil && t.Paid != nil {
+		amounts = []sheet.Cell{sheet.Money(t.PoAmount.Amount), sheet.Money(t.Invoiced.Amount), sheet.Money(t.Paid.Amount)}
 	}
 	totals := append(make([]sheet.Cell, len(table[0])-len(amounts)), amounts...)
 	totals[0] = sheet.Bold("Total")
