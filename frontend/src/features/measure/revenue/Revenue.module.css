@@ -75,3 +75,9 @@
   fill: var(--ink);
   font-size: 11px;
 }
+
+.note {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-sm);
+}

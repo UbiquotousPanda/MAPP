@@ -20,6 +20,7 @@ export interface RankedEntryData<F> {
   level: string;
   name: string;
   planId: string;
+  owner?: { name: string };
   figures: F;
   children?: RankedEntryData<F>[];
 }
@@ -49,6 +50,8 @@ export interface RankedListProps<F> {
   defaultSort: string;
   /** A word on an entry the reader must notice, such as "Over-allocated". */
   flag?: (figures: F) => string | undefined;
+  /** Shows each entry's owner after its name. */
+  owner?: boolean;
 }
 
 const DRILLS_TO = new Set(['plan', 'campaign', 'initiative', 'activity']);
@@ -59,7 +62,7 @@ function isRecordType(level: string): level is PlanningRecordType {
 
 /** The ranked list (040 FR-008 – FR-015): top entries with their children, drill with a trail, shared with 049. */
 export function RankedList<F>(props: RankedListProps<F>) {
-  const { report, data, error, onRetry, columns, groups, defaultSort, flag } = props;
+  const { report, data, error, onRetry, columns, groups, defaultSort, flag, owner = false } = props;
   const { state, change } = useRankedState(defaultSort);
   const [address] = useReportAddress();
   const [params] = useSearchParams();
@@ -117,6 +120,7 @@ export function RankedList<F>(props: RankedListProps<F>) {
           columns={columns}
           sort={state}
           flag={flag}
+          owner={owner}
           onDrill={(id) => change({ drill: id })}
         />
       ) : (
@@ -132,10 +136,11 @@ interface TableProps<F> {
   columns: RankedColumn<F>[];
   sort: { sort: string; order: 'desc' | 'asc' };
   flag?: (figures: F) => string | undefined;
+  owner: boolean;
   onDrill: (id: string) => void;
 }
 
-function RankedTable<F>({ data, columns, sort, flag, onDrill }: TableProps<F>) {
+function RankedTable<F>({ data, columns, sort, flag, owner, onDrill }: TableProps<F>) {
   if (data.groups.length === 0) {
     return <p className={styles.note}>Nothing to rank on this page.</p>;
   }
@@ -145,6 +150,7 @@ function RankedTable<F>({ data, columns, sort, flag, onDrill }: TableProps<F>) {
         <thead>
           <tr>
             <th scope="col">Name</th>
+            {owner && <th scope="col">Owner</th>}
             {columns.map((c) => (
               <th
                 key={c.key}
@@ -168,6 +174,7 @@ function RankedTable<F>({ data, columns, sort, flag, onDrill }: TableProps<F>) {
             {g.label && (
               <tr className={styles.groupRow}>
                 <th scope="rowgroup">{g.label}</th>
+                {owner && <td />}
                 {columns.map((c) => (
                   <td key={c.key} className={styles.numeric}>
                     {c.value(g.totals)}
@@ -181,6 +188,7 @@ function RankedTable<F>({ data, columns, sort, flag, onDrill }: TableProps<F>) {
                 entry={e}
                 columns={columns}
                 flag={flag}
+                owner={owner}
                 onDrill={onDrill}
               />
             ))}
@@ -195,10 +203,11 @@ interface RowsProps<F> {
   entry: RankedEntryData<F>;
   columns: RankedColumn<F>[];
   flag?: (figures: F) => string | undefined;
+  owner: boolean;
   onDrill: (id: string) => void;
 }
 
-function Rows<F>({ entry, columns, flag, onDrill }: RowsProps<F>) {
+function Rows<F>({ entry, columns, flag, owner, onDrill }: RowsProps<F>) {
   const row = (e: RankedEntryData<F>, child: boolean) => {
     const word = flag?.(e.figures);
     const href = isRecordType(e.level) ? recordHref(e.level, e.id, e.planId) : undefined;
@@ -219,6 +228,7 @@ function Rows<F>({ entry, columns, flag, onDrill }: RowsProps<F>) {
           )}
           {word && <StatusChip tone="problem">{word}</StatusChip>}
         </th>
+        {owner && <td>{e.owner?.name ?? '—'}</td>}
         {columns.map((c) => (
           <td key={c.key} className={styles.numeric}>
             {c.value(e.figures)}

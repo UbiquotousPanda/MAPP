@@ -2,13 +2,16 @@
 // paged, each with its children one level down (040 FR-008 – FR-017). Each report supplies its own figures.
 package ranking
 
+import "mapp/internal/allwork"
+
 type Entry[F any] struct {
-	ID       string     `json:"id"`
-	Level    string     `json:"level"`
-	Name     string     `json:"name"`
-	PlanID   string     `json:"planId"`
-	Figures  F          `json:"figures"`
-	Children []Entry[F] `json:"children,omitempty"`
+	ID       string         `json:"id"`
+	Level    string         `json:"level"`
+	Name     string         `json:"name"`
+	PlanID   string         `json:"planId"`
+	Owner    *allwork.Owner `json:"owner,omitempty"`
+	Figures  F              `json:"figures"`
+	Children []Entry[F]     `json:"children,omitempty"`
 }
 
 type Group[F any] struct {

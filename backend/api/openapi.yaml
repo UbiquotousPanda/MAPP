@@ -12014,6 +12014,9 @@ components:
           type: string
         planId:
           type: string
+        owner:
+          description: The record's owner (049 FR-012); absent for a line item or a record with no owner.
+          $ref: "#/components/schemas/AllWorkOwner"
         figures:
           $ref: "#/components/schemas/PlanBudgetFigures"
         children:
@@ -12118,7 +12121,7 @@ components:
     RevenueReport:
       type: object
       additionalProperties: false
-      required: [cards, period, periods, projection, reason]
+      required: [cards, period, periods, projection, projections, reason]
       properties:
         cards: { $ref: "#/components/schemas/RevenueCards" }
         period: { type: string, enum: [month, quarter] }
@@ -12126,7 +12129,12 @@ components:
           type: array
           items: { $ref: "#/components/schemas/RevenuePeriod" }
         projection:
+          description: The first model in view, kept for compatibility; projections names every one.
           oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
+        projections:
+          description: Every model behind a projected figure in view, by name (049 SC-006).
+          type: array
+          items: { $ref: "#/components/schemas/ProjectionStamp" }
         reason:
           type: string
           description: Why the report is empty, never an empty grid alone (049-C20).
@@ -12162,6 +12170,11 @@ components:
             list's attribution names its model and cost basis.
           type: [number, "null"]
         attributedRevenueReason: { type: string, enum: ["", noData] }
+        projection:
+          description: >-
+            The model behind the row's projected figure (049 SC-006); absent when nothing in it projects or its
+            activities' plans use different models.
+          $ref: "#/components/schemas/ProjectionStamp"
         actualCostReason:
           type: string
           description: attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
@@ -12179,6 +12192,9 @@ components:
         level: { type: string, enum: [plan, campaign, initiative, activity] }
         name: { type: string }
         planId: { type: string }
+        owner:
+          description: The record's owner (049 FR-012); absent for a line item or a record with no owner.
+          $ref: "#/components/schemas/AllWorkOwner"
         figures: { $ref: "#/components/schemas/RevenueFigures" }
         children:
           type: array
@@ -12258,12 +12274,14 @@ components:
             reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
             variance: { $ref: "#/components/schemas/SummaryVariance" }
         conversion:
-          description: The selected stage's actual over the previous stage's actual (049-C13).
+          description: >-
+            The selected stage's actual over the previous stage's actual (049-C13); when nothing is counted in the
+            stage, the actual's own reason.
           type: object
           required: [value, reason]
           properties:
             value: { type: [number, "null"] }
-            reason: { type: string, enum: ["", noPreviousStage] }
+            reason: { type: string, enum: ["", noPreviousStage, noData, noSource, notApproved] }
     FunnelPeriod:
       type: object
       required: [key, state, actual, projected, goal, inProgress]
@@ -12277,7 +12295,7 @@ components:
     FunnelReport:
       type: object
       additionalProperties: false
-      required: [stage, availableStages, uncoveredCount, cards, period, periods, projection, reason]
+      required: [stage, availableStages, uncoveredCount, cards, period, periods, projection, projections, reason]
       properties:
         stage: { type: string, enum: [inq, mql] }
         availableStages:
@@ -12293,7 +12311,12 @@ components:
           type: array
           items: { $ref: "#/components/schemas/FunnelPeriod" }
         projection:
+          description: The first model in view, kept for compatibility; projections names every one.
           oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
+        projections:
+          description: Every model behind a projected figure in view, by name (049 SC-006).
+          type: array
+          items: { $ref: "#/components/schemas/ProjectionStamp" }
         reason:
           type: string
           enum: ["", noGoal, notApproved, noData, noModel]
@@ -12308,6 +12331,11 @@ components:
         performance: { type: [number, "null"] }
         variance: { $ref: "#/components/schemas/SummaryVariance" }
         conversion: { type: [number, "null"] }
+        projection:
+          description: >-
+            The model behind the row's projected figure (049 SC-006); absent when nothing in it projects or its
+            activities' plans use different models.
+          $ref: "#/components/schemas/ProjectionStamp"
     FunnelEntry:
       type: object
       additionalProperties: false
@@ -12317,6 +12345,9 @@ components:
         level: { type: string, enum: [plan, campaign, initiative, activity] }
         name: { type: string }
         planId: { type: string }
+        owner:
+          description: The record's owner (049 FR-012); absent for a line item or a record with no owner.
+          $ref: "#/components/schemas/AllWorkOwner"
         figures: { $ref: "#/components/schemas/FunnelFigures" }
         children:
           type: array

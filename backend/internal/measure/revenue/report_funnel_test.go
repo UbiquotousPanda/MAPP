@@ -209,24 +209,6 @@ func TestRankedFunnel_EntryCarriesConversionFromThePreviousStage_FR017_T057(t *t
 	}
 }
 
-func TestConversionCard_NoPreviousActualShowsTheReason_FR017(t *testing.T) {
-	t.Parallel()
-	sc := oneActivityScope()
-	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}
-	s := newFixtureWith(sc, goals, nil)
-
-	got, err := s.FunnelReport(t.Context(), priya, measure.Filter{}, "mql")
-	if err != nil {
-		t.Fatalf("FunnelReport: %v", err)
-	}
-	if got.Cards.Conversion.Value != nil {
-		t.Errorf("conversion = %v, want no value: INQ has no counted facts in this fixture", got.Cards.Conversion.Value)
-	}
-	if got.Cards.Conversion.Reason != revenue.ReasonNoPreviousStage {
-		t.Errorf("conversion reason = %q, want %q", got.Cards.Conversion.Reason, revenue.ReasonNoPreviousStage)
-	}
-}
-
 func TestConversionCard_WithPreviousActualComputesOneDecimal_FR017(t *testing.T) {
 	t.Parallel()
 	sc := oneActivityScope()

@@ -23,10 +23,11 @@ function renderPage(
   report: Answer<'GET /api/v1/reports/revenue'> = { body: revenueReport() },
   route = '/reports/revenue?year=2026',
   ranked: Answer<'GET /api/v1/reports/revenue/ranked'> = { body: revenueRanked() },
+  frame = reportFrame(),
 ) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
-    reply('GET /api/v1/reports/frame', { body: reportFrame() }),
+    reply('GET /api/v1/reports/frame', { body: frame }),
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/settings/activity-categories', { body: CATEGORIES }),
     reply('GET /api/v1/reports/revenue', report),
@@ -202,4 +203,54 @@ describe('RevenueReport (049 US1)', () => {
       within(summary).getByText(/^Projected from Lubricants 1\.0, last changed [^T:]+ 2026\.$/),
     ).toBeInTheDocument();
   });
+
+  it('names every model in view when the plans use more than one (049 SC-006)', async () => {
+    const report = revenueReport();
+    report.projections = [
+      { modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' },
+      { modelName: 'Mobility 1.0', modelChangedAt: '2026-01-05T09:00:00Z' },
+    ];
+    renderPage({ body: report });
+
+    const summary = await screen.findByLabelText('Summary');
+    expect(
+      within(summary).getByText(
+        /^Projected from Lubricants 1\.0, last changed [^;]+; and Mobility 1\.0, last changed [^T:]+ 2026\.$/,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("shows each entry's owner and the model behind its projection (049 FR-012, SC-006)", async () => {
+    const ranked = revenueRanked();
+    const entry = nth(nth(ranked.groups, 0).entries, 0);
+    entry.owner = { id: 'U-1002', name: 'Priya Raman', inactive: false };
+    entry.figures.projection = {
+      modelName: 'Lubricants 1.0',
+      modelChangedAt: '2026-01-02T09:00:00Z',
+    };
+    renderPage(undefined, undefined, { body: ranked });
+
+    const list = await screen.findByRole('region', { name: 'Ranked list' });
+    const row = await within(list).findByRole('row', { name: /^Helix launch/ });
+    expect(within(list).getByRole('columnheader', { name: 'Owner' })).toBeInTheDocument();
+    expect(within(list).getByRole('columnheader', { name: 'Model' })).toBeInTheDocument();
+    expect(row).toHaveTextContent('Priya Raman');
+    expect(row).toHaveTextContent('Lubricants 1.0');
+  });
+
+  it('says cost and ROI leave out the plans whose finances are hidden, when only some are (050 FR-007, #154)', async () => {
+    renderPage(undefined, undefined, undefined, reportFrame({ finance: { plans: 1, of: 2 } }));
+
+    expect(await screen.findByText(PARTIAL_FINANCE)).toBeInTheDocument();
+  });
+
+  it("says nothing about hidden finances when every plan's are shown (050 FR-007, #154)", async () => {
+    renderPage();
+
+    await screen.findByText('Helix launch');
+    expect(screen.queryByText(PARTIAL_FINANCE)).not.toBeInTheDocument();
+  });
 });
+
+const PARTIAL_FINANCE =
+  'Actual cost and ROI leave out the plans whose financial data you may not see.';

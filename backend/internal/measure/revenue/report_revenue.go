@@ -3,7 +3,6 @@ package revenue
 import (
 	"context"
 	"slices"
-	"time"
 
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
@@ -36,7 +35,7 @@ func (s *Service) buildRevenueReport(series []ActivitySeries, period string, sc 
 		cards.Projected = MoneyCard{Reason: reportReason(series, false)}
 	}
 	return RevenueReport{Cards: cards, Period: periodShown(period), Periods: revenuePeriods(sums, period, w, display),
-		Projection: stampOf(series), Reason: reportReason(series, anyGoal)}
+		Projection: stampOf(series), Projections: stampsOf(series), Reason: reportReason(series, anyGoal)}
 }
 
 func periodShown(period string) string {
@@ -46,13 +45,10 @@ func periodShown(period string) string {
 	return measure.PeriodMonth
 }
 
-// stampOf names the first model behind a projected figure, so a reviewer can reproduce it; reports
-// mixing models name one, and the ranked list's own entries carry the rest.
+// stampOf names the first model behind a projected figure, kept for compatibility; stampsOf names every one.
 func stampOf(series []ActivitySeries) *Stamp {
-	for _, a := range series {
-		if a.HasProjection && a.ModelName != "" {
-			return &Stamp{ModelName: a.ModelName, ModelChangedAt: a.ModelChangedAt.Format(time.RFC3339)}
-		}
+	if stamps := stampsOf(series); len(stamps) > 0 {
+		return &stamps[0]
 	}
 	return nil
 }

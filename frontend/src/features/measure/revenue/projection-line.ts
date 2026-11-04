@@ -3,7 +3,11 @@ import { localDate } from '@/format/intl';
 
 type ProjectionStamp = components['schemas']['ProjectionStamp'];
 
-export function projectionLine(stamp: ProjectionStamp | null, date: (day: string) => string) {
-  if (!stamp) return undefined;
-  return `Projected from ${stamp.modelName}, last changed ${date(localDate(stamp.modelChangedAt))}.`;
+/** Names every model behind the projected figures, each with its last change. */
+export function projectionLine(stamps: ProjectionStamp[], date: (day: string) => string) {
+  if (stamps.length === 0) return undefined;
+  const named = stamps.map(
+    (s) => `${s.modelName}, last changed ${date(localDate(s.modelChangedAt))}`,
+  );
+  return `Projected from ${named.join('; and ')}.`;
 }

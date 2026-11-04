@@ -12,11 +12,11 @@ const STAGE_WORDS: Record<string, string> = { inq: 'INQ', mql: 'MQL' };
 export function FunnelCards({
   stage,
   cards,
-  projection,
+  projections,
 }: {
   stage: string;
   cards: FunnelCardsData;
-  projection: FunnelReport['projection'];
+  projections: FunnelReport['projections'];
 }) {
   const { date } = useFormatters();
   const name = STAGE_WORDS[stage] ?? stage;
@@ -36,7 +36,7 @@ export function FunnelCards({
       <SummaryCard
         label={`${name} actual or projected`}
         value={whole(cards.projected.value) ?? reasonText(cards.projected.reason)}
-        detail={projectionLine(projection, date)}
+        detail={projectionLine(projections, date)}
       />
       <SummaryCard
         label="Performance"

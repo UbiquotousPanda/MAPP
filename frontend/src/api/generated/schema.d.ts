@@ -5934,6 +5934,8 @@ export interface components {
             level: "plan" | "campaign" | "initiative" | "activity" | "lineItem";
             name: string;
             planId: string;
+            /** @description The record's owner (049 FR-012); absent for a line item or a record with no owner. */
+            owner?: components["schemas"]["AllWorkOwner"];
             figures: components["schemas"]["PlanBudgetFigures"];
             children?: components["schemas"]["RankedEntry"][];
         };
@@ -5999,7 +6001,10 @@ export interface components {
             /** @enum {string} */
             period: "month" | "quarter";
             periods: components["schemas"]["RevenuePeriod"][];
+            /** @description The first model in view, kept for compatibility; projections names every one. */
             projection: components["schemas"]["ProjectionStamp"] | null;
+            /** @description Every model behind a projected figure in view, by name (049 SC-006). */
+            projections: components["schemas"]["ProjectionStamp"][];
             /**
              * @description Why the report is empty, never an empty grid alone (049-C20).
              * @enum {string}
@@ -6020,6 +6025,8 @@ export interface components {
             roi: number | null;
             /** @enum {string} */
             attributedRevenueReason: "" | "noData";
+            /** @description The model behind the row's projected figure (049 SC-006); absent when nothing in it projects or its activities' plans use different models. */
+            projection?: components["schemas"]["ProjectionStamp"];
             /**
              * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
              * @enum {string}
@@ -6037,6 +6044,8 @@ export interface components {
             level: "plan" | "campaign" | "initiative" | "activity";
             name: string;
             planId: string;
+            /** @description The record's owner (049 FR-012); absent for a line item or a record with no owner. */
+            owner?: components["schemas"]["AllWorkOwner"];
             figures: components["schemas"]["RevenueFigures"];
             children?: components["schemas"]["RevenueEntry"][];
         };
@@ -6094,11 +6103,11 @@ export interface components {
                 reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
                 variance: components["schemas"]["SummaryVariance"];
             };
-            /** @description The selected stage's actual over the previous stage's actual (049-C13). */
+            /** @description The selected stage's actual over the previous stage's actual (049-C13); when nothing is counted in the stage, the actual's own reason. */
             conversion: {
                 value: number | null;
                 /** @enum {string} */
-                reason: "" | "noPreviousStage";
+                reason: "" | "noPreviousStage" | "noData" | "noSource" | "notApproved";
             };
         };
         FunnelPeriod: {
@@ -6122,7 +6131,10 @@ export interface components {
             /** @enum {string} */
             period: "month" | "quarter";
             periods: components["schemas"]["FunnelPeriod"][];
+            /** @description The first model in view, kept for compatibility; projections names every one. */
             projection: components["schemas"]["ProjectionStamp"] | null;
+            /** @description Every model behind a projected figure in view, by name (049 SC-006). */
+            projections: components["schemas"]["ProjectionStamp"][];
             /** @enum {string} */
             reason: "" | "noGoal" | "notApproved" | "noData" | "noModel";
         };
@@ -6133,6 +6145,8 @@ export interface components {
             performance: number | null;
             variance: components["schemas"]["SummaryVariance"];
             conversion: number | null;
+            /** @description The model behind the row's projected figure (049 SC-006); absent when nothing in it projects or its activities' plans use different models. */
+            projection?: components["schemas"]["ProjectionStamp"];
         };
         FunnelEntry: {
             id: string;
@@ -6140,6 +6154,8 @@ export interface components {
             level: "plan" | "campaign" | "initiative" | "activity";
             name: string;
             planId: string;
+            /** @description The record's owner (049 FR-012); absent for a line item or a record with no owner. */
+            owner?: components["schemas"]["AllWorkOwner"];
             figures: components["schemas"]["FunnelFigures"];
             children?: components["schemas"]["FunnelEntry"][];
         };

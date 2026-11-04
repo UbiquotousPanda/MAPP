@@ -9,10 +9,10 @@ import styles from './Revenue.module.css';
 /** The fixed Revenue card set: goal, actual, projected, performance (049-C9). */
 export function RevenueCards({
   cards,
-  projection,
+  projections,
 }: {
   cards: RevenueCardsData;
-  projection: RevenueReport['projection'];
+  projections: RevenueReport['projections'];
 }) {
   const { money, date } = useFormatters();
   return (
@@ -33,7 +33,7 @@ export function RevenueCards({
           cards.projected.value ? money(cards.projected.value) : reasonText(cards.projected.reason)
         }
         tip="Actual to the end of last period, projected from today."
-        detail={projectionLine(projection, date)}
+        detail={projectionLine(projections, date)}
       />
       <SummaryCard
         label="Performance"
