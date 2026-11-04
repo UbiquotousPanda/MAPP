@@ -132,10 +132,11 @@ describe('RequestsGrid (042 US2)', () => {
     expect(onParams).toHaveBeenCalledWith({ pageSize: 10 });
   });
 
-  it('lists the page in the table view', () => {
-    renderGrid({}, '/reports/purchase-requests?table=grid');
+  it('is a table itself, so it offers no Chart · Table switch', () => {
+    renderGrid();
 
-    expect(screen.getAllByRole('row').length).toBe(5);
+    expect(screen.queryByRole('button', { name: 'Chart' })).not.toBeInTheDocument();
+    expect(screen.getByRole('table', { name: 'Purchase requests by vendor' })).toBeInTheDocument();
   });
 
   it('says there are no purchase requests yet when nothing is filtered', () => {

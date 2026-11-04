@@ -4,7 +4,6 @@ import { Link } from 'react-router';
 import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
 import { ReportWidget } from '../shared';
-import type { ReportTableData } from '../shared';
 import type { ApprovalsGridData, ApprovalsRowData } from './api';
 import { CommentDialog } from './CommentDialog';
 import { GridFilters } from './GridFilters';
@@ -117,29 +116,6 @@ function Row({ row, onRead }: { row: ApprovalsRowData; onRead: (row: ApprovalsRo
   );
 }
 
-function tableOf(grid: ApprovalsGridData): ReportTableData {
-  return {
-    columns: COLUMNS.map((c) => ({ label: c.label, numeric: c.numeric })),
-    rows: grid.items.map((row, i) => ({
-      key: `${row.itemId}-${row.level}-${i}`,
-      cells: [
-        row.itemId,
-        row.itemName,
-        recordWord(row.recordType),
-        row.approver?.name ?? NOTHING,
-        row.decidedOn ?? NOTHING,
-        OUTCOME_WORDS[row.outcome] ?? row.outcome,
-        row.submittedOn,
-        String(row.level),
-        row.purchaseOrderNumber ?? NOTHING,
-        row.amount ? `${row.amount.amount} ${row.amount.currency}` : NOTHING,
-        row.owner.name,
-        row.comments || NOTHING,
-      ],
-    })),
-  };
-}
-
 function Empty({ filtered, onReset }: { filtered: boolean; onReset: () => void }) {
   return filtered ? (
     <div className={styles.empty}>
@@ -169,7 +145,6 @@ export function ApprovalsGrid({
   );
   const reset = () => onParams({ q: '', recordTypes: [], approvers: [], outcomes: [] });
   const note = financeNote(covers);
-  const empty: ReportTableData = { columns: [{ label: 'Record ID' }], rows: [] };
   return (
     <>
       <ReportWidget
@@ -181,7 +156,6 @@ export function ApprovalsGrid({
         loading={!grid && !failed}
         failed={failed}
         onRetry={onRetry}
-        table={grid ? tableOf(grid) : empty}
         chart={
           grid && (
             <>

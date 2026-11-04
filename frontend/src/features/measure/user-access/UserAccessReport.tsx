@@ -90,11 +90,7 @@ function Results({ report, table, onChange }: ResultsProps) {
           label="Signed in within 30 days"
           value={formatWhole(report.cards.signedInWithin30Days)}
         />
-        <SummaryCard
-          label="Never signed in"
-          value={formatWhole(report.cards.neverSignedIn)}
-          tip="Not since sign-in times were first recorded."
-        />
+        <SummaryCard label="Never signed in" value={formatWhole(report.cards.neverSignedIn)} />
       </div>
       <SignInBands
         bands={report.bands}

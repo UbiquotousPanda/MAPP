@@ -20,7 +20,7 @@ export interface ReportWidgetProps {
   /** The ⓘ tip naming each figure and its definition. */
   tip: string;
   chart: ReactNode;
-  table: ReportTableData;
+  table?: ReportTableData;
   /** A line under the title: "Covers 1 of 2 plans", "8 activities where it does not apply are not counted". */
   note?: string;
   /** "No data yet: …" naming what would fill it, shown instead of a chart of zeros. */
@@ -30,12 +30,12 @@ export interface ReportWidgetProps {
   onRetry?: () => void;
 }
 
-/** A widget with its tip, Chart · Table switch in the address, export, and its own loading and failure. */
+/** A widget with its tip, a Chart · Table switch in the address when it has a table view, export, and its own loading and failure. */
 export function ReportWidget(props: ReportWidgetProps) {
   const { report, widget, title, tip, chart, table, note, empty, loading, failed, onRetry } = props;
   const [address, setAddress] = useReportAddress();
   const [params] = useSearchParams();
-  const asTable = address.tables.includes(widget);
+  const asTable = table !== undefined && address.tables.includes(widget);
   const show = (tableView: boolean) =>
     setAddress({
       ...address,
@@ -46,20 +46,22 @@ export function ReportWidget(props: ReportWidgetProps) {
   const actions = (
     <div className={styles.actions}>
       <InfoTip label={title} text={tip} />
-      <div className={styles.switch} role="group" aria-label={`Show ${title} as`}>
-        {[false, true].map((tableView) => (
-          <Button
-            key={String(tableView)}
-            type="button"
-            size="sm"
-            variant={asTable === tableView ? 'secondary' : 'tertiary'}
-            aria-pressed={asTable === tableView}
-            onClick={() => show(tableView)}
-          >
-            {tableView ? 'Table' : 'Chart'}
-          </Button>
-        ))}
-      </div>
+      {table && (
+        <div className={styles.switch} role="group" aria-label={`Show ${title} as`}>
+          {[false, true].map((tableView) => (
+            <Button
+              key={String(tableView)}
+              type="button"
+              size="sm"
+              variant={asTable === tableView ? 'secondary' : 'tertiary'}
+              aria-pressed={asTable === tableView}
+              onClick={() => show(tableView)}
+            >
+              {tableView ? 'Table' : 'Chart'}
+            </Button>
+          ))}
+        </div>
+      )}
       <ExportMenu
         label="Export"
         formats={['csv', 'xlsx']}
@@ -81,7 +83,7 @@ export function ReportWidget(props: ReportWidgetProps) {
         <Skeleton lines={5} height="20px" />
       ) : empty ? (
         <p className={styles.empty}>{empty}</p>
-      ) : asTable ? (
+      ) : table && asTable ? (
         <ReportTable title={title} data={table} />
       ) : (
         chart

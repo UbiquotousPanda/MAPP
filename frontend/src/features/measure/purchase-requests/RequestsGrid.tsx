@@ -1,12 +1,9 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
-import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
 import { ReportWidget } from '../shared';
-import type { ReportTableData } from '../shared';
 import type { RequestsGridData } from './api';
-import { lineText, NUMERIC, requestText, vendorText } from './cells';
-import type { Format } from './cells';
+import { NUMERIC } from './cells';
 import { GridPager } from './GridPager';
 import { GridRows } from './GridRows';
 import { GridToolbar } from './GridToolbar';
@@ -85,23 +82,6 @@ function toSort(column: ColumnKey): SortKey {
   }
 }
 
-function tableOf(grid: RequestsGridData, columns: ColumnKey[], f: Format): ReportTableData {
-  const rows: ReportTableData['rows'] = [];
-  for (const v of grid.vendors) {
-    rows.push({ key: `v:${v.vendor}`, cells: columns.map((c) => vendorText(v, c, f)) });
-    for (const r of v.requests) {
-      rows.push({ key: `r:${r.id}`, cells: columns.map((c) => requestText(r, c, f)) });
-      for (const l of r.lines) {
-        rows.push({ key: `l:${l.id}`, cells: columns.map((c) => lineText(l, c, f)) });
-      }
-    }
-  }
-  return {
-    columns: columns.map((c) => ({ label: COLUMN_WORDS[c], numeric: NUMERIC.includes(c) })),
-    rows,
-  };
-}
-
 function Empty({ filtered, onReset }: { filtered: boolean; onReset: () => void }) {
   return filtered ? (
     <div className={styles.empty}>
@@ -125,7 +105,6 @@ export function RequestsGrid({
   failed,
   onRetry,
 }: RequestsGridProps) {
-  const { money, date } = useFormatters();
   const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
   const toggle = (key: string) =>
     setOpen((prev) => {
@@ -139,7 +118,6 @@ export function RequestsGrid({
     params.q || params.vendors.length || params.requestOwners.length || params.statuses.length,
   );
   const reset = () => onParams({ q: '', vendors: [], requestOwners: [], statuses: [] });
-  const empty: ReportTableData = { columns: [{ label: 'Name' }], rows: [] };
   return (
     <ReportWidget
       report="purchaseRequests"
@@ -150,7 +128,6 @@ export function RequestsGrid({
       loading={!grid && !failed}
       failed={failed}
       onRetry={onRetry}
-      table={grid ? tableOf(grid, params.columns, { money, date }) : empty}
       chart={
         grid && (
           <>

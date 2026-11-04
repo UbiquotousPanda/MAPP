@@ -20,7 +20,7 @@ export function SignInBands({ bands, people, recordedSince }: SignInBandsProps) 
       report="userAccess"
       widget="signInBands"
       title="Last sign-in"
-      tip="The people of the table by how long ago they last signed in. Never: not since sign-ins were first recorded."
+      tip="The people of the table by how long ago they last signed in."
       note={`Sign-ins recorded since ${date(recordedSince)}`}
       chart={
         <ul className={styles.bars} aria-label="People by last sign-in">

@@ -39,7 +39,7 @@ export interface PagedTableProps<R> {
   onChange: (patch: Partial<GsapTable>) => void;
 }
 
-/** A tab's table card: its title and export of every row, then the page of rows. */
+/** A tab's table card: the export of every row, then the page of rows; the tab already names it on screen. */
 export function PagedTable<R>(props: PagedTableProps<R>) {
   const { title, widget } = props;
   const headingId = useId();
@@ -48,7 +48,7 @@ export function PagedTable<R>(props: PagedTableProps<R>) {
   return (
     <section className={styles.card} aria-labelledby={headingId}>
       <div className={styles.cardHeader}>
-        <h2 id={headingId} className={styles.heading}>
+        <h2 id={headingId} className="visually-hidden">
           {title}
         </h2>
         <ExportMenu
