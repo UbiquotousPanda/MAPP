@@ -1,7 +1,7 @@
 import { toCents } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { ReportWidget } from '../shared';
+import { ReportWidget, SeriesCard } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { RevenueSectionData, SummaryTrendPeriod } from './api';
 import { varianceText } from '../revenue/variance';
@@ -25,12 +25,14 @@ export function RevenueSection({ revenue }: { revenue: RevenueSectionData }) {
         Revenue · {revenue.periodLabel}
       </h2>
       <div className={styles.cards} aria-label="Revenue figures">
-        <SummaryCard
+        <SeriesCard
+          series="projected"
           label="Actual or projected"
           value={revenue.actualOrProjected ? money(revenue.actualOrProjected) : '—'}
           tip="Actual to the end of the last month, projected from the month in progress on."
         />
-        <SummaryCard
+        <SeriesCard
+          series="goal"
           label="Revenue goal"
           value={revenue.goal ? money(revenue.goal) : '—'}
           tip="The sum of the goals of the activities in view."

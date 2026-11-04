@@ -1,45 +1,97 @@
-.list {
+.groups {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-8);
+  padding-top: var(--space-4);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.groupTitle {
   margin: 0;
-  padding: var(--space-4) 0 0;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heading);
+  line-height: var(--leading-lg);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
-.report {
+.cards > li {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  min-width: 0;
+}
+
+.card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-5);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-card);
   background-color: var(--surface);
 }
 
-.icon {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  color: var(--ink-2);
+/* The whole card is one link: it lifts on hover without moving, like Home's link cards (§5.3). */
+.cardLink {
+  text-decoration: none;
+  transition: box-shadow var(--dur) var(--ease-out);
 }
 
-.text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
+.cardLink:hover {
+  box-shadow: var(--shadow-lift);
+  text-decoration: none;
+}
+
+.cardLink:hover .name {
+  text-decoration: underline;
+}
+
+.cardLink:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-bottom: var(--space-1);
+  color: var(--ink);
 }
 
 .name {
   color: var(--ink);
+  font-family: var(--font-heading);
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-heading);
+  line-height: var(--leading-md);
+  overflow-wrap: break-word;
 }
 
 .purpose {
-  margin: 0;
   color: var(--ink-2);
   font-size: var(--text-sm);
+  overflow-wrap: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardLink {
+    transition: none;
+  }
 }

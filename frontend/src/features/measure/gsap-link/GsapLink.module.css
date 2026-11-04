@@ -2,6 +2,7 @@
    system §5.4). */
 .body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
 }
 
@@ -22,17 +23,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--space-3);
   padding: var(--space-4) var(--card-padding);
-}
-
-.heading {
-  margin: 0;
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-md);
 }
 
 .scroll {

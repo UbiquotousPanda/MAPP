@@ -72,6 +72,13 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
     expect(screen.queryByText('The chart')).not.toBeInTheDocument();
   });
 
+  it('has no Chart · Table switch without a table view, even when the address asks for the table', () => {
+    renderWidget({ table: undefined }, '/reports/plan-details?table=attr12Count');
+
+    expect(screen.queryByRole('group', { name: /Show .* as/ })).not.toBeInTheDocument();
+    expect(screen.getByText('The chart')).toBeInTheDocument();
+  });
+
   it('offers its export as CSV and Excel', async () => {
     const { user } = renderWidget();
 
