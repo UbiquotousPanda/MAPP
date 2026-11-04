@@ -62,19 +62,19 @@ describe('FilterPanel (039 FR-008 – FR-013)', () => {
   it('keeps Apply off, with the reason, while a group has nothing ticked (FR-013)', async () => {
     const { user, onApply } = renderPanel(reportFrame().choices, {
       ...DEFAULT_ADDRESS,
-      planTypes: ['strategic'],
+      activityStatuses: ['approved'],
     });
-    const planType = screen.getByRole('group', { name: /Plan type/ });
+    const statuses = screen.getByRole('group', { name: /Activity status/ });
 
-    await user.click(within(planType).getByRole('button', { name: 'Clear all' }));
+    await user.click(within(statuses).getByRole('button', { name: 'Clear all' }));
 
-    expect(within(planType).getByText('(0 / 3)')).toBeInTheDocument();
-    expect(screen.getByText('Tick at least one value in Plan type.')).toBeInTheDocument();
+    expect(within(statuses).getByText('(0 / 6)')).toBeInTheDocument();
+    expect(screen.getByText('Tick at least one value in Activity status.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
 
-    await user.click(within(planType).getByRole('button', { name: 'Select all' }));
+    await user.click(within(statuses).getByRole('button', { name: 'Select all' }));
     await user.click(screen.getByRole('button', { name: 'Apply' }));
-    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ planTypes: [] }));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ activityStatuses: [] }));
   });
 
   it('changes the year at once, saying first that it clears the chosen plans (FR-013)', async () => {
@@ -104,13 +104,16 @@ describe('FilterPanel (039 FR-008 – FR-013)', () => {
     expect(onApply).not.toHaveBeenCalled();
   });
 
-  it('offers a search above ten values (FR-010)', async () => {
+  it('offers Select all and Clear all above four values and a search above ten (FR-010)', async () => {
     const owners = Array.from({ length: 11 }, (_, i) => ({
       id: `U-${String(2000 + i)}`,
       name: `Owner ${String(i)}`,
     }));
     const { user } = renderPanel({ ...reportFrame().choices, owners });
     const owner = screen.getByRole('group', { name: /Owner/ });
+    const planType = screen.getByRole('group', { name: /Plan type/ });
+    expect(within(planType).queryByRole('button', { name: 'Clear all' })).not.toBeInTheDocument();
+    expect(within(owner).getByRole('button', { name: 'Select all' })).toBeInTheDocument();
 
     await user.type(within(owner).getByRole('searchbox', { name: 'Search Owner' }), 'Owner 1');
 

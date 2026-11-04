@@ -261,7 +261,8 @@ the year and "Figures as of …", **Export** (secondary, the whole report as Exc
 the person's views with a star for the default, *Save current filters*, *Reset*); no primary button — a report
 acts on nothing. Under the header, a left **filter panel** (year, plans, a tab per level for Shell attributes
 with *Not filled in*, owner, activity type, status, team; counters "(selected / all)"; a search box above ten
-values; Select all / Clear all per group; **Apply** at the bottom) that collapses on narrow screens; the page
+values; Select all / Clear all per group above four values; **Apply** in a bar that stays in view at the bottom, or
+an **Update as I choose** switch that applies each change as it is made) that collapses on narrow screens; the page
 keeps the filters in its address. Above the widgets: **Period** (Months · Quarters), **Show** (Plan · Campaign ·
 Initiative · Activity where the report ranks records) and the display currency. Widgets are cards: summary
 cards first, then charts, then tables; every chart has a **Table** toggle and its own export (CSV · Excel); time

@@ -77,19 +77,23 @@ describe('FilterPanel, Update as I choose (039-C7, FR-013)', () => {
   });
 
   it('never applies a group with nothing ticked, saying so instead', async () => {
-    const { user, onApply } = renderLive({ ...DEFAULT_ADDRESS, planTypes: ['strategic'] });
+    const { user, onApply } = renderLive({ ...DEFAULT_ADDRESS, activityStatuses: ['approved'] });
     await user.click(screen.getByRole('switch', LIVE));
-    const planType = screen.getByRole('group', { name: /Plan type/ });
+    const statuses = screen.getByRole('group', { name: /Activity status/ });
 
-    await user.click(within(planType).getByRole('button', { name: 'Clear all' }));
+    await user.click(within(statuses).getByRole('button', { name: 'Clear all' }));
     await settle(LIVE_DELAY_MS * 2);
 
     expect(onApply).not.toHaveBeenCalled();
-    expect(screen.getByRole('status')).toHaveTextContent('Tick at least one value in Plan type.');
-    await user.click(within(planType).getByRole('checkbox', { name: 'Operational' }));
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Tick at least one value in Activity status.',
+    );
+    await user.click(within(statuses).getByRole('checkbox', { name: 'Created' }));
     await settle(LIVE_DELAY_MS);
     expect(onApply).toHaveBeenCalledTimes(1);
-    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ planTypes: ['operational'] }));
+    expect(onApply).toHaveBeenCalledWith(
+      expect.objectContaining({ activityStatuses: ['created'] }),
+    );
   });
 
   it('keeps focus where it was after a live update', async () => {
