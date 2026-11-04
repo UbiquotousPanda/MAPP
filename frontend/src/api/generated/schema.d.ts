@@ -1273,7 +1273,7 @@ export interface paths {
         };
         /**
          * The campaigns, initiatives, activities and line items of the plan whose name or ID holds the text
-         * @description 039 FR-005. Top-down (campaign, initiative, activity, line item), then by name and ID. A plan outside the person's scope answers 404, like a missing one.
+         * @description 052 FR-005. Top-down (campaign, initiative, activity, line item), then by name and ID. A plan outside the person's scope answers 404, like a missing one.
          */
         get: operations["searchPlan"];
         put?: never;
@@ -6220,7 +6220,7 @@ export interface components {
             planPlannedCost?: components["schemas"]["Money"] | null;
             foundIn?: components["schemas"]["PlanFoundIn"];
         };
-        /** @description 039 FR-007. Only on a plan listed because a record below it holds the search, not its own name or ID: the first match top-down and how many more. */
+        /** @description 052 FR-007. Only on a plan listed because a record below it holds the search, not its own name or ID: the first match top-down and how many more. */
         PlanFoundIn: {
             match: components["schemas"]["PlanSearchMatch"];
             more: number;
@@ -13739,7 +13739,7 @@ export interface operations {
                  * @example 2026
                  */
                 year?: number;
-                /** @description Part of the name or of the ID, ignoring letter case and surrounding spaces; a plan is also listed when a campaign, initiative, activity or line item below it holds the text (039 FR-006). */
+                /** @description Part of the name or of the ID, ignoring letter case and surrounding spaces; a plan is also listed when a campaign, initiative, activity or line item below it holds the text (052 FR-006). */
                 q?: string;
                 /** @description BCPIR plans (013 FR-003). */
                 bcpir?: components["parameters"]["AllWorkBcpir"];

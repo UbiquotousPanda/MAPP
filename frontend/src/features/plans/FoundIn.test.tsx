@@ -14,7 +14,7 @@ const VENUE_HIRE = {
   parentId: 'A-1001',
 } as const;
 
-describe('039 US2: the Plans list says where the search matched inside a plan', () => {
+describe('052 US2: the Plans list says where the search matched inside a plan', () => {
   it('scenario 1: the card names the line item that holds the text', () => {
     const europe = { ...nth(seedList().items, 0), foundIn: { match: VENUE_HIRE, more: 0 } };
 

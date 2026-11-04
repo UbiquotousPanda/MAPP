@@ -2,7 +2,7 @@
 
 **Branch**: `feature/039-search-whole-hierarchy` | **Date**: 2026-10-31 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `specs/039-search-whole-hierarchy/spec.md`
+**Input**: Feature specification from `specs/052-search-whole-hierarchy/spec.md`
 
 ## Summary
 
@@ -39,9 +39,9 @@ Playwright for the P1 story
 
 | Principle | How this feature meets it | Status |
 |---|---|---|
-| I Spec first | Spec 039 with acceptance scenarios; amends 004 FR-003, FR-013, FR-014 (D-366) | Pass |
+| I Spec first | Spec 052 with acceptance scenarios; amends 004 FR-003, FR-013, FR-014 (D-380) | Pass |
 | II/IV Ownership, adapters | No GSAP data; plans reads its levels through a port wired in `internal/app` | Pass |
-| III Documented design | research R1–R4, contract, data model, quickstart; D-366 | Pass |
+| III Documented design | research R1–R4, contract, data model, quickstart; D-380 | Pass |
 | V Simplicity | Existing batched reads, matching in Go as All work does; no new table, query or package | Pass |
 | VI Tests | Service rules on fakes; contract test for the endpoint and the list field; component tests for the rows, the note and the card; e2e for US1 | Pass |
 | VII Security, scope | The plan must be in the actor's scope (404 otherwise); the list searches only plans in scope; new route rule `view()`; no new store read, so no new isolation test | Pass |
@@ -54,7 +54,7 @@ Playwright for the P1 story
 ### Documentation (this feature)
 
 ```text
-specs/039-search-whole-hierarchy/
+specs/052-search-whole-hierarchy/
 ├── spec.md
 ├── plan.md
 ├── research.md

@@ -4,7 +4,7 @@
 
 ## Phase 1: Setup and documents
 
-- [x] T001 Decision D-366 in `docs/sdd/decision-log.md`; feature map row 039 in `docs/sdd/feature-map.md`;
+- [x] T001 Decision D-380 (D-366 until renumbered, #54) in `docs/sdd/decision-log.md`; feature map row 052 (039 until #54) in `docs/sdd/feature-map.md`;
   amendment notes on 004 FR-003, FR-013, FR-014 in `specs/004-plans/spec.md`
 
 ## Phase 2: Foundational (blocks both stories)

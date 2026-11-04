@@ -72,7 +72,7 @@ function rowOf(text: string): HTMLElement | null {
 
 const searchBox = () => screen.getByRole('searchbox', { name: 'Search name or ID in this plan' });
 
-describe('039 US1: the plan tree search finds line items', () => {
+describe('052 US1: the plan tree search finds line items', () => {
   it('scenario 1: shows a matching line item under its activity, the path open, leading to its page', async () => {
     const { api, user } = renderSearch({ body: { items: [VENUE_HIRE] } });
 
