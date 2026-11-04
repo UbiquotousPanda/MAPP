@@ -21,9 +21,12 @@ import (
 // areas builds the business areas after people and access, each after those it reads; where people's and
 // Settings' records are used is wired last, once every area exists.
 func (w *wiring) areas() error {
+	release := &heldRelease{}
 	steps := []func() error{
-		w.settingsArea, w.overspendArea, w.plansArea, w.planningArea, w.budgetsArea, w.samplesArea, w.approvalsArea, w.financialsArea,
+		w.settingsArea, w.overspendArea, w.plansArea, w.planningArea, w.budgetsArea, w.samplesArea,
+		func() error { return w.approvalsArea(release) }, w.financialsArea,
 		w.swbsArea, w.purchaseRequestsArea, w.customDashboardsArea, w.datasetsArea, w.bulkArea, w.workbookArea,
+		func() error { return w.performanceArea(release) },
 	}
 	for _, step := range steps {
 		if err := step(); err != nil {
@@ -34,6 +37,9 @@ func (w *wiring) areas() error {
 	w.views()
 	w.spaArea()
 	w.dashboards()
+	if err := w.measureArea(); err != nil {
+		return err
+	}
 	w.widgetData()
 	w.usesOfPeople()
 	w.usesInSettings()
@@ -105,11 +111,15 @@ func (w *wiring) buildActivities() {
 }
 
 func (w *wiring) buildCampaigns() {
-	w.campaigns = campaign.NewService(history.Tools{Tx: w.guard, IDs: w.generator, Log: w.history, Now: w.now}, w.set.Campaigns, campaign.Deps{
-		Plans: campaignPlans{repo: w.set.Plans}, People: w.set.People, Settings: w.settings,
-		Activities: activitiesForCampaigns{svc: w.activities},
+	w.campaigns = w.campaignService(activitiesForCampaigns{svc: w.activities})
+}
+
+func (w *wiring) campaignService(activities campaign.Activities) *campaign.Service {
+	s := campaign.NewService(history.Tools{Tx: w.guard, IDs: w.generator, Log: w.history, Now: w.now}, w.set.Campaigns, campaign.Deps{
+		Plans: campaignPlans{repo: w.set.Plans}, People: w.set.People, Settings: w.settings, Activities: activities,
 	})
-	w.campaigns.UseDisplayRates(w.people)
+	s.UseDisplayRates(w.people)
+	return s
 }
 
 // planningKinds registers the kinds and the plan's levels top-down: campaign, initiative, activity, line item.
@@ -159,24 +169,24 @@ func (w *wiring) samplesArea() error {
 	return nil
 }
 
-func (w *wiring) approvalsArea() error {
+func (w *wiring) approvalsArea(release *heldRelease) error {
 	s := w.set
 	tools := history.Tools{Tx: s.Tx, IDs: w.generator, Log: w.history, Now: w.now}
 	w.approvals = approval.NewService(tools, s.Approvals, s.People, &approvalsActivities{
 		activities: s.Activities, lineItems: s.LineItems, campaigns: s.Campaigns, plans: s.Plans, settings: s.Settings,
-		rates: w.settings.Rates, check: w.activities.SubmitCheck, now: w.now,
+		rates: w.settings.Rates, check: w.activities.SubmitCheck, now: w.now, approved: release.activityApproved,
 	})
 	if err := w.register(w.approvals.Kinds()); err != nil {
 		return err
 	}
-	w.connectApprovals()
+	w.connectApprovals(release)
 	w.accessTargets()
 	mount(w.signedIn, approval.NewHandler(w.approvals))
 	return nil
 }
 
-func (w *wiring) connectApprovals() {
-	w.activities.UseApprovalHooks(activityApprovalHooks{svc: w.approvals})
+func (w *wiring) connectApprovals(release *heldRelease) {
+	w.activities.UseApprovalHooks(activityApprovalHooks{svc: w.approvals, unapproved: release.activityUnapproved})
 	w.approvals.UseDisplayRates(w.people)
 	w.approvals.UseAccess(approvalsAccess{access: w.access})
 	w.approvals.UseRuleChoices(approvalRuleChoices{settings: w.settings})
@@ -222,6 +232,7 @@ func (w *wiring) views() {
 		lineItemsRepo: s.LineItems, settings: w.settings, budgetItems: lineItemBudgets{repo: s.Settings},
 		workflows: activityWorkflows{repo: s.Approvals}, people: w.people, peopleRepo: s.People,
 		history: w.history, financials: w.financials, financeAccess: financialAccess{tx: s.Tx, plans: s.Plans},
+		planningCampaigns: w.campaignService(activitiesForReports{activitiesForCampaigns{svc: w.activities}}),
 	}
 	mount(w.signedIn, home.NewHandler(homeService),
 		allwork.NewHandler(allwork.NewService(history.Tools{Tx: s.Tx, IDs: w.generator, Log: w.history, Now: w.now},

@@ -1,0 +1,270 @@
+import { screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import type { components } from '@/api/generated/schema';
+import { expectNoAxeViolations } from '@/testing/axe';
+import { testUser } from '@/testing/fixtures/users';
+import { mockApi } from '@/testing/mock-api';
+import { renderWithProviders } from '@/testing/render';
+import { reply } from '@/testing/replies';
+import { PerformancePanel } from './PerformancePanel';
+
+const PANEL = 'GET /api/v1/activities/{activityId}/performance';
+
+type Panel = components['schemas']['PerformancePanel'];
+
+function panel(overrides: Partial<Panel> = {}): Panel {
+  return {
+    state: 'ok',
+    stages: [
+      {
+        stage: 'inq',
+        goal: 100,
+        actual: 80,
+        conversion: null,
+        reason: '',
+        projected: null,
+        projectedReason: '',
+        months: [],
+      },
+      {
+        stage: 'mql',
+        goal: 10,
+        actual: 8,
+        conversion: 10.0,
+        reason: '',
+        projected: null,
+        projectedReason: '',
+        months: [],
+      },
+    ],
+    revenue: {
+      goal: { amount: '5000.00', currency: 'USD' },
+      actual: { amount: '1000.00', currency: 'USD' },
+      excludedCount: 1,
+      reason: '',
+      projected: null,
+      projectedReason: '',
+      months: [],
+    },
+    webMetrics: [{ metric: 'sessions', months: [{ month: '2026-02', value: 1200 }] }],
+    sources: [
+      { sourceId: 'PS-1001', sourceName: 'Eloqua', freshness: 'stale', dataThrough: '2026-02-01' },
+    ],
+    projection: null,
+    ...overrides,
+  };
+}
+
+function emptyStages(
+  reason: 'noSource' | 'noGoal' | 'noData' | 'stale' | 'failed',
+): Partial<Panel> {
+  return {
+    stages: [
+      {
+        stage: 'inq',
+        goal: null,
+        actual: null,
+        conversion: null,
+        reason,
+        projected: null,
+        projectedReason: '',
+        months: [],
+      },
+      {
+        stage: 'mql',
+        goal: null,
+        actual: null,
+        conversion: null,
+        reason,
+        projected: null,
+        projectedReason: '',
+        months: [],
+      },
+    ],
+    revenue: {
+      goal: null,
+      actual: null,
+      excludedCount: 0,
+      reason,
+      projected: null,
+      projectedReason: '',
+      months: [],
+    },
+    webMetrics: [],
+    sources: [],
+    projection: null,
+  };
+}
+
+function renderPanel(answer: Panel) {
+  mockApi([reply(PANEL, { body: answer }, { activityId: 'A-1042' })]);
+  return renderWithProviders(<PerformancePanel activityId="A-1042" />, { user: testUser() });
+}
+
+/** Whatever the state, nothing that looks like a figure appears. */
+function expectNoSampleFigure() {
+  expect(screen.queryByText(/\d/)).not.toBeInTheDocument();
+}
+
+describe('PerformancePanel', () => {
+  it('046 FR-029 shows goal, actual, conversion, revenue and freshness when approved', async () => {
+    renderPanel(panel());
+
+    expect(await screen.findByRole('row', { name: /INQ 100 80/ })).toBeInTheDocument();
+    expect(screen.getByRole('row', { name: /MQL 10 8 — 10\.0 %/ })).toBeInTheDocument();
+    expect(screen.getByText(/1 excluded without a rate/)).toBeInTheDocument();
+    expect(screen.getByText('stale')).toBeInTheDocument();
+    await expectNoAxeViolations();
+  });
+
+  it('046 FR-027 gates a non-approved activity with the stated message and no figures', async () => {
+    renderPanel(
+      panel({ state: 'notApproved', stages: [], webMetrics: [], sources: [], projection: null }),
+    );
+
+    expect(
+      await screen.findByText('Approve the activity to see performance data.'),
+    ).toBeInTheDocument();
+    expectNoSampleFigure();
+  });
+
+  it('046 FR-032 states no source and shows no sample figure', async () => {
+    renderPanel(panel(emptyStages('noSource')));
+
+    const reasons = await screen.findAllByText('No active data source supplies this figure.');
+    expect(reasons.length).toBeGreaterThan(0);
+    expectNoSampleFigure();
+  });
+
+  it('046 FR-032 states no goal and shows no sample figure', async () => {
+    renderPanel(panel(emptyStages('noGoal')));
+
+    expect((await screen.findAllByText('No goal is set for this figure.')).length).toBeGreaterThan(
+      0,
+    );
+    expectNoSampleFigure();
+  });
+
+  it('046 FR-032 states no data yet and shows no sample figure', async () => {
+    renderPanel(panel(emptyStages('noData')));
+
+    expect((await screen.findAllByText('No data has arrived yet.')).length).toBeGreaterThan(0);
+    expectNoSampleFigure();
+  });
+
+  it('046 FR-032 states a stale source and shows no sample figure', async () => {
+    renderPanel(panel(emptyStages('stale')));
+
+    expect((await screen.findAllByText('The data source is stale.')).length).toBeGreaterThan(0);
+    expectNoSampleFigure();
+  });
+
+  it('046 FR-032 states a failed load and shows no sample figure', async () => {
+    renderPanel(panel(emptyStages('failed')));
+
+    expect((await screen.findAllByText('The last load failed.')).length).toBeGreaterThan(0);
+    expectNoSampleFigure();
+  });
+});
+
+describe('projected figures (047)', () => {
+  it('shows each stage projected and names the model behind it (047 FR-012, FR-016)', async () => {
+    renderPanel(
+      panel({
+        stages: [
+          {
+            stage: 'inq',
+            goal: 100,
+            actual: 80,
+            projected: 120,
+            conversion: null,
+            reason: '',
+            projectedReason: '',
+            months: [],
+          },
+          {
+            stage: 'mql',
+            goal: 10,
+            actual: 8,
+            projected: 12,
+            conversion: 10.0,
+            reason: '',
+            projectedReason: '',
+            months: [],
+          },
+        ],
+        projection: { modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' },
+      }),
+    );
+
+    expect(await screen.findByText('120')).toBeInTheDocument();
+    expect(
+      screen.getByText(/^Projected from Lubricants 1\.0, last changed [^T:]+ 2026\.$/),
+    ).toBeInTheDocument();
+  });
+
+  it('shows an em dash where nothing projects, never a zero (047 FR-013)', async () => {
+    renderPanel(panel());
+
+    expect(await screen.findAllByText('—')).not.toHaveLength(0);
+    expect(screen.queryByText(/Projected from/)).not.toBeInTheDocument();
+  });
+});
+
+it('047 FR-013 says why nothing projects even when the stage has an actual', async () => {
+  renderPanel(
+    panel({
+      stages: [
+        {
+          stage: 'inq',
+          goal: null,
+          actual: 40,
+          projected: null,
+          conversion: null,
+          reason: '',
+          projectedReason: 'noGoal',
+          months: [],
+        },
+      ],
+    }),
+  );
+
+  expect(await screen.findByText('40')).toBeInTheDocument();
+  expect(screen.getByText('No goal is set for this figure.')).toBeInTheDocument();
+});
+
+it('047 FR-013 FR-016 still shows the projection of a stage with a goal and no actual yet', async () => {
+  renderPanel(
+    panel({
+      stages: [
+        {
+          stage: 'inq',
+          goal: 4000,
+          actual: null,
+          projected: 1327,
+          conversion: null,
+          reason: 'noSource',
+          projectedReason: '',
+          months: [],
+        },
+      ],
+      revenue: {
+        goal: null,
+        actual: null,
+        excludedCount: 0,
+        reason: 'noSource',
+        projected: { amount: '20000.00', currency: 'USD' },
+        projectedReason: '',
+        months: [],
+      },
+    }),
+  );
+
+  const inq = await screen.findByRole('row', { name: /^INQ/ });
+  expect(inq).toHaveTextContent('4,000');
+  expect(inq).toHaveTextContent('No active data source supplies this figure.');
+  expect(inq).toHaveTextContent('1,327');
+  const revenue = screen.getByRole('row', { name: /^Revenue/ });
+  expect(revenue).toHaveTextContent('No active data source supplies this figure.');
+  expect(revenue).toHaveTextContent(/20,000\.00/);
+});

@@ -271,7 +271,7 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
 
 ## Phase 1: Setup (done)
 
-- [X] T001 [INT] Governance: constitution 4.9.0, CLAUDE.md, D-371–D-378, Q-028, Q-029, feature map, ADR-0020 —
+- [X] T001 [INT] Governance: constitution 4.9.0, CLAUDE.md, D-371–D-378, Q-033, Q-034, feature map, ADR-0020 —
   `.specify/memory/constitution.md`, `docs/sdd/*`, `docs/architecture/adr/0020-…`
 - [X] T002 [INT] Spec, plan, research, data model, contracts, quickstart, tokens, product docs; the API contract and
   regenerated types; the 17 operations in `notYetServed` — `specs/051-dashboard-builder/`,

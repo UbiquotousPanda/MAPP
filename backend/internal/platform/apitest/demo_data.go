@@ -18,15 +18,24 @@ type demoData struct {
 	failure error
 }
 
-var withHistory, withoutHistory demoData //nolint:gochecknoglobals // a read-only fixture of the test binary, as in _test.go files
+var withHistory, withoutHistory, withMeasure demoData //nolint:gochecknoglobals // a read-only fixture of the test binary, as in _test.go files
 
 // DemoDB returns a test's own copy of the demo data, loaded at the start of New's clock.
 func DemoDB(tb testing.TB, noHistory bool) *fake.DB {
 	tb.Helper()
-	data, options := &withHistory, []seed.Option(nil)
 	if noHistory {
-		data, options = &withoutHistory, []seed.Option{seed.WithoutHistory()}
+		return copyOf(tb, &withoutHistory, seed.WithoutHistory())
 	}
+	return copyOf(tb, &withHistory)
+}
+
+func MeasureDemoDB(tb testing.TB) *fake.DB {
+	tb.Helper()
+	return copyOf(tb, &withMeasure, seed.WithMeasure())
+}
+
+func copyOf(tb testing.TB, data *demoData, options ...seed.Option) *fake.DB {
+	tb.Helper()
 	data.once.Do(func() { data.db, data.failure = loadDemoData(options) })
 	if data.failure != nil {
 		tb.Fatalf("apitest: loading the demo data: %v", data.failure)

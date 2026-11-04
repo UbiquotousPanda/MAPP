@@ -32,8 +32,8 @@
 ## Notes
 
 - The product owner answered the scoping questions up front (routes, data, sharing, permissions, numbering);
-  they are recorded as D-371–D-378. Two questions stay open with a default: Q-028 (dashboard filters on
-  datasets) and Q-029 (administrators and private dashboards).
+  they are recorded as D-371–D-378. Two questions stay open with a default: Q-033 (dashboard filters on
+  datasets) and Q-034 (administrators and private dashboards).
 - "Apache ECharts", "CSV" and ".xlsx" appear because the client names them; how they are used is in plan.md and
   ADR-0020. Route paths (`/dashboards`, `/builder`) are the product owner's.
 - The widget rules per type (FR-015) and the display options (FR-025) are listed exhaustively so the contract can

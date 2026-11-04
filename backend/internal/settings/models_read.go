@@ -8,8 +8,6 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// ListModels returns every model, active and inactive, by name ignoring letter case, each with its
-// allowed activity types and its usage (FR-002, FR-003). Every signed-in person may see them (FR-008).
 func (s *Service) ListModels(ctx context.Context, _ actor.Actor) ([]ModelView, error) {
 	var views []ModelView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -24,7 +22,6 @@ func (s *Service) ListModels(ctx context.Context, _ actor.Actor) ([]ModelView, e
 	return views, err
 }
 
-// GetModel returns the model id with its usage and the live plans using it (US1-3).
 func (s *Service) GetModel(ctx context.Context, _ actor.Actor, id string) (ModelView, error) {
 	var view ModelView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -38,7 +35,6 @@ func (s *Service) GetModel(ctx context.Context, _ actor.Actor, id string) (Model
 	return view, err
 }
 
-// storedModel reads the model id, or answers not found.
 func (s *Service) storedModel(ctx context.Context, id string) (Model, error) {
 	m, found, err := s.repo.GetModel(ctx, id)
 	if err != nil {
@@ -47,10 +43,9 @@ func (s *Service) storedModel(ctx context.Context, id string) (Model, error) {
 	if !found {
 		return Model{}, errs.NotFound(modelGoneMessage)
 	}
-	return m, nil
+	return m.Normalised(), nil
 }
 
-// modelView returns the model m as the API answers it.
 func (s *Service) modelView(ctx context.Context, m Model) (ModelView, error) {
 	views, err := s.modelViews(ctx, []Model{m})
 	if err != nil {
@@ -59,8 +54,7 @@ func (s *Service) modelView(ctx context.Context, m Model) (ModelView, error) {
 	return views[0], nil
 }
 
-// modelViews returns models as the API answers them, with their allowed activity types by name and their
-// usage, read once for all of them.
+// modelViews reads the usage once for all the models.
 func (s *Service) modelViews(ctx context.Context, models []Model) ([]ModelView, error) {
 	types, err := s.repo.ListActivityTypes(ctx)
 	if err != nil {
@@ -76,6 +70,7 @@ func (s *Service) modelViews(ctx context.Context, models []Model) ([]ModelView, 
 	}
 	views := make([]ModelView, 0, len(models))
 	for _, m := range models {
+		m = m.Normalised()
 		refs := []SettingRef{}
 		for _, id := range m.ActivityTypeIDs {
 			if t, found := typesByID[id]; found {
@@ -85,7 +80,11 @@ func (s *Service) modelViews(ctx context.Context, models []Model) ([]ModelView, 
 		slices.SortStableFunc(refs, func(x, y SettingRef) int { return compareNames(x.Name, y.Name) })
 		views = append(views, ModelView{
 			ID: m.ID, Name: m.Name, InqToMqlRate: m.InqToMqlRate, MqlToDealRate: m.MqlToDealRate,
-			AverageDealSize: m.AverageDealSize, ActivityTypes: refs, Active: m.Active, Usage: u.model(m.ID), Meta: m.Meta,
+			AverageDealSize: m.AverageDealSize, ActivityTypes: refs,
+			InqToMqlVelocityMonths:  m.InqToMqlVelocityMonths,
+			MqlToDealVelocityMonths: m.MqlToDealVelocityMonths,
+			AllowedGoalStages:       slices.Clone(m.AllowedGoalStages),
+			Active:                  m.Active, Usage: u.model(m.ID), Meta: m.Meta,
 		})
 	}
 	return views, nil

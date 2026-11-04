@@ -98,3 +98,64 @@ Forecourt POS refresh, Nitro+ racing heritage film and Fleet EV charging contrac
 Morgan), and Rimula R6 fleet roadshow, Fleet operator breakfast series and Hannover Messe stand (Daniel
 Okoro). The other six are Created, ready to submit. Their line items ask for SWBS codes but have none yet, so
 a demonstration can send them to the simulated GSAP.
+
+## Measure demo plan (optional)
+
+`go run ./cmd/seed -reset -measure` adds **FY2026 Measure demo – Lubricants Benelux** (Published, owner Alex
+Morgan) last, after the demo story and the showcase, so no ID above moves (D-354). Its team **Measure demo** has no
+members: Alex Morgan, Carlos Mendes and Lea Santos see it through their All markets roles, and Priya, Daniel, Mei and
+Sara see the demo story as before. The compose setup and the end-to-end suite load it; the Go tests load without it, except
+Measure's own, which opt in with `apitest.WithMeasureDemo()`.
+
+Its 2 campaigns, 3 initiatives, 9 activities and 13 EUR line items spread over every month of 2026, with the
+plan's INQ goal and activities' INQ, MQL and revenue for the Measure reports. Five activities are Approved by Daniel
+Okoro 1, 4, 7, 12 and 40 days before the seed time; their line items ask for SWBS codes, and four have one from the
+simulated GSAP (Case study production, both Search media line items, Webinar speaker fees), so the GSAP link still
+has a line item without a code in every wait band. **Fleet expo Rotterdam** waits for approval, **Workshop roadshow
+Benelux** was declined, and **Dealer summit** and **Tellus trade press** are Created; Tellus trade press has no Shell
+attributes, for Plan details' *Not filled in*.
+
+Seven purchase requests, owner Alex Morgan, MoA approver Carlos Mendes, Email group BE_LUBES, one in each status:
+
+| Purchase request | Status | What happened |
+|---|---|---|
+| PR for Social media, second half · 30,000.00 EUR | Created | — |
+| PR for Webinar speaker fees · 30,000.00 EUR | Submitted | Waits for Carlos Mendes (WF-1004) |
+| PR for Search media, first half – extra flights · 15,000.00 EUR | In review | **Two-level PR approval (Measure demo)**: Carlos Mendes approved level 1, level 2 waits for Alex Morgan |
+| PR for Search media, second half – trial · 5,000.00 EUR | Declined | Declined by Carlos Mendes |
+| PR for Search media, second half · 40,000.00 EUR | Approved | Routed to BE_LUBES two days ago, no GSAP PR number yet: *Waiting for GSAP* |
+| PR for Search media, first half · 40,000.00 EUR | Approved | GSAP PR and PO from the simulated GSAP, two invoices of 10,000.00 EUR |
+| PR for Case study production · 30,000.00 EUR | Closed | PO invoiced and paid in full, closed five days ago |
+
+The purchase orders, invoices and payment are 6 GSAP transactions on those line items; the invoices and payment come
+in one *Demo data (simulated GSAP)* import, the last, so Financials still shows the demo data as its source.
+
+It also groups the demo's activity types into three **activity categories** (047): **Digital** (the default: Digital
+media), **Events and sponsorship** (Event, Sponsorship) and **Content and creative** (Content production, Agency
+fees – Creative). *MOBILITY – Long-term contract* is in none, so the reports' *Uncategorised* has activities too.
+The categories are Settings, so every persona sees them; the plain seed has none.
+
+Last, its **performance facts** (046 T110) arrive as a real upload: the data source **Measure demo feed** (owner Alex
+Morgan, marketing automation, upload, monthly) with ten column mappings — Ref, Date, the keys Activity, Feed id and
+External name, INQ, MQL and Revenue for Lubricants 1.0, Currency and Journey — and one file,
+*measure-demo-feed.csv*, through 046's import as MAPP at the seed time: 14 rows, all matched, 20 facts, one load
+(Undo works on it) and its one activity-log entry, after the demo history (D-188). The feed is the one active source of
+Lubricants 1.0's INQ, MQL and revenue, so a second one is refused (046 FR-003): tests and demos load through it.
+
+The facts are dated January to 9 March 2026, before the seed time under both the tests' clock (12 March 2026) and
+any later run, on three Approved activities only:
+
+| Activity | INQ by month (Jan · Feb · Mar) | MQL by month | Revenue |
+|---|---|---|---|
+| Helix search and social, first half | 600 · 650 · 200, plus 1 journey touch | 90 · 110 · 30 | 42,000.00 USD (no journey), 18,500.00 EUR (journey JRN-8E05) |
+| Tellus case studies | 60 · 120 · 40, plus 1 journey touch | 10 · 20 · 5, plus 1 journey touch | 24,000.00 USD (journey JRN-2C71) |
+| Tellus webinar series | — | 2 journey touches in March | — |
+
+Two pseudonymous **journeys** (046-C6) feed 050's attribution: **JRN-2C71** — INQ on Helix first half (14 Jan), MQL on
+Tellus webinar series (2 Mar), then 24,000.00 USD on Tellus case studies (6 Mar); **JRN-8E05** — INQ (22 Jan) and MQL
+(12 Feb) on Tellus case studies, MQL on Tellus webinar series (3 Mar), then 18,500.00 EUR on Helix first half (9 Mar).
+Each conversion is on an activity its journey did not touch, so attributed revenue differs from booked revenue under
+every model; the 42,000.00 USD has no journey and stays wholly with its own activity. Equally distributed, the seeded
+model, credits Helix first half 54,000.00, Tellus case studies 13,405.80 and Tellus webinar series 18,702.90 USD.
+Tellus webinar series carries journey MQL only, so its INQ shows no actual and its projection stays the goal's alone
+(`projections.spec.ts`).

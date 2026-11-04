@@ -118,7 +118,7 @@ otherwise by measure 0 descending; `funnel` always measure 0 descending.
 Stored as the dashboard's defaults; in the viewer, the address (`from`, `to`, `plan`, `team`) overrides them. Plans
 and teams the viewer cannot see are ignored (never an error, never named). Applied by the built-in source's own
 reads: the date range to its date field (the record's date falls in the range, both ends included), plans and
-teams to its plan and team (a record whose plan has any of the teams). Never applied to datasets (Q-028).
+teams to its plan and team (a record whose plan has any of the teams). Never applied to datasets (Q-033).
 
 ## 5. Built-in sources (data catalogue)
 

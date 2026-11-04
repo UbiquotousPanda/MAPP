@@ -15,11 +15,12 @@ import styles from '@/ui/settings-table.module.css';
 import { ImpactDialog } from '../ImpactDialog';
 import { saveFailureOf } from '../save-failure';
 import { ActivityTypesField } from './ActivityTypesField';
+import { GoalStagesField } from './GoalStagesField';
 import { checkModelImpact, fetchModel, useCreateModel, useUpdateModel } from './api';
 import type { ChangeImpact, Model, ModelUpdate } from './api';
 import { affectsOthers, changedFields, createBody, startValues } from './model-values';
 import type { ModelFormMode } from './model-values';
-import { modelSchema } from './schemas';
+import { modelSchema, velocityMonths } from './schemas';
 import type { ModelValues } from './schemas';
 import { WaterfallExample } from './WaterfallExample';
 
@@ -29,6 +30,9 @@ const FIELDS = [
   'mqlToDealRate',
   'averageDealSize',
   'activityTypeIds',
+  'inqToMqlVelocityMonths',
+  'mqlToDealVelocityMonths',
+  'allowedGoalStages',
 ] as const;
 
 export interface ModelFormProps {
@@ -45,10 +49,8 @@ interface PendingImpact {
 }
 
 /**
- * New model, Edit model and Duplicate (FR-009 – FR-012) in a side panel: name, both rates, the
- * average deal size, the allowed activity types and the live worked example. Every problem shows at
- * once; a change that affects plans or activities is confirmed first; a conflict keeps what was
- * typed and names who saved first.
+ * New model, Edit model and Duplicate in a side panel. A change that affects plans or activities is
+ * confirmed first; a conflict keeps what was typed and names who saved first.
  */
 export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
   const { show } = useToast();
@@ -68,9 +70,15 @@ export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   const [pendingImpact, setPendingImpact] = useState<PendingImpact | null>(null);
-  const [inqToMqlRate, mqlToDealRate, averageDealSize] = useWatch({
+  const [inqToMqlRate, mqlToDealRate, averageDealSize, inqVelocity, mqlVelocity] = useWatch({
     control: form.control,
-    name: ['inqToMqlRate', 'mqlToDealRate', 'averageDealSize'],
+    name: [
+      'inqToMqlRate',
+      'mqlToDealRate',
+      'averageDealSize',
+      'inqToMqlVelocityMonths',
+      'mqlToDealVelocityMonths',
+    ],
   });
 
   async function save(values: ModelValues) {
@@ -198,6 +206,31 @@ export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
           />
           <FormField
             control={form.control}
+            name="inqToMqlVelocityMonths"
+            render={(field) => (
+              <DecimalField
+                label="INQ→MQL velocity"
+                decimals={0}
+                suffix="months"
+                note="How long a conversion takes, so a projection lands in the right month."
+                {...field}
+              />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="mqlToDealVelocityMonths"
+            render={(field) => (
+              <DecimalField label="MQL→deal velocity" decimals={0} suffix="months" {...field} />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="allowedGoalStages"
+            render={(field) => <GoalStagesField {...field} />}
+          />
+          <FormField
+            control={form.control}
             name="activityTypeIds"
             render={(field) => <ActivityTypesField model={editing} {...field} />}
           />
@@ -205,6 +238,8 @@ export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
             inqToMqlRate={parseDecimalInput(inqToMqlRate, 2)}
             mqlToDealRate={parseDecimalInput(mqlToDealRate, 2)}
             averageDealSize={parseMoneyInput(averageDealSize)?.amount ?? null}
+            inqToMqlVelocityMonths={velocityMonths(inqVelocity)}
+            mqlToDealVelocityMonths={velocityMonths(mqlVelocity)}
           />
         </div>
       </FormPanel>

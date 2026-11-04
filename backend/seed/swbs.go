@@ -23,7 +23,7 @@ const (
 )
 
 func (d *demo) addSwbsRun(ctx context.Context) error {
-	request, err := d.swbsRequest(ctx, swbsDemoActivity, swbsDemoLineItem)
+	request, err := d.swbsRequest(ctx, lubricantsPlan, swbsDemoActivity, swbsDemoLineItem)
 	if err != nil {
 		return err
 	}
@@ -33,8 +33,8 @@ func (d *demo) addSwbsRun(ctx context.Context) error {
 	return err
 }
 
-func (d *demo) swbsRequest(ctx context.Context, activityName, lineItemName string) (swbs.Request, error) {
-	activityID, err := find(d.activities, "activity", lubricantsPlan+"/"+activityName)
+func (d *demo) swbsRequest(ctx context.Context, planName, activityName, lineItemName string) (swbs.Request, error) {
+	activityID, err := find(d.activities, "activity", planName+"/"+activityName)
 	if err != nil {
 		return swbs.Request{}, err
 	}

@@ -14,7 +14,7 @@ reasonable. Viewing at /dashboards, creating at /builder, a new sidebar item. En
 **References**: Constitution 4.9 — Current Phase & Scope (051 in scope), Principles IV (the server works out
 every figure), VII (scope isolation), IX (experience), X (palette), F1 and F6 (charts and their tables) ·
 ADR-0020 (Apache ECharts), ADR-0018 (content security policy), ADR-0007 (activity log and recycle bin) ·
-D-371–D-378, Q-028, Q-029 · features 014 (permissions, scopes, Table A), 036 (built-in dashboards, figures),
+D-371–D-378, Q-033, Q-034 · features 014 (permissions, scopes, Table A), 036 (built-in dashboards, figures),
 012 (checked file imports), 010 (All work's year data), 015 (financial transactions), 017 and 031 (approval
 rounds), 032 (purchase requests), 003 (teams) · `docs/product/domain-model.md` §1–§4, §7 ·
 `docs/product/design-system.md` §2.4, §4.7, §5, §6, §9.
@@ -39,8 +39,8 @@ as a decision.
   viewer may not see says so and shows nothing of it (D-375).
 - Q: Which permissions? → A: **See dashboards** (`dashboards.view`) and **Build dashboards** (`dashboards.build`),
   added to 014 Table A; who holds them by default is in D-374.
-- Q: Do dashboard filters apply to datasets? → A: no (Q-028); each widget can filter its own data.
-- Q: Can administrators see private dashboards? → A: no (Q-029); private means private.
+- Q: Do dashboard filters apply to datasets? → A: no (Q-033); each widget can filter its own data.
+- Q: Can administrators see private dashboards? → A: no (Q-034); private means private.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -266,7 +266,7 @@ the table view.
   the dashboard through that team; restoring the team does not restore the share, and a dashboard or dataset
   restored from the recycle bin keeps only the shares of teams that still exist (D-379).
 - A dashboard's owner made inactive: the dashboard stays visible to the teams it is shared with; nobody can edit it
-  (Q-029).
+  (Q-034).
 - Two people saving the same dashboard: the second save is refused as changed meanwhile; nothing is lost on screen.
 - The grid full at the bottom: new widgets go below the last row; the canvas grows (at most 200 rows, 30 widgets).
 - A very long title, label or category name: shortened with "…" on the chart, in full in the tooltip and table.

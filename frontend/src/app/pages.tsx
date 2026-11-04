@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import type { ReportKey } from '@/features/measure';
 import { loadSettingsSections } from './settings-sections';
 
 // Each page comes with its feature's code, loaded the first time one of its pages is shown (F8).
@@ -14,8 +15,10 @@ const financials = () => import('@/features/financials');
 const globalBudgets = () => import('@/features/global-budgets');
 const home = () => import('@/features/home');
 const lineItems = () => import('@/features/line-items');
+const measure = () => import('@/features/measure');
 const overspend = () => import('@/features/overspend');
 const people = () => import('@/features/people');
+const performanceData = () => import('@/features/performance');
 const plans = () => import('@/features/plans');
 const workbook = () => import('@/features/workbook');
 const purchaseRequests = () => import('@/features/purchase-requests');
@@ -47,6 +50,17 @@ export const ApprovalsPage = lazy(() =>
 );
 export const DashboardsPage = lazy(() =>
   dashboards().then((feature) => ({ default: feature.DashboardsPage })),
+);
+export const ReportsPage = lazy(() =>
+  measure().then((feature) => ({ default: feature.ReportsPage })),
+);
+export const ReportPage = lazy(() =>
+  measure().then((feature) => ({
+    default: ({ reportKey }: { reportKey: ReportKey }) => {
+      const Report = feature.REPORT_PAGES[reportKey];
+      return <Report />;
+    },
+  })),
 );
 export const DashboardListPage = lazy(() =>
   customDashboards().then((feature) => ({ default: feature.DashboardListPage })),
@@ -113,6 +127,18 @@ export const NewCampaignPanel = lazy(() =>
 export const NewInitiativePanel = lazy(() =>
   plans().then((feature) => ({ default: feature.NewInitiativePanel })),
 );
+export const PerformanceDataPage = lazy(() =>
+  performanceData().then((feature) => ({ default: feature.SourceListPage })),
+);
+export const PerformanceImportsPage = lazy(() =>
+  performanceData().then((feature) => ({ default: feature.ImportsPage })),
+);
+export const PerformanceImportPage = lazy(() =>
+  performanceData().then((feature) => ({ default: feature.ImportSummaryPage })),
+);
+export const PerformanceReviewPage = lazy(() =>
+  performanceData().then((feature) => ({ default: feature.ReviewQueuePage })),
+);
 export const PlanCreatePage = lazy(() =>
   plans().then((feature) => ({ default: feature.PlanCreatePage })),
 );
@@ -123,6 +149,9 @@ export const PlanPage = lazy(() => plans().then((feature) => ({ default: feature
 export const PlansPage = lazy(() => plans().then((feature) => ({ default: feature.PlansPage })));
 export const RecycleBinPage = lazy(() =>
   recycleBin().then((feature) => ({ default: feature.RecycleBinPage })),
+);
+export const ActivityCategoriesPage = lazy(() =>
+  settings().then((feature) => ({ default: feature.ActivityCategoriesPage })),
 );
 export const ActivityTypesPage = lazy(() =>
   settings().then((feature) => ({ default: feature.ActivityTypesPage })),
@@ -170,6 +199,11 @@ export const PurchaseRequestCreatePage = lazy(() =>
 );
 export const PurchaseRequestEditPage = lazy(() =>
   purchaseRequests().then((feature) => ({ default: feature.PurchaseRequestEditPage })),
+);
+export const AttributionSettingsPage = lazy(() =>
+  import('@/features/attribution').then((feature) => ({
+    default: feature.AttributionSettingsPage,
+  })),
 );
 export const OverspendSettingsPage = lazy(() =>
   overspend().then((feature) => ({ default: feature.OverspendSettingsPage })),
