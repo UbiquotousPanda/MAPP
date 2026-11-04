@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-01
 
-**Status**: Built (4 Nov 2026)
+**Status**: Built (4 Nov 2026); goal entry checking the allowed stages is the Plan module's, filed as #162 (D-394)
 
 **Input**: Feature 047 of the Measure module (docs/sdd/measure-module-build.md): velocity and allowed goal
 stages on models, activity categories in Settings, and projected INQ, MQL and revenue per period from the

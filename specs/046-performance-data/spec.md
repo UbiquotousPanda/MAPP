@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-30
 
-**Status**: Built (4 Nov 2026)
+**Status**: Built (4 Nov 2026), except Plan details' *Is integrated* widget (D-385), filed as #161
 
 **Input**: Measure module issue #39 (lane B, wave B): "The record types behind every performance figure, built
 like the simulated GSAP (ADR-0016, D-370): data sources with column mappings (Settings › Performance data),
