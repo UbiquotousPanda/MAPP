@@ -68,7 +68,7 @@ Read-only reports, shown as **Reports**. Built on the `measure-module` branch by
 | 046 | `046-performance-data` | Data sources and mappings, performance facts from a simulated feed or file, matching to activities, rows to review, media codes, external names, Is integrated | B · B · 30 | 006, 008, 015 | Built — #62 (API, matching, imports, activity panel), #108 (Settings screens), #136 (demo facts) |
 | 047 | `047-projections` | Velocity and allowed goal stages on models, activity categories, projected INQ, MQL and revenue per period | B · B · 14 | 002, 046 | Built — #75, #109, #156; categories seeded by #98; goal entry not yet checked against the allowed stages (D-394) |
 | 048 | `048-summary-report` | Projected against goal, four league tables, funnel stages and conversion against goal | B · C · 14 | 039, 046, 047 | Built — #106, #139, #148 |
-| 049 | `049-revenue-and-funnel-reports` | Summary cards per stage and category, actual, projected and goal split at today, the ranked list by revenue or a stage | B · B · 14 | 040, 046, 047 | Built — #82, #99, #115, #118, #157; owner and model on ranked entries in #158 (open) |
+| 049 | `049-revenue-and-funnel-reports` | Summary cards per stage and category, actual, projected and goal split at today, the ranked list by revenue or a stage | B · B · 14 | 040, 046, 047 | Built — #82, #99, #115, #118, #157; owner and model on ranked entries in #158 |
 | 050 | `050-attribution-roi` | A chosen attribution model credits revenue to activities; ROI with its model and cost basis named | B · A · 16 | 046, 048, 049 | Built — #71, #119, #149, #153 |
 
 **Wave C (out of scope, future integration points):** the Finance budget report (needs the Finance budgets

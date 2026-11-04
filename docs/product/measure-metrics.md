@@ -43,8 +43,8 @@ figure that cannot be worked out shows "—" with the reason, never 0.
 | **Actual INQ / MQL / Deals / Revenue** | Performance facts matched to the activities in view, by the fact's date; a fact matched to no activity counts nowhere and is listed to review | 046 (new) | 048, 049 |
 | **Projected INQ / MQL / Revenue by period** | From each activity's goal stage forward: the model's conversion rates, placed by its velocity (months between stages) from the activity's start date, to the end of the plan year; revenue = deals × average deal size | 047 (new), domain model §4.5 | 048, 049 |
 | **Actual or projected** | Actual to the end of the last period before today, projected from today | 047 | 048, 049 |
-| **Performance** | (Actual + projected) ÷ goal as a whole per cent; the variance word is *Above plan* or *Below plan* | 048 (new) | 048, 049 |
-| **Conversion rate** | Actual of a stage ÷ actual of the previous stage, one decimal; **conversion goal** is the model's rate | 048 (new), domain model §4.5 | 048 |
+| **Performance** | (Actual + projected) ÷ goal as a whole per cent; the variance word is *Above plan* over 100 %, *On plan* at exactly 100 %, *Below plan* under it, and *No goal* when the goal is zero or missing (048-C1, D-392) | 048 (new) | 048, 049 |
+| **Conversion rate** | Actual of a stage ÷ actual of the previous stage, one decimal; **conversion goal** is the model's rate | 048 (new), domain model §4.5 | 048, 049 (049-C13) |
 | **Attributed revenue** | Revenue facts credited to activities by the chosen attribution model; the model is named next to the figure | 050 (new) | 048, 049, 050 |
 | **ROI** | (Attributed revenue − cost) ÷ cost, a whole per cent, with the cost basis named: cost is **Actual** (paid) when the plans in view have payments in the year, otherwise "—"; a report may offer *Use planned cost* as a labelled choice, never silently (Hive9's "Use Planned Cost as Actual Cost" had no on-screen sign) | 050 (new; confirm in its spec) | 048, 049 |
 | **Is integrated** | An activity with a data source matched to it (external name or integration ID) | 046 (new) | 043, 046 |
