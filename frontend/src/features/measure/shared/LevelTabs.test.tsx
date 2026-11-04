@@ -1,5 +1,5 @@
 import { screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { nth } from '@/testing/dom';
 import { renderWithProviders } from '@/testing/render';
@@ -31,13 +31,18 @@ const GROUPS: ReportAttributeGroup[] = [
   },
 ];
 
-function renderTabs() {
+async function renderTabs() {
   const onChange = vi.fn();
-  return {
-    ...renderWithProviders(<LevelTabs groups={GROUPS} ticked={{}} onChange={onChange} />),
-    onChange,
-  };
+  const rendered = renderWithProviders(
+    <LevelTabs groups={GROUPS} ticked={{}} onChange={onChange} />,
+  );
+  await rendered.user.click(screen.getByRole('button', { name: 'Shell attributes All' }));
+  return { ...rendered, onChange };
 }
+
+afterEach(() => {
+  localStorage.clear();
+});
 
 /** The tab's own Select all or Clear all, above its groups' buttons of the same name. */
 const tabButton = (name: string) =>
@@ -45,7 +50,7 @@ const tabButton = (name: string) =>
 
 describe('LevelTabs (039 FR-008, FR-010)', () => {
   it('offers one tab per level in order, opens on Activity and marks an inactive value', async () => {
-    renderTabs();
+    const { user } = await renderTabs();
 
     expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
       'Plan',
@@ -55,12 +60,13 @@ describe('LevelTabs (039 FR-008, FR-010)', () => {
       'Line item',
     ]);
     expect(screen.getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true');
+    await user.click(screen.getByRole('button', { name: 'Brand All' }));
     expect(screen.getByRole('checkbox', { name: 'Pennzoil (inactive)' })).toBeInTheDocument();
     await expectNoAxeViolations();
   });
 
   it('selects all or clears all of the open tab only, leaving other levels alone (FR-010)', async () => {
-    const { user, onChange } = renderTabs();
+    const { user, onChange } = await renderTabs();
 
     await user.click(tabButton('Clear all'));
     expect(onChange).toHaveBeenLastCalledWith({ 'attr:SA-B': [], 'attr:SA-CH': [] });
@@ -69,7 +75,7 @@ describe('LevelTabs (039 FR-008, FR-010)', () => {
   });
 
   it('says when a level has no attributes to filter by', async () => {
-    const { user } = renderTabs();
+    const { user } = await renderTabs();
 
     await user.click(screen.getByRole('tab', { name: 'Plan' }));
 

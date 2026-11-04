@@ -12,7 +12,7 @@ import {
   TITLES,
   yearNote,
 } from './filter-draft';
-import type { Draft } from './filter-draft';
+import type { Draft, ListKey } from './filter-draft';
 import type { Ticked } from './filter-keys';
 import { FilterGroup } from './FilterGroup';
 import { LevelTabs } from './LevelTabs';
@@ -20,6 +20,8 @@ import { LIVE_DELAY_MS, LIVE_LABEL, useLiveFilters } from './live-filters';
 import type { ReportAddress } from './report-address';
 import { NOT_APPLIED } from './report-text';
 import styles from './ReportFrame.module.css';
+
+const OPEN_AT_FIRST: ListKey[] = ['plans', 'teams', 'owners'];
 
 interface FilterPanelProps {
   choices: ReportChoices;
@@ -132,9 +134,11 @@ export function FilterPanel({ choices, applied, year, busy = false, onApply }: F
         {LIST_KEYS.map((key) => (
           <FilterGroup
             key={key}
+            groupKey={key}
             title={TITLES[key]}
             options={options[key]}
             ticked={draft.ticked[key] ?? null}
+            defaultOpen={OPEN_AT_FIRST.includes(key)}
             onChange={(next) => change({ [key]: next })}
           />
         ))}

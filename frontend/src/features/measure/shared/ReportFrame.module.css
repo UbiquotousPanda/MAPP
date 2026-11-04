@@ -61,21 +61,88 @@
 .group {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
   margin: 0;
   padding: 0;
   border: 0;
 }
 
+/* Thin dividers between groups, never a box around one. */
+.group + .group {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--hairline);
+}
+
 .groupTitle {
+  width: 100%;
+  padding: 0;
+}
+
+.disclosure {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--control-md);
+  margin: 0;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
   color: var(--ink);
+  font: inherit;
   font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.disclosure:hover {
+  background-color: var(--hover);
+}
+
+.disclosure:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.groupName {
+  flex: 1;
   font-weight: var(--weight-bold);
 }
 
-.counter {
+.summary {
+  overflow: hidden;
+  max-width: 50%;
   color: var(--ink-2);
-  font-weight: var(--weight-regular);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.disclosure[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+
+.groupBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-2);
+}
+
+.groupBody[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
 }
 
 .groupActions,

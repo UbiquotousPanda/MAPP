@@ -67,6 +67,11 @@ Proposed for Shell to choose at the demo of 6 November; the tech lead confirms t
 - **039-C8** Q: Does every group need Select all and Clear all? → A: only a group with more than four values, where
   they save clicks; a smaller group is ticked value by value. Each level tab keeps its own pair for all its groups.
   Fewer identical button pairs make a long panel calmer (Principle IX, restraint).
+- **039-C9** Q: How does a long filter panel stay readable? → A: every group **folds**: its header is a button with
+  the name, a summary (**All**, the one value, or **n of m**) and a chevron; thin dividers separate groups and no
+  group is boxed. Plans, Team, Owner, the Shell attributes and any group that restricts start open, the others
+  folded, and the viewer's own folding is remembered in their browser; a group with nothing ticked opens itself
+  while the hint shows. A list shows five values, then **See more (n)** / **See less**.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -100,9 +105,9 @@ filters and compare the "In view" counts with All work's counts for the same yea
    filled in**, the period is **Months**, the currency is her display currency, and the "In view" line counts
    exactly the records All work shows for the same year with no filters.
 4. **Given** the filter panel, **When** Priya opens the **Activity** tab, **Then** it lists one group per active
-   choice or yes/no Shell attribute of the activity level, each with "(selected / all)", its values and **Not
-   filled in**, **Select all** and **Clear all** when the group has more than four values, and a search box when
-   it has more than ten.
+   choice or yes/no Shell attribute of the activity level, each a group that folds, its header saying what is
+   chosen, with its values and **Not filled in**, **Select all** and **Clear all** when the group has more than
+   four values, five values then **See more (n)**, and a search box when it has more than ten.
 5. **Given** a Shell attribute with the same label at two levels, **When** the panel is shown, **Then** it
    appears as two separate groups, one in each level's tab.
 6. **Given** Priya changes filters, **When** she has not pressed **Apply** yet, **Then** the report keeps its
@@ -267,9 +272,11 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   level and attribute and never merged with another by label. A group lists its active values, the inactive
   values still used by a record in view labelled "(inactive)", and **Not filled in**; text, long-text and number
   attributes are not offered.
-- **FR-010**: Every group with choices MUST show "(selected / all)" counting **Not filled in**, **Select all** and
-  **Clear all** when it has more than four values (039-C8), and a search box when it has more than ten; each level
-  tab MUST offer **Select all** and **Clear all** for its groups.
+- **FR-010**: Every group with choices MUST fold under a header that names it and says what is chosen — **All**,
+  the one value, or **n of m** counting **Not filled in** (039-C9) — and MUST show **Select all** and **Clear
+  all** when it has more than four values (039-C8), five values then **See more (n)**, and a search box when it
+  has more than ten; Plans, Team, Owner and any group that restricts open by default; each level tab MUST offer
+  **Select all** and **Clear all** for its groups.
 - **FR-011**: The Plans list MUST follow the year; plans of the old year are dropped and the panel says how many.
   Owner and Activity type MUST list only choices present in the selected plans.
 - **FR-012**: A record MUST match when it meets every filter tested on its level, with All work's rules (010

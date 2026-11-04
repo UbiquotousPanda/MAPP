@@ -1,5 +1,5 @@
 import { screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { closestTo } from '@/testing/dom';
 import { reportFrame } from '@/testing/fixtures/reports';
@@ -16,24 +16,32 @@ function renderPanel(choices = reportFrame().choices, applied: ReportAddress = D
   return { ...rendered, onApply };
 }
 
+afterEach(() => {
+  localStorage.clear();
+});
+
 describe('FilterPanel (039 FR-008 – FR-013)', () => {
-  it("lists the groups in FR-008's order with their counters, my teams first", async () => {
+  it("lists the groups in FR-008's order with their summaries, Plans, Team and Owner open, my teams first", async () => {
     renderPanel();
 
-    const legends = screen
-      .getAllByRole('group')
-      .map(
-        (g) =>
-          within(g).queryByText(/^(Plans|Plan type|Team|Owner|Activity type|Activity status)/)
-            ?.textContent,
-      );
-    expect(legends.filter(Boolean)).toEqual([
-      'Plans (2 / 2)',
-      'Plan type (3 / 3)',
-      'Team (2 / 2)',
-      'Owner (2 / 2)',
-      'Activity type (1 / 1)',
-      'Activity status (6 / 6)',
+    const headers = screen.getAllByRole('button', { name: / All$/ });
+    expect(headers.map((h) => h.textContent)).toEqual([
+      'Plans All',
+      'Plan type All',
+      'Team All',
+      'Owner All',
+      'Activity type All',
+      'Activity status All',
+      'Shell attributes All',
+    ]);
+    expect(headers.map((h) => h.getAttribute('aria-expanded'))).toEqual([
+      'true',
+      'false',
+      'true',
+      'true',
+      'false',
+      'false',
+      'false',
     ]);
     const team = screen.getByRole('group', { name: /Team/ });
     expect(within(team).getAllByRole('checkbox')[0]).toHaveAccessibleName('Lubricants Europe');
@@ -68,7 +76,10 @@ describe('FilterPanel (039 FR-008 – FR-013)', () => {
 
     await user.click(within(statuses).getByRole('button', { name: 'Clear all' }));
 
-    expect(within(statuses).getByText('(0 / 6)')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Activity status 0 of 6' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
     expect(screen.getByText('Tick at least one value in Activity status.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
 
@@ -112,6 +123,8 @@ describe('FilterPanel (039 FR-008 – FR-013)', () => {
     const { user } = renderPanel({ ...reportFrame().choices, owners });
     const owner = screen.getByRole('group', { name: /Owner/ });
     const planType = screen.getByRole('group', { name: /Plan type/ });
+    await user.click(screen.getByRole('button', { name: 'Plan type All' }));
+    expect(within(planType).getAllByRole('checkbox')).toHaveLength(3);
     expect(within(planType).queryByRole('button', { name: 'Clear all' })).not.toBeInTheDocument();
     expect(within(owner).getByRole('button', { name: 'Select all' })).toBeInTheDocument();
 

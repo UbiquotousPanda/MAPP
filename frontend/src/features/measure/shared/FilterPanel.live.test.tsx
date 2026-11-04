@@ -56,7 +56,7 @@ describe('FilterPanel, Update as I choose (039-C7, FR-013)', () => {
     expect(screen.queryByRole('button', { name: 'Apply' })).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Up to date');
     await user.click(screen.getByRole('checkbox', { name: 'FY2026 Mobility' }));
-    await user.click(screen.getByRole('checkbox', { name: 'Strategic' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Priya Raman' }));
     await user.click(screen.getByRole('checkbox', { name: 'Mobility China' }));
 
     expect(screen.getByRole('status')).toHaveTextContent('Updating…');
@@ -66,7 +66,7 @@ describe('FilterPanel, Update as I choose (039-C7, FR-013)', () => {
     expect(onApply).toHaveBeenCalledWith(
       expect.objectContaining({
         plans: ['P-1001'],
-        planTypes: ['operational', 'crossMarket'],
+        owners: ['U-1003'],
         teams: ['T-1001'],
       }),
     );
