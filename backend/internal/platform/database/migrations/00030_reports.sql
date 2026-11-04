@@ -27,7 +27,8 @@ ALTER TABLE roles
         'activities.submit', 'data.export', 'reports.view', 'finance.view', 'finance.link', 'finance.import',
         'purchaseRequests.edit', 'purchaseRequests.delete', 'purchaseRequests.submit', 'purchaseRequests.list',
         'approvals.decide', 'approvals.decideOnBehalf', 'globalBudgets.view',
-        'globalBudgets.manage', 'settings.manage', 'exchangeRates.manage', 'workflows.manage',
+        'globalBudgets.manage', 'dashboards.view', 'dashboards.build', 'settings.manage', 'exchangeRates.manage',
+        'workflows.manage',
         'people.manage', 'access.manage', 'activityLog.viewAll', 'recycleBin.purge']);
 
 UPDATE roles
@@ -39,7 +40,8 @@ SET permissions = ARRAY(
             'activities.submit', 'data.export', 'reports.view', 'finance.view', 'finance.link', 'finance.import',
             'purchaseRequests.edit', 'purchaseRequests.delete', 'purchaseRequests.submit', 'purchaseRequests.list',
             'approvals.decide', 'approvals.decideOnBehalf', 'globalBudgets.view',
-            'globalBudgets.manage', 'settings.manage', 'exchangeRates.manage', 'workflows.manage',
+            'globalBudgets.manage', 'dashboards.view', 'dashboards.build', 'settings.manage', 'exchangeRates.manage',
+        'workflows.manage',
             'people.manage', 'access.manage', 'activityLog.viewAll', 'recycleBin.purge']) WITH ORDINALITY AS table_a (key, position)
         WHERE key = ANY (permissions) OR key = 'reports.view'
         ORDER BY position),

@@ -181,14 +181,6 @@ func TestWaveB_CostLeagueEqualsPlanBudget_048_FR012(t *testing.T) {
 	}
 }
 
-func valuesByKey(l leagueAnswer) map[string]*int64 {
-	out := map[string]*int64{}
-	for _, r := range l.Rows {
-		out[r.Key] = units(r.Value)
-	}
-	return out
-}
-
 func checkRoiNamesItsModel(t *testing.T, alexSees person, model string) {
 	t.Helper()
 	roi := leagueOf(t, alexSees, "roi", "")

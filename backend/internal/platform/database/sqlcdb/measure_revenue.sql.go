@@ -44,9 +44,7 @@ type ReportFactTotalsRow struct {
 	FactCount   int64
 }
 
-// The counted facts of the activities in view, for one plan year (049-C1). One row per activity, stage,
-// web metric, month and currency, so a caller can roll up to any level: an entry's total is the sum of
-// its activities'. Held, unmatched and replaced facts are excluded, exactly as 046's own totals are.
+// Counted facts in view for one plan year, per activity, stage, web metric, month and currency (049-C1).
 func (q *Queries) ReportFactTotals(ctx context.Context, arg ReportFactTotalsParams) ([]ReportFactTotalsRow, error) {
 	rows, err := q.db.Query(ctx, reportFactTotals,
 		arg.ActivityIds,

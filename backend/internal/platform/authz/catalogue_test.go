@@ -76,8 +76,8 @@ func TestCatalogue(t *testing.T) {
 			t.Errorf("dashboard permissions (-want +got):\n%s", diff)
 		}
 		all := authz.All()
-		if all[21] != authz.GlobalBudgetsManage || all[22] != authz.DashboardsView || all[24] != authz.SettingsManage {
-			t.Errorf("the dashboard permissions sit between the global-budget and administration ones: %v", all[21:25])
+		if all[24] != authz.GlobalBudgetsManage || all[25] != authz.DashboardsView || all[27] != authz.SettingsManage {
+			t.Errorf("the dashboard permissions sit between the global-budget and administration ones: %v", all[24:28])
 		}
 	})
 }

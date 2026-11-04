@@ -78,21 +78,25 @@ func CreditAll(conversions []Conversion, m Model, view []string) Credited {
 	}
 	out := Credited{Model: m, ByActivity: map[string]money.Amount{}}
 	for _, c := range conversions {
-		for _, id := range concerned(c) {
-			if _, found := out.ByActivity[id]; inView[id] && !found {
-				out.ByActivity[id] = money.Amount{}
-			}
-		}
-		for _, cr := range Attribute(c, m) {
-			switch {
-			case cr.ActivityID == "" && inView[c.ActivityID]:
-				out.Unattributed = out.Unattributed.Add(cr.Amount)
-			case inView[cr.ActivityID]:
-				out.ByActivity[cr.ActivityID] = out.ByActivity[cr.ActivityID].Add(cr.Amount)
-			}
-		}
+		creditOne(&out, c, m, inView)
 	}
 	return out
+}
+
+func creditOne(out *Credited, c Conversion, m Model, inView map[string]bool) {
+	for _, id := range concerned(c) {
+		if _, found := out.ByActivity[id]; inView[id] && !found {
+			out.ByActivity[id] = money.Amount{}
+		}
+	}
+	for _, cr := range Attribute(c, m) {
+		switch {
+		case cr.ActivityID == "" && inView[c.ActivityID]:
+			out.Unattributed = out.Unattributed.Add(cr.Amount)
+		case inView[cr.ActivityID]:
+			out.ByActivity[cr.ActivityID] = out.ByActivity[cr.ActivityID].Add(cr.Amount)
+		}
+	}
 }
 
 func concerned(c Conversion) []string {

@@ -73,5 +73,6 @@ ALTER TABLE roles
         'performance.import', 'performance.link',
         'purchaseRequests.edit', 'purchaseRequests.delete', 'purchaseRequests.submit', 'purchaseRequests.list',
         'approvals.decide', 'approvals.decideOnBehalf', 'globalBudgets.view',
-        'globalBudgets.manage', 'settings.manage', 'exchangeRates.manage', 'workflows.manage',
+        'globalBudgets.manage', 'dashboards.view', 'dashboards.build', 'settings.manage', 'exchangeRates.manage',
+        'workflows.manage',
         'people.manage', 'access.manage', 'activityLog.viewAll', 'recycleBin.purge']);

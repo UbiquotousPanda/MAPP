@@ -98,9 +98,15 @@ func TestOrders_OnlyFinanceViewPlans_FR004(t *testing.T) {
 	if diff := cmp.Diff(&measure.FinanceCoverage{Plans: 1, Of: 2}, r.Finance); diff != "" || r.Total != 2 {
 		t.Errorf("%d rows, coverage (-want +got):\n%s", r.Total, diff)
 	}
+}
 
-	w.choices, w.asked = allwork.Choices{}, nil
-	if r = w.report(Table{Tab: TabOrders}); r.Total != 0 || w.asked != nil || r.Finance.Plans != 0 {
+func TestOrders_NothingWithoutFinanceView_FR004(t *testing.T) {
+	t.Parallel()
+	w := withOrders(twoPlans(t))
+	w.choices = allwork.Choices{}
+
+	r := w.report(Table{Tab: TabOrders})
+	if r.Total != 0 || w.asked != nil || r.Finance.Plans != 0 {
 		t.Errorf("without finance.view: %d rows, reads %v, coverage %+v; want none", r.Total, w.asked, r.Finance)
 	}
 	if totals := r.Orders.Totals; totals.PoAmount != nil || totals.Invoiced != nil || totals.Paid != nil {

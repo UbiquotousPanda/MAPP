@@ -42,6 +42,11 @@ func TestRevenueAndFunnelReports_Contract_049(t *testing.T) {
 			t.Errorf("GET %s, a year without goals = %d %s, want 200 with its reason in the contract", path, r.Status, r.Body)
 		}
 	}
+}
+
+func TestRevenueAndFunnelReports_InTheCatalogue_049(t *testing.T) {
+	t.Parallel()
+	planner := apitest.New(t).SignIn(t, "priya.raman@shell.com")
 	var catalogue measure.ReportCatalogue
 	planner.Do(t, http.MethodGet, "/api/v1/reports", nil).Decode(t, &catalogue)
 	for _, key := range []string{measure.KeyRevenue, measure.KeyFunnel} {

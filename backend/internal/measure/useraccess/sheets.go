@@ -16,6 +16,8 @@ import (
 const (
 	widgetPeople = "people"
 	widgetBands  = "signInBands"
+	wordActive   = "Active"
+	wordInactive = "Inactive"
 )
 
 func (s *Service) Key() string     { return measure.KeyUserAccess }
@@ -102,9 +104,9 @@ func teamsMarked(r Row) string {
 
 func statusWord(r Row) string {
 	if r.Person.Active {
-		return "Active"
+		return wordActive
 	}
-	return "Inactive"
+	return wordInactive
 }
 
 func signedIn(r Row) sheet.Cell {
@@ -131,7 +133,7 @@ func (s *Service) Describe(ctx context.Context, a actor.Actor, own url.Values) (
 		}
 		lines = append(lines, [2]string{"Team", strings.Join(names, ", ")})
 	}
-	status := map[string]string{StatusActive: "Active", StatusInactive: "Inactive", StatusAll: "All"}[q.Status]
+	status := map[string]string{StatusActive: wordActive, StatusInactive: wordInactive, StatusAll: "All"}[q.Status]
 	return append(lines, [2]string{"Status", status}), nil
 }
 
