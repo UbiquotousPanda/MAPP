@@ -12,6 +12,7 @@ func (w *wiring) overspendArea() error {
 		w.set.Overspend)
 	w.overspend.UseRates(w.settings)
 	w.guard.UseRates(w.settings)
+	w.guard.UseTolerance(w.overspend)
 	if err := w.register(w.overspend.Kinds()); err != nil {
 		return err
 	}

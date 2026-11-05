@@ -19,6 +19,7 @@ type Deps struct {
 	Attributes Attributes
 	Workflows  Workflows
 	Invoices   Invoices
+	Payments   Payments // optional: without it no request reaches Paid
 }
 
 type LineItems interface {
@@ -95,6 +96,11 @@ type WorkflowFacts struct {
 	Active               bool
 }
 
+// Payments returns, per PO line, what GSAP paid on it in USD at today's rates.
+type Payments interface {
+	PaidOn(ctx context.Context, lines []POLineRef) (map[POLineRef]money.Amount, error)
+}
+
 type Invoices interface {
 	// InvoicedOn returns, per PO line, its invoices minus credit notes in USD at today's rates.
 	InvoicedOn(ctx context.Context, lines []POLineRef) (map[POLineRef]money.Amount, error)
@@ -126,6 +132,7 @@ type RoutedPR struct {
 	VendorName, VendorCode string
 	GSAPPRNumber, PONumber string
 	LastPOLine             int
+	AfterApproval          bool
 	Lines                  []RoutedLine
 }
 

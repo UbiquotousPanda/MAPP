@@ -12,7 +12,9 @@ import (
 
 func TestInitiativeRefuse_CreateActivityOverTheBudget_Contract_037_US1(t *testing.T) {
 	t.Parallel()
-	priya := apitest.New(t).SignIn(t, priyasEmail)
+	server := apitest.New(t)
+	noTolerance(t, server)
+	priya := server.SignIn(t, priyasEmail)
 	path := "/api/v1/initiatives/" + printOutdoor
 	view := decoded[campaign.InitiativeView](t, priya.Do(t, http.MethodGet, path, nil), http.StatusOK)
 	budget := view.BudgetAndCost.PlannedCost.Amount.Add(money.FromCents(100 * 100))

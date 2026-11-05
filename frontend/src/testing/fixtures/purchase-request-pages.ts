@@ -60,6 +60,7 @@ export function prRow(overrides: Partial<S['PurchaseRequestRow']> = {}): S['Purc
     approvalWorkflow: PR_WORKFLOW,
     gsapPrNumber: '',
     waitingForGsap: true,
+    stage: 'Approved',
     plan: PLAN_REF,
     lines: [
       {
@@ -172,6 +173,7 @@ export function configuration(
 ): S['PurchaseRequestConfiguration'] {
   return {
     purchaseSupport: true,
+    releaseInGsapAfterApproval: true,
     linesOnApprovedPurchaseRequests: 'withModificationApproval',
     version: 1,
     updatedAt: '2026-10-20T08:00:00Z',

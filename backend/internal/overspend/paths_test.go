@@ -27,6 +27,7 @@ func rimulaActivity(t *testing.T, c *apitest.Client, name string) activity.View 
 func TestRefuse_ActivityMoveCopyAndSplit_Contract_037_US2(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya := server.SignIn(t, priyasEmail)
 	moving, copying, splitting := rimulaActivity(t, priya, "Moving"), rimulaActivity(t, priya, "Copying"),
 		rimulaActivity(t, priya, "Splitting")
@@ -56,6 +57,7 @@ func TestRefuse_ActivityMoveCopyAndSplit_Contract_037_US2(t *testing.T) {
 func TestRefuse_InitiativeMoveAndCopy_Contract_037_US2(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya := server.SignIn(t, priyasEmail)
 	rimulaActivity(t, priya, "Cost in events")
 	refuseHelix(t, priya, "0.00")
@@ -71,6 +73,7 @@ func TestRefuse_InitiativeMoveAndCopy_Contract_037_US2(t *testing.T) {
 func TestRefuse_RestoreAndUndoAddBackCost_DeleteAlwaysPasses_Contract_037_US2(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya := server.SignIn(t, priyasEmail)
 	first := created(t, createActivity(t, priya, digital, newActivity("Deleted first", "500.00")))
 	second := created(t, createActivity(t, priya, digital, newActivity("Deleted second", "500.00")))
@@ -94,6 +97,7 @@ func TestRefuse_RestoreAndUndoAddBackCost_DeleteAlwaysPasses_Contract_037_US2(t 
 func TestRefuse_LineItemsAreNeverRefused_Contract_037_FR012(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya := server.SignIn(t, priyasEmail)
 	a := created(t, createActivity(t, priya, digital, newActivity("With line items", "100.00")))
 	refuseHelix(t, priya, "0.00")
@@ -121,6 +125,7 @@ func allocateMobility(t *testing.T, alex *apitest.Client, room money.Amount, ver
 func TestRefuse_CampaignMoveIntoARefusePlan_Contract_037_US2(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya, alex := server.SignIn(t, priyasEmail), server.SignIn(t, alexsEmail)
 	server.GrantRole(t, priyasEmail, "globalPlanner", "all")
 	helixCost := decoded[campaign.CampaignView](t, priya.Do(t, http.MethodGet, "/api/v1/campaigns/"+helix, nil),

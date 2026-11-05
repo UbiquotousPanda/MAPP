@@ -83,3 +83,21 @@
   justify-content: flex-end;
   align-self: stretch;
 }
+
+.tolerance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.percent {
+  width: 4.5em;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: right;
+}

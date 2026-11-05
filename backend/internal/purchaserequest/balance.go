@@ -3,6 +3,7 @@ package purchaserequest
 import (
 	"fmt"
 
+	"mapp/internal/overspend"
 	"mapp/internal/platform/money"
 )
 
@@ -10,6 +11,8 @@ import (
 type balance struct {
 	rates  money.Rates
 	claims []Claim
+	// tolerancePercent of a request's amount it may exceed what its line item has left by.
+	tolerancePercent int
 }
 
 func (b balance) requested(li LineItemFacts, except string) (money.Amount, error) {
@@ -62,7 +65,7 @@ func (b balance) claimProblem(li LineItemFacts, amount money.Money, except strin
 	if err != nil {
 		return "", err
 	}
-	if converted.Amount.Cmp(left) <= 0 {
+	if converted.Amount.Cmp(left.Add(overspend.Allowance(converted.Amount, b.tolerancePercent))) <= 0 {
 		return "", nil
 	}
 	message := fmt.Sprintf(msgOnlyAvailable, max0(left).Format(), li.Currency, li.ID)

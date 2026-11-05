@@ -14,33 +14,28 @@ const maxRecentChanges = 10
 // scope and whatever is or was inside them, for Everything those of every plan, and how many match. A
 // deleted record keeps its entries, with where the record is now (in the recycle bin). For My teams without
 // team plans the page is empty and the log is not read.
-func (s *Service) RecentChanges(ctx context.Context, a actor.Actor, scopeText string) (RecentChangesPage, error) {
+func (s *Service) RecentChanges(ctx context.Context, a actor.Actor, scopeText, forText string) (RecentChangesPage, error) {
+	f, forErr := ParseFor(forText)
+	if forErr != nil {
+		return RecentChangesPage{}, forErr
+	}
 	scope, scopeErr := ParseScope(scopeText)
 	if scopeErr != nil {
 		return RecentChangesPage{}, scopeErr
 	}
 	page := RecentChangesPage{Items: []any{}}
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
-		var planIDs []string // nil: every plan
-		if scope == ScopeMyTeams {
-			ps, err := s.planScope(ctx, a)
-			if err != nil {
-				return err
-			}
-			for _, p := range ps.in(scope) {
-				planIDs = append(planIDs, p.ID)
-			}
-			if len(planIDs) == 0 {
-				return nil
-			}
+		q, found, err := s.recentChangesQuery(ctx, a, scope, f)
+		if err != nil || !found {
+			return err
 		}
-		found, err := s.src.RecentChanges(ctx, a, planIDs, maxRecentChanges)
+		log, err := s.src.RecentChanges(ctx, a, q)
 		if err != nil {
 			return err
 		}
-		page.Total = found.Total
-		if found.Items != nil {
-			page.Items = found.Items
+		page.Total = log.Total
+		if log.Items != nil {
+			page.Items = log.Items
 		}
 		return nil
 	})
@@ -48,4 +43,29 @@ func (s *Service) RecentChanges(ctx context.Context, a actor.Actor, scopeText st
 		return RecentChangesPage{}, err
 	}
 	return page, nil
+}
+
+// recentChangesQuery reports false when My teams has no team plans, so the log is not read.
+func (s *Service) recentChangesQuery(ctx context.Context, a actor.Actor, scope Scope, f For) (RecentChangesQuery, bool, error) {
+	q := RecentChangesQuery{Limit: maxRecentChanges}
+	if scope == ScopeMyTeams {
+		ps, err := s.planScope(ctx, a)
+		if err != nil {
+			return q, false, err
+		}
+		for _, p := range ps.in(scope) {
+			q.PlanIDs = append(q.PlanIDs, p.ID)
+		}
+		if len(q.PlanIDs) == 0 {
+			return q, false, nil
+		}
+	}
+	if f == ForTeam {
+		people, err := s.peopleFor(ctx, a, f)
+		if err != nil {
+			return q, false, err
+		}
+		q.ActorIDs = people
+	}
+	return q, true, nil
 }

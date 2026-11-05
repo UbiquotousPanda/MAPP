@@ -80,7 +80,7 @@ describe('032 FR-008/FR-009/FR-020/FR-052: purchase request page', () => {
       'href',
       '/plans/P-1001/activities/A-1003',
     );
-    expect(screen.getByText('Created')).toBeInTheDocument();
+    expect(screen.getAllByText('Created')[0]).toBeInTheDocument();
     expect(screen.getByText('PURCHASE REQUEST')).toBeInTheDocument();
     expect(detail('MoA approver')).toHaveTextContent('Daniel Okoro');
     expect(detail('Total amount')).toHaveTextContent('$10,000.00');

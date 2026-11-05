@@ -15,14 +15,18 @@ import (
 // Created, Submitted, Approved, In progress, Complete, empty groups left out. Within a group they are
 // ordered by start date (none last), then by name ignoring letter case, then by ID; every row is returned
 // (D-173), with its planned cost in a's display currency.
-func (s *Service) MyActivities(ctx context.Context, a actor.Actor) (MyActivitiesView, error) {
+func (s *Service) MyActivities(ctx context.Context, a actor.Actor, forText string) (MyActivitiesView, error) {
+	f, forErr := ParseFor(forText)
+	if forErr != nil {
+		return MyActivitiesView{}, forErr
+	}
 	var view MyActivitiesView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
 		c, err := s.converter(ctx, a)
 		if err != nil {
 			return err
 		}
-		owned, err := s.src.Activities(ctx, a, a.ID)
+		owned, err := s.activitiesFor(ctx, a, f)
 		if err != nil {
 			return err
 		}

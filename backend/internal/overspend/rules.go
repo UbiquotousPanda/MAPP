@@ -12,8 +12,11 @@ import (
 )
 
 const (
-	CodeOverBudget = "over_budget"
-	MsgChooseMode  = "Choose Warn or Refuse."
+	CodeOverBudget  = "over_budget"
+	MsgChooseMode   = "Choose Warn or Refuse."
+	MsgTolerance    = "Enter a whole per cent from 0 to 100."
+	maxTolerancePct = 100
+	percentHundred  = 100
 
 	msgPhrase   = "the planned cost of %s '%s' would be %s, over its budget of %s by %s"
 	msgOneOwner = "Not saved — %s. Its owner refuses overspending."
@@ -38,16 +41,28 @@ func keyOf(b Budget) budgetKey {
 	return budgetKey{kind: b.Kind, id: b.ID}
 }
 
-// Overages lists the budgets set to Refuse that a save took over (FR-009, FR-011, research R2): over after the
-// save, and either new (no budget before) or with more planned cost or a smaller amount than before.
-func Overages(before, after []Budget) []Overage {
+// Allowance is tolerancePercent of a, rounded down to the cent: how far over a a Refuse budget lets planned
+// cost go.
+func Allowance(a money.Amount, tolerancePercent int) money.Amount {
+	return money.FromCents(a.Cents() * int64(tolerancePercent) / percentHundred)
+}
+
+// ValidTolerance is a tolerance the setting takes: a whole per cent from 0 to 100.
+func ValidTolerance(percent int) bool {
+	return percent >= 0 && percent <= maxTolerancePct
+}
+
+// Overages lists the budgets set to Refuse that a save took over by more than the tolerance (FR-009, FR-011,
+// research R2): beyond it after the save, and either new (no budget before) or with more planned
+// cost or a smaller amount than before. Within the tolerance a save only warns.
+func Overages(before, after []Budget, tolerancePercent int) []Overage {
 	known := make(map[budgetKey]Budget, len(before))
 	for _, b := range before {
 		known[keyOf(b)] = b
 	}
 	overages := []Overage{}
 	for _, b := range after {
-		if !b.Mode.Refuses() || !isOver(b) {
+		if !b.Mode.Refuses() || !isBeyond(b, tolerancePercent) {
 			continue
 		}
 		if was, found := known[keyOf(b)]; found && !isWorse(was, b) {
@@ -59,8 +74,8 @@ func Overages(before, after []Budget) []Overage {
 	return overages
 }
 
-func isOver(b Budget) bool {
-	return b.Planned.Amount.Cmp(b.Amount.Amount) > 0
+func isBeyond(b Budget, tolerancePercent int) bool {
+	return b.Planned.Amount.Cmp(b.Amount.Amount.Add(Allowance(b.Amount.Amount, tolerancePercent))) > 0
 }
 
 func isWorse(was, now Budget) bool {
@@ -96,28 +111,46 @@ func Refusal(overages []Overage) *errs.Error {
 	return &errs.Error{Status: http.StatusConflict, Code: CodeOverBudget, Message: message, Fields: []errs.FieldError{}}
 }
 
-// LimitsOf returns the budgets set to Refuse on path with what is left to plan in each, in the plan currency
-// (FR-014); a global budget's is converted from USD at rates.
-func LimitsOf(budgets []Budget, path Path, rates money.Rates) ([]Limit, error) {
+// LimitsOf returns every budget on path, Warn or Refuse, with what is left to plan in each and, for Refuse, what
+// is left before it refuses, in the plan currency (FR-014); a global budget's is converted
+// from USD at rates.
+func LimitsOf(budgets []Budget, path Path, rates money.Rates, tolerancePercent int) ([]Limit, error) {
 	limits := []Limit{}
 	for _, b := range budgets {
-		if !b.Mode.Refuses() || !isOnPath(b, path) {
+		if !isOnPath(b, path) {
 			continue
 		}
-		left := money.Money{Amount: b.Amount.Amount.Sub(b.Planned.Amount), Currency: b.Amount.Currency}
-		if left.Currency != path.PlanCurrency {
-			converted, err := rates.Convert(left, path.PlanCurrency)
-			if err != nil {
-				return nil, err
-			}
-			left = converted
+		mode := b.Mode.Normalised()
+		left := b.Amount.Amount.Sub(b.Planned.Amount)
+		beforeRefusing := left
+		if mode.Refuses() {
+			beforeRefusing = left.Add(Allowance(b.Amount.Amount, tolerancePercent))
 		}
-		limits = append(limits, Limit{Budget: refOf(b), LeftToPlan: left})
+		inPlan := func(a money.Amount) (money.Money, error) {
+			return converted(money.Money{Amount: a, Currency: b.Amount.Currency}, path.PlanCurrency, rates)
+		}
+		leftMoney, err := inPlan(left)
+		if err != nil {
+			return nil, err
+		}
+		beforeMoney, err := inPlan(beforeRefusing)
+		if err != nil {
+			return nil, err
+		}
+		limits = append(limits, Limit{Budget: refOf(b), Mode: mode, Amount: b.Amount, LeftToPlan: leftMoney,
+			LeftBeforeRefusing: beforeMoney})
 	}
 	slices.SortFunc(limits, func(x, y Limit) int {
 		return byLevelAndName(Overage{Budget: x.Budget}, Overage{Budget: y.Budget})
 	})
 	return limits, nil
+}
+
+func converted(m money.Money, currency string, rates money.Rates) (money.Money, error) {
+	if m.Currency == currency {
+		return m, nil
+	}
+	return rates.Convert(m, currency)
 }
 
 func isOnPath(b Budget, path Path) bool {

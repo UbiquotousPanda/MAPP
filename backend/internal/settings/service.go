@@ -50,10 +50,13 @@ type Service struct {
 	now     clock.Clock
 	sources []ReferenceSource
 	feed    RateFeed // nil reads the GSAP daily rate file
+	asOf    rateClock
 }
 
 func NewService(tools history.Tools, repo Store) *Service {
-	return &Service{tx: tools.Tx, repo: repo, ids: tools.IDs, history: tools.Log, now: tools.Now}
+	s := &Service{tx: tools.Tx, repo: repo, ids: tools.IDs, history: tools.Log, now: tools.Now}
+	s.asOf.set(s.now())
+	return s
 }
 
 // AddReferenceSource is for internal/app while the API starts, before it serves requests.

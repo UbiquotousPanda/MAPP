@@ -27,7 +27,12 @@ import {
   SAVE,
   SETTING_SAVED,
   SETTINGS_DESCRIPTION,
+  TOLERANCE_AFTER,
+  TOLERANCE_BEFORE,
+  TOLERANCE_HINT,
+  TOLERANCE_PROBLEM,
   lastChangedText,
+  parseTolerance,
 } from './overspend-text';
 import styles from './OverspendSettingsPage.module.css';
 
@@ -65,16 +70,24 @@ function SettingForm({ config }: { config: OverspendConfiguration }) {
   const { date, dateFormat } = useFormatters();
   const [mode, setMode] = useState<OverspendMode>(config.defaultMode);
   const [approval, setApproval] = useState<OverspendApprovalMode>(config.approvalOverPlannedCost);
+  const [tolerance, setTolerance] = useState(String(config.tolerancePercent));
   const [problem, setProblem] = useState('');
+  const toleranceId = useId();
   const locked = !config.canChange.available;
 
   async function send() {
     setProblem('');
+    const tolerancePercent = parseTolerance(tolerance);
+    if (tolerancePercent === null) {
+      setProblem(TOLERANCE_PROBLEM);
+      return;
+    }
     try {
       await save.mutateAsync({
         version: config.version,
         defaultMode: mode,
         approvalOverPlannedCost: approval,
+        tolerancePercent,
       });
       show({ message: SETTING_SAVED });
     } catch (error) {
@@ -111,6 +124,24 @@ function SettingForm({ config }: { config: OverspendConfiguration }) {
         onChange={setMode}
         note={EXISTING_KEEP}
       />
+      <div className={styles.group}>
+        <label className={styles.tolerance}>
+          <span className={styles.legend}>{TOLERANCE_BEFORE}</span>
+          <input
+            name="tolerancePercent"
+            inputMode="numeric"
+            className={styles.percent}
+            value={tolerance}
+            disabled={locked}
+            aria-describedby={toleranceId}
+            onChange={(event) => setTolerance(event.target.value)}
+          />
+          <span className={styles.legend}>{TOLERANCE_AFTER}</span>
+        </label>
+        <p id={toleranceId} className={styles.note}>
+          {TOLERANCE_HINT}
+        </p>
+      </div>
       <Choices
         name="approvalOverPlannedCost"
         legend={APPROVAL_LABEL}

@@ -60,7 +60,7 @@ func TestOverages_RefuseRule_037_FR009_FR011(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got := Overages(tt.before, tt.after)
+			got := Overages(tt.before, tt.after, 0)
 			if (len(got) > 0) != tt.refused {
 				t.Errorf("Overages = %+v, refused want %v", got, tt.refused)
 			}
@@ -76,8 +76,8 @@ func TestRefusal_NamesEveryBudgetInOrder_037_FR010(t *testing.T) {
 		Amount: usd(t, "2000000.00"), Planned: usd(t, "2000000.50")}
 	campaign := budgetOf(t, Refuse, "700000.00", "712000.00")
 
-	one := Refusal(Overages(nil, []Budget{plan}))
-	several := Refusal(Overages(nil, []Budget{global, campaign, plan}))
+	one := Refusal(Overages(nil, []Budget{plan}, 0))
+	several := Refusal(Overages(nil, []Budget{global, campaign, plan}, 0))
 
 	if one.Status != http.StatusConflict || one.Code != CodeOverBudget || one.Message != "Not saved — the planned cost of plan "+
 		"'FY2026 Lubricants Europe' would be 1,250,000.00 USD, over its budget of 1,200,000.00 USD by 50,000.00 USD. "+
@@ -110,13 +110,57 @@ func TestLimitsOf_BudgetsAboveTheActivity_037_FR014(t *testing.T) {
 	}
 	rates := money.Rates{"EUR": money.RateFromMicros(920000)}
 
-	limits, err := LimitsOf(budgets, Path{PlanID: "P-1", CampaignID: "C-1", InitiativeID: "I-1", PlanCurrency: "EUR"}, rates)
+	limits, err := LimitsOf(budgets, Path{PlanID: "P-1", CampaignID: "C-1", InitiativeID: "I-1", PlanCurrency: "EUR"}, rates, 0)
 
 	got := []string{}
 	for _, l := range limits {
 		got = append(got, l.Budget.Type+" "+l.Budget.Name+" "+l.LeftToPlan.Format())
 	}
-	want := []string{"plan Plan 100.00 EUR", "initiative Initiative -10.00 EUR", "globalBudget Global 92.00 EUR"}
+	want := []string{"plan Plan 100.00 EUR", "campaign Campaign 400.00 EUR", "initiative Initiative -10.00 EUR",
+		"globalBudget Global 92.00 EUR"}
+	if diff := cmp.Diff(want, got); err != nil || diff != "" {
+		t.Errorf("LimitsOf (-want +got):\n%s %v", diff, err)
+	}
+}
+
+// demo-mvp #4: within the tolerance a Refuse budget only warns; beyond it, it refuses. Warn never refuses.
+func TestOverages_RefuseOnlyBeyondTheTolerance_DemoMVP4(t *testing.T) {
+	t.Parallel()
+	budget := func(mode Mode, planned string) Budget {
+		return Budget{Kind: KindPlan, ID: "P-1", Name: "Plan", Mode: mode, Amount: usd(t, "1000.00"), Planned: usd(t, planned)}
+	}
+	tests := []struct {
+		name    string
+		after   Budget
+		refused bool
+	}{
+		{"refuse, within 10%", budget(Refuse, "1100.00"), false},
+		{"refuse, beyond 10%", budget(Refuse, "1100.01"), true},
+		{"warn, far beyond 10%", budget(Warn, "5000.00"), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := Overages(nil, []Budget{tt.after}, 10)
+			if refused := len(got) > 0; refused != tt.refused {
+				t.Errorf("Overages refused = %v, want %v", refused, tt.refused)
+			}
+		})
+	}
+}
+
+func TestLimitsOf_LeftBeforeRefusingAddsTheTolerance_DemoMVP4(t *testing.T) {
+	t.Parallel()
+	budgets := []Budget{
+		{Kind: KindPlan, ID: "P-1", Name: "Plan", Mode: Refuse, Amount: usd(t, "1000.00"), Planned: usd(t, "900.00")},
+		{Kind: KindCampaign, ID: "C-1", Name: "Campaign", Mode: Warn, Amount: usd(t, "500.00"), Planned: usd(t, "100.00")},
+	}
+	limits, err := LimitsOf(budgets, Path{PlanID: "P-1", CampaignID: "C-1", PlanCurrency: "USD"}, money.Rates{}, 10)
+	got := []string{}
+	for _, l := range limits {
+		got = append(got, string(l.Mode)+" "+l.LeftToPlan.Format()+" "+l.LeftBeforeRefusing.Format())
+	}
+	want := []string{"refuse 100.00 USD 200.00 USD", "warn 400.00 USD 400.00 USD"}
 	if diff := cmp.Diff(want, got); err != nil || diff != "" {
 		t.Errorf("LimitsOf (-want +got):\n%s %v", diff, err)
 	}

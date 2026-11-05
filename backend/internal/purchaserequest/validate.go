@@ -67,7 +67,12 @@ func (s *Service) checkerFor(ctx context.Context, in Input, before PurchaseReque
 	if err != nil {
 		return nil, err
 	}
-	c := &checker{s: s, how: how, before: before, facts: facts, balance: balance{rates: rates, claims: claims}}
+	tolerance, err := s.tolerancePercent(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c := &checker{s: s, how: how, before: before, facts: facts,
+		balance: balance{rates: rates, claims: claims, tolerancePercent: tolerance}}
 	c.plan = c.planOf(ctx, in.Lines)
 	return c, nil
 }

@@ -12,14 +12,18 @@ const maxWaitingRows = 5
 // Waiting returns Waiting for my approval (FR-013): the first 5 activities of the Waiting for me tab of the
 // Approvals page — the same list, oldest first — and how many wait in all, with their planned cost in a's
 // display currency.
-func (s *Service) Waiting(ctx context.Context, a actor.Actor) (WaitingPage, error) {
+func (s *Service) Waiting(ctx context.Context, a actor.Actor, forText string) (WaitingPage, error) {
+	f, forErr := ParseFor(forText)
+	if forErr != nil {
+		return WaitingPage{}, forErr
+	}
 	var page WaitingPage
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
 		c, err := s.converter(ctx, a)
 		if err != nil {
 			return err
 		}
-		waiting, err := s.src.WaitingForMe(ctx, a)
+		waiting, err := s.waitingFor(ctx, a, f)
 		if err != nil {
 			return err
 		}

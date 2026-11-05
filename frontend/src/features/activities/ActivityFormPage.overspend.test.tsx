@@ -13,7 +13,10 @@ configure({ asyncUtilTimeout: 10_000 });
 
 const LIMIT = {
   budget: { type: 'campaign', id: 'C-1001', name: 'Helix launch' },
+  mode: 'refuse' as const,
+  amount: { amount: '20000.00', currency: 'USD' },
   leftToPlan: { amount: '5000.00', currency: 'USD' },
+  leftBeforeRefusing: { amount: '5000.00', currency: 'USD' },
 };
 
 function openNewForm() {

@@ -55,8 +55,10 @@ func (s *Service) checkUpdate(ctx context.Context, before LineItem, u Update) (A
 		return ActivityFacts{}, LineItem{}, err
 	}
 	checkSwbsKept(&problems, before, u.RequestSwbs)
-	if err = s.requestedRule(ctx, &problems, before.ID, after); err != nil {
-		return ActivityFacts{}, LineItem{}, err
+	if moneyChanged(before, after) {
+		if err = s.requestedRule(ctx, &problems, before.ID, after); err != nil {
+			return ActivityFacts{}, LineItem{}, err
+		}
 	}
 	if u.Version == nil || *u.Version < 1 {
 		problems.Add("version", reloadMessage)

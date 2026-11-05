@@ -21,6 +21,7 @@ type Set struct {
 	Finance
 	Dashboards
 	Samples SampleStore
+	Reviews PostInvestmentReviewStore
 	// Ready says why the data cannot be served now; IsEmpty whether nothing has been stored yet.
 	Ready   func(ctx context.Context) error
 	IsEmpty func(ctx context.Context) (bool, error)
@@ -32,6 +33,7 @@ type Organisation struct {
 	Auth     AuthStore
 	Access   AccessStore
 	Settings SettingsStore
+	Home     HomeStore
 }
 
 type Planning struct {

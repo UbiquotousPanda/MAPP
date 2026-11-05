@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { HttpHandler } from 'msw';
 import { expectCurrentSection, renderApp } from '@/testing/app';
+import { currentRates } from '@/testing/fixtures/line-item-forms';
 import { reply } from '@/testing/replies';
 
 const PAGE_ANSWERS: HttpHandler[] = [
@@ -12,6 +13,7 @@ const PAGE_ANSWERS: HttpHandler[] = [
   reply('GET /api/v1/activity-types', { body: { items: [], total: 0 } }),
   reply('GET /api/v1/settings/activity-categories', { body: { items: [], total: 0 } }),
   reply('GET /api/v1/currencies', { body: { items: [], total: 0 } }),
+  reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
   reply('GET /api/v1/finance-budgets', {
     body: { items: [], total: 0, year: 2026, years: [2026] },
   }),

@@ -1,0 +1,36 @@
+import { screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { purchaseRequest } from '@/testing/fixtures/purchase-requests';
+import { testUser } from '@/testing/fixtures/users';
+import { renderWithProviders } from '@/testing/render';
+import { PurchaseRequestTimeline } from './PurchaseRequestTimeline';
+
+describe('PurchaseRequestTimeline', () => {
+  it('032 timeline: a reached step shows its who and the next step says what it waits for', () => {
+    renderWithProviders(<PurchaseRequestTimeline purchaseRequest={purchaseRequest()} />, {
+      user: testUser(),
+    });
+
+    expect(screen.getByText(/Priya Raman/)).toBeInTheDocument();
+    const next = screen.getByText('Waiting for submission').closest('li');
+    expect(next).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByText(/Priya Raman/).closest('li')).not.toHaveAttribute('aria-current');
+  });
+
+  it('032 timeline: the GSAP PR number and purchase order show calendar dates, not times', () => {
+    const gsap = { id: 'gsap', name: 'GSAP' };
+    const timeline = [
+      { key: 'gsapPrNumber', label: 'GSAP PR number', reached: true, at: '2026-11-03T00:00:00Z' },
+      { key: 'purchaseOrder', label: 'Purchase order', reached: true, at: '2026-11-04T00:00:00Z' },
+    ].map((step, i) => ({ ...step, by: gsap, detail: `450000${i}`, waiting: '' }));
+    renderWithProviders(
+      <PurchaseRequestTimeline purchaseRequest={purchaseRequest({ timeline })} />,
+      {
+        user: testUser(),
+      },
+    );
+
+    expect(screen.getByText('03 Nov 2026 · GSAP · 4500000')).toBeInTheDocument();
+    expect(screen.getByText('04 Nov 2026 · GSAP · 4500001')).toBeInTheDocument();
+  });
+});

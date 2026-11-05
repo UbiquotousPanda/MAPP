@@ -30,6 +30,14 @@ type Sources struct {
 	// WaitingForMe returns the Waiting for me tab of the Approvals page for a: the Submitted activities
 	// whose current level lists a, oldest submission first (008).
 	WaitingForMe func(ctx context.Context, a actor.Actor) ([]Waiting, error)
+	// TeamMemberIDs returns the ids of every member of the teams the person a belongs to, a included,
+	// each once, ordered by id (003). Never nil.
+	TeamMemberIDs func(ctx context.Context, a actor.Actor) ([]string, error)
+	// WaitingFor returns the Waiting for me tab of the Approvals page as personID would see it, oldest
+	// submission first (008). It does not filter by what a may see: the service does.
+	WaitingFor func(ctx context.Context, a actor.Actor, personID string) ([]Waiting, error)
+	// SeesActivities returns which of the activities with the given ids a may see (authz SeesActivity).
+	SeesActivities func(ctx context.Context, a actor.Actor, ids []string) (map[string]bool, error)
 	// DisplayCurrency returns a's display currency with its current rate (003, rates of 002). A display
 	// currency set inactive stays in use with its rate (D-201, D-063).
 	DisplayCurrency func(ctx context.Context, a actor.Actor) (Currency, error)
@@ -37,7 +45,13 @@ type Sources struct {
 	// and line items, at most limit, newest first, each as the activity log shows it with where its record
 	// is now, and how many match (011's QueryLog). With planIDs, only the entries about those plans and
 	// whatever is or was inside them; nil means every plan.
-	RecentChanges func(ctx context.Context, a actor.Actor, planIDs []string, limit int) (RecentChangesPage, error)
+	RecentChanges func(ctx context.Context, a actor.Actor, q RecentChangesQuery) (RecentChangesPage, error)
+}
+
+// RecentChangesQuery narrows Recent changes; nil ActorIDs means anyone.
+type RecentChangesQuery struct {
+	PlanIDs, ActorIDs []string
+	Limit             int
 }
 
 // MissingField is a field still needed to publish or submit (contract MissingField).

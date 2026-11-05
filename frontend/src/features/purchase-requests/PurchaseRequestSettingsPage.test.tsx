@@ -66,6 +66,7 @@ describe('032 FR-004: Settings › Purchase requests', () => {
       {
         version: 1,
         purchaseSupport: false,
+        releaseInGsapAfterApproval: true,
         linesOnApprovedPurchaseRequests: 'withoutApproval',
       },
     ]);
@@ -76,7 +77,9 @@ describe('032 FR-004: Settings › Purchase requests', () => {
     renderPage([reply(GET, { body: configuration({ canChange: no(reason) }) })]);
 
     expect(await screen.findByText(reason)).toBeVisible();
-    expect(screen.getByText('On')).toBeVisible();
+    const on = screen.getAllByText('On');
+    expect(on).toHaveLength(2);
+    on.forEach((value) => expect(value).toBeVisible());
     expect(screen.getByText('Allowed with modification approval')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();

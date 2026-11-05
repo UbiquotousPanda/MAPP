@@ -13,6 +13,8 @@ import type { CurrentUser } from '@/session/useSession';
 import { DISPLAY_CURRENCIES_KEY } from '@/features/people';
 
 export type HomeScope = components['schemas']['HomeScope'];
+/** Whose work the person-based cards show: the person's own, or every member of their teams. */
+export type HomeFor = components['schemas']['HomeFor'];
 export type HomeSummary = components['schemas']['HomeSummary'];
 export type HomePlanRow = components['schemas']['HomePlanRow'];
 export type HomePlanPage = components['schemas']['HomePlanPage'];
@@ -35,22 +37,29 @@ export const HOME_KEY = ['home'] as const;
 
 /** The query keys of the cards (plan "Query keys"). */
 export const HOME_KEYS = {
-  summary: (scope: HomeScope) => [...HOME_KEY, 'summary', scope] as const,
+  summary: (scope: HomeScope, who: HomeFor = 'me') => [...HOME_KEY, 'summary', scope, who] as const,
   plans: (scope: HomeScope) => [...HOME_KEY, 'plans', scope] as const,
-  attention: [...HOME_KEY, 'attention'] as const,
-  waiting: [...HOME_KEY, 'waiting'] as const,
-  myActivities: [...HOME_KEY, 'my-activities'] as const,
-  recentChanges: (scope: HomeScope) => [...HOME_KEY, 'recent-changes', scope] as const,
+  attention: (who: HomeFor = 'me') => [...HOME_KEY, 'attention', who] as const,
+  waiting: (who: HomeFor = 'me') => [...HOME_KEY, 'waiting', who] as const,
+  myActivities: (who: HomeFor = 'me') => [...HOME_KEY, 'my-activities', who] as const,
+  recentChanges: (scope: HomeScope, who: HomeFor = 'me') =>
+    [...HOME_KEY, 'recent-changes', scope, who] as const,
 };
+
+/** Me is the API's default, so only My team adds ?for=team. */
+function forQuery(who: HomeFor): { for?: HomeFor } {
+  return who === 'team' ? { for: 'team' } : {};
+}
 
 /** Current figures each time Home is opened or returned to (FR-019). */
 const ALWAYS_FRESH = { staleTime: 0, refetchOnMount: 'always' } as const;
 
 /** The four summary cards and whether to show Getting started (GET /api/v1/home/summary). */
-export function useHomeSummary(scope: HomeScope) {
+export function useHomeSummary(scope: HomeScope, who: HomeFor = 'me') {
   return useQuery({
-    queryKey: HOME_KEYS.summary(scope),
-    queryFn: () => call(api.GET('/api/v1/home/summary', { params: { query: { scope } } })),
+    queryKey: HOME_KEYS.summary(scope, who),
+    queryFn: () =>
+      call(api.GET('/api/v1/home/summary', { params: { query: { scope, ...forQuery(who) } } })),
     ...ALWAYS_FRESH,
   });
 }
@@ -65,37 +74,41 @@ export function useHomePlans(scope: HomeScope) {
 }
 
 /** Needs your attention: every record the person owns that has a problem, in all plans. */
-export function useHomeAttention() {
+export function useHomeAttention(who: HomeFor = 'me') {
   return useQuery({
-    queryKey: HOME_KEYS.attention,
-    queryFn: () => call(api.GET('/api/v1/home/attention')),
+    queryKey: HOME_KEYS.attention(who),
+    queryFn: () => call(api.GET('/api/v1/home/attention', { params: { query: forQuery(who) } })),
     ...ALWAYS_FRESH,
   });
 }
 
 /** Waiting for my approval: the first 5 of 008's Waiting for me list, oldest first. */
-export function useHomeWaiting() {
+export function useHomeWaiting(who: HomeFor = 'me') {
   return useQuery({
-    queryKey: HOME_KEYS.waiting,
-    queryFn: () => call(api.GET('/api/v1/home/waiting')),
+    queryKey: HOME_KEYS.waiting(who),
+    queryFn: () => call(api.GET('/api/v1/home/waiting', { params: { query: forQuery(who) } })),
     ...ALWAYS_FRESH,
   });
 }
 
 /** My activities: the activities the person owns, grouped by displayed status, all plans. */
-export function useHomeMyActivities() {
+export function useHomeMyActivities(who: HomeFor = 'me') {
   return useQuery({
-    queryKey: HOME_KEYS.myActivities,
-    queryFn: () => call(api.GET('/api/v1/home/my-activities')),
+    queryKey: HOME_KEYS.myActivities(who),
+    queryFn: () =>
+      call(api.GET('/api/v1/home/my-activities', { params: { query: forQuery(who) } })),
     ...ALWAYS_FRESH,
   });
 }
 
 /** Recent changes: the 10 newest activity-log entries (feature 011) about the plans in scope. */
-export function useHomeRecentChanges(scope: HomeScope) {
+export function useHomeRecentChanges(scope: HomeScope, who: HomeFor = 'me') {
   return useQuery({
-    queryKey: HOME_KEYS.recentChanges(scope),
-    queryFn: () => call(api.GET('/api/v1/home/recent-changes', { params: { query: { scope } } })),
+    queryKey: HOME_KEYS.recentChanges(scope, who),
+    queryFn: () =>
+      call(
+        api.GET('/api/v1/home/recent-changes', { params: { query: { scope, ...forQuery(who) } } }),
+      ),
     ...ALWAYS_FRESH,
   });
 }

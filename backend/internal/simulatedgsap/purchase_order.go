@@ -81,7 +81,7 @@ func answers(pr purchaserequest.RoutedPR, today date.Date) []purchaserequest.Ord
 
 func booked(pr purchaserequest.RoutedPR, order purchaserequest.GSAPOrder) BookedOrder {
 	b := BookedOrder{PurchaseRequestID: pr.ID, PONumber: order.PONumber, VendorCode: pr.VendorCode, Vendor: pr.VendorName,
-		Description: pr.ShortText, Lines: make([]BookedLine, 0, len(pr.Lines))}
+		Description: pr.ShortText, AfterApproval: pr.AfterApproval, Lines: make([]BookedLine, 0, len(pr.Lines))}
 	for i, l := range pr.Lines {
 		b.Lines = append(b.Lines, BookedLine{POLine: order.Lines[i].POLine, Currency: l.Currency, SwbsCode: l.SwbsCode,
 			HXKey: l.HXKey, Amount: l.Amount, PostingDate: order.Lines[i].Date})

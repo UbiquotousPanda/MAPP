@@ -99,13 +99,3 @@ func lowerLineItemCost(id string) alteration {
 		return orPut(err, func() error { return store.Put(ctx, item) })
 	})
 }
-
-func lowerPlannedCost(id string) alteration {
-	return altering(func(ctx context.Context, db *fake.DB) error {
-		store := activitytest.NewStore(db)
-		act, _, err := store.Get(ctx, id)
-		low := money.USD(money.FromCents(100))
-		act.PlannedCost = &low
-		return orPut(err, func() error { return store.Put(ctx, act) })
-	})
-}

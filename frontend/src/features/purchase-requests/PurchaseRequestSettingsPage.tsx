@@ -30,6 +30,8 @@ import {
   ON,
   PURCHASE_SUPPORT,
   PURCHASE_SUPPORT_HINT,
+  RELEASE_IN_GSAP,
+  RELEASE_IN_GSAP_HINT,
   SAVE,
   lastChangedText,
 } from './settings-text';
@@ -43,6 +45,7 @@ const LINE_CHOICES = [
 
 const settingsSchema = z.object({
   purchaseSupport: z.boolean(),
+  releaseInGsapAfterApproval: z.boolean(),
   linesOnApprovedPurchaseRequests: z.enum(LINE_CHOICES),
 });
 type SettingsValues = z.infer<typeof settingsSchema>;
@@ -102,6 +105,8 @@ function ReadOnly({ config }: { config: PurchaseRequestConfiguration }) {
       <dl className={styles.values}>
         <dt>{PURCHASE_SUPPORT}</dt>
         <dd>{config.purchaseSupport ? ON : OFF}</dd>
+        <dt>{RELEASE_IN_GSAP}</dt>
+        <dd>{config.releaseInGsapAfterApproval ? ON : OFF}</dd>
         <dt>{LINES_ON_APPROVED}</dt>
         <dd>{LINES_ON_APPROVED_WORDS[config.linesOnApprovedPurchaseRequests]}</dd>
       </dl>
@@ -119,6 +124,7 @@ function SettingsForm({ config }: { config: PurchaseRequestConfiguration }) {
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       purchaseSupport: config.purchaseSupport,
+      releaseInGsapAfterApproval: config.releaseInGsapAfterApproval,
       linesOnApprovedPurchaseRequests: config.linesOnApprovedPurchaseRequests,
     },
     ...CHECK_ON_SAVE,
@@ -159,6 +165,19 @@ function SettingsForm({ config }: { config: PurchaseRequestConfiguration }) {
             checked={field.value}
             onChange={field.onChange}
             hint={PURCHASE_SUPPORT_HINT}
+          />
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="releaseInGsapAfterApproval"
+        render={(field) => (
+          <CheckboxField
+            label={RELEASE_IN_GSAP}
+            name={field.name}
+            checked={field.value}
+            onChange={field.onChange}
+            hint={RELEASE_IN_GSAP_HINT}
           />
         )}
       />

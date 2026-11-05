@@ -6,11 +6,13 @@ import type { RecordFormValues } from './schemas';
 export function overspendRefusal(
   typed: RecordFormValues,
   opened: Campaign | Initiative,
+  tolerancePercent: number | undefined,
 ): string | null {
   return budgetCheck({
     mode: typed.overspend,
     typed: typed.budget,
     stored: opened.budget?.amount ?? null,
     planned: opened.budgetAndCost.plannedCost,
+    tolerancePercent,
   }).error;
 }

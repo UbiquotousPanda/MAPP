@@ -70,10 +70,13 @@ type AllocationRow struct {
 	Amount            money.Money       `json:"amount"`
 	AmountUSD         money.Money       `json:"amountUsd"`
 	PlannedCost       *money.Money      `json:"plannedCost"`
+	Committed         *money.Money      `json:"committed"` // nil when the person doesn't see the plan's finance
+	Actual            *money.Money      `json:"actual"`    // paid; nil as committed
 	LeftToPlan        money.Money       `json:"leftToPlan"`
 	BudgetUsedPercent *string           `json:"budgetUsedPercent"`
 	Overspend         overspend.Mode    `json:"overspend"`
 	Version           int               `json:"version"`
+	CanOpenPlan       bool              `json:"canOpenPlan"` // false for a plan outside the person's scope
 	Access            RowAccess         `json:"access"`
 }
 

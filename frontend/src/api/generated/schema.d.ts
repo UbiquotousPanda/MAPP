@@ -2278,6 +2278,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/home/action-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Action items — the person's pending actions for Home's pop-up, overdue first
+         * @description Approvals waiting for the person, their Declined purchase requests to fix and submit again, line items
+         *     ready to send for an SWBS code (people who may send SWBS requests), and their activities that still
+         *     need fields before they can be submitted. `show` is false when there is nothing to do, or until the
+         *     day "Remind me later" hid the pop-up until.
+         */
+        get: operations["listHomeActionItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/home/action-items/remind-later": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Remind me later — hides the person's action-items pop-up until tomorrow */
+        post: operations["remindHomeActionItemsLater"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/all-work": {
         parameters: {
             query?: never;
@@ -3748,6 +3788,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/exchange-rates/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fetch fresh rates from the simulated GSAP now; the rates it saves are today's rates
+         * @description Needs the permission exchangeRates.manage. The simulated GSAP also refreshes by itself every 15 minutes; no live GSAP call is made (ADR-0009).
+         */
+        post: operations["refreshRates"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/exchange-rates/import-check": {
         parameters: {
             query?: never;
@@ -4263,6 +4323,124 @@ export interface paths {
         };
         /** A plan as a PowerPoint or PDF file — summary, campaigns, budget against planned and actual, activities (feature 036, FR-023) */
         get: operations["exportPlan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/post-investment-reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The post-investment reviews of the activities the person may see (demo-mvp
+         * @description Newest change first. activityId keeps only that activity's review. A review of an activity outside the person's scope is left out, exactly like a missing one.
+         */
+        get: operations["listPostInvestmentReviews"];
+        put?: never;
+        /**
+         * Start the post-investment review of an activity, as a Draft (demo-mvp
+         * @description Needs activities.edit in the activity's plan. Amount spent is prefilled from the activity's actual cost when the person sees its finance. An activity has at most one review: a second answers 409 name_taken.
+         */
+        post: operations["createPostInvestmentReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/post-investment-reviews/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The reviews the list shows as a PowerPoint file, one slide each (demo-mvp
+         * @description Needs data.export. Takes the list's activityId.
+         */
+        get: operations["exportPostInvestmentReviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/post-investment-reviews/{reviewId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example PIR-1001 */
+                reviewId: components["parameters"]["PostInvestmentReviewId"];
+            };
+            cookie?: never;
+        };
+        /** One post-investment review, with its activity's figures read live (demo-mvp */
+        get: operations["getPostInvestmentReview"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a review to the recycle bin (demo-mvp
+         * @description Needs activities.delete in the activity's plan.
+         */
+        delete: operations["deletePostInvestmentReview"];
+        options?: never;
+        head?: never;
+        /**
+         * Save a Draft review's fields (demo-mvp
+         * @description Needs activities.edit in the activity's plan. Only the fields sent change; a Submitted review answers 403 forbidden. An out-of-date version answers 409 version_conflict.
+         */
+        patch: operations["updatePostInvestmentReview"];
+        trace?: never;
+    };
+    "/api/v1/post-investment-reviews/{reviewId}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example PIR-1001 */
+                reviewId: components["parameters"]["PostInvestmentReviewId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit a Draft review (demo-mvp
+         * @description Needs activities.edit in the activity's plan. Checks every field and answers 400 validation_failed with all problems at once: the business case, an amount spent above 0.00 and the margin are required.
+         */
+        post: operations["submitPostInvestmentReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/post-investment-reviews/{reviewId}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example PIR-1001 */
+                reviewId: components["parameters"]["PostInvestmentReviewId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * One review as a one-slide PowerPoint file (demo-mvp
+         * @description Needs data.export; the figures are read live.
+         */
+        get: operations["exportPostInvestmentReview"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5573,9 +5751,13 @@ export interface components {
             mode: components["schemas"]["OverspendMode"];
             canChange: components["schemas"]["ActionAvailability"];
         };
+        /** @description A budget above an activity, Warn or Refuse (demo-mvp #3): what is left to plan in it and, for Refuse, what is left before it refuses, the tolerance added (demo-mvp #4); both in the plan currency. amount is the budget in its own currency. */
         OverspendLimit: {
             budget: components["schemas"]["RecordRef"];
+            mode: components["schemas"]["OverspendMode"];
+            amount: components["schemas"]["Money"];
             leftToPlan: components["schemas"]["Money"];
+            leftBeforeRefusing: components["schemas"]["Money"];
         };
         /**
          * @description What happens when someone approves an activity, a purchase request or its change while an activity's line items exceed its planned cost (038 FR-018): warn the approver (default) or refuse the approval.
@@ -5585,6 +5767,8 @@ export interface components {
         OverspendConfiguration: {
             defaultMode: components["schemas"]["OverspendMode"];
             approvalOverPlannedCost: components["schemas"]["OverspendApprovalMode"];
+            /** @description Allow up to this per cent over before refusing (demo-mvp #4): within it a Refuse budget only warns, and a purchase request may exceed what its line item has left by this per cent of its amount. */
+            tolerancePercent: number;
             version: number;
             /** @description Null while the setting has never been saved (038 FR-057). */
             updatedAt: string | null;
@@ -5596,6 +5780,8 @@ export interface components {
             defaultMode: string;
             /** @description Absent keeps the stored value. */
             approvalOverPlannedCost?: string;
+            /** @description A whole per cent from 0 to 100; absent keeps the stored value. */
+            tolerancePercent?: number;
         };
         /** @description An activity of the round whose line items exceed its planned cost (negative unassigned planned cost, domain model §4.3), in the plan currency (038 FR-019, FR-021). */
         ActivityOverage: {
@@ -5620,6 +5806,8 @@ export interface components {
         GsapSource: "" | "simulatedGsap" | "gsap";
         PurchaseRequestConfiguration: {
             purchaseSupport: boolean;
+            /** @description Release in GSAP right after approval in SP&A One; on by default. */
+            releaseInGsapAfterApproval: boolean;
             linesOnApprovedPurchaseRequests: components["schemas"]["LinesOnApprovedPurchaseRequests"];
             version: number;
             /** @description Null while the setting has never been saved (038 FR-057). */
@@ -5630,6 +5818,8 @@ export interface components {
         PurchaseRequestConfigurationInput: {
             version: number;
             purchaseSupport: boolean;
+            /** @description Omit to keep the saved choice. */
+            releaseInGsapAfterApproval?: boolean;
             linesOnApprovedPurchaseRequests: components["schemas"]["LinesOnApprovedPurchaseRequests"];
         };
         /** @description The line item a PR line draws on, as it is now. */
@@ -5707,6 +5897,19 @@ export interface components {
             overallLimit: components["schemas"]["Money"] | null;
             description: string;
         };
+        PurchaseRequestTimelineStep: {
+            /** @example approved */
+            key: string;
+            /** @example Approved */
+            label: string;
+            reached: boolean;
+            /** Format: date-time */
+            at: string | null;
+            by: components["schemas"]["ActorRef"] | null;
+            detail: string;
+            /** @description The words Waiting for the next step on the first step not reached, empty on every other step. */
+            waiting: string;
+        };
         PurchaseRequestRouting: {
             /** @example PRR-1001 */
             id: string;
@@ -5781,6 +5984,9 @@ export interface components {
             gsapPrDate: string | null;
             gsapSource: components["schemas"]["GsapSource"];
             waitingForGsap: boolean;
+            /** @example Approved */
+            stage: string;
+            timeline: components["schemas"]["PurchaseRequestTimelineStep"][];
             lines: components["schemas"]["PurchaseRequestLine"][];
             approvedVersion: components["schemas"]["PurchaseRequestVersion"] | null;
             /** @description Newest first. */
@@ -5902,6 +6108,8 @@ export interface components {
             approvalWorkflow: components["schemas"]["WorkflowRef"] | null;
             gsapPrNumber: string;
             waitingForGsap: boolean;
+            /** @example Purchase order */
+            stage: string;
             plan: components["schemas"]["RecordRef"];
             lines: components["schemas"]["PurchaseRequestRowLine"][];
         };
@@ -6279,6 +6487,71 @@ export interface components {
         RecycleBinPage: {
             items: components["schemas"]["RecycleBinListItem"][];
             total: number;
+        };
+        /** @description A post-investment review of one activity (demo-mvp #7). amountSpent and margin share one currency. roi is the Post-investment ROI, (margin − amount spent) ÷ amount spent as a per cent with two decimals, worked out by the server; null until both are set and the amount spent is above 0.00. figures are the activity's, read live; null when the person does not see the plan's finance, and then amountSpent and roi are null too (the amount spent starts as the activity's Paid figure) and the review can't be started or changed. */
+        PostInvestmentReview: {
+            /** @example PIR-1001 */
+            id: string;
+            activity: {
+                /** @example A-1001 */
+                id: string;
+                name: string;
+            };
+            /** @description The activity's plan, campaign and initiative, top level first. */
+            path: components["schemas"]["RecordRef"][];
+            /** @enum {string} */
+            status: "draft" | "submitted";
+            /** @description The business case the activity was approved on, as a text reference; empty when not set. */
+            businessCase: string;
+            amountSpent: components["schemas"]["Money"] | null;
+            margin: components["schemas"]["Money"] | null;
+            /** @example 36.25 */
+            roi: string | null;
+            remarks: string;
+            figures: components["schemas"]["PostInvestmentReviewFigures"] | null;
+            /** Format: date-time */
+            submittedAt: string | null;
+            submittedBy: components["schemas"]["ActorRef"] | null;
+            access: components["schemas"]["PostInvestmentReviewAccess"];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        /** @description The activity's figures in the person's display currency: budget is its initiative's (an activity has no budget of its own), planned its planned cost, committed and actual (paid) from GSAP. null when not set. */
+        PostInvestmentReviewFigures: {
+            budget: components["schemas"]["Money"] | null;
+            planned: components["schemas"]["Money"] | null;
+            committed: components["schemas"]["Money"];
+            actual: components["schemas"]["Money"];
+        };
+        PostInvestmentReviewAccess: {
+            edit: components["schemas"]["ActionAvailability"];
+            submit: components["schemas"]["ActionAvailability"];
+            delete: components["schemas"]["ActionAvailability"];
+            export: components["schemas"]["ActionAvailability"];
+        };
+        PostInvestmentReviewList: {
+            items: components["schemas"]["PostInvestmentReview"][];
+            export: components["schemas"]["ActionAvailability"];
+        };
+        PostInvestmentReviewCreate: {
+            /** @example A-1001 */
+            activityId: string;
+        };
+        /** @description Only the fields sent change. null clears amountSpent or margin. */
+        PostInvestmentReviewUpdate: {
+            version: number;
+            businessCase?: string;
+            amountSpent?: components["schemas"]["MoneyInput"] | null;
+            margin?: components["schemas"]["MoneyInput"] | null;
+            remarks?: string;
+        };
+        PostInvestmentReviewSubmit: {
+            version: number;
         };
         DeleteResult: {
             recycleBinEntry: components["schemas"]["RecycleBinEntry"];
@@ -9139,6 +9412,11 @@ export interface components {
             /** @description Always 0 after the call. */
             unread: number;
         };
+        /**
+         * @default me
+         * @enum {string}
+         */
+        HomeFor: "me" | "team";
         /** @enum {string} */
         HomeScope: "myTeams" | "everything";
         HomeSummary: {
@@ -9256,6 +9534,30 @@ export interface components {
         HomeAttentionPage: {
             items: components["schemas"]["HomeAttentionItem"][];
             total: number;
+        };
+        HomeActionItem: {
+            /** @enum {string} */
+            kind: "approval" | "purchaseRequestToFix" | "swbsRequest" | "activityIncomplete";
+            record: components["schemas"]["RecordRef"];
+            /** @description The plan the record is in; null for a line item waiting for an SWBS request. */
+            plan: components["schemas"]["RecordRef"] | null;
+            overdue: boolean;
+            /**
+             * Format: date-time
+             * @description When the approval started waiting; null for the other kinds.
+             */
+            since: string | null;
+        };
+        HomeActionItemsPage: {
+            items: components["schemas"]["HomeActionItem"][];
+            total: number;
+            show: boolean;
+            /** Format: date */
+            hiddenUntil: string | null;
+        };
+        HomeActionReminder: {
+            /** Format: date */
+            hiddenUntil: string;
         };
         WaitingItem: {
             /** @example A-1042 */
@@ -10313,6 +10615,12 @@ export interface components {
             overspend: components["schemas"]["OverspendMode"];
             /** @example BA-1001 */
             id: string;
+            /** @description What the plan's line items have committed (purchase-order lines), in the plan's currency, as the plan's Financials card; null when the viewer doesn't hold finance.view for the plan (demo-mvp */
+            committed: components["schemas"]["Money"] | null;
+            /** @description What the plan's line items have actually spent (paid), in the plan's currency; null as committed (demo-mvp */
+            actual: components["schemas"]["Money"] | null;
+            /** @description False for a plan outside the viewer's plan scope, shown because they see global budgets for All markets (demo-mvp */
+            canOpenPlan: boolean;
             plan: components["schemas"]["AllocationPlanRef"];
             teams: components["schemas"]["TeamRef"][];
             owner: components["schemas"]["PersonRef"] | null;
@@ -10788,6 +11096,11 @@ export interface components {
              * @description The API's date the current rates are worked out for.
              */
             today: string;
+            /**
+             * Format: date-time
+             * @description When the simulated GSAP rates were last refreshed (the start time until the first refresh).
+             */
+            asOf: string;
             items: components["schemas"]["RateUsed"][];
             total: number;
         };
@@ -13624,6 +13937,13 @@ export interface components {
         };
     };
     parameters: {
+        /** @example PIR-1001 */
+        PostInvestmentReviewId: string;
+        /**
+         * @description Only the review of this activity.
+         * @example A-1001
+         */
+        PostInvestmentReviewActivity: string;
         /** @example DB-1001 */
         CustomDashboardId: string;
         /** @example DS-1001 */
@@ -13699,6 +14019,8 @@ export interface components {
         WorkflowId: string;
         /** @example NT-1001 */
         NotificationId: string;
+        /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+        HomeFor: components["schemas"]["HomeFor"];
         /** @description myTeams covers plans with at least one of the person's teams; everything covers all plans. */
         HomeScope: components["schemas"]["HomeScope"];
         /** @description The plans' year. Default - the current year. */
@@ -18198,6 +18520,8 @@ export interface operations {
             query: {
                 /** @description myTeams covers plans with at least one of the person's teams; everything covers all plans. */
                 scope: components["parameters"]["HomeScope"];
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
             };
             header?: never;
             path?: never;
@@ -18249,7 +18573,10 @@ export interface operations {
     };
     listHomeAttention: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -18265,6 +18592,7 @@ export interface operations {
                     "application/json": components["schemas"]["HomeAttentionPage"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             default: components["responses"]["Error"];
@@ -18272,7 +18600,10 @@ export interface operations {
     };
     listHomeWaiting: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -18288,6 +18619,7 @@ export interface operations {
                     "application/json": components["schemas"]["WaitingPage"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             default: components["responses"]["Error"];
@@ -18295,7 +18627,10 @@ export interface operations {
     };
     listHomeMyActivities: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -18311,6 +18646,7 @@ export interface operations {
                     "application/json": components["schemas"]["MyActivitiesPage"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             default: components["responses"]["Error"];
@@ -18321,6 +18657,8 @@ export interface operations {
             query: {
                 /** @description myTeams covers plans with at least one of the person's teams; everything covers all plans. */
                 scope: components["parameters"]["HomeScope"];
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
             };
             header?: never;
             path?: never;
@@ -18338,6 +18676,52 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listHomeActionItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The pending actions in display order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomeActionItemsPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    remindHomeActionItemsLater: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The day the pop-up opens again. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomeActionReminder"];
+                };
+            };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             default: components["responses"]["Error"];
@@ -21103,6 +21487,29 @@ export interface operations {
             default: components["responses"]["Error"];
         };
     };
+    refreshRates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current rates after the refresh, with the time they are as of. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentRatePage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
     checkRateImport: {
         parameters: {
             query?: never;
@@ -21920,6 +22327,223 @@ export interface operations {
         responses: {
             200: components["responses"]["OfficeFile"];
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listPostInvestmentReviews: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Only the review of this activity.
+                 * @example A-1001
+                 */
+                activityId?: components["parameters"]["PostInvestmentReviewActivity"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The reviews. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostInvestmentReviewList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createPostInvestmentReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostInvestmentReviewCreate"];
+            };
+        };
+        responses: {
+            /** @description The new Draft review. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostInvestmentReview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    exportPostInvestmentReviews: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Only the review of this activity.
+                 * @example A-1001
+                 */
+                activityId?: components["parameters"]["PostInvestmentReviewActivity"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["OfficeFile"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getPostInvestmentReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example PIR-1001 */
+                reviewId: components["parameters"]["PostInvestmentReviewId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The review. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostInvestmentReview"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deletePostInvestmentReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example PIR-1001 */
+                reviewId: components["parameters"]["PostInvestmentReviewId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Moved to the recycle bin. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updatePostInvestmentReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example PIR-1001 */
+                reviewId: components["parameters"]["PostInvestmentReviewId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostInvestmentReviewUpdate"];
+            };
+        };
+        responses: {
+            /** @description The review after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostInvestmentReview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    submitPostInvestmentReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example PIR-1001 */
+                reviewId: components["parameters"]["PostInvestmentReviewId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostInvestmentReviewSubmit"];
+            };
+        };
+        responses: {
+            /** @description The Submitted review. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostInvestmentReview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    exportPostInvestmentReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example PIR-1001 */
+                reviewId: components["parameters"]["PostInvestmentReviewId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["OfficeFile"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];

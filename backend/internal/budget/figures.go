@@ -15,8 +15,9 @@ import (
 const fallbackColour = "slate"
 
 type figurer struct {
-	s     *Service
-	rates money.Rates
+	s         *Service
+	rates     money.Rates
+	withSpend bool // only the budget's own page shows committed and actual
 }
 
 func (s *Service) newFigurer(ctx context.Context) (*figurer, error) {
@@ -32,6 +33,7 @@ type allocated struct {
 	plan       PlanInfo
 	amountUSD  money.Amount
 	plannedUSD *money.Amount
+	spendUSD   *Spend // nil without Spending or for a plan that is not live
 }
 
 func (f *figurer) allocated(ctx context.Context, allocations []Allocation) ([]allocated, error) {
@@ -42,6 +44,12 @@ func (f *figurer) allocated(ctx context.Context, allocations []Allocation) ([]al
 	planned, err := f.s.plans.PlannedCosts(ctx, planIDs)
 	if err != nil {
 		return nil, err
+	}
+	spend := map[string]Spend{}
+	if f.withSpend && f.s.spending != nil {
+		if spend, err = f.s.spending.PlanSpend(ctx, planIDs); err != nil {
+			return nil, err
+		}
 	}
 	list := make([]allocated, 0, len(allocations))
 	for _, a := range allocations {
@@ -56,7 +64,11 @@ func (f *figurer) allocated(ctx context.Context, allocations []Allocation) ([]al
 		if err != nil {
 			return nil, err
 		}
-		list = append(list, allocated{allocation: a, plan: plan, amountUSD: usd, plannedUSD: planned[a.PlanID]})
+		x := allocated{allocation: a, plan: plan, amountUSD: usd, plannedUSD: planned[a.PlanID]}
+		if sp, found := spend[a.PlanID]; found {
+			x.spendUSD = &sp
+		}
+		list = append(list, x)
 	}
 	return list, nil
 }
@@ -91,14 +103,37 @@ func (f *figurer) row(ctx context.Context, x allocated, l lookups) (AllocationRo
 	if err != nil {
 		return AllocationRow{}, err
 	}
+	canOpen := f.s.access.CanViewPlan(ctx, x.plan)
+	if !canOpen {
+		manage = Availability{Reason: "You can't open this plan, so you can't change its allocation."}
+	}
+	var committed, actual *money.Money
+	if x.spendUSD != nil && f.s.access.SeeFinanceIn(ctx, x.plan) {
+		if committed, err = f.inPlanCurrency(x.spendUSD.Committed, currency); err != nil {
+			return AllocationRow{}, err
+		}
+		if actual, err = f.inPlanCurrency(x.spendUSD.Actual, currency); err != nil {
+			return AllocationRow{}, err
+		}
+	}
 	return AllocationRow{
 		ID: x.allocation.ID, Plan: planRef(x.plan), Teams: l.teamsOf(x.plan), Owner: l.person(x.plan.OwnerID),
 		Amount: x.allocation.Amount, AmountUSD: money.USD(x.amountUSD), PlannedCost: plannedCost,
+		Committed: committed, Actual: actual, CanOpenPlan: canOpen,
 		LeftToPlan:        money.Money{Amount: x.allocation.Amount.Amount.Sub(planned), Currency: currency},
 		BudgetUsedPercent: percentUsed(planned, x.allocation.Amount.Amount), Version: x.allocation.Version,
 		Overspend: x.plan.Overspend.Normalised(),
 		Access:    RowAccess{Edit: manage, Remove: manage},
 	}, nil
+}
+
+// inPlanCurrency converts a USD figure to the plan's currency at the current rate, as planned cost is.
+func (f *figurer) inPlanCurrency(usd money.Amount, currency string) (*money.Money, error) {
+	local, err := f.rates.FromUSD(usd, currency)
+	if err != nil {
+		return nil, err
+	}
+	return &local, nil
 }
 
 func percentUsed(planned, allocation money.Amount) *string {
@@ -162,6 +197,7 @@ func (s *Service) view(ctx context.Context, b GlobalBudget) (GlobalBudgetView, e
 	if err != nil {
 		return GlobalBudgetView{}, err
 	}
+	f.withSpend = true
 	allocations, err := s.repo.AllocationsOf(ctx, b.ID)
 	if err != nil {
 		return GlobalBudgetView{}, err
@@ -189,9 +225,12 @@ func (s *Service) view(ctx context.Context, b GlobalBudget) (GlobalBudgetView, e
 		PlansWithoutAllocation: []AllocationOption{}, Locks: []settings.Lock{{Field: "year", Reason: msgYearLocked}},
 		Meta: b.Meta,
 	}
+	// Someone who sees global budgets for All markets sees every row, read-only where they can't manage
+	// it; anyone else sees the plans they can view, and the others added up as Other markets (FR-033).
+	seeAll := s.access.SeeAllMarkets(ctx)
 	var hidden []allocated
 	for _, x := range list {
-		if !s.access.CanViewPlan(ctx, x.plan) {
+		if !seeAll && !s.access.CanViewPlan(ctx, x.plan) {
 			hidden = append(hidden, x)
 			continue
 		}

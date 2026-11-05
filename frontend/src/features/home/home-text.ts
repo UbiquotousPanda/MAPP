@@ -1,7 +1,7 @@
 import { formatWhole } from '@/format/decimal';
 import { joinWithAnd, midSentence } from '@/format/text';
 import { formatWaitingTime } from '@/format/intl';
-import type { ActivityLogEntry, HomeScope, Money, MyActivityRow } from './api';
+import type { ActivityLogEntry, HomeFor, HomeScope, Money, MyActivityRow } from './api';
 
 /** "Welcome back, Priya.": Home is the only page whose title greets (design system §2.3). */
 export function greetingText(firstName: string): string {
@@ -187,3 +187,29 @@ export function initialsOf(name: string): string {
   const last = others.at(-1) ?? '';
   return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
 }
+
+/** The titles of the person-based cards, for Me and for My team. */
+export const FOR_TEXT = {
+  attention: { me: 'Needs your attention', team: "Needs your team's attention" },
+  attentionSubtitle: { me: ATTENTION_SUBTITLE, team: 'Things your team owns that have a problem' },
+  waiting: { me: 'Waiting for my approval', team: "Waiting for my team's approval" },
+  waitingSubtitle: {
+    me: WAITING_SUBTITLE,
+    team: 'Activities waiting at a level one of your team approves',
+  },
+  activities: { me: 'My activities', team: "My team's activities" },
+  activitiesSubtitle: {
+    me: 'Activities you own, by status',
+    team: 'Activities your team owns, by status',
+  },
+  activitiesOwned: { me: 'Activities I own', team: 'Activities my team owns' },
+  activitiesOwnedTip: {
+    me: 'Activities you own, in the plans of these years.',
+    team: 'Activities the members of your teams own that you can see, in the plans of these years.',
+  },
+  waitingTip: {
+    me: 'Submitted activities waiting at a level where you are an approver.',
+    team: 'Submitted activities you can see, waiting at a level where a member of your teams is an approver.',
+  },
+  recentChanges: { me: 'Recent changes', team: "My team's recent changes" },
+} satisfies Record<string, Record<HomeFor, string>>;

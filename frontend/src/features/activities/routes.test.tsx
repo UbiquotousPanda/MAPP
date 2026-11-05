@@ -9,6 +9,7 @@ import { launchFilm, PEOPLE } from '@/testing/fixtures/activities';
 import { activityAttributeForm, editForm, newForm } from '@/testing/fixtures/activity-forms';
 import { launchFilmSection } from '@/testing/fixtures/line-items';
 import { currentRates } from '@/testing/fixtures/line-item-forms';
+import { noActivityReview } from '@/testing/fixtures/post-investment';
 import { activitySection } from '@/testing/fixtures/purchase-requests';
 import { reply } from '@/testing/replies';
 
@@ -58,6 +59,7 @@ const ANSWERS: HttpHandler[] = [
   reply('GET /api/v1/activities/{activityId}/purchase-requests', {
     body: activitySection({ activityId: 'A-1001', lineItems: [] }),
   }),
+  noActivityReview(),
 ];
 
 // Feature 006's addresses (build guide §5, D-194). Feature 006 keeps this file up to date as it

@@ -14,12 +14,13 @@ import (
 )
 
 type fixture struct {
-	service *Service
-	db      *fake.DB
-	clock   *testClock
-	plans   *fakePlans
-	access  *fakeAccess
-	history *history.Service
+	service  *Service
+	db       *fake.DB
+	clock    *testClock
+	plans    *fakePlans
+	access   *fakeAccess
+	spending fakeSpending
+	history  *history.Service
 }
 
 func newFixture(t *testing.T) *fixture {
@@ -28,10 +29,12 @@ func newFixture(t *testing.T) *fixture {
 	clock := &testClock{now: start}
 	generator := ids.NewGenerator(fake.NewCounters(db))
 	hist := history.NewService(db, historytest.NewStore(db), generator, clock.Now)
-	f := &fixture{db: db, clock: clock, plans: newFakePlans(t), access: &fakeAccess{}, history: hist}
+	f := &fixture{db: db, clock: clock, plans: newFakePlans(t), access: &fakeAccess{}, history: hist,
+		spending: fakeSpending{}}
 	tools := history.Tools{Tx: db, IDs: generator, Log: hist, Now: clock.Now}
 	f.service = NewService(tools, newFakeStore(db), Deps{
 		Plans: f.plans, Directory: fakeDirectory{}, Rates: fakeRates{t: t}, Access: f.access,
+		Spending: f.spending,
 	})
 	for _, kind := range append([]history.Kind{f.plans.planKind()}, f.service.Kinds()...) {
 		if err := hist.Register(kind); err != nil {

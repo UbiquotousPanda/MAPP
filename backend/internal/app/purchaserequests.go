@@ -14,6 +14,7 @@ func (w *wiring) purchaseRequestsArea() error {
 		LineItems: prLineItems{set: s, settings: w.settings, lineItems: w.lineItems}, People: prPeople{repo: s.People, service: w.people},
 		Currencies: w.settings, Attributes: prAttributes{settings: w.settings, repo: s.Settings},
 		Workflows: prWorkflows{repo: s.Approvals}, Invoices: prInvoices{repo: s.Financials, rates: w.settings.Rates},
+		Payments: prInvoices{repo: s.Financials, rates: w.settings.Rates},
 	})
 	if err := w.register(prs.Kinds()); err != nil {
 		return err
@@ -22,6 +23,7 @@ func (w *wiring) purchaseRequestsArea() error {
 	prs.UseApprovals(w.approvals)
 	w.approvals.UsePurchaseRequests(prs)
 	prs.UseGSAP(w.simulatedOrders())
+	prs.UseOverspend(w.overspend)
 	w.guardPurchaseRequests(prs)
 	w.purchases = prs
 	w.settings.AddReferenceSource(purchaseRequestReferences(s.PurchaseRequests, w.history))

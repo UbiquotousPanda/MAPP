@@ -17,6 +17,7 @@ function configuration(
   return {
     defaultMode: 'warn',
     approvalOverPlannedCost: 'warn',
+    tolerancePercent: 10,
     version: 1,
     updatedAt: '2026-10-27T09:00:00Z',
     updatedBy: { id: 'U-1001', name: 'Alex Morgan' },
@@ -72,7 +73,7 @@ describe('037 FR-006 FR-007: Settings › Overspend control', () => {
 
     expect(await screen.findByText('Overspend control saved.')).toBeVisible();
     expect(api.bodiesOf(PUT)).toEqual([
-      { version: 1, defaultMode: 'refuse', approvalOverPlannedCost: 'warn' },
+      { version: 1, defaultMode: 'refuse', approvalOverPlannedCost: 'warn', tolerancePercent: 10 },
     ]);
   });
 
@@ -125,7 +126,7 @@ describe('038 FR-018, FR-057 (M-18, L-16): approving over planned cost; never ch
 
     expect(await screen.findByText('Overspend control saved.')).toBeVisible();
     expect(api.bodiesOf(PUT)).toEqual([
-      { version: 1, defaultMode: 'warn', approvalOverPlannedCost: 'refuse' },
+      { version: 1, defaultMode: 'warn', approvalOverPlannedCost: 'refuse', tolerancePercent: 10 },
     ]);
   });
 

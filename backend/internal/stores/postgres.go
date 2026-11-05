@@ -18,6 +18,7 @@ import (
 	"mapp/internal/dataset"
 	"mapp/internal/financials"
 	"mapp/internal/history"
+	"mapp/internal/home"
 	"mapp/internal/lineitem"
 	"mapp/internal/measure"
 	"mapp/internal/measure/attribution"
@@ -27,6 +28,7 @@ import (
 	"mapp/internal/plan"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/ids"
+	"mapp/internal/postinvestment"
 	"mapp/internal/purchaserequest"
 	"mapp/internal/sample"
 	"mapp/internal/settings"
@@ -45,7 +47,8 @@ func Postgres(db *database.DB) Set {
 			CustomDashboards: customdashboard.NewPostgresStore(db),
 			Datasets:         dataset.NewPostgresStore(db),
 		},
-		Ready: db.Ping,
+		Reviews: postinvestment.NewPostgresStore(db),
+		Ready:   db.Ping,
 		IsEmpty: func(ctx context.Context) (bool, error) {
 			used, err := counters.Used(ctx)
 			return !used, err
@@ -56,7 +59,7 @@ func Postgres(db *database.DB) Set {
 func postgresOrganisation(db *database.DB) Organisation {
 	return Organisation{
 		People: people.NewPostgresStore(db), History: history.NewPostgresStore(db), Auth: auth.NewPostgresStore(db),
-		Access: access.NewPostgresStore(db), Settings: settings.NewPostgresStore(db),
+		Access: access.NewPostgresStore(db), Settings: settings.NewPostgresStore(db), Home: home.NewPostgresStore(db),
 	}
 }
 

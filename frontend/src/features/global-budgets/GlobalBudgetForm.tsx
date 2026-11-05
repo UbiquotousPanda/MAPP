@@ -11,7 +11,12 @@ import { TextField } from '@/ui/TextField/TextField';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
-import { budgetCheck, OverspendField, useOverspendConfiguration } from '@/features/overspend';
+import {
+  budgetCheck,
+  OverspendField,
+  useOverspendConfiguration,
+  useTolerancePercent,
+} from '@/features/overspend';
 import { PersonField } from '@/features/people';
 import { useFormatters } from '@/format/useFormatters';
 import { fetchGlobalBudget, useCreateGlobalBudget, useUpdateGlobalBudget } from './api';
@@ -60,6 +65,7 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   const yearLock = budget?.locks.find((lock) => lock.field === 'year')?.reason ?? YEAR_LOCKED;
   const defaultMode = useOverspendConfiguration().data?.defaultMode;
+  const tolerancePercent = useTolerancePercent();
   useEffect(() => {
     if (!budget && defaultMode) {
       form.resetField('overspend', { defaultValue: defaultMode });
@@ -72,7 +78,9 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
     if (amount === null) {
       return;
     }
-    const refused = budget ? overspendCheck(budget, values.overspend, values.amount).error : null;
+    const refused = budget
+      ? overspendCheck(budget, values.overspend, values.amount, tolerancePercent).error
+      : null;
     if (refused) {
       setFailure({ message: refused });
       return;
@@ -196,7 +204,11 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
               name="overspend"
               value={field.value}
               onChange={field.onChange}
-              check={budget ? overspendCheck(budget, field.value, typedAmount) : undefined}
+              check={
+                budget
+                  ? overspendCheck(budget, field.value, typedAmount, tolerancePercent)
+                  : undefined
+              }
             />
           )}
         />
@@ -209,11 +221,13 @@ function overspendCheck(
   budget: GlobalBudget,
   mode: GlobalBudgetValues['overspend'],
   typed: string,
+  tolerancePercent: number | undefined,
 ) {
   return budgetCheck({
     mode,
     typed,
     stored: budget.amount.amount,
     planned: budget.figures.plannedCost,
+    tolerancePercent,
   });
 }

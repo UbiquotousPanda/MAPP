@@ -62,6 +62,7 @@ var routeRules = joinRules( //nolint:gochecknoglobals // the route table: built 
 	overspendRoutes(),
 	measureRoutes(),
 	customDashboardRoutes(),
+	postInvestmentRoutes(),
 	datasetRoutes(),
 	dataSourceRoutes(),
 )

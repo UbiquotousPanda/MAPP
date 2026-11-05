@@ -42,6 +42,22 @@ export const APPROVAL_HINTS: Record<OverspendApprovalMode, string> = {
   refuse: 'Refuse approval until the line items are back within the planned cost; Decline stays',
 };
 
+export const TOLERANCE_BEFORE = 'Allow up to';
+export const TOLERANCE_AFTER = '% over before refusing';
+export const TOLERANCE_HINT =
+  'Within it a budget set to Refuse only warns, and a purchase request may go over what its line item has left by this per cent of its amount.';
+export const TOLERANCE_PROBLEM = 'Enter a whole per cent from 0 to 100.';
+
+/** A whole per cent from 0 to 100 typed in the tolerance field; null for anything else. */
+export function parseTolerance(text: string): number | null {
+  const trimmed = text.trim();
+  if (!/^\d{1,3}$/.test(trimmed)) {
+    return null;
+  }
+  const value = Number(trimmed);
+  return value <= 100 ? value : null;
+}
+
 export const NEVER_CHANGED = 'Not changed since SP&A One was set up';
 
 export function levelWord(type: string): string {
@@ -58,6 +74,16 @@ export function alreadyOverText(over: Money): string {
 
 export function overLimitText(over: Money, type: string, name: string): string {
   return `This is ${formatMoneyText(over)} over the budget of ${levelWord(type)} '${name}', which refuses overspending.`;
+}
+
+/** The warning before saving a budget below its planned cost. */
+export function takesOverText(over: Money, budget: Money): string {
+  return `This takes the planned cost ${formatMoneyText(over)} over its budget of ${formatMoneyText(budget)}.`;
+}
+
+/** The warning before saving a planned cost that goes over a budget above the activity. */
+export function overBudgetText(over: Money, type: string, name: string, budget: Money): string {
+  return `This takes ${levelWord(type)} '${name}' ${formatMoneyText(over)} over its budget of ${formatMoneyText(budget)}.`;
 }
 
 export function leftToPlanText(left: Money, type: string, name: string): string {

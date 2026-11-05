@@ -50,6 +50,8 @@ type ConfigurationInput struct {
 	Version                         int             `json:"version"`
 	PurchaseSupport                 bool            `json:"purchaseSupport"`
 	LinesOnApprovedPurchaseRequests LinesOnApproved `json:"linesOnApprovedPurchaseRequests"`
+	// ReleaseInGSAPAfterApproval nil keeps the saved choice.
+	ReleaseInGSAPAfterApproval *bool `json:"releaseInGsapAfterApproval"`
 }
 
 func (in Input) moaApprover() string {

@@ -41,6 +41,7 @@ func planForm(p plan.PlanView, budgetAmount money.Amount, mode string) map[strin
 func TestAllocatedPlan_SettingChangesOnlyThroughItsAllocation_Contract_037_FR004(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya, alex := server.SignIn(t, priyasEmail), server.SignIn(t, alexsEmail)
 	europe := getPlan(t, priya, lubricantsEurope)
 	planned := europe.PlanFigures.PlannedCost.Amount
@@ -71,6 +72,7 @@ func TestAllocatedPlan_SettingChangesOnlyThroughItsAllocation_Contract_037_FR004
 func TestGlobalBudgetRefuse_Contract_037_US3(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya, alex := server.SignIn(t, priyasEmail), server.SignIn(t, alexsEmail)
 	gb := decoded[budget.GlobalBudgetView](t, alex.Do(t, http.MethodGet, "/api/v1/global-budgets/GB-1001", nil), http.StatusOK)
 
@@ -90,6 +92,7 @@ func TestGlobalBudgetRefuse_Contract_037_US3(t *testing.T) {
 func TestPlanCopyOverARefuseBudget_Contract_037_US2(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya := server.SignIn(t, priyasEmail)
 	uk := getPlan(t, priya, "P-1004")
 	below := uk.PlanFigures.PlannedCost.Amount.Sub(money.FromCents(100))
@@ -115,6 +118,7 @@ func TestPlanCopyOverARefuseBudget_Contract_037_US2(t *testing.T) {
 func TestOverAllocationUnderARefusePlan_KeepsWarning_Contract_037_FR013(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya, alex := server.SignIn(t, priyasEmail), server.SignIn(t, alexsEmail)
 	europe := getPlan(t, priya, lubricantsEurope)
 	decoded[budget.GlobalBudgetView](t, alex.Do(t, http.MethodPatch, "/api/v1/budget-allocations/BA-1001", map[string]any{

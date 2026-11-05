@@ -118,3 +118,25 @@ func (s *Service) DataAsOf(ctx context.Context) (*time.Time, error) {
 	})
 	return asOf, err
 }
+
+// PlanFacts gives each plan of planIDs its cards' USD figures (its live line items' transactions added up);
+// a plan that is not live has none. It checks no access: the caller does.
+func (s *Service) PlanFacts(ctx context.Context, planIDs []string) (map[string]Facts, error) {
+	facts := map[string]Facts{}
+	if len(planIDs) == 0 {
+		return facts, nil
+	}
+	err := s.tx.Read(ctx, func(ctx context.Context) error {
+		b, err := s.loadPlans(ctx, "", planIDs)
+		if err != nil {
+			return err
+		}
+		for _, id := range planIDs {
+			if n := b.tree.byID[id]; n != nil {
+				facts[id] = n.facts
+			}
+		}
+		return nil
+	})
+	return facts, err
+}

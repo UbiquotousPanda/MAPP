@@ -84,7 +84,11 @@ func (s *Service) balanceOf(ctx context.Context, lineItemIDs []string) (balance,
 		return balance{}, err
 	}
 	claims, err := s.repo.Claims(ctx, lineItemIDs)
-	return balance{rates: rates, claims: claims}, err
+	if err != nil {
+		return balance{}, err
+	}
+	tolerance, err := s.tolerancePercent(ctx)
+	return balance{rates: rates, claims: claims, tolerancePercent: tolerance}, err
 }
 
 func planRef(p PlanFacts) errs.RecordRef {

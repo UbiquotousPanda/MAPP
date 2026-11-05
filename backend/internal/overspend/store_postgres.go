@@ -67,6 +67,7 @@ func (s *PostgresStore) Configuration(ctx context.Context) (Configuration, error
 	}
 	r := rows[0]
 	return Configuration{DefaultMode: Mode(r.DefaultMode), ApprovalOverPlannedCost: Mode(r.ApprovalOverPlannedCost),
+		TolerancePercent: r.TolerancePercent,
 		Meta: record.Meta{Version: r.Version, CreatedAt: r.CreatedAt,
 			CreatedBy: actor.Actor{ID: r.CreatedByID, Name: r.CreatedByName}, UpdatedAt: r.UpdatedAt,
 			UpdatedBy: actor.Actor{ID: r.UpdatedByID, Name: r.UpdatedByName}}}, nil
@@ -76,7 +77,8 @@ func (s *PostgresStore) PutConfiguration(ctx context.Context, c Configuration) e
 	created, by := cmp.Or(c.CreatedAt, c.UpdatedAt), cmp.Or(c.CreatedBy, c.UpdatedBy)
 	err := s.db.Queries(ctx).PutOverspendConfiguration(ctx, sqlcdb.PutOverspendConfigurationParams{
 		DefaultMode: string(c.DefaultMode.Normalised()), ApprovalOverPlannedCost: string(c.ApprovalOverPlannedCost.Normalised()),
-		Version: c.Version, CreatedAt: created, CreatedByID: by.ID,
+		TolerancePercent: c.TolerancePercent,
+		Version:          c.Version, CreatedAt: created, CreatedByID: by.ID,
 		CreatedByName: by.Name, UpdatedAt: c.UpdatedAt, UpdatedByID: c.UpdatedBy.ID, UpdatedByName: c.UpdatedBy.Name,
 	})
 	if err != nil {

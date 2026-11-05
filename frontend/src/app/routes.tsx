@@ -8,6 +8,7 @@ import { DevOnly } from './DevOnly';
 import { MEASURE_ROUTES } from './measure-routes';
 import { COMING_SOON_SECTIONS } from './navigation';
 import { NotFoundRoute } from './NotFoundRoute';
+import { POST_INVESTMENT_ROUTES } from './post-investment-routes';
 import { WORKBOOK_ROUTES } from './routes-workbook';
 import {
   ActivityFormPage,
@@ -167,6 +168,7 @@ const PLAN_MODULE_ROUTES: RouteObject[] = [
   { path: '/activity-log', element: <ActivityLogPage />, ...titled('Activity log') },
   { path: '/recycle-bin', element: <RecycleBinPage />, ...titled('Recycle bin') },
   ...DASHBOARD_ROUTES,
+  ...POST_INVESTMENT_ROUTES,
   ...MEASURE_ROUTES,
   ...SETTINGS_ROUTES,
 ];

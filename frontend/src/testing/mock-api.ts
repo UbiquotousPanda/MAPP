@@ -27,6 +27,7 @@ export const FRAME_ANSWERS: HttpHandler[] = [
     body: {
       defaultMode: 'warn',
       approvalOverPlannedCost: 'warn',
+      tolerancePercent: 10,
       version: 1,
       updatedAt: '2026-03-12T09:00:00Z',
       updatedBy: { id: 'system', name: 'SP&A One' },
@@ -35,6 +36,9 @@ export const FRAME_ANSWERS: HttpHandler[] = [
   }),
   reply('GET /api/v1/field-help', { body: { items: [], total: 0, shellAttributesWithoutHelp: 0 } }),
   reply('GET /api/v1/purchase-request-configuration', { body: configuration() }),
+  reply('GET /api/v1/home/action-items', {
+    body: { items: [], total: 0, show: false, hiddenUntil: null },
+  }),
   ...NO_BREAKDOWN,
 ];
 

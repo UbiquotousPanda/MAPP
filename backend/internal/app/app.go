@@ -40,6 +40,7 @@ type App struct {
 	allWork   allwork.Source
 	finance   financials.Planning
 	telemetry *telemetry.Telemetry
+	settings  *settings.Service
 }
 
 type wiring struct {
@@ -87,7 +88,7 @@ func New(cfg Config, set stores.Set, now clock.Clock) (*App, error) {
 		return nil, err
 	}
 	return &App{Handler: engine, Routes: web.Operations(engine.Routes()), allWork: w.allWork, finance: w.finance,
-		telemetry: tel}, nil
+		telemetry: tel, settings: w.settings}, nil
 }
 
 // engine puts the sign-in check, then the access middleware (access/routes.go, fail closed) on signed-in routes.

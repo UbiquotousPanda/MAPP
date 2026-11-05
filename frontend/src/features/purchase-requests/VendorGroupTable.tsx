@@ -21,6 +21,7 @@ const COLUMNS = [
   'Purchase request',
   'ID',
   'Status',
+  'Stage',
   'Amount',
   'Invoiced',
   'Owner',
@@ -84,13 +85,13 @@ function VendorGroup({ group, rows, open, onToggle }: VendorGroupProps) {
   return (
     <tbody>
       <tr className={styles.vendor}>
-        <th scope="rowgroup" colSpan={3}>
+        <th scope="rowgroup" colSpan={4}>
           <span className={styles.vendorName}>{group.label || NOT_COMPLETED}</span>
           <span className={styles.muted}> · {countText(group.purchaseRequests)}</span>
         </th>
         <td className={styles.numeric}>{money(group.amountDisplay)}</td>
         <td className={styles.numeric}>{money(group.invoicedDisplay)}</td>
-        <td colSpan={COLUMNS.length - 5} />
+        <td colSpan={COLUMNS.length - 6} />
       </tr>
       {rows.map((row) => (
         <PurchaseRequestRows
@@ -135,6 +136,7 @@ function PurchaseRequestRows({ row, open, onToggle }: RowProps) {
           <PurchaseRequestStatusChip status={row.status} changePending={row.changePending} />
           {row.waitingForGsap && <span className={styles.waiting}>{WAITING_MARK}</span>}
         </td>
+        <td>{row.stage}</td>
         <td className={styles.numeric}>{money(row.amountDisplay)}</td>
         <td className={styles.numeric}>{money(row.invoicedDisplay)}</td>
         <td>{row.owner ? row.owner.name : '—'}</td>

@@ -25,6 +25,7 @@ type Service struct {
 	rates     Rates
 	access    Access
 	overspend OverspendDefaults
+	spending  Spending
 	now       clock.Clock
 }
 
@@ -36,7 +37,8 @@ func NewService(tools history.Tools, repo Store, deps Deps) *Service {
 	}
 	return &Service{
 		tx: tools.Tx, repo: repo, ids: tools.IDs, history: tools.Log, plans: deps.Plans, directory: deps.Directory,
-		rates: deps.Rates, access: access, overspend: deps.Overspend, now: tools.Now,
+		rates: deps.Rates, access: access, overspend: deps.Overspend, spending: deps.Spending,
+		now: tools.Now,
 	}
 }
 

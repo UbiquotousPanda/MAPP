@@ -4,12 +4,14 @@ import "mapp/internal/platform/authz"
 
 func homeRoutes() map[string]Rule {
 	return map[string]Rule{
-		"GET /api/v1/home/summary":        signedIn(),
-		"GET /api/v1/home/plans":          signedIn(),
-		"GET /api/v1/home/attention":      signedIn(),
-		"GET /api/v1/home/waiting":        signedIn(),
-		"GET /api/v1/home/my-activities":  signedIn(),
-		"GET /api/v1/home/recent-changes": signedIn(),
+		"GET /api/v1/home/summary":                    signedIn(),
+		"GET /api/v1/home/plans":                      signedIn(),
+		"GET /api/v1/home/attention":                  signedIn(),
+		"GET /api/v1/home/waiting":                    signedIn(),
+		"GET /api/v1/home/my-activities":              signedIn(),
+		"GET /api/v1/home/recent-changes":             signedIn(),
+		"GET /api/v1/home/action-items":               signedIn(),
+		"POST /api/v1/home/action-items/remind-later": signedIn(),
 	}
 }
 

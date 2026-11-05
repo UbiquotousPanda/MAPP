@@ -1,4 +1,4 @@
-import { budgetCheck, OverspendField } from '@/features/overspend';
+import { budgetCheck, OverspendField, useTolerancePercent } from '@/features/overspend';
 import { useCurrencies, useFieldHelp } from '@/features/settings';
 import type { useFinanceBudgets } from '@/features/settings';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
@@ -42,6 +42,7 @@ export function PlanBudgetSection({
   onFinanceBudgetChange,
 }: PlanBudgetSectionProps) {
   const { help } = useFieldHelp();
+  const tolerancePercent = useTolerancePercent();
   const budgets = financeBudgets.data?.items ?? [];
   const budgetOptions = [
     { id: NO_DEFAULT, label: 'No default', active: true },
@@ -117,6 +118,7 @@ export function PlanBudgetSection({
               typed: values.budget,
               stored: plan?.budget?.amount ?? null,
               planned: plan?.planFigures?.plannedCost ?? null,
+              tolerancePercent,
             })}
           />
         )}

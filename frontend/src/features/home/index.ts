@@ -1,5 +1,6 @@
 // Home (feature 009): the dashboard of the signed-in person.
 export { HomePage } from './HomePage';
+export { HomeWithActions } from './HomeWithActions';
 export type {
   ActivityLogEntry,
   FinancialOverview,

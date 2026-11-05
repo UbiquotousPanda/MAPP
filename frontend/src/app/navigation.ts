@@ -3,6 +3,7 @@ import {
   ChartNoAxesCombined,
   CircleCheckBig,
   ClipboardList,
+  FileCheck,
   FileText,
   House,
   Landmark,
@@ -109,6 +110,12 @@ const PURCHASE_REQUESTS: NavItem = {
   Shown: PurchaseSupportOnly,
 };
 
+const POST_INVESTMENT_REVIEWS: NavItem = {
+  label: 'Post-investment reviews',
+  path: '/post-investment-reviews',
+  icon: FileCheck,
+};
+
 const SETTINGS: NavItem = { label: 'Settings', path: '/settings', icon: Settings };
 
 const RECYCLE_BIN: NavItem = { label: 'Recycle bin', path: '/recycle-bin', icon: Trash };
@@ -130,6 +137,7 @@ export const MAIN_ITEMS: NavItem[] = [
   ALL_WORK,
   FINANCIALS,
   PURCHASE_REQUESTS,
+  POST_INVESTMENT_REVIEWS,
   DASHBOARDS,
   REPORTS,
   DASHBOARD_BUILDER,

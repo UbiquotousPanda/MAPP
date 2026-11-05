@@ -115,6 +115,8 @@ tags:
     description: "Delegation of approval authority for a date range (feature 017)"
   - name: Dashboards
     description: "Executive and regional planning dashboards and the export of plans and dashboards to PowerPoint and PDF (feature 036)"
+  - name: Post-investment reviews
+    description: "A post-investment review of an activity: business case, amount spent, margin, ROI and remarks (demo-mvp #7, #8)"
   - name: Custom dashboards
     description: "Dashboards people build from the data they may see, their widgets and view-only sharing with teams (feature 051)"
   - name: Datasets
@@ -4312,6 +4314,7 @@ paths:
       summary: The four summary cards and whether to show Getting started
       parameters:
         - $ref: "#/components/parameters/HomeScope"
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: The summary for the scope.
@@ -4356,6 +4359,8 @@ paths:
         - Home
       operationId: listHomeAttention
       summary: Needs your attention — records the person owns that have a problem (all plans)
+      parameters:
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: Every record with at least one reason, in display order.
@@ -4363,6 +4368,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HomeAttentionPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -4375,6 +4382,8 @@ paths:
         - Home
       operationId: listHomeWaiting
       summary: Waiting for my approval — the first 5 of the Waiting for me list, oldest first
+      parameters:
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: The activities waiting for the person's decision.
@@ -4382,6 +4391,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WaitingPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -4394,6 +4405,8 @@ paths:
         - Home
       operationId: listHomeMyActivities
       summary: My activities — the activities the person owns, grouped by displayed status (all plans)
+      parameters:
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: The groups in display order; empty groups are left out.
@@ -4401,6 +4414,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MyActivitiesPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -4415,6 +4430,7 @@ paths:
       summary: Recent changes — the 10 newest activity-log entries about the plans in scope
       parameters:
         - $ref: "#/components/parameters/HomeScope"
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: The newest entries about plans, campaigns, initiatives, activities and line items of the plans in scope.
@@ -4424,6 +4440,49 @@ paths:
                 $ref: "#/components/schemas/RecentChangesPage"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/home/action-items:
+    get:
+      tags:
+        - Home
+      operationId: listHomeActionItems
+      summary: Action items — the person's pending actions for Home's pop-up, overdue first
+      description: |
+        Approvals waiting for the person, their Declined purchase requests to fix and submit again, line items
+        ready to send for an SWBS code (people who may send SWBS requests), and their activities that still
+        need fields before they can be submitted. `show` is false when there is nothing to do, or until the
+        day "Remind me later" hid the pop-up until.
+      responses:
+        "200":
+          description: The pending actions in display order.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeActionItemsPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/home/action-items/remind-later:
+    post:
+      tags:
+        - Home
+      operationId: remindHomeActionItemsLater
+      summary: Remind me later — hides the person's action-items pop-up until tomorrow
+      responses:
+        "200":
+          description: The day the pop-up opens again.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeActionReminder"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -7031,6 +7090,27 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/exchange-rates/refresh:
+    post:
+      tags: [Exchange rates]
+      operationId: refreshRates
+      summary: Fetch fresh rates from the simulated GSAP now; the rates it saves are today's rates
+      description: >-
+        Needs the permission exchangeRates.manage. The simulated GSAP also refreshes by itself every 15 minutes;
+        no live GSAP call is made (ADR-0009).
+      responses:
+        "200":
+          description: The current rates after the refresh, with the time they are as of.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentRatePage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/exchange-rates/import-check:
     post:
       tags: [Exchange rates]
@@ -7799,6 +7879,202 @@ paths:
           $ref: "#/components/responses/OfficeFile"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/post-investment-reviews:
+    get:
+      tags: [Post-investment reviews]
+      operationId: listPostInvestmentReviews
+      summary: The post-investment reviews of the activities the person may see (demo-mvp #7)
+      description: >-
+        Newest change first. activityId keeps only that activity's review. A review of an activity outside the
+        person's scope is left out, exactly like a missing one.
+      parameters:
+        - $ref: "#/components/parameters/PostInvestmentReviewActivity"
+      responses:
+        "200":
+          description: The reviews.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostInvestmentReviewList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [Post-investment reviews]
+      operationId: createPostInvestmentReview
+      summary: Start the post-investment review of an activity, as a Draft (demo-mvp #7)
+      description: >-
+        Needs activities.edit in the activity's plan. Amount spent is prefilled from the activity's actual cost
+        when the person sees its finance. An activity has at most one review: a second answers 409 name_taken.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInvestmentReviewCreate"
+      responses:
+        "201":
+          description: The new Draft review.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostInvestmentReview"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/post-investment-reviews/export:
+    get:
+      tags: [Post-investment reviews]
+      operationId: exportPostInvestmentReviews
+      summary: The reviews the list shows as a PowerPoint file, one slide each (demo-mvp #8)
+      description: Needs data.export. Takes the list's activityId.
+      parameters:
+        - $ref: "#/components/parameters/PostInvestmentReviewActivity"
+      responses:
+        "200":
+          $ref: "#/components/responses/OfficeFile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/post-investment-reviews/{reviewId}:
+    parameters:
+      - $ref: "#/components/parameters/PostInvestmentReviewId"
+    get:
+      tags: [Post-investment reviews]
+      operationId: getPostInvestmentReview
+      summary: One post-investment review, with its activity's figures read live (demo-mvp #7)
+      responses:
+        "200":
+          description: The review.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostInvestmentReview"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      tags: [Post-investment reviews]
+      operationId: updatePostInvestmentReview
+      summary: Save a Draft review's fields (demo-mvp #7)
+      description: >-
+        Needs activities.edit in the activity's plan. Only the fields sent change; a Submitted review answers 403
+        forbidden. An out-of-date version answers 409 version_conflict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInvestmentReviewUpdate"
+      responses:
+        "200":
+          description: The review after the change.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostInvestmentReview"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [Post-investment reviews]
+      operationId: deletePostInvestmentReview
+      summary: Delete a review to the recycle bin (demo-mvp #7)
+      description: Needs activities.delete in the activity's plan.
+      responses:
+        "200":
+          description: Moved to the recycle bin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/post-investment-reviews/{reviewId}/submit:
+    parameters:
+      - $ref: "#/components/parameters/PostInvestmentReviewId"
+    post:
+      tags: [Post-investment reviews]
+      operationId: submitPostInvestmentReview
+      summary: Submit a Draft review (demo-mvp #7)
+      description: >-
+        Needs activities.edit in the activity's plan. Checks every field and answers 400 validation_failed with
+        all problems at once: the business case, an amount spent above 0.00 and the margin are required.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInvestmentReviewSubmit"
+      responses:
+        "200":
+          description: The Submitted review.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostInvestmentReview"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/post-investment-reviews/{reviewId}/export:
+    parameters:
+      - $ref: "#/components/parameters/PostInvestmentReviewId"
+    get:
+      tags: [Post-investment reviews]
+      operationId: exportPostInvestmentReview
+      summary: One review as a one-slide PowerPoint file (demo-mvp #8)
+      description: Needs data.export; the figures are read live.
+      responses:
+        "200":
+          $ref: "#/components/responses/OfficeFile"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -10032,6 +10308,23 @@ components:
       description: HttpOnly session cookie set by sign-in.
   parameters:
     # Feature 051 Dashboard builder
+    PostInvestmentReviewId:
+      name: reviewId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^PIR-[0-9]+$
+      example: PIR-1001
+    PostInvestmentReviewActivity:
+      name: activityId
+      in: query
+      required: false
+      description: Only the review of this activity.
+      schema:
+        type: string
+        pattern: ^A-[0-9]+$
+      example: A-1001
     CustomDashboardId:
       name: dashboardId
       in: path
@@ -10320,6 +10613,15 @@ components:
       schema:
         type: string
       example: NT-1001
+    HomeFor:
+      name: for
+      in: query
+      required: false
+      description: >-
+        Whose work the person-based cards show: me (default) is the signed-in person; team is every member of
+        the person's teams, the person included. Only records the signed-in person may see are returned.
+      schema:
+        $ref: "#/components/schemas/HomeFor"
     HomeScope:
       name: scope
       in: query
@@ -11478,11 +11780,21 @@ components:
     OverspendLimit:
       type: object
       additionalProperties: false
-      required: [budget, leftToPlan]
+      description: >-
+        A budget above an activity, Warn or Refuse (demo-mvp #3): what is left to plan in it and, for Refuse, what
+        is left before it refuses, the tolerance added (demo-mvp #4); both in the plan currency. amount is the
+        budget in its own currency.
+      required: [budget, mode, amount, leftToPlan, leftBeforeRefusing]
       properties:
         budget:
           $ref: "#/components/schemas/RecordRef"
+        mode:
+          $ref: "#/components/schemas/OverspendMode"
+        amount:
+          $ref: "#/components/schemas/Money"
         leftToPlan:
+          $ref: "#/components/schemas/Money"
+        leftBeforeRefusing:
           $ref: "#/components/schemas/Money"
     OverspendApprovalMode:
       type: string
@@ -11493,12 +11805,19 @@ components:
     OverspendConfiguration:
       type: object
       additionalProperties: false
-      required: [defaultMode, approvalOverPlannedCost, version, updatedAt, updatedBy, canChange]
+      required: [defaultMode, approvalOverPlannedCost, tolerancePercent, version, updatedAt, updatedBy, canChange]
       properties:
         defaultMode:
           $ref: "#/components/schemas/OverspendMode"
         approvalOverPlannedCost:
           $ref: "#/components/schemas/OverspendApprovalMode"
+        tolerancePercent:
+          description: >-
+            Allow up to this per cent over before refusing (demo-mvp #4): within it a Refuse budget only warns, and
+            a purchase request may exceed what its line item has left by this per cent of its amount.
+          type: integer
+          minimum: 0
+          maximum: 100
         version:
           type: integer
           minimum: 1
@@ -11526,6 +11845,11 @@ components:
         approvalOverPlannedCost:
           description: Absent keeps the stored value.
           type: string
+        tolerancePercent:
+          description: A whole per cent from 0 to 100; absent keeps the stored value.
+          type: integer
+          minimum: 0
+          maximum: 100
     ActivityOverage:
       type: object
       additionalProperties: false
@@ -11559,10 +11883,13 @@ components:
     PurchaseRequestConfiguration:
       type: object
       additionalProperties: false
-      required: [purchaseSupport, linesOnApprovedPurchaseRequests, version, updatedAt, updatedBy, canChange]
+      required: [purchaseSupport, linesOnApprovedPurchaseRequests, releaseInGsapAfterApproval, version, updatedAt, updatedBy, canChange]
       properties:
         purchaseSupport:
           type: boolean
+        releaseInGsapAfterApproval:
+          type: boolean
+          description: Release in GSAP right after approval in SP&A One; on by default.
         linesOnApprovedPurchaseRequests:
           $ref: "#/components/schemas/LinesOnApprovedPurchaseRequests"
         version:
@@ -11589,6 +11916,9 @@ components:
           type: integer
         purchaseSupport:
           type: boolean
+        releaseInGsapAfterApproval:
+          type: boolean
+          description: Omit to keep the saved choice.
         linesOnApprovedPurchaseRequests:
           $ref: "#/components/schemas/LinesOnApprovedPurchaseRequests"
     PurchaseRequestLineItemRef:
@@ -11748,6 +12078,31 @@ components:
             - type: "null"
         description:
           type: string
+    PurchaseRequestTimelineStep:
+      type: object
+      additionalProperties: false
+      required: [key, label, reached, at, by, detail, waiting]
+      properties:
+        key:
+          type: string
+          example: approved
+        label:
+          type: string
+          example: Approved
+        reached:
+          type: boolean
+        at:
+          type: [string, "null"]
+          format: date-time
+        by:
+          oneOf:
+            - $ref: "#/components/schemas/ActorRef"
+            - type: "null"
+        detail:
+          type: string
+        waiting:
+          type: string
+          description: The words Waiting for the next step on the first step not reached, empty on every other step.
     PurchaseRequestRouting:
       type: object
       additionalProperties: false
@@ -11835,7 +12190,7 @@ components:
     PurchaseRequest:
       type: object
       additionalProperties: false
-      required: [id, name, description, owner, moaApprover, approvalWorkflow, modificationWorkflow, status, changePending, plan, path, companyCode, costCentres, hxKeys, attributes, vendor, amountDisplay, invoicedDisplay, gsapPrNumber, gsapPrDate, gsapSource, waitingForGsap, lines, approvedVersion, routings, readiness, missing, notice, access, version, createdAt, createdBy, updatedAt, updatedBy]
+      required: [id, name, description, owner, moaApprover, approvalWorkflow, modificationWorkflow, status, changePending, plan, path, companyCode, costCentres, hxKeys, attributes, vendor, amountDisplay, invoicedDisplay, gsapPrNumber, gsapPrDate, gsapSource, waitingForGsap, stage, timeline, lines, approvedVersion, routings, readiness, missing, notice, access, version, createdAt, createdBy, updatedAt, updatedBy]
       properties:
         id:
           type: string
@@ -11902,6 +12257,13 @@ components:
           $ref: "#/components/schemas/GsapSource"
         waitingForGsap:
           type: boolean
+        stage:
+          type: string
+          example: Approved
+        timeline:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseRequestTimelineStep"
         lines:
           type: array
           minItems: 1
@@ -12119,7 +12481,7 @@ components:
     PurchaseRequestRow:
       type: object
       additionalProperties: false
-      required: [id, name, vendor, status, changePending, amountDisplay, invoicedDisplay, owner, createdAt, approvalWorkflow, gsapPrNumber, waitingForGsap, plan, lines]
+      required: [id, name, vendor, status, changePending, amountDisplay, invoicedDisplay, owner, createdAt, approvalWorkflow, gsapPrNumber, waitingForGsap, stage, plan, lines]
       properties:
         id:
           type: string
@@ -12150,6 +12512,9 @@ components:
           type: string
         waitingForGsap:
           type: boolean
+        stage:
+          type: string
+          example: Purchase order
         plan:
           $ref: "#/components/schemas/RecordRef"
         lines:
@@ -13036,6 +13401,163 @@ components:
       description: >-
         Extended by later features: items changed (011). Properties beyond the required list are always sent by the
         feature that adds them; they stay optional so that earlier answers remain valid (D-191).
+    PostInvestmentReview:
+      type: object
+      additionalProperties: false
+      description: >-
+        A post-investment review of one activity (demo-mvp #7). amountSpent and margin share one currency. roi is
+        the Post-investment ROI, (margin − amount spent) ÷ amount spent as a per cent with two decimals, worked
+        out by the server; null until both are set and the amount spent is above 0.00. figures are the
+        activity's, read live; null when the person does not see the plan's finance, and then amountSpent and roi
+        are null too (the amount spent starts as the activity's Paid figure) and the review can't be started or
+        changed.
+      required: [id, activity, path, status, businessCase, amountSpent, margin, roi, remarks, figures, submittedAt,
+        submittedBy, access, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id:
+          type: string
+          example: PIR-1001
+        activity:
+          type: object
+          additionalProperties: false
+          required: [id, name]
+          properties:
+            id:
+              type: string
+              example: A-1001
+            name:
+              type: string
+        path:
+          type: array
+          description: The activity's plan, campaign and initiative, top level first.
+          items:
+            $ref: "#/components/schemas/RecordRef"
+        status:
+          type: string
+          enum: [draft, submitted]
+        businessCase:
+          type: string
+          description: The business case the activity was approved on, as a text reference; empty when not set.
+        amountSpent:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        margin:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        roi:
+          type: [string, "null"]
+          pattern: ^-?[0-9]+\.[0-9]{2}$
+          example: "36.25"
+        remarks:
+          type: string
+        figures:
+          oneOf:
+            - $ref: "#/components/schemas/PostInvestmentReviewFigures"
+            - type: "null"
+        submittedAt:
+          type: [string, "null"]
+          format: date-time
+        submittedBy:
+          oneOf:
+            - $ref: "#/components/schemas/ActorRef"
+            - type: "null"
+        access:
+          $ref: "#/components/schemas/PostInvestmentReviewAccess"
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/ActorRef"
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          $ref: "#/components/schemas/ActorRef"
+    PostInvestmentReviewFigures:
+      type: object
+      additionalProperties: false
+      description: >-
+        The activity's figures in the person's display currency: budget is its initiative's (an activity has no
+        budget of its own), planned its planned cost, committed and actual (paid) from GSAP. null when not set.
+      required: [budget, planned, committed, actual]
+      properties:
+        budget:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        planned:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        committed:
+          $ref: "#/components/schemas/Money"
+        actual:
+          $ref: "#/components/schemas/Money"
+    PostInvestmentReviewAccess:
+      type: object
+      additionalProperties: false
+      required: [edit, submit, delete, export]
+      properties:
+        edit:
+          $ref: "#/components/schemas/ActionAvailability"
+        submit:
+          $ref: "#/components/schemas/ActionAvailability"
+        delete:
+          $ref: "#/components/schemas/ActionAvailability"
+        export:
+          $ref: "#/components/schemas/ActionAvailability"
+    PostInvestmentReviewList:
+      type: object
+      additionalProperties: false
+      required: [items, export]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostInvestmentReview"
+        export:
+          $ref: "#/components/schemas/ActionAvailability"
+    PostInvestmentReviewCreate:
+      type: object
+      additionalProperties: false
+      required: [activityId]
+      properties:
+        activityId:
+          type: string
+          example: A-1001
+    PostInvestmentReviewUpdate:
+      type: object
+      additionalProperties: false
+      description: Only the fields sent change. null clears amountSpent or margin.
+      required: [version]
+      properties:
+        version:
+          type: integer
+        businessCase:
+          type: string
+          maxLength: 200
+        amountSpent:
+          oneOf:
+            - $ref: "#/components/schemas/MoneyInput"
+            - type: "null"
+        margin:
+          oneOf:
+            - $ref: "#/components/schemas/MoneyInput"
+            - type: "null"
+        remarks:
+          type: string
+          maxLength: 2000
+    PostInvestmentReviewSubmit:
+      type: object
+      additionalProperties: false
+      required: [version]
+      properties:
+        version:
+          type: integer
     DeleteResult:
       type: object
       additionalProperties: false
@@ -20047,6 +20569,12 @@ components:
         unread:
           type: integer
           description: Always 0 after the call.
+    HomeFor:
+      type: string
+      enum:
+        - me
+        - team
+      default: me
     HomeScope:
       type: string
       enum:
@@ -20392,6 +20920,69 @@ components:
             $ref: "#/components/schemas/HomeAttentionItem"
         total:
           type: integer
+    HomeActionItem:
+      type: object
+      additionalProperties: false
+      required:
+        - kind
+        - record
+        - plan
+        - overdue
+        - since
+      properties:
+        kind:
+          type: string
+          enum:
+            - approval
+            - purchaseRequestToFix
+            - swbsRequest
+            - activityIncomplete
+        record:
+          $ref: "#/components/schemas/RecordRef"
+        plan:
+          description: The plan the record is in; null for a line item waiting for an SWBS request.
+          oneOf:
+            - $ref: "#/components/schemas/RecordRef"
+            - type: "null"
+        overdue:
+          type: boolean
+        since:
+          description: When the approval started waiting; null for the other kinds.
+          type:
+            - string
+            - "null"
+          format: date-time
+    HomeActionItemsPage:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+        - total
+        - show
+        - hiddenUntil
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/HomeActionItem"
+        total:
+          type: integer
+        show:
+          type: boolean
+        hiddenUntil:
+          type:
+            - string
+            - "null"
+          format: date
+    HomeActionReminder:
+      type: object
+      additionalProperties: false
+      required:
+        - hiddenUntil
+      properties:
+        hiddenUntil:
+          type: string
+          format: date
     WaitingItem:
       type: object
       additionalProperties: false
@@ -23144,13 +23735,26 @@ components:
     BudgetAllocationRow:
       type: object
       additionalProperties: false
-      required: [id, plan, teams, owner, amount, amountUsd, plannedCost, leftToPlan, budgetUsedPercent, version, access, overspend]
+      required: [id, plan, teams, owner, amount, amountUsd, plannedCost, committed, actual, leftToPlan, budgetUsedPercent, version, canOpenPlan, access, overspend]
       properties:
         overspend:
           $ref: "#/components/schemas/OverspendMode"
         id:
           type: string
           example: BA-1001
+        committed:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+          description: What the plan's line items have committed (purchase-order lines), in the plan's currency, as the plan's Financials card; null when the viewer doesn't hold finance.view for the plan (demo-mvp #2).
+        actual:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+          description: What the plan's line items have actually spent (paid), in the plan's currency; null as committed (demo-mvp #2).
+        canOpenPlan:
+          type: boolean
+          description: False for a plan outside the viewer's plan scope, shown because they see global budgets for All markets (demo-mvp #2); the row is then read-only.
         plan:
           $ref: "#/components/schemas/AllocationPlanRef"
         teams:
@@ -24210,6 +24814,7 @@ components:
       additionalProperties: false
       required:
         - today
+        - asOf
         - items
         - total
       properties:
@@ -24217,6 +24822,10 @@ components:
           type: string
           format: date
           description: The API's date the current rates are worked out for.
+        asOf:
+          type: string
+          format: date-time
+          description: When the simulated GSAP rates were last refreshed (the start time until the first refresh).
         items:
           type: array
           items:

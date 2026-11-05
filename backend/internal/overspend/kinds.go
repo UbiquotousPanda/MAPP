@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"mapp/internal/history"
 )
@@ -11,6 +12,7 @@ import (
 const (
 	labelDefaultMode  = "New budgets start with"
 	labelApprovalMode = "Approval over planned cost"
+	labelTolerance    = "Allow over before refusing"
 	labelOverspend    = "Overspend"
 	fieldOverspend    = "overspend"
 )
@@ -34,7 +36,7 @@ func (s *Service) snapshot(ctx context.Context, _ string) (history.Snapshot, boo
 }
 
 func (s *Service) put(ctx context.Context, snap history.Snapshot) error {
-	var c Configuration
+	c := DefaultConfiguration() // a snapshot from before the tolerance keeps the default one
 	if err := json.Unmarshal(snap.Data, &c); err != nil {
 		return err
 	}
@@ -42,6 +44,9 @@ func (s *Service) put(ctx context.Context, snap history.Snapshot) error {
 }
 
 func describe(_ context.Context, field string, value any) (string, string, error) {
+	if field == fieldTolerance {
+		return labelTolerance, fmt.Sprintf("%v%%", value), nil
+	}
 	text, _ := value.(string)
 	switch field {
 	case fieldDefaultMode:

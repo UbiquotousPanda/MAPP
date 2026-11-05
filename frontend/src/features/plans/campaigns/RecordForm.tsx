@@ -10,7 +10,7 @@ import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import type { AttributeForm, AttributeValues } from '@/ui/ShellAttributeFields/rules';
-import { budgetCheck, OverspendField } from '@/features/overspend';
+import { budgetCheck, OverspendField, useTolerancePercent } from '@/features/overspend';
 import { PersonField } from '@/features/people';
 import { FieldHelpTip, useFieldHelp } from '@/features/settings';
 import { useFormatters } from '@/format/useFormatters';
@@ -95,6 +95,7 @@ export function RecordForm({
   const tip = (field: string) => help(`${level}.${field}`);
   const campaignFieldId = useId();
   const values = useWatch({ control, compute: (all: RecordFormValues) => all });
+  const tolerancePercent = useTolerancePercent();
   const isCampaign = level === 'campaign';
   const ownerDefaulted = defaults && defaults.ownerId !== '' && values.ownerId === defaults.ownerId;
   const datesDefaulted =
@@ -250,6 +251,7 @@ export function RecordForm({
                 typed: values.budget,
                 stored: savedBudget?.amount ?? null,
                 planned,
+                tolerancePercent,
               })}
             />
           )}

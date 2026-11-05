@@ -30,26 +30,42 @@ func (s *Service) CreateGSAPOrder(ctx context.Context, a actor.Actor, id string,
 		if err != nil {
 			return err
 		}
-		pending := pendingLines(pr)
-		sent, err := s.routedPR(ctx, a, pr, pending)
-		if err != nil {
-			return err
-		}
-		order, err := s.gsap.CreatePurchaseOrder(ctx, sent)
-		if err != nil {
-			return err
-		}
-		details := orderText(order, pending, !pr.hasPO())
-		if pr, err = applyOrder(pr, order); err != nil {
-			return err
-		}
-		if pr, err = s.storeOrder(ctx, a, pr, details); err != nil {
+		if pr, err = s.placeOrder(ctx, a, pr, false); err != nil {
 			return err
 		}
 		view, err = s.viewOf(ctx, a, pr)
 		return err
 	})
 	return view, err
+}
+
+// placeOrder sends the lines of pr still waiting for GSAP and stores the answer, in the caller's Write.
+func (s *Service) placeOrder(ctx context.Context, a actor.Actor, pr PurchaseRequest, afterApproval bool) (PurchaseRequest, error) {
+	pending := pendingLines(pr)
+	sent, err := s.routedPR(ctx, a, pr, pending)
+	if err != nil {
+		return PurchaseRequest{}, err
+	}
+	sent.AfterApproval = afterApproval
+	order, err := s.gsap.CreatePurchaseOrder(ctx, sent)
+	if err != nil {
+		return PurchaseRequest{}, err
+	}
+	details := orderText(order, pending, !pr.hasPO())
+	if pr, err = applyOrder(pr, order); err != nil {
+		return PurchaseRequest{}, err
+	}
+	return s.storeOrder(ctx, a, pr, details)
+}
+
+// releaseAfterApproval runs GSAP at once for a purchase request the engine has just approved and routed,
+// when Settings › Purchase requests says so; the approver needs no finance.import for it.
+func (s *Service) releaseAfterApproval(ctx context.Context, a actor.Actor, pr PurchaseRequest) (PurchaseRequest, error) {
+	config, err := s.repo.Configuration(ctx)
+	if err != nil || !config.ReleaseInGSAP || s.gsap == nil || len(pendingLines(pr)) == 0 {
+		return pr, err
+	}
+	return s.placeOrder(ctx, a, pr, true)
 }
 
 func (s *Service) orderable(ctx context.Context, id string, version int) (PurchaseRequest, error) {

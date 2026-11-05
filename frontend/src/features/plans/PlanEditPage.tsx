@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { ApiError, conflictMessage } from '@/api/errors';
-import { budgetCheck } from '@/features/overspend';
+import { budgetCheck, useTolerancePercent } from '@/features/overspend';
 import { allows } from '@/session/gate-action';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
@@ -70,6 +70,7 @@ function EditForm({ plan: loaded }: { plan: Plan }) {
   const changeEffects = useChangeEffects(plan.id);
   const [version, setVersion] = useState(plan.version);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
+  const tolerancePercent = useTolerancePercent();
   const [effects, setEffects] = useState<{ data: PlanChangeEffects; modelOnly: boolean } | null>(
     null,
   );
@@ -112,6 +113,7 @@ function EditForm({ plan: loaded }: { plan: Plan }) {
       typed: values.budget,
       stored: plan.budget?.amount ?? null,
       planned: plan.planFigures?.plannedCost ?? null,
+      tolerancePercent,
     }).error;
     if (refused) {
       setFailure({ message: refused });

@@ -49,6 +49,17 @@ type Rates interface {
 	Rates(ctx context.Context) (money.Rates, error)
 }
 
+// Spend is what a plan's line items have committed and actually spent (paid), in USD (feature 029's figures).
+type Spend struct {
+	Committed money.Amount
+	Actual    money.Amount
+}
+
+// Spending gives each plan of planIDs its Spend; a plan without one is left out.
+type Spending interface {
+	PlanSpend(ctx context.Context, planIDs []string) (map[string]Spend, error)
+}
+
 type OverspendDefaults interface {
 	DefaultMode(ctx context.Context) (overspend.Mode, error)
 }
@@ -61,6 +72,11 @@ type Access interface {
 	SeeGlobalBudgets(ctx context.Context) bool
 	CanViewPlan(ctx context.Context, plan PlanInfo) bool
 	CanManageAll(ctx context.Context, personID string) (bool, error)
+	// SeeAllMarkets reports whether the person holds globalBudgets.view for All markets: they see every
+	// allocation row, also of plans outside their own scope.
+	SeeAllMarkets(ctx context.Context) bool
+	// SeeFinanceIn reports whether the person sees the plan's committed and actual figures (finance.view).
+	SeeFinanceIn(ctx context.Context, plan PlanInfo) bool
 }
 
 // unrestricted allows everything, as authz treats a context without grants (internal calls, the seed, tests).
@@ -72,6 +88,8 @@ func (unrestricted) ManageIn(context.Context, PlanInfo) error           { return
 func (unrestricted) SeeGlobalBudgets(context.Context) bool              { return true }
 func (unrestricted) CanViewPlan(context.Context, PlanInfo) bool         { return true }
 func (unrestricted) CanManageAll(context.Context, string) (bool, error) { return true, nil }
+func (unrestricted) SeeAllMarkets(context.Context) bool                 { return true }
+func (unrestricted) SeeFinanceIn(context.Context, PlanInfo) bool        { return true }
 
 type Deps struct {
 	Plans     Plans
@@ -79,4 +97,5 @@ type Deps struct {
 	Rates     Rates
 	Access    Access
 	Overspend OverspendDefaults
+	Spending  Spending // optional: without it, rows show no committed or actual figures
 }

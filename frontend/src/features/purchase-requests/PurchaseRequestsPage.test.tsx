@@ -89,6 +89,24 @@ describe('032 FR-044–FR-048: Purchase requests page', () => {
     await expectNoAxeViolations();
   });
 
+  it('puts each vendor total under its own column heading (FR-044)', async () => {
+    renderPage({ body: listPage() });
+
+    const table = await screen.findByRole('table', { name: 'Purchase requests by vendor' });
+    const headings = within(table)
+      .getAllByRole('columnheader')
+      .map((heading) => heading.textContent);
+    const vendorRow = within(table).getByText('Brightside Media BV').closest('tr');
+    let column = 0;
+    const columnOf: Record<string, string | null | undefined> = {};
+    for (const cell of Array.from(vendorRow?.cells ?? [])) {
+      columnOf[cell.textContent ?? ''] = headings[column];
+      column += cell.colSpan;
+    }
+    expect(columnOf['$30,000.00']).toBe('Amount');
+    expect(column).toBe(headings.length);
+  });
+
   it('searches after a pause, keeping the search in the address (US5 scenario 2)', async () => {
     const { api, router, user } = renderPage({ body: listPage() });
     await screen.findByRole('table');
