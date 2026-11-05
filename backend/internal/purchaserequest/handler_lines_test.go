@@ -18,13 +18,32 @@ func linesOnApproved(t *testing.T, s *apitest.Server, setting string) {
 		map[string]any{"version": before.Version, "purchaseSupport": true, "linesOnApprovedPurchaseRequests": setting}), http.StatusOK)
 }
 
-// secondStandBuild duplicates Stand build in its approved activity and gives the copy its SWBS code.
+const standBuildsApproval = "/api/v1/activities/A-1003/approval"
+
+// secondStandBuild duplicates Stand build in its approved activity, has the copy approved and gives it its SWBS code.
 func secondStandBuild(t *testing.T, s *apitest.Server) string {
 	t.Helper()
 	var copied struct{ ID string }
-	s.SignIn(t, priyasEmail).Do(t, http.MethodPost, "/api/v1/line-items/"+standBuild+"/duplicate", map[string]any{}).Decode(t, &copied)
+	priya := s.SignIn(t, priyasEmail)
+	priya.Do(t, http.MethodPost, "/api/v1/line-items/"+standBuild+"/duplicate", map[string]any{}).Decode(t, &copied)
+	approveNewLineItems(t, s, priya)
 	receiveSwbsCodes(t, s)
 	return copied.ID
+}
+
+func approveNewLineItems(t *testing.T, s *apitest.Server, owner *apitest.Client) {
+	t.Helper()
+	var section struct {
+		ActivityVersion int `json:"activityVersion"`
+		Rounds          []struct {
+			ID string `json:"id"`
+		} `json:"rounds"`
+	}
+	owner.Do(t, http.MethodGet, standBuildsApproval, nil).Decode(t, &section)
+	owner.Do(t, http.MethodPost, standBuildsApproval+"/submit", map[string]any{"version": section.ActivityVersion}).
+		Decode(t, &section)
+	s.SignIn(t, danielsEmail).Do(t, http.MethodPost, standBuildsApproval+"/approve",
+		map[string]any{"roundId": section.Rounds[0].ID, "level": 1}).Decode(t, &section)
 }
 
 // withAddedLine is a save of pr that keeps its line and adds one of 100.00 EUR on lineItemID.
