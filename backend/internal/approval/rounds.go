@@ -133,7 +133,7 @@ func (s *Service) startRound(ctx context.Context, sb *submitting) error {
 	if err = s.addAction(ctx, round, Action{Action: words.action, Level: first, Actor: sb.a, At: sb.now, Comment: sb.comment}); err != nil {
 		return err
 	}
-	sb.round, sb.sub = round, sb.sub.of(round)
+	sb.round, sb.sub = round, sb.sub.inRound(round)
 	sb.automatic, err = s.levelEntries(ctx, round)
 	return err
 }

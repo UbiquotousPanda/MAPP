@@ -65,8 +65,7 @@ func (sub subject) as(kind SubjectKind) subject {
 	return sub
 }
 
-// of is the record as round sees it: of the round's record type, about the round's line items.
-func (sub subject) of(round Round) subject {
+func (sub subject) inRound(round Round) subject {
 	sub = sub.as(round.kind())
 	sub.RoundLineItems = round.LineItemIDs
 	return sub

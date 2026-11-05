@@ -10,7 +10,7 @@ export interface LineItemChoicesProps {
   onChange: (id: string, checked: boolean) => void;
 }
 
-/** The line items the round decides, each ticked to approve it (053 FR-001, FR-002). */
+/** The line items the round decides, each ticked to approve it. */
 export function LineItemChoices({ items, ticked, onChange }: LineItemChoicesProps) {
   const { money } = useFormatters();
   return (

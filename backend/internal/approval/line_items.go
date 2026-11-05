@@ -180,14 +180,14 @@ func (s *Service) roundMoved(ctx context.Context, a actor.Actor, sub subject, ev
 		}
 	}
 	if sub.Kind != KindActivity || event != OutcomeApproved {
-		return updated.of(round), nil
+		return updated.inRound(round), nil
 	}
 	choice := LineItemChoice{Only: round.LineItemIDs, HeldBack: round.HeldBack, Round: round.Number}
 	if err = s.activities.SetLineItemApproval(ctx, a, sub.ID, choice); err != nil {
 		return subject{}, err
 	}
 	facts, err := s.activity(ctx, sub.ID)
-	return activitySubject(facts).of(round), err
+	return activitySubject(facts).inRound(round), err
 }
 
 // endLineItemRound ends, as restarted, the round open for line items when the activity's approval restarts.

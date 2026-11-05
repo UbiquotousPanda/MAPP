@@ -42,7 +42,7 @@ func (b *board) submitted(fn func(sub subject, round Round, entries []Action) er
 		if !found || !sub.waitingOn(round) {
 			continue
 		}
-		if err := fn(sub.of(round), round, entriesOf(b.entries[sub.ID], round.ID)); err != nil {
+		if err := fn(sub.inRound(round), round, entriesOf(b.entries[sub.ID], round.ID)); err != nil {
 			return err
 		}
 	}

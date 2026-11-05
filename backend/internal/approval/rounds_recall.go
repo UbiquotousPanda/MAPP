@@ -58,7 +58,7 @@ func (s *Service) recall(ctx context.Context, a actor.Actor, sub subject, in rec
 	if err != nil {
 		return subject{}, err
 	}
-	sub = sub.of(round)
+	sub = sub.inRound(round)
 	now := s.now()
 	waiting := round.Levels[round.CurrentLevel-1]
 	round.Outcome, round.EndedAt = OutcomeRecalled, &now

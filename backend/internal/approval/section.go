@@ -48,7 +48,7 @@ func (s *Service) section(ctx context.Context, a actor.Actor, sub subject) (Sect
 		return Section{}, err
 	}
 	if open != nil {
-		at := decisionPoint{sub: sub.of(*open), round: *open, entries: entriesOf(entries, open.ID), onBehalf: true}
+		at := decisionPoint{sub: sub.inRound(*open), round: *open, entries: entriesOf(entries, open.ID), onBehalf: true}
 		if err = s.viewerOn(ctx, &view, at, viewing{a: a, d: rc.people}); err != nil {
 			return Section{}, err
 		}

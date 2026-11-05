@@ -10,8 +10,7 @@ import (
 	"mapp/internal/platform/record"
 )
 
-// Duplicate copies every value, the spread included, into the same activity with a new ID and the name
-// "<name> (copy)", " (copy 2)", … shortened to fit 120 characters, and logs "copied" (FR-029).
+// Duplicate copies every value into the same activity as "<name> (copy)", " (copy 2)", …, and logs "copied".
 func TestDuplicate_CopiesEverything_FR029(t *testing.T) { //nolint:gocyclo // 11: three copies, then their names, values, bookkeeping and log entry
 	t.Parallel()
 	f := newTestService(t)

@@ -109,7 +109,7 @@ function replacesText(submission: ApprovalSubmission): string {
   return `Round ${replaced.roundNumber}, waiting at ${replaced.levelLabel}, ends and round ${submission.roundNumber} starts at the first level that needs a decision.`;
 }
 
-/** The line items a send names before anything changes (053 FR-008). */
+/** The line items a send names before anything changes. */
 function SentLineItems({ items }: { items: NonNullable<ApprovalSubmission['lineItems']> }) {
   return (
     <>

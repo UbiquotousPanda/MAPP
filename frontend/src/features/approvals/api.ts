@@ -99,7 +99,7 @@ export interface DecisionInput {
   roundId: string;
   level: number;
   comment: string;
-  /** The line items ticked; left out, every line item of the round is approved (053 FR-012). */
+  /** The line items ticked; left out, every line item of the round is approved. */
   approvedLineItemIds?: string[];
 }
 

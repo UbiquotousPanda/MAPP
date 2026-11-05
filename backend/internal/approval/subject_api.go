@@ -85,7 +85,7 @@ func (s *Service) DecideSubject(ctx context.Context, a actor.Actor, kind Subject
 		if err != nil {
 			return err
 		}
-		dg, err := s.decidingOn(ctx, a, sub.of(round), round)
+		dg, err := s.decidingOn(ctx, a, sub.inRound(round), round)
 		if err != nil {
 			return err
 		}
@@ -106,8 +106,7 @@ func (s *Service) DecideSubject(ctx context.Context, a actor.Actor, kind Subject
 	return sec, nil
 }
 
-// SectionOf returns the record's approval section: every round of the record, newest first, and the actions
-// of kind available to a now (data-model §9).
+// SectionOf returns every round of the record, newest first, and the actions of kind available to a now.
 func (s *Service) SectionOf(ctx context.Context, a actor.Actor, kind SubjectKind, id string) (Section, error) {
 	var sec Section
 	err := s.tx.Read(ctx, func(ctx context.Context) error {

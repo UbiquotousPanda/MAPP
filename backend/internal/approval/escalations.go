@@ -37,7 +37,7 @@ func (s *Service) RunEscalations(ctx context.Context, a actor.Actor) (Escalation
 			if !found || !sub.waitingOn(round) {
 				continue
 			}
-			e := escalating{runner: a, b: b, rule: rule, sub: sub.of(round), round: round, run: &run}
+			e := escalating{runner: a, b: b, rule: rule, sub: sub.inRound(round), round: round, run: &run}
 			if err := s.escalate(ctx, e); err != nil {
 				return err
 			}

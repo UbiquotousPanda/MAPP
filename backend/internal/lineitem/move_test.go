@@ -7,7 +7,7 @@ import (
 	"mapp/internal/history"
 )
 
-// Moving a line item to another activity (a split, 016 FR-028) changes only its activity, nothing else.
+// Moving a line item to another activity (a split) changes only its activity, nothing else.
 func TestMoveToActivity_KeepsIDsValuesSpreads_FR028(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -46,7 +46,7 @@ func TestMoveToActivity_LogsMoved_FR030(t *testing.T) {
 	}
 }
 
-// A moved line item's SWBS status follows its new activity and its own approval (FR-029, D-402).
+// A moved line item's SWBS status follows its new activity and its own approval.
 func TestMoveToActivity_SwbsFollowsNewActivity_FR029_053_FR005(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
