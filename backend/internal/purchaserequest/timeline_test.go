@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 )
 
@@ -37,5 +38,49 @@ func TestStageOf_NamesTheLastStepReached(t *testing.T) {
 				t.Errorf("stageOf() = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestStepsOf_032Timeline_SentToGSAPIsTheFirstSend(t *testing.T) {
+	t.Parallel()
+	sentOn := date.New(2026, time.November, 3)
+	first := time.Date(2026, time.November, 3, 9, 0, 0, 0, time.UTC)
+	resent := time.Date(2026, time.November, 4, 9, 0, 0, 0, time.UTC)
+	pr := PurchaseRequest{Status: StatusApproved, Approved: &Version{ApprovedAt: first}, Lines: []Line{{SentOn: &sentOn}}}
+	newestFirst := []Routing{{RoutedAt: resent, RoutedBy: actor.Actor{Name: "Resender"}}, {RoutedAt: first, RoutedBy: actor.Actor{Name: "Sender"}}}
+
+	sent := stepsOf(pr, nil, newestFirst, progress{})[3]
+	if sent.Key != stepSent || sent.At == nil || !sent.At.Equal(first) || sent.By.Name != "Sender" {
+		t.Errorf("Sent to GSAP = %+v at %v, want the first send at %v by Sender", sent, sent.At, first)
+	}
+}
+
+func TestStepsOf_032Timeline_DeclinedOrClosedWaitsForNothing(t *testing.T) {
+	t.Parallel()
+	approved := &Version{ApprovedAt: time.Date(2026, time.November, 2, 9, 0, 0, 0, time.UTC)}
+	tests := []struct {
+		name string
+		pr   PurchaseRequest
+	}{
+		{"declined", PurchaseRequest{Status: StatusDeclined}},
+		{"closed", PurchaseRequest{Status: StatusClosed, Approved: approved}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			for _, step := range stepsOf(tt.pr, nil, nil, progress{}) {
+				if step.Waiting != "" {
+					t.Errorf("step %s waits %q, want no waiting step", step.Key, step.Waiting)
+				}
+			}
+		})
+	}
+}
+
+func TestStepsOf_032Timeline_OpenRequestWaitsForTheNextStep(t *testing.T) {
+	t.Parallel()
+	steps := stepsOf(PurchaseRequest{Status: StatusInReview}, nil, nil, progress{})
+	if steps[2].Waiting != "Waiting for approval" {
+		t.Errorf("approved step waits %q, want %q", steps[2].Waiting, "Waiting for approval")
 	}
 }

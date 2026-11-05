@@ -71,26 +71,30 @@ func stageOf(pr PurchaseRequest, p progress) string {
 	return stage
 }
 
-// timelineOf lists the eight steps with who and when for each one reached, and for the first one not
-// reached the words "Waiting for …".
 func (s *Service) timelineOf(ctx context.Context, a actor.Actor, pr PurchaseRequest, routings []Routing, p progress) ([]TimelineStep, error) {
 	page, err := s.history.QueryLog(ctx, a, history.LogQuery{RecordID: pr.ID, RecordTypes: []string{recordKind}, Limit: timelineLimit})
 	if err != nil {
 		return nil, err
 	}
+	return stepsOf(pr, page.Items, routings, p), nil
+}
+
+// stepsOf lists the eight steps with who and when for each one reached, and for the first one not
+// reached the words "Waiting for …"; a declined or closed request waits for nothing.
+func stepsOf(pr PurchaseRequest, items []history.EntryView, routings []Routing, p progress) []TimelineStep {
 	reached := pr.reached(p)
 	steps := make([]TimelineStep, 0, len(stepLabels))
-	waitingSet := false
+	waitingSet := pr.Status == StatusDeclined || pr.Status == StatusClosed
 	for _, def := range stepLabels {
 		step := TimelineStep{Key: def.key, Label: def.label, Reached: reached[def.key]}
 		if step.Reached {
-			fillStep(&step, pr, page.Items, routings)
+			fillStep(&step, pr, items, routings)
 		} else if !waitingSet {
 			step.Waiting, waitingSet = "Waiting for "+def.waiting, true
 		}
 		steps = append(steps, step)
 	}
-	return steps, nil
+	return steps
 }
 
 func fillStep(step *TimelineStep, pr PurchaseRequest, items []history.EntryView, routings []Routing) {
@@ -108,7 +112,8 @@ func fillStep(step *TimelineStep, pr PurchaseRequest, items []history.EntryView,
 		}
 	case stepSent:
 		if len(routings) > 0 {
-			step.At, step.By = &routings[0].RoutedAt, &routings[0].RoutedBy
+			first := slices.MinFunc(routings, func(x, y Routing) int { return x.RoutedAt.Compare(y.RoutedAt) })
+			step.At, step.By = &first.RoutedAt, &first.RoutedBy
 		}
 	case stepPRNumber:
 		step.Detail, step.By = pr.GSAP.PRNumber, gsapActor(pr.GSAP.Source)
