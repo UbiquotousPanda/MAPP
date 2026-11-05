@@ -26,4 +26,5 @@ type Activities interface {
 	// InScope answers the activities among ids that scope sees (activity_in_scope), by id.
 	InScope(ctx context.Context, scope authz.Scope, ids []string) (map[string]Activity, error)
 	Live(ctx context.Context, a actor.Actor, activityID string) (Live, error)
+	KnownCurrency(ctx context.Context, code string) (bool, error)
 }

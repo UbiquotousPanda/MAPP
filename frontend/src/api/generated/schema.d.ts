@@ -6488,7 +6488,7 @@ export interface components {
             items: components["schemas"]["RecycleBinListItem"][];
             total: number;
         };
-        /** @description A post-investment review of one activity (demo-mvp #7). amountSpent and margin share one currency. roi is the Post-investment ROI, (margin − amount spent) ÷ amount spent as a per cent with two decimals, worked out by the server; null until both are set and the amount spent is above 0.00. figures are the activity's, read live; null when the person does not see the plan's finance. */
+        /** @description A post-investment review of one activity (demo-mvp #7). amountSpent and margin share one currency. roi is the Post-investment ROI, (margin − amount spent) ÷ amount spent as a per cent with two decimals, worked out by the server; null until both are set and the amount spent is above 0.00. figures are the activity's, read live; null when the person does not see the plan's finance, and then amountSpent and roi are null too (the amount spent starts as the activity's Paid figure) and the review can't be started or changed. */
         PostInvestmentReview: {
             /** @example PIR-1001 */
             id: string;

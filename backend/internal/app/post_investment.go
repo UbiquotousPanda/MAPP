@@ -122,6 +122,16 @@ func (r reviewActivities) initiativeBudget(ctx context.Context, display money.Di
 	return &converted, nil
 }
 
+// KnownCurrency is a currency with a current rate in Settings; US dollars always are.
+func (r reviewActivities) KnownCurrency(ctx context.Context, code string) (bool, error) {
+	rates, err := r.rates(ctx)
+	if err != nil {
+		return false, err
+	}
+	_, err = rates.Of(code)
+	return err == nil, nil
+}
+
 func hidden(err error) bool {
 	var e *errs.Error
 	return errors.As(err, &e) && (e.Code == errs.CodeNotFound || e.Code == errs.CodeForbidden)

@@ -18,6 +18,7 @@ const (
 	reviewTitle     = "Post-investment review"
 	contentTypePPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 	notSet          = "Not filled in"
+	notShown        = "Not shown"
 	pathSeparator   = " › "
 	nameSeparator   = " – "
 	dayLayout       = "2 Jan 2006"
@@ -81,9 +82,12 @@ func (s *Service) render(views []View, parts []string) (File, error) {
 }
 
 func slideOf(v View) deck.Page {
-	roi := notSet
+	roi, spent := notSet, moneyText(v.AmountSpent)
 	if v.ROI != nil {
 		roi = *v.ROI + " %"
+	}
+	if v.Figures == nil {
+		roi, spent = notShown, notShown
 	}
 	page := deck.Page{
 		Title: v.Activity.Name, Subtitle: pathText(v.Path) + " · " + statusText(v.Status),
@@ -93,7 +97,7 @@ func slideOf(v View) deck.Page {
 			Columns: []deck.Column{{Title: "Review", Weight: 1}, {Title: "", Weight: 3}},
 			Rows: []deck.Row{
 				{Cells: []string{"Business case", orNotSet(v.BusinessCase)}},
-				{Cells: []string{"Amount spent", moneyText(v.AmountSpent)}},
+				{Cells: []string{"Amount spent", spent}},
 				{Cells: []string{"Margin", moneyText(v.Margin)}},
 			},
 		},

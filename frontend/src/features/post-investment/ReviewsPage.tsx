@@ -23,7 +23,8 @@ import {
   moneyText,
   pathText,
   reviewHref,
-  roiText,
+  reviewRoiText,
+  spentText,
 } from './review-text';
 import { useReviewExport } from './useReviewExport';
 import styles from './PostInvestment.module.css';
@@ -107,9 +108,9 @@ function ReviewRow({ review }: { review: Review }) {
       <td>
         <ReviewStatusChip status={review.status} />
       </td>
-      <td className={styles.numeric}>{moneyText(review.amountSpent)}</td>
+      <td className={styles.numeric}>{spentText(review)}</td>
       <td className={styles.numeric}>{moneyText(review.margin)}</td>
-      <td className={styles.numeric}>{roiText(review.roi)}</td>
+      <td className={styles.numeric}>{reviewRoiText(review)}</td>
       <td>{formatDate(localDate(review.updatedAt), dateFormat)}</td>
     </tr>
   );

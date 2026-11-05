@@ -30,8 +30,8 @@ func (s *Service) visible(ctx context.Context, id string) (Review, Activity, err
 	return r, act, nil
 }
 
-// editable is a visible Draft the person may edit in its activity's plan.
-func (s *Service) editable(ctx context.Context, id string) (Review, Activity, error) {
+// editable is a visible Draft the person may edit in its activity's plan and whose finance they see.
+func (s *Service) editable(ctx context.Context, a actor.Actor, id string) (Review, Activity, error) {
 	r, act, err := s.visible(ctx, id)
 	if err != nil {
 		return Review{}, Activity{}, err
@@ -41,6 +41,13 @@ func (s *Service) editable(ctx context.Context, id string) (Review, Activity, er
 	}
 	if r.Status == StatusSubmitted {
 		return Review{}, Activity{}, errs.Forbidden(msgSubmitted)
+	}
+	live, err := s.activities.Live(ctx, a, act.ID)
+	if err != nil {
+		return Review{}, Activity{}, err
+	}
+	if live.Figures == nil {
+		return Review{}, Activity{}, errs.Forbidden(msgFinanceHidden)
 	}
 	return r, act, nil
 }
@@ -78,18 +85,26 @@ func (s *Service) view(ctx context.Context, a actor.Actor, r Review, act Activit
 	if err != nil {
 		return View{}, err
 	}
-	return View{
+	hidden := live.Figures == nil
+	v := View{
 		ID: r.ID, Activity: ActivityRef{ID: act.ID, Name: act.Name}, Path: act.Path, Status: r.Status,
 		BusinessCase: r.BusinessCase, AmountSpent: moneyOf(r.AmountSpent, r.Currency), Margin: moneyOf(r.Margin, r.Currency),
 		ROI: ROI(r.AmountSpent, r.Margin), Remarks: r.Remarks, Figures: live.Figures, SubmittedAt: r.SubmittedAt,
-		SubmittedBy: r.SubmittedBy, Access: accessOf(ctx, r, act), Meta: r.Meta,
-	}, nil
+		SubmittedBy: r.SubmittedBy, Access: accessOf(ctx, r, act, hidden), Meta: r.Meta,
+	}
+	if hidden { // the amount spent starts as the activity's Paid figure, so it is finance data
+		v.AmountSpent, v.ROI = nil, nil
+	}
+	return v, nil
 }
 
-func accessOf(ctx context.Context, r Review, act Activity) Access {
+func accessOf(ctx context.Context, r Review, act Activity, financeHidden bool) Access {
 	edit := authz.Available(ctx, authz.ActivitiesEdit, act.Facts.Plan)
-	if r.Status == StatusSubmitted {
+	switch {
+	case r.Status == StatusSubmitted:
 		edit = authz.Unavailable(msgSubmitted)
+	case financeHidden && edit.Available:
+		edit = authz.Unavailable(msgFinanceHidden)
 	}
 	return Access{
 		Edit: edit, Submit: edit, Delete: authz.Available(ctx, authz.ActivitiesDelete, act.Facts.Plan),

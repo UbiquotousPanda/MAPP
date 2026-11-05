@@ -27,6 +27,7 @@ const (
 	msgSpentNegative      = "Enter 0.00 or more."
 	msgWrongCurrency      = "Enter it in %s, the currency of this review."
 	msgSubmitted          = "This review is submitted, so it can't be changed."
+	msgFinanceHidden      = "Financial data of this plan isn't shown to you, so you can't start or change its review."
 	msgBusinessCaseNeeded = "Enter the business case to submit the review."
 	msgSpentNeeded        = "Enter the amount spent, above 0.00, to submit the review."
 	msgMarginNeeded       = "Enter the margin to submit the review."

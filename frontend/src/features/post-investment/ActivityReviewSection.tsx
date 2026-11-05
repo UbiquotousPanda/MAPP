@@ -18,6 +18,7 @@ import {
   START,
   moneyText,
   reviewHref,
+  spentText,
 } from './review-text';
 import styles from './PostInvestment.module.css';
 
@@ -54,9 +55,9 @@ function Summary({ review }: { review: Review }) {
     <div className={styles.cardBody}>
       <ReviewStatusChip status={review.status} />
       <dl className={styles.figures}>
-        <Figure label={LABELS.amountSpent} value={moneyText(review.amountSpent)} />
+        <Figure label={LABELS.amountSpent} value={spentText(review)} />
         <Figure label={LABELS.margin} value={moneyText(review.margin)} />
-        <RoiFigure roi={review.roi} />
+        <RoiFigure review={review} />
       </dl>
     </div>
   );

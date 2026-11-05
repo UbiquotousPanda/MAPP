@@ -83,11 +83,15 @@ func (s *Service) Create(ctx context.Context, a actor.Actor, in CreateInput) (Vi
 func (s *Service) Update(ctx context.Context, a actor.Actor, id string, in UpdateInput) (View, error) {
 	var view View
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
-		stored, act, err := s.editable(ctx, id)
+		stored, act, err := s.editable(ctx, a, id)
 		if err != nil {
 			return err
 		}
-		changed, problems := applied(stored, in)
+		currency, err := s.currencyFor(ctx, stored, in)
+		if err != nil {
+			return err
+		}
+		changed, problems := applied(stored, in, currency)
 		if err = problems.Err(); err != nil {
 			return err
 		}
@@ -110,7 +114,7 @@ func (s *Service) Submit(ctx context.Context, a actor.Actor, id string, in Submi
 	}
 	var view View
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
-		r, act, err := s.editable(ctx, id)
+		r, act, err := s.editable(ctx, a, id)
 		if err != nil {
 			return err
 		}
@@ -178,11 +182,11 @@ func (s *Service) draft(ctx context.Context, a actor.Actor, act Activity) (Revie
 	if err != nil {
 		return Review{}, err
 	}
-	r := Review{ActivityID: act.ID, Status: StatusDraft, Currency: live.Currency}
-	if live.Figures != nil {
-		spent := live.Figures.Actual.Amount
-		r.AmountSpent, r.Currency = &spent, live.Figures.Actual.Currency
+	if live.Figures == nil {
+		return Review{}, errs.Forbidden(msgFinanceHidden)
 	}
+	spent := live.Figures.Actual.Amount
+	r := Review{ActivityID: act.ID, Status: StatusDraft, Currency: live.Figures.Actual.Currency, AmountSpent: &spent}
 	if r.ID, err = s.ids.Next(ctx, ids.PrefixPostInvestmentReview); err != nil {
 		return Review{}, err
 	}

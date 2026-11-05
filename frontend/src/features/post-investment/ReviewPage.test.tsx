@@ -1,10 +1,11 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { review } from '@/testing/fixtures/post-investment';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
+import { reviewKeys } from './api';
 import { ReviewPage } from './ReviewPage';
 
 const GET = 'GET /api/v1/post-investment-reviews/{reviewId}';
@@ -109,5 +110,57 @@ describe('ReviewPage', () => {
         'This post-investment review no longer exists — someone may have deleted it.',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('saves from the version the form started on, so another person’s save in between is a conflict (#187)', async () => {
+    const api = mockApi([
+      reply(GET, { body: review() }),
+      reply(PATCH, {
+        status: 409,
+        body: apiError(
+          'version_conflict',
+          'Not saved — Priya Raman changed this post-investment review.',
+        ),
+      }),
+    ]);
+    const { user, queryClient } = renderPage();
+
+    const businessCase = await screen.findByRole('textbox', { name: /Business case/ });
+    act(() => {
+      queryClient.setQueryData(
+        reviewKeys.one('PIR-1001'),
+        review({ remarks: 'Priya’s remarks', version: 4 }),
+      );
+    });
+    await user.clear(businessCase);
+    await user.type(businessCase, 'BC-2026-099{Enter}');
+
+    expect(await screen.findByText(/Priya Raman changed this/)).toBeInTheDocument();
+    expect(api.bodiesOf('PATCH /api/v1/post-investment-reviews/PIR-1001')).toEqual([
+      { version: 3, businessCase: 'BC-2026-099' },
+    ]);
+  });
+
+  it('says the amount spent and ROI are not shown where the plan’s finance is not (#187)', async () => {
+    const hidden = { available: false, reason: 'Financial data of this plan isn’t shown to you.' };
+    mockApi([
+      reply(GET, {
+        body: review({
+          figures: null,
+          amountSpent: null,
+          roi: null,
+          access: { edit: hidden, submit: hidden, delete: hidden, export: hidden },
+        }),
+      }),
+    ]);
+    renderPage();
+
+    expect(
+      await screen.findByLabelText('Post-investment ROI: Not shown to you'),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText('Not shown to you')).toHaveLength(2);
+    expect(screen.getByText('Financial data of this plan isn’t shown to you.')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Activity figures' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 });

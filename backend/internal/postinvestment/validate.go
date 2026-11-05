@@ -2,6 +2,7 @@ package postinvestment
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,7 +17,7 @@ import (
 var currencyCode = regexp.MustCompile(`^[A-Z]{3}$`)
 
 // applied is stored with the fields in sends, and every problem found in them.
-func applied(stored Review, in UpdateInput) (Review, errs.Problems) {
+func applied(stored Review, in UpdateInput, currency string) (Review, errs.Problems) {
 	changed := stored
 	var problems errs.Problems
 	if in.Version == nil {
@@ -34,7 +35,7 @@ func applied(stored Review, in UpdateInput) (Review, errs.Problems) {
 			problems.Add(fieldRemarks, msgRemarksLength)
 		}
 	}
-	changed.Currency = currencyOf(stored, in)
+	changed.Currency = currency
 	read := amountReader{currency: changed.Currency, problems: &problems}
 	changed.AmountSpent = read.amount(in.AmountSpent, stored.AmountSpent, fieldAmountSpent)
 	if changed.AmountSpent != nil && changed.AmountSpent.Sign() < 0 {
@@ -44,18 +45,23 @@ func applied(stored Review, in UpdateInput) (Review, errs.Problems) {
 	return changed, problems
 }
 
-// currencyOf keeps the review's currency once it holds an amount; until then the first amount sent sets it.
-func currencyOf(stored Review, in UpdateInput) string {
+// currencyFor keeps the review's currency once it holds an amount; until then the first amount sent sets it,
+// when it is a currency set up in Settings.
+func (s *Service) currencyFor(ctx context.Context, stored Review, in UpdateInput) (string, error) {
 	if stored.AmountSpent != nil || stored.Margin != nil {
-		return stored.Currency
+		return stored.Currency, nil
 	}
 	for _, raw := range []json.RawMessage{in.AmountSpent, in.Margin} {
 		var sent money.Input
-		if json.Unmarshal(raw, &sent) == nil && currencyCode.MatchString(sent.Currency) {
-			return sent.Currency
+		if json.Unmarshal(raw, &sent) != nil || !currencyCode.MatchString(sent.Currency) || sent.Currency == stored.Currency {
+			continue
+		}
+		known, err := s.activities.KnownCurrency(ctx, sent.Currency)
+		if err != nil || known {
+			return sent.Currency, err
 		}
 	}
-	return stored.Currency
+	return stored.Currency, nil
 }
 
 // amountReader reads sent amounts in the review's currency, adding a problem for each wrong one.

@@ -1,7 +1,7 @@
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import type { Review, ReviewFigures } from './api';
-import { HINTS, LABELS, ROI_LABEL, moneyText, roiText, statusText } from './review-text';
+import { HINTS, LABELS, ROI_LABEL, moneyText, reviewRoiText, statusText } from './review-text';
 import styles from './PostInvestment.module.css';
 
 export function ReviewStatusChip({ status }: { status: Review['status'] }) {
@@ -24,14 +24,15 @@ export function Figure({ label, value }: FigureProps) {
   );
 }
 
-export function RoiFigure({ roi }: { roi: string | null }) {
+export function RoiFigure({ review }: { review: Review }) {
+  const text = reviewRoiText(review);
   return (
     <div className={styles.figure}>
       <dt className={styles.figureLabel}>
         {ROI_LABEL} <InfoTip label={ROI_LABEL} text={HINTS.roi} />
       </dt>
-      <dd className={styles.figureValue} aria-label={`${ROI_LABEL}: ${roiText(roi)}`}>
-        {roiText(roi)}
+      <dd className={styles.figureValue} aria-label={`${ROI_LABEL}: ${text}`}>
+        {text}
       </dd>
     </div>
   );

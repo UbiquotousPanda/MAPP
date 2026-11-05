@@ -85,7 +85,7 @@ function ReviewView({ review }: { review: Review }) {
             <Link to={recordHref('activity', review.activity.id)}>Open the activity</Link>
           </p>
           <dl className={styles.figures}>
-            <RoiFigure roi={review.roi} />
+            <RoiFigure review={review} />
           </dl>
           {editable ? (
             <ReviewForm key={review.id} review={review} />

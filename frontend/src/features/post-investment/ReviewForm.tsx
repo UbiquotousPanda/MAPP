@@ -21,7 +21,10 @@ import styles from './PostInvestment.module.css';
 /** A Draft review's form: Enter or Save keeps the fields; Submit saves them, then submits. */
 export function ReviewForm({ review }: { review: Review }) {
   const { displayCurrency } = useFormatters();
-  const currency = currencyOf(review, displayCurrency);
+  // The review this form started from: a save sends its version, so another person's save in between is a
+  // version conflict, never silently overwritten by this draft.
+  const [base, setBase] = useState<Review>(review);
+  const currency = currencyOf(base, displayCurrency);
   const [draft, setDraft] = useState<ReviewDraft>(() => draftOf(review));
   const [problems, setProblems] = useState<FieldProblem[]>([]);
   const update = useUpdateReview(review.id);
@@ -36,12 +39,14 @@ export function ReviewForm({ review }: { review: Review }) {
 
   /** Saves what changed and answers the saved review, or null when the save was refused. */
   async function save(): Promise<Review | null> {
-    const body = changesOf(review, draft, currency);
+    const body = changesOf(base, draft, currency);
     if (!hasChanges(body)) {
-      return review;
+      return base;
     }
     try {
-      return await update.mutateAsync(body);
+      const saved = await update.mutateAsync(body);
+      setBase(saved);
+      return saved;
     } catch (error) {
       refused(error);
       return null;

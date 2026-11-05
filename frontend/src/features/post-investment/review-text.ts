@@ -35,6 +35,7 @@ export const NO_REVIEWS_TEXT =
   "Start one from an activity's Overview, once the activity's money is spent.";
 export const NO_ACTIVITY_REVIEW = 'This activity has no post-investment review yet.';
 export const NOT_SET = 'Not set';
+export const NOT_SHOWN = 'Not shown to you';
 export const SAVED = 'Review saved';
 export const SUBMITTED = 'Review submitted';
 export const PREPARING = 'Preparing the file…';
@@ -60,4 +61,13 @@ export function moneyText(money: Money | null): string {
 /** The server's ROI as written; never worked out here. */
 export function roiText(roi: string | null): string {
   return roi === null ? NOT_SET : formatPercent(roi);
+}
+
+/** The API leaves the amount spent and ROI out where the plan's finance isn't shown: say so, not "Not set". */
+export function spentText(review: Review): string {
+  return review.figures === null ? NOT_SHOWN : moneyText(review.amountSpent);
+}
+
+export function reviewRoiText(review: Review): string {
+  return review.figures === null ? NOT_SHOWN : roiText(review.roi);
 }

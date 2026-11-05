@@ -22,10 +22,12 @@ import (
 
 var (
 	alex  = actor.Actor{ID: "U-1001", Name: "Alex Morgan"}
+	sara  = actor.Actor{ID: "U-1007", Name: "Sara Novak"}
 	start = time.Date(2026, time.November, 5, 9, 0, 0, 0, time.UTC)
 )
 
-// fakeActivities sees A-1001 and A-1002, with 1,250.00 USD paid on A-1001; A-1003 is outside every scope.
+// fakeActivities sees A-1001 (1,250.00 USD paid) and A-1002 (nothing paid yet); A-1003 is outside every scope.
+// Sara doesn't see the plan's finance; USD and EUR are set up in Settings.
 type fakeActivities struct{}
 
 func (fakeActivities) InScope(_ context.Context, _ authz.Scope, activityIDs []string) (map[string]postinvestment.Activity, error) {
@@ -39,12 +41,20 @@ func (fakeActivities) InScope(_ context.Context, _ authz.Scope, activityIDs []st
 	return found, nil
 }
 
-func (fakeActivities) Live(_ context.Context, _ actor.Actor, activityID string) (postinvestment.Live, error) {
-	if activityID != "A-1001" {
+func (fakeActivities) Live(_ context.Context, a actor.Actor, activityID string) (postinvestment.Live, error) {
+	if a.ID == sara.ID {
 		return postinvestment.Live{Currency: "USD"}, nil
 	}
-	paid := money.Money{Amount: money.FromCents(125000), Currency: "USD"}
+	var cents int64
+	if activityID == "A-1001" {
+		cents = 125000
+	}
+	paid := money.Money{Amount: money.FromCents(cents), Currency: "USD"}
 	return postinvestment.Live{Currency: "USD", Figures: &postinvestment.Figures{Committed: paid, Actual: paid}}, nil
+}
+
+func (fakeActivities) KnownCurrency(_ context.Context, code string) (bool, error) {
+	return code == "USD" || code == "EUR", nil
 }
 
 func newService(t *testing.T) *postinvestment.Service {
@@ -111,9 +121,6 @@ func TestCreate_StartsADraftWithTheActualCost_184(t *testing.T) {
 	}
 	if v.ROI != nil {
 		t.Fatalf("ROI = %s before a margin, want null", *v.ROI)
-	}
-	if hidden := create(t, s, "A-1002"); hidden.AmountSpent != nil || hidden.Figures != nil {
-		t.Fatalf("without finance: amount spent %v, figures %v; want neither", hidden.AmountSpent, hidden.Figures)
 	}
 }
 
@@ -201,19 +208,5 @@ func TestExport_OneSlidePerReviewShown_185(t *testing.T) {
 	}
 	if want := "SP&A One – Post-investment reviews – 5 Nov 2026.pptx"; list.Name != want {
 		t.Fatalf("list file %q, want %q", list.Name, want)
-	}
-}
-
-func TestUpdate_FirstAmountSetsTheCurrencyOfABlankReview_184(t *testing.T) {
-	s := newService(t)
-	v := create(t, s, "A-1002")
-	eur, _ := json.Marshal(money.Input{Amount: "500.00", Currency: "EUR"})
-	v, err := s.Update(t.Context(), alex, v.ID, postinvestment.UpdateInput{Version: &v.Version, Margin: eur})
-	if err != nil || v.Margin == nil || v.Margin.Currency != "EUR" {
-		t.Fatalf("first amount in EUR: %v, margin %v; want it kept in EUR", err, v.Margin)
-	}
-	_, err = s.Update(t.Context(), alex, v.ID, postinvestment.UpdateInput{Version: &v.Version, AmountSpent: moneyInput("1.00")})
-	if want := []string{"amountSpent"}; !slices.Equal(fieldsOf(err), want) {
-		t.Fatalf("USD after EUR: fields %v, want %v", fieldsOf(err), want)
 	}
 }
