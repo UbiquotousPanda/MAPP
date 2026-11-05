@@ -20,6 +20,16 @@ export const MODE_HINTS: Record<OverspendMode, string> = {
   refuse: 'Refuse any save that takes the planned cost over the budget',
 };
 
+/** A mode's hint on a budget form, with the tolerance in use once Settings › Overspend control has loaded. */
+export function modeHint(mode: OverspendMode, tolerancePercent: number | undefined): string {
+  if (tolerancePercent === undefined || tolerancePercent === 0) {
+    return MODE_HINTS[mode];
+  }
+  return mode === 'refuse'
+    ? `Refuse any save that takes the planned cost more than ${tolerancePercent}% over the budget; up to ${tolerancePercent}% over, only warn`
+    : `${MODE_HINTS.warn}; Refuse would allow up to ${tolerancePercent}% over`;
+}
+
 const LEVEL_WORDS: Record<string, string> = {
   plan: 'plan',
   campaign: 'campaign',

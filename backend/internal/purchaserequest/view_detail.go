@@ -69,15 +69,25 @@ func (r *reader) header(pr PurchaseRequest) View {
 }
 
 func (s *Service) lineViews(ctx context.Context, pr PurchaseRequest, r *reader) ([]LineView, error) {
+	b, err := s.balanceOf(ctx, pr.lineItemIDs())
+	if err != nil {
+		return nil, err
+	}
 	lines := make([]LineView, 0, len(pr.Lines))
 	for _, l := range pr.Lines {
-		missing, err := s.lineMissing(ctx, l, r.facts[l.LineItemID].BusinessUnit)
+		f := r.facts[l.LineItemID]
+		missing, err := s.lineMissing(ctx, l, f.BusinessUnit)
+		if err != nil {
+			return nil, err
+		}
+		left, err := b.available(f, pr.ID)
 		if err != nil {
 			return nil, err
 		}
 		lines = append(lines, LineView{
 			ID: l.ID, Position: l.Position, LineItem: r.lineItemRef(l.LineItemID), HXKey: HXKey(l.LineItemID),
-			Currency: l.Currency, Amount: l.money(), DeliveryDate: l.DeliveryDate, OverallLimit: inCurrency(l.OverallLimit, l.Currency),
+			Currency: l.Currency, Amount: l.money(), Available: money.Money{Amount: left, Currency: f.Currency},
+			DeliveryDate: l.DeliveryDate, OverallLimit: inCurrency(l.OverallLimit, l.Currency),
 			Description: l.Description, Attributes: nonNilValues(l.Attributes), SentOn: l.SentOn, PONumber: l.PO.Number,
 			POLine: l.PO.Line, POLineStatus: l.PO.Status, PODate: l.PO.Date, POValue: l.PO.Value,
 			Invoiced: r.lineInvoiced(l), Changed: pr.ChangePending && l.changedSince(pr.Approved), Missing: missing,

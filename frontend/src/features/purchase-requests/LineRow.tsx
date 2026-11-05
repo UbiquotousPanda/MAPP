@@ -9,6 +9,7 @@ import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFields';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
+import { useTolerancePercent } from '@/features/overspend';
 import { DateField } from './DateField';
 import { problemAt, problemMap } from './form-problems';
 import type { LineValues, PurchaseRequestFormValues } from './form-schema';
@@ -21,6 +22,7 @@ import {
   SWBS_HINT,
 } from './form-text';
 import { HxKey } from './HxKey';
+import { overLeftWarning } from './line-warning';
 import styles from './LineRowsEditor.module.css';
 
 const DESCRIPTION_MAX = 2000;
@@ -52,6 +54,7 @@ export function LineRow({
   const titleId = useId();
   const id = (field: string) => `lines[${index}].${field}`;
   const error = (field: string) => problemAt(problems, id(field));
+  const tolerancePercent = useTolerancePercent();
 
   return (
     <section className={styles.line} aria-labelledby={titleId}>
@@ -102,6 +105,7 @@ export function LineRow({
               label={LABELS.amount}
               marking="Required"
               currency={line.currency}
+              note={overLeftWarning(line, tolerancePercent) ?? undefined}
               error={error('amount')}
             />
           )}

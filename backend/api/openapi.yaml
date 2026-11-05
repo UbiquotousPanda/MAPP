@@ -11972,6 +11972,13 @@ components:
           type: string
         amount:
           $ref: "#/components/schemas/Money"
+        availableToRequest:
+          description: >-
+            What the line item has left to request without this purchase request, in the line item's currency at
+            today's rates; negative when other requests already go over it. The form warns before saving a line
+            that goes over it within the overspend tolerance.
+          allOf:
+            - $ref: "#/components/schemas/Money"
         deliveryDate:
           type: string
           format: date

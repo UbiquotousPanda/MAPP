@@ -105,6 +105,16 @@ export function removeText(amount: Money): string {
 
 export const REMOVE_AFTER_SAVE = 'The line goes to the recycle bin when you save.';
 
+/** The warning before saving a line that goes over what its line item has left, within the tolerance. */
+export function overLeftText(
+  over: Money,
+  lineItemId: string,
+  left: Money,
+  percent: number,
+): string {
+  return `This request goes ${formatMoneyText(over)} over what line item ${lineItemId} has left (${formatMoneyText(left)}); allowed up to ${percent}% over.`;
+}
+
 export function lineTitle(position: number, name: string, id: string): string {
   return `Line ${position} · ${name} (${id})`;
 }

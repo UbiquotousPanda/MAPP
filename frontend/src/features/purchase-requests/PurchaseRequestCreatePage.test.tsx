@@ -126,6 +126,26 @@ describe('032 FR-003/FR-053/FR-054: new purchase request', () => {
     );
   });
 
+  it('warns before saving a line over what its line item has left within the tolerance, then saves it (demo-mvp #4)', async () => {
+    const { api, router, user } = renderCreate({ body: defaults() }, [
+      reply(CREATE, { status: 201, body: purchaseRequest() }),
+    ]);
+    await screen.findByLabelText(/^Name/);
+    await chooseWorkflows(user);
+    await user.clear(field('lines[0].amount'));
+    await user.type(field('lines[0].amount'), '10000');
+
+    expect(
+      await screen.findByText(
+        'This request goes 800.00 EUR over what line item L-1006 has left (9,200.00 EUR); allowed up to 10% over.',
+      ),
+    ).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/purchase-requests/PR-1002'));
+    expect(api.bodiesOf(CREATE)[0]).toMatchObject({ lines: [{ amount: '10000.00' }] });
+  });
+
   it('saves the purchase request and opens it', async () => {
     const { api, router, user } = renderCreate({ body: defaults() }, [
       reply(CREATE, { status: 201, body: purchaseRequest() }),

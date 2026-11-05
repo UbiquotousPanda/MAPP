@@ -52,6 +52,40 @@ describe('GlobalBudgetPage — overspend control (037 US3)', () => {
     });
   });
 
+  it('says the tolerance in use in the allocation dialog, 12% here, like the other budget forms (demo-mvp #4)', async () => {
+    const { user } = renderBudgetPage([
+      reply('GET /api/v1/overspend-configuration', {
+        body: {
+          defaultMode: 'warn',
+          approvalOverPlannedCost: 'warn',
+          tolerancePercent: 12,
+          version: 2,
+          updatedAt: '2026-11-01T09:00:00Z',
+          updatedBy: { id: 'U-1001', name: 'Alex Morgan' },
+          canChange: { available: true, reason: '' },
+        },
+      }),
+    ]);
+    await screen.findByRole('table', { name: 'Allocations' });
+    await user.click(
+      within(budgetRow('FY2026 Lubricants Europe')).getByRole('button', {
+        name: 'Actions for FY2026 Lubricants Europe',
+      }),
+    );
+    await user.click(await screen.findByRole('menuitem', { name: 'Change allocation' }));
+    const dialog = await screen.findByRole('dialog', {
+      name: "Change the allocation to 'FY2026 Lubricants Europe'",
+    });
+    expect(
+      await within(dialog).findByText(
+        'Refuse any save that takes the planned cost more than 12% over the budget; up to 12% over, only warn',
+      ),
+    ).toBeVisible();
+    expect(
+      within(dialog).getByText('Save and show the overage; Refuse would allow up to 12% over'),
+    ).toBeVisible();
+  });
+
   it('offers the setting in Edit global budget, refusing an amount below the planned cost (FR-001, FR-015)', async () => {
     const { api, user } = renderBudgetPage([reply('GET /api/v1/people', PEOPLE)]);
     await user.click(await screen.findByRole('button', { name: 'Edit' }));

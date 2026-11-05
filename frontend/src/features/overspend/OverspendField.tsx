@@ -3,7 +3,8 @@ import { useId } from 'react';
 import { LockedNote } from '@/ui/LockedNote/LockedNote';
 import type { OverspendMode } from './api';
 import type { BudgetCheck } from './overspend-check';
-import { MODE_HINTS, MODE_WORDS, MODES, OVERSPEND_LABEL } from './overspend-text';
+import { useTolerancePercent } from './api';
+import { MODE_WORDS, MODES, modeHint, OVERSPEND_LABEL } from './overspend-text';
 import styles from './OverspendField.module.css';
 
 export interface OverspendFieldProps {
@@ -24,6 +25,7 @@ export function OverspendField({
   check,
 }: OverspendFieldProps) {
   const id = useId();
+  const tolerancePercent = useTolerancePercent();
   const locked = Boolean(lockedReason);
   const described = [locked ? `${id}-lock` : '', check?.error ? `${id}-error` : '']
     .filter(Boolean)
@@ -43,7 +45,7 @@ export function OverspendField({
           />
           <span>
             <span className={styles.word}>{MODE_WORDS[mode]}</span>
-            <span className={styles.hint}>{MODE_HINTS[mode]}</span>
+            <span className={styles.hint}>{modeHint(mode, tolerancePercent)}</span>
           </span>
         </label>
       ))}
