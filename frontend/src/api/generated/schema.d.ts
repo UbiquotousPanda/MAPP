@@ -11100,7 +11100,7 @@ export interface components {
             today: string;
             /**
              * Format: date-time
-             * @description When the simulated GSAP rates were last refreshed (the start time until the first refresh).
+             * @description When the rates last changed: the newest stored rate import or rate change (a deleted rate counts), or the last refresh that confirmed the rates, whichever is later. It never moves backwards.
              */
             asOf: string;
             items: components["schemas"]["RateUsed"][];
