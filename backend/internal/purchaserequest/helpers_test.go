@@ -94,7 +94,23 @@ func receiveSwbsCodes(t *testing.T, s *apitest.Server) {
 }
 
 // approved creates a purchase request on Stand build, submits it as Priya and approves it as Daniel.
+// approved leaves the purchase request waiting for the GSAP run: release after approval is switched off first.
 func approved(t *testing.T, s *apitest.Server) purchaserequest.View {
+	t.Helper()
+	setRelease(t, s, false)
+	return approvedAsConfigured(t, s)
+}
+
+func setRelease(t *testing.T, s *apitest.Server, on bool) purchaserequest.ConfigurationView {
+	t.Helper()
+	alex := s.SignIn(t, alexsEmail)
+	before := decoded[purchaserequest.ConfigurationView](t, alex.Do(t, http.MethodGet, configurationPath, nil), http.StatusOK)
+	return decoded[purchaserequest.ConfigurationView](t, alex.Do(t, http.MethodPut, configurationPath, map[string]any{
+		"version": before.Version, "purchaseSupport": true, "linesOnApprovedPurchaseRequests": before.LinesOnApprovedPurchaseRequests,
+		"releaseInGsapAfterApproval": on}), http.StatusOK)
+}
+
+func approvedAsConfigured(t *testing.T, s *apitest.Server) purchaserequest.View {
 	t.Helper()
 	receiveSwbsCodes(t, s)
 	priya, daniel := s.SignIn(t, priyasEmail), s.SignIn(t, danielsEmail)

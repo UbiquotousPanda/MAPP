@@ -43,6 +43,9 @@ func (s *Service) SaveConfiguration(ctx context.Context, a actor.Actor, in Confi
 		}
 		after := before
 		after.PurchaseSupport, after.LinesOnApproved = in.PurchaseSupport, in.LinesOnApprovedPurchaseRequests
+		if in.ReleaseInGSAPAfterApproval != nil {
+			after.ReleaseInGSAP = *in.ReleaseInGSAPAfterApproval
+		}
 		after.Touch(a, s.now())
 		if err = s.repo.PutConfiguration(ctx, after); err != nil {
 			return err
@@ -62,7 +65,8 @@ func (s *Service) SaveConfiguration(ctx context.Context, a actor.Actor, in Confi
 // configurationView has no last change while only SP&A One has saved the setting.
 func configurationView(ctx context.Context, c Configuration) ConfigurationView {
 	view := ConfigurationView{PurchaseSupport: c.PurchaseSupport, LinesOnApprovedPurchaseRequests: c.LinesOnApproved,
-		Version: c.Version, CanChange: authz.AvailableAnywhere(ctx, authz.SettingsManage)}
+		ReleaseInGSAPAfterApproval: c.ReleaseInGSAP,
+		Version:                    c.Version, CanChange: authz.AvailableAnywhere(ctx, authz.SettingsManage)}
 	if !c.UpdatedAt.IsZero() && c.UpdatedBy.ID != actor.System.ID {
 		at, by := c.UpdatedAt, c.UpdatedBy
 		view.UpdatedAt, view.UpdatedBy = &at, &by

@@ -56,6 +56,7 @@ func run(ctx context.Context) error {
 	}
 	slog.InfoContext(ctx, "MAPP API listening", "url", "http://"+listener.Addr().String(),
 		"environment", cfg.Env, "demo_sign_in", cfg.DemoMode())
+	go api.KeepRatesFresh(ctx)
 	served := app.Serve(ctx, listener, api.Handler, cfg.ShutdownTimeout)
 	closing, cancel := context.WithTimeout(context.WithoutCancel(ctx), cfg.ShutdownTimeout)
 	defer cancel()

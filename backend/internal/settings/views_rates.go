@@ -23,6 +23,7 @@ type RateInfo struct {
 // CurrentRatePage is the answer of GET /api/v1/exchange-rates/current (contract CurrentRatePage).
 type CurrentRatePage struct {
 	Today date.Date  `json:"today"`
+	AsOf  *time.Time `json:"asOf"`
 	Items []RateInfo `json:"items"`
 	Total int        `json:"total"`
 }

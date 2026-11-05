@@ -24,6 +24,7 @@ type BookedOrder struct {
 	PONumber           string
 	VendorCode, Vendor string
 	Description        string
+	AfterApproval      bool
 	Lines              []BookedLine
 }
 

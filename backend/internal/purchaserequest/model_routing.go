@@ -54,11 +54,12 @@ type FormRow struct {
 type Configuration struct {
 	PurchaseSupport bool            `json:"purchaseSupport"`
 	LinesOnApproved LinesOnApproved `json:"linesOnApprovedPurchaseRequests"`
+	ReleaseInGSAP   bool            `json:"releaseInGsapAfterApproval"`
 	record.Meta
 }
 
 func DefaultConfiguration() Configuration {
-	return Configuration{PurchaseSupport: true, LinesOnApproved: WithModificationApproval,
+	return Configuration{PurchaseSupport: true, LinesOnApproved: WithModificationApproval, ReleaseInGSAP: true,
 		Meta: record.Meta{Version: 1, CreatedBy: actor.System, UpdatedBy: actor.System}}
 }
 

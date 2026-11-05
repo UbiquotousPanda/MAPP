@@ -4,7 +4,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { moneyText } from './line-item-math';
 import type { Money } from './api';
 import styles from './MoneyPair.module.css';
-import { factsOf, RATES_UNKNOWN, rateText, useCurrentRates } from './rates';
+import { asOfText, factsOf, RATES_UNKNOWN, rateText, useCurrentRates } from './rates';
 
 export interface MoneyPairProps {
   /** The amount as typed: in the plan currency (activities) or its own currency. */
@@ -51,7 +51,8 @@ export function RateTip({ codes }: { codes: string[] }) {
       const rate = rates.data?.items.find((item) => item.currency === code);
       return rate ? rateText(factsOf(rate), date) : null;
     });
-  const text =
+  const named =
     lines.length > 0 && lines.every((line) => line !== null) ? lines.join('; ') : RATES_UNKNOWN;
-  return <InfoTip label="the rates used" text={text} />;
+  const asOf = asOfText(rates.data?.asOf);
+  return <InfoTip label="the rates used" text={asOf ? `${named} · ${asOf}` : named} />;
 }

@@ -188,6 +188,7 @@ type OptionPage struct {
 type ConfigurationView struct {
 	PurchaseSupport                 bool               `json:"purchaseSupport"`
 	LinesOnApprovedPurchaseRequests LinesOnApproved    `json:"linesOnApprovedPurchaseRequests"`
+	ReleaseInGSAPAfterApproval      bool               `json:"releaseInGsapAfterApproval"`
 	Version                         int                `json:"version"`
 	UpdatedAt                       *time.Time         `json:"updatedAt"`
 	UpdatedBy                       *actor.Actor       `json:"updatedBy"`

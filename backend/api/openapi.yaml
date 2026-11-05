@@ -7031,6 +7031,24 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/exchange-rates/refresh:
+    post:
+      tags: [Exchange rates]
+      operationId: refreshRates
+      summary: Refresh the simulated GSAP rates now (the same refresh runs every 15 minutes)
+      responses:
+        "201":
+          description: The import record of the refresh.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateImport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/exchange-rates/import-check:
     post:
       tags: [Exchange rates]
@@ -11559,10 +11577,13 @@ components:
     PurchaseRequestConfiguration:
       type: object
       additionalProperties: false
-      required: [purchaseSupport, linesOnApprovedPurchaseRequests, version, updatedAt, updatedBy, canChange]
+      required: [purchaseSupport, linesOnApprovedPurchaseRequests, releaseInGsapAfterApproval, version, updatedAt, updatedBy, canChange]
       properties:
         purchaseSupport:
           type: boolean
+        releaseInGsapAfterApproval:
+          type: boolean
+          description: Release in GSAP right after approval in SP&A One (demo feedback #6); on by default.
         linesOnApprovedPurchaseRequests:
           $ref: "#/components/schemas/LinesOnApprovedPurchaseRequests"
         version:
@@ -11589,6 +11610,9 @@ components:
           type: integer
         purchaseSupport:
           type: boolean
+        releaseInGsapAfterApproval:
+          type: boolean
+          description: Omit to keep the saved choice.
         linesOnApprovedPurchaseRequests:
           $ref: "#/components/schemas/LinesOnApprovedPurchaseRequests"
     PurchaseRequestLineItemRef:
@@ -24210,6 +24234,7 @@ components:
       additionalProperties: false
       required:
         - today
+        - asOf
         - items
         - total
       properties:
@@ -24217,6 +24242,12 @@ components:
           type: string
           format: date
           description: The API's date the current rates are worked out for.
+        asOf:
+          description: When the GSAP rates were last refreshed or imported ("GSAP rates as of HH:MM"); null before any.
+          oneOf:
+            - type: string
+              format: date-time
+            - type: "null"
         items:
           type: array
           items:

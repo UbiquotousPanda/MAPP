@@ -3,6 +3,7 @@
 package app
 
 import (
+	"context"
 	"net/http"
 	"slices"
 
@@ -38,6 +39,7 @@ type App struct {
 	Handler   http.Handler
 	Routes    []string
 	allWork   allwork.Source
+	settings  *settings.Service
 	finance   financials.Planning
 	telemetry *telemetry.Telemetry
 }
@@ -87,7 +89,7 @@ func New(cfg Config, set stores.Set, now clock.Clock) (*App, error) {
 		return nil, err
 	}
 	return &App{Handler: engine, Routes: web.Operations(engine.Routes()), allWork: w.allWork, finance: w.finance,
-		telemetry: tel}, nil
+		settings: w.settings, telemetry: tel}, nil
 }
 
 // engine puts the sign-in check, then the access middleware (access/routes.go, fail closed) on signed-in routes.
@@ -139,4 +141,9 @@ func mount(r gin.IRoutes, handlers ...routeRegistrar) {
 	for _, h := range handlers {
 		h.RegisterRoutes(r)
 	}
+}
+
+// KeepRatesFresh refreshes the simulated GSAP rates every 15 minutes until ctx ends.
+func (a *App) KeepRatesFresh(ctx context.Context) {
+	a.settings.KeepRatesFresh(ctx)
 }

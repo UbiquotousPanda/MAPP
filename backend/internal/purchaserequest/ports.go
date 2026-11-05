@@ -126,6 +126,7 @@ type RoutedPR struct {
 	VendorName, VendorCode string
 	GSAPPRNumber, PONumber string
 	LastPOLine             int
+	AfterApproval          bool
 	Lines                  []RoutedLine
 }
 

@@ -25,6 +25,7 @@ func (h *Handler) rateRoutes(r gin.IRoutes) {
 	r.POST("/exchange-rates/import", h.importRates)
 	r.GET("/exchange-rates/imports", h.listRateImports)
 	r.GET("/exchange-rates/import-sample", h.rateImportSample)
+	r.POST("/exchange-rates/refresh", h.refreshRates)
 }
 
 // fieldHelpRoutes registers the Field help routes.
@@ -90,6 +91,12 @@ func (h *Handler) updateRateImpact(c *gin.Context) {
 func (h *Handler) currentRates(c *gin.Context) {
 	page, err := h.service.ListCurrentRates(c.Request.Context(), actorOf(c))
 	respond(c, http.StatusOK, page, err)
+}
+
+// refreshRates answers POST /api/v1/exchange-rates/refresh with 201 and the import record of the refresh.
+func (h *Handler) refreshRates(c *gin.Context) {
+	result, err := h.service.RefreshRates(c.Request.Context(), actorOf(c))
+	respond(c, http.StatusCreated, result, err)
 }
 
 // checkRateImport answers POST /api/v1/exchange-rates/import-check with every row's outcome. The body holds a

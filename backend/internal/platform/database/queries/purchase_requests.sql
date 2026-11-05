@@ -118,20 +118,23 @@ WHERE (sqlc.narg(purchase_request_id)::text IS NULL OR purchase_request_id = sql
 ORDER BY routed_at DESC, length(id) DESC, id COLLATE "C" DESC;
 
 -- name: GetPurchaseRequestConfiguration :many
-SELECT * FROM purchase_request_configuration WHERE id = 'purchase-requests';
+SELECT id, purchase_support, lines_on_approved, version, created_at, created_by_id, created_by_name, updated_at,
+    updated_by_id, updated_by_name, release_in_gsap
+FROM purchase_request_configuration WHERE id = 'purchase-requests';
 
 -- name: PutPurchaseRequestConfiguration :exec
 INSERT INTO purchase_request_configuration (
     id, purchase_support, lines_on_approved, version, created_at, created_by_id, created_by_name, updated_at,
-    updated_by_id, updated_by_name
-) VALUES ('purchase-requests', $1, $2, $3, $4, $5, $6, $7, $8, $9)
+    updated_by_id, updated_by_name, release_in_gsap
+) VALUES ('purchase-requests', $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 ON CONFLICT (id) DO UPDATE SET
     purchase_support = excluded.purchase_support,
     lines_on_approved = excluded.lines_on_approved,
     version = excluded.version,
     updated_at = excluded.updated_at,
     updated_by_id = excluded.updated_by_id,
-    updated_by_name = excluded.updated_by_name;
+    updated_by_name = excluded.updated_by_name,
+    release_in_gsap = excluded.release_in_gsap;
 
 -- name: PagePurchaseRequests :many
 WITH matches AS (

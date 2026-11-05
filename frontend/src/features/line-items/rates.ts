@@ -23,6 +23,15 @@ export function useCurrentRates(enabled = true) {
   });
 }
 
+/** "GSAP rates as of 14:05": when the simulated feed last refreshed, in the viewer's time; null before any. */
+export function asOfText(asOf: string | null | undefined): string | null {
+  if (!asOf) {
+    return null;
+  }
+  const time = new Date(asOf).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return `GSAP rates as of ${time}`;
+}
+
 /** Where a rate came from, in words. */
 export function rateSourceText(source: RateSource | null | undefined): string {
   return source === 'gsapImport' ? 'GSAP import' : 'Settings';

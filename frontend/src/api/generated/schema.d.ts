@@ -3790,6 +3790,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/exchange-rates/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh the simulated GSAP rates now (the same refresh runs every 15 minutes) */
+        post: operations["refreshRates"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/exchange-rates/imports": {
         parameters: {
             query?: never;
@@ -5620,6 +5637,8 @@ export interface components {
         GsapSource: "" | "simulatedGsap" | "gsap";
         PurchaseRequestConfiguration: {
             purchaseSupport: boolean;
+            /** @description Release in GSAP right after approval in SP&A One (demo feedback #6); on by default. */
+            releaseInGsapAfterApproval: boolean;
             linesOnApprovedPurchaseRequests: components["schemas"]["LinesOnApprovedPurchaseRequests"];
             version: number;
             /** @description Null while the setting has never been saved (038 FR-057). */
@@ -5630,6 +5649,8 @@ export interface components {
         PurchaseRequestConfigurationInput: {
             version: number;
             purchaseSupport: boolean;
+            /** @description Omit to keep the saved choice. */
+            releaseInGsapAfterApproval?: boolean;
             linesOnApprovedPurchaseRequests: components["schemas"]["LinesOnApprovedPurchaseRequests"];
         };
         /** @description The line item a PR line draws on, as it is now. */
@@ -10788,6 +10809,8 @@ export interface components {
              * @description The API's date the current rates are worked out for.
              */
             today: string;
+            /** @description When the GSAP rates were last refreshed or imported ("GSAP rates as of HH:MM"); null before any. */
+            asOf: string | null;
             items: components["schemas"]["RateUsed"][];
             total: number;
         };
@@ -21154,6 +21177,29 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    refreshRates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The import record of the refresh. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RateImport"];
+                };
+            };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             default: components["responses"]["Error"];

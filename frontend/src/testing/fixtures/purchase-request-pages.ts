@@ -172,6 +172,7 @@ export function configuration(
 ): S['PurchaseRequestConfiguration'] {
   return {
     purchaseSupport: true,
+    releaseInGsapAfterApproval: true,
     linesOnApprovedPurchaseRequests: 'withModificationApproval',
     version: 1,
     updatedAt: '2026-10-20T08:00:00Z',

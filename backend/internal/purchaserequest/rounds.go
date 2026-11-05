@@ -113,6 +113,11 @@ func (s *Service) roundChanged(ctx context.Context, a actor.Actor, id string, e 
 	if err = s.repo.Put(ctx, pr); err != nil {
 		return Facts{}, err
 	}
+	if event == EventApproved {
+		if pr, err = s.releaseAfterApproval(ctx, a, pr); err != nil {
+			return Facts{}, err
+		}
+	}
 	return s.factsFrom(ctx, pr)
 }
 

@@ -3,6 +3,7 @@ package settings
 import (
 	"context"
 	"slices"
+	"time"
 
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
@@ -79,7 +80,13 @@ func (s *Service) ListCurrentRates(ctx context.Context, _ actor.Actor) (CurrentR
 	if err != nil {
 		return CurrentRatePage{}, err
 	}
-	return CurrentRatePage{Today: s.today(), Items: infos, Total: len(infos)}, nil
+	var asOf *time.Time
+	err = s.tx.Read(ctx, func(ctx context.Context) error {
+		var err error
+		asOf, err = s.ratesAsOf(ctx)
+		return err
+	})
+	return CurrentRatePage{Today: s.today(), AsOf: asOf, Items: infos, Total: len(infos)}, err
 }
 
 // rateInfoOf returns the current rate of c on day with where it came from.

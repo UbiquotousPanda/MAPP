@@ -69,6 +69,7 @@ func extensionRoutes() map[string]Rule {
 		"GET /api/v1/exchange-rates/current":                    signedIn(),
 		"POST /api/v1/exchange-rates/import-check":              need(authz.ExchangeRatesManage),
 		"POST /api/v1/exchange-rates/import":                    need(authz.ExchangeRatesManage),
+		"POST /api/v1/exchange-rates/refresh":                   need(authz.ExchangeRatesManage),
 		"GET /api/v1/exchange-rates/imports":                    signedIn(),
 		"GET /api/v1/exchange-rates/import-sample":              need(authz.ExchangeRatesManage),
 		"GET /api/v1/field-help":                                signedIn(),
