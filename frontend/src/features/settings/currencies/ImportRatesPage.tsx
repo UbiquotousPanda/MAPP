@@ -1,4 +1,4 @@
-import { CircleAlert, Download, RefreshCw } from 'lucide-react';
+import { CircleAlert, Download } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useNavigate } from 'react-router';
@@ -9,7 +9,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { CURRENCIES_PATH } from './currency-paths';
-import { checkRateImport, downloadRateSample, useImportRates, useRefreshRates } from './rates-api';
+import { checkRateImport, downloadRateSample, useImportRates } from './rates-api';
 import type { RateImportCheck, RateImportUpload } from './rates-api';
 import { FILE_TOO_LARGE, importedMessage, MAX_FILE_BYTES, NOT_A_CSV } from './rate-words';
 import styles from './rates.module.css';
@@ -27,7 +27,6 @@ export function ImportRatesPage() {
   const navigate = useNavigate();
   const { show } = useToast();
   const importRates = useImportRates();
-  const refreshRates = useRefreshRates();
   const fileInput = useRef<HTMLInputElement>(null);
   const inputId = useId();
   const [upload, setUpload] = useState<RateImportUpload | null>(null);
@@ -35,15 +34,6 @@ export function ImportRatesPage() {
   const [reviewing, setReviewing] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [importFailure, setImportFailure] = useState<string | null>(null);
-
-  async function refreshNow() {
-    try {
-      const done = await refreshRates.mutateAsync();
-      show({ message: `Rates refreshed: ${done.added} added, ${done.replaced} replaced` });
-    } catch (error) {
-      show({ message: failureText(error) ?? 'The rates could not be refreshed.' });
-    }
-  }
 
   function reset() {
     setUpload(null);
@@ -131,21 +121,6 @@ export function ImportRatesPage() {
         description="Import the GSAP daily rate extract until GSAP sends rates by itself. SP&A One reads the file and connects to no system."
       />
       <div className={styles.stack}>
-        <Card title="Simulated GSAP feed">
-          <p className={styles.note}>
-            The simulated GSAP refreshes its rates every 15 minutes. Refresh them now to see
-            converted amounts move.
-          </p>
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<RefreshCw />}
-            aria-busy={refreshRates.isPending || undefined}
-            onClick={() => void refreshNow()}
-          >
-            Refresh rates now
-          </Button>
-        </Card>
         <Card title="Rate file">
           <div className={styles.upload}>
             <label htmlFor={inputId} className={styles.label}>

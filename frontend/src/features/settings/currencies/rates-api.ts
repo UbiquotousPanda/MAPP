@@ -135,15 +135,6 @@ export function useImportRates() {
   });
 }
 
-/** Refreshes the simulated GSAP rates now; the same refresh runs every 15 minutes on its own. */
-export function useRefreshRates() {
-  const refresh = useRefreshRateLists();
-  return useMutation({
-    mutationFn: () => call(api.POST('/api/v1/exchange-rates/refresh')),
-    onSettled: refresh,
-  });
-}
-
 /** Saves the sample file of today's rates; answers its name. */
 export function downloadRateSample(): Promise<string> {
   return downloadFromApi(
