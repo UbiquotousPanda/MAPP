@@ -26,6 +26,7 @@ import {
   lastLevelText,
 } from './purchase-request-texts';
 import styles from './approval-dialogs.module.css';
+import refusal from './PurchaseRequestRefusal.module.css';
 
 const COMMENT_MAX = 2000;
 
@@ -140,7 +141,7 @@ export function PurchaseRequestDecisionDialog({
           <div role="alert" className={styles.note}>
             <p>{problem}</p>
             {problems.length > 0 && (
-              <ul className={styles.problems}>
+              <ul className={refusal.problems}>
                 {problems.map((link) => (
                   <li key={link.key}>
                     <Link to={link.href}>{link.text}</Link>

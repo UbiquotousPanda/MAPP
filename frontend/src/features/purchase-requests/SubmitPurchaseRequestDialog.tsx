@@ -91,7 +91,7 @@ interface DialogProps {
 }
 
 /**
- * What Submit would do now (032 FR-021, D-404): every problem of both kinds at once, each linked to
+ * What Submit would do now (D-404): every problem of both kinds at once, each linked to
  * where it is fixed, or the workflow's levels and an optional comment; a refusal lists the problems
  * it names, field problems and missing fields alike, in the same place.
  */

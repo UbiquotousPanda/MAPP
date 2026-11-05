@@ -19,7 +19,7 @@ func (s *Service) viewOf(ctx context.Context, a actor.Actor, pr PurchaseRequest)
 	if err != nil {
 		return View{}, err
 	}
-	verdict, err := s.verify(ctx, pr, moment{kind: submissionKind(pr)})
+	found, err := s.verify(ctx, pr, moment{kind: submissionKind(pr)})
 	if err != nil {
 		return View{}, err
 	}
@@ -28,7 +28,7 @@ func (s *Service) viewOf(ctx context.Context, a actor.Actor, pr PurchaseRequest)
 		return View{}, err
 	}
 	v := r.header(pr)
-	v.Readiness = Readiness{Ready: verdict.passed(), Problems: verdict.problems()}
+	v.Readiness = Readiness{Ready: found.passed(), Problems: found.problems()}
 	v.Missing, v.Routings = missing, routingViews(routings)
 	v.Access = s.access(ctx, accessFacts{pr: pr, config: r.config, routed: len(routings) > 0, plan: pr.planFacts(r.facts)})
 	if v.Lines, err = s.lineViews(ctx, pr, r); err != nil {

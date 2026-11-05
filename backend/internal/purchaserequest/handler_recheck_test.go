@@ -1,122 +1,14 @@
 package purchaserequest_test
 
 import (
-	"context"
 	"net/http"
 	"slices"
 	"strings"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/activity/activitytest"
-	"mapp/internal/approval/approvaltest"
-	"mapp/internal/lineitem/lineitemtest"
-	"mapp/internal/people/peopletest"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/platform/fake"
-	"mapp/internal/platform/money"
 	"mapp/internal/purchaserequest"
-	"mapp/internal/settings/settingstest"
 )
-
-const (
-	meisID    = "U-1004"
-	danielsID = "U-1003"
-)
-
-// onDemoData starts the API on a copy of the demo data that the test changes directly afterwards, as other
-// features would while a purchase request waits.
-func onDemoData(t *testing.T) (*apitest.Server, *fake.DB) {
-	t.Helper()
-	db := apitest.DemoDB(t, false)
-	return apitest.New(t, apitest.WithDB(db)), db
-}
-
-func change(t *testing.T, db *fake.DB, fn func(ctx context.Context) error) {
-	t.Helper()
-	if err := db.Write(t.Context(), fn); err != nil {
-		t.Fatalf("changing the demo data: %v", err)
-	}
-}
-
-func deactivatePerson(t *testing.T, db *fake.DB, id string) {
-	t.Helper()
-	store := peopletest.NewStore(db)
-	change(t, db, func(ctx context.Context) error {
-		person, _, err := store.Get(ctx, id)
-		person.Active = false
-		return orPut(err, func() error { return store.Put(ctx, person) })
-	})
-}
-
-func deactivateCurrency(t *testing.T, db *fake.DB, code string) {
-	t.Helper()
-	store := settingstest.NewStore(db)
-	change(t, db, func(ctx context.Context) error {
-		currency, _, err := store.GetCurrency(ctx, code)
-		currency.Active = false
-		return orPut(err, func() error { return store.PutCurrency(ctx, currency) })
-	})
-}
-
-func deactivateOption(t *testing.T, db *fake.DB, id string) {
-	t.Helper()
-	store := settingstest.NewStore(db)
-	change(t, db, func(ctx context.Context) error {
-		option, _, err := store.GetOption(ctx, id)
-		option.Active = false
-		return orPut(err, func() error { return store.PutOption(ctx, option) })
-	})
-}
-
-// leaveApproval takes the activity out of its approval, as an edit of an approved activity does.
-func leaveApproval(t *testing.T, db *fake.DB, id string) {
-	t.Helper()
-	store := activitytest.NewStore(db)
-	change(t, db, func(ctx context.Context) error {
-		act, _, err := store.Get(ctx, id)
-		act.Status = activity.StatusCreated
-		return orPut(err, func() error { return store.Put(ctx, act) })
-	})
-}
-
-func deactivateWorkflow(t *testing.T, db *fake.DB, id string) {
-	t.Helper()
-	store := approvaltest.NewStore(db)
-	change(t, db, func(ctx context.Context) error {
-		workflow, _, err := store.GetWorkflow(ctx, id)
-		workflow.Active = false
-		return orPut(err, func() error { return store.PutWorkflow(ctx, workflow) })
-	})
-}
-
-func lowerLineItemCost(t *testing.T, db *fake.DB, id string) {
-	t.Helper()
-	store := lineitemtest.NewStore(db)
-	change(t, db, func(ctx context.Context) error {
-		item, _, err := store.Get(ctx, id)
-		item.PlannedCost = money.FromCents(100000)
-		return orPut(err, func() error { return store.Put(ctx, item) })
-	})
-}
-
-func lowerPlannedCost(t *testing.T, db *fake.DB, id string) {
-	t.Helper()
-	store := activitytest.NewStore(db)
-	change(t, db, func(ctx context.Context) error {
-		act, _, err := store.Get(ctx, id)
-		low := money.USD(money.FromCents(100))
-		act.PlannedCost = &low
-		return orPut(err, func() error { return store.Put(ctx, act) })
-	})
-}
-
-func orPut(err error, put func() error) error {
-	if err != nil {
-		return err
-	}
-	return put()
-}
 
 func fieldNames(e apiError) []string {
 	var names []string
@@ -130,13 +22,13 @@ func TestSubmit_ChecksTheStoredValuesAgain_Contract_032_FR021_D404(t *testing.T)
 	t.Parallel()
 	tests := []struct {
 		name, field string
-		change      func(t *testing.T, db *fake.DB)
+		change      alteration
 	}{
-		{"an inactive owner", "ownerId", func(t *testing.T, db *fake.DB) { deactivatePerson(t, db, meisID) }},
-		{"an inactive MoA approver", "moaApproverId", func(t *testing.T, db *fake.DB) { deactivatePerson(t, db, danielsID) }},
-		{"an inactive currency", "lines[0].currency", func(t *testing.T, db *fake.DB) { deactivateCurrency(t, db, "EUR") }},
-		{"an inactive attribute option", "attributes.SA-1050", func(t *testing.T, db *fake.DB) { deactivateOption(t, db, deLubes) }},
-		{"a line item with less left than the amount", "lines[0].amount", func(t *testing.T, db *fake.DB) { lowerLineItemCost(t, db, standBuild) }},
+		{"an inactive owner", "ownerId", deactivatePerson(meisID)},
+		{"an inactive MoA approver", "moaApproverId", deactivatePerson(danielsID)},
+		{"an inactive currency", "lines[0].currency", deactivateCurrency("EUR")},
+		{"an inactive attribute option", "attributes.SA-1050", deactivateOption(deLubes)},
+		{"a line item with less left than the amount", "lines[0].amount", lowerLineItemCost(standBuild)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -190,10 +82,10 @@ func TestApprove_ChecksTheStoredValuesAgain_Contract_032_FR021_D404(t *testing.T
 	tests := []struct {
 		name, wantField string
 		wantMissing     bool
-		change          func(t *testing.T, db *fake.DB)
+		change          alteration
 	}{
-		{name: "the activity left approval", wantMissing: true, change: func(t *testing.T, db *fake.DB) { leaveApproval(t, db, "A-1003") }},
-		{name: "the owner became inactive", wantField: "ownerId", change: func(t *testing.T, db *fake.DB) { deactivatePerson(t, db, meisID) }},
+		{name: "the activity left approval", wantMissing: true, change: leaveApproval("A-1003")},
+		{name: "the owner became inactive", wantField: "ownerId", change: deactivatePerson(meisID)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -226,11 +118,11 @@ func TestApprove_LeavesOutWhatOnlyASubmissionNeeds_Contract_032_FR021_D404(t *te
 	t.Parallel()
 	tests := []struct {
 		name, submissionWouldSay string
-		change                   func(t *testing.T, db *fake.DB)
+		change                   alteration
 	}{
-		{"its workflow was made inactive", "Choose an active approval workflow", func(t *testing.T, db *fake.DB) { deactivateWorkflow(t, db, "WF-1004") }},
+		{"its workflow was made inactive", "Choose an active approval workflow", deactivateWorkflow("WF-1004")},
 		{"its activity's line items cost more than planned and the setting only warns", "exceed its planned cost",
-			func(t *testing.T, db *fake.DB) { lowerPlannedCost(t, db, "A-1003") }},
+			lowerPlannedCost("A-1003")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -264,7 +156,7 @@ func TestApproveChange_ChecksTheStoredValuesAgain_Contract_032_FR036_D404(t *tes
 	priya, daniel := s.SignIn(t, priyasEmail), s.SignIn(t, danielsEmail)
 	decoded[purchaserequest.View](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(pr, "8000.00", "submitChanges")), http.StatusOK)
 	at := decoded[purchaserequest.ApprovalView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval", nil), http.StatusOK)
-	leaveApproval(t, db, "A-1003")
+	leaveApproval("A-1003")(t, db)
 	round := openRound(t, at)
 
 	refused := decoded[apiError](t, daniel.Do(t, http.MethodPost, prs+"/"+pr.ID+"/approval/approve",
