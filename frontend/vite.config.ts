@@ -1,7 +1,8 @@
 /// <reference types="vitest/config" />
+import { realpathSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, searchForWorkspaceRoot } from 'vite';
 import { developmentHeaders, securityHeaders } from './security-headers.ts';
 
 // 127.0.0.1, not localhost: Node may resolve localhost to IPv6, where the API does not listen.
@@ -15,12 +16,24 @@ if (process.env.VITEST) {
 // xfwd: the API counts sign-in attempts per client, so it must see the browser's address.
 const proxy = { '/api': { target: apiTarget, xfwd: true } };
 
+const nodeModulesEvenWhenLinkedFromAnotherCheckout = realpathSync(
+  fileURLToPath(new URL('./node_modules', import.meta.url)),
+);
+const allow = [searchForWorkspaceRoot(process.cwd()), nodeModulesEvenWhenLinkedFromAnotherCheckout];
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
-  server: { host: '127.0.0.1', port: 5173, strictPort: true, proxy, headers: developmentHeaders },
+  server: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    proxy,
+    headers: developmentHeaders,
+    fs: { allow },
+  },
   preview: { host: '127.0.0.1', port: 4173, strictPort: true, proxy, headers: securityHeaders },
   build: {
     rolldownOptions: {

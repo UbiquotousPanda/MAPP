@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import { purchaseRequestHref, recordHref } from '@/ui/record-links';
-import { waitingForMeHref } from './home-links';
 
 export type HomeActionItem = components['schemas']['HomeActionItem'];
 
@@ -41,12 +40,17 @@ export function actionHref(item: HomeActionItem): string {
   const { type, id } = item.record;
   switch (item.kind) {
     case 'approval':
-      return type === 'activity' ? waitingForMeHref(id) : purchaseRequestHref(id);
+      return `${type === 'activity' ? activityHref(item) : purchaseRequestHref(id)}#approval`;
     case 'purchaseRequestToFix':
       return purchaseRequestHref(id);
     case 'swbsRequest':
       return recordHref('lineItem', id);
     case 'activityIncomplete':
-      return recordHref('activity', id);
+      return activityHref(item);
   }
+}
+
+function activityHref(item: HomeActionItem): string {
+  const planId = item.plan?.type === 'plan' ? item.plan.id : undefined;
+  return recordHref('activity', item.record.id, planId);
 }

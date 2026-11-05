@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"math"
@@ -11,6 +12,9 @@ import (
 
 	"mapp/internal/platform/errs"
 )
+
+// statusClientClosedRequest is nginx's 499: the browser went away, so no one reads the answer.
+const statusClientClosedRequest = 499
 
 // BindJSON decodes the body into dst, or returns bad_request for anything but one strict JSON value.
 func BindJSON(c *gin.Context, dst any) error {
@@ -28,6 +32,12 @@ func Respond(c *gin.Context, status int, body any) {
 // RespondError answers an *errs.Error as it is and logs any other error as internal_error, then aborts.
 func RespondError(c *gin.Context, err error) {
 	apiErr, ok := errors.AsType[*errs.Error](err)
+	if !ok && errors.Is(err, context.Canceled) {
+		slog.InfoContext(c.Request.Context(), "request cancelled", "method", c.Request.Method,
+			"path", c.Request.URL.Path, "error", err)
+		c.AbortWithStatus(statusClientClosedRequest)
+		return
+	}
 	if !ok {
 		slog.ErrorContext(c.Request.Context(), "request failed", "method", c.Request.Method,
 			"path", c.Request.URL.Path, "error", err)
