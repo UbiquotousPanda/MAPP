@@ -80,6 +80,29 @@ assumption for the product owner to confirm.
 - Q: May a PR line use another currency than its line item? → A: Yes (013 FR-017, edge cases). Every check
   converts into the line item's currency at today's rate (D-303) and shows both amounts.
 
+### Session 2026-11-05
+
+Shell's leads asked that a purchase request be refused for business reasons only, never for technical ones,
+and that its verification and validation be sturdy. The integrator decided as follows (D-404).
+
+- Q: When do the checks run? → A: Every check, the save checks of FR-053 and the gates of FR-021, runs again on
+  the stored PR at each Submit, Re-submit, Save and re-submit and Submit changes, and at each approval of a PR
+  or of a change. Until now a plain Submit ran only the gates and an approval ran nothing, so a PR whose
+  activity left approval, whose SWBS code went, whose MoA approver became inactive or whose line item had
+  less left could still be approved.
+- Q: Is that check stricter than a save? → A: Yes. A save accepts an inactive owner, MoA approver, currency
+  or attribute option that the PR already holds, so an owner who left Shell does not block editing the
+  description. A submission and an approval do not accept them, because a PR nobody can follow up is not
+  ready; the amount is also checked again against what the line item has left at today's rates.
+- Q: What does the approver see when the check fails, and may they still decline? → A: Approve is refused with
+  every problem listed, each linking to what needs fixing. Decline is never refused: it is the business
+  decision. At a decision the overspend gate (037) and the workflow gate are not repeated: Overspend
+  control's setting decides the first, and an open round has already used its workflow.
+- Q: How are field problems and readiness problems shown together? → A: One answer, 409 `not_ready`, carries
+  `fields` (shown next to the form's fields and in its summary) and `missing` (the gates, grouped by record).
+  A save that also submits and has only field problems stays 400 `validation_failed`, because its input is
+  what is wrong; once a gate fails too, the answer is the 409 with both lists and nothing is saved.
+
 ## User Scenarios & Testing *(mandatory)*
 
 All examples use the demo data: "FY2026 Lubricants Europe" (P-1001, Priya Raman) with "Billboard winter
@@ -179,6 +202,19 @@ approval history shows the level, approver, date, outcome and comment.
 12. **Given** Daniel opens the Approvals page, **Then** the PR waiting for him is listed with its name,
     amount and owner; selecting it shows a preview with the PR's lines, total, approval chain and Approve
     and Decline.
+13. **Given** a Created PR whose owner, MoA approver, line currency or an attribute option has become
+    inactive, or whose line item has less left than the line's amount, **When** Priya chooses Submit,
+    **Then** it is refused with every such problem listed with the others, and the PR stays Created (D-404).
+14. **Given** a Submitted PR, **When** Priya sets a line's amount to 0.00 and moves the line to a line item
+    whose activity is not Approved and chooses Save and re-submit, **Then** one answer shows the amount's
+    problem next to the field and the activity's problem in the list of what is needed, nothing is saved and
+    the open round continues (D-404).
+15. **Given** a Submitted PR whose activity left approval after it was submitted, **When** Daniel chooses
+    Approve, **Then** it is refused naming the activity with a link to it; the PR stays Submitted, and Daniel
+    can still Decline (D-404).
+16. **Given** a Submitted PR whose workflow was made inactive, or whose activity's line items now cost more
+    than its planned cost while Overspend control only warns, **When** Daniel approves, **Then** the approval
+    is accepted as the round was started (D-404).
 
 ---
 
@@ -403,7 +439,8 @@ other seeded attributes.
   approve, close, delete or restore a PR until it is switched on again; the Purchase requests page leaves
   the sidebar.
 - **Owner leaves Shell (made inactive)**: the PR keeps its owner, shown "(inactive)"; anyone allowed to edit
-  can change the owner of a PR that is not Closed.
+  can change the owner of a PR that is not Closed. Submit, Re-submit, Submit changes and Approve are refused
+  until they do (FR-059); Decline is not.
 - **A line item in the recycle bin**: cannot be added to a PR (only live line items are offered).
 - **Empty list**: when no PR matches, the page says so and offers Clear filters; when there are no PRs at
   all, it explains that PRs are raised from a line item's Purchase requests section.
@@ -511,6 +548,8 @@ amounts (no goods-receipt data exists).
   *Amended by [037 FR-019](../037-overspend-control/spec.md) (D-349): also refused while any line's activity
   has line items exceeding its planned cost (negative unassigned planned cost), whatever its budgets'
   overspend setting, naming each such activity and the overage with the other problems.*
+  *Amended by D-404 (2026-11-05): the save checks of FR-053 also run again at each of these steps, with the
+  gates and strictly, and every approval of a PR or a change repeats them (FR-059, FR-060).*
 - **FR-022**: System MUST run a submission through the Approval workflow (approval rounds of type Purchase
   request) and Submit changes through the Approval workflow for modification (type Modified purchase
   request), using the approval engine of feature 031, and set the PR status exactly as the Status Model
@@ -634,6 +673,8 @@ amounts (no goods-receipt data exists).
   completeness chip ("3 things needed to submit") that links to what is missing (013 FR-065).
 - **FR-053**: Saving MUST check the whole PR, header and lines, and show every problem at once, in a summary
   and next to each field (013 FR-066).
+  *Amended by D-404 (2026-11-05): a save that also submits shows the problems of FR-021 together with them
+  (FR-060).*
 - **FR-054**: Leaving a PR with unsaved changes MUST ask to save, discard or stay (013 FR-067).
 - **FR-055**: Delete, remove line and close MUST ask for confirmation naming the record and stating what
   will be removed and released; cancelling changes nothing (013 FR-068).
@@ -648,6 +689,20 @@ amounts (no goods-receipt data exists).
   a History section (013 FR-070 minus documents and invoices).
 - **FR-058**: The owner MUST be notified in MAPP when the PR is approved or declined, and the notification
   MUST open the PR (013 FR-071 in part).
+
+#### Checks at every step (D-404)
+
+- **FR-059**: System MUST run every check again on the stored PR — the save checks of FR-053 and the gates of
+  FR-021 — at Submit, Re-submit, Save and re-submit, Submit changes, and when an approver approves a PR or a
+  change; never when declining. The save checks run strictly: an inactive owner, MoA approver, currency or
+  attribute option that the PR already holds is refused, and each line's amount is checked against what its
+  line item has left at today's rates. At an approval the overspend gate (037 FR-019, whose approval side
+  follows Overspend control) and the workflow gate are left out.
+- **FR-060**: A refusal MUST list the problems of both kinds together: 409 `not_ready` with `fields` (the
+  save checks' problems) and `missing` (the gates' problems grouped by record); a save with only field
+  problems stays 400 `validation_failed`. The Submit dialog and the PR form show both lists, and the
+  approver's Approve dialog shows the refusal, each problem linking to where it is fixed; Decline stays
+  available.
 
 ### Record Operations
 

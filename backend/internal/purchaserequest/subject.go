@@ -48,6 +48,14 @@ func (s *Service) ReadyCheck(ctx context.Context, a actor.Actor, id string, kind
 	return check, nil
 }
 
+func (s *Service) CheckToApprove(ctx context.Context, id string, kind approval.SubjectKind) error {
+	pr, err := s.stored(ctx, id)
+	if err != nil {
+		return err
+	}
+	return s.ensureReady(ctx, pr, moment{kind: RoundKind(kind), deciding: true})
+}
+
 // RoundChanged sets the status for a round event (data-model §3.5); the engine logs the event itself.
 //
 //nolint:revive // argument-limit 5: the port's signature, declared by approval (031 contracts/go-api.md)

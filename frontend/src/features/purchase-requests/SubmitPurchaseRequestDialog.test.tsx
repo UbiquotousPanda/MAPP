@@ -112,7 +112,7 @@ describe('032 FR-021: submit', () => {
       [problems[0]?.message, '/activities/A-1004'],
       [problems[1]?.message, '/line-items/L-1006'],
       ['MoA approver', '/purchase-requests/PR-1002/edit?field=moaApproverId'],
-      ['Overall limit', '/purchase-requests/PR-1002/edit?field=lines%5B0%5D.overallLimit'],
+      ['Line 1: Overall limit', '/purchase-requests/PR-1002/edit?field=lines%5B0%5D.overallLimit'],
     ]);
     expect(within(dialog).queryByRole('button', { name: 'Submit for approval' })).toBeNull();
     await expectNoAxeViolations();
@@ -196,6 +196,39 @@ describe('032 FR-021: submit', () => {
     expect(links[2]).toHaveAttribute(
       'href',
       '/purchase-requests/PR-1002/edit?field=attributes.SA-1201',
+    );
+  });
+
+  it('032 D-404: a refusal lists its field problems with the missing fields, each a link', async () => {
+    const refusal = apiError('not_ready', 'This purchase request is not ready to submit.', {
+      fields: [
+        { field: 'ownerId', message: 'Choose an active person.' },
+        { field: 'lines[0].currency', message: 'Choose an active currency.' },
+      ],
+      missing: [
+        {
+          record: { type: 'lineItem', id: 'L-1006', name: 'Stand build' },
+          fields: [{ field: 'swbsCode', label: 'SWBS code', reason: 'No SWBS code yet' }],
+        },
+      ],
+    });
+    const { user } = renderButton({ body: submission() }, purchaseRequest(), [
+      reply(SUBMIT, { status: 409, body: refusal }),
+    ]);
+
+    const dialog = await openDialog(user, 'Submit for approval');
+    await user.click(await within(dialog).findByRole('button', { name: 'Submit for approval' }));
+
+    const links = await within(dialog).findAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual([
+      'Owner: Choose an active person.',
+      'Line 1: Choose an active currency.',
+      'Stand build: No SWBS code yet',
+    ]);
+    expect(links[0]).toHaveAttribute('href', '/purchase-requests/PR-1002/edit?field=ownerId');
+    expect(links[1]).toHaveAttribute(
+      'href',
+      '/purchase-requests/PR-1002/edit?field=lines%5B0%5D.currency',
     );
   });
 

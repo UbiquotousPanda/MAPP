@@ -445,7 +445,8 @@ paths:
       operationId: submitPurchaseRequest
       summary: Submit (Created) or Re-submit (Submitted, In review, Declined) without changes (FR-021 – FR-023)
       description: |
-        409 not_ready when a gate fails (error.missing groups every problem by record, as for PUT); 409
+        409 not_ready when any check fails, run again on the stored PR (D-404: error.fields holds the save
+        checks' problems, error.missing groups every gate problem by record, as for PUT); 409
         not_allowed for an Approved PR ("Edit the purchase request and choose Submit changes.") or a Closed one.
       requestBody:
         required: true

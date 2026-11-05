@@ -58,3 +58,21 @@ func (in Input) moaApprover() string {
 	}
 	return *in.MoAApproverID
 }
+
+// inputOf is the save that would store pr as it is, so that the save checks can run on it again.
+func inputOf(pr PurchaseRequest) Input {
+	moa := pr.MoAApproverID
+	in := Input{Name: pr.Name, Description: pr.Description, OwnerID: pr.OwnerID, MoAApproverID: &moa,
+		ApprovalWorkflowID: pr.WorkflowID, ModificationWorkflowID: pr.ModificationWorkflowID, Attributes: pr.Attributes,
+		Lines: make([]LineInput, 0, len(pr.Lines))}
+	for _, l := range pr.Lines {
+		line := LineInput{ID: l.ID, LineItemID: l.LineItemID, Currency: l.Currency, Amount: l.Amount.String(),
+			DeliveryDate: l.DeliveryDate.String(), Description: l.Description, Attributes: l.Attributes}
+		if l.OverallLimit != nil {
+			limit := l.OverallLimit.String()
+			line.OverallLimit = &limit
+		}
+		in.Lines = append(in.Lines, line)
+	}
+	return in
+}

@@ -439,6 +439,13 @@ empty (header and lines). `ready` is true when there is none. A refused submissi
 with the problems in `error.missing`, one `ReadinessGroup` per record (type `purchaseRequest`,
 `purchaseRequestLine`, `activity` or `lineItem`), each problem a `MissingField` whose `reason` is the message.
 
+Since D-404 (2026-11-05) the same refusal also lists the save checks' field problems in `error.fields`, because
+every check runs again on the stored PR at Submit, Re-submit, Save and re-submit, Submit changes and each
+Approve (§3.2 strictly: an inactive owner, MoA approver, currency or attribute option the PR already holds, and
+each amount against what its line item has left at today's rates). At an Approve the overspend and workflow gates
+are not repeated, and `ReadyCheck` and the submission check list both kinds as `problems`, field problems first.
+A save with only field problems stays 400 `validation_failed`.
+
 ### 3.5 Status transitions (Status Model; `RoundChanged`)
 
 | Kind | Outcome | From | To | Side effects |

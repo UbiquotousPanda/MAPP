@@ -15,6 +15,8 @@ type PurchaseRequests interface {
 	PurchaseRequest(ctx context.Context, id string) (PurchaseRequestFacts, bool, error)
 	ListInScope(ctx context.Context, scope authz.Scope, ids []string) ([]PurchaseRequestFacts, error)
 	ReadyCheck(ctx context.Context, a actor.Actor, id string, kind SubjectKind) (ReadyCheck, error)
+	// CheckToApprove runs every check of the stored purchase request again; the refusal lists all its problems (032 D-404).
+	CheckToApprove(ctx context.Context, id string, kind SubjectKind) error
 	// RoundChanged lets 032 set the PR status for a round event; approvals writes the log entry.
 	RoundChanged(ctx context.Context, a actor.Actor, id string, kind SubjectKind, outcome Outcome) (PurchaseRequestFacts, error)
 }

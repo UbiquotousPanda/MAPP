@@ -51,6 +51,10 @@ func (x prAttributes) Check(ctx context.Context, level settings.Level, in settin
 	return x.settings.CheckAttributes(ctx, level, in)
 }
 
+func (x prAttributes) CheckStored(ctx context.Context, level settings.Level, in settings.AttributeInput) (settings.AttributeResult, error) {
+	return x.settings.CheckStoredAttributes(ctx, level, in)
+}
+
 func (x prAttributes) Missing(ctx context.Context, level settings.Level, values settings.AttributeValues, businessUnit []string) ([]settings.MissingField, error) {
 	return x.settings.MissingAttributes(ctx, level, values, businessUnit)
 }

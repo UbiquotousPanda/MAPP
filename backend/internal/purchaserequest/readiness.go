@@ -30,20 +30,25 @@ func submissionKind(pr PurchaseRequest) RoundKind {
 	return KindPurchaseRequest
 }
 
-// gates are FR-021: everything that stops a submission of kind, every problem at once.
-func (s *Service) gates(ctx context.Context, pr PurchaseRequest, facts map[string]LineItemFacts, kind RoundKind) ([]Problem, error) {
+// gates are everything that stops a submission of m's round kind, every problem at once; a decision runs them
+// again without the two that only a submission needs (D-404).
+func (s *Service) gates(ctx context.Context, pr PurchaseRequest, facts map[string]LineItemFacts, m moment) ([]Problem, error) {
 	problems := []Problem{}
 	if len(pr.Lines) == 0 {
 		problems = append(problems, Problem{Field: fieldLines, Group: groupPurchaseRequest, RecordID: pr.ID, Message: msgAddLine})
 	}
 	problems = append(problems, activityGates(pr, facts)...)
-	problems = append(problems, overspentActivityGates(pr, facts)...)
-	problems = append(problems, companyCodeGates(pr, facts)...)
-	workflow, err := s.workflowGate(ctx, pr, kind)
-	if err != nil {
-		return nil, err
+	if !m.deciding {
+		problems = append(problems, overspentActivityGates(pr, facts)...)
 	}
-	problems = append(problems, workflow...)
+	problems = append(problems, companyCodeGates(pr, facts)...)
+	if !m.deciding {
+		workflow, err := s.workflowGate(ctx, pr, m.kind)
+		if err != nil {
+			return nil, err
+		}
+		problems = append(problems, workflow...)
+	}
 	if pr.MoAApproverID == "" {
 		problems = append(problems, Problem{Field: fieldMoA, Group: groupPurchaseRequest, RecordID: pr.ID, Message: msgChooseMoA})
 	}
@@ -182,8 +187,8 @@ func nonNilMissing(list []settings.MissingField) []settings.MissingField {
 	return list
 }
 
-// notReady is the 409 answer of a refused submission: the problems grouped by record (data-model §3.4).
-func notReady(pr PurchaseRequest, problems []Problem, facts map[string]LineItemFacts) error {
+// groupsOf groups the problems of a refused submission by record (data-model §3.4).
+func groupsOf(pr PurchaseRequest, problems []Problem, facts map[string]LineItemFacts) []errs.ReadinessGroup {
 	var groups []errs.ReadinessGroup
 	for _, p := range problems {
 		ref := recordOf(pr, p, facts)
@@ -194,7 +199,7 @@ func notReady(pr PurchaseRequest, problems []Problem, facts map[string]LineItemF
 		}
 		groups[i].Fields = append(groups[i].Fields, errs.MissingField{Field: p.Field, Label: p.Message, Reason: p.Message})
 	}
-	return errs.NotReady(msgNotReady, groups)
+	return groups
 }
 
 func recordOf(pr PurchaseRequest, p Problem, facts map[string]LineItemFacts) errs.RecordRef {
@@ -208,7 +213,11 @@ func recordOf(pr PurchaseRequest, p Problem, facts map[string]LineItemFacts) err
 	case groupLineItem:
 		return errs.RecordRef{Type: groupLineItem, ID: p.RecordID, Name: facts[p.RecordID].Name}
 	case groupLine:
-		return errs.RecordRef{Type: lineKind, ID: p.RecordID, Name: p.RecordID}
+		name := p.RecordID
+		if name == "" {
+			name = fmt.Sprintf("Line %d", lineNumberOf(p.Field))
+		}
+		return errs.RecordRef{Type: lineKind, ID: p.RecordID, Name: name}
 	}
 	return errs.RecordRef{Type: recordKind, ID: pr.ID, Name: pr.Name}
 }

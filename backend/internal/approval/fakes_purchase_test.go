@@ -26,7 +26,14 @@ type fakePurchases struct {
 	facts    map[string]PurchaseRequestFacts
 	problems map[string][]SubmitProblem
 	events   map[string][]purchaseEvent
+	refusals map[string]error
+	checked  []string
 	order    []string
+}
+
+func (f *fakePurchases) CheckToApprove(_ context.Context, id string, _ SubjectKind) error {
+	f.checked = append(f.checked, id)
+	return f.refusals[id]
 }
 
 func (f *fakePurchases) PurchaseRequest(_ context.Context, id string) (PurchaseRequestFacts, bool, error) {
@@ -93,7 +100,7 @@ func endedStatus(status string, modification bool, outcome Outcome) string {
 func (f *fixture) usePurchases(t *testing.T) *fakePurchases {
 	t.Helper()
 	prs := &fakePurchases{clock: f.clock, facts: map[string]PurchaseRequestFacts{}, problems: map[string][]SubmitProblem{},
-		events: map[string][]purchaseEvent{}}
+		events: map[string][]purchaseEvent{}, refusals: map[string]error{}}
 	err := f.history.Register(history.Kind{
 		Name: string(KindPurchaseRequest), Singular: "purchase request", Plural: "purchase requests",
 		Snapshot: func(_ context.Context, id string) (history.Snapshot, bool, error) {

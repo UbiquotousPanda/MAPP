@@ -49,6 +49,17 @@ func (s *Service) overageRefused(ctx context.Context, sub subject) (string, erro
 	return strings.ToUpper(text[:1]) + text[1:], nil
 }
 
+// refuseApproval is every reason to refuse an approval of a person who may decide; a decline is never refused.
+func (s *Service) refuseApproval(ctx context.Context, dg deciding) error {
+	if dg.kind != ActionApproved {
+		return nil
+	}
+	if err := s.refuseOverage(ctx, dg); err != nil {
+		return err
+	}
+	return s.refuseUnready(ctx, dg)
+}
+
 func (s *Service) refuseOverage(ctx context.Context, dg deciding) error {
 	if dg.kind != ActionApproved {
 		return nil

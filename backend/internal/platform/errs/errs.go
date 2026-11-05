@@ -171,6 +171,12 @@ func NotReady(message string, missing []ReadinessGroup) *Error {
 	return e
 }
 
+func NotReadyWithFields(message string, fields []FieldError, missing []ReadinessGroup) *Error {
+	e := NotReady(message, missing)
+	e.Fields = append(e.Fields, fields...)
+	return e
+}
+
 func ParentDeletedPermanently(level string, parent RecordRef, parentLevel string) *Error {
 	message := fmt.Sprintf("This %s can't be restored because its %s '%s' was permanently deleted.",
 		level, parentLevel, parent.Name)

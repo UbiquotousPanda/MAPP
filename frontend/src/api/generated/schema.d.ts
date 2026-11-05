@@ -3265,9 +3265,11 @@ export interface paths {
          *     left out is removed to the recycle bin (Created and Declined only). then must fit the status (data-model
          *     §3.2): save (Created, Declined; Approved when only lines are added and Lines on approved purchase requests
          *     is withoutApproval), resubmit (Submitted, In review), submitChanges (Approved). With resubmit and
-         *     submitChanges the person also needs purchaseRequests.submit and the gates must pass (409 not_ready;
-         *     error.missing groups every problem by record — purchaseRequest, purchaseRequestLine, activity, lineItem —
-         *     with MissingField.reason holding the message). An out-of-date version answers 409 version_conflict.
+         *     submitChanges the person also needs purchaseRequests.submit, and every check runs on what is saved: the field
+         *     problems alone answer 400 validation_failed, as for save; once a gate fails too the answer is 409 not_ready
+         *     with both lists (D-404) — error.fields holds the field problems, error.missing groups the gates' problems by
+         *     record (purchaseRequest, purchaseRequestLine, activity, lineItem) with MissingField.reason holding the
+         *     message — and nothing is saved. An out-of-date version answers 409 version_conflict.
          */
         put: operations["savePurchaseRequest"];
         post?: never;
@@ -3420,8 +3422,10 @@ export interface paths {
         put?: never;
         /**
          * Submit (Created) or Re-submit (Submitted, In review, Declined) without changes (FR-021 – FR-023)
-         * @description 409 not_ready when a gate fails (error.missing groups every problem by record, as for PUT); 409
-         *     not_allowed for an Approved PR ("Edit the purchase request and choose Submit changes.") or a Closed one.
+         * @description 409 not_ready when any check fails, run again on the stored purchase request (D-404): error.fields holds the
+         *     save checks' problems (an inactive owner, MoA approver, currency or option; an amount above what the line
+         *     item has left) and error.missing groups the gates' problems by record, as for PUT; 409 not_allowed for an
+         *     Approved PR ("Edit the purchase request and choose Submit changes.") or a Closed one.
          */
         post: operations["submitPurchaseRequest"];
         delete?: never;
@@ -3444,7 +3448,7 @@ export interface paths {
         put?: never;
         /**
          * Approve the waiting level as one of its approvers (self-approval allowed, FR-027)
-         * @description A person holding neither approvals permission is refused with 403 forbidden first (038 FR-056); 409 not_allowed when approval over planned cost is set to refuse (038 FR-020).
+         * @description A person holding neither approvals permission is refused with 403 forbidden first (038 FR-056); 409 not_allowed when approval over planned cost is set to refuse (038 FR-020); 409 not_ready when the stored purchase request no longer passes its checks (D-404): error.fields and error.missing list every problem, as for submit, without the overspend and workflow gates. Decline is never refused for that.
          */
         post: operations["approvePurchaseRequest"];
         delete?: never;
@@ -5716,7 +5720,7 @@ export interface components {
             recipients: string[];
             lineCount: number;
         };
-        /** @description One thing that stops a submission (FR-021). */
+        /** @description One thing that stops a submission (FR-021), a gate or, since D-404, a save check run again on the stored purchase request. */
         PurchaseRequestProblem: {
             /** @description The form field to go to, e.g. moaApproverId, attributes.SA-1101, lines[0].overallLimit; empty for a gate on another record. */
             field: string;
@@ -6038,12 +6042,12 @@ export interface components {
             code: "validation_failed" | "bad_request" | "sign_in_required" | "session_expired" | "incorrect_credentials" | "not_found" | "version_conflict" | "restore_parent_first" | "undo_expired" | "already_resolved" | "name_taken" | "internal_error" | "parent_deleted_permanently" | "in_use" | "cannot_restore" | "not_allowed" | "not_ready" | "forbidden" | "over_budget" | "too_many_attempts" | "too_large";
             /** @description Plain-language message for the user (never technical details). */
             message: string;
-            /** @description Every field problem (validation_failed); always present, empty otherwise. */
+            /** @description Every field problem (validation_failed); always present, empty otherwise. A purchase request refused for both kinds of reason also lists its field problems here with not_ready (032 D-404). */
             fields: components["schemas"]["FieldError"][];
             conflict?: components["schemas"]["Conflict"];
             parent?: components["schemas"]["RecordRef"];
             resolution?: components["schemas"]["Resolution"];
-            /** @description Every needed field that stops the action, grouped by record (only with not_ready: publishing a plan, submitting an activity). */
+            /** @description Every needed field that stops the action, grouped by record (only with not_ready: publishing a plan, submitting an activity, submitting or approving a purchase request, which also lists fields). */
             missing?: components["schemas"]["ReadinessGroup"][];
         };
         FieldError: {

@@ -90,7 +90,7 @@ func (s *Service) DecideSubject(ctx context.Context, a actor.Actor, kind Subject
 			return err
 		}
 		dg.kind, dg.comment, dg.now = decision.Action, comment, s.now()
-		if err = s.refuseOverage(ctx, dg); err != nil {
+		if err = s.refuseApproval(ctx, dg); err != nil {
 			return err
 		}
 		updated, err := s.recordDecision(ctx, dg)
@@ -106,8 +106,7 @@ func (s *Service) DecideSubject(ctx context.Context, a actor.Actor, kind Subject
 	return sec, nil
 }
 
-// SectionOf returns the record's approval section: every round of the record, newest first, and the actions
-// of kind available to a now (data-model §9).
+// SectionOf returns the record's approval section: its rounds, newest first, and the actions a may take (data-model §9).
 func (s *Service) SectionOf(ctx context.Context, a actor.Actor, kind SubjectKind, id string) (Section, error) {
 	var sec Section
 	err := s.tx.Read(ctx, func(ctx context.Context) error {

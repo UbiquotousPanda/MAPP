@@ -15,6 +15,7 @@ import (
 // checker checks one save of a purchase request (data-model §3.2), collecting every problem at once.
 type checker struct {
 	s        *Service
+	how      checking
 	before   PurchaseRequest // the stored purchase request; its ID is "" on create
 	facts    map[string]LineItemFacts
 	balance  balance
@@ -32,8 +33,8 @@ type checked struct {
 	problems errs.Problems
 }
 
-func (s *Service) check(ctx context.Context, in Input, before PurchaseRequest) (checked, error) {
-	c, err := s.checkerFor(ctx, in, before)
+func (s *Service) check(ctx context.Context, in Input, before PurchaseRequest, how checking) (checked, error) {
+	c, err := s.checkerFor(ctx, in, before, how)
 	if err != nil {
 		return checked{}, err
 	}
@@ -48,7 +49,7 @@ func (s *Service) check(ctx context.Context, in Input, before PurchaseRequest) (
 	return checked{pr: pr, facts: c.facts, balance: c.balance, plan: c.plan, problems: c.problems}, nil
 }
 
-func (s *Service) checkerFor(ctx context.Context, in Input, before PurchaseRequest) (*checker, error) {
+func (s *Service) checkerFor(ctx context.Context, in Input, before PurchaseRequest, how checking) (*checker, error) {
 	ids := make([]string, 0, len(in.Lines)+len(before.Lines))
 	for _, l := range in.Lines {
 		ids = append(ids, l.LineItemID)
@@ -66,7 +67,7 @@ func (s *Service) checkerFor(ctx context.Context, in Input, before PurchaseReque
 	if err != nil {
 		return nil, err
 	}
-	c := &checker{s: s, before: before, facts: facts, balance: balance{rates: rates, claims: claims}}
+	c := &checker{s: s, how: how, before: before, facts: facts, balance: balance{rates: rates, claims: claims}}
 	c.plan = c.planOf(ctx, in.Lines)
 	return c, nil
 }
@@ -124,13 +125,13 @@ func (c *checker) people(ctx context.Context, pr *PurchaseRequest) error {
 	if err != nil {
 		return err
 	}
-	if p, ok := found[pr.OwnerID]; !ok || (!p.Active && pr.OwnerID != c.before.OwnerID) {
+	if p, ok := found[pr.OwnerID]; !ok || (!p.Active && !c.mayKeep(pr.OwnerID, c.before.OwnerID)) {
 		c.problems.Add(fieldOwner, msgChoosePerson)
 	}
 	if pr.MoAApproverID == "" {
 		return nil
 	}
-	if p, ok := found[pr.MoAApproverID]; !ok || (!p.Active && pr.MoAApproverID != c.before.MoAApproverID) {
+	if p, ok := found[pr.MoAApproverID]; !ok || (!p.Active && !c.mayKeep(pr.MoAApproverID, c.before.MoAApproverID)) {
 		c.problems.Add(fieldMoA, msgChoosePerson)
 	}
 	return nil
@@ -163,7 +164,7 @@ func kindWords(kind RoundKind) string {
 // attributes checks the purchase request's Shell attributes, the vendor e-mail address, and copies
 // the vendor's name onto the record for the list (research R2).
 func (c *checker) attributes(ctx context.Context, values settings.AttributeValues, pr *PurchaseRequest) error {
-	result, err := c.s.deps.Attributes.Check(ctx, settings.LevelPurchaseRequest, settings.AttributeInput{
+	result, err := c.checkValues(ctx, settings.LevelPurchaseRequest, settings.AttributeInput{
 		Values: values, Previous: c.before.Attributes, BusinessUnit: c.plan.businessUnit(c.facts),
 	})
 	if err != nil {

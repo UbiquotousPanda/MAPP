@@ -37,13 +37,16 @@ func (s *Service) saved(ctx context.Context, a actor.Actor, id string, in Input)
 	if err != nil {
 		return PurchaseRequest{}, err
 	}
+	if err = s.refuseSave(ctx, ck, in.Then); err != nil {
+		return PurchaseRequest{}, err
+	}
 	pr, err := s.store(ctx, a, before, ck.pr)
 	if err != nil {
 		return PurchaseRequest{}, err
 	}
 	switch {
 	case in.Then != ThenSave:
-		return s.submitAfterSave(ctx, a, toSubmit{pr: pr, facts: ck.facts, comment: in.Comment})
+		return s.startRound(ctx, a, pr, in.Comment)
 	case addsOnly:
 		return s.approveAddedLines(ctx, a, pr, before.Approved)
 	}
@@ -125,31 +128,32 @@ func (s *Service) removeLines(ctx context.Context, a actor.Actor, before, pr Pur
 	return removed, nil
 }
 
-// toSubmit is a saved purchase request about to be submitted, with the facts of its line items.
-type toSubmit struct {
-	pr      PurchaseRequest
-	facts   map[string]LineItemFacts
-	comment string
+// refuseSave answers a save's problems before anything is stored: 400 for field problems alone, 409 not_ready
+// listing both kinds once a gate fails too (D-404).
+func (s *Service) refuseSave(ctx context.Context, ck checked, then string) error {
+	if then == ThenSave || ck.wrongThen() {
+		return ck.problems.Err()
+	}
+	m := moment{kind: submissionKind(ck.pr)}
+	v, err := s.verdictOf(ctx, ck, m)
+	if err != nil {
+		return err
+	}
+	if len(v.gates) == 0 {
+		return v.fields.Err()
+	}
+	return v.refusal(m)
 }
 
-// submitAfterSave starts the round of Save and re-submit or Submit changes once the gates pass.
-func (s *Service) submitAfterSave(ctx context.Context, a actor.Actor, t toSubmit) (PurchaseRequest, error) {
-	kind := submissionKind(t.pr)
-	problems, err := s.gates(ctx, t.pr, t.facts, kind)
-	if err != nil {
-		return PurchaseRequest{}, err
-	}
-	if len(problems) > 0 {
-		return PurchaseRequest{}, notReady(t.pr, problems, t.facts)
-	}
+func (s *Service) startRound(ctx context.Context, a actor.Actor, pr PurchaseRequest, comment string) (PurchaseRequest, error) {
 	if s.rounds == nil {
 		return PurchaseRequest{}, errs.NotFound(msgNotFound)
 	}
-	err = s.rounds.Submit(ctx, a, Submission{Kind: kind, ID: t.pr.ID, Comment: strings.TrimSpace(t.comment)})
+	err := s.rounds.Submit(ctx, a, Submission{Kind: submissionKind(pr), ID: pr.ID, Comment: strings.TrimSpace(comment)})
 	if err != nil {
 		return PurchaseRequest{}, err
 	}
-	return s.stored(ctx, t.pr.ID)
+	return s.stored(ctx, pr.ID)
 }
 
 // approveAddedLines keeps an Approved purchase request Approved when a save only added lines and the setting
