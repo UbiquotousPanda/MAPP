@@ -60,7 +60,7 @@ describe('ActionItemsDialog', () => {
     ]);
     expect(within(dialog).getByRole('link', { name: 'Go to Dealer summit' })).toHaveAttribute(
       'href',
-      '/approvals?tab=waiting&activity=A-1045',
+      '/plans/P-1001/activities/A-1045#approval',
     );
     expect(within(dialog).getByRole('link', { name: 'Go to Summit venue' })).toHaveAttribute(
       'href',
@@ -70,6 +70,42 @@ describe('ActionItemsDialog', () => {
       'href',
       '/line-items/LI-1007',
     );
+  });
+
+  it('opens each record itself: an approval at its approval section, not the Approvals list (#186)', async () => {
+    renderDialog(true, [
+      {
+        kind: 'approval',
+        record: { type: 'activity', id: 'A-1045', name: 'Dealer summit' },
+        plan: null,
+        overdue: true,
+        since: null,
+      },
+      {
+        kind: 'approval',
+        record: { type: 'purchaseRequest', id: 'PR-1004', name: 'Extra flights' },
+        plan,
+        overdue: false,
+        since: null,
+      },
+      {
+        kind: 'activityIncomplete',
+        record: { type: 'activity', id: 'A-1038', name: 'Workshop roadshow' },
+        plan,
+        overdue: false,
+        since: null,
+      },
+    ]);
+
+    const dialog = await screen.findByRole('dialog', { name: 'Your action items' });
+    const hrefs = within(dialog)
+      .getAllByRole('link')
+      .map((link) => link.getAttribute('href'));
+    expect(hrefs).toEqual([
+      '/activities/A-1045#approval',
+      '/purchase-requests/PR-1004#approval',
+      '/plans/P-1001/activities/A-1038',
+    ]);
   });
 
   it('saves Remind me later on the server and closes (demo-mvp #9)', async () => {
