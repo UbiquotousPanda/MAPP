@@ -13,11 +13,3 @@ ALTER TABLE approval_rounds
     ADD COLUMN held_back_line_item_ids text[] NOT NULL DEFAULT '{}',
     ADD CONSTRAINT approval_rounds_held_back_check
         CHECK (cardinality(line_item_ids) = 0 OR held_back_line_item_ids <@ line_item_ids);
-
--- +goose Down
-ALTER TABLE approval_rounds
-    DROP CONSTRAINT approval_rounds_held_back_check,
-    DROP COLUMN held_back_line_item_ids,
-    DROP COLUMN line_item_ids;
-
-ALTER TABLE line_items DROP COLUMN approval;
