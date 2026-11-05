@@ -13,7 +13,8 @@ import (
 const listOpenRounds = `-- name: ListOpenRounds :many
 SELECT id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 FROM approval_rounds
 WHERE outcome = 'open'
 ORDER BY length(id), id COLLATE "C"
@@ -54,6 +55,8 @@ func (q *Queries) ListOpenRounds(ctx context.Context) ([]ApprovalRound, error) {
 			&i.UpdatedByID,
 			&i.UpdatedByName,
 			&i.SubjectKind,
+			&i.LineItemIds,
+			&i.HeldBackLineItemIds,
 		); err != nil {
 			return nil, err
 		}
@@ -68,7 +71,8 @@ func (q *Queries) ListOpenRounds(ctx context.Context) ([]ApprovalRound, error) {
 const listRounds = `-- name: ListRounds :many
 SELECT id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 FROM approval_rounds
 WHERE ($1::text IS NULL OR id = $1)
     AND ($2::text IS NULL OR subject_id = $2)
@@ -115,6 +119,8 @@ func (q *Queries) ListRounds(ctx context.Context, arg ListRoundsParams) ([]Appro
 			&i.UpdatedByID,
 			&i.UpdatedByName,
 			&i.SubjectKind,
+			&i.LineItemIds,
+			&i.HeldBackLineItemIds,
 		); err != nil {
 			return nil, err
 		}
@@ -129,7 +135,8 @@ func (q *Queries) ListRounds(ctx context.Context, arg ListRoundsParams) ([]Appro
 const listRoundsInScope = `-- name: ListRoundsInScope :many
 SELECT id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 FROM approval_rounds
 WHERE ($1::text IS NULL OR id = $1)
     AND subject_kind = 'activity'
@@ -187,6 +194,8 @@ func (q *Queries) ListRoundsInScope(ctx context.Context, arg ListRoundsInScopePa
 			&i.UpdatedByID,
 			&i.UpdatedByName,
 			&i.SubjectKind,
+			&i.LineItemIds,
+			&i.HeldBackLineItemIds,
 		); err != nil {
 			return nil, err
 		}
@@ -201,7 +210,8 @@ func (q *Queries) ListRoundsInScope(ctx context.Context, arg ListRoundsInScopePa
 const listRoundsOfSubjects = `-- name: ListRoundsOfSubjects :many
 SELECT id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 FROM approval_rounds
 WHERE subject_id = ANY($1::text[])
 ORDER BY length(id), id COLLATE "C"
@@ -242,6 +252,8 @@ func (q *Queries) ListRoundsOfSubjects(ctx context.Context, subjectIds []string)
 			&i.UpdatedByID,
 			&i.UpdatedByName,
 			&i.SubjectKind,
+			&i.LineItemIds,
+			&i.HeldBackLineItemIds,
 		); err != nil {
 			return nil, err
 		}
@@ -257,9 +269,11 @@ const putRound = `-- name: PutRound :exec
 INSERT INTO approval_rounds (
     id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25,
+    $26, $27
 )
 ON CONFLICT (id) DO UPDATE SET
     subject_kind = excluded.subject_kind,
@@ -285,35 +299,39 @@ ON CONFLICT (id) DO UPDATE SET
     created_by_name = excluded.created_by_name,
     updated_at = excluded.updated_at,
     updated_by_id = excluded.updated_by_id,
-    updated_by_name = excluded.updated_by_name
+    updated_by_name = excluded.updated_by_name,
+    line_item_ids = excluded.line_item_ids,
+    held_back_line_item_ids = excluded.held_back_line_item_ids
 `
 
 type PutRoundParams struct {
-	ID              string
-	SubjectID       string
-	Number          int
-	WorkflowID      string
-	WorkflowName    string
-	Levels          []byte
-	CurrentLevel    int
-	Outcome         string
-	SubmittedAt     time.Time
-	SubmittedByID   string
-	SubmittedByName string
-	Comment         string
-	EndedAt         *time.Time
-	Facts           []byte
-	ReminderDays    *int
-	EscalationDays  *int
-	AutoApproved    bool
-	Version         int
-	CreatedAt       time.Time
-	CreatedByID     string
-	CreatedByName   string
-	UpdatedAt       time.Time
-	UpdatedByID     string
-	UpdatedByName   string
-	SubjectKind     string
+	ID                  string
+	SubjectID           string
+	Number              int
+	WorkflowID          string
+	WorkflowName        string
+	Levels              []byte
+	CurrentLevel        int
+	Outcome             string
+	SubmittedAt         time.Time
+	SubmittedByID       string
+	SubmittedByName     string
+	Comment             string
+	EndedAt             *time.Time
+	Facts               []byte
+	ReminderDays        *int
+	EscalationDays      *int
+	AutoApproved        bool
+	Version             int
+	CreatedAt           time.Time
+	CreatedByID         string
+	CreatedByName       string
+	UpdatedAt           time.Time
+	UpdatedByID         string
+	UpdatedByName       string
+	SubjectKind         string
+	LineItemIds         []string
+	HeldBackLineItemIds []string
 }
 
 func (q *Queries) PutRound(ctx context.Context, arg PutRoundParams) error {
@@ -343,6 +361,8 @@ func (q *Queries) PutRound(ctx context.Context, arg PutRoundParams) error {
 		arg.UpdatedByID,
 		arg.UpdatedByName,
 		arg.SubjectKind,
+		arg.LineItemIds,
+		arg.HeldBackLineItemIds,
 	)
 	return err
 }

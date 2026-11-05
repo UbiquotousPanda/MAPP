@@ -133,7 +133,7 @@ func (s *Service) startRound(ctx context.Context, sb *submitting) error {
 	if err = s.addAction(ctx, round, Action{Action: words.action, Level: first, Actor: sb.a, At: sb.now, Comment: sb.comment}); err != nil {
 		return err
 	}
-	sb.round = round
+	sb.round, sb.sub = round, sb.sub.inRound(round)
 	sb.automatic, err = s.levelEntries(ctx, round)
 	return err
 }
@@ -145,7 +145,7 @@ func openingRound(sb submitting, n int) (Round, int) {
 		SubjectKind: sb.sub.Kind, SubjectID: sb.sub.ID, Number: n, WorkflowID: sb.workflow.ID,
 		WorkflowName: sb.workflow.Name, Levels: sb.levels, Outcome: OutcomeOpen, SubmittedAt: now, SubmittedBy: sb.a,
 		Comment: sb.comment, Facts: &used, ReminderDays: sb.workflow.ReminderDays, EscalationDays: sb.workflow.EscalationDays,
-		Meta: record.NewMeta(sb.a, now),
+		Meta: record.NewMeta(sb.a, now), LineItemIDs: sb.lineItemIDs(),
 	}
 	first := firstDecideLevel(round.Levels, 0)
 	if first > 0 {
@@ -178,7 +178,7 @@ func (s *Service) levelEntries(ctx context.Context, round Round) ([]string, erro
 }
 
 func (s *Service) waitAtFirstLevel(ctx context.Context, sb submitting) (subject, error) {
-	updated, err := s.moved(ctx, sb.a, sb.sub, OutcomeOpen)
+	updated, err := s.roundMoved(ctx, sb.a, sb.sub, roundEvent{sb.round, OutcomeOpen})
 	if err != nil {
 		return subject{}, err
 	}
@@ -208,7 +208,7 @@ func (s *Service) waitAtFirstLevel(ctx context.Context, sb submitting) (subject,
 
 // roundDetails is the start of the submission's log details: "Round 3 · <workflow> · replaces round 2".
 func roundDetails(sb submitting) string {
-	details := fmt.Sprintf("Round %d · %s", sb.round.Number, sb.round.WorkflowName)
+	details := fmt.Sprintf("Round %d · %s", sb.round.Number, sb.round.WorkflowName) + lineItemsNote(sb.round)
 	if sb.open != nil {
 		details += fmt.Sprintf(" · replaces round %d", sb.open.Number)
 	}
@@ -247,7 +247,7 @@ func (s *Service) approvedAtSubmission(ctx context.Context, sb submitting) (subj
 		reason = noLevelAppliesNote
 	}
 	err = s.notifier(actor.System, approved, round.SubmittedAt).send(ctx, []string{sb.sub.OwnerID}, NotifyAutoApproved,
-		fmt.Sprintf(autoApprovedTitle, sb.sub.Kind.Label()), fmt.Sprintf(autoApprovedText, subjectText(approved), reason))
+		fmt.Sprintf(autoApprovedTitle, sb.sub.label()), fmt.Sprintf(autoApprovedText, subjectText(approved), reason))
 	return approved, err
 }
 
@@ -255,9 +255,9 @@ func (s *Service) approvedAtSubmission(ctx context.Context, sb submitting) (subj
 // change, a purchase request hears both events.
 func (s *Service) openedAndApproved(ctx context.Context, sb submitting) (subject, subject, error) {
 	if sb.sub.Kind == KindActivity {
-		approved, err := s.moved(ctx, sb.a, sb.sub, OutcomeApproved)
+		approved, err := s.roundMoved(ctx, sb.a, sb.sub, roundEvent{sb.round, OutcomeApproved})
 		opened := approved
-		opened.Status = StatusSubmitted
+		opened.Status = openedStatus(sb)
 		return opened, approved, err
 	}
 	opened, err := s.moved(ctx, sb.a, sb.sub, OutcomeOpen)
@@ -266,22 +266,6 @@ func (s *Service) openedAndApproved(ctx context.Context, sb submitting) (subject
 	}
 	approved, err := s.moved(ctx, sb.a, opened, OutcomeApproved)
 	return opened, approved, err
-}
-
-// sendToLevel tells the approvers of a level the round has reached that it waits for them, and each one's
-// current delegates the same with "— you approve as delegate of <name>".
-func (n *notifier) sendToLevel(ctx context.Context, level RoundLevel, dl []Delegation, text string) error {
-	if err := n.send(ctx, idsOf(level.Approvers), NotifyApprovalNeeded, approvalNeededTitle, text); err != nil {
-		return err
-	}
-	for _, approver := range level.Approvers {
-		err := n.send(ctx, delegatesOf(dl, approver.ID), NotifyApprovalNeeded, approvalNeededTitle,
-			text+fmt.Sprintf(delegateSuffix, approver.Name))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (s *Service) addAction(ctx context.Context, round Round, entry Action) error {

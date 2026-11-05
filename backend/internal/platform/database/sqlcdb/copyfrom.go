@@ -347,6 +347,7 @@ func (r iteratorForAddLineItems) Values() ([]interface{}, error) {
 		r.rows[0].SwbsCode,
 		r.rows[0].SwbsRequestedAt,
 		r.rows[0].SwbsReceivedAt,
+		r.rows[0].Approval,
 	}, nil
 }
 
@@ -355,7 +356,7 @@ func (r iteratorForAddLineItems) Err() error {
 }
 
 func (q *Queries) AddLineItems(ctx context.Context, arg []AddLineItemsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"line_items"}, []string{"id", "activity_id", "name", "owner_id", "description", "currency", "planned_cost_minor", "spread_method", "attributes", "contracted_amount_minor", "request_swbs", "finance_budget_year", "finance_budget_item_id", "version", "created_at", "created_by_id", "created_by_name", "updated_at", "updated_by_id", "updated_by_name", "swbs_code", "swbs_requested_at", "swbs_received_at"}, &iteratorForAddLineItems{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"line_items"}, []string{"id", "activity_id", "name", "owner_id", "description", "currency", "planned_cost_minor", "spread_method", "attributes", "contracted_amount_minor", "request_swbs", "finance_budget_year", "finance_budget_item_id", "version", "created_at", "created_by_id", "created_by_name", "updated_at", "updated_by_id", "updated_by_name", "swbs_code", "swbs_requested_at", "swbs_received_at", "approval"}, &iteratorForAddLineItems{rows: arg})
 }
 
 // iteratorForAddOptionParents implements pgx.CopyFromSource.

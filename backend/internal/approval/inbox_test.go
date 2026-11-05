@@ -260,6 +260,7 @@ func TestPreview_FR032(t *testing.T) {
 	items := []PreviewLineItem{{
 		ID: "L-1007", Name: "Launch event", PlannedCost: money.Money{Amount: mustAmount(t, "100000.00"), Currency: "CNY"},
 		PlannedCostDisplay: &usd, SpendType: "Events", GLCode: "61000 Marketing", FinanceBudgetItem: "Mobility China events",
+		Approval: approvalNotApproved,
 	}}
 	f.activities.lineItems["A-1009"] = items
 	f.activities.missing["A-1009"] = []MissingFieldRef{{ID: "attributes.SA-1003", Label: "Cluster"}}

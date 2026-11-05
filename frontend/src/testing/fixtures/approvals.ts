@@ -219,6 +219,7 @@ export function previewOf(overrides: Partial<ApprovalPreview> = {}): ApprovalPre
         spendType: 'Media',
         glCode: '',
         financeBudgetItem: 'Brand films',
+        approval: 'notApproved',
       },
     ],
     unassignedPlannedCost: { amount: '6800.00', currency: 'USD' },

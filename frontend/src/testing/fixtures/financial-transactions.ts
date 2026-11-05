@@ -103,6 +103,7 @@ export const STATION_SIGNAGE: LineItemPreview = {
     contractedAmount: null,
     requestSwbs: false,
     swbsStatus: 'notRequested',
+    approval: 'approved',
     swbsCode: '',
     swbsRequestedAt: null,
     swbsReceivedAt: null,

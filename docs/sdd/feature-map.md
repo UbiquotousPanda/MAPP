@@ -77,6 +77,7 @@ Read-only reports, shown as **Reports**. Built on the `measure-module` branch by
 module), AR invoice details (accrual requests), the China budget pack (budget release figures), vendor delivery
 reliability (goods receipts, Q-030), the custom dashboard engine and self-service builder (client 019, 025),
 report sharing and scheduling by e-mail.
+| 053 | [053-line-item-approval](../../specs/053-line-item-approval/spec.md) | Line-item approval: the approver ticks the line items they approve; unticked and later line items stay Not approved (no SWBS request, not on a purchase request) until sent for approval in a round of their own while the activity stays Approved (D-402) | P1 | 008, 030, 031, 032, 034 | Built — assumptions open for Shell's leads (spec) |
 
 ## Scope boundaries
 

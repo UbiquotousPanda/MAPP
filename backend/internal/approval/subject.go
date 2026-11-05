@@ -29,6 +29,8 @@ type subject struct {
 	TypeName       string
 	BusinessUnits  []Choice
 	Overages       []Overage
+	LineItems      []LineItemFact
+	RoundLineItems []string
 }
 
 func activitySubject(f ActivityFacts) subject {
@@ -36,7 +38,7 @@ func activitySubject(f ActivityFacts) subject {
 		Kind: KindActivity, ID: f.ID, Name: f.Name, Status: f.Status, DisplayStatus: f.DisplayStatus, Path: f.Path,
 		OwnerID: f.OwnerID, Amount: f.PlannedCost, WorkflowID: f.WorkflowID, StartDate: f.StartDate, Meta: f.Meta,
 		Access: f.Access, Plan: f.Plan, ActivityTypeID: f.ActivityTypeID, TypeName: f.TypeName, BusinessUnits: f.BusinessUnits,
-		Overages: activityOverages(f),
+		Overages: activityOverages(f), LineItems: f.LineItems,
 	}
 }
 
@@ -63,6 +65,12 @@ func (sub subject) as(kind SubjectKind) subject {
 	return sub
 }
 
+func (sub subject) inRound(round Round) subject {
+	sub = sub.as(round.kind())
+	sub.RoundLineItems = round.LineItemIDs
+	return sub
+}
+
 func (sub subject) workflowID() string {
 	if sub.Kind == KindModifiedPurchaseRequest {
 		return sub.ModificationWorkflowID
@@ -86,9 +94,9 @@ func (sub subject) view() SubjectView {
 		DisplayStatus: sub.DisplayStatus, Version: sub.Version}
 }
 
-// waiting reports whether the record is in approval: an activity is Submitted exactly while a round is open.
-func (sub subject) waiting() bool {
-	return sub.Kind != KindActivity || sub.Status == StatusSubmitted
+// waitingOn: an activity waits Submitted in a round of its own, and stays Approved in a round for line items.
+func (sub subject) waitingOn(open Round) bool {
+	return sub.Kind != KindActivity || sub.Status == StatusSubmitted || open.forLineItems()
 }
 
 func (s *Service) subjectOf(ctx context.Context, kind SubjectKind, id string) (subject, error) {

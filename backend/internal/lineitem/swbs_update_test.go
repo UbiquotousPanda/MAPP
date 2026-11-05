@@ -77,7 +77,7 @@ func TestUpdate_RequestOffWithoutCode_030_FR004(t *testing.T) {
 	}
 }
 
-func TestDuplicate_DropsSwbsCode_030_FR005(t *testing.T) {
+func TestDuplicate_DropsSwbsCode_030_FR005_053_FR006(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
 	venue := f.venueWithCode(t)
@@ -89,8 +89,8 @@ func TestDuplicate_DropsSwbsCode_030_FR005(t *testing.T) {
 	if dup.SwbsCode != "" || dup.SwbsRequestedAt != nil || dup.SwbsReceivedAt != nil || !dup.RequestSwbs {
 		t.Errorf("copy = %+v, want no SWBS code and the request on", dup.Swbs)
 	}
-	if dup.SwbsStatus != SwbsReadyToSend {
-		t.Errorf("copy status = %s, want readyToSend (the activity stays approved, D-322)", dup.SwbsStatus)
+	if dup.SwbsStatus != SwbsWaitingForApproval {
+		t.Errorf("copy status = %s, want waitingForApproval (a copy is Not approved, D-402)", dup.SwbsStatus)
 	}
 	assertCode(t, f.storedByID(t, venue.ID))
 }

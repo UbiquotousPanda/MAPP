@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useCurrentUser } from '@/session/useSession';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
@@ -11,6 +12,16 @@ import { asApiError, isSessionLost } from '@/api/errors';
 import { useDecide } from './api';
 import type { ActivityApproval } from './api';
 import { alreadyDecidedMessage, approvedToast, capacitySentence } from './decision-messages';
+import { LineItemChoices } from './LineItemChoices';
+import {
+  LINE_ITEMS_DECLINED,
+  decisionConfirmLabel,
+  decisionFailureMessage,
+  decisionTitle,
+  initiallyTicked,
+  lastLevelText,
+  withTick,
+} from './line-item-choices';
 import { levelOf, names } from './messages';
 import { OverPlannedCostAlert } from './OverPlannedCost';
 import { commentSchema, declineSchema } from './schemas';
@@ -58,6 +69,9 @@ export function DecisionDialog({ mode, approval, onClose, onDecided }: DecisionD
     : !viewer.isCurrentApprover && viewer.onBehalfOf.length > 0;
   const allLevel = level ? allLevelLines(level, capacity, viewer, user.id) : null;
   const completes = !allLevel || allLevel.completes;
+  const forLineItems = (round?.lineItemIds ?? []).length > 0;
+  const choices = approve ? (approval.lineItems ?? []) : [];
+  const [ticked, setTicked] = useState(() => initiallyTicked(choices));
 
   function confirm() {
     if (round && !decide.isPending) {
@@ -73,6 +87,7 @@ export function DecisionDialog({ mode, approval, onClose, onDecided }: DecisionD
         roundId,
         level: levelNumber,
         comment,
+        approvedLineItemIds: choices.length > 0 ? [...ticked] : undefined,
       });
       show({
         message: approve
@@ -96,7 +111,7 @@ export function DecisionDialog({ mode, approval, onClose, onDecided }: DecisionD
         onClose();
         return;
       }
-      show({ message: failure.message });
+      show({ message: decisionFailureMessage(failure) });
       // Could not reach the server, or it failed: the dialog stays, so Approve can be tried again.
       if (failure.kind !== 'unreachable' && failure.kind !== 'other') {
         onClose();
@@ -112,8 +127,8 @@ export function DecisionDialog({ mode, approval, onClose, onDecided }: DecisionD
           onClose();
         }
       }}
-      title={approve ? `Approve '${name}'?` : `Decline '${name}'?`}
-      confirmLabel={approve ? 'Approve' : 'Decline activity'}
+      title={decisionTitle(approve, name, forLineItems)}
+      confirmLabel={decisionConfirmLabel(approve, forLineItems)}
       tone={approve ? undefined : 'danger'}
       busy={decide.isPending}
       onConfirm={confirm}
@@ -140,15 +155,23 @@ export function DecisionDialog({ mode, approval, onClose, onDecided }: DecisionD
                 : `Next: level ${next.number}.`}
             </p>
           ) : (
-            <p>This is the last level — the activity becomes Approved.</p>
+            <p>{lastLevelText(forLineItems)}</p>
           ))}
-        {!approve && <GoesBackTo owner={approval.owner} />}
+        {!approve &&
+          (forLineItems ? <p>{LINE_ITEMS_DECLINED}</p> : <GoesBackTo owner={approval.owner} />)}
         {viewer.isOwner && <p>You own this activity.</p>}
         {capacityText && <p className={styles.note}>{capacityText}</p>}
         {onBehalf && viewer.onBehalfOf.length > 0 && (
           <p className={styles.note}>
             {`You are not an approver of level ${levelNumber}. Your decision will be recorded as made on behalf of ${names(viewer.onBehalfOf)}.`}
           </p>
+        )}
+        {choices.length > 0 && (
+          <LineItemChoices
+            items={choices}
+            ticked={ticked}
+            onChange={(id, checked) => setTicked((current) => withTick(current, id, checked))}
+          />
         )}
         <FormField
           control={form.control}

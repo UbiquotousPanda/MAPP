@@ -7,14 +7,12 @@ import (
 	"mapp/internal/settings"
 )
 
-// filledIn is a line item with everything needed to submit: owner, finance budget year and item.
 func filledIn() LineItem {
 	year := 2026
 	return LineItem{OwnerID: priya.ID, FinanceBudgetYear: &year, FinanceBudgetItemID: europeDigital}
 }
 
-// The missing list counts the empty needed-to-submit fields in a fixed order: owner, Shell attributes,
-// finance budget year, finance budget item; nothing missing is an empty list, "All filled in" (FR-028).
+// Missing lists empty needed-to-submit fields in a fixed order: owner, attributes, budget year, budget item.
 func TestMissing_NeededToSubmit_FR028(t *testing.T) {
 	t.Parallel()
 	active := budgetItems[0]
@@ -35,8 +33,7 @@ func TestMissing_NeededToSubmit_FR028(t *testing.T) {
 	}
 }
 
-// The Shell attributes Settings marks needed to submit (Spend type, GL code) come after the owner, in the
-// order feature 002 lists them (FR-014, FR-028).
+// The Shell attributes needed to submit come after the owner, in the order feature 002 lists them.
 func TestMissing_Attributes_FR014(t *testing.T) {
 	t.Parallel()
 	attributes := []settings.MissingField{
@@ -72,8 +69,7 @@ func TestMissing_InactiveItem_FR016(t *testing.T) {
 	}
 }
 
-// A custom spread that does not add up to the planned cost saves, but counts as a problem (FR-019): 900.00
-// of 1,000.00 spread.
+// A custom spread that does not add up to the planned cost saves, but counts as a problem: 900.00 of 1,000.00.
 func TestMissing_CustomNotAddingUp_FR019(t *testing.T) {
 	t.Parallel()
 	f := newFakeActivities().facts[launchFilm]
@@ -108,7 +104,7 @@ func TestSwbsStatus_FR024(t *testing.T) {
 		{true, "approved", SwbsReadyToSend},
 	}
 	for _, tt := range tests {
-		got := SwbsStatusOf(LineItem{RequestSwbs: tt.request}, ActivityFacts{Status: tt.status})
+		got := SwbsStatusOf(LineItem{RequestSwbs: tt.request, Approved: true}, ActivityFacts{Status: tt.status})
 
 		if got != tt.want {
 			t.Errorf("request %v, activity %s: %s, want %s", tt.request, tt.status, got, tt.want)

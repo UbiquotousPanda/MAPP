@@ -153,6 +153,7 @@ func TestApproval_NotSubmittedYet_FR024(t *testing.T) {
 		Viewer:          Viewer{IsOwner: true, OnBehalfOf: []PersonView{}, AsDelegateOf: []PersonView{}},
 		Actions:         ActionSet{Submit: ActionAvailability{Available: true}},
 		OverPlannedCost: []Overage{},
+		LineItems:       []RoundLineItem{},
 	}
 	if !reflect.DeepEqual(asOwner, want) {
 		t.Errorf("approval =\n%+v\nwant\n%+v", asOwner, want)

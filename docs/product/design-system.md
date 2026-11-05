@@ -543,7 +543,7 @@ in code (`lib/statusTone.ts`) is the only place a word gets its family.
 | Family (token name) | Meaning | Words | Dot (light / dark) | Chip text light (on its 12 % tint) | Chip text dark (on its 12 % tint) |
 |---|---|---|---|---|---|
 | **Neutral** (`--status-neutral`) | Not started, nothing to do yet, switched off | Draft, Created, Not started, No activities, Not requested, Inactive | `#6E6E6E` / `#8E99A4` | `#595959` (6.04) | `#B0B8C1` (6.00) |
-| **Waiting** (`--status-review` = warning) | Someone must decide or check; also non-blocking warnings | Submitted, Waiting for approval, Partly approved (n of m approved), Waiting for activity approval | `#C77700` / `#E09A2A` (amber — never brand yellow) | `#8F5400` (5.36) | `#F0A640` (5.74) |
+| **Waiting** (`--status-review` = warning) | Someone must decide or check; also non-blocking warnings | Submitted, Waiting for approval, Partly approved (n of m approved) | `#C77700` / `#E09A2A` (amber — never brand yellow) | `#8F5400` (5.36) | `#F0A640` (5.74) |
 | **Positive** (`--status-positive` = success) | Agreed, published, complete and correct | Published, Approved, All approved, All filled in, Active (Settings records, people), Ready to send to GSAP | `#008557` / `#3DBB8C` | `#00704A` (5.22) | `#4CC79A` (5.61) |
 | **Running** (`--status-active` = info) | Approved and under way in time | In progress (activity running), Running | `#336094` / `#6F9BD1` | `#2B5482` (6.56) | `#8FB4E3` (5.63) |
 | **Done** (`--status-done`) | Finished | Complete, Finished | `#5B6B7A` / `#8696A6` | `#4D5C6A` (5.86) | `#A9B8C6` (5.98) |

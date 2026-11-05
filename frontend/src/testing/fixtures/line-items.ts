@@ -146,6 +146,7 @@ export function lineItem(overrides: Partial<LineItem> = {}): LineItem {
     contractedAmount: null,
     requestSwbs: true,
     swbsStatus: 'waitingForApproval',
+    approval: 'notApproved',
     swbsCode: '',
     swbsRequestedAt: null,
     swbsReceivedAt: null,

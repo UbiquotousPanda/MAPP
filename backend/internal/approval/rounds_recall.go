@@ -58,7 +58,7 @@ func (s *Service) recall(ctx context.Context, a actor.Actor, sub subject, in rec
 	if err != nil {
 		return subject{}, err
 	}
-	sub = sub.as(round.kind())
+	sub = sub.inRound(round)
 	now := s.now()
 	waiting := round.Levels[round.CurrentLevel-1]
 	round.Outcome, round.EndedAt = OutcomeRecalled, &now
@@ -69,7 +69,7 @@ func (s *Service) recall(ctx context.Context, a actor.Actor, sub subject, in rec
 	if err = s.addAction(ctx, round, Action{Action: ActionRecalled, Level: waiting.Number, Actor: a, At: now, Comment: in.reason}); err != nil {
 		return subject{}, err
 	}
-	updated, err := s.moved(ctx, a, sub, OutcomeRecalled)
+	updated, err := s.roundMoved(ctx, a, sub, roundEvent{round, OutcomeRecalled})
 	if err != nil {
 		return subject{}, err
 	}
@@ -88,12 +88,12 @@ func (s *Service) recall(ctx context.Context, a actor.Actor, sub subject, in rec
 
 // roundToRecall returns the open round roundID if the person acting may recall it, or why they may not.
 func (s *Service) roundToRecall(ctx context.Context, sub subject, roundID string) (Round, error) {
-	if sub.Kind == KindActivity && sub.Status == StatusApproved {
-		return Round{}, errs.BadRequest(approvedNoRecallMessage)
-	}
 	round, err := s.roundOf(ctx, sub, roundID)
 	if err != nil {
 		return Round{}, err
+	}
+	if sub.Kind == KindActivity && sub.Status == StatusApproved && !round.forLineItems() {
+		return Round{}, errs.BadRequest(approvedNoRecallMessage)
 	}
 	if round.Outcome != OutcomeOpen {
 		return Round{}, s.movedOn(ctx, round, 0)

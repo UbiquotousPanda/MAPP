@@ -35,6 +35,7 @@ type LineItem struct {
 	RequestSwbs         bool                     `json:"requestSwbs"`
 	FinanceBudgetYear   *int                     `json:"financeBudgetYear"`
 	FinanceBudgetItemID string                   `json:"financeBudgetItemId"`
+	Approved            bool                     `json:"approved"`
 	Swbs
 	record.Meta
 }
@@ -132,6 +133,7 @@ type View struct {
 	ContractedAmount   *money.Money             `json:"contractedAmount"`
 	RequestSwbs        bool                     `json:"requestSwbs"`
 	SwbsStatus         SwbsStatus               `json:"swbsStatus"`
+	Approval           string                   `json:"approval"`
 	Swbs
 	HXKey             string                  `json:"hxKey"`
 	FinanceBudgetYear *int                    `json:"financeBudgetYear"`

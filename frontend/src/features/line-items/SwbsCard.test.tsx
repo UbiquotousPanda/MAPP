@@ -32,8 +32,8 @@ describe('030 FR-014, FR-001: the SWBS request card', () => {
     ],
     [
       'waitingForApproval',
-      'Waiting for activity approval',
-      'The request is sent once the activity is approved.',
+      'Waiting for approval',
+      'The request is sent once the line item is approved.',
     ],
     ['readyToSend', 'Ready to send to GSAP', 'Sent with the next run of the simulated GSAP.'],
   ] as const)(

@@ -39,6 +39,7 @@ type LineItemFacts struct {
 	PlannedCost                     money.Amount
 	ActivityID, ActivityName        string
 	ActivityStatus                  string
+	LineItemApproved                bool
 	Plan                            PlanFacts
 	Access                          authz.ActivityFacts
 	Path                            []errs.RecordRef

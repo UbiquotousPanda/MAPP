@@ -11,6 +11,7 @@ import { LineItemPurchaseRequests } from '@/features/purchase-requests';
 import { FieldHelpTip } from '@/features/settings';
 import { allows, gateItem, moreItemFor } from '@/session/gate-action';
 import { ViewOnlyNote } from '@/ui/ViewOnlyNote/ViewOnlyNote';
+import { LineItemApprovalChip } from '@/ui/LineItemApprovalChip/LineItemApprovalChip';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
 import { fieldHref, recordHref } from '@/ui/record-links';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -71,6 +72,7 @@ export function LineItemPage() {
               onSelectField={(field) => void navigate(fieldHref('lineItem', lineItem.id, field))}
             />
             <FieldHelpTip helpKey="common.completeness" label="Completeness" />
+            <LineItemApprovalChip approval={lineItem.approval} />
             <SwbsChip status={lineItem.swbsStatus} />
             <span className={styles.fact}>{lineItem.id}</span>
             {lineItem.owner ? (

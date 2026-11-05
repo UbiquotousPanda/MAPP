@@ -139,7 +139,8 @@ func (o activityOf) lineItem(li lineitem.LineItem, c roleCoding) purchaserequest
 	return purchaserequest.LineItemFacts{
 		ID: li.ID, Name: li.Name, OwnerID: li.OwnerID, Currency: li.Currency, PlannedCost: li.PlannedCost,
 		ActivityID: o.act.ID, ActivityName: o.act.Name, ActivityStatus: string(o.act.Status), Plan: o.plan,
-		Access: o.access, Path: o.path, SwbsCode: li.SwbsCode,
+		LineItemApproved: lineitem.IsApproved(li, string(o.act.Status)),
+		Access:           o.access, Path: o.path, SwbsCode: li.SwbsCode,
 		SwbsStatus:  string(lineitem.SwbsStatusOf(li, lineitem.ActivityFacts{Status: string(o.act.Status)})),
 		CompanyCode: c.text(settings.RoleCompanyCode, o.act.Attributes), CostCentre: c.text(settings.RoleCostCentre, o.act.Attributes),
 		GLCode: c.text(settings.RoleGLCode, li.Attributes), BusinessUnit: o.businessUnit,

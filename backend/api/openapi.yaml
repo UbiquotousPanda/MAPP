@@ -4009,6 +4009,8 @@ paths:
         validation_failed listing every problem (field keys as SubmitProblem.field). Otherwise the activity
         becomes Submitted and a new round starts at level 1 with a copy of the workflow's current levels.
         An activity that is not Created or Declined answers bad_request. Any plan status is allowed (Q-007).
+        On an Approved activity with Not approved line items and no open round it sends those line items for
+        approval instead: the round lists them (lineItemIds) and the activity stays Approved (053 FR-008).
       parameters:
         - $ref: "#/components/parameters/ActivityId"
       requestBody:
@@ -4046,7 +4048,8 @@ paths:
         Any signed-in person may approve (D-020); a person who is not an approver of the level is recorded as acting on
         behalf of the level's approvers. Approving the last level makes the activity Approved. A person holding
         neither approvals permission is refused with 403 forbidden first (038 FR-056); 409 not_allowed when
-        approval over planned cost is set to refuse (038 FR-020).
+        approval over planned cost is set to refuse (038 FR-020). With approvedLineItemIds, the line items the
+        round decides and the request leaves out stay Not approved (053 FR-001 – FR-004).
       parameters:
         - $ref: "#/components/parameters/ActivityId"
       requestBody:
@@ -12571,6 +12574,35 @@ components:
         changedAt:
           type: string
           format: date-time
+    LineItemApproval:
+      type: string
+      description: >-
+        approved once a round of its activity approved it with the line item ticked, and only while the activity
+        is approved (also In progress or Complete); notApproved otherwise (053 FR-005).
+      enum:
+        - approved
+        - notApproved
+    ApprovalLineItem:
+      type: object
+      additionalProperties: false
+      description: A line item the activity's open round decides (053 FR-001).
+      required:
+        - id
+        - name
+        - plannedCost
+        - heldBack
+      properties:
+        id:
+          type: string
+          example: L-1003
+        name:
+          type: string
+        plannedCost:
+          description: In the line item's own currency.
+          $ref: "#/components/schemas/Money"
+        heldBack:
+          type: boolean
+          description: An earlier decision of the round left it unticked; it stays Not approved (053 FR-002).
     RecordRef:
       type: object
       additionalProperties: false
@@ -17924,6 +17956,7 @@ components:
         - contractedAmount
         - requestSwbs
         - swbsStatus
+        - approval
         - swbsCode
         - swbsRequestedAt
         - swbsReceivedAt
@@ -17981,6 +18014,8 @@ components:
           type: boolean
         swbsStatus:
           $ref: "#/components/schemas/SwbsStatus"
+        approval:
+          $ref: "#/components/schemas/LineItemApproval"
         swbsCode:
           type: string
           description: The SWBS code GSAP returned, read-only; empty until received (030 FR-002).
@@ -18540,6 +18575,11 @@ components:
         decline:
           $ref: "#/components/schemas/ApprovalActionAvailability"
         recall:
+          $ref: "#/components/schemas/ApprovalActionAvailability"
+        sendLineItems:
+          description: >-
+            Send line items for approval: an Approved activity with Not approved line items and no open round (053
+            FR-008); left out when not available.
           $ref: "#/components/schemas/ApprovalActionAvailability"
     ApprovalSection:
       type: object
@@ -19235,6 +19275,13 @@ components:
         autoApproved:
           description: "017. Optional in the contract; always sent once its feature is built (D-298)."
           type: boolean
+        lineItemIds:
+          type: array
+          description: >-
+            The line items a round sent for an Approved activity decides, the activity staying Approved (053 FR-008);
+            empty for a round of the whole record.
+          items:
+            type: string
     DeclineNote:
       type: object
       additionalProperties: false
@@ -19384,6 +19431,13 @@ components:
           description: The activities whose line items exceed their planned cost (038 FR-019); empty when none.
           items:
             $ref: "#/components/schemas/ActivityOverage"
+        lineItems:
+          type: array
+          description: >-
+            The line items the open round decides, the approver ticks them to approve (053 FR-001); empty without an
+            open round.
+          items:
+            $ref: "#/components/schemas/ApprovalLineItem"
     SubmitProblem:
       type: object
       additionalProperties: false
@@ -19439,7 +19493,10 @@ components:
           enum:
             - submit
             - resubmit
-          description: resubmit when the activity is Declined or Submitted (031 FR-017).
+            - lineItems
+          description: >-
+            resubmit when the activity is Declined or Submitted (031 FR-017); lineItems when an Approved activity sends
+            its Not approved line items (053 FR-008).
         available:
           type: boolean
           description: false when the activity is Approved.
@@ -19480,6 +19537,11 @@ components:
         approvedAutomatically:
           type: boolean
           description: No level needs a decision; confirming approves the activity.
+        lineItems:
+          type: array
+          description: The line items a lineItems submission sends; empty otherwise.
+          items:
+            $ref: "#/components/schemas/RecordRef"
         replaces:
           description: The open round a re-submission ends, and the level it waits at (031 FR-018); null otherwise.
           oneOf:
@@ -19524,6 +19586,14 @@ components:
         comment:
           type: string
           description: Optional for approve; required (not blank) for decline; at most 2,000 characters.
+        approvedLineItemIds:
+          type: array
+          maxItems: 1000
+          description: >-
+            Approve only: the line items ticked; the others the round decides stay Not approved. Omitted, every line
+            item of the round is approved. Ignored for purchase requests (053 FR-012).
+          items:
+            type: string
     RecallRequest:
       type: object
       additionalProperties: false
@@ -19758,6 +19828,7 @@ components:
         - spendType
         - glCode
         - financeBudgetItem
+        - approval
       properties:
         id:
           type: string
@@ -19781,6 +19852,8 @@ components:
           type: string
         financeBudgetItem:
           type: string
+        approval:
+          $ref: "#/components/schemas/LineItemApproval"
     ApprovalPreview:
       type: object
       additionalProperties: false

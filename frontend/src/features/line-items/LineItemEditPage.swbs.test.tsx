@@ -59,7 +59,7 @@ describe('030 FR-004, FR-018: the request stays on once the code is received', (
     expect(request).toBeEnabled();
     expect(
       screen.getByText(
-        'Filled by the simulated GSAP once the activity is approved and the request is sent',
+        'Filled by the simulated GSAP once the line item is approved and the request is sent',
       ),
     ).toBeInTheDocument();
   });

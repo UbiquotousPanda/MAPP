@@ -87,6 +87,7 @@ type PreviewLineItem struct {
 	SpendType          string       `json:"spendType"`
 	GLCode             string       `json:"glCode"`
 	FinanceBudgetItem  string       `json:"financeBudgetItem"`
+	Approval           string       `json:"approval"`
 }
 
 type PreviewActivity struct {

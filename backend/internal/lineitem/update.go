@@ -68,6 +68,7 @@ func (s *Service) checkUpdate(ctx context.Context, before LineItem, u Update) (A
 		return ActivityFacts{}, LineItem{}, err
 	}
 	after.ID, after.ActivityID, after.Swbs, after.Meta = before.ID, before.ActivityID, before.Swbs, before.Meta
+	after.Approved = before.Approved
 	return f, after, nil
 }
 

@@ -17,6 +17,7 @@ type Activities interface {
 	WorkflowFields(ctx context.Context) (map[string]string, error)
 	ListInScope(ctx context.Context, scope authz.Scope, ids []string) ([]ActivityFacts, error)
 	SetStatus(ctx context.Context, a actor.Actor, id, status string) (ActivityFacts, error)
+	SetLineItemApproval(ctx context.Context, a actor.Actor, activityID string, choice LineItemChoice) error
 	ReadyCheck(ctx context.Context, a actor.Actor, id string) (ReadyCheck, error)
 	LineItems(ctx context.Context, a actor.Actor, activityID string) ([]PreviewLineItem, error)
 }
@@ -40,6 +41,22 @@ type ActivityFacts struct {
 	Plan           PlanFacts
 	ActivityTypeID string
 	BusinessUnits  []Choice
+	LineItems      []LineItemFact
+}
+
+// LineItemFact is a line item of the activity; Approved is its stored approval, which counts only while the
+// activity is approved.
+type LineItemFact struct {
+	ID, Name    string
+	PlannedCost money.Money
+	Approved    bool
+}
+
+// LineItemChoice is what an approved round decides: only its line items (all of them when Only is empty),
+// those HeldBack staying Not approved.
+type LineItemChoice struct {
+	Only, HeldBack []string
+	Round          int
 }
 
 type PlanFacts struct {

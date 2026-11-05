@@ -34,10 +34,10 @@ func (s *Service) RunEscalations(ctx context.Context, a actor.Actor) (Escalation
 		slices.SortStableFunc(stored, func(x, y subject) int { return cmp.Compare(x.ID, y.ID) })
 		for _, sub := range stored {
 			round, found := openRound(b.rounds[sub.ID])
-			if !found || !sub.waiting() {
+			if !found || !sub.waitingOn(round) {
 				continue
 			}
-			e := escalating{runner: a, b: b, rule: rule, sub: sub.as(round.kind()), round: round, run: &run}
+			e := escalating{runner: a, b: b, rule: rule, sub: sub.inRound(round), round: round, run: &run}
 			if err := s.escalate(ctx, e); err != nil {
 				return err
 			}

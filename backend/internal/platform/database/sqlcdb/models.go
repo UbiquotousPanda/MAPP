@@ -186,31 +186,33 @@ type ApprovalDelegation struct {
 }
 
 type ApprovalRound struct {
-	ID              string
-	SubjectID       string
-	Number          int
-	WorkflowID      string
-	WorkflowName    string
-	Levels          []byte
-	CurrentLevel    int
-	Outcome         string
-	SubmittedAt     time.Time
-	SubmittedByID   string
-	SubmittedByName string
-	Comment         string
-	EndedAt         *time.Time
-	Facts           []byte
-	ReminderDays    *int
-	EscalationDays  *int
-	AutoApproved    bool
-	Version         int
-	CreatedAt       time.Time
-	CreatedByID     string
-	CreatedByName   string
-	UpdatedAt       time.Time
-	UpdatedByID     string
-	UpdatedByName   string
-	SubjectKind     string
+	ID                  string
+	SubjectID           string
+	Number              int
+	WorkflowID          string
+	WorkflowName        string
+	Levels              []byte
+	CurrentLevel        int
+	Outcome             string
+	SubmittedAt         time.Time
+	SubmittedByID       string
+	SubmittedByName     string
+	Comment             string
+	EndedAt             *time.Time
+	Facts               []byte
+	ReminderDays        *int
+	EscalationDays      *int
+	AutoApproved        bool
+	Version             int
+	CreatedAt           time.Time
+	CreatedByID         string
+	CreatedByName       string
+	UpdatedAt           time.Time
+	UpdatedByID         string
+	UpdatedByName       string
+	SubjectKind         string
+	LineItemIds         []string
+	HeldBackLineItemIds []string
 }
 
 type ApprovalWorkflow struct {
@@ -602,6 +604,7 @@ type LineItem struct {
 	SwbsCode              string
 	SwbsRequestedAt       *time.Time
 	SwbsReceivedAt        *time.Time
+	Approval              string
 }
 
 type LineItemSpreadMonth struct {

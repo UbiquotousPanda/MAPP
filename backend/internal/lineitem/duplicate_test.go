@@ -10,8 +10,7 @@ import (
 	"mapp/internal/platform/record"
 )
 
-// Duplicate copies every value, the spread included, into the same activity with a new ID and the name
-// "<name> (copy)", " (copy 2)", … shortened to fit 120 characters, and logs "copied" (FR-029).
+// Duplicate copies every value into the same activity as "<name> (copy)", " (copy 2)", …, and logs "copied".
 func TestDuplicate_CopiesEverything_FR029(t *testing.T) { //nolint:gocyclo // 11: three copies, then their names, values, bookkeeping and log entry
 	t.Parallel()
 	f := newTestService(t)
@@ -46,9 +45,8 @@ func TestDuplicate_CopiesEverything_FR029(t *testing.T) { //nolint:gocyclo // 11
 	}
 }
 
-// Duplicating a line item of a Submitted or Approved activity needs no confirmation and keeps the activity's
-// approval (D-322); an unknown line item is not found.
-func TestDuplicate_InApprovalKeepsStatus_034_FR001(t *testing.T) {
+// Duplicating in a Submitted or Approved activity keeps its approval (D-322); the copy is Not approved (D-402).
+func TestDuplicate_InApprovalKeepsStatus_034_FR001_053_FR006(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
 	venue := f.create(t, priya, socialOnAir, input("Venue hire", "GBP", "15800"))
@@ -61,9 +59,8 @@ func TestDuplicate_InApprovalKeepsStatus_034_FR001(t *testing.T) {
 	if err != nil || err2 != nil || dup.Name != "Venue hire (copy)" || printCopy.Name != "Print run (copy)" {
 		t.Fatalf("Duplicate = %q %v, %q %v; want both copies made without confirmation", dup.Name, err, printCopy.Name, err2)
 	}
-	if dup.SwbsStatus != SwbsReadyToSend || printCopy.SwbsStatus != SwbsWaitingForApproval {
-		t.Errorf("SWBS statuses %s, %s; want readyToSend (still Approved) and waitingForApproval (still Submitted)",
-			dup.SwbsStatus, printCopy.SwbsStatus)
+	if dup.Approval != ApprovalNotApproved || dup.SwbsStatus != SwbsWaitingForApproval || printCopy.SwbsStatus != SwbsWaitingForApproval {
+		t.Errorf("copies %s %s, %s; want notApproved, both waitingForApproval", dup.Approval, dup.SwbsStatus, printCopy.SwbsStatus)
 	}
 	assertError(t, gone, errs.NotFound(lineItemGoneMessage))
 }

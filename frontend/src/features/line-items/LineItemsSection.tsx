@@ -11,6 +11,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import type { components } from '@/api/generated/schema';
 import { allows, gateItem } from '@/session/gate-action';
 import { cx } from '@/ui/cx';
+import { LineItemApprovalChip } from '@/ui/LineItemApprovalChip/LineItemApprovalChip';
 import { fieldHref, recordHref } from '@/ui/record-links';
 import { useFinancialRecord } from './gsap-financials';
 import type { FinancialFiguresData } from './gsap-financials';
@@ -44,15 +45,12 @@ export interface LineItemsSectionProps {
 }
 
 /**
- * The Line items section of feature 006's activity page (US1, FR-001 – FR-005): one row per line
- * item with its amounts, spread, completeness and SWBS request, the unassigned planned cost, and
- * the spread grid. A row given in the address's state (highlightLineItemId, after a create) is
- * scrolled into view and highlighted.
+ * Feature 006's Line items section: a row given in the address's state (highlightLineItemId, after a
+ * create) is scrolled into view and highlighted.
  */
 export function LineItemsSection({ activityId }: LineItemsSectionProps) {
   const section = useLineItemSection(activityId);
-  // The GSAP figures of each line item, from the activity's record view: the same query as the
-  // Financials card, so the page asks once (015 FR-016, plan "Query keys").
+  // The same query as the Financials card, so the page asks once for the GSAP figures (015 plan).
   const financials = useFinancialRecord(activityId);
   const actions = useLineItemActions();
   const location = useLocation();
@@ -68,7 +66,6 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
   }, [highlight, section.data]);
 
   const access = section.data?.access;
-  // 014 FR-011: Add line item only for a person who may add line items here.
   const addButton = allows(access?.add) ? (
     <LinkButton to={`/activities/${encodeURIComponent(activityId)}/line-items/new`} icon={<Plus />}>
       {ADD_LINE_ITEM}
@@ -146,6 +143,7 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
                   </th>
                   <th scope="col">Spread</th>
                   <th scope="col">Completeness</th>
+                  <th scope="col">Approval</th>
                   <th scope="col">SWBS request</th>
                   <th scope="col">
                     <span className="visually-hidden">Actions</span>
@@ -190,7 +188,6 @@ type GsapCell = FinancialFiguresData | 'loading' | 'none';
 
 interface RowProps {
   item: LineItem;
-  /** Whether the plan-currency column is shown (016 FR-015). */
   planColumn: boolean;
   gsap: GsapCell;
   highlighted: boolean;
@@ -199,7 +196,6 @@ interface RowProps {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
-  /** What the person may do with the activity's line items (feature 014). */
   access?: LineItemAccess;
 }
 
@@ -237,6 +233,9 @@ function Row({
           missing={item.missing.map((field) => ({ id: field.field, label: field.label }))}
           onSelectField={onSelectField}
         />
+      </td>
+      <td>
+        <LineItemApprovalChip approval={item.approval} />
       </td>
       <td>
         <SwbsChip status={item.swbsStatus} />

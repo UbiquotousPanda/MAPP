@@ -37,6 +37,7 @@ type deciding struct {
 	entries []Action
 	dl      []Delegation
 	au      authority
+	ticked  []string
 }
 
 func decisionProblems(decision SubjectDecision, comment string, kind SubjectKind) error {
@@ -125,6 +126,10 @@ func (s *Service) decidingOn(ctx context.Context, a actor.Actor, sub subject, ro
 
 // recordDecision stores dg's decision, the round after it, the record's change and its log entry.
 func (s *Service) recordDecision(ctx context.Context, dg deciding) (subject, error) {
+	unticked, err := dg.holdBack()
+	if err != nil {
+		return subject{}, err
+	}
 	entry, err := s.decisionEntry(ctx, dg)
 	if err != nil {
 		return subject{}, err
@@ -135,7 +140,7 @@ func (s *Service) recordDecision(ctx context.Context, dg deciding) (subject, err
 		return subject{}, err
 	}
 	if dg.kind == ActionApproved {
-		logEntry.details += overageDetails(dg.sub)
+		logEntry.details += overageDetails(dg.sub) + heldBackNote(unticked)
 	}
 	round.Touch(dg.a, dg.now)
 	if err = s.repo.PutRound(ctx, round); err != nil {
@@ -143,7 +148,7 @@ func (s *Service) recordDecision(ctx context.Context, dg deciding) (subject, err
 	}
 	updated := dg.sub
 	if event != "" {
-		if updated, err = s.moved(ctx, dg.a, dg.sub, event); err != nil {
+		if updated, err = s.roundMoved(ctx, dg.a, dg.sub, roundEvent{round, event}); err != nil {
 			return subject{}, err
 		}
 	}
@@ -194,7 +199,7 @@ func (s *Service) decisionOutcome(ctx context.Context, dg deciding) (Round, stat
 	switch {
 	case dg.kind == ActionDeclined:
 		round.Outcome, round.EndedAt, event, logEntry.verb = OutcomeDeclined, &now, OutcomeDeclined, "declined"
-		err = notify.send(ctx, owner, NotifyDeclined, fmt.Sprintf(declinedTitle, sub.Kind.Label()),
+		err = notify.send(ctx, owner, NotifyDeclined, fmt.Sprintf(declinedTitle, sub.label()),
 			fmt.Sprintf(declinedText, a.Name, subjectText(sub), quoted(dg.comment)))
 	case !levelDone(level, dg.entries):
 		waiting := waitingOn(level, dg.entries)
@@ -203,7 +208,7 @@ func (s *Service) decisionOutcome(ctx context.Context, dg deciding) (Round, stat
 			len(level.Approvers)-len(waiting), len(level.Approvers), names(waiting), suffix)
 	case next == 0:
 		round.Outcome, round.EndedAt, event, logEntry.verb = OutcomeApproved, &now, OutcomeApproved, "approved"
-		err = notify.send(ctx, owner, NotifyApproved, fmt.Sprintf(approvedTitle, sub.Kind.Label()),
+		err = notify.send(ctx, owner, NotifyApproved, fmt.Sprintf(approvedTitle, sub.label()),
 			fmt.Sprintf(approvedText, a.Name, subjectText(sub)))
 	default:
 		event, logEntry.verb = continued(sub.Kind), fmt.Sprintf("approved level %d of", level.Number)

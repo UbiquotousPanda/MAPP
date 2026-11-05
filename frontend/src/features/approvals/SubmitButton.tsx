@@ -9,6 +9,7 @@ import { fetchSubmission, useSubmitActivity } from './api';
 import type { ApprovalSubmission } from './api';
 import type { ApprovalActivity, ShowSubmitProblems } from './approval-types';
 import { submitConflictMessage } from './decision-messages';
+import { submitLabel, submittedToast } from './submit-texts';
 import { SubmitDialog } from './SubmitDialog';
 
 export interface SubmitButtonProps {
@@ -25,7 +26,7 @@ export function SubmitButton({ activity, onShowProblems, variant = 'primary' }: 
   const [checking, setChecking] = useState(false);
   const [submission, setSubmission] = useState<ApprovalSubmission | null>(null);
   const [commentError, setCommentError] = useState<string>();
-  const label = activity.status === 'created' ? 'Submit for approval' : 'Re-submit for approval';
+  const label = submitLabel(activity.status);
 
   function showFailure(error: unknown) {
     const failure = asApiError(error);
@@ -66,13 +67,7 @@ export function SubmitButton({ activity, onShowProblems, variant = 'primary' }: 
         version: activity.version,
         comment,
       });
-      const verb = submission.kind === 'resubmit' ? 're-submitted' : 'submitted';
-      const automatic = submission.approvedAutomatically || result.status === 'approved';
-      show({
-        message: automatic
-          ? `Activity '${submission.activityName}' approved automatically`
-          : `Activity '${submission.activityName}' ${verb} for approval`,
-      });
+      show({ message: submittedToast(submission, result.status) });
       setSubmission(null);
     } catch (error) {
       const failure = asApiError(error);

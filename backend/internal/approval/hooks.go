@@ -39,6 +39,9 @@ func (s *Service) ApprovalRestarted(ctx context.Context, a actor.Actor, activity
 			}
 			round, level, approvers = open, waiting.Number, idsOf(waiting.Approvers)
 		case StatusApproved:
+			if err = s.endLineItemRound(ctx, a, rounds, now); err != nil {
+				return err
+			}
 			approved, found := lastApproved(rounds)
 			if !found {
 				return nil

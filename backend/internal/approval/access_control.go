@@ -54,7 +54,7 @@ func limitSubmit(ctx context.Context, actions *ActionSet, sub subject) {
 	if reason == "" {
 		return
 	}
-	for _, action := range []*ActionAvailability{&actions.Submit, &actions.Resubmit} {
+	for _, action := range []*ActionAvailability{&actions.Submit, &actions.Resubmit, &actions.SendLineItems} {
 		if action.Available {
 			*action = ActionAvailability{Available: false, Reason: reason}
 		}
