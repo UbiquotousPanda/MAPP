@@ -6276,9 +6276,11 @@ paths:
         left out is removed to the recycle bin (Created and Declined only). then must fit the status (data-model
         §3.2): save (Created, Declined; Approved when only lines are added and Lines on approved purchase requests
         is withoutApproval), resubmit (Submitted, In review), submitChanges (Approved). With resubmit and
-        submitChanges the person also needs purchaseRequests.submit and the gates must pass (409 not_ready;
-        error.missing groups every problem by record — purchaseRequest, purchaseRequestLine, activity, lineItem —
-        with MissingField.reason holding the message). An out-of-date version answers 409 version_conflict.
+        submitChanges the person also needs purchaseRequests.submit, and every check runs on what is saved: the field
+        problems alone answer 400 validation_failed, as for save; once a gate fails too the answer is 409 not_ready
+        with both lists (D-404) — error.fields holds the field problems, error.missing groups the gates' problems by
+        record (purchaseRequest, purchaseRequestLine, activity, lineItem) with MissingField.reason holding the
+        message — and nothing is saved. An out-of-date version answers 409 version_conflict.
       requestBody:
         required: true
         content:
@@ -6507,8 +6509,10 @@ paths:
       operationId: submitPurchaseRequest
       summary: Submit (Created) or Re-submit (Submitted, In review, Declined) without changes (FR-021 – FR-023)
       description: |
-        409 not_ready when a gate fails (error.missing groups every problem by record, as for PUT); 409
-        not_allowed for an Approved PR ("Edit the purchase request and choose Submit changes.") or a Closed one.
+        409 not_ready when any check fails, run again on the stored purchase request (D-404): error.fields holds the
+        save checks' problems (an inactive owner, MoA approver, currency or option; an amount above what the line
+        item has left) and error.missing groups the gates' problems by record, as for PUT; 409 not_allowed for an
+        Approved PR ("Edit the purchase request and choose Submit changes.") or a Closed one.
       requestBody:
         required: true
         content:
@@ -6543,7 +6547,9 @@ paths:
       summary: Approve the waiting level as one of its approvers (self-approval allowed, FR-027)
       description: >-
         A person holding neither approvals permission is refused with 403 forbidden first (038 FR-056); 409
-        not_allowed when approval over planned cost is set to refuse (038 FR-020).
+        not_allowed when approval over planned cost is set to refuse (038 FR-020); 409 not_ready when the stored
+        purchase request no longer passes its checks (D-404): error.fields and error.missing list every problem,
+        as for submit, without the overspend and workflow gates. Decline is never refused for that.
       requestBody:
         required: true
         content:
@@ -9497,7 +9503,9 @@ components:
     PurchaseRequestProblem:
       type: object
       additionalProperties: false
-      description: One thing that stops a submission (FR-021).
+      description: >-
+        One thing that stops a submission (FR-021), a gate or, since D-404, a save check run again on the stored
+        purchase request.
       required: [field, group, recordId, message]
       properties:
         field:
@@ -10226,7 +10234,9 @@ components:
           description: Plain-language message for the user (never technical details).
         fields:
           type: array
-          description: Every field problem (validation_failed); always present, empty otherwise.
+          description: >-
+            Every field problem (validation_failed); always present, empty otherwise. A purchase request refused for
+            both kinds of reason also lists its field problems here with not_ready (032 D-404).
           items:
             $ref: "#/components/schemas/FieldError"
         conflict:
@@ -10239,7 +10249,7 @@ components:
           type: array
           description: >-
             Every needed field that stops the action, grouped by record (only with not_ready: publishing a plan,
-            submitting an activity).
+            submitting an activity, submitting or approving a purchase request, which also lists fields).
           items:
             $ref: "#/components/schemas/ReadinessGroup"
       description: "Every failure. Codes added by 002-014: in_use, cannot_restore (002), not_allowed (003), not_ready with missing (004), parent_deleted_permanently (011), forbidden (014: 403, refused by permission or scope; D-299), too_many_attempts (038: 429 on sign-in, with Retry-After), too_large (038: 413, the body is over the operation's limit). A record outside the person's access answers 404 not_found, like a missing one (022)."
