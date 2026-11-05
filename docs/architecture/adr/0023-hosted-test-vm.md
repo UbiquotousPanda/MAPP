@@ -1,4 +1,4 @@
-# ADR-0021: One Azure VM as a hosted test environment
+# ADR-0023: One Azure VM as a hosted test environment
 
 **Status:** Accepted · **Date:** 2026-11-03
 

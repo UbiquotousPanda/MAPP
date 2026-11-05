@@ -1,4 +1,4 @@
-# Layered on the root compose.yaml on the hosted test VM; see README.md here and ADR-0021.
+# Layered on the root compose.yaml on the hosted test VM; see README.md here and ADR-0023.
 services:
   api:
     environment:

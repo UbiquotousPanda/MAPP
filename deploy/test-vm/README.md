@@ -1,7 +1,7 @@
 # Hosted test environment — deployment guide
 
 One small Azure VM runs the whole app from `compose.yaml`, so one or two business analysts or testers can
-use it in a browser without installing anything (ADR-0021, constitution 4.10.0). The data is the fictitious
+use it in a browser without installing anything (ADR-0023, constitution 4.10.0). The data is the fictitious
 demo seed; never put real Shell data here. Set up on 2026-11-03.
 
 | | |
