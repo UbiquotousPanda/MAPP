@@ -40,8 +40,18 @@ type TimelineStep struct {
 	Waiting string       `json:"waiting"`
 }
 
-// progress is what GSAP's invoices and payments say about a purchase request's PO lines.
-type progress struct{ invoiced, paid bool }
+// progress is what GSAP's invoices and payments say about a purchase request's PO lines, with the first posting dates.
+type progress struct {
+	invoiced, paid     bool
+	invoicedOn, paidOn *date.Date
+}
+
+type timelineRecords struct {
+	log      []history.EntryView
+	routings []Routing
+	rounds   []ApprovalRound
+	progress progress
+}
 
 func (pr PurchaseRequest) reached(p progress) map[string]bool {
 	sent := slices.ContainsFunc(pr.Lines, func(l Line) bool { return l.SentOn != nil })
@@ -76,19 +86,25 @@ func (s *Service) timelineOf(ctx context.Context, a actor.Actor, pr PurchaseRequ
 	if err != nil {
 		return nil, err
 	}
-	return stepsOf(pr, page.Items, routings, p), nil
+	records := timelineRecords{log: page.Items, routings: routings, progress: p}
+	if s.deps.Approvals != nil {
+		if records.rounds, err = s.deps.Approvals.RoundsOf(ctx, pr.ID); err != nil {
+			return nil, err
+		}
+	}
+	return stepsOf(pr, records), nil
 }
 
 // stepsOf lists the eight steps with who and when for each one reached, and for the first one not
 // reached the words "Waiting for …"; a declined or closed request waits for nothing.
-func stepsOf(pr PurchaseRequest, items []history.EntryView, routings []Routing, p progress) []TimelineStep {
-	reached := pr.reached(p)
+func stepsOf(pr PurchaseRequest, records timelineRecords) []TimelineStep {
+	reached := pr.reached(records.progress)
 	steps := make([]TimelineStep, 0, len(stepLabels))
 	waitingSet := pr.Status == StatusDeclined || pr.Status == StatusClosed
 	for _, def := range stepLabels {
 		step := TimelineStep{Key: def.key, Label: def.label, Reached: reached[def.key]}
 		if step.Reached {
-			fillStep(&step, pr, items, routings)
+			fillStep(&step, pr, records)
 		} else if !waitingSet {
 			step.Waiting, waitingSet = "Waiting for "+def.waiting, true
 		}
@@ -97,29 +113,66 @@ func stepsOf(pr PurchaseRequest, items []history.EntryView, routings []Routing, 
 	return steps
 }
 
-func fillStep(step *TimelineStep, pr PurchaseRequest, items []history.EntryView, routings []Routing) {
+func fillStep(step *TimelineStep, pr PurchaseRequest, records timelineRecords) {
 	switch step.Key {
 	case stepCreated:
 		step.At, step.By = &pr.CreatedAt, &pr.CreatedBy
 	case stepSubmitted:
-		setFromLog(step, items, func(verb string) bool {
-			return strings.HasPrefix(verb, "submitted") || strings.HasPrefix(verb, "re-submitted")
-		}, true)
+		fillSubmitted(step, records)
 	case stepApproved:
-		setFromLog(step, items, func(verb string) bool { return verb == "approved" || verb == "approved automatically" }, false)
-		if step.At == nil && pr.Approved != nil {
-			step.At = &pr.Approved.ApprovedAt
-		}
+		fillApproved(step, pr, records)
 	case stepSent:
-		if len(routings) > 0 {
-			first := slices.MinFunc(routings, func(x, y Routing) int { return x.RoutedAt.Compare(y.RoutedAt) })
+		if len(records.routings) > 0 {
+			first := slices.MinFunc(records.routings, func(x, y Routing) int { return x.RoutedAt.Compare(y.RoutedAt) })
 			step.At, step.By = &first.RoutedAt, &first.RoutedBy
 		}
+	default:
+		fillGSAP(step, pr, records.progress)
+	}
+}
+
+// fillSubmitted and fillApproved prefer the rounds: the engine logs a decision only after the request is routed.
+func fillSubmitted(step *TimelineStep, records timelineRecords) {
+	setFromLog(step, records.log, func(verb string) bool {
+		return strings.HasPrefix(verb, "submitted") || strings.HasPrefix(verb, "re-submitted")
+	}, true)
+	if len(records.rounds) > 0 {
+		first := slices.MinFunc(records.rounds, func(x, y ApprovalRound) int { return x.SubmittedAt.Compare(y.SubmittedAt) })
+		step.At, step.By = &first.SubmittedAt, &first.SubmittedBy
+	}
+}
+
+func fillApproved(step *TimelineStep, pr PurchaseRequest, records timelineRecords) {
+	setFromLog(step, records.log, func(verb string) bool { return verb == "approved" || verb == "approved automatically" }, false)
+	if pr.Approved != nil {
+		step.At = &pr.Approved.ApprovedAt
+	}
+	var last *ApprovalRound
+	for i, r := range records.rounds {
+		if r.ApprovedAt != nil && (last == nil || r.ApprovedAt.After(*last.ApprovedAt)) {
+			last = &records.rounds[i]
+		}
+	}
+	if last == nil {
+		return
+	}
+	step.At = last.ApprovedAt
+	if last.ApprovedBy != nil {
+		step.By = last.ApprovedBy
+	}
+}
+
+func fillGSAP(step *TimelineStep, pr PurchaseRequest, p progress) {
+	by := gsapActor(pr.GSAP.Source)
+	switch step.Key {
 	case stepPRNumber:
-		step.Detail, step.By = pr.GSAP.PRNumber, gsapActor(pr.GSAP.Source)
-		step.At = dayStart(pr.GSAP.PRDate)
+		step.Detail, step.By, step.At = pr.GSAP.PRNumber, by, dayStart(pr.GSAP.PRDate)
 	case stepPO:
 		fillOrder(step, pr)
+	case stepInvoiced:
+		step.By, step.At = by, dayStart(p.invoicedOn)
+	case stepPaid:
+		step.By, step.At = by, dayStart(p.paidOn)
 	}
 }
 

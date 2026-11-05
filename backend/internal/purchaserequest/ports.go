@@ -2,6 +2,7 @@ package purchaserequest
 
 import (
 	"context"
+	"time"
 
 	"mapp/internal/people"
 	"mapp/internal/platform/actor"
@@ -20,6 +21,27 @@ type Deps struct {
 	Workflows  Workflows
 	Invoices   Invoices
 	Payments   Payments // optional: without it no request reaches Paid
+	Postings   Postings
+	Approvals  ApprovalRecords
+}
+
+type ApprovalRecords interface {
+	RoundsOf(ctx context.Context, id string) ([]ApprovalRound, error)
+}
+
+type ApprovalRound struct {
+	SubmittedAt time.Time
+	SubmittedBy actor.Actor
+	ApprovedAt  *time.Time
+	ApprovedBy  *actor.Actor
+}
+
+type Postings interface {
+	FirstPostedOn(ctx context.Context, lines []POLineRef) (map[POLineRef]FirstPosted, error)
+}
+
+type FirstPosted struct {
+	Invoice, Payment *date.Date
 }
 
 type LineItems interface {
@@ -110,7 +132,6 @@ type POLineRef struct {
 	PONumber, Line string
 }
 
-// Rounds is the approval engine as purchase requests use it (031); it joins the caller's Write.
 type Rounds interface {
 	Submit(ctx context.Context, a actor.Actor, s Submission) error
 }

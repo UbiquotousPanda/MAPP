@@ -6,6 +6,7 @@ import (
 
 	"mapp/internal/people"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 )
@@ -19,6 +20,7 @@ type reader struct {
 	people    map[string]Person
 	invoiced  map[POLineRef]money.Amount
 	paid      map[POLineRef]money.Amount
+	posted    map[POLineRef]FirstPosted
 	workflows map[string]*WorkflowRef
 }
 
@@ -47,6 +49,11 @@ func (s *Service) readerFor(ctx context.Context, a actor.Actor, prs []PurchaseRe
 	}
 	if s.deps.Payments != nil {
 		if r.paid, err = s.deps.Payments.PaidOn(ctx, poLinesOf(prs)); err != nil {
+			return nil, err
+		}
+	}
+	if s.deps.Postings != nil {
+		if r.posted, err = s.deps.Postings.FirstPostedOn(ctx, poLinesOf(prs)); err != nil {
 			return nil, err
 		}
 	}
@@ -160,11 +167,22 @@ func (r *reader) invoicedTotal(lines []Line) money.Amount {
 func (r *reader) progressOf(lines []Line) progress {
 	p := progress{invoiced: r.invoicedTotal(lines).Sign() > 0}
 	for _, l := range lines {
-		if l.PO.Line != "" && r.paid[POLineRef{PONumber: l.PO.Number, Line: l.PO.Line}].Sign() > 0 {
-			p.paid = true
+		if l.PO.Line == "" {
+			continue
 		}
+		ref := POLineRef{PONumber: l.PO.Number, Line: l.PO.Line}
+		p.paid = p.paid || r.paid[ref].Sign() > 0
+		p.invoicedOn = earlier(p.invoicedOn, r.posted[ref].Invoice)
+		p.paidOn = earlier(p.paidOn, r.posted[ref].Payment)
 	}
 	return p
+}
+
+func earlier(a, b *date.Date) *date.Date {
+	if a == nil || (b != nil && b.Before(*a)) {
+		return b
+	}
+	return a
 }
 
 func (r *reader) lineItemRef(id string) LineItemRef {
