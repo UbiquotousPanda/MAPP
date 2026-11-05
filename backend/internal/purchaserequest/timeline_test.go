@@ -1,6 +1,7 @@
 package purchaserequest
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -172,8 +173,8 @@ func TestStepsOf_032Timeline_ApprovedIsTheFirstApprovalAndALaterChangeIsANote(t 
 	if approved.At == nil || !approved.At.Equal(first) || approved.By == nil || approved.By.Name != daniel.Name {
 		t.Errorf("Approved = %v by %v, want the first approval on 20 Nov by Daniel Okoro", approved.At, approved.By)
 	}
-	if approved.Detail != "change re-approved 25 Nov 2026" {
-		t.Errorf("Approved detail = %q, want the later re-approval as a note", approved.Detail)
+	if got := (TimelineStep{ReapprovedAt: approved.ReapprovedAt, Detail: approved.Detail}); !reflect.DeepEqual(got, TimelineStep{ReapprovedAt: &change}) {
+		t.Errorf("Approved re-approved at %v, detail %q, want %v and no detail", got.ReapprovedAt, got.Detail, change)
 	}
 	if sent.At == nil || approved.At.After(*sent.At) {
 		t.Errorf("Approved %v is after Sent to GSAP %v", approved.At, sent.At)

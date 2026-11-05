@@ -6,8 +6,7 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// demo-mvp #4: each line says what its line item has left without this purchase request, so the form can warn
-// before saving a line that goes over it within the tolerance; Media booking plans 30,000.00 USD.
+// Left excludes this request so the form can warn before saving; Media booking plans 30,000.00 USD.
 func TestLines_SayWhatTheLineItemHasLeftWithoutThem_Contract_DemoMVP4(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)

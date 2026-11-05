@@ -37,8 +37,6 @@ func TestUpdate_RequestedRuleOnlyWhenThePlannedCostChanges_DemoMVP4(t *testing.T
 	}
 }
 
-// Planned 9,200 with 10,000 requested within the tolerance: a raise to 9,500 still leaves the line item below
-// what is requested, yet only a lower planned cost or another currency is refused.
 func TestUpdate_RaisingThePlannedCostBelowWhatIsRequestedIsSaved_DemoMVP3(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)

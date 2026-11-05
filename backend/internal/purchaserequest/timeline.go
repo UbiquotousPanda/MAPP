@@ -21,9 +21,6 @@ const (
 	stepInvoiced  = "invoiced"
 	stepPaid      = "paid"
 	timelineLimit = 200
-
-	reapprovedPrefix = "change re-approved "
-	dayLayout        = "2 Jan 2006"
 )
 
 var stepLabels = []struct{ key, label, waiting string }{
@@ -34,13 +31,14 @@ var stepLabels = []struct{ key, label, waiting string }{
 
 // TimelineStep is one step of a purchase request's life; At and By are empty when the records do not say.
 type TimelineStep struct {
-	Key     string       `json:"key"`
-	Label   string       `json:"label"`
-	Reached bool         `json:"reached"`
-	At      *time.Time   `json:"at"`
-	By      *actor.Actor `json:"by"`
-	Detail  string       `json:"detail"`
-	Waiting string       `json:"waiting"`
+	Key          string       `json:"key"`
+	Label        string       `json:"label"`
+	Reached      bool         `json:"reached"`
+	At           *time.Time   `json:"at"`
+	By           *actor.Actor `json:"by"`
+	Detail       string       `json:"detail"`
+	Waiting      string       `json:"waiting"`
+	ReapprovedAt *time.Time   `json:"reapprovedAt,omitempty"`
 }
 
 // progress is what GSAP's invoices and payments say about a purchase request's PO lines, with the first posting dates.
@@ -162,7 +160,7 @@ func fillApproved(step *TimelineStep, pr PurchaseRequest, records timelineRecord
 		step.By = first.ApprovedBy
 	}
 	if len(approved) > 1 {
-		step.Detail = reapprovedPrefix + last.ApprovedAt.UTC().Format(dayLayout)
+		step.ReapprovedAt = last.ApprovedAt
 	}
 }
 

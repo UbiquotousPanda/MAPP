@@ -169,9 +169,10 @@ func (x prInvoices) FirstPostedOn(ctx context.Context, lines []purchaserequest.P
 		if !slices.Contains(lines, ref) {
 			continue
 		}
-		first, on := posted[ref], t.PostingDate
-		first.Invoice = earliest(first.Invoice, &on, t.Type == financials.TypeInvoice)
-		first.Payment = earliest(first.Payment, &on, t.Type == financials.TypePayment)
+		// A credit note or reversal is negative: it neither invoices nor pays the line.
+		first, on, positive := posted[ref], t.PostingDate, t.Amount.Sign() > 0
+		first.Invoice = earliest(first.Invoice, &on, positive && t.Type == financials.TypeInvoice)
+		first.Payment = earliest(first.Payment, &on, positive && t.Type == financials.TypePayment)
 		posted[ref] = first
 	}
 	return posted, nil
