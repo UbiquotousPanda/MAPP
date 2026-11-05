@@ -95,14 +95,28 @@ func (s *Service) ApplyRateImport(ctx context.Context, a actor.Actor, upload Rat
 // data-model §2.4 and saves the rows to add and replace in one Write, with the import record named source
 // (a file name) and one log entry. A later automatic GSAP feed calls it with its own rows.
 func (s *Service) ApplyRateRows(ctx context.Context, a actor.Actor, feedName, source string, rows []FeedRow) (RateImportView, error) {
+	view, err := s.saveRateRows(ctx, a, feedRows{feed: feedName, source: source, rows: rows})
+	if err == nil && view.ID == "" {
+		err = contentProblem(nothingToImportMessage)
+	}
+	return view, err
+}
+
+type feedRows struct {
+	feed, source string
+	rows         []FeedRow
+}
+
+// saveRateRows is ApplyRateRows without the refusal: with nothing to save it answers a view without an id.
+func (s *Service) saveRateRows(ctx context.Context, a actor.Actor, in feedRows) (RateImportView, error) {
 	var view RateImportView
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
-		review, err := s.reviewRates(ctx, rows)
+		review, err := s.reviewRates(ctx, in.rows)
 		if err != nil {
 			return err
 		}
 		if review.counts.Add+review.counts.Replace == 0 {
-			return contentProblem(nothingToImportMessage)
+			return nil
 		}
 		importID, err := s.ids.Next(ctx, ids.PrefixRateImport)
 		if err != nil {
@@ -115,18 +129,9 @@ func (s *Service) ApplyRateRows(ctx context.Context, a actor.Actor, feedName, so
 		if err := s.repo.PutRates(ctx, written); err != nil {
 			return err
 		}
-		var first, last *date.Date
-		for _, r := range written {
-			day := r.Date
-			if first == nil || day.Before(*first) {
-				first = &day
-			}
-			if last == nil || day.After(*last) {
-				last = &day
-			}
-		}
+		first, last := writtenSpan(written)
 		imp := RateImport{
-			ID: importID, FileName: source, Feed: feedName, FirstDate: first, LastDate: last,
+			ID: importID, FileName: in.source, Feed: in.feed, FirstDate: first, LastDate: last,
 			Added: review.counts.Add, Replaced: review.counts.Replace, Unchanged: review.counts.Present,
 			NotUsed: review.counts.NotUsed, Problems: review.counts.Problem, Meta: record.NewMeta(a, s.now()),
 		}
@@ -145,6 +150,19 @@ func (s *Service) ApplyRateRows(ctx context.Context, a actor.Actor, feedName, so
 		return nil
 	})
 	return view, err
+}
+
+func writtenSpan(written []ExchangeRate) (first, last *date.Date) {
+	for _, r := range written {
+		day := r.Date
+		if first == nil || day.Before(*first) {
+			first = &day
+		}
+		if last == nil || day.After(*last) {
+			last = &day
+		}
+	}
+	return first, last
 }
 
 func (s *Service) importedRates(ctx context.Context, a actor.Actor, rates []ExchangeRate, importID string) ([]ExchangeRate, error) {

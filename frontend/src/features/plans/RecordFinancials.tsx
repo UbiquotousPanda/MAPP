@@ -2,6 +2,7 @@ import { TriangleAlert } from 'lucide-react';
 import { useId } from 'react';
 import { Link } from 'react-router';
 import { ApiError } from '@/api/errors';
+import { RatesAsOfNote } from '@/features/rates-as-of';
 import type { components } from '@/api/generated/schema';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
@@ -98,6 +99,7 @@ export function RecordFinancials({ recordId, planId, variant }: RecordFinancials
               ? `GSAP data as of ${dateTime(data.source.dataAsOf)}${data.source.feedName ? ` · ${data.source.feedName}` : ''}${data.source.fileName ? ` '${data.source.fileName}'` : ''}`
               : 'No GSAP data loaded yet.'}
           </span>
+          <RatesAsOfNote />
         </div>
       </>
     );

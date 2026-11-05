@@ -1,9 +1,4 @@
-// Command api runs the MAPP API on http://127.0.0.1:<APP_PORT>. From the backend folder:
-//
-//	go run ./cmd/api
-//
-// It reads its settings from the environment (see app.LoadConfig), writes its log as JSON lines on standard
-// output and serves until Ctrl+C or SIGTERM, letting the requests in progress finish before it stops.
+// Command api (go run ./cmd/api) serves the MAPP API on 127.0.0.1:<APP_PORT> until Ctrl+C or SIGTERM.
 package main
 
 import (
@@ -58,10 +53,12 @@ func run(ctx context.Context) error {
 	slog.InfoContext(ctx, "MAPP API listening", "url", "http://"+listener.Addr().String(),
 		"environment", cfg.Env, "demo_sign_in", cfg.DemoMode())
 	refreshCtx, stopRefresh := context.WithCancel(ctx)
+	ticker := time.NewTicker(rateRefreshEvery)
+	defer ticker.Stop()
 	refreshed := make(chan struct{})
 	go func() {
 		defer close(refreshed)
-		api.RefreshRates(refreshCtx, rateRefreshEvery)
+		api.RefreshRates(refreshCtx, ticker.C)
 	}()
 	served := app.Serve(ctx, listener, api.Handler, cfg.ShutdownTimeout)
 	stopRefresh()
@@ -71,7 +68,6 @@ func run(ctx context.Context) error {
 	return errors.Join(served, api.Close(closing))
 }
 
-// rateRefreshEvery is how often the simulated GSAP rates refresh during the day.
 const rateRefreshEvery = 15 * time.Minute
 
 type message string
@@ -97,8 +93,7 @@ func openDatabase(ctx context.Context, url string) (*database.DB, error) {
 	return db, nil
 }
 
-// listen opens port on host: 127.0.0.1, so that other computers cannot reach the API, or 0.0.0.0 inside the
-// container, whose port compose publishes on 127.0.0.1 only.
+// listen binds 127.0.0.1, or 0.0.0.0 inside the container, whose port compose publishes on 127.0.0.1 only.
 func listen(ctx context.Context, host string, port int) (net.Listener, error) {
 	var config net.ListenConfig
 	listener, err := config.Listen(ctx, "tcp", net.JoinHostPort(host, strconv.Itoa(port)))
@@ -108,15 +103,12 @@ func listen(ctx context.Context, host string, port int) (net.Listener, error) {
 	return listener, err
 }
 
-// Windows' error numbers for a port that another program holds: WSAEADDRINUSE (in use), and WSAEACCES
-// (another program listens on the port on all addresses, or Windows has reserved the port). On Windows,
-// Go's syscall.EADDRINUSE matches neither.
+// Windows' WSAEADDRINUSE and WSAEACCES (held on all addresses, or reserved): syscall.EADDRINUSE matches neither.
 const (
 	windowsAddressInUse = 10048
 	windowsAccessDenied = 10013
 )
 
-// isPortInUse reports whether err says that another program, or Windows, already holds the port.
 func isPortInUse(err error) bool {
 	var errno syscall.Errno
 	return errors.Is(err, syscall.EADDRINUSE) ||

@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"mapp/internal/history"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 )
@@ -49,14 +50,74 @@ func TestRefreshRates_SavesTodaysRatesAndMovesAsOf_Demo10(t *testing.T) {
 	}
 }
 
-func TestListCurrentRates_AsOfStartsAtTheStartTime_Demo10(t *testing.T) {
+func TestListCurrentRates_AsOfIsTheNewestStoredChangeNotTheStart_Issue183(t *testing.T) {
 	t.Parallel()
 	f := feedFixture(t)
+	f.clock.now = october20.Add(15 * time.Minute)
+	if _, err := f.service.RefreshRates(t.Context(), alex); err != nil {
+		t.Fatalf("RefreshRates() error = %v", err)
+	}
+	refreshedAt := f.clock.now
+	f.clock.now = refreshedAt.Add(2 * time.Hour)
 
-	page, err := f.service.ListCurrentRates(t.Context(), alex)
+	s := f.service
+	restarted := NewService(history.Tools{Tx: s.tx, IDs: s.ids, Log: s.history, Now: s.now}, s.repo)
+	page, err := restarted.ListCurrentRates(t.Context(), alex)
 
-	if err != nil || !page.AsOf.Equal(start) {
-		t.Errorf("as of = %v, %v, want the start time %v", page.AsOf, err, start)
+	if err != nil || !page.AsOf.Equal(refreshedAt) {
+		t.Errorf("as of after a restart = %v, %v, want the stored refresh %v", page.AsOf, err, refreshedAt)
+	}
+}
+
+func TestListCurrentRates_AsOfFollowsAnImportAndAHandEnteredRate_Issue183(t *testing.T) {
+	t.Parallel()
+	f := feedFixture(t)
+	f.clock.now = october20.Add(time.Hour)
+	rows := []FeedRow{{Row: 1, RateType: sampleRateType, From: "USD", To: "EUR", ValidFrom: "2026-10-20", Rate: "0.987654"}}
+	if _, err := f.service.ApplyRateRows(t.Context(), alex, "file", "gsap_rates.csv", rows); err != nil {
+		t.Fatalf("ApplyRateRows() error = %v", err)
+	}
+	imported, _ := f.service.ListCurrentRates(t.Context(), alex)
+	f.clock.now = october20.Add(2 * time.Hour)
+	if _, err := f.service.AddRate(t.Context(), alex, "GBP", RateInput{Date: "2026-10-21", Rate: "0.81"}); err != nil {
+		t.Fatalf("AddRate() error = %v", err)
+	}
+	entered, _ := f.service.ListCurrentRates(t.Context(), alex)
+
+	if !imported.AsOf.Equal(october20.Add(time.Hour)) || !entered.AsOf.Equal(f.clock.now) {
+		t.Errorf("as of = %v after the import, %v after the rate entry; want %v and %v",
+			imported.AsOf, entered.AsOf, october20.Add(time.Hour), f.clock.now)
+	}
+}
+
+func TestRefreshRates_RepeatWithinTheMinuteSucceedsAndSavesNothing_Issue183(t *testing.T) {
+	t.Parallel()
+	f := feedFixture(t)
+	f.clock.now = october20.Add(15 * time.Minute)
+	first, err := f.service.RefreshRates(t.Context(), alex)
+	if err != nil {
+		t.Fatalf("RefreshRates() error = %v", err)
+	}
+	imports, _ := f.service.repo.ListRateImports(t.Context())
+	logged := len(f.logEntries(t))
+	f.clock.now = f.clock.now.Add(20 * time.Second)
+
+	again, err := f.service.RefreshRates(t.Context(), alex)
+
+	if err != nil {
+		t.Fatalf("repeat RefreshRates() error = %v, want the current rates", err)
+	}
+	if !again.AsOf.Equal(f.clock.now) {
+		t.Errorf("as of = %v, want the repeat's time %v", again.AsOf, f.clock.now)
+	}
+	if ratePage(t, again, "EUR").Rate != ratePage(t, first, "EUR").Rate {
+		t.Errorf("EUR moved on a repeat within the minute")
+	}
+	if after, _ := f.service.repo.ListRateImports(t.Context()); len(after) != len(imports) {
+		t.Errorf("imports = %d, want %d: a repeat saves no import", len(after), len(imports))
+	}
+	if n := len(f.logEntries(t)); n != logged {
+		t.Errorf("%d new log entries, want none", n-logged)
 	}
 }
 

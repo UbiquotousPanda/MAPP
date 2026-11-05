@@ -3,6 +3,7 @@ package settings
 import (
 	"context"
 	"slices"
+	"time"
 
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
@@ -34,7 +35,13 @@ func (s *Service) RatesOn(ctx context.Context, d date.Date) (money.Rates, error)
 // CurrentRates returns every currency's current rate with its date and source (FR-002, FR-009): USD first,
 // then by code.
 func (s *Service) CurrentRates(ctx context.Context) ([]RateInfo, error) {
+	infos, _, err := s.currentRates(ctx)
+	return infos, err
+}
+
+func (s *Service) currentRates(ctx context.Context) ([]RateInfo, time.Time, error) {
 	var infos []RateInfo
+	var changed time.Time
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
 		currencies, err := s.repo.ListCurrencies(ctx)
 		if err != nil {
@@ -45,21 +52,22 @@ func (s *Service) CurrentRates(ctx context.Context) ([]RateInfo, error) {
 		if err != nil {
 			return err
 		}
-		files, err := s.importFileNames(ctx)
+		imports, err := s.repo.ListRateImports(ctx)
 		if err != nil {
 			return err
 		}
+		files := fileNames(imports)
 		infos = make([]RateInfo, 0, len(currencies))
 		for _, c := range currencies {
 			infos = append(infos, rateInfoOf(c, book, s.today(), files))
 		}
+		changed = ratesChangedAt(book, imports)
 		return nil
 	})
-	return infos, err
+	return infos, changed, err
 }
 
-// CurrentRate returns the current rate of the currency code with its date and source, and false when there
-// is no such currency.
+// CurrentRate returns the current rate of the currency code, and false when there is no such currency.
 func (s *Service) CurrentRate(ctx context.Context, code string) (RateInfo, bool, error) {
 	infos, err := s.CurrentRates(ctx)
 	if err != nil {
@@ -75,14 +83,13 @@ func (s *Service) CurrentRate(ctx context.Context, code string) (RateInfo, bool,
 
 // ListCurrentRates answers GET /api/v1/exchange-rates/current. Every signed-in person may read it (014 Table C).
 func (s *Service) ListCurrentRates(ctx context.Context, _ actor.Actor) (CurrentRatePage, error) {
-	infos, err := s.CurrentRates(ctx)
+	infos, changed, err := s.currentRates(ctx)
 	if err != nil {
 		return CurrentRatePage{}, err
 	}
-	return CurrentRatePage{Today: s.today(), AsOf: s.asOf.get(), Items: infos, Total: len(infos)}, nil
+	return CurrentRatePage{Today: s.today(), AsOf: s.asOf.asOf(changed, s.now()), Items: infos, Total: len(infos)}, nil
 }
 
-// rateInfoOf returns the current rate of c on day with where it came from.
 func rateInfoOf(c Currency, book rateBook, day date.Date, files map[string]string) RateInfo {
 	info := RateInfo{Currency: c.Code, Rate: money.One, InverseRate: money.One}
 	if c.Code == money.BaseCurrency {
@@ -104,7 +111,6 @@ func rateInfoOf(c Currency, book rateBook, day date.Date, files map[string]strin
 	return info
 }
 
-// importFileNames returns the file name of every rate import, by id.
 func (s *Service) importFileNames(ctx context.Context) (map[string]string, error) {
 	imports, err := s.repo.ListRateImports(ctx)
 	if err != nil {
@@ -117,7 +123,6 @@ func (s *Service) importFileNames(ctx context.Context) (map[string]string, error
 	return names, nil
 }
 
-// rateView returns the rate r as the API answers it on day.
 func rateView(r ExchangeRate, book rateBook, day date.Date, files map[string]string) ExchangeRateView {
 	view := ExchangeRateView{
 		ID: r.ID, Currency: r.Currency, Date: r.Date, Rate: r.Rate, InverseRate: r.Rate.Inverse(), Source: r.Source,
@@ -170,7 +175,6 @@ func (s *Service) ListRates(ctx context.Context, _ actor.Actor, code string) (Ex
 	return page, err
 }
 
-// rateViewOf returns the stored rate r as the API answers it, reading the other rates of its currency.
 func (s *Service) rateViewOf(ctx context.Context, r ExchangeRate) (ExchangeRateView, error) {
 	book, err := s.rateBook(ctx)
 	if err != nil {
@@ -183,7 +187,6 @@ func (s *Service) rateViewOf(ctx context.Context, r ExchangeRate) (ExchangeRateV
 	return rateView(r, book, s.today(), files), nil
 }
 
-// storedRate reads the rate id, or answers not found.
 func (s *Service) storedRate(ctx context.Context, id string) (ExchangeRate, error) {
 	r, found, err := s.repo.GetRate(ctx, id)
 	if err != nil {

@@ -5,6 +5,7 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useFormatters } from '@/format/useFormatters';
+import { RatesAsOfNote } from '@/features/rates-as-of';
 import { Breakdown, LatestTransactions, LineItemTransactions } from './FinancialsTables';
 import {
   cardTip,
@@ -70,6 +71,7 @@ export function ActivityFinancials({ activityId }: { activityId: string }) {
             />
           )}
           <Source view={view} />
+          <RatesAsOfNote />
         </div>
       )}
     </Frame>

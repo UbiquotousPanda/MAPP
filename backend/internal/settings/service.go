@@ -54,9 +54,7 @@ type Service struct {
 }
 
 func NewService(tools history.Tools, repo Store) *Service {
-	s := &Service{tx: tools.Tx, repo: repo, ids: tools.IDs, history: tools.Log, now: tools.Now}
-	s.asOf.set(s.now())
-	return s
+	return &Service{tx: tools.Tx, repo: repo, ids: tools.IDs, history: tools.Log, now: tools.Now}
 }
 
 // AddReferenceSource is for internal/app while the API starts, before it serves requests.
