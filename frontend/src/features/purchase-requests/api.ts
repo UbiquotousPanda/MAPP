@@ -22,6 +22,7 @@ export type PurchaseRequestRow = Schemas['PurchaseRequestRow'];
 export type PurchaseRequestRowLine = Schemas['PurchaseRequestRowLine'];
 export type PurchaseRequestVendorGroup = Schemas['PurchaseRequestVendorGroup'];
 export type PurchaseRequestRouting = Schemas['PurchaseRequestRouting'];
+export type PurchaseRequestTimelineStep = Schemas['PurchaseRequestTimelineStep'];
 export type PurchaseRequestRoutingType = Schemas['PurchaseRequestRoutingType'];
 export type PurchaseRequestVersion = Schemas['PurchaseRequestVersion'];
 export type PurchaseRequestProblem = Schemas['PurchaseRequestProblem'];

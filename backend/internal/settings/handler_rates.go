@@ -21,6 +21,7 @@ func (h *Handler) rateRoutes(r gin.IRoutes) {
 	r.DELETE("/exchange-rates/:rateId", h.deleteRate)
 	r.POST("/exchange-rates/:rateId/impact", h.updateRateImpact)
 	r.GET("/exchange-rates/current", h.currentRates)
+	r.POST("/exchange-rates/refresh", h.refreshRates)
 	r.POST("/exchange-rates/import-check", h.checkRateImport)
 	r.POST("/exchange-rates/import", h.importRates)
 	r.GET("/exchange-rates/imports", h.listRateImports)
@@ -89,6 +90,12 @@ func (h *Handler) updateRateImpact(c *gin.Context) {
 // source (FR-009).
 func (h *Handler) currentRates(c *gin.Context) {
 	page, err := h.service.ListCurrentRates(c.Request.Context(), actorOf(c))
+	respond(c, http.StatusOK, page, err)
+}
+
+// refreshRates answers POST /api/v1/exchange-rates/refresh: the current rates after a refresh from the simulated GSAP.
+func (h *Handler) refreshRates(c *gin.Context) {
+	page, err := h.service.RefreshRates(c.Request.Context(), actorOf(c))
 	respond(c, http.StatusOK, page, err)
 }
 

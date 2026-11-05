@@ -16,6 +16,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"mapp/internal/app"
 	"mapp/internal/platform/clock"
@@ -56,11 +57,22 @@ func run(ctx context.Context) error {
 	}
 	slog.InfoContext(ctx, "MAPP API listening", "url", "http://"+listener.Addr().String(),
 		"environment", cfg.Env, "demo_sign_in", cfg.DemoMode())
+	refreshCtx, stopRefresh := context.WithCancel(ctx)
+	refreshed := make(chan struct{})
+	go func() {
+		defer close(refreshed)
+		api.RefreshRates(refreshCtx, rateRefreshEvery)
+	}()
 	served := app.Serve(ctx, listener, api.Handler, cfg.ShutdownTimeout)
+	stopRefresh()
+	<-refreshed
 	closing, cancel := context.WithTimeout(context.WithoutCancel(ctx), cfg.ShutdownTimeout)
 	defer cancel()
 	return errors.Join(served, api.Close(closing))
 }
+
+// rateRefreshEvery is how often the simulated GSAP rates refresh during the day.
+const rateRefreshEvery = 15 * time.Minute
 
 type message string
 

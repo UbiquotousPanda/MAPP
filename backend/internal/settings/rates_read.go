@@ -79,7 +79,7 @@ func (s *Service) ListCurrentRates(ctx context.Context, _ actor.Actor) (CurrentR
 	if err != nil {
 		return CurrentRatePage{}, err
 	}
-	return CurrentRatePage{Today: s.today(), Items: infos, Total: len(infos)}, nil
+	return CurrentRatePage{Today: s.today(), AsOf: s.asOf.get(), Items: infos, Total: len(infos)}, nil
 }
 
 // rateInfoOf returns the current rate of c on day with where it came from.

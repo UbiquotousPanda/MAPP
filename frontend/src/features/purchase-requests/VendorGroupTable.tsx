@@ -21,6 +21,7 @@ const COLUMNS = [
   'Purchase request',
   'ID',
   'Status',
+  'Stage',
   'Amount',
   'Invoiced',
   'Owner',
@@ -135,6 +136,7 @@ function PurchaseRequestRows({ row, open, onToggle }: RowProps) {
           <PurchaseRequestStatusChip status={row.status} changePending={row.changePending} />
           {row.waitingForGsap && <span className={styles.waiting}>{WAITING_MARK}</span>}
         </td>
+        <td>{row.stage}</td>
         <td className={styles.numeric}>{money(row.amountDisplay)}</td>
         <td className={styles.numeric}>{money(row.invoicedDisplay)}</td>
         <td>{row.owner ? row.owner.name : '—'}</td>

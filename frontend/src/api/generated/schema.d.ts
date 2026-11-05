@@ -3788,6 +3788,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/exchange-rates/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fetch fresh rates from the simulated GSAP now; the rates it saves are today's rates
+         * @description Needs the permission exchangeRates.manage. The simulated GSAP also refreshes by itself every 15 minutes; no live GSAP call is made (ADR-0009).
+         */
+        post: operations["refreshRates"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/exchange-rates/import-check": {
         parameters: {
             query?: never;
@@ -5786,6 +5806,8 @@ export interface components {
         GsapSource: "" | "simulatedGsap" | "gsap";
         PurchaseRequestConfiguration: {
             purchaseSupport: boolean;
+            /** @description Release in GSAP right after approval in SP&A One (demo feedback */
+            releaseInGsapAfterApproval: boolean;
             linesOnApprovedPurchaseRequests: components["schemas"]["LinesOnApprovedPurchaseRequests"];
             version: number;
             /** @description Null while the setting has never been saved (038 FR-057). */
@@ -5796,6 +5818,8 @@ export interface components {
         PurchaseRequestConfigurationInput: {
             version: number;
             purchaseSupport: boolean;
+            /** @description Omit to keep the saved choice. */
+            releaseInGsapAfterApproval?: boolean;
             linesOnApprovedPurchaseRequests: components["schemas"]["LinesOnApprovedPurchaseRequests"];
         };
         /** @description The line item a PR line draws on, as it is now. */
@@ -5873,6 +5897,19 @@ export interface components {
             overallLimit: components["schemas"]["Money"] | null;
             description: string;
         };
+        PurchaseRequestTimelineStep: {
+            /** @example approved */
+            key: string;
+            /** @example Approved */
+            label: string;
+            reached: boolean;
+            /** Format: date-time */
+            at: string | null;
+            by: components["schemas"]["ActorRef"] | null;
+            detail: string;
+            /** @description The words Waiting for the next step on the first step not reached, empty on every other step. */
+            waiting: string;
+        };
         PurchaseRequestRouting: {
             /** @example PRR-1001 */
             id: string;
@@ -5947,6 +5984,9 @@ export interface components {
             gsapPrDate: string | null;
             gsapSource: components["schemas"]["GsapSource"];
             waitingForGsap: boolean;
+            /** @example Approved */
+            stage: string;
+            timeline: components["schemas"]["PurchaseRequestTimelineStep"][];
             lines: components["schemas"]["PurchaseRequestLine"][];
             approvedVersion: components["schemas"]["PurchaseRequestVersion"] | null;
             /** @description Newest first. */
@@ -6068,6 +6108,8 @@ export interface components {
             approvalWorkflow: components["schemas"]["WorkflowRef"] | null;
             gsapPrNumber: string;
             waitingForGsap: boolean;
+            /** @example Purchase order */
+            stage: string;
             plan: components["schemas"]["RecordRef"];
             lines: components["schemas"]["PurchaseRequestRowLine"][];
         };
@@ -11054,6 +11096,11 @@ export interface components {
              * @description The API's date the current rates are worked out for.
              */
             today: string;
+            /**
+             * Format: date-time
+             * @description When the simulated GSAP rates were last refreshed (the start time until the first refresh).
+             */
+            asOf: string;
             items: components["schemas"]["RateUsed"][];
             total: number;
         };
@@ -21427,6 +21474,29 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description The current rates; USD first, then by code. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentRatePage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    refreshRates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current rates after the refresh, with the time they are as of. */
             200: {
                 headers: {
                     [name: string]: unknown;

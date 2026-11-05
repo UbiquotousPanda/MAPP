@@ -1,5 +1,6 @@
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { cx } from '@/ui/cx';
+import { asOfText } from '@/format/asOf';
 import { useFormatters } from '@/format/useFormatters';
 import { moneyText } from './line-item-math';
 import type { Money } from './api';
@@ -51,7 +52,8 @@ export function RateTip({ codes }: { codes: string[] }) {
       const rate = rates.data?.items.find((item) => item.currency === code);
       return rate ? rateText(factsOf(rate), date) : null;
     });
-  const text =
-    lines.length > 0 && lines.every((line) => line !== null) ? lines.join('; ') : RATES_UNKNOWN;
+  const asOf = rates.data?.asOf;
+  const known = lines.length > 0 && lines.every((line) => line !== null);
+  const text = known && asOf ? `${lines.join('; ')} · ${asOfText(asOf)}` : RATES_UNKNOWN;
   return <InfoTip label="the rates used" text={text} />;
 }

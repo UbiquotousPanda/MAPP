@@ -26,6 +26,7 @@ import { PurchaseRequestApprovalSection } from './PurchaseRequestApprovalSection
 import { PurchaseRequestDetailsCard } from './PurchaseRequestDetailsCard';
 import { PurchaseRequestHeader } from './PurchaseRequestHeader';
 import { PurchaseRequestLinesTable } from './PurchaseRequestLinesTable';
+import { PurchaseRequestTimeline } from './PurchaseRequestTimeline';
 import { RoutingHistory } from './RoutingHistory';
 import styles from './PurchaseRequestPage.module.css';
 
@@ -76,6 +77,7 @@ function Loaded({ purchaseRequest: pr }: { purchaseRequest: PurchaseRequest }) {
           <PurchaseRequestDetailsCard purchaseRequest={pr} />
           <GsapFields purchaseRequest={pr} />
         </div>
+        <PurchaseRequestTimeline purchaseRequest={pr} />
         <PurchaseRequestLinesTable purchaseRequest={pr} />
         <ApprovedVersionCard purchaseRequest={pr} />
         <div id="approval">

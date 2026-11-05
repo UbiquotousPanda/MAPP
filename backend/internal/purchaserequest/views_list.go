@@ -38,6 +38,7 @@ type Row struct {
 	ApprovalWorkflow *WorkflowRef      `json:"approvalWorkflow"`
 	GSAPPRNumber     string            `json:"gsapPrNumber"`
 	WaitingForGSAP   bool              `json:"waitingForGsap"`
+	Stage            string            `json:"stage"`
 	Plan             errs.RecordRef    `json:"plan"`
 	Lines            []RowLine         `json:"lines"`
 }

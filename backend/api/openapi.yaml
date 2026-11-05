@@ -7090,6 +7090,27 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/exchange-rates/refresh:
+    post:
+      tags: [Exchange rates]
+      operationId: refreshRates
+      summary: Fetch fresh rates from the simulated GSAP now; the rates it saves are today's rates
+      description: >-
+        Needs the permission exchangeRates.manage. The simulated GSAP also refreshes by itself every 15 minutes;
+        no live GSAP call is made (ADR-0009).
+      responses:
+        "200":
+          description: The current rates after the refresh, with the time they are as of.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentRatePage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/exchange-rates/import-check:
     post:
       tags: [Exchange rates]
@@ -11860,10 +11881,13 @@ components:
     PurchaseRequestConfiguration:
       type: object
       additionalProperties: false
-      required: [purchaseSupport, linesOnApprovedPurchaseRequests, version, updatedAt, updatedBy, canChange]
+      required: [purchaseSupport, linesOnApprovedPurchaseRequests, releaseInGsapAfterApproval, version, updatedAt, updatedBy, canChange]
       properties:
         purchaseSupport:
           type: boolean
+        releaseInGsapAfterApproval:
+          type: boolean
+          description: Release in GSAP right after approval in SP&A One (demo feedback #6); on by default.
         linesOnApprovedPurchaseRequests:
           $ref: "#/components/schemas/LinesOnApprovedPurchaseRequests"
         version:
@@ -11890,6 +11914,9 @@ components:
           type: integer
         purchaseSupport:
           type: boolean
+        releaseInGsapAfterApproval:
+          type: boolean
+          description: Omit to keep the saved choice.
         linesOnApprovedPurchaseRequests:
           $ref: "#/components/schemas/LinesOnApprovedPurchaseRequests"
     PurchaseRequestLineItemRef:
@@ -12049,6 +12076,31 @@ components:
             - type: "null"
         description:
           type: string
+    PurchaseRequestTimelineStep:
+      type: object
+      additionalProperties: false
+      required: [key, label, reached, at, by, detail, waiting]
+      properties:
+        key:
+          type: string
+          example: approved
+        label:
+          type: string
+          example: Approved
+        reached:
+          type: boolean
+        at:
+          type: [string, "null"]
+          format: date-time
+        by:
+          oneOf:
+            - $ref: "#/components/schemas/ActorRef"
+            - type: "null"
+        detail:
+          type: string
+        waiting:
+          type: string
+          description: The words Waiting for the next step on the first step not reached, empty on every other step.
     PurchaseRequestRouting:
       type: object
       additionalProperties: false
@@ -12136,7 +12188,7 @@ components:
     PurchaseRequest:
       type: object
       additionalProperties: false
-      required: [id, name, description, owner, moaApprover, approvalWorkflow, modificationWorkflow, status, changePending, plan, path, companyCode, costCentres, hxKeys, attributes, vendor, amountDisplay, invoicedDisplay, gsapPrNumber, gsapPrDate, gsapSource, waitingForGsap, lines, approvedVersion, routings, readiness, missing, notice, access, version, createdAt, createdBy, updatedAt, updatedBy]
+      required: [id, name, description, owner, moaApprover, approvalWorkflow, modificationWorkflow, status, changePending, plan, path, companyCode, costCentres, hxKeys, attributes, vendor, amountDisplay, invoicedDisplay, gsapPrNumber, gsapPrDate, gsapSource, waitingForGsap, stage, timeline, lines, approvedVersion, routings, readiness, missing, notice, access, version, createdAt, createdBy, updatedAt, updatedBy]
       properties:
         id:
           type: string
@@ -12203,6 +12255,13 @@ components:
           $ref: "#/components/schemas/GsapSource"
         waitingForGsap:
           type: boolean
+        stage:
+          type: string
+          example: Approved
+        timeline:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseRequestTimelineStep"
         lines:
           type: array
           minItems: 1
@@ -12420,7 +12479,7 @@ components:
     PurchaseRequestRow:
       type: object
       additionalProperties: false
-      required: [id, name, vendor, status, changePending, amountDisplay, invoicedDisplay, owner, createdAt, approvalWorkflow, gsapPrNumber, waitingForGsap, plan, lines]
+      required: [id, name, vendor, status, changePending, amountDisplay, invoicedDisplay, owner, createdAt, approvalWorkflow, gsapPrNumber, waitingForGsap, stage, plan, lines]
       properties:
         id:
           type: string
@@ -12451,6 +12510,9 @@ components:
           type: string
         waitingForGsap:
           type: boolean
+        stage:
+          type: string
+          example: Purchase order
         plan:
           $ref: "#/components/schemas/RecordRef"
         lines:
@@ -24748,6 +24810,7 @@ components:
       additionalProperties: false
       required:
         - today
+        - asOf
         - items
         - total
       properties:
@@ -24755,6 +24818,10 @@ components:
           type: string
           format: date
           description: The API's date the current rates are worked out for.
+        asOf:
+          type: string
+          format: date-time
+          description: When the simulated GSAP rates were last refreshed (the start time until the first refresh).
         items:
           type: array
           items:

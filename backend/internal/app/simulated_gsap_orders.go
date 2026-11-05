@@ -35,7 +35,7 @@ func (x simulatedLedger) BookPurchaseOrder(ctx context.Context, a actor.Actor, o
 		})
 	}
 	_, err := x.financials.RecordSimulatedGSAP(ctx, a, financials.SimulatedDelivery{
-		FeedName: simulatedOrderFeed, FileName: order.PurchaseRequestID, Rows: rows,
+		FeedName: simulatedOrderFeed, FileName: order.PurchaseRequestID, Rows: rows, AfterApproval: order.AfterApproval,
 	})
 	return err
 }

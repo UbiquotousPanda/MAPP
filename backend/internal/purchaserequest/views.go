@@ -144,6 +144,8 @@ type View struct {
 	GSAPPRDate           *date.Date               `json:"gsapPrDate"`
 	GSAPSource           string                   `json:"gsapSource"`
 	WaitingForGSAP       bool                     `json:"waitingForGsap"`
+	Stage                string                   `json:"stage"`
+	Timeline             []TimelineStep           `json:"timeline"`
 	Lines                []LineView               `json:"lines"`
 	ApprovedVersion      *VersionView             `json:"approvedVersion"`
 	Routings             []RoutingView            `json:"routings"`
@@ -188,6 +190,7 @@ type OptionPage struct {
 type ConfigurationView struct {
 	PurchaseSupport                 bool               `json:"purchaseSupport"`
 	LinesOnApprovedPurchaseRequests LinesOnApproved    `json:"linesOnApprovedPurchaseRequests"`
+	ReleaseInGSAPAfterApproval      bool               `json:"releaseInGsapAfterApproval"`
 	Version                         int                `json:"version"`
 	UpdatedAt                       *time.Time         `json:"updatedAt"`
 	UpdatedBy                       *actor.Actor       `json:"updatedBy"`

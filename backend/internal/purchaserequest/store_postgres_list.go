@@ -155,6 +155,7 @@ func (s *PostgresStore) Configuration(ctx context.Context) (Configuration, error
 	}
 	r := rows[0]
 	return Configuration{PurchaseSupport: r.PurchaseSupport, LinesOnApproved: LinesOnApproved(r.LinesOnApproved),
+		ReleaseInGSAP: r.ReleaseInGsap,
 		Meta: record.Meta{Version: r.Version, CreatedAt: r.CreatedAt, CreatedBy: actor.Actor{ID: r.CreatedByID, Name: r.CreatedByName},
 			UpdatedAt: r.UpdatedAt, UpdatedBy: actor.Actor{ID: r.UpdatedByID, Name: r.UpdatedByName}}}, nil
 }
@@ -164,7 +165,7 @@ func (s *PostgresStore) PutConfiguration(ctx context.Context, c Configuration) e
 	err := s.db.Queries(ctx).PutPurchaseRequestConfiguration(ctx, sqlcdb.PutPurchaseRequestConfigurationParams{
 		PurchaseSupport: c.PurchaseSupport, LinesOnApproved: string(c.LinesOnApproved), Version: c.Version,
 		CreatedAt: created, CreatedByID: by.ID, CreatedByName: by.Name, UpdatedAt: c.UpdatedAt,
-		UpdatedByID: c.UpdatedBy.ID, UpdatedByName: c.UpdatedBy.Name,
+		UpdatedByID: c.UpdatedBy.ID, UpdatedByName: c.UpdatedBy.Name, ReleaseInGsap: c.ReleaseInGSAP,
 	})
 	if err != nil {
 		return fmt.Errorf("save the purchase request configuration: %w", err)

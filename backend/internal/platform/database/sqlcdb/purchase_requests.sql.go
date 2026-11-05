@@ -60,7 +60,9 @@ func (q *Queries) DeletePurchaseRequestLine(ctx context.Context, id string) erro
 }
 
 const getPurchaseRequestConfiguration = `-- name: GetPurchaseRequestConfiguration :many
-SELECT id, purchase_support, lines_on_approved, version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name FROM purchase_request_configuration WHERE id = 'purchase-requests'
+SELECT id, purchase_support, lines_on_approved, version, created_at, created_by_id, created_by_name, updated_at,
+    updated_by_id, updated_by_name, release_in_gsap
+FROM purchase_request_configuration WHERE id = 'purchase-requests'
 `
 
 func (q *Queries) GetPurchaseRequestConfiguration(ctx context.Context) ([]PurchaseRequestConfiguration, error) {
@@ -83,6 +85,7 @@ func (q *Queries) GetPurchaseRequestConfiguration(ctx context.Context) ([]Purcha
 			&i.UpdatedAt,
 			&i.UpdatedByID,
 			&i.UpdatedByName,
+			&i.ReleaseInGsap,
 		); err != nil {
 			return nil, err
 		}
@@ -633,15 +636,16 @@ func (q *Queries) PutPurchaseRequest(ctx context.Context, arg PutPurchaseRequest
 const putPurchaseRequestConfiguration = `-- name: PutPurchaseRequestConfiguration :exec
 INSERT INTO purchase_request_configuration (
     id, purchase_support, lines_on_approved, version, created_at, created_by_id, created_by_name, updated_at,
-    updated_by_id, updated_by_name
-) VALUES ('purchase-requests', $1, $2, $3, $4, $5, $6, $7, $8, $9)
+    updated_by_id, updated_by_name, release_in_gsap
+) VALUES ('purchase-requests', $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 ON CONFLICT (id) DO UPDATE SET
     purchase_support = excluded.purchase_support,
     lines_on_approved = excluded.lines_on_approved,
     version = excluded.version,
     updated_at = excluded.updated_at,
     updated_by_id = excluded.updated_by_id,
-    updated_by_name = excluded.updated_by_name
+    updated_by_name = excluded.updated_by_name,
+    release_in_gsap = excluded.release_in_gsap
 `
 
 type PutPurchaseRequestConfigurationParams struct {
@@ -654,6 +658,7 @@ type PutPurchaseRequestConfigurationParams struct {
 	UpdatedAt       time.Time
 	UpdatedByID     string
 	UpdatedByName   string
+	ReleaseInGsap   bool
 }
 
 func (q *Queries) PutPurchaseRequestConfiguration(ctx context.Context, arg PutPurchaseRequestConfigurationParams) error {
@@ -667,6 +672,7 @@ func (q *Queries) PutPurchaseRequestConfiguration(ctx context.Context, arg PutPu
 		arg.UpdatedAt,
 		arg.UpdatedByID,
 		arg.UpdatedByName,
+		arg.ReleaseInGsap,
 	)
 	return err
 }

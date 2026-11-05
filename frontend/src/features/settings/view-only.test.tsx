@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { TYPES } from '@/testing/fixtures/activity-types';
 import { FIELD_HELP_PAGE } from '@/testing/fixtures/field-help';
 import { BUDGETS } from '@/testing/fixtures/finance-budget-items';
+import { currentRates } from '@/testing/fixtures/line-item-forms';
 import { EUR_RATES, NO_IMPORTS } from '@/testing/fixtures/rates';
 import { CURRENCIES, MODELS } from '@/testing/fixtures/settings';
 import { VIEWER } from '@/testing/fixtures/viewer';
@@ -36,6 +37,7 @@ const PAGES: [string, ReactElement, HttpHandler[]][] = [
     [
       reply('GET /api/v1/currencies', { body: CURRENCIES }),
       reply('GET /api/v1/exchange-rates/imports', { body: NO_IMPORTS }),
+      reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
     ],
   ],
   [

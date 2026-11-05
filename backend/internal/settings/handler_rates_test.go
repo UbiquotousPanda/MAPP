@@ -202,3 +202,28 @@ func TestFieldHelpAPI_ListAndUpdate_FR045_FR046_FR048(t *testing.T) {
 	assertAnswer(t, tooLong, http.StatusBadRequest, validationBody(`{"field":"text","message":"Use 300 characters or fewer."}`))
 	assertAnswer(t, unknown, http.StatusNotFound, `{"error":{"code":"not_found","message":"This help entry doesn't exist.","fields":[]}}`)
 }
+
+// Refresh rates fetches fresh simulated GSAP rates for today and says when they are as of; only a person
+// who manages exchange rates may ask for it (demo-mvp #10).
+func TestRatesAPI_Refresh_Demo10(t *testing.T) {
+	t.Parallel()
+	server := apitest.New(t)
+	server.Advance(15 * time.Minute)
+	alex := server.SignIn(t, alexsEmail)
+	daniel := server.SignIn(t, danielsEmail)
+	var before, after struct {
+		AsOf  string
+		Items []struct{ Currency, Rate string }
+	}
+	alex.Do(t, http.MethodGet, "/api/v1/exchange-rates/current", nil).Decode(t, &before)
+
+	refused := daniel.Do(t, http.MethodPost, "/api/v1/exchange-rates/refresh", nil)
+	alex.Do(t, http.MethodPost, "/api/v1/exchange-rates/refresh", nil).Decode(t, &after)
+
+	if refused.Status != http.StatusForbidden {
+		t.Errorf("Daniel refreshing = %d %s, want 403", refused.Status, refused.Body)
+	}
+	if after.AsOf == before.AsOf || len(after.Items) != len(before.Items) || after.Items[2].Rate == before.Items[2].Rate {
+		t.Errorf("rates after the refresh = %+v, before %+v, want a newer as-of time and a moved %s", after, before, after.Items[2].Currency)
+	}
+}

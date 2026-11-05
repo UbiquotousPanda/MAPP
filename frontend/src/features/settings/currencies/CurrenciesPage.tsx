@@ -1,4 +1,4 @@
-import { Plus, Upload } from 'lucide-react';
+import { Plus, RefreshCw, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { Button, LinkButton } from '@/ui/Button/Button';
@@ -8,6 +8,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useToast } from '@/ui/Toast/useToast';
+import { asOfText } from '@/format/asOf';
 import { useFormatters } from '@/format/useFormatters';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
@@ -28,6 +29,7 @@ import { CURRENCY_IMPORT_PATH } from './currency-paths';
 import { rateDateOf, SOURCE_WORDS } from './rate-words';
 import styles016 from './rates.module.css';
 import { RecentImports } from './RecentImports';
+import { useCurrentRatesAsOf, useRefreshRates } from './rates-api';
 import { useCurrencies } from '../api';
 
 const CURRENCY_NOUN = { one: 'currency', many: 'currencies' };
@@ -72,6 +74,13 @@ export function CurrenciesPage() {
     explainLock: (reason) => show({ message: reason }),
   };
   const newCurrency = () => setForm({ kind: 'new' });
+  const asOf = useCurrentRatesAsOf().data?.asOf;
+  const refreshRates = useRefreshRates();
+  const refreshNow = () =>
+    refreshRates.mutate(undefined, {
+      onSuccess: (page) => show({ message: `Rates refreshed. ${asOfText(page.asOf)}` }),
+      onError: () => show({ message: 'The rates could not be refreshed. Try again.' }),
+    });
   // The details wait for the list; a currency that is not in it any more says so.
   const openCurrency =
     filters.openId && currencies.data
@@ -87,6 +96,9 @@ export function CurrenciesPage() {
         actions={
           <CanChange permission="exchangeRates.manage">
             <>
+              <Button icon={<RefreshCw />} disabled={refreshRates.isPending} onClick={refreshNow}>
+                Refresh rates now
+              </Button>
               <LinkButton icon={<Upload />} to={CURRENCY_IMPORT_PATH}>
                 Import GSAP rates
               </LinkButton>
@@ -98,6 +110,7 @@ export function CurrenciesPage() {
         }
       />
       <SettingsViewOnlyNote permission="exchangeRates.manage" />
+      {asOf && <p className={styles016.asOf}>{asOfText(asOf)} · refreshed every 15 minutes</p>}
       <div className={styles016.stack}>
         <CurrenciesCard currencies={currencies} filters={filters} actions={actions} />
         <RecentImports />

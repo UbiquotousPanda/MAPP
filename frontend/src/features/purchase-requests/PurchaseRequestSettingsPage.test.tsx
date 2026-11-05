@@ -66,6 +66,7 @@ describe('032 FR-004: Settings › Purchase requests', () => {
       {
         version: 1,
         purchaseSupport: false,
+        releaseInGsapAfterApproval: true,
         linesOnApprovedPurchaseRequests: 'withoutApproval',
       },
     ]);

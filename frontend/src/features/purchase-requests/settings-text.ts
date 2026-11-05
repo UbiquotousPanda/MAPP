@@ -6,6 +6,9 @@ export const PURCHASE_SUPPORT_HINT =
 export const LINES_ON_APPROVED = 'Lines on approved purchase requests';
 export const LINES_ON_APPROVED_HINT =
   'What happens when someone adds a line to an approved purchase request.';
+export const RELEASE_IN_GSAP = 'Release in GSAP right after approval in SP&A One';
+export const RELEASE_IN_GSAP_HINT =
+  'On: an approved purchase request goes to GSAP at once and gets its GSAP PR number and purchase order straight away. Off: Finance creates them later.';
 export const ON = 'On';
 export const OFF = 'Off';
 export const SAVE = 'Save';

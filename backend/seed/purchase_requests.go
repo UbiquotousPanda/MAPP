@@ -28,7 +28,7 @@ const (
 func (d *demo) addPurchaseRequests(ctx context.Context) error {
 	repo := d.stores.PurchaseRequests
 	if err := repo.PutConfiguration(ctx, purchaserequest.Configuration{PurchaseSupport: true,
-		LinesOnApproved: purchaserequest.WithModificationApproval, Meta: d.meta()}); err != nil {
+		LinesOnApproved: purchaserequest.WithModificationApproval, ReleaseInGSAP: true, Meta: d.meta()}); err != nil {
 		return err
 	}
 	approvalID, err := d.addPRWorkflow(ctx, prWorkflowName, approval.KindPurchaseRequest,

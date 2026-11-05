@@ -15,6 +15,8 @@ type SimulatedDelivery struct {
 	FeedName string
 	FileName string
 	Rows     []Fields
+	// AfterApproval is a purchase order booked at once on approval: the approver needs no finance.import.
+	AfterApproval bool
 }
 
 // RecordSimulatedGSAP books the delivery through the import's rules inside the caller's Write: one import record
@@ -22,8 +24,10 @@ type SimulatedDelivery struct {
 func (s *Service) RecordSimulatedGSAP(ctx context.Context, a actor.Actor, d SimulatedDelivery) (Import, error) {
 	var imp Import
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
-		if err := s.access.Import(ctx, a); err != nil {
-			return err
+		if !d.AfterApproval {
+			if err := s.access.Import(ctx, a); err != nil {
+				return err
+			}
 		}
 		ap, err := s.applier(ctx, a, rowsFeed{name: d.FeedName, rows: d.Rows})
 		if err != nil {

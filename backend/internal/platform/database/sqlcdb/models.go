@@ -986,6 +986,7 @@ type PurchaseRequestConfiguration struct {
 	UpdatedAt       time.Time
 	UpdatedByID     string
 	UpdatedByName   string
+	ReleaseInGsap   bool
 }
 
 type PurchaseRequestLine struct {

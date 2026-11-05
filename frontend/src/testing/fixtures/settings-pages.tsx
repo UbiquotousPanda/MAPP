@@ -14,6 +14,7 @@ import { renderWithProviders } from '../render';
 import { reply } from '../replies';
 import { TYPES } from './activity-types';
 import { BUDGETS } from './finance-budget-items';
+import { currentRates } from './line-item-forms';
 import { EUR_RATES, NO_IMPORTS, NO_RATES } from './rates';
 import { ACTIVITY_TYPES, CURRENCIES, MODELS } from './settings';
 import { testUser } from './users';
@@ -42,6 +43,7 @@ export function renderCurrenciesPage(answers: HttpHandler[] = [], route = '/sett
   return renderSettingsPage(<CurrenciesPage />, '/settings/currencies', route, [
     reply('GET /api/v1/currencies', { body: CURRENCIES }),
     reply('GET /api/v1/exchange-rates/imports', { body: NO_IMPORTS }),
+    reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
     reply('GET /api/v1/currencies/{code}/rates', { body: EUR_RATES }, { code: 'EUR' }),
     reply('GET /api/v1/currencies/{code}/rates', { body: NO_RATES }, { code: 'JPY' }),
     ...answers,

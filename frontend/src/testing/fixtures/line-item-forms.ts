@@ -144,6 +144,7 @@ export function deleteResult(name = 'Agency fee', id = 'L-1001') {
 export function currentRates() {
   return {
     today: '2026-03-12',
+    asOf: '2026-03-12T09:00:00Z',
     total: 3,
     items: [
       {

@@ -100,6 +100,24 @@ export function useAddRate() {
   });
 }
 
+/** The current rates with their "as of" time; the same request and cache as the tips beside converted amounts. */
+export function useCurrentRatesAsOf() {
+  return useQuery({
+    queryKey: RATE_KEYS.current,
+    queryFn: () => call(api.GET('/api/v1/exchange-rates/current')),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** Fetches fresh rates from the simulated GSAP now; the answer is the current rates with their "as of" time. */
+export function useRefreshRates() {
+  const refresh = useRefreshRateLists();
+  return useMutation({
+    mutationFn: () => call(api.POST('/api/v1/exchange-rates/refresh')),
+    onSettled: refresh,
+  });
+}
+
 /** Changes a rate's value (its date never changes); the rate becomes "Entered by hand". */
 export function useUpdateRate() {
   const refresh = useRefreshRateLists();
