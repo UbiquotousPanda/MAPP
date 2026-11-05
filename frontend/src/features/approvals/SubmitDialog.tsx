@@ -7,6 +7,7 @@ import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { useFormatters } from '@/format/useFormatters';
 import type { ApprovalSubmission } from './api';
 import { names } from './messages';
+import { approvedAutomaticallyText, submitConfirmLabel, submitDialogTitle } from './submit-texts';
 import { commentSchema } from './schemas';
 import { SubmissionOutcomes } from './SubmissionOutcomes';
 import styles from './approval-dialogs.module.css';
@@ -35,7 +36,7 @@ export function SubmitDialog({
     ...CHECK_ON_SAVE,
   });
   const resubmit = submission.kind === 'resubmit';
-  const verb = resubmit ? 'Re-submit' : 'Submit';
+  const sent = submission.lineItems ?? [];
   const outcomes = submission.outcomes ?? [];
 
   return (
@@ -46,12 +47,13 @@ export function SubmitDialog({
           onCancel();
         }
       }}
-      title={`${verb} '${submission.activityName}' for approval?`}
-      confirmLabel={`${verb} for approval`}
+      title={submitDialogTitle(submission)}
+      confirmLabel={submitConfirmLabel(submission.kind)}
       busy={busy}
       onConfirm={() => void form.handleSubmit(({ comment }) => onConfirm(comment.trim()))()}
     >
       <div className={styles.body}>
+        {sent.length > 0 && <SentLineItems items={sent} />}
         {submission.workflow && <p>{`Approval workflow: ${submission.workflow.name}`}</p>}
         {outcomes.length > 0 ? (
           <SubmissionOutcomes outcomes={outcomes} />
@@ -65,7 +67,7 @@ export function SubmitDialog({
           )
         )}
         {submission.approvedAutomatically && (
-          <p className={styles.strong}>This activity will be approved automatically.</p>
+          <p className={styles.strong}>{approvedAutomaticallyText(submission.kind)}</p>
         )}
         {submission.replaces ? (
           <p className={styles.strong}>{replacesText(submission)}</p>
@@ -105,4 +107,18 @@ function replacesText(submission: ApprovalSubmission): string {
     return '';
   }
   return `Round ${replaced.roundNumber}, waiting at ${replaced.levelLabel}, ends and round ${submission.roundNumber} starts at the first level that needs a decision.`;
+}
+
+/** The line items a send names before anything changes (053 FR-008). */
+function SentLineItems({ items }: { items: NonNullable<ApprovalSubmission['lineItems']> }) {
+  return (
+    <>
+      <p>The activity stays Approved. These line items go to the approvers:</p>
+      <ul role="list" className={styles.levels}>
+        {items.map((item) => (
+          <li key={item.id}>{`${item.id} · ${item.name}`}</li>
+        ))}
+      </ul>
+    </>
+  );
 }

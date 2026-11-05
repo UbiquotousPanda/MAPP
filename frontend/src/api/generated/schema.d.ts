@@ -1995,6 +1995,8 @@ export interface paths {
          *     validation_failed listing every problem (field keys as SubmitProblem.field). Otherwise the activity
          *     becomes Submitted and a new round starts at level 1 with a copy of the workflow's current levels.
          *     An activity that is not Created or Declined answers bad_request. Any plan status is allowed (Q-007).
+         *     On an Approved activity with Not approved line items and no open round it sends those line items for
+         *     approval instead: the round lists them (lineItemIds) and the activity stays Approved (053 FR-008).
          */
         post: operations["submitActivityForApproval"];
         delete?: never;
@@ -2014,7 +2016,7 @@ export interface paths {
         put?: never;
         /**
          * Approve the current level of the open round (FR-014, FR-015, FR-017, FR-018)
-         * @description Any signed-in person may approve (D-020); a person who is not an approver of the level is recorded as acting on behalf of the level's approvers. Approving the last level makes the activity Approved. A person holding neither approvals permission is refused with 403 forbidden first (038 FR-056); 409 not_allowed when approval over planned cost is set to refuse (038 FR-020).
+         * @description Any signed-in person may approve (D-020); a person who is not an approver of the level is recorded as acting on behalf of the level's approvers. Approving the last level makes the activity Approved. A person holding neither approvals permission is refused with 403 forbidden first (038 FR-056); 409 not_allowed when approval over planned cost is set to refuse (038 FR-020). With approvedLineItemIds, the line items the round decides and the request leaves out stay Not approved (053 FR-001 – FR-004).
          */
         post: operations["approveActivityLevel"];
         delete?: never;
@@ -5028,6 +5030,21 @@ export interface components {
             /** Format: date-time */
             changedAt: string;
         };
+        /**
+         * @description approved once a round of its activity approved it with the line item ticked, and only while the activity is approved (also In progress or Complete); notApproved otherwise (053 FR-005).
+         * @enum {string}
+         */
+        LineItemApproval: "approved" | "notApproved";
+        /** @description A line item the activity's open round decides (053 FR-001). */
+        ApprovalLineItem: {
+            /** @example L-1003 */
+            id: string;
+            name: string;
+            /** @description In the line item's own currency. */
+            plannedCost: components["schemas"]["Money"];
+            /** @description An earlier decision of the round left it unticked; it stays Not approved (053 FR-002). */
+            heldBack: boolean;
+        };
         RecordRef: {
             /** @example sampleFolder */
             type: string;
@@ -7188,6 +7205,7 @@ export interface components {
             contractedAmount: components["schemas"]["Money"] | null;
             requestSwbs: boolean;
             swbsStatus: components["schemas"]["SwbsStatus"];
+            approval: components["schemas"]["LineItemApproval"];
             /**
              * @description The SWBS code GSAP returned, read-only; empty until received (030 FR-002).
              * @example SIM-GB01-0001
@@ -7435,6 +7453,8 @@ export interface components {
             approve: components["schemas"]["ApprovalActionAvailability"];
             decline: components["schemas"]["ApprovalActionAvailability"];
             recall: components["schemas"]["ApprovalActionAvailability"];
+            /** @description Send line items for approval: an Approved activity with Not approved line items and no open round (053 FR-008); left out when not available. */
+            sendLineItems?: components["schemas"]["ApprovalActionAvailability"];
         };
         /** @description A record's approval section (Go approval.Section) for the approval routes of other record types (feature 032): every round of the record, newest first, and the actions of the record type asked for. */
         ApprovalSection: {
@@ -7756,6 +7776,8 @@ export interface components {
             escalationDays?: number | null;
             /** @description 017. Optional in the contract; always sent once its feature is built (D-298). */
             autoApproved?: boolean;
+            /** @description The line items a round sent for an Approved activity decides, the activity staying Approved (053 FR-008); empty for a round of the whole record. */
+            lineItemIds?: string[];
         };
         /** @description The latest decline, shown at the top of the Approval section while the activity is Declined. */
         DeclineNote: {
@@ -7821,6 +7843,8 @@ export interface components {
             actions: components["schemas"]["ApprovalActionSet"];
             /** @description The activities whose line items exceed their planned cost (038 FR-019); empty when none. */
             overPlannedCost: components["schemas"]["ActivityOverage"][];
+            /** @description The line items the open round decides, the approver ticks them to approve (053 FR-001); empty without an open round. */
+            lineItems?: components["schemas"]["ApprovalLineItem"][];
         };
         SubmitProblem: {
             /**
@@ -7840,10 +7864,10 @@ export interface components {
             activityName: string;
             activityVersion: number;
             /**
-             * @description resubmit when the activity is Declined or Submitted (031 FR-017).
+             * @description resubmit when the activity is Declined or Submitted (031 FR-017); lineItems when an Approved activity sends its Not approved line items (053 FR-008).
              * @enum {string}
              */
-            kind: "submit" | "resubmit";
+            kind: "submit" | "resubmit" | "lineItems";
             /** @description false when the activity is Approved. */
             available: boolean;
             reason: string;
@@ -7861,6 +7885,8 @@ export interface components {
             outcomes?: components["schemas"]["ApprovalSubmissionLevel"][];
             /** @description No level needs a decision; confirming approves the activity. */
             approvedAutomatically?: boolean;
+            /** @description The line items a lineItems submission sends; empty otherwise. */
+            lineItems?: components["schemas"]["RecordRef"][];
             /** @description The open round a re-submission ends, and the level it waits at (031 FR-018); null otherwise. */
             replaces?: {
                 roundNumber: number;
@@ -7881,6 +7907,8 @@ export interface components {
             level: number;
             /** @description Optional for approve; required (not blank) for decline; at most 2,000 characters. */
             comment?: string;
+            /** @description Approve only: the line items ticked; the others the round decides stay Not approved. Omitted, every line item of the round is approved. Ignored for purchase requests (053 FR-012). */
+            approvedLineItemIds?: string[];
         };
         RecallRequest: {
             roundId: string;
@@ -7981,6 +8009,7 @@ export interface components {
             spendType: string;
             glCode: string;
             financeBudgetItem: string;
+            approval: components["schemas"]["LineItemApproval"];
         };
         ApprovalPreview: {
             activity: {

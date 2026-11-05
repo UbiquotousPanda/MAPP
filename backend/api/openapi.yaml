@@ -17497,6 +17497,7 @@ components:
         - spendType
         - glCode
         - financeBudgetItem
+        - approval
       properties:
         id:
           type: string

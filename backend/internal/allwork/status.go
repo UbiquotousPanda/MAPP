@@ -55,7 +55,7 @@ var activityStatuses = map[string]chip{
 
 var swbsStatuses = map[string]chip{
 	"notRequested":       {"Not requested", ToneNeutral, 0},
-	"waitingForApproval": {"Waiting for activity approval", ToneReview, 1},
+	"waitingForApproval": {"Waiting for approval", ToneReview, 1},
 	"readyToSend":        {"Ready to send to GSAP", TonePositive, 2},
 	"received":           {"SWBS code received", ToneDone, 3},
 }

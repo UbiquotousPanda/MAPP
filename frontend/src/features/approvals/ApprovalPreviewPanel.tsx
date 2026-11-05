@@ -4,6 +4,7 @@ import { ApiError } from '@/api/errors';
 import { Button, LinkButton } from '@/ui/Button/Button';
 import { CompletenessChip } from '@/ui/CompletenessChip/CompletenessChip';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { LineItemApprovalChip } from '@/ui/LineItemApprovalChip/LineItemApprovalChip';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -206,6 +207,7 @@ function LineItems({ items }: { items: PreviewLineItem[] }) {
               {item.name}
               <span className={styles.id}>{item.id}</span>
             </p>
+            <LineItemApprovalChip approval={item.approval} />
             <dl className={styles.itemFacts}>
               <dt>Planned cost</dt>
               <dd className={styles.amountText}>{format.money(item.plannedCost)}</dd>
@@ -236,6 +238,7 @@ function LineItems({ items }: { items: PreviewLineItem[] }) {
         <thead>
           <tr>
             <th scope="col">Line item</th>
+            <th scope="col">Approval</th>
             <th scope="col" className={styles.amount}>
               Planned cost
             </th>
@@ -254,6 +257,9 @@ function LineItems({ items }: { items: PreviewLineItem[] }) {
                 {item.name}
                 <span className={styles.id}>{item.id}</span>
               </th>
+              <td>
+                <LineItemApprovalChip approval={item.approval} />
+              </td>
               <td className={styles.amount}>{format.money(item.plannedCost)}</td>
               <td className={styles.amount}>{format.money(item.plannedCostDisplay)}</td>
               <td>{item.spendType || '—'}</td>

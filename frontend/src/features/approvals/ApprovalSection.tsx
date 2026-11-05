@@ -66,7 +66,10 @@ function ApprovalBody({ approval, activity, onShowProblems }: ApprovalBodyProps)
     !actions.approve.available && approval.status === 'submitted' ? actions.approve.reason : '',
     !actions.recall.available ? actions.recall.reason : '',
   ].filter((reason, index, all) => reason !== '' && all.indexOf(reason) === index);
-  const canSubmit = actions.submit.available || actions.resubmit.available;
+  const canSubmit =
+    actions.submit.available ||
+    actions.resubmit.available ||
+    Boolean(actions.sendLineItems?.available);
   const refusal = approveRefusal(actions);
   const refusalId = useId();
 

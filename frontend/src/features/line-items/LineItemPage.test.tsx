@@ -91,7 +91,7 @@ describe('LineItemPage (US4, FR-026)', () => {
     expect(within(breadcrumb).getByText('Agency fee')).toHaveAttribute('aria-current', 'page');
     expect(screen.getByText('LINE ITEM')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '3 fields needed' })).toBeInTheDocument();
-    expect(screen.getAllByText('Waiting for activity approval')).toHaveLength(2);
+    expect(screen.getAllByText('Waiting for approval')).toHaveLength(2);
     expect(screen.getByText('L-1001')).toBeInTheDocument();
     expect(screen.getAllByText('Priya Raman').length).toBeGreaterThan(0);
     expect(screen.getAllByText('50,000.00 USD').length).toBeGreaterThan(0);

@@ -24,7 +24,7 @@ describe('LineItemsSection (US1)', () => {
     expect(film).toHaveTextContent('All filled in');
     expect(film).toHaveTextContent('Not requested');
     expect(rows[1]).toHaveTextContent('3 fields needed');
-    expect(rows[1]).toHaveTextContent('Waiting for activity approval');
+    expect(rows[1]).toHaveTextContent('Waiting for approval');
     expect(
       within(table).getByRole('columnheader', { name: 'Planned cost (USD)' }),
     ).toBeInTheDocument();
@@ -153,8 +153,24 @@ describe('LineItemsSection (US1)', () => {
     renderLineItemsSection({ body: section });
 
     expect(await screen.findByText('Ready to send to GSAP')).toBeInTheDocument();
-    expect(screen.getByText('Waiting for activity approval')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for approval')).toBeInTheDocument();
     expect(screen.getByText('Not requested')).toBeInTheDocument();
+  });
+
+  it('shows each line item’s own approval in its row (053 FR-005)', async () => {
+    const section = launchFilmSection({
+      activity: activity({ status: 'approved' }),
+      items: [
+        lineItem({ id: 'L-1', name: 'One', approval: 'approved', swbsStatus: 'readyToSend' }),
+        lineItem({ id: 'L-2', name: 'Two', approval: 'notApproved' }),
+      ],
+    });
+    renderLineItemsSection({ body: section });
+
+    const rows = await screen.findAllByRole('row');
+    expect(screen.getByRole('columnheader', { name: 'Approval' })).toBeInTheDocument();
+    expect(rows[1]).toHaveTextContent('Approved');
+    expect(rows[2]).toHaveTextContent('Not approved');
   });
 
   it('says when everything is assigned, when there is no planned cost and when cents are left', async () => {

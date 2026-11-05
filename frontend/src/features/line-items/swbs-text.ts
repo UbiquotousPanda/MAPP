@@ -4,14 +4,14 @@ type SwbsStatus = components['schemas']['SwbsStatus'];
 
 export const SWBS_TEXT: Record<SwbsStatus, string> = {
   notRequested: 'Not requested',
-  waitingForApproval: 'Waiting for activity approval',
+  waitingForApproval: 'Waiting for approval',
   readyToSend: 'Ready to send to GSAP',
   received: 'SWBS code received',
 };
 
 export const SWBS_EXPLANATION: Record<SwbsStatus, string> = {
   notRequested: "'Request SWBS code from GSAP' is off, so no code will be requested.",
-  waitingForApproval: 'The request is sent once the activity is approved.',
+  waitingForApproval: 'The request is sent once the line item is approved.',
   readyToSend: 'Sent with the next run of the simulated GSAP.',
   received: "The simulated GSAP returned this line item's SWBS code.",
 };
@@ -34,9 +34,9 @@ export const HX_COPIED = 'HX key copied';
 export const HX_COPY_FAILED = "Couldn't copy the HX key — select it and copy it yourself.";
 
 export const SWBS_LATER =
-  'Filled by the simulated GSAP once the activity is approved and the request is sent';
+  'Filled by the simulated GSAP once the line item is approved and the request is sent';
 export const SWBS_HELP =
-  'SP&A One asks GSAP for an SWBS code once the activity is approved; until GSAP is connected, a simulated GSAP answers.';
+  'SP&A One asks GSAP for an SWBS code once the line item is approved; until GSAP is connected, a simulated GSAP answers.';
 export const SWBS_KEPT_ON =
   'This line item already has its SWBS code from the simulated GSAP, so the request stays on.';
 

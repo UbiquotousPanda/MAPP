@@ -41,7 +41,7 @@ describe('LineItemCreatePage (US2)', () => {
     expect(screen.getByText(/On by default/)).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Filled by the simulated GSAP once the activity is approved and the request is sent',
+        'Filled by the simulated GSAP once the line item is approved and the request is sent',
       ),
     ).toBeInTheDocument();
 
