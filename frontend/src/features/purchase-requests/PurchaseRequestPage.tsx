@@ -3,6 +3,7 @@ import { useParams } from 'react-router';
 import { ApiError } from '@/api/errors';
 import { HistorySection } from '@/features/activity-log';
 import { ApprovalAlert } from '@/features/approvals';
+import { RatesAsOfNote } from '@/features/rates-as-of';
 import { useAccess } from '@/session/access';
 import { LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
@@ -90,6 +91,7 @@ function Loaded({ purchaseRequest: pr }: { purchaseRequest: PurchaseRequest }) {
           recordName={pr.name}
           level="purchaseRequest"
         />
+        <RatesAsOfNote />
       </div>
     </ViewOnlyArea>
   );

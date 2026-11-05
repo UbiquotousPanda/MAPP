@@ -21,7 +21,7 @@ const (
 	basisPointsPerUnit  = 10_000
 )
 
-// rateClock is when the simulated GSAP rates were last refreshed, and the rate each refresh moves from: the
+// rateClock is when a refresh last found the stored rates current, and the rate each refresh moves from: the
 // last one that didn't come from a refresh, so the rates stay near it all day instead of wandering.
 type rateClock struct {
 	mu    sync.Mutex
@@ -29,10 +29,49 @@ type rateClock struct {
 	bases map[string]money.Rate
 }
 
-func (c *rateClock) set(at time.Time) {
+func (c *rateClock) confirm(at time.Time) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.at = at
+}
+
+// asOf is the later of changed and the last refresh that found the stored rates current; now when neither.
+func (c *rateClock) asOf(changed, now time.Time) time.Time {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	at := changed
+	if c.at.After(at) {
+		at = c.at
+	}
+	if at.IsZero() {
+		return now
+	}
+	return at
+}
+
+func ratesChangedAt(book rateBook, imports []RateImport) time.Time {
+	var at time.Time
+	for _, i := range imports {
+		if i.UpdatedAt.After(at) {
+			at = i.UpdatedAt
+		}
+	}
+	for _, rates := range book {
+		for _, r := range rates {
+			if r.UpdatedAt.After(at) {
+				at = r.UpdatedAt
+			}
+		}
+	}
+	return at
+}
+
+func fileNames(imports []RateImport) map[string]string {
+	names := make(map[string]string, len(imports))
+	for _, i := range imports {
+		names[i.ID] = i.FileName
+	}
+	return names
 }
 
 func (c *rateClock) withBases(infos []RateInfo) []RateInfo {
@@ -58,27 +97,23 @@ func refreshed(info RateInfo) bool {
 	return info.ImportFileName != nil && strings.HasPrefix(*info.ImportFileName, strings.TrimSuffix(refreshSourceFormat, "%s"))
 }
 
-func (c *rateClock) get() time.Time {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	return c.at
-}
-
-// RefreshRates fetches fresh rates from the simulated GSAP feed and saves them as today's rates with the same
-// rules as a rate file import. It answers the current rates with the new "as of" time.
+// RefreshRates saves the simulated GSAP rates as today's rates with the rules of a rate file import. They are
+// fixed per minute, so a repeat within the minute saves nothing and only moves "as of".
 func (s *Service) RefreshRates(ctx context.Context, a actor.Actor) (CurrentRatePage, error) {
 	infos, err := s.CurrentRates(ctx)
 	if err != nil {
 		return CurrentRatePage{}, err
 	}
 	at := s.now()
-	if rows := simulatedRows(s.asOf.withBases(infos), date.Today(at), at); len(rows) > 0 {
-		source := fmt.Sprintf(refreshSourceFormat, at.UTC().Format("15:04"))
-		if _, err := s.ApplyRateRows(ctx, a, simulatedFeedName, source, rows); err != nil {
-			return CurrentRatePage{}, err
-		}
+	rows := simulatedRows(s.asOf.withBases(infos), date.Today(at), at)
+	source := fmt.Sprintf(refreshSourceFormat, at.UTC().Format("15:04"))
+	saved, err := s.saveRateRows(ctx, a, feedRows{feed: simulatedFeedName, source: source, rows: rows})
+	if err != nil {
+		return CurrentRatePage{}, err
 	}
-	s.asOf.set(at)
+	if saved.ID == "" {
+		s.asOf.confirm(at)
+	}
 	return s.ListCurrentRates(ctx, a)
 }
 

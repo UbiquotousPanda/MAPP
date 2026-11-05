@@ -1,5 +1,6 @@
-/** "GSAP rates as of 10:45": when the simulated GSAP rates were last refreshed, in the viewer's time. */
+import { formatTime } from './intl';
+
+/** "GSAP rates as of 10:45": when the rates last changed or a refresh confirmed them, in the viewer's time. */
 export function asOfText(asOf: string): string {
-  const time = new Date(asOf).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  return `GSAP rates as of ${time}`;
+  return `GSAP rates as of ${formatTime(asOf)}`;
 }

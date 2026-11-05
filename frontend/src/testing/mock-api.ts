@@ -3,6 +3,7 @@ import { http as msw, HttpResponse } from 'msw';
 import type { HttpHandler } from 'msw';
 import { setupServer } from 'msw/node';
 import { NO_BREAKDOWN } from './fixtures/all-work-breakdown';
+import { currentRates } from './fixtures/line-item-forms';
 import { configuration } from './fixtures/purchase-request-pages';
 import { ORIGIN, reply } from './replies';
 
@@ -39,6 +40,7 @@ export const FRAME_ANSWERS: HttpHandler[] = [
   reply('GET /api/v1/home/action-items', {
     body: { items: [], total: 0, show: false, hiddenUntil: null },
   }),
+  reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
   ...NO_BREAKDOWN,
 ];
 
