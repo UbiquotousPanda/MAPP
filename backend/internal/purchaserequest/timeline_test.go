@@ -153,3 +153,29 @@ func TestProgressOf_032Timeline_TakesTheEarliestPostingOfThePOLines(t *testing.T
 		t.Errorf("progressOf() dates = %v, %v, want %v, %v", p.invoicedOn, p.paidOn, first, later)
 	}
 }
+
+func TestStepsOf_032Timeline_ApprovedIsTheFirstApprovalAndALaterChangeIsANote(t *testing.T) {
+	t.Parallel()
+	first := time.Date(2026, time.November, 20, 10, 0, 0, 0, time.UTC)
+	change := time.Date(2026, time.November, 25, 15, 0, 0, 0, time.UTC)
+	daniel, mei := actor.Actor{Name: "Daniel Okoro"}, actor.Actor{Name: "Mei Lin"}
+	sentOn := date.New(2026, time.November, 20)
+	pr := PurchaseRequest{Status: StatusApproved, Approved: &Version{ApprovedAt: change}, Lines: []Line{{SentOn: &sentOn}}}
+	rounds := []ApprovalRound{
+		{SubmittedAt: change.Add(-time.Hour), ApprovedAt: &change, ApprovedBy: &mei},
+		{SubmittedAt: first.Add(-time.Hour), ApprovedAt: &first, ApprovedBy: &daniel},
+	}
+	routings := []Routing{{RoutedAt: first.Add(time.Minute), RoutedBy: daniel}}
+
+	steps := stepsOf(pr, timelineRecords{rounds: rounds, routings: routings})
+	approved, sent := steps[2], steps[3]
+	if approved.At == nil || !approved.At.Equal(first) || approved.By == nil || approved.By.Name != daniel.Name {
+		t.Errorf("Approved = %v by %v, want the first approval on 20 Nov by Daniel Okoro", approved.At, approved.By)
+	}
+	if approved.Detail != "change re-approved 25 Nov 2026" {
+		t.Errorf("Approved detail = %q, want the later re-approval as a note", approved.Detail)
+	}
+	if sent.At == nil || approved.At.After(*sent.At) {
+		t.Errorf("Approved %v is after Sent to GSAP %v", approved.At, sent.At)
+	}
+}

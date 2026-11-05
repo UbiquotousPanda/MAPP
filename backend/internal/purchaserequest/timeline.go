@@ -21,6 +21,9 @@ const (
 	stepInvoiced  = "invoiced"
 	stepPaid      = "paid"
 	timelineLimit = 200
+
+	reapprovedPrefix = "change re-approved "
+	dayLayout        = "2 Jan 2006"
 )
 
 var stepLabels = []struct{ key, label, waiting string }{
@@ -142,23 +145,24 @@ func fillSubmitted(step *TimelineStep, records timelineRecords) {
 	}
 }
 
+// fillApproved shows the first approval, which let the request go to GSAP; a later approved change is a note.
 func fillApproved(step *TimelineStep, pr PurchaseRequest, records timelineRecords) {
-	setFromLog(step, records.log, func(verb string) bool { return verb == "approved" || verb == "approved automatically" }, false)
+	setFromLog(step, records.log, func(verb string) bool { return verb == "approved" || verb == "approved automatically" }, true)
 	if pr.Approved != nil {
 		step.At = &pr.Approved.ApprovedAt
 	}
-	var last *ApprovalRound
-	for i, r := range records.rounds {
-		if r.ApprovedAt != nil && (last == nil || r.ApprovedAt.After(*last.ApprovedAt)) {
-			last = &records.rounds[i]
-		}
-	}
-	if last == nil {
+	approved := slices.DeleteFunc(slices.Clone(records.rounds), func(r ApprovalRound) bool { return r.ApprovedAt == nil })
+	if len(approved) == 0 {
 		return
 	}
-	step.At = last.ApprovedAt
-	if last.ApprovedBy != nil {
-		step.By = last.ApprovedBy
+	slices.SortFunc(approved, func(x, y ApprovalRound) int { return x.ApprovedAt.Compare(*y.ApprovedAt) })
+	first, last := approved[0], approved[len(approved)-1]
+	step.At = first.ApprovedAt
+	if first.ApprovedBy != nil {
+		step.By = first.ApprovedBy
+	}
+	if len(approved) > 1 {
+		step.Detail = reapprovedPrefix + last.ApprovedAt.UTC().Format(dayLayout)
 	}
 }
 
