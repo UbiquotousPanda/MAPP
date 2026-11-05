@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { components } from '@/api/generated/schema';
 import { parseMoneyInput, toCents } from '@/format/decimal';
-import type { PurchaseRequestLineItemRef } from './api';
+import type { Money, PurchaseRequestLineItemRef } from './api';
 import { PROBLEMS } from './form-text';
 
 type AttributeValues = components['schemas']['AttributeValues'];
@@ -29,6 +29,8 @@ export const lineSchema = z.object({
   overallLimit: limitText,
   description: z.string().max(DESCRIPTION_MAX, PROBLEMS.descriptionLength),
   attributes: z.custom<AttributeValues>(),
+  /** What the line item has left without this purchase request, as the API counts it; never sent. */
+  left: z.custom<Money>().optional(),
 });
 
 /** Fast feedback only (032 FR-053): every other rule is the server's, answered all at once. */

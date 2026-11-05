@@ -33,7 +33,8 @@ func (s *Service) requestedRule(ctx context.Context, problems *errs.Problems, id
 	return nil
 }
 
-// moneyChanged: a request within the overspend tolerance may already exceed the line item, so only a money change is checked.
-func moneyChanged(before, after LineItem) bool {
-	return before.Currency != after.Currency || before.PlannedCost.Cmp(after.PlannedCost) != 0
+// moneyLowered: a request within the overspend tolerance may already exceed the line item, so only a lower
+// planned cost or another currency is checked; a raise or an unchanged planned cost always passes.
+func moneyLowered(before, after LineItem) bool {
+	return before.Currency != after.Currency || after.PlannedCost.Cmp(before.PlannedCost) < 0
 }

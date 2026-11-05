@@ -46,6 +46,7 @@ type LineView struct {
 	HXKey        string                   `json:"hxKey"`
 	Currency     string                   `json:"currency"`
 	Amount       money.Money              `json:"amount"`
+	Available    money.Money              `json:"availableToRequest"`
 	DeliveryDate date.Date                `json:"deliveryDate"`
 	OverallLimit *money.Money             `json:"overallLimit"`
 	Description  string                   `json:"description"`

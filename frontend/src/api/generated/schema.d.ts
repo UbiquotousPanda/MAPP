@@ -5848,6 +5848,8 @@ export interface components {
             hxKey: string;
             currency: string;
             amount: components["schemas"]["Money"];
+            /** @description What the line item has left to request without this purchase request, in the line item's currency at today's rates; negative when other requests already go over it. The form warns before saving a line that goes over it within the overspend tolerance. */
+            availableToRequest?: components["schemas"]["Money"];
             /** Format: date */
             deliveryDate: string;
             overallLimit: components["schemas"]["Money"] | null;

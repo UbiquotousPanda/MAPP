@@ -64,3 +64,16 @@ func TestClaimProblem_ToleranceOfTheAmount_DemoMVP4(t *testing.T) {
 		}
 	}
 }
+
+// demo-mvp #4: amount ≤ left + 10% of the amount, at the cent: 19,000.01 left takes 21,111.12, not 21,111.13.
+func TestClaimProblem_ToleranceBoundaryAtTheCent_DemoMVP4(t *testing.T) {
+	t.Parallel()
+	li := LineItemFacts{ID: "L-1", Currency: "USD", PlannedCost: amount(t, "19000.01")}
+	b := balance{rates: money.Rates{}, tolerancePercent: 10}
+	for text, wantRefused := range map[string]bool{"21111.12": false, "21111.13": true} {
+		got, err := b.claimProblem(li, money.Money{Amount: amount(t, text), Currency: "USD"}, "")
+		if err != nil || (got != "") != wantRefused {
+			t.Errorf("claimProblem(%s) = %q, %v; want refused %v", text, got, err, wantRefused)
+		}
+	}
+}

@@ -36,3 +36,21 @@ func TestUpdate_RequestedRuleOnlyWhenThePlannedCostChanges_DemoMVP4(t *testing.T
 		t.Errorf("Update(planned cost 900.00) = %v, want a plannedCost problem: PR-1001 requests 1,100.00", err)
 	}
 }
+
+// Planned 9,200 with 10,000 requested within the tolerance: a raise to 9,500 still leaves the line item below
+// what is requested, yet only a lower planned cost or another currency is refused.
+func TestUpdate_RaisingThePlannedCostBelowWhatIsRequestedIsSaved_DemoMVP3(t *testing.T) {
+	t.Parallel()
+	f := newTestService(t)
+	fee := f.create(t, priya, launchFilm, input("Agency fee", "USD", "9200.00"))
+	requested, _ := money.ParseAmount("10000.00")
+	f.service.UsePurchaseRequests(fakeRequested{amount: requested})
+
+	raised := formOf(fee)
+	raised.PlannedCost = text("9500.00")
+	view := f.update(t, priya, fee.ID, raised)
+
+	if got := view.PlannedCost.Amount.Format(); got != "9,500.00" {
+		t.Errorf("Update(planned cost 9,500.00) planned cost = %s, want 9,500.00", got)
+	}
+}

@@ -39,6 +39,7 @@ export function fromDefaults(defaults: PurchaseRequestDefaults): PurchaseRequest
         overallLimit: formatAmount(line.overallLimit.amount),
         description: '',
         attributes: {},
+        left: line.amount,
       },
     ],
   };
@@ -55,6 +56,7 @@ function lineOf(line: PurchaseRequestLine): LineValues {
     overallLimit: line.overallLimit ? formatAmount(line.overallLimit.amount) : '',
     description: line.description,
     attributes: line.attributes,
+    left: line.availableToRequest,
   };
 }
 
@@ -84,6 +86,7 @@ export function lineFromOption(option: PurchaseRequestLineItemOption): LineValue
     overallLimit: available,
     description: '',
     attributes: {},
+    left: option.availableToRequest,
   };
 }
 
