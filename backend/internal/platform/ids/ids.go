@@ -75,6 +75,8 @@ const (
 
 	PrefixDashboard = "DB"
 	PrefixDataset   = "DS"
+
+	PrefixPostInvestmentReview = "PIR"
 )
 
 var Prefixes = []string{
@@ -95,6 +97,7 @@ var Prefixes = []string{
 	PrefixPerformanceReviewRow, PrefixMediaCode, PrefixExternalNameAlias, PrefixIntegrationID,
 	PrefixReportView,
 	PrefixDashboard, PrefixDataset,
+	PrefixPostInvestmentReview,
 }
 
 const firstNumber = 1001

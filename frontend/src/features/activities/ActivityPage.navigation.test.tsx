@@ -4,6 +4,7 @@ import { HISTORY_ANSWERS } from '@/testing/fixtures/activity-log';
 import { approvalOf } from '@/testing/fixtures/approvals';
 import { activityRecord } from '@/testing/fixtures/line-item-financials';
 import { mockApi } from '@/testing/mock-api';
+import { noActivityReview } from '@/testing/fixtures/post-investment';
 import { activitySection } from '@/testing/fixtures/purchase-requests';
 import type { Answer } from '@/testing/replies';
 import { renderWithProviders } from '@/testing/render';
@@ -107,6 +108,7 @@ function openPage(
     reply('GET /api/v1/activities/{activityId}/purchase-requests', {
       body: activitySection({ activityId: 'A-1042', lineItems: [] }),
     }),
+    noActivityReview(),
   ]);
   return renderWithProviders(<ActivityPage />, { route, path: PATH, user: testUser() });
 }

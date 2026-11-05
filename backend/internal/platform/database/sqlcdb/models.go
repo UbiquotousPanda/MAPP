@@ -552,6 +552,12 @@ type GlobalBudget struct {
 	Overspend     string
 }
 
+type HomeActionReminder struct {
+	PersonID    string
+	HiddenUntil time.Time
+	UpdatedAt   time.Time
+}
+
 type Initiative struct {
 	ID             string
 	CampaignID     string
@@ -908,6 +914,27 @@ type PlanTeam struct {
 	PlanID   string
 	Position int
 	TeamID   string
+}
+
+type PostInvestmentReview struct {
+	ID               string
+	ActivityID       string
+	Status           string
+	BusinessCase     string
+	Currency         string
+	AmountSpentMinor *int64
+	MarginMinor      *int64
+	Remarks          string
+	SubmittedAt      *time.Time
+	SubmittedByID    *string
+	SubmittedByName  *string
+	Version          int
+	CreatedAt        time.Time
+	CreatedByID      string
+	CreatedByName    string
+	UpdatedAt        time.Time
+	UpdatedByID      string
+	UpdatedByName    string
 }
 
 type Preference struct {

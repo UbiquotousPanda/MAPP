@@ -27,6 +27,7 @@ func (w *wiring) areas() error {
 		func() error { return w.approvalsArea(release) }, w.financialsArea,
 		w.swbsArea, w.purchaseRequestsArea, w.customDashboardsArea, w.datasetsArea, w.bulkArea, w.workbookArea,
 		func() error { return w.performanceArea(release) },
+		w.postInvestmentArea,
 	}
 	for _, step := range steps {
 		if err := step(); err != nil {
@@ -224,10 +225,13 @@ func (w *wiring) financialsArea() error {
 // are personal settings, not business records, so they have no history kinds (D-121).
 func (w *wiring) views() {
 	s := w.set
-	homeService := home.NewService(s.Tx, homeReaders{
+	readers := homeReaders{
 		people: w.people, plansRepo: s.Plans, plans: w.plans, campaigns: w.campaigns, activities: w.activities,
 		activityStore: s.Activities, approvals: w.approvals, history: w.history, rates: w.settings.Rates,
-	}.sources())
+	}
+	homeService := home.NewService(s.Tx, readers.sources())
+	swbsItems := swbsLineItems{activities: s.Activities, lineItems: s.LineItems, settings: s.Settings}
+	actions := home.NewActionsService(s.Tx, readers.actionSources(w.prs, swbsItems), s.Home, w.now)
 	w.allWork = allWorkSource{
 		plans: w.plans, plansRepo: s.Plans, campaigns: w.campaigns, campaignsRepo: s.Campaigns,
 		activities: w.activities, activitiesRepo: s.Activities, lineItems: w.lineItems,
@@ -236,7 +240,7 @@ func (w *wiring) views() {
 		history: w.history, financials: w.financials, financeAccess: financialAccess{tx: s.Tx, plans: s.Plans},
 		planningCampaigns: w.campaignService(activitiesForReports{activitiesForCampaigns{svc: w.activities}}),
 	}
-	mount(w.signedIn, home.NewHandler(homeService),
+	mount(w.signedIn, home.NewHandler(homeService), home.NewActionsHandler(actions),
 		allwork.NewHandler(allwork.NewService(history.Tools{Tx: s.Tx, IDs: w.generator, Log: w.history, Now: w.now},
 			s.AllWork, w.allWork)))
 }

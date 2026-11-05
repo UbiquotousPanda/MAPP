@@ -21,6 +21,7 @@ const people = () => import('@/features/people');
 const performanceData = () => import('@/features/performance');
 const plans = () => import('@/features/plans');
 const workbook = () => import('@/features/workbook');
+const postInvestment = () => import('@/features/post-investment');
 const purchaseRequests = () => import('@/features/purchase-requests');
 const recycleBin = () => import('@/features/recycle-bin');
 const settings = () => import('@/features/settings');
@@ -95,7 +96,9 @@ export const GlobalBudgetPage = lazy(() =>
 export const GlobalBudgetsPage = lazy(() =>
   globalBudgets().then((feature) => ({ default: feature.GlobalBudgetsPage })),
 );
-export const HomePage = lazy(() => home().then((feature) => ({ default: feature.HomePage })));
+export const HomePage = lazy(() =>
+  home().then((feature) => ({ default: feature.HomeWithActions })),
+);
 export const LineItemCreatePage = lazy(() =>
   lineItems().then((feature) => ({ default: feature.LineItemCreatePage })),
 );
@@ -217,4 +220,10 @@ export const ImportPage = lazy(() =>
 );
 export const ImportResultPage = lazy(() =>
   workbook().then((feature) => ({ default: feature.ImportResultPage })),
+);
+export const PostInvestmentReviewsPage = lazy(() =>
+  postInvestment().then((feature) => ({ default: feature.ReviewsPage })),
+);
+export const PostInvestmentReviewPage = lazy(() =>
+  postInvestment().then((feature) => ({ default: feature.ReviewPage })),
 );

@@ -40,6 +40,7 @@ describe('Sidebar', () => {
       'All work',
       'Financials',
       'Purchase requests',
+      'Post-investment reviews',
       'Dashboards',
       'Reports',
       'Dashboard builder',

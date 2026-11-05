@@ -7,6 +7,7 @@ import { ApprovalSection, useActivityApproval } from '@/features/approvals';
 import type { ApprovalActivity } from '@/features/approvals';
 import { ActivityFinancials, LineItemsSection, Notice } from '@/features/line-items';
 import { ActivityPurchaseRequests } from '@/features/purchase-requests';
+import { ActivityReviewSection } from '@/features/post-investment';
 import { useAttributeForm } from '@/features/settings';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { allows } from '@/session/gate-action';
@@ -208,6 +209,7 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
                 <LineItemsSection activityId={activity.id} />
               </div>
               <ActivityPurchaseRequests activityId={activity.id} />
+              <ActivityReviewSection activityId={activity.id} edit={access?.edit} />
             </div>
           )}
           {tab === 'details' && (

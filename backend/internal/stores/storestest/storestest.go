@@ -22,6 +22,7 @@ import (
 	"mapp/internal/dataset/datasettest"
 	"mapp/internal/financials/financialstest"
 	"mapp/internal/history/historytest"
+	"mapp/internal/home/hometest"
 	"mapp/internal/lineitem/lineitemtest"
 	"mapp/internal/measure/attribution/attributiontest"
 	"mapp/internal/measure/gsaplink/gsaplinktest"
@@ -31,6 +32,7 @@ import (
 	"mapp/internal/plan/plantest"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/fake"
+	"mapp/internal/postinvestment/postinvestmenttest"
 	"mapp/internal/purchaserequest/purchaserequesttest"
 	"mapp/internal/sample/sampletest"
 	"mapp/internal/settings/settingstest"
@@ -48,6 +50,7 @@ func New(db *fake.DB) stores.Set {
 			CustomDashboards: customdashboardtest.NewStore(db),
 			Datasets:         datasettest.NewStore(db),
 		},
+		Reviews: postinvestmenttest.NewStore(db),
 		Ready:   func(context.Context) error { return nil },
 		IsEmpty: func(context.Context) (bool, error) { return !counters.Used(), nil },
 	}
@@ -56,7 +59,7 @@ func New(db *fake.DB) stores.Set {
 func organisation(db *fake.DB) stores.Organisation {
 	return stores.Organisation{
 		People: peopletest.NewStore(db), History: historytest.NewStore(db), Auth: authtest.NewStore(db),
-		Access: accesstest.NewStore(db), Settings: settingstest.NewStore(db),
+		Access: accesstest.NewStore(db), Settings: settingstest.NewStore(db), Home: hometest.NewStore(db),
 	}
 }
 

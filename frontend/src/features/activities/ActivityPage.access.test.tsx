@@ -8,6 +8,7 @@ import { activityRecord } from '@/testing/fixtures/line-item-financials';
 import { currentRates } from '@/testing/fixtures/line-item-forms';
 import { activity, launchFilmSection } from '@/testing/fixtures/line-items';
 import { plan } from '@/testing/fixtures/plans';
+import { noActivityReview } from '@/testing/fixtures/post-investment';
 import { activitySection } from '@/testing/fixtures/purchase-requests';
 import { testUser } from '@/testing/fixtures/users';
 import {
@@ -91,6 +92,7 @@ function openPage(access: Activity['access'], person: CurrentUser, formAllowed: 
     reply('GET /api/v1/activities/{activityId}/purchase-requests', {
       body: activitySection({ activityId: 'A-1042', lineItems: [] }),
     }),
+    noActivityReview(),
   ]);
   return renderWithProviders(<ActivityPage />, {
     route: '/plans/P-1001/activities/A-1042',

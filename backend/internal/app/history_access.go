@@ -55,6 +55,7 @@ var deletedWith = map[string]authz.Permission{
 	"plan": authz.PlansDelete, "campaign": authz.CampaignsDelete, "initiative": authz.CampaignsDelete,
 	"activity": authz.ActivitiesDelete, "lineItem": authz.ActivitiesDelete, "budgetAllocation": authz.GlobalBudgetsManage,
 	kindPurchaseRequest: authz.PurchaseRequestsDelete, kindPurchaseRequestLine: authz.PurchaseRequestsEdit,
+	"postInvestmentReview": authz.ActivitiesDelete,
 }
 
 var openToAll = map[string]bool{"sampleFolder": true, "sampleNote": true}
