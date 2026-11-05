@@ -22,6 +22,7 @@ func (w *wiring) purchaseRequestsArea() error {
 	prs.UseApprovals(w.approvals)
 	w.approvals.UsePurchaseRequests(prs)
 	prs.UseGSAP(w.simulatedOrders())
+	prs.UseOverspend(w.overspend)
 	w.guardPurchaseRequests(prs)
 	w.purchases = prs
 	w.settings.AddReferenceSource(purchaseRequestReferences(s.PurchaseRequests, w.history))

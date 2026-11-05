@@ -264,4 +264,46 @@ describe('HomePage', () => {
     expect(messages).toHaveTextContent("Your choice couldn't be saved.");
     expect(within(messages).getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
+
+  it('switches the person-based cards to My team, asking every one of them for the team (demo-mvp #1)', async () => {
+    const { api, user } = renderHome();
+    await screen.findByRole('link', { name: "My teams' plans: 0 — open the Plans list" });
+
+    await user.click(
+      within(screen.getByRole('group', { name: 'Whose work' })).getByRole('button', {
+        name: 'My team',
+      }),
+    );
+
+    expect(
+      await screen.findByText("Waiting for my team's approval", { selector: 'h2, h3' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("My team's activities", { selector: 'h2, h3' })).toBeInTheDocument();
+    for (const path of ['attention', 'waiting', 'my-activities']) {
+      await waitFor(() =>
+        expect(requestsTo(api, `/api/v1/home/${path}`).map((r) => r.search)).toEqual([
+          '',
+          '?for=team',
+        ]),
+      );
+    }
+    await waitFor(() =>
+      expect(requestsTo(api, '/api/v1/home/summary').map((r) => r.search)).toContain(
+        '?scope=myTeams&for=team',
+      ),
+    );
+    // Nothing is saved: the choice lives in the address.
+    expect(api.bodiesOf('PATCH /api/v1/me/preferences')).toEqual([]);
+    // The summary cards open the team's lists on Home, not the person's own All work and Approvals.
+    expect(
+      await screen.findByRole('link', {
+        name: /Activities my team owns.*open your team's activities/,
+      }),
+    ).toHaveAttribute('href', '/?for=team#my-activities');
+    expect(
+      screen.getByRole('link', {
+        name: /Waiting for my team's approval.*open your team's waiting list/,
+      }),
+    ).toHaveAttribute('href', '/?for=team#waiting');
+  });
 });

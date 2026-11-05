@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"mapp/internal/history"
+	"mapp/internal/overspend"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/errs"
@@ -27,6 +28,14 @@ type Service struct {
 	rounds  Rounds
 	engine  Engine
 	gsap    GSAP
+	// overspend is Settings › Overspend control (demo-mvp #3, #4); nil allows no tolerance and refuses.
+	overspend Overspend
+}
+
+// Overspend is Settings › Overspend control as purchase requests read it.
+type Overspend interface {
+	overspend.Tolerance
+	RefusesOverPlannedCost(ctx context.Context) (bool, error)
 }
 
 func NewService(store Store, tools history.Tools, deps Deps) *Service {
@@ -39,6 +48,26 @@ func (s *Service) UseRounds(r Rounds) {
 }
 
 // UseGSAP connects GSAP (the simulated GSAP now, 033); until then the GSAP run is unavailable.
+// UseOverspend lets a line exceed what its line item has left by the tolerance of its amount (demo-mvp #4)
+// and, under Warn, lets a submission go while line items exceed an activity's planned cost (demo-mvp #3).
+func (s *Service) UseOverspend(o Overspend) {
+	s.overspend = o
+}
+
+func (s *Service) tolerancePercent(ctx context.Context) (int, error) {
+	if s.overspend == nil {
+		return 0, nil
+	}
+	return s.overspend.TolerancePercent(ctx)
+}
+
+func (s *Service) refusesOverPlannedCost(ctx context.Context) (bool, error) {
+	if s.overspend == nil {
+		return true, nil
+	}
+	return s.overspend.RefusesOverPlannedCost(ctx)
+}
+
 func (s *Service) UseGSAP(g GSAP) {
 	s.gsap = g
 }

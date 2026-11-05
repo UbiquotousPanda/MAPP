@@ -32,35 +32,35 @@ func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 // recentChanges answers GET /api/v1/home/recent-changes?scope=: Recent changes (FR-015, FR-016).
 func (h *Handler) recentChanges(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context()) // put there by the sign-in middleware
-	page, err := h.service.RecentChanges(c.Request.Context(), a, c.Request.URL.Query().Get("scope"))
+	page, err := h.service.RecentChanges(c.Request.Context(), a, c.Request.URL.Query().Get("scope"), c.Request.URL.Query().Get("for"))
 	answer(c, page, err)
 }
 
 // myActivities answers GET /api/v1/home/my-activities: My activities (FR-014).
 func (h *Handler) myActivities(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context()) // put there by the sign-in middleware
-	view, err := h.service.MyActivities(c.Request.Context(), a)
+	view, err := h.service.MyActivities(c.Request.Context(), a, c.Request.URL.Query().Get("for"))
 	answer(c, view, err)
 }
 
 // attention answers GET /api/v1/home/attention: Needs your attention (FR-011, FR-012).
 func (h *Handler) attention(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context()) // put there by the sign-in middleware
-	page, err := h.service.Attention(c.Request.Context(), a)
+	page, err := h.service.Attention(c.Request.Context(), a, c.Request.URL.Query().Get("for"))
 	answer(c, page, err)
 }
 
 // waiting answers GET /api/v1/home/waiting: Waiting for my approval (FR-013).
 func (h *Handler) waiting(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context()) // put there by the sign-in middleware
-	page, err := h.service.Waiting(c.Request.Context(), a)
+	page, err := h.service.Waiting(c.Request.Context(), a, c.Request.URL.Query().Get("for"))
 	answer(c, page, err)
 }
 
 // summary answers GET /api/v1/home/summary?scope=: the four summary cards (FR-005 – FR-007).
 func (h *Handler) summary(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context()) // put there by the sign-in middleware
-	view, err := h.service.Summary(c.Request.Context(), a, c.Request.URL.Query().Get("scope"))
+	view, err := h.service.Summary(c.Request.Context(), a, c.Request.URL.Query().Get("scope"), c.Request.URL.Query().Get("for"))
 	answer(c, view, err)
 }
 

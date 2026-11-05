@@ -1,10 +1,59 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { BRAND_OPTION, globalBudget, LUBRICANTS } from '@/testing/fixtures/global-budgets';
+import {
+  BRAND_OPTION,
+  globalBudget,
+  LUBRICANTS,
+  MOBILITY,
+} from '@/testing/fixtures/global-budgets';
 import { budgetRow, renderBudgetPage } from '@/testing/fixtures/global-budget-page';
 import { reply } from '@/testing/replies';
 
 describe('GlobalBudgetPage allocations (014 US6, FR-030, FR-034)', () => {
+  it("shows each local budget's figures, read-only where the plan is outside the person's scope (demo-mvp #2)", async () => {
+    const reason = 'Managing global budgets is allowed for you only in plans of Lubricants Europe.';
+    const { user } = renderBudgetPage([
+      reply(
+        'GET /api/v1/global-budgets/{globalBudgetId}',
+        {
+          body: globalBudget({
+            allocations: [
+              LUBRICANTS,
+              {
+                ...MOBILITY,
+                committed: null,
+                actual: null,
+                canOpenPlan: false,
+                access: {
+                  edit: { available: false, reason },
+                  remove: { available: false, reason },
+                },
+              },
+            ],
+          }),
+        },
+        { globalBudgetId: 'GB-1001' },
+      ),
+    ]);
+    await screen.findByRole('table', { name: 'Allocations' });
+
+    const europe = budgetRow('FY2026 Lubricants Europe');
+    expect(within(europe).getByText('$35,652.17')).toBeInTheDocument();
+    expect(within(europe).getByText('$30,652.17')).toBeInTheDocument();
+    expect(
+      within(europe).getByRole('link', { name: 'FY2026 Lubricants Europe' }),
+    ).toBeInTheDocument();
+    const china = budgetRow('FY2026 Mobility China');
+    expect(within(china).queryByRole('link')).not.toBeInTheDocument();
+    await user.click(
+      within(china).getByRole('button', { name: 'Actions for FY2026 Mobility China' }),
+    );
+    expect(await screen.findByRole('menuitem', { name: /Change allocation/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+
   it('changes an allocation with the allocation and plan versions (US6 scenario 2)', async () => {
     const { api, user } = renderBudgetPage([
       reply(

@@ -74,3 +74,9 @@
 .more a:focus-visible {
   text-decoration: underline;
 }
+
+/* The summary card scrolls here in the team view. */
+.anchor {
+  min-width: 0;
+  scroll-margin-top: var(--space-5);
+}

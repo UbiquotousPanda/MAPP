@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router';
 import { useCurrentUser, useSession } from '@/session/useSession';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
@@ -8,7 +9,7 @@ import { CurrencyPicker } from './CurrencyPicker';
 import { FinancialsCard } from './FinancialsCard';
 import { GettingStartedCard } from './GettingStartedCard';
 import { useHomeSummary } from './api';
-import type { HomeScope } from './api';
+import type { HomeFor, HomeScope } from './api';
 import { SCOPE_HINT, greetingText } from './home-text';
 import styles from './HomePage.module.css';
 import { MyActivitiesCard } from './MyActivitiesCard';
@@ -21,6 +22,11 @@ import { WaitingCard } from './WaitingCard';
 const SCOPES: SegmentedFilterOption<HomeScope>[] = [
   { value: 'myTeams', label: 'My teams' },
   { value: 'everything', label: 'Everything' },
+];
+
+const FOR_OPTIONS: SegmentedFilterOption<HomeFor>[] = [
+  { value: 'me', label: 'Me' },
+  { value: 'team', label: 'My team' },
 ];
 
 /**
@@ -40,7 +46,20 @@ export function HomePage() {
   // The switch shows the choice at once and saves it in the background (001's preference pattern).
   const scope: HomeScope = person.preferences.homeScope ?? 'myTeams';
   const changeScope = (homeScope: HomeScope) => updatePreferences({ homeScope });
-  const summary = useHomeSummary(scope);
+  // Me · My team lives in the address (?for=team), so it survives a reload and a shared link.
+  const [params, setParams] = useSearchParams();
+  const who: HomeFor = params.get('for') === 'team' ? 'team' : 'me';
+  const changeWho = (next: HomeFor) =>
+    setParams(
+      (current) => {
+        const updated = new URLSearchParams(current);
+        if (next === 'team') updated.set('for', 'team');
+        else updated.delete('for');
+        return updated;
+      },
+      { replace: true },
+    );
+  const summary = useHomeSummary(scope, who);
   const gettingStarted = summary.data?.gettingStarted ?? null;
   // Before 014 is served the person has no access object: Home shows its cards as before.
   const noRole = person.access !== undefined && person.access.roles.length === 0;
@@ -53,6 +72,12 @@ export function HomePage() {
         actions={
           !noRole && (
             <div className={styles.actions}>
+              <SegmentedFilter
+                label="Whose work"
+                options={FOR_OPTIONS}
+                value={who}
+                onChange={changeWho}
+              />
               <SegmentedFilter
                 label="Scope"
                 options={SCOPES}
@@ -73,15 +98,15 @@ export function HomePage() {
       ) : (
         <div className={styles.page}>
           {gettingStarted && <GettingStartedCard reason={gettingStarted} />}
-          <SummaryCards scope={scope} />
+          <SummaryCards scope={scope} who={who} />
           <FinancialsCard scope={scope} />
           <div className={styles.pair}>
-            <AttentionCard />
-            <WaitingCard />
+            <AttentionCard who={who} />
+            <WaitingCard who={who} />
           </div>
           <PlansAtAGlanceCard scope={scope} onShowEverything={() => changeScope('everything')} />
-          <MyActivitiesCard />
-          <RecentChangesCard scope={scope} />
+          <MyActivitiesCard who={who} />
+          <RecentChangesCard scope={scope} who={who} />
         </div>
       )}
     </>

@@ -4312,6 +4312,7 @@ paths:
       summary: The four summary cards and whether to show Getting started
       parameters:
         - $ref: "#/components/parameters/HomeScope"
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: The summary for the scope.
@@ -4356,6 +4357,8 @@ paths:
         - Home
       operationId: listHomeAttention
       summary: Needs your attention — records the person owns that have a problem (all plans)
+      parameters:
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: Every record with at least one reason, in display order.
@@ -4363,6 +4366,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HomeAttentionPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -4375,6 +4380,8 @@ paths:
         - Home
       operationId: listHomeWaiting
       summary: Waiting for my approval — the first 5 of the Waiting for me list, oldest first
+      parameters:
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: The activities waiting for the person's decision.
@@ -4382,6 +4389,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WaitingPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -4394,6 +4403,8 @@ paths:
         - Home
       operationId: listHomeMyActivities
       summary: My activities — the activities the person owns, grouped by displayed status (all plans)
+      parameters:
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: The groups in display order; empty groups are left out.
@@ -4401,6 +4412,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MyActivitiesPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -4415,6 +4428,7 @@ paths:
       summary: Recent changes — the 10 newest activity-log entries about the plans in scope
       parameters:
         - $ref: "#/components/parameters/HomeScope"
+        - $ref: "#/components/parameters/HomeFor"
       responses:
         "200":
           description: The newest entries about plans, campaigns, initiatives, activities and line items of the plans in scope.
@@ -10320,6 +10334,15 @@ components:
       schema:
         type: string
       example: NT-1001
+    HomeFor:
+      name: for
+      in: query
+      required: false
+      description: >-
+        Whose work the person-based cards show: me (default) is the signed-in person; team is every member of
+        the person's teams, the person included. Only records the signed-in person may see are returned.
+      schema:
+        $ref: "#/components/schemas/HomeFor"
     HomeScope:
       name: scope
       in: query
@@ -11478,11 +11501,21 @@ components:
     OverspendLimit:
       type: object
       additionalProperties: false
-      required: [budget, leftToPlan]
+      description: >-
+        A budget above an activity, Warn or Refuse (demo-mvp #3): what is left to plan in it and, for Refuse, what
+        is left before it refuses, the tolerance added (demo-mvp #4); both in the plan currency. amount is the
+        budget in its own currency.
+      required: [budget, mode, amount, leftToPlan, leftBeforeRefusing]
       properties:
         budget:
           $ref: "#/components/schemas/RecordRef"
+        mode:
+          $ref: "#/components/schemas/OverspendMode"
+        amount:
+          $ref: "#/components/schemas/Money"
         leftToPlan:
+          $ref: "#/components/schemas/Money"
+        leftBeforeRefusing:
           $ref: "#/components/schemas/Money"
     OverspendApprovalMode:
       type: string
@@ -11493,12 +11526,19 @@ components:
     OverspendConfiguration:
       type: object
       additionalProperties: false
-      required: [defaultMode, approvalOverPlannedCost, version, updatedAt, updatedBy, canChange]
+      required: [defaultMode, approvalOverPlannedCost, tolerancePercent, version, updatedAt, updatedBy, canChange]
       properties:
         defaultMode:
           $ref: "#/components/schemas/OverspendMode"
         approvalOverPlannedCost:
           $ref: "#/components/schemas/OverspendApprovalMode"
+        tolerancePercent:
+          description: >-
+            Allow up to this per cent over before refusing (demo-mvp #4): within it a Refuse budget only warns, and
+            a purchase request may exceed what its line item has left by this per cent of its amount.
+          type: integer
+          minimum: 0
+          maximum: 100
         version:
           type: integer
           minimum: 1
@@ -11526,6 +11566,9 @@ components:
         approvalOverPlannedCost:
           description: Absent keeps the stored value.
           type: string
+        tolerancePercent:
+          description: A whole per cent from 0 to 100; absent keeps the stored value.
+          type: integer
     ActivityOverage:
       type: object
       additionalProperties: false
@@ -20047,6 +20090,12 @@ components:
         unread:
           type: integer
           description: Always 0 after the call.
+    HomeFor:
+      type: string
+      enum:
+        - me
+        - team
+      default: me
     HomeScope:
       type: string
       enum:
@@ -23144,13 +23193,26 @@ components:
     BudgetAllocationRow:
       type: object
       additionalProperties: false
-      required: [id, plan, teams, owner, amount, amountUsd, plannedCost, leftToPlan, budgetUsedPercent, version, access, overspend]
+      required: [id, plan, teams, owner, amount, amountUsd, plannedCost, committed, actual, leftToPlan, budgetUsedPercent, version, canOpenPlan, access, overspend]
       properties:
         overspend:
           $ref: "#/components/schemas/OverspendMode"
         id:
           type: string
           example: BA-1001
+        committed:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+          description: What the plan's line items have committed (purchase-order lines), in the plan's currency, as the plan's Financials card; null when the viewer doesn't hold finance.view for the plan (demo-mvp #2).
+        actual:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+          description: What the plan's line items have actually spent (paid), in the plan's currency; null as committed (demo-mvp #2).
+        canOpenPlan:
+          type: boolean
+          description: False for a plan outside the viewer's plan scope, shown because they see global budgets for All markets (demo-mvp #2); the row is then read-only.
         plan:
           $ref: "#/components/schemas/AllocationPlanRef"
         teams:

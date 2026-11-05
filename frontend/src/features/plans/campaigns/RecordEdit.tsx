@@ -12,6 +12,7 @@ import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { recordHref } from '@/ui/record-links';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
 import { useFormatters } from '@/format/useFormatters';
+import { useTolerancePercent } from '@/features/overspend';
 import { focusOf } from '../schemas';
 import { fetchLatestRecord, useUpdateRecord } from './api';
 import type { Campaign, Initiative } from './api';
@@ -60,6 +61,7 @@ export function RecordEdit({
   const [version, setVersion] = useState(opened.version);
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
+  const tolerancePercent = useTolerancePercent();
   const [askingToClear, setAskingToClear] = useState(false);
   const detailsHref = recordHref(level, record.id, planId);
   const cleared = valuesToClear(attributeForm, attributes, start.attributes);
@@ -67,7 +69,7 @@ export function RecordEdit({
   useFocusField(focus ? fieldId(level, focus) : null);
 
   const requestSave = form.handleSubmit((typed) => {
-    const refused = overspendRefusal(typed, opened);
+    const refused = overspendRefusal(typed, opened, tolerancePercent);
     if (refused) {
       setFailure({ message: refused });
       return;

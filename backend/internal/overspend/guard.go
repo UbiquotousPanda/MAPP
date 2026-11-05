@@ -11,9 +11,20 @@ type guardKey struct{}
 // Guard is a transactor whose outermost Write refuses, rolling everything back, a save that takes a budget set
 // to Refuse over it (FR-009, research R3). Every Write inside it joins it and is checked once, with it.
 type Guard struct {
-	tx      Transactor
-	budgets *reader
-	checks  bool
+	tx        Transactor
+	budgets   *reader
+	checks    bool
+	tolerance Tolerance
+}
+
+// Tolerance is the per cent over its budget a Refuse budget allows before refusing (demo-mvp #4).
+type Tolerance interface {
+	TolerancePercent(ctx context.Context) (int, error)
+}
+
+// UseTolerance lets the guard allow the tolerance; without one it allows none.
+func (g *Guard) UseTolerance(t Tolerance) {
+	g.tolerance = t
 }
 
 func NewGuard(tx Transactor, repo Budgets) *Guard {
@@ -26,7 +37,7 @@ func (g *Guard) UseRates(r Rates) {
 
 // Unchecked is the same transaction without the check: a guarded Write inside one of its Writes is not checked.
 func (g *Guard) Unchecked() *Guard {
-	return &Guard{tx: g.tx, budgets: g.budgets}
+	return &Guard{tx: g.tx, budgets: g.budgets, tolerance: g.tolerance}
 }
 
 func (g *Guard) Read(ctx context.Context, fn func(ctx context.Context) error) error {
@@ -58,7 +69,13 @@ func (g *Guard) checked(ctx context.Context, fn func(ctx context.Context) error)
 	if err != nil {
 		return err
 	}
-	if overages := Overages(before, after); len(overages) > 0 {
+	tolerance := 0
+	if g.tolerance != nil {
+		if tolerance, err = g.tolerance.TolerancePercent(ctx); err != nil {
+			return err
+		}
+	}
+	if overages := Overages(before, after, tolerance); len(overages) > 0 {
 		return Refusal(overages)
 	}
 	return nil

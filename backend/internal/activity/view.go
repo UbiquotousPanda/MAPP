@@ -43,9 +43,13 @@ func (s *Service) derive(ctx context.Context, a Activity, pc planContext, facts 
 	if err != nil {
 		return derived{}, err
 	}
+	refusesOverCost, err := s.refusesOverPlannedCost(ctx)
+	if err != nil {
+		return derived{}, err
+	}
 	d.readiness = check(checkInput{
 		activity: a, initiative: pc.initiative, missing: missing, typeName: d.activityType.Name, typeAllowed: d.activityType.Allowed,
-		modelName: pc.model.Name, workflow: workflow, lineItems: facts,
+		modelName: pc.model.Name, workflow: workflow, lineItems: facts, overCostWarns: !refusesOverCost,
 	})
 	d.completeness = completeness(d.readiness, facts)
 	d.missing = missingFields(d.readiness, missing)

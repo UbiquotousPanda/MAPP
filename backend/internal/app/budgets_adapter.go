@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"mapp/internal/budget"
+	"mapp/internal/financials"
 	"mapp/internal/plan"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
@@ -104,4 +105,26 @@ func (p planAllocations) AllocationOf(ctx context.Context, planID string) (plan.
 		ID: found.Allocation.ID, GlobalBudgetID: found.GlobalBudget.ID, GlobalBudgetName: found.GlobalBudget.Name,
 		OwnerID: found.GlobalBudget.OwnerID, Amount: found.Allocation.Amount, CanOpen: found.CanOpen,
 	}, true, nil
+}
+
+// budgetSpending is budget.Spending over the financials service, which is wired after budgets: it reads
+// the service when asked, not when built.
+type budgetSpending struct {
+	financials func() *financials.Service
+}
+
+func (b budgetSpending) PlanSpend(ctx context.Context, planIDs []string) (map[string]budget.Spend, error) {
+	service := b.financials()
+	if service == nil {
+		return map[string]budget.Spend{}, nil
+	}
+	facts, err := service.PlanFacts(ctx, planIDs)
+	if err != nil {
+		return nil, err
+	}
+	spend := make(map[string]budget.Spend, len(facts))
+	for id, f := range facts {
+		spend[id] = budget.Spend{Committed: f.Committed, Actual: f.Paid}
+	}
+	return spend, nil
 }

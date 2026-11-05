@@ -28,6 +28,26 @@ func ParseScope(text string) (Scope, error) {
 	return "", errs.Validation(errs.FieldError{Field: "scope", Message: chooseScopeMessage})
 }
 
+// For is whose work the person-based cards show: the signed-in person, or every member of their teams.
+type For string
+
+const (
+	ForMe   For = "me"
+	ForTeam For = "team"
+)
+
+const chooseForMessage = "Choose Me or My team."
+
+func ParseFor(text string) (For, error) {
+	switch f := For(text); f {
+	case "", ForMe:
+		return ForMe, nil
+	case ForTeam:
+		return f, nil
+	}
+	return "", errs.Validation(errs.FieldError{Field: "for", Message: chooseForMessage})
+}
+
 // Every amount is in the person's display currency. Lists are never nil.
 
 type SummaryView struct {

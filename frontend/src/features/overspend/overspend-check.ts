@@ -4,14 +4,21 @@ import {
   alreadyOverText,
   budgetBelowPlannedText,
   leftToPlanText,
+  overBudgetText,
   overLimitText,
+  takesOverText,
 } from './overspend-text';
+
+/** The organisation's "Allow up to n% over before refusing" while the setting loads (demo-mvp #4). */
+export const DEFAULT_TOLERANCE_PERCENT = 10;
 
 export interface BudgetCheckInput {
   mode: OverspendMode;
   typed: string;
   stored: string | null;
   planned: Money | null;
+  /** Settings › Overspend control's tolerance; within it a Refuse budget only warns (demo-mvp #4). */
+  tolerancePercent?: number;
 }
 
 export interface BudgetCheck {
@@ -26,36 +33,66 @@ function centsOf(text: string): bigint | null {
   return parsed ? toCents(parsed.amount) : null;
 }
 
-/** A Refuse budget typed below its planned cost: refused when lowered or newly set, noted when kept. */
-export function budgetCheck({ mode, typed, stored, planned }: BudgetCheckInput): BudgetCheck {
+/** tolerancePercent of cents, rounded down to the cent, as the API counts it. */
+export function allowanceCents(cents: bigint, tolerancePercent: number): bigint {
+  return (cents * BigInt(tolerancePercent)) / 100n;
+}
+
+/**
+ * A budget typed below its planned cost (demo-mvp #3, #4): a warning before saving under Warn, or under Refuse
+ * within the tolerance; beyond it, a Refuse budget is refused when lowered or newly set and noted when kept.
+ */
+export function budgetCheck({
+  mode,
+  typed,
+  stored,
+  planned,
+  tolerancePercent = DEFAULT_TOLERANCE_PERCENT,
+}: BudgetCheckInput): BudgetCheck {
   const typedCents = centsOf(typed);
-  if (mode !== 'refuse' || !planned || typedCents === null) {
+  if (!planned || typedCents === null) {
     return NOTHING;
   }
   const plannedCents = toCents(planned.amount);
   if (typedCents >= plannedCents) {
     return NOTHING;
   }
+  const over = { amount: formatCents(plannedCents - typedCents), currency: planned.currency };
+  const warning = takesOverText(over, {
+    amount: formatCents(typedCents),
+    currency: planned.currency,
+  });
+  const withinTolerance = plannedCents <= typedCents + allowanceCents(typedCents, tolerancePercent);
+  if (mode !== 'refuse' || withinTolerance) {
+    return { error: null, note: warning };
+  }
   if (stored === null || typedCents < toCents(stored)) {
     return { error: budgetBelowPlannedText(planned), note: null };
   }
-  const over = { amount: formatCents(plannedCents - typedCents), currency: planned.currency };
   return { error: null, note: alreadyOverText(over) };
 }
 
-/** What a typed planned cost would take over each Refuse budget above the activity. */
+function increaseOf(before: string | null, typed: string): bigint | null {
+  const typedCents = centsOf(typed);
+  return typedCents === null ? null : typedCents - (before === null ? 0n : toCents(before));
+}
+
+function refuses(limit: OverspendLimit, increase: bigint): boolean {
+  return limit.mode === 'refuse' && increase > toCents(limit.leftBeforeRefusing.amount);
+}
+
+/** What a typed planned cost would take beyond the tolerance of each Refuse budget above the activity: refused. */
 export function overLimitMessages(
   limits: OverspendLimit[],
   before: string | null,
   typed: string,
 ): string[] {
-  const typedCents = centsOf(typed);
-  if (typedCents === null) {
+  const increase = increaseOf(before, typed);
+  if (increase === null || increase <= 0n) {
     return [];
   }
-  const increase = typedCents - (before === null ? 0n : toCents(before));
   return limits
-    .filter((limit) => increase > 0n && increase > toCents(limit.leftToPlan.amount))
+    .filter((limit) => refuses(limit, increase))
     .map((limit) => {
       const over = increase - toCents(limit.leftToPlan.amount);
       return overLimitText(
@@ -66,9 +103,35 @@ export function overLimitMessages(
     });
 }
 
+/**
+ * What a typed planned cost would take over a budget above the activity without being refused: a Warn budget, or
+ * a Refuse budget within the tolerance. Shown before saving; the save goes ahead (demo-mvp #3).
+ */
+export function overBudgetWarnings(
+  limits: OverspendLimit[],
+  before: string | null,
+  typed: string,
+): string[] {
+  const increase = increaseOf(before, typed);
+  if (increase === null || increase <= 0n) {
+    return [];
+  }
+  return limits
+    .filter((limit) => increase > toCents(limit.leftToPlan.amount) && !refuses(limit, increase))
+    .map((limit) => {
+      const over = increase - toCents(limit.leftToPlan.amount);
+      return overBudgetText(
+        { amount: formatCents(over), currency: limit.leftToPlan.currency },
+        limit.budget.type,
+        limit.budget.name,
+        limit.amount,
+      );
+    });
+}
+
 /** The note under an activity's planned cost: what is left in each Refuse budget above it. */
 export function limitNotes(limits: OverspendLimit[]): string[] {
-  return limits.map((limit) =>
-    leftToPlanText(limit.leftToPlan, limit.budget.type, limit.budget.name),
-  );
+  return limits
+    .filter((limit) => limit.mode === 'refuse')
+    .map((limit) => leftToPlanText(limit.leftToPlan, limit.budget.type, limit.budget.name));
 }

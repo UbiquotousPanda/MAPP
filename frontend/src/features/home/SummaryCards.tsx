@@ -5,8 +5,9 @@ import { cx } from '@/ui/cx';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import { useHomeSummary } from './api';
-import type { HomeScope, HomeSummary } from './api';
+import type { HomeFor, HomeScope, HomeSummary } from './api';
 import {
+  FOR_TEXT,
   NOTHING_PLANNED,
   PLANS_CARD,
   activityCountsText,
@@ -23,10 +24,10 @@ import { SectionError } from './SectionError';
 import styles from './SummaryCards.module.css';
 import { SummaryLinkCard } from './SummaryLinkCard';
 
-export function SummaryCards({ scope }: { scope: HomeScope }) {
+export function SummaryCards({ scope, who = 'me' }: { scope: HomeScope; who?: HomeFor }) {
   const person = useCurrentUser();
   const { money, moneyCompact } = useFormatters();
-  const summary = useHomeSummary(scope);
+  const summary = useHomeSummary(scope, who);
 
   if (summary.isPending) {
     return (
@@ -63,8 +64,8 @@ export function SummaryCards({ scope }: { scope: HomeScope }) {
         linkLabel="open the Plans list"
       />
       <SummaryLinkCard
-        label="Activities I own"
-        tip="Activities you own, in the plans of these years."
+        label={FOR_TEXT.activitiesOwned[who]}
+        tip={FOR_TEXT.activitiesOwnedTip[who]}
         value={formatWhole(activitiesOwned.count)}
         detail={
           <span>
@@ -76,17 +77,21 @@ export function SummaryCards({ scope }: { scope: HomeScope }) {
               .join(' · ')}
           </span>
         }
-        to={myActivitiesHref(person.id, activitiesOwned.yearFrom, activitiesOwned.yearTo)}
-        linkLabel="open your activities"
+        to={
+          who === 'team'
+            ? '?for=team#my-activities'
+            : myActivitiesHref(person.id, activitiesOwned.yearFrom, activitiesOwned.yearTo)
+        }
+        linkLabel={who === 'team' ? "open your team's activities" : 'open your activities'}
       />
       <SummaryLinkCard
-        label="Waiting for my approval"
-        tip="Submitted activities waiting at a level where you are an approver."
+        label={FOR_TEXT.waiting[who]}
+        tip={FOR_TEXT.waitingTip[who]}
         value={formatWhole(waitingForMe.count)}
         tone={waitingForMe.count > 0 ? 'review' : undefined}
         detail={<span>{oldestWaitingText(waitingForMe.oldestWaitingSince)}</span>}
-        to={waitingForMeHref()}
-        linkLabel="open Approvals"
+        to={who === 'team' ? '?for=team#waiting' : waitingForMeHref()}
+        linkLabel={who === 'team' ? "open your team's waiting list" : 'open Approvals'}
       />
       <SummaryLinkCard
         label="Planned cost vs plan budget"

@@ -44,6 +44,7 @@ func TestDefaults_Contract(t *testing.T) {
 func TestCreate_ReservesAtOnce_Contract_032_FR017(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
+	strictOverspend(t, s, "")
 	priya := s.SignIn(t, priyasEmail)
 
 	pr := create(t, priya, body(mediaBooking, "USD", "26000.00"))

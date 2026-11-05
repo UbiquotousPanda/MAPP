@@ -6,7 +6,7 @@ import { FormField } from '@/ui/FormField/FormField';
 import { FormCard } from '@/ui/FormRail/FormRail';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { SpreadEffectNote } from '@/features/line-items';
-import { limitNotes, overLimitMessages } from '@/features/overspend';
+import { limitNotes, overBudgetWarnings, overLimitMessages } from '@/features/overspend';
 import { useFieldHelp } from '@/features/settings';
 import { useFormatters } from '@/format/useFormatters';
 import type { ActivityFormData } from './api';
@@ -55,7 +55,12 @@ export function ActivityDatesCard(props: ActivityDatesCardProps) {
     stored?.plannedCost?.amount ?? null,
     value.plannedCost,
   );
-  const costNotes = [props.costNote, ...limitNotes(limits)].filter(Boolean).join(' ');
+  const warnings = overBudgetWarnings(
+    limits,
+    stored?.plannedCost?.amount ?? null,
+    value.plannedCost,
+  );
+  const costNotes = [...warnings, props.costNote, ...limitNotes(limits)].filter(Boolean).join(' ');
   const { help } = useFieldHelp();
 
   return (

@@ -33,13 +33,15 @@ var (
 
 // fakeSources keep containers, activities and waiting lists per person: the real sources filter by owner and approver.
 type fakeSources struct {
-	teams      map[string][]Team
-	plans      []Plan
-	containers map[string][]Container
-	activities map[string][]Activity
-	waiting    map[string][]Waiting // oldest first
-	currencies map[string]Currency  // none means US dollars
-	failWith   error                // when set, every source fails with it
+	teams       map[string][]Team
+	plans       []Plan
+	containers  map[string][]Container
+	activities  map[string][]Activity
+	waiting     map[string][]Waiting // oldest first
+	currencies  map[string]Currency  // none means US dollars
+	failWith    error                // when set, every source fails with it
+	hidden      map[string]bool      // activity ids the person signed in may not see
+	actorsAsked [][]string           // the actor ids Recent changes asked for
 
 	logAsked  [][]string // nil plan ids ask for every plan
 	logLimit  int
@@ -56,6 +58,7 @@ func newFakeSources() *fakeSources {
 		activities: map[string][]Activity{},
 		waiting:    map[string][]Waiting{},
 		currencies: map[string]Currency{},
+		hidden:     map[string]bool{},
 	}
 }
 
@@ -82,9 +85,30 @@ func (f *fakeSources) sources() Sources {
 			}
 			return Currency{Code: "USD", Rate: money.One}, f.failWith
 		},
-		RecentChanges: func(_ context.Context, _ actor.Actor, planIDs []string, limit int) (RecentChangesPage, error) {
-			f.logAsked = append(f.logAsked, slices.Clone(planIDs))
-			f.logLimit = limit
+		TeamMemberIDs: func(_ context.Context, a actor.Actor) ([]string, error) {
+			ids := []string{a.ID}
+			for person, teams := range f.teams {
+				if slices.ContainsFunc(teams, func(t Team) bool { return slices.Contains(f.teams[a.ID], t) }) {
+					ids = append(ids, person)
+				}
+			}
+			slices.Sort(ids)
+			return slices.Compact(ids), f.failWith
+		},
+		WaitingFor: func(_ context.Context, _ actor.Actor, personID string) ([]Waiting, error) {
+			return slices.Clone(f.waiting[personID]), f.failWith
+		},
+		SeesActivities: func(_ context.Context, _ actor.Actor, ids []string) (map[string]bool, error) {
+			seen := map[string]bool{}
+			for _, id := range ids {
+				seen[id] = !f.hidden[id]
+			}
+			return seen, f.failWith
+		},
+		RecentChanges: func(_ context.Context, _ actor.Actor, q RecentChangesQuery) (RecentChangesPage, error) {
+			f.actorsAsked = append(f.actorsAsked, slices.Clone(q.ActorIDs))
+			f.logAsked = append(f.logAsked, slices.Clone(q.PlanIDs))
+			f.logLimit = q.Limit
 			return f.logAnswer, f.failWith
 		},
 	}

@@ -29,3 +29,9 @@ export function useSaveOverspendConfiguration() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: overspendKeys.configuration }),
   });
 }
+
+/** Settings › Overspend control's "Allow up to n% over before refusing", the default while it loads (demo-mvp #4). */
+export function useTolerancePercent(): number {
+  const config = useOverspendConfiguration();
+  return config.data?.tolerancePercent ?? 10;
+}

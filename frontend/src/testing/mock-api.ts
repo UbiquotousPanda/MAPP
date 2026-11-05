@@ -27,6 +27,7 @@ export const FRAME_ANSWERS: HttpHandler[] = [
     body: {
       defaultMode: 'warn',
       approvalOverPlannedCost: 'warn',
+      tolerancePercent: 10,
       version: 1,
       updatedAt: '2026-03-12T09:00:00Z',
       updatedBy: { id: 'system', name: 'SP&A One' },

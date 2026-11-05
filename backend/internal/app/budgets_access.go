@@ -65,3 +65,18 @@ func (b budgetAccess) CanManageAll(ctx context.Context, personID string) (bool, 
 	holders, err := b.access.HoldersOf(ctx, authz.GlobalBudgetsManage, true)
 	return slices.Contains(holders, personID), err
 }
+
+// SeeAllMarkets reports whether the person holds globalBudgets.view for All markets.
+func (budgetAccess) SeeAllMarkets(ctx context.Context) bool {
+	g, restricted := authz.From(ctx)
+	if !restricted {
+		return true
+	}
+	all, _ := g.Teams(authz.GlobalBudgetsView)
+	return all && g.Has(authz.GlobalBudgetsView)
+}
+
+// SeeFinanceIn reports whether the person holds finance.view in the plan's scope.
+func (budgetAccess) SeeFinanceIn(ctx context.Context, plan budget.PlanInfo) bool {
+	return authz.RequireIn(ctx, authz.FinanceView, budgetPlanFacts(plan)) == nil
+}

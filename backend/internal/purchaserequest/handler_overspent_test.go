@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mapp/internal/lineitem"
+	"mapp/internal/overspend"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/purchaserequest"
 )
@@ -31,6 +32,7 @@ func submissionMessages(t *testing.T, c *apitest.Client, id string) []string {
 func TestSubmit_RefusedWhileLineItemsExceedThePlannedCost_Contract_037_FR019(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
+	strictOverspend(t, s, "refuse")
 	receiveSwbsCodes(t, s)
 	priya := s.SignIn(t, priyasEmail)
 	pr := create(t, priya, body(standBuild, "EUR", "9200.00"))
@@ -105,4 +107,17 @@ func submittedRound(t *testing.T, s *apitest.Server, round string) purchasereque
 	decoded[purchaserequest.ApprovalView](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/approval/submit",
 		map[string]any{"version": pr.Version}), http.StatusOK)
 	return pr
+}
+
+// strictOverspend sets the tolerance to 0 % and, when approval is not "", the approval-over-planned-cost mode, so
+// the tests written before demo-mvp #3 and #4 keep their rules.
+func strictOverspend(t *testing.T, s *apitest.Server, approval string) {
+	t.Helper()
+	alex := s.SignIn(t, alexsEmail)
+	c := decoded[overspend.ConfigurationView](t, alex.Do(t, http.MethodGet, "/api/v1/overspend-configuration", nil), http.StatusOK)
+	in := map[string]any{"version": c.Version, "defaultMode": c.DefaultMode, "tolerancePercent": 0}
+	if approval != "" {
+		in["approvalOverPlannedCost"] = approval
+	}
+	decoded[overspend.ConfigurationView](t, alex.Do(t, http.MethodPut, "/api/v1/overspend-configuration", in), http.StatusOK)
 }

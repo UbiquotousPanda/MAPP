@@ -35,6 +35,9 @@ type checkInput struct {
 	modelName   string
 	workflow    *WorkflowFacts // the chosen workflow; nil when none is chosen or it no longer exists
 	lineItems   LineItemFacts
+	// overCostWarns makes line items above the planned cost advice, not a problem: Settings › Overspend
+	// control is Warn (demo-mvp #3).
+	overCostWarns bool
 }
 
 // check lists everything that stops the activity from being submitted, all at once, in the order of data
@@ -84,8 +87,13 @@ func check(in checkInput) SubmitCheck {
 
 	balance := unassigned(a, in.lineItems)
 	if balance != nil && balance.Amount.Sign() < 0 {
-		result.LineItems = append(result.LineItems, SubmitProblem{Code: ProblemNegativeUnassigned, Field: "lineItems",
-			Message: fmt.Sprintf(negativeUnassignedFormat, money.Money{Amount: balance.Amount.Neg(), Currency: balance.Currency}.Format())})
+		over := SubmitProblem{Code: ProblemNegativeUnassigned, Field: "lineItems",
+			Message: fmt.Sprintf(negativeUnassignedFormat, money.Money{Amount: balance.Amount.Neg(), Currency: balance.Currency}.Format())}
+		if in.overCostWarns {
+			result.Advice = append(result.Advice, over)
+		} else {
+			result.LineItems = append(result.LineItems, over)
+		}
 	}
 	for _, p := range in.lineItems.Problems {
 		id, name := p.LineItemID, p.LineItemName

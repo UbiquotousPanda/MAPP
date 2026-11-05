@@ -146,6 +146,7 @@ func (w *wiring) budgetsArea() error {
 	budgetsService := budget.NewService(tools, w.set.Budgets, budget.Deps{
 		Plans:     budgetPlans{plans: w.plans, repo: w.set.Plans, rates: w.settings.Rates},
 		Directory: w.people, Rates: w.settings, Access: budgetAccess{access: w.access}, Overspend: w.overspend,
+		Spending: budgetSpending{financials: func() *financials.Service { return w.financials }},
 	})
 	if err := w.register(overspend.Described(budgetsService.Kinds())); err != nil {
 		return err
@@ -225,7 +226,7 @@ func (w *wiring) views() {
 	s := w.set
 	homeService := home.NewService(s.Tx, homeReaders{
 		people: w.people, plansRepo: s.Plans, plans: w.plans, campaigns: w.campaigns, activities: w.activities,
-		approvals: w.approvals, history: w.history, rates: w.settings.Rates,
+		activityStore: s.Activities, approvals: w.approvals, history: w.history, rates: w.settings.Rates,
 	}.sources())
 	w.allWork = allWorkSource{
 		plans: w.plans, plansRepo: s.Plans, campaigns: w.campaigns, campaignsRepo: s.Campaigns,

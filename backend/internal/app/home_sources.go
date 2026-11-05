@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"slices"
 
 	"mapp/internal/activity"
 	"mapp/internal/approval"
@@ -18,14 +19,15 @@ import (
 )
 
 type homeReaders struct {
-	people     *people.Service
-	plansRepo  stores.PlanStore
-	plans      *plan.Service
-	campaigns  *campaign.Service
-	activities *activity.Service
-	approvals  *approval.Service
-	history    *history.Service
-	rates      func(context.Context) (money.Rates, error)
+	people        *people.Service
+	plansRepo     stores.PlanStore
+	plans         *plan.Service
+	campaigns     *campaign.Service
+	activities    *activity.Service
+	activityStore stores.ActivityStore
+	approvals     *approval.Service
+	history       *history.Service
+	rates         func(context.Context) (money.Rates, error)
 }
 
 // sources builds the Sources of feature 009's Home over the services of features 003–008 and 011's
@@ -34,8 +36,21 @@ type homeReaders struct {
 // here. Every function joins the read transaction of the Home service.
 func (h homeReaders) sources() home.Sources {
 	return home.Sources{
-		RecentChanges: func(ctx context.Context, a actor.Actor, planIDs []string, limit int) (home.RecentChangesPage, error) {
-			return h.recentChanges(ctx, a, planIDs, limit)
+		RecentChanges: h.recentChanges,
+		TeamMemberIDs: h.teamMemberIDs,
+		WaitingFor: func(ctx context.Context, _ actor.Actor, personID string) ([]home.Waiting, error) {
+			return h.waitingFor(ctx, actor.Actor{ID: personID})
+		},
+		SeesActivities: func(ctx context.Context, _ actor.Actor, ids []string) (map[string]bool, error) {
+			seen, err := h.activityStore.ListInScopeOf(ctx, authz.ScopeOf(ctx), ids) // the scope of the person signed in
+			if err != nil {
+				return nil, err
+			}
+			found := make(map[string]bool, len(seen))
+			for _, act := range seen {
+				found[act.ID] = true
+			}
+			return found, nil
 		},
 		MyTeams: func(ctx context.Context, a actor.Actor) ([]home.Team, error) {
 			return h.myTeams(ctx, a)
@@ -96,6 +111,24 @@ func (h homeReaders) myTeams(ctx context.Context, a actor.Actor) ([]home.Team, e
 		teams = append(teams, home.Team{ID: id, Name: refs[id].Name, Colour: refs[id].Colour, Active: refs[id].Active})
 	}
 	return teams, nil
+}
+
+// teamMemberIDs returns every member of a's teams, a included, each once and ordered by id.
+func (h homeReaders) teamMemberIDs(ctx context.Context, a actor.Actor) ([]string, error) {
+	teamIDs, err := h.people.TeamIDsOf(ctx, a.ID)
+	if err != nil {
+		return nil, err
+	}
+	byTeam, err := h.people.MemberIDs(ctx, teamIDs)
+	if err != nil {
+		return nil, err
+	}
+	ids := []string{a.ID}
+	for _, members := range byTeam {
+		ids = append(ids, members...)
+	}
+	slices.Sort(ids)
+	return slices.Compact(ids), nil
 }
 
 func homePlan(o plan.Overview) home.Plan {
@@ -227,8 +260,8 @@ func amountOf(m *money.Money) *money.Amount {
 
 var planningKinds = []string{"plan", "campaign", "initiative", "activity", "lineItem"}
 
-func (h homeReaders) recentChanges(ctx context.Context, a actor.Actor, planIDs []string, limit int) (home.RecentChangesPage, error) {
-	page, err := h.history.QueryLog(ctx, a, history.LogQuery{RecordTypes: planningKinds, PlanIDs: planIDs, Limit: limit})
+func (h homeReaders) recentChanges(ctx context.Context, a actor.Actor, q home.RecentChangesQuery) (home.RecentChangesPage, error) {
+	page, err := h.history.QueryLog(ctx, a, history.LogQuery{RecordTypes: planningKinds, PlanIDs: q.PlanIDs, ActorIDs: q.ActorIDs, Limit: q.Limit})
 	if err != nil {
 		return home.RecentChangesPage{}, err
 	}

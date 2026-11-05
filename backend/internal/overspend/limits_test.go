@@ -7,6 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"mapp/internal/activity"
+	"mapp/internal/overspend"
 	"mapp/internal/platform/apitest"
 )
 
@@ -25,11 +26,23 @@ func TestActivityForm_ShowsTheLimitsAbove_Contract_037_FR014(t *testing.T) {
 		http.StatusOK)
 
 	limits := []string{}
-	for _, l := range append(newForm.OverspendLimits, editForm.OverspendLimits...) {
+	for _, l := range refusing(append(newForm.OverspendLimits, editForm.OverspendLimits...)) {
 		limits = append(limits, l.Budget.Type+" "+l.Budget.Name+" "+l.LeftToPlan.Format())
 	}
 	want := []string{"campaign Helix launch 100.00 USD", "campaign Helix launch 100.00 USD"}
-	if diff := cmp.Diff(want, limits); diff != "" || len(before.OverspendLimits) != 0 || len(outside.OverspendLimits) != 0 {
+	if diff := cmp.Diff(want, limits); diff != "" || len(refusing(before.OverspendLimits)) != 0 ||
+		len(refusing(outside.OverspendLimits)) != 0 {
 		t.Errorf("037 FR-014 limits (-want +got):\n%s before %v, outside %v", diff, before.OverspendLimits, outside.OverspendLimits)
 	}
+}
+
+// refusing keeps the Refuse budgets: since demo-mvp #3 the form lists Warn budgets above the activity too.
+func refusing(limits []overspend.Limit) []overspend.Limit {
+	kept := []overspend.Limit{}
+	for _, l := range limits {
+		if l.Mode == overspend.Refuse {
+			kept = append(kept, l)
+		}
+	}
+	return kept
 }

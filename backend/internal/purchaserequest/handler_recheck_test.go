@@ -121,8 +121,8 @@ func TestApprove_LeavesOutWhatOnlyASubmissionNeeds_Contract_032_FR021_D404(t *te
 		change                   alteration
 	}{
 		{"its workflow was made inactive", "Choose an active approval workflow", deactivateWorkflow("WF-1004")},
-		{"its activity's line items cost more than planned and the setting only warns", "exceed its planned cost",
-			lowerPlannedCost("A-1003")},
+		// demo-mvp #3: under Warn a submission no longer refuses line items above the planned cost, so that case
+		// is no longer something only a submission needs.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

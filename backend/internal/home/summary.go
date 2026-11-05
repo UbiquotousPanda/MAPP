@@ -9,7 +9,11 @@ import (
 	"mapp/internal/rollup"
 )
 
-func (s *Service) Summary(ctx context.Context, a actor.Actor, scopeText string) (SummaryView, error) {
+func (s *Service) Summary(ctx context.Context, a actor.Actor, scopeText, forText string) (SummaryView, error) {
+	f, forErr := ParseFor(forText)
+	if forErr != nil {
+		return SummaryView{}, forErr
+	}
 	scope, scopeErr := ParseScope(scopeText)
 	if scopeErr != nil {
 		return SummaryView{}, scopeErr
@@ -24,11 +28,11 @@ func (s *Service) Summary(ctx context.Context, a actor.Actor, scopeText string) 
 		if err != nil {
 			return err
 		}
-		owned, err := s.src.Activities(ctx, a, a.ID)
+		owned, err := s.activitiesFor(ctx, a, f)
 		if err != nil {
 			return err
 		}
-		waiting, err := s.src.WaitingForMe(ctx, a)
+		waiting, err := s.waitingFor(ctx, a, f)
 		if err != nil {
 			return err
 		}

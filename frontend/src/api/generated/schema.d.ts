@@ -5573,9 +5573,13 @@ export interface components {
             mode: components["schemas"]["OverspendMode"];
             canChange: components["schemas"]["ActionAvailability"];
         };
+        /** @description A budget above an activity, Warn or Refuse (demo-mvp #3): what is left to plan in it and, for Refuse, what is left before it refuses, the tolerance added (demo-mvp #4); both in the plan currency. amount is the budget in its own currency. */
         OverspendLimit: {
             budget: components["schemas"]["RecordRef"];
+            mode: components["schemas"]["OverspendMode"];
+            amount: components["schemas"]["Money"];
             leftToPlan: components["schemas"]["Money"];
+            leftBeforeRefusing: components["schemas"]["Money"];
         };
         /**
          * @description What happens when someone approves an activity, a purchase request or its change while an activity's line items exceed its planned cost (038 FR-018): warn the approver (default) or refuse the approval.
@@ -5585,6 +5589,8 @@ export interface components {
         OverspendConfiguration: {
             defaultMode: components["schemas"]["OverspendMode"];
             approvalOverPlannedCost: components["schemas"]["OverspendApprovalMode"];
+            /** @description Allow up to this per cent over before refusing (demo-mvp #4): within it a Refuse budget only warns, and a purchase request may exceed what its line item has left by this per cent of its amount. */
+            tolerancePercent: number;
             version: number;
             /** @description Null while the setting has never been saved (038 FR-057). */
             updatedAt: string | null;
@@ -5596,6 +5602,8 @@ export interface components {
             defaultMode: string;
             /** @description Absent keeps the stored value. */
             approvalOverPlannedCost?: string;
+            /** @description A whole per cent from 0 to 100; absent keeps the stored value. */
+            tolerancePercent?: number;
         };
         /** @description An activity of the round whose line items exceed its planned cost (negative unassigned planned cost, domain model §4.3), in the plan currency (038 FR-019, FR-021). */
         ActivityOverage: {
@@ -9139,6 +9147,11 @@ export interface components {
             /** @description Always 0 after the call. */
             unread: number;
         };
+        /**
+         * @default me
+         * @enum {string}
+         */
+        HomeFor: "me" | "team";
         /** @enum {string} */
         HomeScope: "myTeams" | "everything";
         HomeSummary: {
@@ -10313,6 +10326,12 @@ export interface components {
             overspend: components["schemas"]["OverspendMode"];
             /** @example BA-1001 */
             id: string;
+            /** @description What the plan's line items have committed (purchase-order lines), in the plan's currency, as the plan's Financials card; null when the viewer doesn't hold finance.view for the plan (demo-mvp */
+            committed: components["schemas"]["Money"] | null;
+            /** @description What the plan's line items have actually spent (paid), in the plan's currency; null as committed (demo-mvp */
+            actual: components["schemas"]["Money"] | null;
+            /** @description False for a plan outside the viewer's plan scope, shown because they see global budgets for All markets (demo-mvp */
+            canOpenPlan: boolean;
             plan: components["schemas"]["AllocationPlanRef"];
             teams: components["schemas"]["TeamRef"][];
             owner: components["schemas"]["PersonRef"] | null;
@@ -13699,6 +13718,8 @@ export interface components {
         WorkflowId: string;
         /** @example NT-1001 */
         NotificationId: string;
+        /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+        HomeFor: components["schemas"]["HomeFor"];
         /** @description myTeams covers plans with at least one of the person's teams; everything covers all plans. */
         HomeScope: components["schemas"]["HomeScope"];
         /** @description The plans' year. Default - the current year. */
@@ -18198,6 +18219,8 @@ export interface operations {
             query: {
                 /** @description myTeams covers plans with at least one of the person's teams; everything covers all plans. */
                 scope: components["parameters"]["HomeScope"];
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
             };
             header?: never;
             path?: never;
@@ -18249,7 +18272,10 @@ export interface operations {
     };
     listHomeAttention: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -18265,6 +18291,7 @@ export interface operations {
                     "application/json": components["schemas"]["HomeAttentionPage"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             default: components["responses"]["Error"];
@@ -18272,7 +18299,10 @@ export interface operations {
     };
     listHomeWaiting: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -18288,6 +18318,7 @@ export interface operations {
                     "application/json": components["schemas"]["WaitingPage"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             default: components["responses"]["Error"];
@@ -18295,7 +18326,10 @@ export interface operations {
     };
     listHomeMyActivities: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -18311,6 +18345,7 @@ export interface operations {
                     "application/json": components["schemas"]["MyActivitiesPage"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             default: components["responses"]["Error"];
@@ -18321,6 +18356,8 @@ export interface operations {
             query: {
                 /** @description myTeams covers plans with at least one of the person's teams; everything covers all plans. */
                 scope: components["parameters"]["HomeScope"];
+                /** @description Whose work the person-based cards show: me (default) is the signed-in person; team is every member of the person's teams, the person included. Only records the signed-in person may see are returned. */
+                for?: components["parameters"]["HomeFor"];
             };
             header?: never;
             path?: never;

@@ -682,6 +682,7 @@ type OverspendConfiguration struct {
 	UpdatedByID             string
 	UpdatedByName           string
 	ApprovalOverPlannedCost string
+	TolerancePercent        int
 }
 
 type PerformanceCodeActivityType struct {

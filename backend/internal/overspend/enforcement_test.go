@@ -14,6 +14,7 @@ import (
 func TestCampaignRefuse_CreateActivityOverTheBudget_Contract_037_US1(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya := server.SignIn(t, priyasEmail)
 
 	set := refuseHelix(t, priya, "100.00")
@@ -37,6 +38,7 @@ func TestCampaignRefuse_CreateActivityOverTheBudget_Contract_037_US1(t *testing.
 func TestCampaignRefuse_UpdateActivityAndLowerTheBudget_Contract_037_US1(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya := server.SignIn(t, priyasEmail)
 	a := created(t, createActivity(t, priya, digital, newActivity("Raised later", "1000.00")))
 	set := refuseHelix(t, priya, "0.00")
@@ -60,6 +62,7 @@ func TestCampaignRefuse_UpdateActivityAndLowerTheBudget_Contract_037_US1(t *test
 func TestOverspendSetting_OnlyOwnerOrBudgetManager_Contract_037_FR003(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya, alex := server.SignIn(t, priyasEmail), server.SignIn(t, alexsEmail)
 	rimula := decoded[campaign.CampaignView](t, priya.Do(t, http.MethodGet, "/api/v1/campaigns/C-1002", nil), http.StatusOK)
 	form := map[string]any{"name": rimula.Name, "description": rimula.Description, "ownerId": "U-1003",
@@ -82,6 +85,7 @@ func TestOverspendSetting_OnlyOwnerOrBudgetManager_Contract_037_FR003(t *testing
 func TestOverspendSetting_LoggedOnTheRecord_Contract_037_FR005(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
+	noTolerance(t, server)
 	priya := server.SignIn(t, priyasEmail)
 	refuseHelix(t, priya, "0.00")
 

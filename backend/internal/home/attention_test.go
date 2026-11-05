@@ -70,7 +70,7 @@ func TestAttention_EachReason_FR011(t *testing.T) {
 	f.currencies[priya.ID] = Currency{Code: "EUR", Rate: rate(t, "0.92")}
 	s := newService(t, f)
 
-	page, err := s.Attention(t.Context(), priya)
+	page, err := s.Attention(t.Context(), priya, "")
 
 	if err != nil || page.Total != 5 || len(page.Items) != 5 {
 		t.Fatalf("Attention = %d items of %d, %v; want 5", len(page.Items), page.Total, err)
@@ -135,12 +135,12 @@ func TestAttention_OnlyOwnedRecords_FR011(t *testing.T) {
 	f.activities[priya.ID] = append(f.activities[priya.ID], unassignedLeft)
 	s := newService(t, f)
 
-	page, err := s.Attention(t.Context(), priya)
+	page, err := s.Attention(t.Context(), priya, "")
 
 	if ids := itemIDs(page); err != nil || !slices.Equal(ids, []string{"P-1001"}) || page.Total != 1 {
 		t.Errorf("items = %q of %d, %v; want only her plan with a problem", ids, page.Total, err)
 	}
-	nothing, err := s.Attention(t.Context(), nina)
+	nothing, err := s.Attention(t.Context(), nina, "")
 	if err != nil || len(nothing.Items) != 0 || nothing.Items == nil || nothing.Total != 0 {
 		t.Errorf("Nina = %+v, %v; want an empty list", nothing, err)
 	}
@@ -160,7 +160,7 @@ func TestAttention_OneItemAllReasons_FR012(t *testing.T) {
 	f.activities[priya.ID] = []Activity{act}
 	s := newService(t, f)
 
-	page, err := s.Attention(t.Context(), priya)
+	page, err := s.Attention(t.Context(), priya, "")
 
 	if err != nil || len(page.Items) != 2 {
 		t.Fatalf("Attention = %+v, %v; want 2 items", page, err)
@@ -200,7 +200,7 @@ func TestAttention_Order_FR012(t *testing.T) {
 	f.containers[priya.ID] = []Container{budget}
 	s := newService(t, f)
 
-	page, err := s.Attention(t.Context(), priya)
+	page, err := s.Attention(t.Context(), priya, "")
 
 	want := []string{"A-1004", "A-1003", "I-1001", "A-1002", "A-1005", "A-1006", "A-1001"}
 	if ids := itemIDs(page); err != nil || !slices.Equal(ids, want) {
@@ -218,7 +218,7 @@ func TestAttention_LineItemsThroughActivity_Assumption(t *testing.T) {
 	f.activities[priya.ID] = []Activity{act}
 	s := newService(t, f)
 
-	page, err := s.Attention(t.Context(), priya)
+	page, err := s.Attention(t.Context(), priya, "")
 
 	want := []HomeAttentionReason{{Kind: "missingFields", Missing: []MissingField{}, ItemsBelow: 2}}
 	if err != nil || len(page.Items) != 1 || page.Items[0].RecordType != "activity" || !reflect.DeepEqual(page.Items[0].Reasons, want) {
@@ -255,7 +255,7 @@ func TestMyActivities_Groups_FR014(t *testing.T) {
 	f.currencies[priya.ID] = Currency{Code: "EUR", Rate: rate(t, "0.92")}
 	s := newService(t, f)
 
-	view, err := s.MyActivities(t.Context(), priya)
+	view, err := s.MyActivities(t.Context(), priya, "")
 
 	if err != nil || view.Total != 6 {
 		t.Fatalf("MyActivities = %+v, %v; want 6 activities", view, err)
@@ -281,7 +281,7 @@ func TestMyActivities_Groups_FR014(t *testing.T) {
 	if got := view.Groups[1].Items[2]; !reflect.DeepEqual(got, want) {
 		t.Errorf("Launch film row = %+v\nwant %+v", got, want)
 	}
-	nothing, err := s.MyActivities(t.Context(), nina)
+	nothing, err := s.MyActivities(t.Context(), nina, "")
 	if err != nil || nothing.Total != 0 || nothing.Groups == nil || len(nothing.Groups) != 0 {
 		t.Errorf("Nina = %+v, %v; want no groups", nothing, err)
 	}
@@ -301,7 +301,7 @@ func TestMyActivities_UsesDisplayedStatus_EdgeCase(t *testing.T) {
 	f.activities[priya.ID] = []Activity{running, ongoing, done}
 	s := newService(t, f)
 
-	view, err := s.MyActivities(t.Context(), priya)
+	view, err := s.MyActivities(t.Context(), priya, "")
 
 	if err != nil || len(view.Groups) != 2 || view.Groups[0].Status != "inProgress" || view.Groups[0].Count != 2 ||
 		view.Groups[1].Status != "complete" || view.Groups[1].Items[0].ID != "A-1003" || !view.Groups[0].Items[0].Ongoing {

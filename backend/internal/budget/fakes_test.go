@@ -207,6 +207,13 @@ type fakeAccess struct {
 	hidden    map[string]bool
 	noView    bool            // the person does not hold globalBudgets.view
 	managers  map[string]bool // who holds globalBudgets.manage for All markets; nil: Carlos and Alex
+	allViews  bool            // the person holds globalBudgets.view for All markets
+	noFinance map[string]bool // plans whose finance the person does not see
+}
+
+func (f *fakeAccess) SeeAllMarkets(context.Context) bool { return f.allViews }
+func (f *fakeAccess) SeeFinanceIn(_ context.Context, plan PlanInfo) bool {
+	return !f.noFinance[plan.ID]
 }
 
 func (f *fakeAccess) ManageAll(context.Context) error { return f.manageAll }
@@ -232,4 +239,17 @@ func priyasAccess() *fakeAccess {
 		manageIn: map[string]error{planEurope: refusal(refusedAll), planChina: refusal(refusedAll), planBrazil: refusal(refusedAll)},
 		hidden:   map[string]bool{planChina: true, planBrazil: true},
 	}
+}
+
+// fakeSpending gives the plans it holds their committed and actual figures, in USD.
+type fakeSpending map[string]Spend
+
+func (f fakeSpending) PlanSpend(_ context.Context, planIDs []string) (map[string]Spend, error) {
+	spend := map[string]Spend{}
+	for _, id := range planIDs {
+		if s, found := f[id]; found {
+			spend[id] = s
+		}
+	}
+	return spend, nil
 }

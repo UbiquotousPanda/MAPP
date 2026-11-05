@@ -101,6 +101,7 @@ func TestClose_ReleasesWhatWasNotInvoiced_Contract_032_FR041(t *testing.T) {
 func TestDelete_ByStatus_AndRestore_Contract_032_FR042(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
+	strictOverspend(t, s, "")
 	approvedPR := approved(t, s)
 	priya := s.SignIn(t, priyasEmail)
 

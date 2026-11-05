@@ -16,6 +16,7 @@ const (
 	settingsName      = "Overspend control"
 	fieldDefaultMode  = "defaultMode"
 	fieldApprovalMode = "approvalOverPlannedCost"
+	fieldTolerance    = "tolerancePercent"
 	configurationNoun = "setting"
 )
 
@@ -86,6 +87,9 @@ func (in ConfigurationInput) problems() error {
 			problems.Add(fieldApprovalMode, MsgChooseMode)
 		}
 	}
+	if in.TolerancePercent != nil && !ValidTolerance(*in.TolerancePercent) {
+		problems.Add(fieldTolerance, MsgTolerance)
+	}
 	return problems.Err()
 }
 
@@ -94,6 +98,9 @@ func (in ConfigurationInput) applied(before Configuration) Configuration {
 	after.DefaultMode, _ = ParseMode(in.DefaultMode)
 	if in.ApprovalOverPlannedCost != nil {
 		after.ApprovalOverPlannedCost, _ = ParseMode(*in.ApprovalOverPlannedCost)
+	}
+	if in.TolerancePercent != nil {
+		after.TolerancePercent = *in.TolerancePercent
 	}
 	return after
 }
@@ -114,7 +121,8 @@ func (s *Service) saveChange(ctx context.Context, a actor.Actor, before, after C
 
 func configurationView(ctx context.Context, c Configuration) ConfigurationView {
 	view := ConfigurationView{DefaultMode: c.DefaultMode.Normalised(),
-		ApprovalOverPlannedCost: c.ApprovalOverPlannedCost.Normalised(), Version: c.Version,
+		ApprovalOverPlannedCost: c.ApprovalOverPlannedCost.Normalised(), TolerancePercent: c.TolerancePercent,
+		Version:   c.Version,
 		CanChange: authz.AvailableAnywhere(ctx, authz.SettingsManage)}
 	if !c.UpdatedAt.IsZero() && c.UpdatedBy.ID != actor.System.ID {
 		at, by := c.UpdatedAt, c.UpdatedBy
@@ -127,6 +135,13 @@ func configurationView(ctx context.Context, c Configuration) ConfigurationView {
 func (s *Service) RefusesOverPlannedCost(ctx context.Context) (bool, error) {
 	c, err := s.repo.Configuration(ctx)
 	return c.ApprovalOverPlannedCost.Refuses(), err
+}
+
+// TolerancePercent is how far over its budget planned cost may go before Refuse refuses, and how far over what
+// its line item has left a purchase request may go (demo-mvp #4); it joins the caller's transaction.
+func (s *Service) TolerancePercent(ctx context.Context) (int, error) {
+	c, err := s.repo.Configuration(ctx)
+	return c.TolerancePercent, err
 }
 
 // DefaultMode is the setting a new budget starts with (FR-007); it joins the caller's transaction.
@@ -146,5 +161,9 @@ func (s *Service) Limits(ctx context.Context, path Path) ([]Limit, error) {
 	if err != nil {
 		return nil, err
 	}
-	return LimitsOf(budgets, path, rates)
+	tolerance, err := s.TolerancePercent(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return LimitsOf(budgets, path, rates, tolerance)
 }

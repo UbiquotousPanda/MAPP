@@ -34,7 +34,11 @@ var reasonGroups = map[string]int{
 // its reasons. Items are ordered by their first reason's group, then the most recently changed first, then
 // by ID; all of them are returned (D-173). Line items never appear on their own: their problems count in
 // their activity (Assumptions).
-func (s *Service) Attention(ctx context.Context, a actor.Actor) (HomeAttentionPage, error) {
+func (s *Service) Attention(ctx context.Context, a actor.Actor, forText string) (HomeAttentionPage, error) {
+	f, forErr := ParseFor(forText)
+	if forErr != nil {
+		return HomeAttentionPage{}, forErr
+	}
 	var page HomeAttentionPage
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
 		c, err := s.converter(ctx, a)
@@ -45,36 +49,20 @@ func (s *Service) Attention(ctx context.Context, a actor.Actor) (HomeAttentionPa
 		if err != nil {
 			return err
 		}
-		containers, err := s.src.Containers(ctx, a, a.ID)
+		containers, err := s.containersFor(ctx, a, f, all)
 		if err != nil {
 			return err
 		}
-		owned, err := s.src.Activities(ctx, a, a.ID)
+		owned, err := s.activitiesFor(ctx, a, f)
 		if err != nil {
 			return err
 		}
 
-		items := []HomeAttentionItem{}
-		add := func(item HomeAttentionItem) {
-			if len(item.Reasons) > 0 {
-				items = append(items, item)
-			}
+		plans, err := s.ownedPlans(ctx, a, f, all)
+		if err != nil {
+			return err
 		}
-		for _, p := range all {
-			if p.OwnerID == a.ID {
-				add(planItem(p, c))
-			}
-		}
-		for _, container := range containers {
-			add(containerItem(container, c))
-		}
-		for _, act := range owned {
-			add(activityItem(act, c))
-		}
-		slices.SortFunc(items, func(x, y HomeAttentionItem) int {
-			return cmp.Or(cmp.Compare(reasonGroups[x.Reasons[0].Kind], reasonGroups[y.Reasons[0].Kind]),
-				y.ChangedAt.Compare(x.ChangedAt), strings.Compare(x.ID, y.ID))
-		})
+		items := attentionItems(plans, containers, owned, c)
 		page = HomeAttentionPage{Items: items, Total: len(items)}
 		return nil
 	})
@@ -82,6 +70,39 @@ func (s *Service) Attention(ctx context.Context, a actor.Actor) (HomeAttentionPa
 		return HomeAttentionPage{}, err
 	}
 	return page, nil
+}
+
+// attentionItems keeps the records with at least one reason, in display order.
+func attentionItems(plans []Plan, containers []Container, owned []Activity, c converter) []HomeAttentionItem {
+	items := []HomeAttentionItem{}
+	add := func(item HomeAttentionItem) {
+		if len(item.Reasons) > 0 {
+			items = append(items, item)
+		}
+	}
+	for _, p := range plans {
+		add(planItem(p, c))
+	}
+	for _, container := range containers {
+		add(containerItem(container, c))
+	}
+	for _, act := range owned {
+		add(activityItem(act, c))
+	}
+	slices.SortFunc(items, func(x, y HomeAttentionItem) int {
+		return cmp.Or(cmp.Compare(reasonGroups[x.Reasons[0].Kind], reasonGroups[y.Reasons[0].Kind]),
+			y.ChangedAt.Compare(x.ChangedAt), strings.Compare(x.ID, y.ID))
+	})
+	return items
+}
+
+// ownedPlans keeps the plans of all that one of the people of f owns.
+func (s *Service) ownedPlans(ctx context.Context, a actor.Actor, f For, all []Plan) ([]Plan, error) {
+	people, err := s.peopleFor(ctx, a, f)
+	if err != nil {
+		return nil, err
+	}
+	return slices.DeleteFunc(slices.Clone(all), func(p Plan) bool { return p.OwnerID == "" || !slices.Contains(people, p.OwnerID) }), nil
 }
 
 // planItem is the plan p with its reasons: over-allocated, over budget, missing fields.

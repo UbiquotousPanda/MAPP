@@ -82,10 +82,14 @@ type Control struct {
 	CanChange authz.Availability `json:"canChange"`
 }
 
-// Limit is a Refuse budget above an activity and what is left to plan in it; negative when already over (FR-014).
+// Limit is a budget above an activity and what is left to plan in it; negative when already over (FR-014).
+// LeftBeforeRefusing adds the tolerance for a Refuse budget and equals LeftToPlan for a Warn one (demo-mvp #4).
 type Limit struct {
-	Budget     errs.RecordRef `json:"budget"`
-	LeftToPlan money.Money    `json:"leftToPlan"`
+	Budget             errs.RecordRef `json:"budget"`
+	Mode               Mode           `json:"mode"`
+	Amount             money.Money    `json:"amount"`
+	LeftToPlan         money.Money    `json:"leftToPlan"`
+	LeftBeforeRefusing money.Money    `json:"leftBeforeRefusing"`
 }
 
 type Path struct {
@@ -93,14 +97,18 @@ type Path struct {
 	PlanCurrency                     string
 }
 
+// DefaultTolerancePercent is how far over its budget planned cost may go before Refuse refuses (demo-mvp #4).
+const DefaultTolerancePercent = 10
+
 type Configuration struct {
 	DefaultMode             Mode `json:"defaultMode"`
 	ApprovalOverPlannedCost Mode `json:"approvalOverPlannedCost"`
+	TolerancePercent        int  `json:"tolerancePercent"`
 	record.Meta
 }
 
 func DefaultConfiguration() Configuration {
-	return Configuration{DefaultMode: Warn, ApprovalOverPlannedCost: Warn,
+	return Configuration{DefaultMode: Warn, ApprovalOverPlannedCost: Warn, TolerancePercent: DefaultTolerancePercent,
 		Meta: record.Meta{Version: 1, CreatedBy: actor.System, UpdatedBy: actor.System}}
 }
 
@@ -113,6 +121,7 @@ func (c Configuration) normalised() Configuration {
 type ConfigurationView struct {
 	DefaultMode             Mode               `json:"defaultMode"`
 	ApprovalOverPlannedCost Mode               `json:"approvalOverPlannedCost"`
+	TolerancePercent        int                `json:"tolerancePercent"`
 	Version                 int                `json:"version"`
 	UpdatedAt               *time.Time         `json:"updatedAt"`
 	UpdatedBy               *actor.Actor       `json:"updatedBy"`
@@ -123,4 +132,5 @@ type ConfigurationInput struct {
 	Version                 int     `json:"version"`
 	DefaultMode             string  `json:"defaultMode"`
 	ApprovalOverPlannedCost *string `json:"approvalOverPlannedCost"`
+	TolerancePercent        *int    `json:"tolerancePercent"`
 }

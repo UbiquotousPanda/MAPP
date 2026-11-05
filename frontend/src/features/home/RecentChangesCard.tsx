@@ -9,8 +9,8 @@ import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import { isPlanningType, recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
 import { useHomeRecentChanges } from './api';
-import type { ActivityLogEntry, HomeScope } from './api';
-import { RECENT_CHANGES, initialsOf, recentSentence } from './home-text';
+import type { ActivityLogEntry, HomeFor, HomeScope } from './api';
+import { FOR_TEXT, RECENT_CHANGES, initialsOf, recentSentence } from './home-text';
 import styles from './RecentChangesCard.module.css';
 import { SectionError } from './SectionError';
 
@@ -18,12 +18,12 @@ import { SectionError } from './SectionError';
  * Recent changes (FR-015, FR-016): the 10 newest activity-log entries (feature 011) about the plans
  * in scope — who changed what, and when — each naming its record with a link while it exists.
  */
-export function RecentChangesCard({ scope }: { scope: HomeScope }) {
-  const changes = useHomeRecentChanges(scope);
+export function RecentChangesCard({ scope, who = 'me' }: { scope: HomeScope; who?: HomeFor }) {
+  const changes = useHomeRecentChanges(scope, who);
 
   return (
     <Card
-      title="Recent changes"
+      title={FOR_TEXT.recentChanges[who]}
       subtitle={RECENT_CHANGES.subtitle[scope]}
       actions={
         <LinkButton size="sm" to="/activity-log">

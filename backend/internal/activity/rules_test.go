@@ -295,6 +295,18 @@ func TestCheck_InactiveWorkflow_FR023(t *testing.T) {
 	}
 }
 
+// demo-mvp #3: under Warn, line items above the planned cost are advice shown before submitting, never a block.
+func TestCheck_LineItemsOverPlannedCostOnlyWarnUnderWarn_DemoMVP3(t *testing.T) {
+	t.Parallel()
+	in := readyInput()
+	in.overCostWarns = true
+	in.lineItems = LineItemFacts{Count: 1, PlannedCostPlan: usd("1000.01").Amount}
+	got := check(in)
+	if !got.Ready || len(got.Advice) != 1 || got.Advice[0].Code != ProblemNegativeUnassigned {
+		t.Errorf("check = %+v, want ready with the overage as advice", got)
+	}
+}
+
 // A positive unassigned planned cost is advice that never blocks; a negative one blocks (FR-024, D-204).
 func TestCheck_UnassignedPlannedCost_FR024(t *testing.T) {
 	t.Parallel()

@@ -10,7 +10,7 @@ import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
 import styles from './AttentionCard.module.css';
 import { useHomeAttention } from './api';
-import type { HomeAttentionItem } from './api';
+import type { HomeAttentionItem, HomeFor } from './api';
 import type { ReasonFormatters } from './attention-text';
 import {
   NOTHING_NEEDS_ATTENTION,
@@ -18,7 +18,7 @@ import {
   reasonLinkOf,
   reasonText,
 } from './attention-text';
-import { ATTENTION_SUBTITLE, SHOW_FEWER, viewAllText } from './home-text';
+import { FOR_TEXT, SHOW_FEWER, viewAllText } from './home-text';
 import { SectionError } from './SectionError';
 
 /**
@@ -33,13 +33,13 @@ const SHOWN = 5;
  * where each is fixed. The API sends them in order: declined, balance, budget, missing fields.
  * There is no page of them, so View all opens the rest on the card.
  */
-export function AttentionCard() {
-  const attention = useHomeAttention();
+export function AttentionCard({ who = 'me' }: { who?: HomeFor }) {
+  const attention = useHomeAttention(who);
   const { money, date } = useFormatters();
   const [showAll, setShowAll] = useState(false);
 
   return (
-    <Card title="Needs your attention" subtitle={ATTENTION_SUBTITLE}>
+    <Card title={FOR_TEXT.attention[who]} subtitle={FOR_TEXT.attentionSubtitle[who]}>
       {attention.isPending ? (
         <Skeleton lines={4} height="18px" />
       ) : attention.isError ? (

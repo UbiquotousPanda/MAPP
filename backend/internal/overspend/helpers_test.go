@@ -7,6 +7,7 @@ import (
 
 	"mapp/internal/activity"
 	"mapp/internal/campaign"
+	"mapp/internal/overspend"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )
@@ -84,4 +85,13 @@ func createActivity(t *testing.T, c *apitest.Client, initiativeID string, body m
 func created(t *testing.T, r *apitest.Response) activity.View {
 	t.Helper()
 	return decoded[activity.View](t, r, http.StatusCreated)
+}
+
+// noTolerance sets the tolerance to 0 % so the feature 037 tests keep refusing a cent over (demo-mvp #4).
+func noTolerance(t *testing.T, server *apitest.Server) {
+	t.Helper()
+	alex := server.SignIn(t, alexsEmail)
+	c := decoded[overspend.ConfigurationView](t, alex.Do(t, http.MethodGet, "/api/v1/overspend-configuration", nil), http.StatusOK)
+	decoded[overspend.ConfigurationView](t, alex.Do(t, http.MethodPut, "/api/v1/overspend-configuration", map[string]any{
+		"version": c.Version, "defaultMode": c.DefaultMode, "tolerancePercent": 0}), http.StatusOK)
 }

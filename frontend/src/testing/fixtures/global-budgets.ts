@@ -45,10 +45,13 @@ export const LUBRICANTS: BudgetAllocationRow = {
   amount: usd('1200000.00'),
   amountUsd: usd('1200000.00'),
   plannedCost: usd('460000.00'),
+  committed: usd('35652.17'),
+  actual: usd('30652.17'),
   leftToPlan: usd('740000.00'),
   budgetUsedPercent: '38.33',
   overspend: 'warn',
   version: 1,
+  canOpenPlan: true,
   access: { edit: AVAILABLE, remove: AVAILABLE },
 };
 
@@ -60,10 +63,13 @@ export const MOBILITY: BudgetAllocationRow = {
   amount: usd('800000.00'),
   amountUsd: usd('800000.00'),
   plannedCost: usd('210000.00'),
+  committed: usd('0.00'),
+  actual: usd('0.00'),
   leftToPlan: usd('590000.00'),
   budgetUsedPercent: '26.25',
   overspend: 'warn',
   version: 1,
+  canOpenPlan: true,
   access: { edit: AVAILABLE, remove: AVAILABLE },
 };
 

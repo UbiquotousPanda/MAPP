@@ -20,7 +20,11 @@ interface AllocationsProps {
   onRemove: (row: BudgetAllocationRow) => void;
 }
 
-/** One row per allocated plan the person can see, then "Other markets (n plans)" (FR-032, FR-033). */
+/**
+ * One row per local budget (allocated plan) the person can see, then "Other markets (n plans)" (FR-032,
+ * FR-033). Someone who sees global budgets for All markets gets every row; a plan outside their scope is
+ * shown without a link and read-only (demo-mvp #2).
+ */
 export function Allocations({ budget, onAllocate, onChange, onRemove }: AllocationsProps) {
   const { money } = useFormatters();
   const rows = budget.allocations;
@@ -51,7 +55,7 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
             <thead>
               <tr>
                 <th scope="col">Plan</th>
-                <th scope="col">Teams</th>
+                <th scope="col">Market / team</th>
                 <th scope="col">Owner</th>
                 <th scope="col">Status</th>
                 <th scope="col" className={styles.numeric}>
@@ -59,6 +63,12 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
                 </th>
                 <th scope="col" className={styles.numeric}>
                   Planned cost
+                </th>
+                <th scope="col" className={styles.numeric}>
+                  Committed
+                </th>
+                <th scope="col" className={styles.numeric}>
+                  Actual
                 </th>
                 <th scope="col" className={styles.numeric}>
                   Left to plan
@@ -75,9 +85,16 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
               {rows.map((row) => (
                 <tr key={row.id}>
                   <th scope="row">
-                    <Link to={`/plans/${encodeURIComponent(row.plan.id)}`} className={styles.name}>
-                      {row.plan.name}
-                    </Link>
+                    {row.canOpenPlan ? (
+                      <Link
+                        to={`/plans/${encodeURIComponent(row.plan.id)}`}
+                        className={styles.name}
+                      >
+                        {row.plan.name}
+                      </Link>
+                    ) : (
+                      row.plan.name
+                    )}
                   </th>
                   <td className={styles.teams}>
                     <TeamPills teams={row.teams} />
@@ -90,6 +107,8 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
                   </td>
                   <td className={styles.numeric}>{money(row.amount)}</td>
                   <td className={styles.numeric}>{money(row.plannedCost)}</td>
+                  <td className={styles.numeric}>{money(row.committed)}</td>
+                  <td className={styles.numeric}>{money(row.actual)}</td>
                   <td
                     className={`${styles.numeric} ${row.leftToPlan.amount.startsWith('-') ? styles.problem : ''}`}
                   >
@@ -102,12 +121,19 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
                     <ActionsMenu
                       label={row.plan.name}
                       items={[
-                        { label: 'Change allocation', onSelect: () => onChange(row) },
+                        {
+                          label: 'Change allocation',
+                          onSelect: () => onChange(row),
+                          disabled: !row.access.edit.available,
+                          hint: row.access.edit.reason || undefined,
+                        },
                         {
                           label: 'Remove allocation',
                           tone: 'danger',
                           separatorBefore: true,
                           onSelect: () => onRemove(row),
+                          disabled: !row.access.remove.available,
+                          hint: row.access.remove.reason || undefined,
                         },
                       ]}
                     />
@@ -127,6 +153,8 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
                   <td />
                   <td className={styles.numeric}>{money(other.amount)}</td>
                   <td className={styles.numeric}>{money(other.plannedCost)}</td>
+                  <td />
+                  <td />
                   <td />
                   <td />
                   <td />

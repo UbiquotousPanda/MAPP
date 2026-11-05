@@ -20,7 +20,7 @@ func TestSummary_OwnedActivitiesCoverAllPlans_EdgeCase(t *testing.T) {
 	s := newService(t, f)
 
 	for _, scope := range []string{"myTeams", "everything"} {
-		got, err := s.Summary(t.Context(), priya, scope)
+		got, err := s.Summary(t.Context(), priya, scope, "")
 
 		if c := countsText(got.ActivitiesOwned); err != nil || c != "1 (0 declined, 1 submitted) in 2026–2026" {
 			t.Errorf("%s: activities owned = %s, %v; want the activity outside her teams", scope, c, err)
@@ -47,8 +47,8 @@ func TestSummary_OwnedActivitiesYears_038_FR032_M5(t *testing.T) {
 		{ID: "A-2", Plan: in("P-1"), Status: "created"}, {ID: "A-3", Plan: in("P-3"), Status: "submitted"}}
 	s := newService(t, f)
 
-	got, err := s.Summary(t.Context(), priya, "myTeams")
-	none, noneErr := s.Summary(t.Context(), daniel, "myTeams")
+	got, err := s.Summary(t.Context(), priya, "myTeams", "")
+	none, noneErr := s.Summary(t.Context(), daniel, "myTeams", "")
 
 	if c := countsText(got.ActivitiesOwned); err != nil || c != "2 (1 declined, 0 submitted) in 2026–2027" {
 		t.Errorf("activities owned = %s, %v; want 2 in 2026–2027 (2031 is more than four years later)", c, err)
@@ -69,7 +69,7 @@ func TestSummary_BudgetUsed_FR006(t *testing.T) {
 	f.plans = []Plan{lubricants, joint}
 	s := newService(t, f)
 
-	got, err := s.Summary(t.Context(), sara, "myTeams")
+	got, err := s.Summary(t.Context(), sara, "myTeams", "")
 
 	want := PlannedCostTotal{PlanCount: 2, PlannedCost: money.USD(usd(t, "960000.00")),
 		PlanBudget: ptr(money.USD(usd(t, "2000000.00"))), BudgetUsedPercent: ptr(48)}
@@ -79,13 +79,13 @@ func TestSummary_BudgetUsed_FR006(t *testing.T) {
 
 	lubricants.PlannedCost = usdPtr(t, "1204800.00") // 100.4 % of 1,200,000.00
 	f.plans = []Plan{lubricants}
-	over, _ := s.Summary(t.Context(), priya, "myTeams")
+	over, _ := s.Summary(t.Context(), priya, "myTeams", "")
 	if p := over.PlannedCost; p.BudgetUsedPercent == nil || *p.BudgetUsedPercent != 100 || !p.OverBudget {
 		t.Errorf("100.4 %%: %+v; want 100 %% and over budget", p)
 	}
 	lubricants.PlannedCost = usdPtr(t, "1200000.00")
 	f.plans = []Plan{lubricants}
-	full, _ := s.Summary(t.Context(), priya, "myTeams")
+	full, _ := s.Summary(t.Context(), priya, "myTeams", "")
 	if p := full.PlannedCost; p.BudgetUsedPercent == nil || *p.BudgetUsedPercent != 100 || p.OverBudget {
 		t.Errorf("exactly the budget: %+v; want 100 %% and not over", p)
 	}
@@ -102,7 +102,7 @@ func TestSummary_PlansWithoutBudget_FR006(t *testing.T) {
 	f.plans = []Plan{withBudget, noBudget, nothing}
 	s := newService(t, f)
 
-	got, err := s.Summary(t.Context(), priya, "everything")
+	got, err := s.Summary(t.Context(), priya, "everything", "")
 
 	want := PlannedCostTotal{PlanCount: 3, PlannedCost: money.USD(usd(t, "500000.00")),
 		PlanBudget: ptr(money.USD(usd(t, "1000000.00"))), BudgetUsedPercent: ptr(50), PlansWithoutBudget: 2}
@@ -119,8 +119,8 @@ func TestSummary_NoBudgetAtAll_FR006(t *testing.T) {
 	f.plans = []Plan{p}
 	s := newService(t, f)
 
-	got, err := s.Summary(t.Context(), alex, "myTeams")
-	none, err2 := s.Summary(t.Context(), nina, "myTeams")
+	got, err := s.Summary(t.Context(), alex, "myTeams", "")
+	none, err2 := s.Summary(t.Context(), nina, "myTeams", "")
 
 	want := PlannedCostTotal{PlanCount: 1, PlannedCost: money.USD(usd(t, "250000.00")), PlansWithoutBudget: 1}
 	if err != nil || !reflect.DeepEqual(got.PlannedCost, want) {
@@ -144,7 +144,7 @@ func TestSummary_TotalsConvertedOnce_FR017(t *testing.T) {
 	f.currencies[priya.ID] = Currency{Code: "EUR", Rate: rate(t, "0.92")}
 	s := newService(t, f)
 
-	got, err := s.Summary(t.Context(), priya, "myTeams")
+	got, err := s.Summary(t.Context(), priya, "myTeams", "")
 
 	if err != nil || got.DisplayCurrency != "EUR" || got.PlannedCost.PlannedCost.Format() != "1,840.09 EUR" ||
 		got.PlannedCost.PlanBudget.Format() != "1,840.09 EUR" || *got.PlannedCost.BudgetUsedPercent != 100 {
@@ -160,7 +160,7 @@ func TestSummary_GettingStarted_FR020(t *testing.T) {
 	s := newService(t, f)
 	reason := func(a actor.Actor, scope string) string {
 		t.Helper()
-		got, err := s.Summary(t.Context(), a, scope)
+		got, err := s.Summary(t.Context(), a, scope, "")
 		if err != nil {
 			t.Fatalf("Summary: %v", err)
 		}
@@ -196,7 +196,7 @@ func TestSummary_InactiveDisplayCurrencyStaysInUse(t *testing.T) {
 	f.currencies[priya.ID] = Currency{Code: "GBP", Rate: rate(t, "0.79")} // GBP is inactive: the source still gives it
 	s := newService(t, f)
 
-	got, err := s.Summary(t.Context(), priya, "myTeams")
+	got, err := s.Summary(t.Context(), priya, "myTeams", "")
 
 	if err != nil || got.DisplayCurrency != "GBP" || got.PlannedCost.PlannedCost.Format() != "79.00 GBP" {
 		t.Errorf("display currency %s, planned %v, %v; want GBP in use", got.DisplayCurrency, got.PlannedCost.PlannedCost, err)

@@ -12,8 +12,9 @@ import { formatWhole } from '@/format/decimal';
 import { fieldHref, recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
 import { useHomeMyActivities } from './api';
-import type { MyActivityGroup, MyActivityRow } from './api';
+import type { HomeFor, MyActivityGroup, MyActivityRow } from './api';
 import {
+  FOR_TEXT,
   NO_ACTIVITIES,
   SHOW_FEWER,
   datesText,
@@ -31,13 +32,13 @@ const SHOWN = 5;
  * people see — Declined, Created, Submitted, Approved, In progress, Complete — with Complete
  * folded. "Activities I own" leads here while All work is not built (D-174).
  */
-export function MyActivitiesCard() {
-  const activities = useHomeMyActivities();
+export function MyActivitiesCard({ who = 'me' }: { who?: HomeFor }) {
+  const activities = useHomeMyActivities(who);
 
   return (
     // The card's place on Home, for the "Activities I own" card's link.
     <div id="my-activities" className={styles.anchor}>
-      <Card title="My activities" subtitle="Activities you own, by status">
+      <Card title={FOR_TEXT.activities[who]} subtitle={FOR_TEXT.activitiesSubtitle[who]}>
         {activities.isPending ? (
           <Skeleton lines={4} height="18px" />
         ) : activities.isError ? (

@@ -51,3 +51,16 @@ func TestAvailable(t *testing.T) {
 		})
 	}
 }
+
+// demo-mvp #4: a line may exceed what its line item has left by the tolerance of its own amount, not more.
+func TestClaimProblem_ToleranceOfTheAmount_DemoMVP4(t *testing.T) {
+	t.Parallel()
+	li := LineItemFacts{ID: "L-1", Currency: "USD", PlannedCost: amount(t, "1000.00")}
+	b := balance{rates: money.Rates{}, tolerancePercent: 10}
+	for text, wantRefused := range map[string]bool{"1000.00": false, "1100.00": false, "1112.00": true} {
+		got, err := b.claimProblem(li, money.Money{Amount: amount(t, text), Currency: "USD"}, "")
+		if err != nil || (got != "") != wantRefused {
+			t.Errorf("claimProblem(%s) = %q, %v; want refused %v", text, got, err, wantRefused)
+		}
+	}
+}
