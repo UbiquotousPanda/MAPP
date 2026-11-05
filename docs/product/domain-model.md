@@ -121,12 +121,17 @@ Created / Declined ──Submit, when no level needs a decision──► Approve
 
 ### 2.4 Line item
 
-Line items have **no approval of their own**: they are approved as part of their activity. They show:
+Line items are approved **within their activity's approval rounds** (feature 053, D-402): the approver of an
+activity's round ticks the line items they approve, all ticked by default, and an unticked one stays **Not
+approved** while the activity is approved. A line item added to an approved activity, or a copy, starts Not
+approved; **Send line items for approval** sends the activity's Not approved line items in one round on the
+activity's workflow while the activity stays Approved. They show:
 
 | Status | Values | Rule |
 |---|---|---|
 | **Completeness** | All filled in · *n* fields needed | All "needed to submit" fields filled. |
-| **SWBS request** | Not requested · Waiting for activity approval · Ready to send to GSAP · SWBS code received | *SWBS code received* once GSAP returned the line item's code — it wins over everything else and stays when the activity leaves approval, the line item is edited, moved, deleted and restored; "Request SWBS code" can then no longer be switched off. Otherwise *Not requested* when "Request SWBS code" is off, *Ready…* once the activity is approved (also while In progress or Complete), *Waiting…* before. Until live GSAP integration, a **simulated GSAP** answers: a person with "Import GSAP extracts" sends the ready line items from the Financials page or one line item from its page, and each receives `SIM-<company code>-<nnnn>` at once, numbered per company code (feature 030, ADR-0016). Copies never take the code. |
+| **Approval** | Approved · Not approved | *Approved* once a round of its activity approved it with the line item ticked, and only while the activity is approved (also In progress or Complete); editing keeps it. *Not approved* otherwise. |
+| **SWBS request** | Not requested · Waiting for activity approval · Ready to send to GSAP · SWBS code received | *SWBS code received* once GSAP returned the line item's code — it wins over everything else and stays when the activity leaves approval, the line item is edited, moved, deleted and restored; "Request SWBS code" can then no longer be switched off. Otherwise *Not requested* when "Request SWBS code" is off, *Ready…* once the line item is Approved, *Waiting…* before. Until live GSAP integration, a **simulated GSAP** answers: a person with "Import GSAP extracts" sends the ready line items from the Financials page or one line item from its page, and each receives `SIM-<company code>-<nnnn>` at once, numbered per company code (feature 030, ADR-0016). Copies never take the code. |
 
 ### 2.4a Purchase request (feature 032)
 
