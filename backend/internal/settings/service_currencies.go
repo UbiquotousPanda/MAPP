@@ -183,6 +183,9 @@ func (s *Service) DeleteCurrency(ctx context.Context, a actor.Actor, code string
 		entry, err = s.history.MoveToBin(ctx, a, currencyKind, c.Code)
 		return err
 	})
+	if err == nil {
+		s.asOf.note(entry.DeletedAt)
+	}
 	return entry, err
 }
 

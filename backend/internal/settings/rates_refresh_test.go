@@ -60,9 +60,7 @@ func TestListCurrentRates_AsOfIsTheNewestStoredChangeNotTheStart_Issue183(t *tes
 	refreshedAt := f.clock.now
 	f.clock.now = refreshedAt.Add(2 * time.Hour)
 
-	s := f.service
-	restarted := NewService(history.Tools{Tx: s.tx, IDs: s.ids, Log: s.history, Now: s.now}, s.repo)
-	page, err := restarted.ListCurrentRates(t.Context(), alex)
+	page, err := restartedService(f).ListCurrentRates(t.Context(), alex)
 
 	if err != nil || !page.AsOf.Equal(refreshedAt) {
 		t.Errorf("as of after a restart = %v, %v, want the stored refresh %v", page.AsOf, err, refreshedAt)
@@ -165,6 +163,72 @@ func TestRefreshRates_StayNearTheRateTheyStartedFromAllDay_Demo10(t *testing.T) 
 		moved := now.Rate.Micros() - was.Rate.Micros()
 		if limit := was.Rate.Micros() * maxDriftBasisPoints / basisPointsPerUnit; moved > limit || moved < -limit {
 			t.Errorf("%s moved %d after a day of refreshes, want within ±%d of %v", code, moved, limit, was.Rate)
+		}
+	}
+}
+
+func restartedService(f *fixture) *Service {
+	s := f.service
+	return NewService(history.Tools{Tx: s.tx, IDs: s.ids, Log: s.history, Now: s.now}, s.repo)
+}
+
+func TestListCurrentRates_AsOfNeverMovesBackAfterADelete_Issue183(t *testing.T) {
+	t.Parallel()
+	f := feedFixture(t)
+	f.clock.now = october20.Add(time.Hour)
+	added, err := f.service.AddRate(t.Context(), alex, "GBP", RateInput{Date: "2026-10-21", Rate: "0.81"})
+	if err != nil {
+		t.Fatalf("AddRate() error = %v", err)
+	}
+	f.clock.now = october20.Add(2 * time.Hour)
+	if _, deleteErr := f.service.DeleteRate(t.Context(), alex, added.ID); deleteErr != nil {
+		t.Fatalf("DeleteRate() error = %v", deleteErr)
+	}
+	deletedAt := f.clock.now
+	f.clock.now = deletedAt.Add(time.Hour)
+
+	page, err := f.service.ListCurrentRates(t.Context(), alex)
+	restarted, restartErr := restartedService(f).ListCurrentRates(t.Context(), alex)
+
+	if err != nil || !page.AsOf.Equal(deletedAt) {
+		t.Errorf("as of after the delete = %v, %v, want the delete %v", page.AsOf, err, deletedAt)
+	}
+	if restartErr != nil || !restarted.AsOf.Equal(deletedAt) {
+		t.Errorf("as of after a restart = %v, %v, want the delete %v", restarted.AsOf, restartErr, deletedAt)
+	}
+}
+
+func TestRefreshRates_RepeatAfterARestartSavesNothingAndDriftsFromTheBase_Issue183(t *testing.T) {
+	t.Parallel()
+	f := feedFixture(t)
+	before, _ := f.service.ListCurrentRates(t.Context(), alex)
+	f.clock.now = october20.Add(15 * time.Minute)
+	first, err := f.service.RefreshRates(t.Context(), alex)
+	if err != nil {
+		t.Fatalf("RefreshRates() error = %v", err)
+	}
+	imports, _ := f.service.repo.ListRateImports(t.Context())
+	restarted := restartedService(f)
+	f.clock.now = f.clock.now.Add(20 * time.Second)
+
+	again, err := restarted.RefreshRates(t.Context(), alex)
+
+	if err != nil || !again.AsOf.Equal(f.clock.now) || ratePage(t, again, "EUR").Rate != ratePage(t, first, "EUR").Rate {
+		t.Errorf("repeat after a restart = %v as of %v, EUR %v; want no error, as of %v, EUR %v",
+			err, again.AsOf, ratePage(t, again, "EUR").Rate, f.clock.now, ratePage(t, first, "EUR").Rate)
+	}
+	if after, _ := f.service.repo.ListRateImports(t.Context()); len(after) != len(imports) {
+		t.Errorf("imports = %d, want %d: a repeat after a restart saves no import", len(after), len(imports))
+	}
+
+	f.clock.now = october20.Add(16 * time.Minute)
+	next, err := restarted.RefreshRates(t.Context(), alex)
+	if err != nil {
+		t.Fatalf("next minute RefreshRates() error = %v", err)
+	}
+	for _, row := range simulatedRows(before.Items, date.MustParse("2026-10-20"), f.clock.now) {
+		if got := ratePage(t, next, row.To).Rate.String(); got != row.Rate {
+			t.Errorf("%s = %s after the next minute's refresh, want %s, drifted from the base", row.To, got, row.Rate)
 		}
 	}
 }

@@ -230,6 +230,9 @@ func (s *Service) DeleteRate(ctx context.Context, a actor.Actor, id string) (his
 		entry, err = s.history.MoveToBin(ctx, a, exchangeRateKind, r.ID)
 		return err
 	})
+	if err == nil {
+		s.asOf.note(entry.DeletedAt)
+	}
 	return entry, err
 }
 

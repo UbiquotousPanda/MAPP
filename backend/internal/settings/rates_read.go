@@ -42,6 +42,9 @@ func (s *Service) CurrentRates(ctx context.Context) ([]RateInfo, error) {
 func (s *Service) currentRates(ctx context.Context) ([]RateInfo, time.Time, error) {
 	var infos []RateInfo
 	var changed time.Time
+	if err := s.seedRateClock(ctx); err != nil {
+		return nil, time.Time{}, err
+	}
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
 		currencies, err := s.repo.ListCurrencies(ctx)
 		if err != nil {
