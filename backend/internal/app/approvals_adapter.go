@@ -9,6 +9,7 @@ import (
 	"mapp/internal/activity"
 	"mapp/internal/approval"
 	"mapp/internal/history"
+	"mapp/internal/lineitem"
 	"mapp/internal/plan"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
@@ -31,6 +32,8 @@ type approvalsActivities struct {
 	rates      func(context.Context) (money.Rates, error)
 	check      submitCheck
 	now        clock.Clock
+
+	approveLineItems func(ctx context.Context, a actor.Actor, choice lineitem.ApprovalChoice) error
 }
 
 var _ approval.Activities = (*approvalsActivities)(nil)
@@ -169,6 +172,10 @@ func (p *approvalsActivities) facts(ctx context.Context, act activity.Activity) 
 	if err != nil {
 		return approval.ActivityFacts{}, err
 	}
+	items, err := p.lineItemFacts(ctx, act.ID)
+	if err != nil {
+		return approval.ActivityFacts{}, err
+	}
 	facts := approval.ActivityFacts{
 		ID: act.ID, Name: act.Name, Status: string(act.Status), DisplayStatus: displayStatus(act, date.Today(p.now())),
 		Path: path, OwnerID: act.OwnerID, StartDate: act.StartDate, EndDate: act.EndDate, Ongoing: act.Ongoing,
@@ -176,7 +183,7 @@ func (p *approvalsActivities) facts(ctx context.Context, act activity.Activity) 
 		Description: act.Description,
 		WorkflowID:  act.ApprovalWorkflowID, Meta: act.Meta,
 		Plan:           approval.PlanFacts{ID: pl.ID, TeamIDs: slices.Clone(pl.TeamIDs), OwnerID: pl.OwnerID, CreatedByID: pl.CreatedBy.ID},
-		ActivityTypeID: act.ActivityTypeID, BusinessUnits: units,
+		ActivityTypeID: act.ActivityTypeID, BusinessUnits: units, LineItems: items,
 		Access: plan.AccessFacts(pl),
 	}
 	if act.ActivityTypeID != "" {

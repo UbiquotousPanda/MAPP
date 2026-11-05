@@ -40,6 +40,7 @@ type AddLineItemsParams struct {
 	SwbsCode              string
 	SwbsRequestedAt       *time.Time
 	SwbsReceivedAt        *time.Time
+	Approval              string
 }
 
 const deleteLineItem = `-- name: DeleteLineItem :exec
@@ -91,7 +92,7 @@ func (q *Queries) InsertLineItemSpreadMonths(ctx context.Context, arg InsertLine
 }
 
 const listLineItems = `-- name: ListLineItems :many
-SELECT line_items.id, line_items.activity_id, line_items.name, line_items.owner_id, line_items.description, line_items.currency, line_items.planned_cost_minor, line_items.spread_method, line_items.attributes, line_items.contracted_amount_minor, line_items.request_swbs, line_items.finance_budget_year, line_items.finance_budget_item_id, line_items.version, line_items.created_at, line_items.created_by_id, line_items.created_by_name, line_items.updated_at, line_items.updated_by_id, line_items.updated_by_name, line_items.swbs_code, line_items.swbs_requested_at, line_items.swbs_received_at,
+SELECT line_items.id, line_items.activity_id, line_items.name, line_items.owner_id, line_items.description, line_items.currency, line_items.planned_cost_minor, line_items.spread_method, line_items.attributes, line_items.contracted_amount_minor, line_items.request_swbs, line_items.finance_budget_year, line_items.finance_budget_item_id, line_items.version, line_items.created_at, line_items.created_by_id, line_items.created_by_name, line_items.updated_at, line_items.updated_by_id, line_items.updated_by_name, line_items.swbs_code, line_items.swbs_requested_at, line_items.swbs_received_at, line_items.approval,
     coalesce(spread.months, '{}')::text[] AS spread_months,
     coalesce(spread.amounts, '{}')::bigint[] AS spread_amounts
 FROM line_items
@@ -150,6 +151,7 @@ func (q *Queries) ListLineItems(ctx context.Context, arg ListLineItemsParams) ([
 			&i.LineItem.SwbsCode,
 			&i.LineItem.SwbsRequestedAt,
 			&i.LineItem.SwbsReceivedAt,
+			&i.LineItem.Approval,
 			&i.SpreadMonths,
 			&i.SpreadAmounts,
 		); err != nil {
@@ -164,7 +166,7 @@ func (q *Queries) ListLineItems(ctx context.Context, arg ListLineItemsParams) ([
 }
 
 const listLineItemsInScope = `-- name: ListLineItemsInScope :many
-SELECT line_items.id, line_items.activity_id, line_items.name, line_items.owner_id, line_items.description, line_items.currency, line_items.planned_cost_minor, line_items.spread_method, line_items.attributes, line_items.contracted_amount_minor, line_items.request_swbs, line_items.finance_budget_year, line_items.finance_budget_item_id, line_items.version, line_items.created_at, line_items.created_by_id, line_items.created_by_name, line_items.updated_at, line_items.updated_by_id, line_items.updated_by_name, line_items.swbs_code, line_items.swbs_requested_at, line_items.swbs_received_at,
+SELECT line_items.id, line_items.activity_id, line_items.name, line_items.owner_id, line_items.description, line_items.currency, line_items.planned_cost_minor, line_items.spread_method, line_items.attributes, line_items.contracted_amount_minor, line_items.request_swbs, line_items.finance_budget_year, line_items.finance_budget_item_id, line_items.version, line_items.created_at, line_items.created_by_id, line_items.created_by_name, line_items.updated_at, line_items.updated_by_id, line_items.updated_by_name, line_items.swbs_code, line_items.swbs_requested_at, line_items.swbs_received_at, line_items.approval,
     coalesce((SELECT array_agg(m.month ORDER BY m.month) FROM line_item_spread_months m
         WHERE m.line_item_id = line_items.id), '{}')::text[] AS spread_months,
     coalesce((SELECT array_agg(m.amount_minor ORDER BY m.month) FROM line_item_spread_months m
@@ -229,6 +231,7 @@ func (q *Queries) ListLineItemsInScope(ctx context.Context, arg ListLineItemsInS
 			&i.LineItem.SwbsCode,
 			&i.LineItem.SwbsRequestedAt,
 			&i.LineItem.SwbsReceivedAt,
+			&i.LineItem.Approval,
 			&i.SpreadMonths,
 			&i.SpreadAmounts,
 		); err != nil {
@@ -247,9 +250,9 @@ INSERT INTO line_items (
     id, activity_id, name, owner_id, description, currency, planned_cost_minor, spread_method, attributes,
     contracted_amount_minor, request_swbs, finance_budget_year, finance_budget_item_id, version, created_at,
     created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, swbs_code, swbs_requested_at,
-    swbs_received_at
+    swbs_received_at, approval
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
 )
 ON CONFLICT (id) DO UPDATE SET
     activity_id = excluded.activity_id,
@@ -273,7 +276,8 @@ ON CONFLICT (id) DO UPDATE SET
     updated_by_name = excluded.updated_by_name,
     swbs_code = excluded.swbs_code,
     swbs_requested_at = excluded.swbs_requested_at,
-    swbs_received_at = excluded.swbs_received_at
+    swbs_received_at = excluded.swbs_received_at,
+    approval = excluded.approval
 `
 
 type PutLineItemParams struct {
@@ -300,6 +304,7 @@ type PutLineItemParams struct {
 	SwbsCode              string
 	SwbsRequestedAt       *time.Time
 	SwbsReceivedAt        *time.Time
+	Approval              string
 }
 
 func (q *Queries) PutLineItem(ctx context.Context, arg PutLineItemParams) error {
@@ -327,6 +332,7 @@ func (q *Queries) PutLineItem(ctx context.Context, arg PutLineItemParams) error 
 		arg.SwbsCode,
 		arg.SwbsRequestedAt,
 		arg.SwbsReceivedAt,
+		arg.Approval,
 	)
 	return err
 }

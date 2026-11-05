@@ -22,11 +22,12 @@ type Viewer struct {
 }
 
 type ActionSet struct {
-	Submit   ActionAvailability `json:"submit"`
-	Resubmit ActionAvailability `json:"resubmit"`
-	Approve  ActionAvailability `json:"approve"`
-	Decline  ActionAvailability `json:"decline"`
-	Recall   ActionAvailability `json:"recall"`
+	Submit        ActionAvailability `json:"submit"`
+	Resubmit      ActionAvailability `json:"resubmit"`
+	Approve       ActionAvailability `json:"approve"`
+	Decline       ActionAvailability `json:"decline"`
+	Recall        ActionAvailability `json:"recall"`
+	SendLineItems ActionAvailability `json:"sendLineItems,omitzero"`
 }
 
 type SubjectView struct {
@@ -51,24 +52,26 @@ type Section struct {
 	Viewer         Viewer       `json:"viewer"`
 	Actions        ActionSet    `json:"actions"`
 
-	OverPlannedCost []Overage `json:"-"`
+	OverPlannedCost []Overage       `json:"-"`
+	LineItems       []RoundLineItem `json:"-"`
 }
 
 type ActivityApproval struct {
-	ActivityID      string       `json:"activityId"`
-	ActivityName    string       `json:"activityName"`
-	ActivityVersion int          `json:"activityVersion"`
-	Status          string       `json:"status"`
-	DisplayStatus   string       `json:"displayStatus"`
-	OwnerID         string       `json:"ownerId"`
-	Owner           *PersonView  `json:"owner"`
-	Workflow        *WorkflowRef `json:"workflow"`
-	UpcomingLevels  []LevelView  `json:"upcomingLevels"`
-	Rounds          []RoundView  `json:"rounds"`
-	LatestDecline   *DeclineNote `json:"latestDecline"`
-	Viewer          Viewer       `json:"viewer"`
-	Actions         ActionSet    `json:"actions"`
-	OverPlannedCost []Overage    `json:"overPlannedCost"`
+	ActivityID      string          `json:"activityId"`
+	ActivityName    string          `json:"activityName"`
+	ActivityVersion int             `json:"activityVersion"`
+	Status          string          `json:"status"`
+	DisplayStatus   string          `json:"displayStatus"`
+	OwnerID         string          `json:"ownerId"`
+	Owner           *PersonView     `json:"owner"`
+	Workflow        *WorkflowRef    `json:"workflow"`
+	UpcomingLevels  []LevelView     `json:"upcomingLevels"`
+	Rounds          []RoundView     `json:"rounds"`
+	LatestDecline   *DeclineNote    `json:"latestDecline"`
+	Viewer          Viewer          `json:"viewer"`
+	Actions         ActionSet       `json:"actions"`
+	OverPlannedCost []Overage       `json:"overPlannedCost"`
+	LineItems       []RoundLineItem `json:"lineItems"`
 }
 
 // Overage is an activity whose line items exceed its planned cost (contract ActivityOverage).
@@ -83,6 +86,7 @@ func activityApproval(sec Section) ActivityApproval {
 		Status: sec.Subject.Status, DisplayStatus: sec.Subject.DisplayStatus, OwnerID: sec.OwnerID, Owner: sec.Owner,
 		Workflow: sec.Workflow, UpcomingLevels: sec.UpcomingLevels, Rounds: sec.Rounds, LatestDecline: sec.LatestDecline,
 		Viewer: sec.Viewer, Actions: sec.Actions, OverPlannedCost: append([]Overage{}, sec.OverPlannedCost...),
+		LineItems: append([]RoundLineItem{}, sec.LineItems...),
 	}
 }
 
@@ -109,6 +113,7 @@ type Submission struct {
 	Outcomes              []SubmissionLevel `json:"outcomes"`
 	ApprovedAutomatically bool              `json:"approvedAutomatically"`
 	Replaces              *ReplacedRound    `json:"replaces"`
+	LineItems             []errs.RecordRef  `json:"lineItems"`
 }
 
 // ReplacedRound is the open round a re-submission would end.
@@ -137,10 +142,20 @@ type SubmitInput struct {
 	Comment string `json:"comment"`
 }
 
+// DecisionInput's ApprovedLineItemIDs is nil when the request leaves them out: every line item is approved.
 type DecisionInput struct {
-	RoundID string `json:"roundId"`
-	Level   *int   `json:"level"`
-	Comment string `json:"comment"`
+	RoundID             string   `json:"roundId"`
+	Level               *int     `json:"level"`
+	Comment             string   `json:"comment"`
+	ApprovedLineItemIDs []string `json:"approvedLineItemIds"`
+}
+
+// RoundLineItem is a line item the open round decides; HeldBack when an earlier decision left it unticked.
+type RoundLineItem struct {
+	ID          string      `json:"id"`
+	Name        string      `json:"name"`
+	PlannedCost money.Money `json:"plannedCost"`
+	HeldBack    bool        `json:"heldBack"`
 }
 
 // SubjectDecision is an approval (Action ActionApproved) or a decline (ActionDeclined) of a record's open round.

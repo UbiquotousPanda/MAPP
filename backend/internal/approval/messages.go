@@ -34,6 +34,12 @@ const (
 	approvedNoRecallMessage = "Approved activities can't be recalled. " +
 		"Changing its planned cost or dates sends it back for approval."
 
+	notDecidedMessage = "Line item %s is not waiting for this approval. Reload the page and try again."
+	heldBackDetails   = " · not approved: %s"
+	lineItemsOfText   = "line items %s of %s"
+	lineItemsSentVerb = "sent line items for approval"
+	lineItemsSentText = "%s sent %s for approval"
+
 	cancelledNote = "Approval round %d was cancelled because the activity was deleted — submit it for approval again."
 
 	notificationGoneMessage = "This notification no longer exists."

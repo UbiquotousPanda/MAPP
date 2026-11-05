@@ -79,6 +79,7 @@ func (s *PostgresStore) PutRound(ctx context.Context, r Round) error {
 		Facts: facts, ReminderDays: r.ReminderDays, EscalationDays: r.EscalationDays, AutoApproved: r.AutoApproved,
 		Version: r.Version, CreatedAt: r.CreatedAt, CreatedByID: r.CreatedBy.ID, CreatedByName: r.CreatedBy.Name,
 		UpdatedAt: r.UpdatedAt, UpdatedByID: r.UpdatedBy.ID, UpdatedByName: r.UpdatedBy.Name,
+		LineItemIds: nonNilIDs(r.LineItemIDs), HeldBackLineItemIds: nonNilIDs(r.HeldBack),
 	})
 	if err != nil {
 		return fmt.Errorf("save approval round %s: %w", r.ID, err)
@@ -147,6 +148,7 @@ func roundsFromRows(rows []sqlcdb.ApprovalRound) ([]Round, error) {
 			SubmittedAt: row.SubmittedAt, SubmittedBy: actor.Actor{ID: row.SubmittedByID, Name: row.SubmittedByName},
 			Comment: row.Comment, EndedAt: row.EndedAt, ReminderDays: row.ReminderDays,
 			EscalationDays: row.EscalationDays, AutoApproved: row.AutoApproved,
+			LineItemIDs: row.LineItemIds, HeldBack: row.HeldBackLineItemIds,
 			Meta: record.Meta{
 				Version:   row.Version,
 				CreatedAt: row.CreatedAt,

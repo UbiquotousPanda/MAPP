@@ -40,7 +40,7 @@ func roundView(round Round, entries []Action, rc ruleContext) RoundView {
 		CurrentLevel: round.CurrentLevel, LevelCount: len(round.Levels),
 		Levels: make([]ChainLevel, 0, len(round.Levels)), History: make([]HistoryEntryView, 0, len(entries)),
 		Facts: factsView(round.Facts, rc), ReminderDays: round.ReminderDays, EscalationDays: round.EscalationDays,
-		AutoApproved: round.AutoApproved,
+		AutoApproved: round.AutoApproved, LineItemIDs: nonNilIDs(round.LineItemIDs),
 	}
 	for _, l := range round.Levels {
 		view.Levels = append(view.Levels, chainLevel(round, l, entries, rc))

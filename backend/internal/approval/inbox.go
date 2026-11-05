@@ -83,7 +83,7 @@ func (s *Service) Preview(ctx context.Context, a actor.Actor, activityID string)
 			return err
 		}
 		preview = Preview{
-			Activity: previewActivity(facts, check, sec.Owner, shown), LineItems: shownItems(items, shown),
+			Activity: previewActivity(facts, check, sec.Owner, shown), LineItems: withApproval(shownItems(items, shown), facts),
 			UnassignedPlannedCost: shown.optional(facts.UnassignedPlannedCost), Approval: activityApproval(sec),
 		}
 		return nil

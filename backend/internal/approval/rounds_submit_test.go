@@ -94,6 +94,7 @@ func TestSubmission_ListsLevelsAndNote_FR011(t *testing.T) {
 			{Number: 1, Label: "Level 1", Outcome: ResolutionDecide, Approvers: []PersonView{{ID: carlos.ID, Name: "Carlos Mendes", Initials: "CM", Active: true}}, Mode: ModeAny, Excluded: []ExcludedView{}},
 			{Number: 2, Label: "Level 2", Outcome: ResolutionDecide, Approvers: []PersonView{{ID: alex.ID, Name: "Alex Morgan", Initials: "AM", Active: true}}, Mode: ModeAny, Excluded: []ExcludedView{}},
 		},
+		LineItems: []errs.RecordRef{},
 	}
 	if !reflect.DeepEqual(submission, want) {
 		t.Errorf("submission =\n%+v\nwant\n%+v", submission, want)

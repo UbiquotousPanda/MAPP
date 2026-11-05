@@ -7,8 +7,7 @@ import (
 	"mapp/internal/history"
 )
 
-// Moving a line item to another activity (a split, 016 FR-028) changes only its activity: its ID, currency,
-// planned cost, spread and SWBS request stay as they are.
+// Moving a line item to another activity (a split, 016 FR-028) changes only its activity, nothing else.
 func TestMoveToActivity_KeepsIDsValuesSpreads_FR028(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -47,9 +46,8 @@ func TestMoveToActivity_LogsMoved_FR030(t *testing.T) {
 	}
 }
 
-// A moved line item's SWBS request status follows its new activity: from a Created activity (waiting for
-// approval) to an Approved one (ready to send) (FR-029).
-func TestMoveToActivity_SwbsFollowsNewActivity_FR029(t *testing.T) {
+// A moved line item's SWBS status follows its new activity and its own approval (FR-029, D-402).
+func TestMoveToActivity_SwbsFollowsNewActivity_FR029_053_FR005(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
 	agency := f.create(t, priya, launchFilm, input("Agency fee", "EUR", "23000.00"))
@@ -62,12 +60,11 @@ func TestMoveToActivity_SwbsFollowsNewActivity_FR029(t *testing.T) {
 	}
 
 	details, err := f.service.Get(t.Context(), priya, agency.ID)
-	if err != nil || details.LineItem.SwbsStatus != SwbsReadyToSend || details.Activity.ID != socialOnAir {
-		t.Errorf("after the move: %s under %s, %v; want readyToSend under %s", details.LineItem.SwbsStatus, details.Activity.ID, err, socialOnAir)
+	if err != nil || details.LineItem.SwbsStatus != SwbsWaitingForApproval || details.Activity.ID != socialOnAir {
+		t.Errorf("after the move: %s under %s, %v; want waitingForApproval under %s", details.LineItem.SwbsStatus, details.Activity.ID, err, socialOnAir)
 	}
 }
 
-// A line item that is not stored is refused and nothing moves.
 func TestMoveToActivity_UnknownLineItemRefused(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)

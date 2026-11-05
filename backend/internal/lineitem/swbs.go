@@ -50,7 +50,7 @@ func SwbsStatusOf(li LineItem, f ActivityFacts) SwbsStatus {
 		return SwbsReceived
 	case !li.RequestSwbs:
 		return SwbsNotRequested
-	case f.Status == activityApproved:
+	case IsApproved(li, f.Status):
 		return SwbsReadyToSend
 	}
 	return SwbsWaitingForApproval

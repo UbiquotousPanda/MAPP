@@ -61,6 +61,10 @@ func activityGates(pr PurchaseRequest, facts map[string]LineItemFacts) []Problem
 			problems = append(problems, Problem{Group: groupActivity, RecordID: f.ActivityID,
 				Message: fmt.Sprintf(msgActivityNotApproved, f.ActivityName)})
 		}
+		if f.ActivityStatus == activityApproved && !f.LineItemApproved {
+			problems = append(problems, Problem{Group: groupLineItem, RecordID: l.LineItemID,
+				Message: fmt.Sprintf(msgLineItemNotApproved, l.LineItemID, f.Name)})
+		}
 		if f.SwbsCode == "" {
 			problems = append(problems, Problem{Group: groupLineItem, RecordID: l.LineItemID,
 				Message: fmt.Sprintf(msgNoSwbs, l.LineItemID, f.Name, swbsStatusWords[f.SwbsStatus])})

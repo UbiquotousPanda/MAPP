@@ -65,10 +65,10 @@ func copyNameSuffix(n int) string {
 	return fmt.Sprintf(" (copy %d)", n)
 }
 
-// copyOf shares no list, map or pointer with li and leaves out the SWBS code: every copy path uses it.
+// copyOf shares no list, map or pointer with li and leaves out the SWBS code and approval: every copy path uses it.
 func copyOf(li LineItem) LineItem {
 	dup := li
-	dup.Swbs = Swbs{}
+	dup.Swbs, dup.Approved = Swbs{}, false
 	dup.Spread.Months = slices.Clone(li.Spread.Months)
 	dup.Attributes = maps.Clone(li.Attributes)
 	if li.ContractedAmount != nil {

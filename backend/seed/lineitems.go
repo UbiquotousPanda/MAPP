@@ -110,6 +110,7 @@ func (d *demo) lineItemFields(l demoLineItem, act activity.Activity, rate money.
 		ActivityID: act.ID, Name: l.name, OwnerID: act.OwnerID, Currency: l.currency,
 		Spread:      lineitem.Spread{Method: l.method, Months: []lineitem.MonthAmount{}},
 		RequestSwbs: l.requestSwbs, FinanceBudgetYear: &year, Meta: d.meta(),
+		Approved: act.Status == activity.StatusApproved,
 	}
 	var err error
 	if l.plannedCost != "" {

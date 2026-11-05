@@ -195,10 +195,6 @@ func changeText(c ChangeText) string {
 	}
 }
 
-func subjectText(sub subject) string {
-	return fmt.Sprintf("'%s' (%s)", sub.Name, sub.ID)
-}
-
 // notifier tells each person once per action, whatever the number of sends, and never the actor.
 type notifier struct {
 	service *Service
@@ -279,4 +275,20 @@ func (s *Service) logOn(ctx context.Context, a actor.Actor, sub subject, entry s
 		Details:    entry.details,
 	})
 	return err
+}
+
+// sendToLevel tells the approvers of a level the round has reached that it waits for them, and each one's
+// current delegates the same with "— you approve as delegate of <name>".
+func (n *notifier) sendToLevel(ctx context.Context, level RoundLevel, dl []Delegation, text string) error {
+	if err := n.send(ctx, idsOf(level.Approvers), NotifyApprovalNeeded, approvalNeededTitle, text); err != nil {
+		return err
+	}
+	for _, approver := range level.Approvers {
+		err := n.send(ctx, delegatesOf(dl, approver.ID), NotifyApprovalNeeded, approvalNeededTitle,
+			text+fmt.Sprintf(delegateSuffix, approver.Name))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -1,7 +1,8 @@
 -- name: ListRounds :many
 SELECT id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 FROM approval_rounds
 WHERE (sqlc.narg(id)::text IS NULL OR id = sqlc.narg(id))
     AND (sqlc.narg(subject_id)::text IS NULL OR subject_id = sqlc.narg(subject_id))
@@ -10,7 +11,8 @@ ORDER BY CASE WHEN sqlc.narg(subject_id)::text IS NULL THEN 0 ELSE number END, l
 -- name: ListRoundsOfSubjects :many
 SELECT id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 FROM approval_rounds
 WHERE subject_id = ANY(sqlc.arg(subject_ids)::text[])
 ORDER BY length(id), id COLLATE "C";
@@ -18,7 +20,8 @@ ORDER BY length(id), id COLLATE "C";
 -- name: ListOpenRounds :many
 SELECT id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 FROM approval_rounds
 WHERE outcome = 'open'
 ORDER BY length(id), id COLLATE "C";
@@ -26,7 +29,8 @@ ORDER BY length(id), id COLLATE "C";
 -- name: ListRoundsInScope :many
 SELECT id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 FROM approval_rounds
 WHERE (sqlc.narg(id)::text IS NULL OR id = sqlc.narg(id))
     AND subject_kind = 'activity'
@@ -38,9 +42,11 @@ ORDER BY length(id), id COLLATE "C";
 INSERT INTO approval_rounds (
     id, subject_id, number, workflow_id, workflow_name, levels, current_level, outcome, submitted_at,
     submitted_by_id, submitted_by_name, comment, ended_at, facts, reminder_days, escalation_days, auto_approved,
-    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, subject_kind,
+    line_item_ids, held_back_line_item_ids
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25,
+    $26, $27
 )
 ON CONFLICT (id) DO UPDATE SET
     subject_kind = excluded.subject_kind,
@@ -66,4 +72,6 @@ ON CONFLICT (id) DO UPDATE SET
     created_by_name = excluded.created_by_name,
     updated_at = excluded.updated_at,
     updated_by_id = excluded.updated_by_id,
-    updated_by_name = excluded.updated_by_name;
+    updated_by_name = excluded.updated_by_name,
+    line_item_ids = excluded.line_item_ids,
+    held_back_line_item_ids = excluded.held_back_line_item_ids;

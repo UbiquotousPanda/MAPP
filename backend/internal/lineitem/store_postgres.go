@@ -121,6 +121,7 @@ func lineItemParams(li LineItem) (sqlcdb.PutLineItemParams, error) {
 		Version: li.Version, CreatedAt: li.CreatedAt, CreatedByID: li.CreatedBy.ID, CreatedByName: li.CreatedBy.Name,
 		UpdatedAt: li.UpdatedAt, UpdatedByID: li.UpdatedBy.ID, UpdatedByName: li.UpdatedBy.Name,
 		SwbsCode: li.SwbsCode, SwbsRequestedAt: li.SwbsRequestedAt, SwbsReceivedAt: li.SwbsReceivedAt,
+		Approval: approvalColumn(li.Approved),
 	}
 	if li.ContractedAmount != nil {
 		cents := li.ContractedAmount.Cents()
@@ -205,8 +206,8 @@ func lineItemsFromRows(rows []sqlcdb.ListLineItemsRow, err error) ([]LineItem, e
 			Description: r.Description, Currency: r.Currency, PlannedCost: money.FromCents(r.PlannedCostMinor),
 			Spread:     Spread{Method: SpreadMethod(r.SpreadMethod), Months: make([]MonthAmount, 0, len(row.SpreadMonths))},
 			Attributes: attributes, RequestSwbs: r.RequestSwbs, FinanceBudgetYear: r.FinanceBudgetYear,
-			FinanceBudgetItemID: database.EmptyIfNull(r.FinanceBudgetItemID),
-			Swbs:                Swbs{SwbsCode: r.SwbsCode, SwbsRequestedAt: r.SwbsRequestedAt, SwbsReceivedAt: r.SwbsReceivedAt},
+			FinanceBudgetItemID: database.EmptyIfNull(r.FinanceBudgetItemID), Approved: r.Approval == ApprovalApproved,
+			Swbs: Swbs{SwbsCode: r.SwbsCode, SwbsRequestedAt: r.SwbsRequestedAt, SwbsReceivedAt: r.SwbsReceivedAt},
 			Meta: record.Meta{
 				Version:   r.Version,
 				CreatedAt: r.CreatedAt,

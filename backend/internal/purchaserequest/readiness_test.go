@@ -9,11 +9,11 @@ func TestGates_ActivitiesSwbsAndCompanyCodes(t *testing.T) {
 	t.Parallel()
 	facts := map[string]LineItemFacts{
 		"L-1006": {ID: "L-1006", Name: "Stand build", ActivityID: "A-1003", ActivityName: "Billboard winter wave",
-			ActivityStatus: "approved", SwbsCode: "SIM-GB01-0001", SwbsStatus: "received", CompanyCode: "GB01"},
+			ActivityStatus: "approved", SwbsCode: "SIM-GB01-0001", SwbsStatus: "received", CompanyCode: "GB01", LineItemApproved: true},
 		"L-1005": {ID: "L-1005", Name: "Media booking", ActivityID: "A-1004", ActivityName: "Trade magazine ads",
 			ActivityStatus: "submitted", SwbsStatus: "waitingForApproval", CompanyCode: "NL02"},
 		"L-1001": {ID: "L-1001", Name: "Agency fee", ActivityID: "A-1001", ActivityName: "Launch film",
-			ActivityStatus: "approved", SwbsCode: "SIM-X", SwbsStatus: "readyToSend"},
+			ActivityStatus: "approved", SwbsCode: "SIM-X", SwbsStatus: "readyToSend", LineItemApproved: true},
 	}
 	tests := []struct {
 		name  string

@@ -41,6 +41,8 @@ type Round struct {
 	ReminderDays   *int         `json:"reminderDays"`
 	EscalationDays *int         `json:"escalationDays"`
 	AutoApproved   bool         `json:"autoApproved"`
+	LineItemIDs    []string     `json:"lineItemIds"`
+	HeldBack       []string     `json:"heldBack"`
 	record.Meta
 }
 
@@ -165,6 +167,7 @@ type RoundView struct {
 	ReminderDays   *int               `json:"reminderDays"`
 	EscalationDays *int               `json:"escalationDays"`
 	AutoApproved   bool               `json:"autoApproved"`
+	LineItemIDs    []string           `json:"lineItemIds"`
 }
 
 type DeclineNote struct {

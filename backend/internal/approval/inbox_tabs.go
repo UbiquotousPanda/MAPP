@@ -39,10 +39,10 @@ func (s *Service) Inbox(ctx context.Context, a actor.Actor, tab string) ([]Row, 
 func (b *board) submitted(fn func(sub subject, round Round, entries []Action) error) error {
 	for _, sub := range b.subjects {
 		round, found := openRound(b.rounds[sub.ID])
-		if !found || !sub.waiting() {
+		if !found || !sub.waitingOn(round) {
 			continue
 		}
-		if err := fn(sub.as(round.kind()), round, entriesOf(b.entries[sub.ID], round.ID)); err != nil {
+		if err := fn(sub.of(round), round, entriesOf(b.entries[sub.ID], round.ID)); err != nil {
 			return err
 		}
 	}

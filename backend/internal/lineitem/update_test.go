@@ -170,11 +170,17 @@ func TestUpdate_KeepsInactiveValues_FR011_FR016(t *testing.T) { //nolint:gocyclo
 }
 
 // A new planned cost or currency of a line item of a Submitted or Approved activity is saved without a
-// confirmation and keeps the activity's approval (D-322); each save logs its change.
-func TestUpdate_CostOrCurrencyKeepsStatus_034_FR001(t *testing.T) {
+// confirmation and keeps the activity's approval and the line item's (D-322, D-402); each save logs its change.
+func TestUpdate_CostOrCurrencyKeepsStatus_034_FR001_053_FR006(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
 	venue := f.create(t, priya, socialOnAir, input("Venue hire", "GBP", "15800"))
+	f.setApproval(t, ApprovalChoice{ActivityID: socialOnAir, Round: 1})
+	approvedVenue, err := f.service.Get(t.Context(), priya, venue.ID)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	venue = approvedVenue.LineItem
 	printRun := f.create(t, priya, tradeAds, input("Print run", "USD", "2000"))
 
 	more := formOf(venue)
@@ -187,9 +193,9 @@ func TestUpdate_CostOrCurrencyKeepsStatus_034_FR001(t *testing.T) {
 	dearer.PlannedCost = text("2500")
 	submitted := f.update(t, priya, printRun.ID, dearer)
 
-	if inEuros.Version != 3 || inEuros.PlannedCost.Format() != "17,000.00 EUR" || inEuros.SwbsStatus != SwbsReadyToSend ||
+	if inEuros.Version != 4 || inEuros.PlannedCost.Format() != "17,000.00 EUR" || inEuros.SwbsStatus != SwbsReadyToSend ||
 		submitted.SwbsStatus != SwbsWaitingForApproval {
-		t.Errorf("venue v%d %s %s, print run %s; want v3 17,000.00 EUR still ready to send, print run still waiting",
+		t.Errorf("venue v%d %s %s, print run %s; want v4 17,000.00 EUR still ready to send, print run still waiting",
 			inEuros.Version, inEuros.PlannedCost.Format(), inEuros.SwbsStatus, submitted.SwbsStatus)
 	}
 	changed := 0

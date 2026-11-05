@@ -38,7 +38,7 @@ func (s *Service) section(ctx context.Context, a actor.Actor, sub subject) (Sect
 	open := openRoundPointer(rounds)
 	view := Section{
 		Subject: sub.view(), OwnerID: sub.OwnerID, Owner: rc.people.owner(sub.OwnerID), UpcomingLevels: []LevelView{},
-		Rounds: make([]RoundView, 0, len(rounds)), Actions: availableActions(sub, open),
+		Rounds: make([]RoundView, 0, len(rounds)), Actions: availableActions(sub, open), LineItems: []RoundLineItem{},
 		Viewer: Viewer{IsOwner: sub.OwnerID != "" && sub.OwnerID == a.ID, OnBehalfOf: []PersonView{}, AsDelegateOf: []PersonView{}},
 	}
 	for i := len(rounds) - 1; i >= 0; i-- {
@@ -48,13 +48,14 @@ func (s *Service) section(ctx context.Context, a actor.Actor, sub subject) (Sect
 		return Section{}, err
 	}
 	if open != nil {
-		at := decisionPoint{sub: sub.as(open.kind()), round: *open, entries: entriesOf(entries, open.ID), onBehalf: true}
+		at := decisionPoint{sub: sub.of(*open), round: *open, entries: entriesOf(entries, open.ID), onBehalf: true}
 		if err = s.viewerOn(ctx, &view, at, viewing{a: a, d: rc.people}); err != nil {
 			return Section{}, err
 		}
 		if err = s.overagesOn(ctx, &view, at.sub); err != nil {
 			return Section{}, err
 		}
+		view.LineItems = roundLineItems(at.sub, at.round)
 	}
 	limitSubmit(ctx, &view.Actions, sub)
 	if sub.Status == StatusDeclined {
@@ -117,7 +118,7 @@ func (s *Service) viewerOn(ctx context.Context, view *Section, at decisionPoint,
 			view.Viewer.OnBehalfOf = d.copiedAll(au.onBehalfOf)
 		}
 	}
-	if at.sub.waiting() {
+	if at.sub.waitingOn(at.round) {
 		decide := ActionAvailability{Available: au.allowed, Reason: au.shown}
 		view.Actions.Approve, view.Actions.Decline = decide, decide
 	}
@@ -134,9 +135,11 @@ func availableActions(sub subject, open *Round) ActionSet {
 		set.Submit.Available = true
 	case kindResubmit:
 		set.Resubmit.Available = true
+	case kindLineItems:
+		set.SendLineItems.Available = true
 	}
 	set.Recall.Available = open != nil || (sub.Kind == KindActivity && sub.Status == StatusSubmitted)
-	if sub.Kind == KindActivity && sub.Status == StatusApproved {
+	if sub.Kind == KindActivity && sub.Status == StatusApproved && open == nil {
 		set.Recall.Reason = approvedNoRecallMessage
 	}
 	return set

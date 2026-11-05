@@ -186,8 +186,8 @@ func TestCreate_ContractedAmount_FR014(t *testing.T) {
 }
 
 // Adding a line item to a Submitted or Approved activity saves without confirmation and leaves its approval
-// alone (D-322): the only log entries are the line items'.
-func TestCreate_InApprovalKeepsStatus_034_FR001(t *testing.T) {
+// alone (D-322): the only log entries are the line items'. The new line item is Not approved (D-402).
+func TestCreate_InApprovalKeepsStatus_034_FR001_053_FR006(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
 
@@ -197,9 +197,10 @@ func TestCreate_InApprovalKeepsStatus_034_FR001(t *testing.T) {
 	if err != nil || err2 != nil {
 		t.Fatalf("Create without confirmation: %v, %v; want both saved", err, err2)
 	}
-	if onApproved.SwbsStatus != SwbsReadyToSend || onSubmitted.SwbsStatus != SwbsWaitingForApproval {
-		t.Errorf("SWBS statuses %s, %s; want readyToSend (still Approved) and waitingForApproval (still Submitted)",
-			onApproved.SwbsStatus, onSubmitted.SwbsStatus)
+	if onApproved.Approval != ApprovalNotApproved || onApproved.SwbsStatus != SwbsWaitingForApproval ||
+		onSubmitted.SwbsStatus != SwbsWaitingForApproval {
+		t.Errorf("on the Approved activity %s, %s, on the Submitted one %s; want notApproved and both waitingForApproval",
+			onApproved.Approval, onApproved.SwbsStatus, onSubmitted.SwbsStatus)
 	}
 	if entries := f.log(t); len(entries) != 2 || entries[0].Action != history.ActionCreated || entries[1].Action != history.ActionCreated {
 		t.Errorf("log = %+v, want the two line items' created entries only", entries)
@@ -213,8 +214,8 @@ func TestCreate_NegativeBalanceKeepsApproval_034_FR004(t *testing.T) {
 
 	v, err := f.service.Create(t.Context(), priya, socialOnAir, input("Stadium screen", "USD", "90000.00"))
 
-	if err != nil || v.SwbsStatus != SwbsReadyToSend {
-		t.Fatalf("Create = %s, %v; want saved on the still Approved activity", v.SwbsStatus, err)
+	if err != nil || v.ID == "" {
+		t.Fatalf("Create = %q, %v; want saved on the Approved activity", v.ID, err)
 	}
 	if b := f.section(t, priya, socialOnAir).Balance; b.State != BalanceExceeded || b.Balance.Format() != "-10,000.00 USD" {
 		t.Errorf("balance = %+v, want exceeded by 10,000.00 USD", b)

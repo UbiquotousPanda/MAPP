@@ -44,11 +44,17 @@ func submissionKind(sub subject, open *Round) string {
 		return modificationSubmission(sub.Status, open != nil, openOfKind)
 	case KindActivity:
 	}
-	switch sub.Status {
-	case StatusCreated:
+	return activitySubmission(sub, open != nil)
+}
+
+func activitySubmission(sub subject, open bool) string {
+	switch {
+	case sub.Status == StatusCreated:
 		return kindSubmit
-	case StatusDeclined, StatusSubmitted:
+	case sub.Status == StatusDeclined || sub.Status == StatusSubmitted:
 		return kindResubmit
+	case sub.Status == StatusApproved && !open && len(sub.notApproved()) > 0:
+		return kindLineItems
 	}
 	return ""
 }
@@ -93,8 +99,11 @@ type submitWords struct {
 
 func submitWordsOf(kind SubjectKind, submission string) submitWords {
 	words := submitWords{action: ActionSubmitted, verb: "submitted", text: submittedText}
-	if submission == kindResubmit {
+	switch submission {
+	case kindResubmit:
 		words = submitWords{action: ActionResubmitted, verb: "re-submitted", text: resubmittedText}
+	case kindLineItems:
+		words = submitWords{action: ActionSubmitted, verb: lineItemsSentVerb, text: lineItemsSentText}
 	}
 	if kind == KindModifiedPurchaseRequest {
 		words.verb += " changes to"

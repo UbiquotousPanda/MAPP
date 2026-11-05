@@ -85,11 +85,11 @@ func (s *Service) DecideSubject(ctx context.Context, a actor.Actor, kind Subject
 		if err != nil {
 			return err
 		}
-		dg, err := s.decidingOn(ctx, a, sub.as(round.kind()), round)
+		dg, err := s.decidingOn(ctx, a, sub.of(round), round)
 		if err != nil {
 			return err
 		}
-		dg.kind, dg.comment, dg.now = decision.Action, comment, s.now()
+		dg.kind, dg.comment, dg.now, dg.ticked = decision.Action, comment, s.now(), decision.ApprovedLineItemIDs
 		if err = s.refuseOverage(ctx, dg); err != nil {
 			return err
 		}

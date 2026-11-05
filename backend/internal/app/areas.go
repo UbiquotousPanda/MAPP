@@ -164,7 +164,7 @@ func (w *wiring) approvalsArea() error {
 	tools := history.Tools{Tx: s.Tx, IDs: w.generator, Log: w.history, Now: w.now}
 	w.approvals = approval.NewService(tools, s.Approvals, s.People, &approvalsActivities{
 		activities: s.Activities, lineItems: s.LineItems, campaigns: s.Campaigns, plans: s.Plans, settings: s.Settings,
-		rates: w.settings.Rates, check: w.activities.SubmitCheck, now: w.now,
+		rates: w.settings.Rates, check: w.activities.SubmitCheck, now: w.now, approveLineItems: w.lineItems.SetApproval,
 	})
 	if err := w.register(w.approvals.Kinds()); err != nil {
 		return err

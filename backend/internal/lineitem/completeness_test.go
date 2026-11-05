@@ -108,7 +108,7 @@ func TestSwbsStatus_FR024(t *testing.T) {
 		{true, "approved", SwbsReadyToSend},
 	}
 	for _, tt := range tests {
-		got := SwbsStatusOf(LineItem{RequestSwbs: tt.request}, ActivityFacts{Status: tt.status})
+		got := SwbsStatusOf(LineItem{RequestSwbs: tt.request, Approved: true}, ActivityFacts{Status: tt.status})
 
 		if got != tt.want {
 			t.Errorf("request %v, activity %s: %s, want %s", tt.request, tt.status, got, tt.want)
