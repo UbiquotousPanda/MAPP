@@ -37,4 +37,33 @@ describe('PurchaseRequestTimeline', () => {
     expect(screen.getByText('10 Nov 2026 · GSAP')).toBeInTheDocument();
     expect(screen.getByText('24 Nov 2026 · GSAP')).toBeInTheDocument();
   });
+
+  it('032 timeline: a later re-approval shows on the day it was in the viewer’s time zone', () => {
+    const timeline = [
+      {
+        key: 'approved',
+        label: 'Approved',
+        reached: true,
+        at: '2026-11-20T10:00:00Z',
+        by: { id: 'u-daniel', name: 'Daniel Okoro' },
+        detail: '',
+        waiting: '',
+        reapprovedAt: '2026-11-25T20:00:00Z',
+      },
+    ];
+    const original = process.env.TZ;
+    process.env.TZ = 'Asia/Kolkata';
+    try {
+      renderWithProviders(
+        <PurchaseRequestTimeline purchaseRequest={purchaseRequest({ timeline })} />,
+        { user: testUser() },
+      );
+    } finally {
+      process.env.TZ = original;
+    }
+
+    expect(
+      screen.getByText('20 Nov 2026, 15:30 · Daniel Okoro · change re-approved 26 Nov 2026'),
+    ).toBeInTheDocument();
+  });
 });

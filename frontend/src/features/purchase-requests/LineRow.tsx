@@ -10,6 +10,7 @@ import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFi
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { useTolerancePercent } from '@/features/overspend';
+import { useCurrentRatesPerUsd } from '@/features/rates-as-of';
 import { DateField } from './DateField';
 import { problemAt, problemMap } from './form-problems';
 import type { LineValues, PurchaseRequestFormValues } from './form-schema';
@@ -55,6 +56,9 @@ export function LineRow({
   const id = (field: string) => `lines[${index}].${field}`;
   const error = (field: string) => problemAt(problems, id(field));
   const tolerancePercent = useTolerancePercent();
+  const rates = useCurrentRatesPerUsd(
+    Boolean(line.left) && line.currency !== line.left?.currency,
+  ).data;
 
   return (
     <section className={styles.line} aria-labelledby={titleId}>
@@ -105,7 +109,7 @@ export function LineRow({
               label={LABELS.amount}
               marking="Required"
               currency={line.currency}
-              note={overLeftWarning(line, tolerancePercent) ?? undefined}
+              note={overLeftWarning(line, tolerancePercent, rates) ?? undefined}
               error={error('amount')}
             />
           )}

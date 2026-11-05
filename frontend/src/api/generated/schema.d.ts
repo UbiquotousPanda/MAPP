@@ -5911,6 +5911,11 @@ export interface components {
             detail: string;
             /** @description The words Waiting for the next step on the first step not reached, empty on every other step. */
             waiting: string;
+            /**
+             * Format: date-time
+             * @description On the Approved step, when a later change was last approved; absent when there was none.
+             */
+            reapprovedAt?: string;
         };
         PurchaseRequestRouting: {
             /** @example PRR-1001 */
