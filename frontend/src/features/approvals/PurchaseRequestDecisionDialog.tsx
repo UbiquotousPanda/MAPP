@@ -2,9 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { Link } from 'react-router';
 import { asApiError, isSessionLost } from '@/api/errors';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { FormField } from '@/ui/FormField/FormField';
+import { refusalLinks } from '@/ui/refusal-links';
+import type { ProblemLink } from '@/ui/refusal-links';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
@@ -58,6 +61,7 @@ export function PurchaseRequestDecisionDialog({
   const { show } = useToast();
   const decide = usePurchaseRequestDecision();
   const [problem, setProblem] = useState('');
+  const [problems, setProblems] = useState<ProblemLink[]>([]);
   const approve = mode === 'approve';
   const form = useForm({
     resolver: zodResolver(approve ? approveSchema : declineSchema),
@@ -91,6 +95,9 @@ export function PurchaseRequestDecisionDialog({
         form.setError('comment', { message: commentProblem.message });
       } else if (!isSessionLost(failure)) {
         setProblem(failure.message);
+        setProblems(
+          failure.kind === 'notReady' ? refusalLinks(approval.purchaseRequestId, failure) : [],
+        );
       }
     }
   }
@@ -130,9 +137,18 @@ export function PurchaseRequestDecisionDialog({
           ))}
         {!approve && <p>{declineText(section.kind, approval.owner?.name ?? 'its owner')}</p>}
         {problem && (
-          <p role="alert" className={styles.note}>
-            {problem}
-          </p>
+          <div role="alert" className={styles.note}>
+            <p>{problem}</p>
+            {problems.length > 0 && (
+              <ul className={styles.problems}>
+                {problems.map((link) => (
+                  <li key={link.key}>
+                    <Link to={link.href}>{link.text}</Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         )}
         <FormField
           control={form.control}

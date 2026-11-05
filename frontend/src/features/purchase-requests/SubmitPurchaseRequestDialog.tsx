@@ -13,10 +13,11 @@ import { FormField } from '@/ui/FormField/FormField';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { useToast } from '@/ui/Toast/useToast';
+import { refusalLinks } from '@/ui/refusal-links';
+import type { ProblemLink } from '@/ui/refusal-links';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { useHidesUnavailable } from '@/ui/ViewOnlyNote/view-only-context';
-import { missingLinks, problemLinks } from './approval-links';
-import type { ProblemLink } from './approval-links';
+import { problemLinks } from './approval-links';
 import {
   CLOSE,
   COMMENT_LABEL,
@@ -90,9 +91,9 @@ interface DialogProps {
 }
 
 /**
- * What Submit would do now (032 FR-021): every gate problem at once, each linked to where it is
- * fixed, or the workflow's levels and an optional comment; a refusal that names missing fields
- * lists them all in the same place.
+ * What Submit would do now (032 FR-021, D-404): every problem of both kinds at once, each linked to
+ * where it is fixed, or the workflow's levels and an optional comment; a refusal lists the problems
+ * it names, field problems and missing fields alike, in the same place.
  */
 function SubmitPurchaseRequestDialog({ purchaseRequest: pr, onClose }: DialogProps) {
   const { show } = useToast();
@@ -121,7 +122,7 @@ function SubmitPurchaseRequestDialog({ purchaseRequest: pr, onClose }: DialogPro
       if (failure.kind === 'validation' && commentProblem) {
         form.setError('comment', { message: commentProblem.message });
       } else if (failure.kind === 'notReady') {
-        setMissing(missingLinks(pr.id, failure.missing));
+        setMissing(refusalLinks(pr.id, failure));
       } else if (!isSessionLost(failure)) {
         setProblem(failure.message);
       }

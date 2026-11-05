@@ -90,6 +90,42 @@ describe('032 FR-029: PR in the approvals inbox', () => {
     expect(onDecided).toHaveBeenCalled();
   });
 
+  it('032 D-404: an approval refused for what changed lists every problem as a link, and Decline stays', async () => {
+    const refusal = apiError('not_ready', "This purchase request can't be approved as it stands.", {
+      fields: [{ field: 'ownerId', message: 'Choose an active person.' }],
+      missing: [
+        {
+          record: { type: 'activity', id: 'A-1003', name: 'Billboard winter wave' },
+          fields: [{ field: '', label: 'Status', reason: 'Must be approved first.' }],
+        },
+      ],
+    });
+    const { onDecided, user } = renderPanel({ body: preview() }, [
+      reply(APPROVE, { status: 409, body: refusal }),
+    ]);
+
+    await user.click(await screen.findByRole('button', { name: 'Approve' }));
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Approve' }));
+
+    const alert = await within(dialog).findByRole('alert');
+    expect(alert).toHaveTextContent("This purchase request can't be approved as it stands.");
+    expect(
+      within(alert)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual([
+      'Owner: Choose an active person.',
+      'Billboard winter wave: Must be approved first.',
+    ]);
+    expect(within(alert).getByRole('link', { name: /Billboard winter wave/ })).toHaveAttribute(
+      'href',
+      '/activities/A-1003',
+    );
+    expect(onDecided).not.toHaveBeenCalled();
+    expect(screen.getByRole('alertdialog')).toBeVisible();
+  });
+
   it('032 FR-025: declining needs a comment, then sends it', async () => {
     const { api, user } = renderPanel({ body: preview() }, [
       reply(DECLINE, { body: waitingApproval() }),

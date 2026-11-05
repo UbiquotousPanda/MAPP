@@ -140,6 +140,27 @@ describe('032 FR-016/FR-053/FR-054: edit', () => {
     expect(box).toHaveTextContent('PR for Stand build: MoA approver');
   });
 
+  it('032 D-404: a refused re-submission shows its field problems at their fields beside the gate problems', async () => {
+    const notReady = apiError('not_ready', 'Not ready.', {
+      fields: [{ field: 'ownerId', message: 'Choose an active person.' }],
+      missing: [
+        {
+          record: { type: 'activity', id: 'A-1003', name: 'Billboard winter wave' },
+          fields: [{ field: '', label: 'Status', reason: 'Must be approved first.' }],
+        },
+      ],
+    });
+    const { user } = renderEdit({ body: purchaseRequest({ status: 'submitted' }) }, [
+      reply(PUT, { status: 409, body: notReady }),
+    ]);
+
+    await user.click(await screen.findByRole('button', { name: 'Save and re-submit' }));
+
+    const failure = await screen.findByText('Not saved — these things are needed first:');
+    expect(failure.closest('[role="alert"]')).toHaveTextContent('Must be approved first.');
+    expect(field('ownerId')).toHaveAccessibleDescription(/Choose an active person\./);
+  });
+
   it('asks before leaving with unsaved changes', async () => {
     const { router, user } = renderEdit({ body: purchaseRequest() });
     await user.type(await screen.findByLabelText(/^Name/), ' 2');

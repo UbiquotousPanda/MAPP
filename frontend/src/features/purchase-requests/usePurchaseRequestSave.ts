@@ -10,7 +10,7 @@ import { CONFLICT_NEXT_STEP, NOT_READY_TITLE } from './form-text';
 export interface SaveFailure {
   message: string;
   nextStep?: string;
-  /** Every gate problem of a refused submission (409 not_ready), at once. */
+  /** Every gate problem of a refused submission (409 not_ready); its field problems show at their fields. */
   details: string[];
   /** Someone else saved first: offer to load their version, keeping the entries. */
   conflict: boolean;
@@ -51,11 +51,12 @@ export function usePurchaseRequestSave({ onSave, setProblems }: SaveOptions) {
       setProblems(error.fields);
       return;
     }
-    setProblems([]);
     if (error.kind === 'notReady') {
+      setProblems(error.fields);
       setFailure({ message: NOT_READY_TITLE, details: notReadyLines(error), conflict: false });
       return;
     }
+    setProblems([]);
     const conflict = error.kind === 'conflict';
     setFailure({
       message: conflict ? conflictMessage(error, 'purchase request', dateFormat) : error.message,
