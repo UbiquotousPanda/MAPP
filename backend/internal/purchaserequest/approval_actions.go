@@ -32,10 +32,11 @@ func (s *Service) Submission(ctx context.Context, a actor.Actor, id string) (Sub
 			return err
 		}
 		kind := submissionKind(pr)
-		problems, err := s.gates(ctx, pr, facts, kind)
+		found, err := s.verify(ctx, pr, moment{kind: kind})
 		if err != nil {
 			return err
 		}
+		problems := found.problems()
 		check, err := s.engine.SubmissionOf(ctx, a, approval.SubjectKind(kind), pr.ID)
 		view = SubmissionView{PurchaseRequestID: pr.ID, Version: pr.Version, Kind: "submit", RoundKind: kind,
 			Ready: len(problems) == 0, Problems: problems, Workflow: check.Workflow, Levels: check.Levels,
@@ -50,7 +51,8 @@ func (s *Service) Submission(ctx context.Context, a actor.Actor, id string) (Sub
 }
 
 // Submit submits a Created purchase request, or re-submits a Submitted, In review or Declined one without
-// changes, once the gates pass; an Approved one is changed with Submit changes.
+// changes, once every check passes again, the save checks and the gates together (D-404); an Approved one is
+// changed with Submit changes.
 func (s *Service) Submit(ctx context.Context, a actor.Actor, id string, in SubmitInput) (ApprovalView, error) {
 	comment := strings.TrimSpace(in.Comment)
 	if utf8.RuneCountInString(comment) > maxTextLength {
@@ -58,34 +60,37 @@ func (s *Service) Submit(ctx context.Context, a actor.Actor, id string, in Submi
 	}
 	var view ApprovalView
 	err := s.withEngine(ctx, s.tx.Write, id, func(ctx context.Context, pr PurchaseRequest) error {
-		facts, err := s.submittable(ctx, pr, in.Version)
-		if err != nil {
+		if err := s.submittable(ctx, pr, in.Version); err != nil {
 			return err
 		}
-		if _, err = s.submitAfterSave(ctx, a, toSubmit{pr: pr, facts: facts, comment: comment}); err != nil {
+		if err := s.ensureReady(ctx, pr, moment{kind: submissionKind(pr)}); err != nil {
 			return err
 		}
+		if _, err := s.startRound(ctx, a, pr, comment); err != nil {
+			return err
+		}
+		var err error
 		view, err = s.approvedView(ctx, a, pr.ID)
 		return err
 	})
 	return view, err
 }
 
-func (s *Service) submittable(ctx context.Context, pr PurchaseRequest, version int) (map[string]LineItemFacts, error) {
+func (s *Service) submittable(ctx context.Context, pr PurchaseRequest, version int) error {
 	facts, err := s.factsOf(ctx, pr)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if err = authz.RequireIn(ctx, authz.PurchaseRequestsSubmit, pr.planFacts(facts)); err != nil {
-		return nil, err
+		return err
 	}
 	if _, err = s.switchedOn(ctx); err != nil {
-		return nil, err
+		return err
 	}
 	if available, reason := submitAllowed(pr); !available {
-		return nil, errs.NotAllowed(reason)
+		return errs.NotAllowed(reason)
 	}
-	return facts, pr.CheckVersion(version, recordNoun)
+	return pr.CheckVersion(version, recordNoun)
 }
 
 func submitAllowed(pr PurchaseRequest) (bool, string) {

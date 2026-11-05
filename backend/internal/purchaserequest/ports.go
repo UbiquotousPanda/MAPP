@@ -77,6 +77,7 @@ type Currencies interface {
 
 type Attributes interface {
 	Check(ctx context.Context, level settings.Level, in settings.AttributeInput) (settings.AttributeResult, error)
+	CheckStored(ctx context.Context, level settings.Level, in settings.AttributeInput) (settings.AttributeResult, error)
 	Missing(ctx context.Context, level settings.Level, values settings.AttributeValues, businessUnit []string) ([]settings.MissingField, error)
 	// Roles returns, per role among roles, the texts of the values: a text as typed, the labels of chosen options.
 	Roles(ctx context.Context, values settings.AttributeValues, roles []string) (map[string][]string, error)

@@ -7,16 +7,17 @@ import (
 	"slices"
 
 	"mapp/internal/platform/authz"
+	"mapp/internal/platform/errs"
 )
 
 var thenWords = map[string]string{ //nolint:gochecknoglobals // a fixed lookup of the buttons' words
 	ThenSave: "Save", ThenResubmit: "Save and re-submit", ThenSubmitChanges: "Submit changes",
 }
 
-// checkSave is check plus the rules a save of before must follow by its status (data-model §3.2); addsOnly
-// says the save only adds lines to an Approved purchase request without approval.
+// checkSave is check, strict when the save also submits (D-404), plus the rules a save of before must follow by its
+// status (data-model §3.2); addsOnly says the save only adds lines to an Approved purchase request without approval.
 func (s *Service) checkSave(ctx context.Context, in Input, before PurchaseRequest, config Configuration) (checked, bool, error) {
-	ck, err := s.check(ctx, in, before)
+	ck, err := s.check(ctx, in, before, checking{strict: in.Then != ThenSave})
 	if err != nil {
 		return checked{}, false, err
 	}
@@ -28,7 +29,11 @@ func (s *Service) checkSave(ctx context.Context, in Input, before PurchaseReques
 	if err = s.invoicedRule(ctx, &ck, before); err != nil {
 		return checked{}, false, err
 	}
-	return ck, addsOnly && in.Then == ThenSave, ck.problems.Err()
+	return ck, addsOnly && in.Then == ThenSave, nil
+}
+
+func (ck checked) wrongThen() bool {
+	return slices.ContainsFunc(ck.problems, func(p errs.FieldError) bool { return p.Field == "then" })
 }
 
 // then checks the save's next step fits the status: Save, Save and re-submit or Submit changes.
@@ -53,8 +58,7 @@ func (ck *checked) then(ctx context.Context, before PurchaseRequest, then string
 	return authz.RequireIn(ctx, authz.PurchaseRequestsSubmit, ck.plan.Access)
 }
 
-// lineRules: lines leave only Created and Declined purchase requests; lines join Approved ones as the
-// setting says.
+// lineRules: lines leave only Created and Declined purchase requests; lines join Approved ones as the setting says.
 func (ck *checked) lineRules(before PurchaseRequest, config Configuration) {
 	removing := slices.ContainsFunc(before.Lines, func(l Line) bool { return ck.pr.line(l.ID) == nil })
 	if removing && before.Status != StatusCreated && before.Status != StatusDeclined {

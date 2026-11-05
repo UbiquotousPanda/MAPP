@@ -52,7 +52,7 @@ func (s *Service) checkCreate(ctx context.Context, in Input) (checked, error) {
 	if _, err := s.switchedOn(ctx); err != nil {
 		return checked{}, err
 	}
-	ck, err := s.check(ctx, in, PurchaseRequest{Attributes: settings.AttributeValues{}})
+	ck, err := s.check(ctx, in, PurchaseRequest{Attributes: settings.AttributeValues{}}, checking{})
 	if err != nil {
 		return checked{}, err
 	}

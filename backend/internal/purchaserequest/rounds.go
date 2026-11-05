@@ -85,11 +85,8 @@ func (s *Service) readyCheck(ctx context.Context, _ actor.Actor, id string, kind
 	if err != nil {
 		return nil, err
 	}
-	facts, err := s.factsOf(ctx, pr)
-	if err != nil {
-		return nil, err
-	}
-	return s.gates(ctx, pr, facts, kind)
+	v, err := s.verify(ctx, pr, moment{kind: kind})
+	return v.problems(), err
 }
 
 // roundChanged sets the purchase request's status for a round event of the approval engine (Status Model,

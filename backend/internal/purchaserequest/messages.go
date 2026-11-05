@@ -30,6 +30,7 @@ const (
 	msgNotFound           = "This purchase request no longer exists — someone may have deleted it."
 	msgRoutingNotFound    = "This routing of the purchase request no longer exists."
 	msgNotReady           = "This purchase request can't be submitted yet."
+	msgNotReadyToApprove  = "This purchase request can't be approved as it stands — decline it, or ask its owner to fix what is listed."
 	msgOnlyApprovedClose  = "Only approved purchase requests can be closed."
 	msgChangeInReview     = "Wait until the change of this purchase request is approved or declined."
 	msgNotRouted          = "The PR form is resent once the purchase request was routed."

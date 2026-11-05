@@ -66,7 +66,7 @@ func (c *checker) lineItem(ctx context.Context, field string, l Line, seen map[s
 	switch {
 	case l.LineItemID == "":
 		c.problems.Add(field+"lineItemId", msgLineItemNeeded)
-	case !found || !canSee(ctx, f):
+	case !found || (!c.how.stored && !canSee(ctx, f)):
 		c.problems.Add(field+"lineItemId", msgLineItemGone)
 	case seen[l.LineItemID]:
 		c.problems.Add(field+"lineItemId", fmt.Sprintf(msgOnceOnPR, l.LineItemID))
@@ -92,7 +92,7 @@ func (c *checker) values(ctx context.Context, field string, in LineInput, l *Lin
 	l.OverallLimit = c.overallLimit(field, in.OverallLimit)
 	l.Description = strings.TrimSpace(in.Description)
 	c.tooLong(field+"description", l.Description)
-	result, err := c.s.deps.Attributes.Check(ctx, settings.LevelPurchaseRequestLine, settings.AttributeInput{
+	result, err := c.checkValues(ctx, settings.LevelPurchaseRequestLine, settings.AttributeInput{
 		Values: in.Attributes, Previous: l.Attributes, BusinessUnit: c.plan.businessUnit(c.facts),
 	})
 	if err != nil {
@@ -105,13 +105,13 @@ func (c *checker) values(ctx context.Context, field string, in LineInput, l *Lin
 	return nil
 }
 
-// currency accepts an active currency, or the inactive one the line already has.
+// currency accepts an active currency, or the inactive one the line already has unless the check is strict.
 func (c *checker) currency(ctx context.Context, field, code string, l *Line) error {
 	cur, found, err := c.s.deps.Currencies.Currency(ctx, code)
 	if err != nil {
 		return err
 	}
-	if !found || (!cur.Active && code != l.Currency) {
+	if !found || (!cur.Active && !c.mayKeep(code, l.Currency)) {
 		c.problems.Add(field+"currency", msgChooseCurrency)
 	}
 	l.Currency = code
