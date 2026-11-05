@@ -17,12 +17,14 @@ describe('PurchaseRequestTimeline', () => {
     expect(screen.getByText(/Priya Raman/).closest('li')).not.toHaveAttribute('aria-current');
   });
 
-  it('032 timeline: the GSAP PR number and purchase order show calendar dates, not times', () => {
+  it('032 timeline: the GSAP steps show calendar dates, not times', () => {
     const gsap = { id: 'gsap', name: 'GSAP' };
     const timeline = [
       { key: 'gsapPrNumber', label: 'GSAP PR number', reached: true, at: '2026-11-03T00:00:00Z' },
       { key: 'purchaseOrder', label: 'Purchase order', reached: true, at: '2026-11-04T00:00:00Z' },
-    ].map((step, i) => ({ ...step, by: gsap, detail: `450000${i}`, waiting: '' }));
+      { key: 'invoiced', label: 'Invoiced', reached: true, at: '2026-11-10T00:00:00Z' },
+      { key: 'paid', label: 'Paid', reached: true, at: '2026-11-24T00:00:00Z' },
+    ].map((step, i) => ({ ...step, by: gsap, detail: i < 2 ? `450000${i}` : '', waiting: '' }));
     renderWithProviders(
       <PurchaseRequestTimeline purchaseRequest={purchaseRequest({ timeline })} />,
       {
@@ -32,5 +34,7 @@ describe('PurchaseRequestTimeline', () => {
 
     expect(screen.getByText('03 Nov 2026 · GSAP · 4500000')).toBeInTheDocument();
     expect(screen.getByText('04 Nov 2026 · GSAP · 4500001')).toBeInTheDocument();
+    expect(screen.getByText('10 Nov 2026 · GSAP')).toBeInTheDocument();
+    expect(screen.getByText('24 Nov 2026 · GSAP')).toBeInTheDocument();
   });
 });

@@ -15,6 +15,7 @@ func (w *wiring) purchaseRequestsArea() error {
 		Currencies: w.settings, Attributes: prAttributes{settings: w.settings, repo: s.Settings},
 		Workflows: prWorkflows{repo: s.Approvals}, Invoices: prInvoices{repo: s.Financials, rates: w.settings.Rates},
 		Payments: prInvoices{repo: s.Financials, rates: w.settings.Rates},
+		Postings: prInvoices{repo: s.Financials, rates: w.settings.Rates}, Approvals: prApprovals{repo: s.Approvals},
 	})
 	if err := w.register(prs.Kinds()); err != nil {
 		return err

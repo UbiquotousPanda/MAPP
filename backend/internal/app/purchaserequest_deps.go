@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"slices"
 
+	"mapp/internal/approval"
 	"mapp/internal/financials"
 	"mapp/internal/people"
+	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 	"mapp/internal/purchaserequest"
 	"mapp/internal/settings"
@@ -151,4 +153,74 @@ func (x prInvoices) sumOn(ctx context.Context, kind financials.Type, lines []pur
 		invoiced[ref] = invoiced[ref].Add(usd)
 	}
 	return invoiced, nil
+}
+
+func (x prInvoices) FirstPostedOn(ctx context.Context, lines []purchaserequest.POLineRef) (map[purchaserequest.POLineRef]purchaserequest.FirstPosted, error) {
+	posted := map[purchaserequest.POLineRef]purchaserequest.FirstPosted{}
+	if len(lines) == 0 {
+		return posted, nil
+	}
+	all, err := x.repo.ListTransactions(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, t := range all {
+		ref := purchaserequest.POLineRef{PONumber: t.PONumber, Line: t.POLineNumber}
+		if !slices.Contains(lines, ref) {
+			continue
+		}
+		first, on := posted[ref], t.PostingDate
+		first.Invoice = earliest(first.Invoice, &on, t.Type == financials.TypeInvoice)
+		first.Payment = earliest(first.Payment, &on, t.Type == financials.TypePayment)
+		posted[ref] = first
+	}
+	return posted, nil
+}
+
+func earliest(a, b *date.Date, counts bool) *date.Date {
+	if counts && (a == nil || b.Before(*a)) {
+		return b
+	}
+	return a
+}
+
+// prApprovals implements purchaserequest.ApprovalRecords over the approval engine's rounds and actions.
+type prApprovals struct {
+	repo stores.ApprovalStore
+}
+
+func (x prApprovals) RoundsOf(ctx context.Context, id string) ([]purchaserequest.ApprovalRound, error) {
+	rounds, err := x.repo.RoundsOf(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	actions, err := x.repo.ActionsOf(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	list := make([]purchaserequest.ApprovalRound, 0, len(rounds))
+	for _, r := range rounds {
+		ar := purchaserequest.ApprovalRound{SubmittedAt: r.SubmittedAt, SubmittedBy: r.SubmittedBy}
+		if r.Outcome == approval.OutcomeApproved {
+			ar.ApprovedAt = r.EndedAt
+			if a, found := approvingAction(r, actions); found {
+				ar.ApprovedAt, ar.ApprovedBy = &a.At, &a.Actor
+			}
+		}
+		list = append(list, ar)
+	}
+	return list, nil
+}
+
+// approvingAction is the round's last approval, by a person or automatic.
+func approvingAction(r approval.Round, actions []approval.Action) (approval.Action, bool) {
+	var last approval.Action
+	found := false
+	for _, a := range actions {
+		approves := a.Action == approval.ActionApproved || a.Action == approval.ActionAutoApproved
+		if a.RoundID == r.ID && approves && (!found || !a.At.Before(last.At)) {
+			last, found = a, true
+		}
+	}
+	return last, found
 }
