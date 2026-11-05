@@ -18,6 +18,7 @@ type reader struct {
 	facts     map[string]LineItemFacts
 	people    map[string]Person
 	invoiced  map[POLineRef]money.Amount
+	paid      map[POLineRef]money.Amount
 	workflows map[string]*WorkflowRef
 }
 
@@ -43,6 +44,11 @@ func (s *Service) readerFor(ctx context.Context, a actor.Actor, prs []PurchaseRe
 	}
 	if r.invoiced, err = s.deps.Invoices.InvoicedOn(ctx, poLinesOf(prs)); err != nil {
 		return nil, err
+	}
+	if s.deps.Payments != nil {
+		if r.paid, err = s.deps.Payments.PaidOn(ctx, poLinesOf(prs)); err != nil {
+			return nil, err
+		}
 	}
 	return r, s.readWorkflows(ctx, r, prs)
 }
@@ -149,6 +155,16 @@ func (r *reader) invoicedTotal(lines []Line) money.Amount {
 		total = total.Add(r.invoicedUSD(l))
 	}
 	return total
+}
+
+func (r *reader) progressOf(lines []Line) progress {
+	p := progress{invoiced: r.invoicedTotal(lines).Sign() > 0}
+	for _, l := range lines {
+		if l.PO.Line != "" && r.paid[POLineRef{PONumber: l.PO.Number, Line: l.PO.Line}].Sign() > 0 {
+			p.paid = true
+		}
+	}
+	return p
 }
 
 func (r *reader) lineItemRef(id string) LineItemRef {

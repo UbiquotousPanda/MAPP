@@ -28,7 +28,7 @@ type Service struct {
 	rounds  Rounds
 	engine  Engine
 	gsap    GSAP
-	// overspend is Settings › Overspend control (demo-mvp #3, #4); nil allows no tolerance and refuses.
+	// overspend is Settings › Overspend control; nil allows no tolerance and refuses.
 	overspend Overspend
 }
 
@@ -47,9 +47,8 @@ func (s *Service) UseRounds(r Rounds) {
 	s.rounds = r
 }
 
-// UseGSAP connects GSAP (the simulated GSAP now, 033); until then the GSAP run is unavailable.
-// UseOverspend lets a line exceed what its line item has left by the tolerance of its amount (demo-mvp #4)
-// and, under Warn, lets a submission go while line items exceed an activity's planned cost (demo-mvp #3).
+// UseOverspend lets a line exceed what its line item has left by the tolerance of its amount and, under Warn,
+// lets a submission go while line items exceed an activity's planned cost.
 func (s *Service) UseOverspend(o Overspend) {
 	s.overspend = o
 }
@@ -63,11 +62,12 @@ func (s *Service) tolerancePercent(ctx context.Context) (int, error) {
 
 func (s *Service) refusesOverPlannedCost(ctx context.Context) (bool, error) {
 	if s.overspend == nil {
-		return true, nil
+		return false, nil
 	}
 	return s.overspend.RefusesOverPlannedCost(ctx)
 }
 
+// UseGSAP connects GSAP (the simulated GSAP now, 033); until then the GSAP run is unavailable.
 func (s *Service) UseGSAP(g GSAP) {
 	s.gsap = g
 }

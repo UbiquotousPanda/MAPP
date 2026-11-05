@@ -36,7 +36,7 @@ type checkInput struct {
 	workflow    *WorkflowFacts // the chosen workflow; nil when none is chosen or it no longer exists
 	lineItems   LineItemFacts
 	// overCostWarns makes line items above the planned cost advice, not a problem: Settings › Overspend
-	// control is Warn (demo-mvp #3).
+	// control is Warn.
 	overCostWarns bool
 }
 

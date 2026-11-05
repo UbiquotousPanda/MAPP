@@ -30,7 +30,7 @@ func (s *Service) viewOf(ctx context.Context, a actor.Actor, pr PurchaseRequest)
 	v := r.header(pr)
 	v.Readiness = Readiness{Ready: found.passed(), Problems: found.problems()}
 	v.Missing, v.Routings = missing, routingViews(routings)
-	if v.Timeline, err = s.timelineOf(ctx, a, pr, routings, r.invoicedTotal(pr.Lines).Sign() > 0); err != nil {
+	if v.Timeline, err = s.timelineOf(ctx, a, pr, routings, r.progressOf(pr.Lines)); err != nil {
 		return View{}, err
 	}
 	v.Access = s.access(ctx, accessFacts{pr: pr, config: r.config, routed: len(routings) > 0, plan: pr.planFacts(r.facts)})
@@ -49,7 +49,7 @@ func (r *reader) header(pr PurchaseRequest) View {
 		Plan: plan, Path: path, CostCentres: []string{}, HXKeys: []string{}, Attributes: nonNilValues(pr.Attributes),
 		Vendor: pr.Vendor, AmountDisplay: r.shown(r.usd(pr.Lines)), InvoicedDisplay: r.shown(r.invoicedTotal(pr.Lines)),
 		GSAPPRNumber: pr.GSAP.PRNumber, GSAPPRDate: pr.GSAP.PRDate, GSAPSource: pr.GSAP.Source,
-		WaitingForGSAP: waiting(pr), Stage: stageOf(pr, r.invoicedTotal(pr.Lines).Sign() > 0),
+		WaitingForGSAP: waiting(pr), Stage: stageOf(pr, r.progressOf(pr.Lines)),
 		Timeline: []TimelineStep{}, Notice: notice(pr, r.config), Meta: pr.Meta,
 	}
 	for _, l := range pr.Lines {

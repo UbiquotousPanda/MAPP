@@ -42,7 +42,7 @@ func keyOf(b Budget) budgetKey {
 }
 
 // Allowance is tolerancePercent of a, rounded down to the cent: how far over a a Refuse budget lets planned
-// cost go (demo-mvp #4).
+// cost go.
 func Allowance(a money.Amount, tolerancePercent int) money.Amount {
 	return money.FromCents(a.Cents() * int64(tolerancePercent) / percentHundred)
 }
@@ -53,7 +53,7 @@ func ValidTolerance(percent int) bool {
 }
 
 // Overages lists the budgets set to Refuse that a save took over by more than the tolerance (FR-009, FR-011,
-// research R2, demo-mvp #4): beyond it after the save, and either new (no budget before) or with more planned
+// research R2): beyond it after the save, and either new (no budget before) or with more planned
 // cost or a smaller amount than before. Within the tolerance a save only warns.
 func Overages(before, after []Budget, tolerancePercent int) []Overage {
 	known := make(map[budgetKey]Budget, len(before))
@@ -112,7 +112,7 @@ func Refusal(overages []Overage) *errs.Error {
 }
 
 // LimitsOf returns every budget on path, Warn or Refuse, with what is left to plan in each and, for Refuse, what
-// is left before it refuses, in the plan currency (FR-014, demo-mvp #3 and #4); a global budget's is converted
+// is left before it refuses, in the plan currency (FR-014); a global budget's is converted
 // from USD at rates.
 func LimitsOf(budgets []Budget, path Path, rates money.Rates, tolerancePercent int) ([]Limit, error) {
 	limits := []Limit{}

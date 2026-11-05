@@ -1,4 +1,4 @@
-// The action-items pop-up of Home (demo-mvp #9): what it asks the API and where each item leads.
+// The action-items pop-up of Home: what it asks the API and where each item leads.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';

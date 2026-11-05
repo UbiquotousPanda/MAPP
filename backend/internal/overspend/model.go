@@ -83,7 +83,7 @@ type Control struct {
 }
 
 // Limit is a budget above an activity and what is left to plan in it; negative when already over (FR-014).
-// LeftBeforeRefusing adds the tolerance for a Refuse budget and equals LeftToPlan for a Warn one (demo-mvp #4).
+// LeftBeforeRefusing adds the tolerance for a Refuse budget and equals LeftToPlan for a Warn one.
 type Limit struct {
 	Budget             errs.RecordRef `json:"budget"`
 	Mode               Mode           `json:"mode"`
@@ -97,7 +97,7 @@ type Path struct {
 	PlanCurrency                     string
 }
 
-// DefaultTolerancePercent is how far over its budget planned cost may go before Refuse refuses (demo-mvp #4).
+// DefaultTolerancePercent is how far over its budget planned cost may go before Refuse refuses.
 const DefaultTolerancePercent = 10
 
 type Configuration struct {

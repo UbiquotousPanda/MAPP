@@ -93,7 +93,7 @@ func (r *reader) row(pr PurchaseRequest) Row {
 	row := Row{ID: pr.ID, Name: pr.Name, Vendor: pr.Vendor, Status: pr.Status, ChangePending: pr.ChangePending,
 		AmountDisplay: r.shown(r.usd(pr.Lines)), InvoicedDisplay: r.shown(r.invoicedTotal(pr.Lines)),
 		Owner: r.person(pr.OwnerID), CreatedAt: pr.CreatedAt, ApprovalWorkflow: r.workflows[pr.WorkflowID],
-		GSAPPRNumber: pr.GSAP.PRNumber, WaitingForGSAP: waiting(pr), Stage: stageOf(pr, r.invoicedTotal(pr.Lines).Sign() > 0), Plan: plan, Lines: make([]RowLine, 0, len(pr.Lines))}
+		GSAPPRNumber: pr.GSAP.PRNumber, WaitingForGSAP: waiting(pr), Stage: stageOf(pr, r.progressOf(pr.Lines)), Plan: plan, Lines: make([]RowLine, 0, len(pr.Lines))}
 	for _, l := range pr.Lines {
 		row.Lines = append(row.Lines, RowLine{ID: l.ID, LineItem: r.lineItemRef(l.LineItemID),
 			LineItemOwner: r.person(r.facts[l.LineItemID].OwnerID), HXKey: HXKey(l.LineItemID), Amount: l.money(),

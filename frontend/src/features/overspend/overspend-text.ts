@@ -76,12 +76,12 @@ export function overLimitText(over: Money, type: string, name: string): string {
   return `This is ${formatMoneyText(over)} over the budget of ${levelWord(type)} '${name}', which refuses overspending.`;
 }
 
-/** The warning before saving a budget below its planned cost (demo-mvp #3). */
+/** The warning before saving a budget below its planned cost. */
 export function takesOverText(over: Money, budget: Money): string {
   return `This takes the planned cost ${formatMoneyText(over)} over its budget of ${formatMoneyText(budget)}.`;
 }
 
-/** The warning before saving a planned cost that goes over a budget above the activity (demo-mvp #3). */
+/** The warning before saving a planned cost that goes over a budget above the activity. */
 export function overBudgetText(over: Money, type: string, name: string, budget: Money): string {
   return `This takes ${levelWord(type)} '${name}' ${formatMoneyText(over)} over its budget of ${formatMoneyText(budget)}.`;
 }

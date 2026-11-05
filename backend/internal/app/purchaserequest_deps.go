@@ -119,6 +119,14 @@ type prInvoices struct {
 }
 
 func (x prInvoices) InvoicedOn(ctx context.Context, lines []purchaserequest.POLineRef) (map[purchaserequest.POLineRef]money.Amount, error) {
+	return x.sumOn(ctx, financials.TypeInvoice, lines)
+}
+
+func (x prInvoices) PaidOn(ctx context.Context, lines []purchaserequest.POLineRef) (map[purchaserequest.POLineRef]money.Amount, error) {
+	return x.sumOn(ctx, financials.TypePayment, lines)
+}
+
+func (x prInvoices) sumOn(ctx context.Context, kind financials.Type, lines []purchaserequest.POLineRef) (map[purchaserequest.POLineRef]money.Amount, error) {
 	invoiced := map[purchaserequest.POLineRef]money.Amount{}
 	if len(lines) == 0 {
 		return invoiced, nil
@@ -133,7 +141,7 @@ func (x prInvoices) InvoicedOn(ctx context.Context, lines []purchaserequest.POLi
 	}
 	for _, t := range all {
 		ref := purchaserequest.POLineRef{PONumber: t.PONumber, Line: t.POLineNumber}
-		if t.Type != financials.TypeInvoice || !slices.Contains(lines, ref) {
+		if t.Type != kind || !slices.Contains(lines, ref) {
 			continue
 		}
 		usd, err := rates.ToUSD(money.Money{Amount: t.Amount, Currency: t.Currency})

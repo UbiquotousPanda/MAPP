@@ -17,7 +17,7 @@ type Guard struct {
 	tolerance Tolerance
 }
 
-// Tolerance is the per cent over its budget a Refuse budget allows before refusing (demo-mvp #4).
+// Tolerance is the per cent over its budget a Refuse budget allows before refusing.
 type Tolerance interface {
 	TolerancePercent(ctx context.Context) (int, error)
 }

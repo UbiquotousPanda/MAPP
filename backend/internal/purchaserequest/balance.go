@@ -11,7 +11,7 @@ import (
 type balance struct {
 	rates  money.Rates
 	claims []Claim
-	// tolerancePercent of a request's amount it may exceed what its line item has left by (demo-mvp #4).
+	// tolerancePercent of a request's amount it may exceed what its line item has left by.
 	tolerancePercent int
 }
 

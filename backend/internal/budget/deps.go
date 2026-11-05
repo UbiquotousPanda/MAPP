@@ -73,7 +73,7 @@ type Access interface {
 	CanViewPlan(ctx context.Context, plan PlanInfo) bool
 	CanManageAll(ctx context.Context, personID string) (bool, error)
 	// SeeAllMarkets reports whether the person holds globalBudgets.view for All markets: they see every
-	// allocation row, also of plans outside their own scope (demo-mvp #2).
+	// allocation row, also of plans outside their own scope.
 	SeeAllMarkets(ctx context.Context) bool
 	// SeeFinanceIn reports whether the person sees the plan's committed and actual figures (finance.view).
 	SeeFinanceIn(ctx context.Context, plan PlanInfo) bool

@@ -40,25 +40,28 @@ type TimelineStep struct {
 	Waiting string       `json:"waiting"`
 }
 
-func (pr PurchaseRequest) reached(invoiced bool) map[string]bool {
+// progress is what GSAP's invoices and payments say about a purchase request's PO lines.
+type progress struct{ invoiced, paid bool }
+
+func (pr PurchaseRequest) reached(p progress) map[string]bool {
 	sent := slices.ContainsFunc(pr.Lines, func(l Line) bool { return l.SentOn != nil })
 	ordered := slices.ContainsFunc(pr.Lines, func(l Line) bool { return l.PO.Number != "" })
 	return map[string]bool{
 		stepCreated: true, stepSubmitted: pr.Status != StatusCreated || pr.Approved != nil,
 		stepApproved: pr.Approved != nil, stepSent: sent, stepPRNumber: pr.GSAP.PRNumber != "",
-		stepPO: ordered, stepInvoiced: invoiced,
+		stepPO: ordered, stepInvoiced: p.invoiced, stepPaid: p.paid,
 	}
 }
 
 // stageOf is the words of the last step the purchase request has reached; Declined and Closed replace them.
-func stageOf(pr PurchaseRequest, invoiced bool) string {
+func stageOf(pr PurchaseRequest, p progress) string {
 	switch pr.Status {
 	case StatusDeclined:
 		return "Declined"
 	case StatusClosed:
 		return "Closed"
 	}
-	reached := pr.reached(invoiced)
+	reached := pr.reached(p)
 	stage := stepLabels[0].label
 	for _, s := range stepLabels {
 		if reached[s.key] {
@@ -70,12 +73,12 @@ func stageOf(pr PurchaseRequest, invoiced bool) string {
 
 // timelineOf lists the eight steps with who and when for each one reached, and for the first one not
 // reached the words "Waiting for …".
-func (s *Service) timelineOf(ctx context.Context, a actor.Actor, pr PurchaseRequest, routings []Routing, invoiced bool) ([]TimelineStep, error) {
+func (s *Service) timelineOf(ctx context.Context, a actor.Actor, pr PurchaseRequest, routings []Routing, p progress) ([]TimelineStep, error) {
 	page, err := s.history.QueryLog(ctx, a, history.LogQuery{RecordID: pr.ID, RecordTypes: []string{recordKind}, Limit: timelineLimit})
 	if err != nil {
 		return nil, err
 	}
-	reached := pr.reached(invoiced)
+	reached := pr.reached(p)
 	steps := make([]TimelineStep, 0, len(stepLabels))
 	waitingSet := false
 	for _, def := range stepLabels {
@@ -95,7 +98,9 @@ func fillStep(step *TimelineStep, pr PurchaseRequest, items []history.EntryView,
 	case stepCreated:
 		step.At, step.By = &pr.CreatedAt, &pr.CreatedBy
 	case stepSubmitted:
-		setFromLog(step, items, func(verb string) bool { return strings.HasPrefix(verb, "submitted") || strings.HasPrefix(verb, "re-submitted") }, true)
+		setFromLog(step, items, func(verb string) bool {
+			return strings.HasPrefix(verb, "submitted") || strings.HasPrefix(verb, "re-submitted")
+		}, true)
 	case stepApproved:
 		setFromLog(step, items, func(verb string) bool { return verb == "approved" || verb == "approved automatically" }, false)
 		if step.At == nil && pr.Approved != nil {

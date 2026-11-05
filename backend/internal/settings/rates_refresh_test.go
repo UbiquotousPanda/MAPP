@@ -83,3 +83,27 @@ func TestSimulatedRows_RepeatableAndNeverStandStill_Demo10(t *testing.T) {
 		}
 	}
 }
+
+func TestRefreshRates_StayNearTheRateTheyStartedFromAllDay_Demo10(t *testing.T) {
+	t.Parallel()
+	f := feedFixture(t)
+	before, err := f.service.ListCurrentRates(t.Context(), alex)
+	if err != nil {
+		t.Fatalf("ListCurrentRates() error = %v", err)
+	}
+	var after CurrentRatePage
+	for tick := 1; tick <= 32; tick++ {
+		f.clock.now = october20.Add(time.Duration(tick) * 15 * time.Minute)
+		if after, err = f.service.RefreshRates(t.Context(), alex); err != nil {
+			t.Fatalf("RefreshRates() tick %d error = %v", tick, err)
+		}
+	}
+
+	for _, code := range []string{"EUR", "GBP", "INR"} {
+		was, now := ratePage(t, before, code), ratePage(t, after, code)
+		moved := now.Rate.Micros() - was.Rate.Micros()
+		if limit := was.Rate.Micros() * maxDriftBasisPoints / basisPointsPerUnit; moved > limit || moved < -limit {
+			t.Errorf("%s moved %d after a day of refreshes, want within ±%d of %v", code, moved, limit, was.Rate)
+		}
+	}
+}

@@ -138,7 +138,7 @@ func (s *Service) RefusesOverPlannedCost(ctx context.Context) (bool, error) {
 }
 
 // TolerancePercent is how far over its budget planned cost may go before Refuse refuses, and how far over what
-// its line item has left a purchase request may go (demo-mvp #4); it joins the caller's transaction.
+// its line item has left a purchase request may go; it joins the caller's transaction.
 func (s *Service) TolerancePercent(ctx context.Context) (int, error) {
 	c, err := s.repo.Configuration(ctx)
 	return c.TolerancePercent, err

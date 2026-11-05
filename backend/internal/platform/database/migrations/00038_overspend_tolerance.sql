@@ -1,5 +1,5 @@
 -- +goose Up
--- demo-mvp #4: how far over its budget planned cost may go before a budget set to Refuse refuses, in whole per cent.
+-- How far over its budget planned cost may go before a budget set to Refuse refuses, in whole per cent.
 ALTER TABLE overspend_configuration
     ADD COLUMN tolerance_percent integer NOT NULL DEFAULT 10 CHECK (tolerance_percent BETWEEN 0 AND 100);
 

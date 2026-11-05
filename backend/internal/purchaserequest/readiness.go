@@ -43,7 +43,7 @@ func (s *Service) gates(ctx context.Context, pr PurchaseRequest, facts map[strin
 		if err != nil {
 			return nil, err
 		}
-		if refuses { // under Warn the approver is warned instead (038 FR-018, demo-mvp #3)
+		if refuses { // under Warn the approver is warned instead (038 FR-018)
 			problems = append(problems, overspentActivityGates(pr, facts)...)
 		}
 	}
@@ -85,7 +85,7 @@ func activityGates(pr PurchaseRequest, facts map[string]LineItemFacts) []Problem
 }
 
 // overspentActivityGates stop a submission while an activity's line items cost more than its planned cost, when
-// Settings › Overspend control refuses it (037 FR-019, D-349; demo-mvp #3 makes Warn only warn), naming each
+// Settings › Overspend control refuses it (037 FR-019, D-349; under Warn it only warns), naming each
 // activity once.
 func overspentActivityGates(pr PurchaseRequest, facts map[string]LineItemFacts) []Problem {
 	problems := []Problem{}

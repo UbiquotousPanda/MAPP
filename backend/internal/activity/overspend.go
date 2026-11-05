@@ -8,7 +8,7 @@ import (
 )
 
 // Overspend gives the budgets above an activity and what is left to plan in each (037 FR-014), and whether
-// line items above the planned cost refuse or only warn (demo-mvp #3).
+// line items above the planned cost refuse or only warn.
 type Overspend interface {
 	Limits(ctx context.Context, path overspend.Path) ([]overspend.Limit, error)
 	RefusesOverPlannedCost(ctx context.Context) (bool, error)
@@ -19,7 +19,7 @@ func (s *Service) UseOverspend(o Overspend) {
 }
 
 // refusesOverPlannedCost is true when Settings › Overspend control refuses line items above the planned cost;
-// under Warn (the default) submitting only warns of them (demo-mvp #3). Read once per transaction.
+// under Warn (the default) submitting only warns of them. Read once per transaction.
 func (s *Service) refusesOverPlannedCost(ctx context.Context) (bool, error) {
 	if s.overspend == nil {
 		return false, nil

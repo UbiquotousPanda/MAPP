@@ -23,7 +23,7 @@ interface AllocationsProps {
 /**
  * One row per local budget (allocated plan) the person can see, then "Other markets (n plans)" (FR-032,
  * FR-033). Someone who sees global budgets for All markets gets every row; a plan outside their scope is
- * shown without a link and read-only (demo-mvp #2).
+ * shown without a link and read-only.
  */
 export function Allocations({ budget, onAllocate, onChange, onRemove }: AllocationsProps) {
   const { money } = useFormatters();

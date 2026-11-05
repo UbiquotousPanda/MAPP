@@ -9,7 +9,7 @@ import {
   takesOverText,
 } from './overspend-text';
 
-/** The organisation's "Allow up to n% over before refusing" while the setting loads (demo-mvp #4). */
+/** The organisation's "Allow up to n% over before refusing" while the setting loads. */
 export const DEFAULT_TOLERANCE_PERCENT = 10;
 
 export interface BudgetCheckInput {
@@ -17,7 +17,7 @@ export interface BudgetCheckInput {
   typed: string;
   stored: string | null;
   planned: Money | null;
-  /** Settings › Overspend control's tolerance; within it a Refuse budget only warns (demo-mvp #4). */
+  /** Settings › Overspend control's tolerance; within it a Refuse budget only warns. */
   tolerancePercent?: number;
 }
 
@@ -39,7 +39,7 @@ export function allowanceCents(cents: bigint, tolerancePercent: number): bigint 
 }
 
 /**
- * A budget typed below its planned cost (demo-mvp #3, #4): a warning before saving under Warn, or under Refuse
+ * A budget typed below its planned cost: a warning before saving under Warn, or under Refuse
  * within the tolerance; beyond it, a Refuse budget is refused when lowered or newly set and noted when kept.
  */
 export function budgetCheck({
@@ -105,7 +105,7 @@ export function overLimitMessages(
 
 /**
  * What a typed planned cost would take over a budget above the activity without being refused: a Warn budget, or
- * a Refuse budget within the tolerance. Shown before saving; the save goes ahead (demo-mvp #3).
+ * a Refuse budget within the tolerance. Shown before saving; the save goes ahead.
  */
 export function overBudgetWarnings(
   limits: OverspendLimit[],
