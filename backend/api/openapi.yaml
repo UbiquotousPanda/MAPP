@@ -11848,6 +11848,8 @@ components:
         tolerancePercent:
           description: A whole per cent from 0 to 100; absent keeps the stored value.
           type: integer
+          minimum: 0
+          maximum: 100
     ActivityOverage:
       type: object
       additionalProperties: false
@@ -11887,7 +11889,7 @@ components:
           type: boolean
         releaseInGsapAfterApproval:
           type: boolean
-          description: Release in GSAP right after approval in SP&A One (demo feedback #6); on by default.
+          description: Release in GSAP right after approval in SP&A One; on by default.
         linesOnApprovedPurchaseRequests:
           $ref: "#/components/schemas/LinesOnApprovedPurchaseRequests"
         version:

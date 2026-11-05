@@ -4,7 +4,6 @@ export { OverspendSettingsPage } from './OverspendSettingsPage';
 export { RefusesOverspending } from './RefusesOverspending';
 export { OVERSPEND_SETTINGS_SECTIONS } from './settings-sections';
 export {
-  DEFAULT_TOLERANCE_PERCENT,
   allowanceCents,
   budgetCheck,
   limitNotes,

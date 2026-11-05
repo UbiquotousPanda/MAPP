@@ -9,15 +9,12 @@ import {
   takesOverText,
 } from './overspend-text';
 
-/** The organisation's "Allow up to n% over before refusing" while the setting loads. */
-export const DEFAULT_TOLERANCE_PERCENT = 10;
-
 export interface BudgetCheckInput {
   mode: OverspendMode;
   typed: string;
   stored: string | null;
   planned: Money | null;
-  /** Settings › Overspend control's tolerance; within it a Refuse budget only warns. */
+  /** Settings › Overspend control's tolerance; while it is unknown only the API refuses. */
   tolerancePercent?: number;
 }
 
@@ -47,7 +44,7 @@ export function budgetCheck({
   typed,
   stored,
   planned,
-  tolerancePercent = DEFAULT_TOLERANCE_PERCENT,
+  tolerancePercent,
 }: BudgetCheckInput): BudgetCheck {
   const typedCents = centsOf(typed);
   if (!planned || typedCents === null) {
@@ -62,7 +59,9 @@ export function budgetCheck({
     amount: formatCents(typedCents),
     currency: planned.currency,
   });
-  const withinTolerance = plannedCents <= typedCents + allowanceCents(typedCents, tolerancePercent);
+  const withinTolerance =
+    tolerancePercent === undefined ||
+    plannedCents <= typedCents + allowanceCents(typedCents, tolerancePercent);
   if (mode !== 'refuse' || withinTolerance) {
     return { error: null, note: warning };
   }

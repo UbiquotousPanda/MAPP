@@ -6,7 +6,7 @@ import type { RecordFormValues } from './schemas';
 export function overspendRefusal(
   typed: RecordFormValues,
   opened: Campaign | Initiative,
-  tolerancePercent: number,
+  tolerancePercent: number | undefined,
 ): string | null {
   return budgetCheck({
     mode: typed.overspend,

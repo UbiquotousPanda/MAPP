@@ -28,7 +28,7 @@ type Service struct {
 	rounds  Rounds
 	engine  Engine
 	gsap    GSAP
-	// overspend is Settings › Overspend control; nil allows no tolerance and refuses.
+	// overspend is Settings › Overspend control; nil allows no tolerance and only warns.
 	overspend Overspend
 }
 

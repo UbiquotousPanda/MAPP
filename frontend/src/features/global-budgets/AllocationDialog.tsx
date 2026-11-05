@@ -9,7 +9,7 @@ import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
-import { budgetCheck, OverspendField } from '@/features/overspend';
+import { budgetCheck, OverspendField, useTolerancePercent } from '@/features/overspend';
 import { formatAmount } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import { useAllocate, useAllocationOptions, useUpdateAllocation } from './api';
@@ -64,10 +64,12 @@ export function AllocationDialog({ budget, target, onClose }: AllocationDialogPr
   const busy = allocate.isPending || change.isPending;
   const option = optionOf(useWatch({ control: form.control, name: 'planId' }));
   const typedAmount = useWatch({ control: form.control, name: 'amount' });
+  const tolerancePercent = useTolerancePercent();
   const check = (mode: AllocationValues['overspend'], typed: string) =>
     budgetCheck({
       mode,
       typed,
+      tolerancePercent,
       stored:
         target.kind === 'change' ? target.row.amount.amount : (option?.budget?.amount ?? null),
       planned: target.kind === 'change' ? target.row.plannedCost : null,

@@ -30,8 +30,7 @@ export function useSaveOverspendConfiguration() {
   });
 }
 
-/** Settings › Overspend control's "Allow up to n% over before refusing", the default while it loads. */
-export function useTolerancePercent(): number {
-  const config = useOverspendConfiguration();
-  return config.data?.tolerancePercent ?? 10;
+/** Settings › Overspend control's "Allow up to n% over before refusing"; undefined until it loads. */
+export function useTolerancePercent(): number | undefined {
+  return useOverspendConfiguration().data?.tolerancePercent;
 }

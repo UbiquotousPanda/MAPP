@@ -82,6 +82,15 @@ describe('demo-mvp #4 budgetCheck tolerance', () => {
       }).error,
     ).not.toBeNull();
   });
+
+  it('leaves refusing to the API while the tolerance is not loaded, and warns', () => {
+    expect(
+      budgetCheck({ mode: 'refuse', typed: '100,000', stored: '150000.00', planned: PLANNED }),
+    ).toEqual({
+      error: null,
+      note: 'This takes the planned cost 20,000.00 USD over its budget of 100,000.00 USD.',
+    });
+  });
 });
 
 const refuseLimit = (type: string, id: string, name: string, left: string) => ({

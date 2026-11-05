@@ -221,7 +221,7 @@ function overspendCheck(
   budget: GlobalBudget,
   mode: GlobalBudgetValues['overspend'],
   typed: string,
-  tolerancePercent: number,
+  tolerancePercent: number | undefined,
 ) {
   return budgetCheck({
     mode,

@@ -5806,7 +5806,7 @@ export interface components {
         GsapSource: "" | "simulatedGsap" | "gsap";
         PurchaseRequestConfiguration: {
             purchaseSupport: boolean;
-            /** @description Release in GSAP right after approval in SP&A One (demo feedback */
+            /** @description Release in GSAP right after approval in SP&A One; on by default. */
             releaseInGsapAfterApproval: boolean;
             linesOnApprovedPurchaseRequests: components["schemas"]["LinesOnApprovedPurchaseRequests"];
             version: number;

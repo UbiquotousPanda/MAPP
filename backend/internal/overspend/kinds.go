@@ -45,8 +45,7 @@ func (s *Service) put(ctx context.Context, snap history.Snapshot) error {
 
 func describe(_ context.Context, field string, value any) (string, string, error) {
 	if field == fieldTolerance {
-		percent, _ := value.(float64)
-		return labelTolerance, fmt.Sprintf("%g%%", percent), nil
+		return labelTolerance, fmt.Sprintf("%v%%", value), nil
 	}
 	text, _ := value.(string)
 	switch field {
