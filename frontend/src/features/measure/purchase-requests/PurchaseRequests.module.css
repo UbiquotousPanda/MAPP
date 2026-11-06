@@ -5,6 +5,10 @@
   margin: 0;
 }
 
+.cards > * {
+  container: figure-card / inline-size;
+}
+
 .card dt {
   color: var(--ink-2);
   font-size: var(--text-sm);

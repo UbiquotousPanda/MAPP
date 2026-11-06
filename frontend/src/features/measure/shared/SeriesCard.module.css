@@ -2,6 +2,7 @@
   position: relative;
   display: grid;
   min-width: 0;
+  container: figure-card / inline-size;
 }
 
 .card::before {

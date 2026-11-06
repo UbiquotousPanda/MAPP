@@ -12,6 +12,10 @@
   gap: var(--space-4);
 }
 
+.cards > * {
+  container: figure-card / inline-size;
+}
+
 .card {
   border: 1px solid var(--card-border);
   border-radius: var(--radius-card);
