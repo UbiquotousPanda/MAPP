@@ -162,5 +162,6 @@ application use these definitions. Hive9 names are given in brackets where users
 | **Is integrated** | Whether an activity has a data source matched to it. |
 | **Projection** | Projected stage volumes and revenue from an activity's goal through the model's conversion rates, placed in time by its **velocity** (months between stages), up to the end of the plan year (feature 047). |
 | **Attribution model** | The rule that shares revenue credit between the activities that touched a deal (first touch, last touch, equally distributed, linear time decay, U-shaped). The chosen model is named next to every credited figure (feature 050). |
+| **Journey** | The steps one customer took before a deal — inquiries, MQLs and web visits on activities — linked by a pseudonymous reference from the data source. The attribution model shares the deal between the steps on or before it; a step is one activity on one day (features 050, 058). |
 | **ROI** | (Attributed revenue − cost) ÷ cost as a whole per cent, with its cost basis named. |
 | **GSAP link reports** | SWBS codes requested and not received, purchase requests waiting for GSAP, and the purchase orders per line item (feature 044). |

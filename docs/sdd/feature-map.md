@@ -51,7 +51,7 @@ In progress · Built (merged on `plan-module`, or on `measure-module` for 039–
 | 051 | [051-dashboard-builder](../../specs/051-dashboard-builder/spec.md) | Dashboard builder: people build their own dashboards of ECharts charts, figure tiles, tables and notes from the Plan-module data they may see and from CSV or Excel datasets they upload; one Dashboards list with 036's built-ins, viewing at `/dashboards/:id`, building at `/builder`, view-only sharing with teams (constitution 4.9.0, D-371–D-378, ADR-0020) | P2 | 014, 036, 012 | Planned |
 | 052 | [052-search-whole-hierarchy](../../specs/052-search-whole-hierarchy/spec.md) | Search the whole hierarchy: the plan tree's search finds line items as rows under their activity, and the Plans list's search finds a plan by any campaign, initiative, activity or line item in it, saying where it matched (D-366) | P2 | 004, 005, 006, 007 | Built |
 
-## Measure module (features 039–050, constitution 4.8.0, D-366)
+## Measure module (features 039–050 and 058, constitution 4.8.0, D-366)
 
 Read-only reports, shown as **Reports**. Built on the `measure-module` branch by four lanes (A–D) following
 [measure-module-build.md](measure-module-build.md); the figures are defined once in
@@ -72,6 +72,7 @@ Read-only reports, shown as **Reports**. Built on the `measure-module` branch by
 | 048 | `048-summary-report` | Projected against goal, four league tables, funnel stages and conversion against goal | B · C · 14 | 039, 046, 047 | Built — #106, #139, #148 |
 | 049 | `049-revenue-and-funnel-reports` | Summary cards per stage and category, actual, projected and goal split at today, the ranked list by revenue or a stage | B · B · 14 | 040, 046, 047 | Built — #82, #99, #115, #118, #157; owner and model on ranked entries in #158 |
 | 050 | `050-attribution-roi` | A chosen attribution model credits revenue to activities; ROI with its model and cost basis named | B · A · 16 | 046, 048, 049 | Built — #71, #119, #149, #153; *Use planned cost* open as #160 |
+| 058 | `058-attribution-journeys` | How attributed revenue is made up: Revenue's activity figure opens a side panel of the deals it is concerned in, each with its journey's steps and the activity's share; comparison model, export (D-409) | B · A · 22 | 046, 049, 050 | Specified (6 Nov 2026), not built |
 
 **Wave C (out of scope, future integration points):** the Finance budget report (needs the Finance budgets
 module), AR invoice details (accrual requests), the China budget pack (budget release figures), vendor delivery
