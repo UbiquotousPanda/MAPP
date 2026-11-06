@@ -26,3 +26,4 @@ Consequences. Add a new ADR (next number) instead of editing an accepted one; ma
 | [0018](0018-web-content-security-policy.md) | The web app's content security policy, with inline style elements allowed | Accepted |
 | [0019](0019-overspend-guard-unscoped-budget-read.md) | The overspend guard reads every budget without the actor's scope | Proposed |
 | [0020](0020-apache-echarts-for-the-dashboard-builder.md) | Apache ECharts for the dashboard builder's charts | Accepted |
+| [0023](0023-hosted-test-vm.md) | One Azure VM as a hosted test environment | Accepted |

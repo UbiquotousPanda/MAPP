@@ -74,6 +74,30 @@ func TestEngine_RefusesOtherHosts(t *testing.T) {
 	}
 }
 
+// A hosted test environment also answers the host names it is given, and only those.
+func TestEngine_AnswersPublicHosts(t *testing.T) {
+	t.Parallel()
+	hosts := map[string]bool{
+		"mapp-test.eastus.cloudapp.azure.com": false, "MAPP-TEST.eastus.cloudapp.azure.com:443": false,
+		"127.0.0.1:8080": false, "evil.example": true, "mapp-test.eastus.cloudapp.azure.com.evil.example": true,
+	}
+	engine, err := web.NewEngine(web.Options{Tracer: tracenoop.NewTracerProvider(), Meter: metricnoop.NewMeterProvider(),
+		PublicHosts: []string{"mapp-test.eastus.cloudapp.azure.com"}})
+	if err != nil {
+		t.Fatalf("NewEngine: %v", err)
+	}
+	engine.GET(testPath, ok)
+	for host, refused := range hosts {
+		r := newRequest(http.MethodGet, testPath, "")
+		r.Host = host
+		w := httptest.NewRecorder()
+		engine.ServeHTTP(w, r)
+		if got := w.Code == http.StatusBadRequest; got != refused {
+			t.Errorf("%s: refused = %v, want %v (status %d)", host, got, refused, w.Code)
+		}
+	}
+}
+
 func TestEngine_PanicAnswersInternalError_024_FR009(t *testing.T) {
 	t.Parallel()
 	w := serve(t, func(*gin.Context) { panic("boom") }, newRequest(http.MethodGet, testPath, ""))

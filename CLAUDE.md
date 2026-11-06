@@ -1,6 +1,6 @@
 # CLAUDE.md — guidance for AI agents working on MAPP
 
-Read this with `.specify/memory/constitution.md` (the rules, version 4.9) before doing anything. Where
+Read this with `.specify/memory/constitution.md` (the rules, version 4.10) before doing anything. Where
 this file and the constitution disagree, the constitution wins and this file is corrected. Working in
 `backend/`? `backend/CLAUDE.md` loads the Go standards (`backend/docs/GO_STANDARDS.md`).
 
@@ -82,7 +82,8 @@ Software Design & Construction Policy and SEMS, which are mandatory.
     The self-service dashboard builder with uploaded datasets is in scope since 4.9.0 (feature 051, D-371).
 14. **Local only:** servers listen on `127.0.0.1`; no cloud services at run time; Docker or Podman only
     optionally, for PostgreSQL or for reviewers running the whole app from `compose.yaml` (ADR-0012);
-    developing MAPP never needs them; no secrets in the repository.
+    developing MAPP never needs them; no secrets in the repository. The one exception is the hosted test VM
+    (constitution 4.10.0, ADR-0023, `deploy/test-vm/`), with the demo seed only.
 15. **Alignment** (constitution, Governance): code written before constitution 2.0.0 is aligned by
     dedicated features later. Until a package or screen is aligned, a change to it keeps its current
     stack and structure — don't migrate it as a side effect of another change. New packages, screens and

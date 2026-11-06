@@ -1,0 +1,9 @@
+#cloud-config
+# Passed to `az vm create --custom-data`: Docker with Compose, and the admin user allowed to run it.
+package_update: true
+packages:
+  - docker.io
+  - docker-compose-v2
+runcmd:
+  - systemctl enable --now docker
+  - usermod -aG docker azureuser

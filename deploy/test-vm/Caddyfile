@@ -1,0 +1,4 @@
+{$MAPP_HOST} {
+	log
+	reverse_proxy web:8080
+}

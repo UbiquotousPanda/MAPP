@@ -39,6 +39,7 @@ type Config struct {
 	ShutdownTimeout time.Duration
 	Telemetry       telemetry.Config
 	TrustedProxies  []string
+	PublicHosts     []string
 }
 
 type reader struct {
@@ -63,6 +64,7 @@ func LoadConfig(getenv func(name string) string) (Config, error) {
 			Metrics: env.exporter("OTEL_METRICS_EXPORTER"),
 		},
 		TrustedProxies: env.proxies("TRUSTED_PROXIES"),
+		PublicHosts:    env.hosts("PUBLIC_HOSTS"),
 	}
 	if len(env.problems) > 0 {
 		return Config{}, errors.New(strings.Join(env.problems, "\n"))
@@ -139,6 +141,24 @@ func (r *reader) proxies(name string) []string {
 		_, _, cidrErr := net.ParseCIDR(part)
 		if net.ParseIP(part) == nil && cidrErr != nil {
 			r.problem("%s must list IP addresses or CIDR ranges separated by commas (it is '%s').", name, value)
+			return nil
+		}
+		list = append(list, part)
+	}
+	return list
+}
+
+// hosts reads the host names, besides this computer's, that a hosted test environment is reached by.
+func (r *reader) hosts(name string) []string {
+	value := r.getenv(name)
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	var list []string
+	for part := range strings.SplitSeq(value, ",") {
+		part = strings.ToLower(strings.TrimSpace(part))
+		if part == "" || strings.Trim(part, "abcdefghijklmnopqrstuvwxyz0123456789.-") != "" {
+			r.problem("%s must list host names, without scheme or port, separated by commas (it is '%s').", name, value)
 			return nil
 		}
 		list = append(list, part)
