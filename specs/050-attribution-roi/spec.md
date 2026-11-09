@@ -48,6 +48,11 @@ the decision log.
 
 ### Follow-ups (not built by 050)
 
+- **Built by 058 (D-409):** the deals behind one activity's credit, each with its journey's steps and the
+  activity's share, with one comparison model for that activity; 058 states the crediting rules as built
+  (R1–R12: a fact matched to no activity belongs to no journey, so *Unattributed* is a journey with no step on
+  or before its deal) and converts the deals of one activity, month and currency to US dollars as parts, so they
+  add up to 049's Actual.
 - The Attribution view of client 020 FR-060: pick any model, credited revenue and conversions by activity, the
   unattributed amount, a cross-model comparison and freshness, without changing the designated model (050-C2).
 - The six weighted models of client 020 FR-056 with their settings (half-life, touch-type weights) (050-C1).
