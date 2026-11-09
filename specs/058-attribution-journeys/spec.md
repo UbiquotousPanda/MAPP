@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-06
 
-**Status**: Specified (6 Nov 2026), not built
+**Status**: In progress (building since 9 Nov 2026)
 
 **Input**: Integrator, after the demo prep of 6 Nov 2026: "On the Revenue report's ranked list, at the activity
 level, clicking an activity's attributed revenue opens a side panel listing every deal that credited it — the
@@ -47,17 +47,19 @@ explained why *Tellus webinar series* is credited $18,702.90 while booking no re
 - **058-C6** Q: Does the panel export? → A: **Yes**, as every widget does (039): CSV or Excel through the report's
   export with the widget `deals`, needing Export data, one row per deal, the usual notes (US3).
 
-### Open questions for Shell
+### Session 2026-11-09 (integrator, before building; for Shell to confirm)
 
-- **058-Q1** Should a journey be credited **across plans** — the same shares for everyone, steps in plans the
-  viewer can't open shown as "a step in a plan you can't open" — instead of within each viewer's plans? It would
-  reveal that such steps exist and when, and would change 050-C4 and every attributed figure.
-- **058-Q2** An INQ and an MQL on one activity on the same day are **one step** (R3, as built). Should each fact be
-  its own step, giving that activity two shares? And on a same-day tie for the last step, activity ID decides
-  (R5): is another order wanted (an MQL after an INQ, say)?
-- **058-Q3** Is the comparison model (US2) wanted now, or only with the full Attribution view?
-- **058-Q4** Is a deal's **source reference** (from Shell's CRM export) safe to show to everyone with Reports view?
-  If it can carry a customer's name, the panel numbers deals by date instead (Deal 1, 2…).
+- **058-Q1** Q: Credit a journey **across plans**, the same shares for everyone, with hidden steps shown as "a
+  step in a plan you can't open"? → A: **No — within the viewer's plans**, as built (050-C4, 058-C1). Crediting
+  across plans would reveal that such steps exist and when, and would restate every attributed figure.
+- **058-Q2** Q: An INQ and an MQL on one activity on the same day: one step or two? → A: **One step** (R3, as
+  built and as D-398 says), listing both stages. On a same-day tie for the last step, activity ID decides (R5).
+- **058-Q3** Q: Build the comparison model (US2) now? → A: **Yes**, for one activity in the panel only; the full
+  Attribution view stays a follow-up (050-C2).
+- **058-Q4** Q: Is a deal's **source reference** safe to show? → A: **Yes**: the panel shows the source and its
+  reference ("Measure demo feed · MD-009"), which is what a planner matches against the CRM export; 046 refuses
+  files with personal-data columns before a row is stored (046-C6). If Shell's references turn out to carry
+  names, the panel numbers deals by date instead.
 
 ## Crediting rules (050 as built, `measure/attribution`, with D-409)
 
