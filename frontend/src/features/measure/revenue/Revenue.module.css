@@ -81,3 +81,19 @@
   color: var(--ink);
   font-size: var(--text-sm);
 }
+
+.figureButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.figureButton:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

@@ -1,11 +1,22 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useFormatters } from '@/format/useFormatters';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { RankedList, ReportFrame, useRankedState } from '../shared';
-import type { RankedColumn, ReportAddress, ReportFrameData } from '../shared';
+import type {
+  Money,
+  RankedColumn,
+  RankedEntryData,
+  ReportAddress,
+  ReportFrameData,
+} from '../shared';
 import { useRevenueReport, useRevenueRanked } from './api';
 import type { RevenueFigures, RevenueRanked, RevenueRankedParams } from './api';
 import { CategorySelect } from './CategorySelect';
+import { useDealsAddress } from './deals/address';
+import { DealsPanel } from './deals/DealsPanel';
+import type { OpenedWith } from './deals/DealsPanel';
 import { RevenueCards } from './RevenueCards';
 import { RevenueChart } from './RevenueChart';
 import { reasonText } from './reasons';
@@ -32,6 +43,33 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
   const { state } = useRankedState(DEFAULT_SORT);
   const ranked = useRevenueRanked(address, rankedParams(state, category));
   const show = address.show ?? 'campaign';
+  const queryClient = useQueryClient();
+  const [openedWith, setOpenedWith] = useState<OpenedWith | null>(null);
+  const deals = useDealsAddress();
+  const openDeals = (entry: RankedEntryData<RevenueFigures>, amount: Money) => {
+    setOpenedWith({ name: entry.name, amount, model: ranked.data?.attribution.model ?? '' });
+    deals.open(entry.id);
+  };
+  const refreshReport = () => {
+    setOpenedWith(null);
+    void queryClient.invalidateQueries({ queryKey: ['reports', 'revenue'] });
+  };
+  const attributedCell = (f: RevenueFigures, entry: RankedEntryData<RevenueFigures>) => {
+    const amount = f.attributedRevenue;
+    if (!amount || entry.level !== 'activity') {
+      return amount ? money(amount) : reasonText(f.attributedRevenueReason);
+    }
+    return (
+      <button
+        type="button"
+        className={styles.figureButton}
+        aria-label={`Attributed revenue of ${entry.name}: ${money(amount)} — see the deals`}
+        onClick={() => openDeals(entry, amount)}
+      >
+        {money(amount)}
+      </button>
+    );
+  };
   const columns: RankedColumn<RevenueFigures>[] = [
     { key: 'goal', label: 'Goal', value: (f) => (f.goal ? money(f.goal) : '—'), sortable: false },
     {
@@ -55,6 +93,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       label: attributedLabel(ranked.data?.attribution),
       value: (f) =>
         f.attributedRevenue ? money(f.attributedRevenue) : reasonText(f.attributedRevenueReason),
+      render: attributedCell,
       sortable: false,
     },
     {
@@ -112,6 +151,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
           Actual cost and ROI leave out the plans whose financial data you may not see.
         </p>
       )}
+      <DealsPanel address={address} openedWith={openedWith} onRefresh={refreshReport} />
     </div>
   );
 }

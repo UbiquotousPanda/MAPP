@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { recordHref } from '@/ui/record-links';
 import type { PlanningRecordType } from '@/ui/record-links';
@@ -37,6 +38,8 @@ export interface RankedColumn<F> {
   label: string;
   value: (figures: F) => string;
   sortable?: boolean;
+  /** Draws an entry's cell instead of its text, such as a figure that opens a panel; group totals keep the text. */
+  render?: (figures: F, entry: RankedEntryData<F>) => ReactNode;
 }
 
 export interface RankedListProps<F> {
@@ -231,7 +234,7 @@ function Rows<F>({ entry, columns, flag, owner, onDrill }: RowsProps<F>) {
         {owner && <td>{e.owner?.name ?? '—'}</td>}
         {columns.map((c) => (
           <td key={c.key} className={styles.numeric}>
-            {c.value(e.figures)}
+            {c.render ? c.render(e.figures, e) : c.value(e.figures)}
           </td>
         ))}
       </tr>

@@ -67,6 +67,14 @@ const OWN_VALUES = [
   'performanceBy',
   'costBy',
   'roiBy',
+  'activity',
+] as const;
+const COMPARE_MODELS = [
+  'firstTouch',
+  'lastTouch',
+  'equallyDistributed',
+  'linearTimeDecay',
+  'uShaped',
 ] as const;
 const OWN_LISTS = [
   'recordType',
@@ -92,6 +100,8 @@ function ownQuery(params?: URLSearchParams): Partial<ExportQuery> {
   if (order === 'asc' || order === 'desc') query.order = order;
   const stage = params?.get('stage');
   if (stage === 'inq' || stage === 'mql') query.stage = stage;
+  const compare = COMPARE_MODELS.find((m) => m === params?.get('compare'));
+  if (compare) query.compare = compare;
   return query;
 }
 
