@@ -22,6 +22,7 @@ type Deps struct {
 	Rates      Rates
 	Credits    Credits
 	Spending   attribution.Spending
+	Deals      DealSheets
 }
 
 type Service struct {

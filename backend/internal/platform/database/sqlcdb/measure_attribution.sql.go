@@ -10,22 +10,83 @@ import (
 	"time"
 )
 
-const attributionConversions = `-- name: AttributionConversions :many
-SELECT activity_id::text AS activity_id, fact_date, amount_minor::bigint AS amount_minor,
-    coalesce(currency, '') AS currency, coalesce(journey_ref, '') AS journey_ref
-FROM performance_facts
-WHERE stage = 'revenue' AND NOT held AND replaced_by_id IS NULL
-    AND fact_date BETWEEN make_date($1::int, 1, 1) AND make_date($1::int, 12, 31)
-    AND activity_in_scope(activity_id, $2::boolean, $3::text,
+const attributionActivityNames = `-- name: AttributionActivityNames :many
+SELECT a.id, a.name, a.status, p.id AS plan_id, p.name AS plan_name
+FROM activities a
+JOIN initiatives i ON i.id = a.initiative_id
+JOIN campaigns c ON c.id = i.campaign_id
+JOIN plans p ON p.id = c.plan_id
+WHERE a.id = ANY($1::text[])
+    AND activity_in_scope(a.id, $2::boolean, $3::text,
         $4::boolean, $5::text[])
-    AND (activity_id = ANY($6::text[])
-        OR journey_ref IN (
+ORDER BY a.id
+`
+
+type AttributionActivityNamesParams struct {
+	ActivityIds    []string
+	SeesEverything bool
+	ViewerID       string
+	ViewsPlans     bool
+	ViewerTeamIds  []string
+}
+
+type AttributionActivityNamesRow struct {
+	ID       string
+	Name     string
+	Status   string
+	PlanID   string
+	PlanName string
+}
+
+func (q *Queries) AttributionActivityNames(ctx context.Context, arg AttributionActivityNamesParams) ([]AttributionActivityNamesRow, error) {
+	rows, err := q.db.Query(ctx, attributionActivityNames,
+		arg.ActivityIds,
+		arg.SeesEverything,
+		arg.ViewerID,
+		arg.ViewsPlans,
+		arg.ViewerTeamIds,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AttributionActivityNamesRow{}
+	for rows.Next() {
+		var i AttributionActivityNamesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Status,
+			&i.PlanID,
+			&i.PlanName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const attributionConversions = `-- name: AttributionConversions :many
+SELECT f.id, f.source_reference, s.name AS source_name, f.activity_id::text AS activity_id, f.fact_date,
+    f.amount_minor::bigint AS amount_minor, coalesce(f.currency, '') AS currency, coalesce(f.journey_ref, '') AS journey_ref
+FROM performance_facts f
+JOIN performance_sources s ON s.id = f.source_id
+WHERE f.stage = 'revenue' AND NOT f.held AND f.replaced_by_id IS NULL
+    AND f.fact_date BETWEEN make_date($1::int, 1, 1) AND make_date($1::int, 12, 31)
+    AND activity_in_scope(f.activity_id, $2::boolean, $3::text,
+        $4::boolean, $5::text[])
+    AND (f.activity_id = ANY($6::text[])
+        OR f.journey_ref IN (
             SELECT journey_ref FROM performance_facts
             WHERE activity_id = ANY($6::text[]) AND journey_ref IS NOT NULL
                 AND NOT held AND replaced_by_id IS NULL
                 AND activity_in_scope(activity_id, $2::boolean, $3::text,
                     $4::boolean, $5::text[])))
-ORDER BY fact_date, id
+ORDER BY f.fact_date, f.id
 `
 
 type AttributionConversionsParams struct {
@@ -38,11 +99,14 @@ type AttributionConversionsParams struct {
 }
 
 type AttributionConversionsRow struct {
-	ActivityID  string
-	FactDate    time.Time
-	AmountMinor int64
-	Currency    string
-	JourneyRef  string
+	ID              string
+	SourceReference string
+	SourceName      string
+	ActivityID      string
+	FactDate        time.Time
+	AmountMinor     int64
+	Currency        string
+	JourneyRef      string
 }
 
 func (q *Queries) AttributionConversions(ctx context.Context, arg AttributionConversionsParams) ([]AttributionConversionsRow, error) {
@@ -62,6 +126,9 @@ func (q *Queries) AttributionConversions(ctx context.Context, arg AttributionCon
 	for rows.Next() {
 		var i AttributionConversionsRow
 		if err := rows.Scan(
+			&i.ID,
+			&i.SourceReference,
+			&i.SourceName,
 			&i.ActivityID,
 			&i.FactDate,
 			&i.AmountMinor,
@@ -78,14 +145,46 @@ func (q *Queries) AttributionConversions(ctx context.Context, arg AttributionCon
 	return items, nil
 }
 
+const attributionHeldFacts = `-- name: AttributionHeldFacts :one
+SELECT count(*)::int AS held_facts
+FROM performance_facts
+WHERE held AND replaced_by_id IS NULL
+    AND (journey_ref = ANY($1::text[]) OR activity_id = $2::text)
+    AND activity_in_scope(activity_id, $3::boolean, $4::text,
+        $5::boolean, $6::text[])
+`
+
+type AttributionHeldFactsParams struct {
+	JourneyRefs    []string
+	ActivityID     string
+	SeesEverything bool
+	ViewerID       string
+	ViewsPlans     bool
+	ViewerTeamIds  []string
+}
+
+func (q *Queries) AttributionHeldFacts(ctx context.Context, arg AttributionHeldFactsParams) (int, error) {
+	row := q.db.QueryRow(ctx, attributionHeldFacts,
+		arg.JourneyRefs,
+		arg.ActivityID,
+		arg.SeesEverything,
+		arg.ViewerID,
+		arg.ViewsPlans,
+		arg.ViewerTeamIds,
+	)
+	var held_facts int
+	err := row.Scan(&held_facts)
+	return held_facts, err
+}
+
 const attributionTouches = `-- name: AttributionTouches :many
-SELECT DISTINCT journey_ref::text AS journey_ref, activity_id::text AS activity_id, fact_date
+SELECT DISTINCT journey_ref::text AS journey_ref, activity_id::text AS activity_id, fact_date, stage, web_metric
 FROM performance_facts
 WHERE journey_ref = ANY($1::text[]) AND stage <> 'revenue' AND activity_id IS NOT NULL
     AND NOT held AND replaced_by_id IS NULL
     AND activity_in_scope(activity_id, $2::boolean, $3::text,
         $4::boolean, $5::text[])
-ORDER BY journey_ref, fact_date, activity_id
+ORDER BY journey_ref, fact_date, activity_id, stage, web_metric
 `
 
 type AttributionTouchesParams struct {
@@ -100,6 +199,8 @@ type AttributionTouchesRow struct {
 	JourneyRef string
 	ActivityID string
 	FactDate   time.Time
+	Stage      string
+	WebMetric  string
 }
 
 func (q *Queries) AttributionTouches(ctx context.Context, arg AttributionTouchesParams) ([]AttributionTouchesRow, error) {
@@ -117,7 +218,13 @@ func (q *Queries) AttributionTouches(ctx context.Context, arg AttributionTouches
 	items := []AttributionTouchesRow{}
 	for rows.Next() {
 		var i AttributionTouchesRow
-		if err := rows.Scan(&i.JourneyRef, &i.ActivityID, &i.FactDate); err != nil {
+		if err := rows.Scan(
+			&i.JourneyRef,
+			&i.ActivityID,
+			&i.FactDate,
+			&i.Stage,
+			&i.WebMetric,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

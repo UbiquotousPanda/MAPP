@@ -10,6 +10,7 @@ import (
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"
+	"mapp/internal/platform/sheet"
 	"mapp/internal/projection"
 )
 
@@ -60,6 +61,12 @@ type Categories interface {
 
 type Credits interface {
 	Credit(ctx context.Context, scope authz.Scope, activityIDs []string, year int) (attribution.Credited, error)
+}
+
+// DealSheets writes and describes 058's deals widget for one activity, when the export names one.
+type DealSheets interface {
+	Sheet(ctx context.Context, a actor.Actor, q attribution.DealsQuery) (sheet.Sheet, error)
+	Describe(ctx context.Context, a actor.Actor, q attribution.DealsQuery) ([][2]string, error)
 }
 
 // Rates answers the current exchange rates, which convert every revenue fact.

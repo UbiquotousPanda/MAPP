@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 
+	"mapp/internal/measure"
 	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/actor"
 )
@@ -30,8 +31,25 @@ func (funnelReport) sortWords() sortWords {
 		sorts: funnelSorts(), defaultSort: SortProjected}
 }
 
-func (r revenueReport) Describe(ctx context.Context, _ actor.Actor, own url.Values) ([][2]string, error) {
-	return r.service.describe(ctx, own, r.sortWords(), nil)
+func (r revenueReport) Describe(ctx context.Context, a actor.Actor, own url.Values) ([][2]string, error) {
+	lines, err := r.service.describe(ctx, own, r.sortWords(), nil)
+	if err != nil {
+		return nil, err
+	}
+	return r.service.withDealNotes(ctx, a, own, lines)
+}
+
+// withDealNotes adds the deals widget's notes when the export names an activity (058).
+func (s *Service) withDealNotes(ctx context.Context, a actor.Actor, own url.Values, lines [][2]string) ([][2]string, error) {
+	q, asked := dealsQueryOf(measure.Filter{Own: own})
+	if !asked || s.deps.Deals == nil {
+		return lines, nil
+	}
+	notes, err := s.deps.Deals.Describe(ctx, a, q)
+	if err != nil {
+		return nil, err
+	}
+	return append(lines, notes...), nil
 }
 
 func (r funnelReport) Describe(ctx context.Context, _ actor.Actor, own url.Values) ([][2]string, error) {

@@ -8,29 +8,55 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Attribute shares a conversion's revenue among its journey's activities; the credits add up to it exactly.
-func Attribute(c Conversion, m Model) []Credit {
-	if !c.Journey {
-		return []Credit{{ActivityID: c.ActivityID, Amount: c.Revenue}}
-	}
-	touches := slices.DeleteFunc(slices.Clone(c.Touches), func(t Touch) bool { return t.Date.After(c.Date) })
-	if len(touches) == 0 {
-		return []Credit{{Amount: c.Revenue}}
-	}
-	slices.SortStableFunc(touches, func(x, y Touch) int { return x.Date.Compare(y.Date) })
-	shares := allocate(c.Revenue.Cents(), weights(m, len(touches)))
-	var credits []Credit
-	for i, t := range touches {
-		at := slices.IndexFunc(credits, func(c Credit) bool { return c.ActivityID == t.ActivityID })
-		if at < 0 {
-			credits, at = append(credits, Credit{ActivityID: t.ActivityID}), len(credits)
-		}
-		credits[at].Amount = credits[at].Amount.Add(money.FromCents(shares[i]))
-	}
-	return slices.DeleteFunc(credits, func(c Credit) bool { return c.Amount.IsZero() && c.ActivityID != "" })
+type Share struct {
+	Touch
+	Amount money.Amount
 }
 
-// weights are the touches' relative weights, earliest first.
+// Shares gives each step dated on or before the conversion its part, earliest first; a conversion without a
+// journey is one share for its own activity, and one whose steps all came later has none.
+func Shares(c Conversion, m Model) []Share {
+	if !c.Journey {
+		return []Share{{Touch: Touch{ActivityID: c.ActivityID, Date: c.Date}, Amount: c.Revenue}}
+	}
+	steps := sharing(c)
+	if len(steps) == 0 {
+		return nil
+	}
+	parts := allocate(c.Revenue.Cents(), weights(m, len(steps)))
+	shares := make([]Share, len(steps))
+	for i, t := range steps {
+		shares[i] = Share{Touch: t, Amount: money.FromCents(parts[i])}
+	}
+	return shares
+}
+
+func sharing(c Conversion) []Touch {
+	steps := slices.DeleteFunc(slices.Clone(c.Touches), func(t Touch) bool { return t.Date.After(c.Date) })
+	slices.SortFunc(steps, compareTouches)
+	return steps
+}
+
+// Attribute sums the shares per activity; a journey with no step before its conversion is Unattributed.
+func Attribute(c Conversion, m Model) []Credit {
+	shares := Shares(c, m)
+	if len(shares) == 0 {
+		return []Credit{{Amount: c.Revenue}}
+	}
+	var credits []Credit
+	for _, s := range shares {
+		at := slices.IndexFunc(credits, func(cr Credit) bool { return cr.ActivityID == s.ActivityID })
+		if at < 0 {
+			credits, at = append(credits, Credit{ActivityID: s.ActivityID}), len(credits)
+		}
+		credits[at].Amount = credits[at].Amount.Add(s.Amount)
+	}
+	if !c.Journey {
+		return credits
+	}
+	return slices.DeleteFunc(credits, func(cr Credit) bool { return cr.Amount.IsZero() && cr.ActivityID != "" })
+}
+
 func weights(m Model, n int) []int64 {
 	w := make([]int64, n)
 	switch {
@@ -55,8 +81,8 @@ func weights(m Model, n int) []int64 {
 	return w
 }
 
-// allocate splits total cents by the weights, rounding down; the residual goes to the largest weight, the newest
-// touch on a tie, so nothing is lost or made up.
+// allocate splits total cents by the weights, rounding down; the residual goes to the largest weight, the
+// latest step on a tie, so nothing is lost or made up.
 func allocate(total int64, w []int64) []int64 {
 	var sum int64
 	for _, x := range w {

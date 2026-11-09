@@ -85,7 +85,10 @@ func putJourneyFacts(ctx context.Context, facts *performance.PostgresStore) erro
 		inquiry.FactDate = time.Date(2026, 3, 1+i, 0, 0, 0, 0, time.UTC)
 		err = errors.Join(err, facts.PutFact(ctx, conversion), facts.PutFact(ctx, inquiry))
 	}
-	return err
+	held := performance.Fact{ID: "PF-30", SourceID: "PS-1", ImportID: "PIM-1", SourceReference: "h1", ActivityID: "A-1002",
+		MatchedOn: performance.MatchedActivityID, MatchedKey: "a-1002", JourneyRef: "J-1", Stage: "inq", Count: &one, Held: true,
+		FactDate: time.Date(2026, 3, 5, 0, 0, 0, 0, time.UTC), Meta: pgMeta}
+	return errors.Join(err, facts.PutFact(ctx, held))
 }
 
 func TestPostgresStore_FactsOutsideTheScopeAreInvisible_050_C4(t *testing.T) {
@@ -110,6 +113,47 @@ func TestPostgresStore_FactsOutsideTheScopeAreInvisible_050_C4(t *testing.T) {
 	}
 	if diff := cmp.Diff([]string{"A-1001", "A-1002"}, touchedActivities(all)); diff != "" {
 		t.Errorf("every touch, revenue facts not among them (-want +got):\n%s", diff)
+	}
+	if mine[0].Kind != "inq" || conversions[0].Source != "Eloqua" || conversions[0].Reference != "r1" || conversions[0].ID != "PF-11" {
+		t.Errorf("touch kind %q, conversion %s from %q ref %q; want inq, PF-11 from Eloqua ref r1", mine[0].Kind, conversions[0].ID,
+			conversions[0].Source, conversions[0].Reference)
+	}
+}
+
+func TestPostgresStore_HeldFactsStayInScope_058_FR021(t *testing.T) {
+	t.Parallel()
+	store := pgFactStore(t)
+
+	mine, err := store.HeldFacts(t.Context(), team1Only, "A-1001", []string{"J-1"})
+	if err != nil || mine != 0 {
+		t.Errorf("team 1's held facts around A-1001 = %d, %v; want 0: the held fact sits on team 2's activity", mine, err)
+	}
+	all, err := store.HeldFacts(t.Context(), authz.Scope{Everything: true}, "A-1001", []string{"J-1"})
+	if err != nil || all != 1 {
+		t.Errorf("everyone's held facts around A-1001 = %d, %v; want the one on J-1", all, err)
+	}
+	none, err := store.HeldFacts(t.Context(), authz.Scope{Everything: true}, "A-1001", nil)
+	if err != nil || none != 0 {
+		t.Errorf("held facts with no journey and none on A-1001 = %d, %v; want 0", none, err)
+	}
+}
+
+func TestPostgresStore_NamesOutsideTheScopeAreMissing_058_FR014_FR016(t *testing.T) {
+	t.Parallel()
+	store := pgFactStore(t)
+	asked := []string{"A-1001", "A-1002", "A-9999"}
+
+	mine, err := store.ActivitiesInScope(t.Context(), team1Only, asked)
+	if err != nil {
+		t.Fatalf("ActivitiesInScope: %v", err)
+	}
+	want := []attribution.ActivityName{{ID: "A-1001", Name: "Activity 1", Status: "approved", PlanID: "P-1001", PlanName: "Plan 1"}}
+	if diff := cmp.Diff(want, mine); diff != "" {
+		t.Errorf("team 1's names: another team's activity and an unknown one look alike, missing (-want +got):\n%s", diff)
+	}
+	all, err := store.ActivitiesInScope(t.Context(), authz.Scope{Everything: true}, asked)
+	if err != nil || len(all) != 2 {
+		t.Errorf("everyone's names = %d, %v; want both activities", len(all), err)
 	}
 }
 

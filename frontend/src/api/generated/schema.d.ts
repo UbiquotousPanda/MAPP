@@ -5297,6 +5297,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/revenue/activities/{activityId}/deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The deals behind one activity's attributed revenue, each with its journey's steps and the activity's share (feature 058)
+         * @description Every deal the activity is concerned in — booked on it, or with a step on it that shares the deal — under the designated attribution model (050), worked out from the facts in the person's reports.view scope (058-C1): a step or deal in a plan they can't open is neither shown nor counted. The activity's shares and totals come in the display currency as parts of the ranked list's figures, so they add up to them; deal amounts and step shares stay in US dollars, the currency revenue is shared in (058-C3). 404 alike for an activity that is unknown, in the recycle bin or outside the scope.
+         */
+        get: operations["getRevenueActivityDeals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/funnel": {
         parameters: {
             query?: never;
@@ -12883,6 +12903,91 @@ export interface components {
             }[];
             drillLost: boolean;
         };
+        AttributionModelChoice: {
+            key: components["schemas"]["AttributionModel"];
+            /** @example Equally distributed */
+            name: string;
+            /** @example Every activity of the journey gets the same share. */
+            description: string;
+        };
+        DealActivity: {
+            /** @example A-1041 */
+            id: string;
+            /** @example Tellus webinar series */
+            name: string;
+            /** @example P-1012 */
+            planId: string;
+            /** @example FY2026 Measure demo – Lubricants Benelux */
+            planName: string;
+        };
+        /** @description One activity on one day of a deal's journey, dated on or before the deal (058 R3–R5). */
+        DealStep: {
+            activity: components["schemas"]["DealActivity"];
+            /** Format: date */
+            date: string;
+            /** @description What the step recorded, once each, funnel stages first. */
+            kinds: ("inq" | "mql" | "sessions" | "visits" | "engagementTouches")[];
+            /** @description The step's share of the deal, in US dollars. */
+            share: components["schemas"]["Money"];
+            comparisonShare: components["schemas"]["Money"] | null;
+            thisActivity: boolean;
+        };
+        /** @description A counted revenue fact the activity is concerned in, with its journey's sharing steps (058 R1, R12). */
+        Deal: {
+            /** @example PF-1009 */
+            id: string;
+            /** @example Measure demo feed */
+            source: string;
+            /** @example MD-009 */
+            reference: string;
+            /** Format: date */
+            date: string;
+            bookedOn: components["schemas"]["DealActivity"];
+            /** @description As booked, in the fact's currency. */
+            amount: components["schemas"]["Money"];
+            /** @description In US dollars at the current rate, converted together with the booking activity's other deals of the month and currency as parts of their total (D-409), so the deals add up to the report's Actual. */
+            usd: components["schemas"]["Money"];
+            /**
+             * @description The rate per 1 USD the conversion used, as text; null for a deal in US dollars.
+             * @example 0.92
+             */
+            rate: string | null;
+            /**
+             * @description none — no journey, so the deal stays with the activity that booked it; shared — split between the steps; unattributed — a journey with no step on or before the deal, so nobody is credited.
+             * @enum {string}
+             */
+            journey: "none" | "shared" | "unattributed";
+            steps: components["schemas"]["DealStep"][];
+            /** @description This activity's share of the deal, in the display currency. */
+            share: components["schemas"]["Money"];
+            comparisonShare: components["schemas"]["Money"] | null;
+        };
+        ActivityDeals: {
+            activity: components["schemas"]["DealActivity"];
+            /** @example 2026 */
+            year: number;
+            model: components["schemas"]["AttributionModelChoice"];
+            comparison: components["schemas"]["AttributionModelChoice"] | null;
+            /** @description This activity's shares added up, in the display currency — the ranked list's attributed revenue. */
+            credited: components["schemas"]["Money"];
+            comparisonCredited: components["schemas"]["Money"] | null;
+            /** @description The deals booked on this activity added up, in the display currency; null when none was. */
+            booked: components["schemas"]["Money"] | null;
+            /**
+             * @description Why there are no deals — notApproved while the activity's facts are held, noData otherwise.
+             * @enum {string}
+             */
+            reason: "" | "noData" | "notApproved";
+            /** @description Held facts in the person's scope on the deals' journeys or on the activity, which count nowhere yet. */
+            heldFacts: number;
+            /** @description Deals left out for a currency without a rate. */
+            withoutRate: number;
+            total: number;
+            page: number;
+            /** @enum {integer} */
+            size: 25;
+            deals: components["schemas"]["Deal"][];
+        };
         FunnelCards: {
             goal: {
                 value: number | null;
@@ -13821,6 +13926,10 @@ export interface components {
         ReportOwnCostBy: string;
         /** @description The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048). */
         ReportOwnRoiBy: string;
+        /** @description The Revenue report's deals widget, the activity whose deals are exported (058). */
+        ReportOwnActivity: string;
+        /** @description The Revenue report's deals widget, the attribution model compared with (058). */
+        ReportOwnCompare: components["schemas"]["AttributionModel"];
         RankedSort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
         RankedOrder: "desc" | "asc";
         /** @description none, plan, owner or attr:<attribute ID>. */
@@ -23637,6 +23746,10 @@ export interface operations {
                 costBy?: components["parameters"]["ReportOwnCostBy"];
                 /** @description The Summary report's ROI league segment, a Shell attribute ID, which the report validates (048). */
                 roiBy?: components["parameters"]["ReportOwnRoiBy"];
+                /** @description The Revenue report's deals widget, the activity whose deals are exported (058). */
+                activity?: components["parameters"]["ReportOwnActivity"];
+                /** @description The Revenue report's deals widget, the attribution model compared with (058). */
+                compare?: components["parameters"]["ReportOwnCompare"];
             };
             header?: never;
             path: {
@@ -24020,6 +24133,43 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getRevenueActivityDeals: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description A second model whose shares are shown beside the designated model's, for this activity only. */
+                compare?: components["schemas"]["AttributionModel"];
+                /** @description 25 deals a page, by this activity's share, largest first, then newest. */
+                page?: number;
+            };
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The deals, their journeys and the shares, with the totals over every deal. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityDeals"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             default: components["responses"]["Error"];
         };
     };

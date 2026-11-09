@@ -7,6 +7,7 @@ import (
 
 	"mapp/internal/allwork"
 	"mapp/internal/measure"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
@@ -17,6 +18,9 @@ const (
 	widgetCards   = "cards"
 	widgetPeriods = "periods"
 	widgetRanked  = "ranked"
+	widgetDeals   = "deals"
+	paramActivity = "activity"
+	paramCompare  = "compare"
 	noValue       = "—"
 
 	sheetCards       = "Cards"
@@ -45,11 +49,31 @@ func (s *Service) revenueSheets(ctx context.Context, a actor.Actor, f measure.Fi
 	if err != nil {
 		return nil, err
 	}
-	return []measure.WidgetSheet{
+	sheets := []measure.WidgetSheet{
 		{Key: widgetCards, Sheet: revenueCardsSheet(report.Cards)},
 		{Key: widgetPeriods, Sheet: revenuePeriodsSheet(report.Periods)},
 		{Key: widgetRanked, Sheet: revenueRankedSheet(ranked)},
-	}, nil
+	}
+	return s.withDealsSheet(ctx, a, f, sheets)
+}
+
+// withDealsSheet adds 058's deals widget when the export names an activity, as it does while the panel is open.
+func (s *Service) withDealsSheet(ctx context.Context, a actor.Actor, f measure.Filter, sheets []measure.WidgetSheet) ([]measure.WidgetSheet, error) {
+	q, asked := dealsQueryOf(f)
+	if !asked || s.deps.Deals == nil {
+		return sheets, nil
+	}
+	deals, err := s.deps.Deals.Sheet(ctx, a, q)
+	if err != nil {
+		return nil, err
+	}
+	return append(sheets, measure.WidgetSheet{Key: widgetDeals, Sheet: deals}), nil
+}
+
+func dealsQueryOf(f measure.Filter) (attribution.DealsQuery, bool) {
+	id := f.Own.Get(paramActivity)
+	return attribution.DealsQuery{ActivityID: id, Year: f.Query.Year, Currency: f.Currency,
+		Compare: attribution.Model(f.Own.Get(paramCompare))}, id != ""
 }
 
 func unboundedRanked(own url.Values, sorts []string, defaultSort string) (RankedQuery, error) {

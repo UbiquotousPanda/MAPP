@@ -9183,6 +9183,8 @@ paths:
         - $ref: "#/components/parameters/ReportOwnPerformanceBy"
         - $ref: "#/components/parameters/ReportOwnCostBy"
         - $ref: "#/components/parameters/ReportOwnRoiBy"
+        - $ref: "#/components/parameters/ReportOwnActivity"
+        - $ref: "#/components/parameters/ReportOwnCompare"
       responses:
         "200":
           description: The file, named "SP&A One – <report> [– <widget>] – <year> – <date>".
@@ -9496,6 +9498,51 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/revenue/activities/{activityId}/deals:
+    get:
+      tags:
+        - Reports
+      operationId: getRevenueActivityDeals
+      summary: The deals behind one activity's attributed revenue, each with its journey's steps and the activity's share (feature 058)
+      description: >-
+        Every deal the activity is concerned in — booked on it, or with a step on it that shares the deal — under
+        the designated attribution model (050), worked out from the facts in the person's reports.view scope
+        (058-C1): a step or deal in a plan they can't open is neither shown nor counted. The activity's shares and
+        totals come in the display currency as parts of the ranked list's figures, so they add up to them; deal
+        amounts and step shares stay in US dollars, the currency revenue is shared in (058-C3). 404 alike for an
+        activity that is unknown, in the recycle bin or outside the scope.
+      parameters:
+        - $ref: "#/components/parameters/ActivityId"
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - name: compare
+          in: query
+          description: A second model whose shares are shown beside the designated model's, for this activity only.
+          schema:
+            $ref: "#/components/schemas/AttributionModel"
+        - name: page
+          in: query
+          description: 25 deals a page, by this activity's share, largest first, then newest.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: The deals, their journeys and the shares, with the totals over every deal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityDeals"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/reports/funnel:
@@ -10979,6 +11026,19 @@ components:
       schema:
         type: string
         maxLength: 40
+    ReportOwnActivity:
+      name: activity
+      in: query
+      description: The Revenue report's deals widget, the activity whose deals are exported (058).
+      schema:
+        type: string
+        maxLength: 40
+    ReportOwnCompare:
+      name: compare
+      in: query
+      description: The Revenue report's deals widget, the attribution model compared with (058).
+      schema:
+        $ref: "#/components/schemas/AttributionModel"
     RankedSort:
       name: sort
       in: query
@@ -28669,6 +28729,116 @@ components:
                 type: array
                 items: { $ref: "#/components/schemas/RevenueEntry" }
         drillLost: { type: boolean }
+    AttributionModelChoice:
+      type: object
+      additionalProperties: false
+      required: [key, name, description]
+      properties:
+        key: { $ref: "#/components/schemas/AttributionModel" }
+        name: { type: string, example: Equally distributed }
+        description: { type: string, example: Every activity of the journey gets the same share. }
+    DealActivity:
+      type: object
+      additionalProperties: false
+      required: [id, name, planId, planName]
+      properties:
+        id: { type: string, example: A-1041 }
+        name: { type: string, example: Tellus webinar series }
+        planId: { type: string, example: P-1012 }
+        planName: { type: string, example: FY2026 Measure demo – Lubricants Benelux }
+    DealStep:
+      type: object
+      additionalProperties: false
+      description: One activity on one day of a deal's journey, dated on or before the deal (058 R3–R5).
+      required: [activity, date, kinds, share, comparisonShare, thisActivity]
+      properties:
+        activity: { $ref: "#/components/schemas/DealActivity" }
+        date: { type: string, format: date }
+        kinds:
+          description: What the step recorded, once each, funnel stages first.
+          type: array
+          minItems: 1
+          items: { type: string, enum: [inq, mql, sessions, visits, engagementTouches] }
+        share:
+          description: The step's share of the deal, in US dollars.
+          $ref: "#/components/schemas/Money"
+        comparisonShare:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        thisActivity: { type: boolean }
+    Deal:
+      type: object
+      additionalProperties: false
+      description: A counted revenue fact the activity is concerned in, with its journey's sharing steps (058 R1, R12).
+      required: [id, source, reference, date, bookedOn, amount, usd, rate, journey, steps, share, comparisonShare]
+      properties:
+        id: { type: string, example: PF-1009 }
+        source: { type: string, example: Measure demo feed }
+        reference: { type: string, example: MD-009 }
+        date: { type: string, format: date }
+        bookedOn: { $ref: "#/components/schemas/DealActivity" }
+        amount:
+          description: As booked, in the fact's currency.
+          $ref: "#/components/schemas/Money"
+        usd:
+          description: >-
+            In US dollars at the current rate, converted together with the booking activity's other deals of the
+            month and currency as parts of their total (D-409), so the deals add up to the report's Actual.
+          $ref: "#/components/schemas/Money"
+        rate:
+          description: The rate per 1 USD the conversion used, as text; null for a deal in US dollars.
+          type: [string, "null"]
+          example: "0.92"
+        journey:
+          description: >-
+            none — no journey, so the deal stays with the activity that booked it; shared — split between the
+            steps; unattributed — a journey with no step on or before the deal, so nobody is credited.
+          type: string
+          enum: [none, shared, unattributed]
+        steps:
+          type: array
+          items: { $ref: "#/components/schemas/DealStep" }
+        share:
+          description: This activity's share of the deal, in the display currency.
+          $ref: "#/components/schemas/Money"
+        comparisonShare:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+    ActivityDeals:
+      type: object
+      additionalProperties: false
+      required: [activity, year, model, comparison, credited, comparisonCredited, booked, reason, heldFacts,
+        withoutRate, total, page, size, deals]
+      properties:
+        activity: { $ref: "#/components/schemas/DealActivity" }
+        year: { type: integer, example: 2026 }
+        model: { $ref: "#/components/schemas/AttributionModelChoice" }
+        comparison:
+          oneOf: [{ $ref: "#/components/schemas/AttributionModelChoice" }, { type: "null" }]
+        credited:
+          description: >-
+            This activity's shares added up, in the display currency — the ranked list's attributed revenue.
+          $ref: "#/components/schemas/Money"
+        comparisonCredited:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        booked:
+          description: The deals booked on this activity added up, in the display currency; null when none was.
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        reason:
+          description: >-
+            Why there are no deals — notApproved while the activity's facts are held, noData otherwise.
+          type: string
+          enum: ["", noData, notApproved]
+        heldFacts:
+          description: Held facts in the person's scope on the deals' journeys or on the activity, which count nowhere yet.
+          type: integer
+        withoutRate:
+          description: Deals left out for a currency without a rate.
+          type: integer
+        total: { type: integer }
+        page: { type: integer }
+        size: { type: integer, enum: [25] }
+        deals:
+          type: array
+          items: { $ref: "#/components/schemas/Deal" }
     FunnelCards:
       type: object
       required: [goal, actual, projected, performance, conversion]

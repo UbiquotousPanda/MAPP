@@ -2,6 +2,7 @@
 package attribution
 
 import (
+	"slices"
 	"time"
 
 	"mapp/internal/platform/actor"
@@ -35,6 +36,10 @@ func Models() []ModelChoice {
 		{LinearDecay, "Linear time decay", "Later activities get more: the share grows with each touch."},
 		{UShaped, "U-shaped", "40% to the first and the last activity each, 20% shared by the ones between."},
 	}
+}
+
+func listedModel(m Model) bool {
+	return slices.ContainsFunc(Models(), func(c ModelChoice) bool { return c.Key == m })
 }
 
 func (m Model) Name() string {
@@ -77,6 +82,7 @@ type Touch struct {
 
 // Conversion is converted revenue with its journey; a conversion without a journey reference has Journey false.
 type Conversion struct {
+	ID         string
 	ActivityID string
 	Date       date.Date
 	Revenue    money.Amount

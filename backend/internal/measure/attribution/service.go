@@ -2,7 +2,6 @@ package attribution
 
 import (
 	"context"
-	"slices"
 
 	"mapp/internal/history"
 	"mapp/internal/platform/actor"
@@ -52,7 +51,7 @@ func (s *Service) SaveSettings(ctx context.Context, a actor.Actor, in SettingsIn
 	if err := authz.Require(ctx, authz.SettingsManage); err != nil {
 		return SettingsView{}, err
 	}
-	if !slices.ContainsFunc(Models(), func(c ModelChoice) bool { return c.Key == in.Model }) {
+	if !listedModel(in.Model) {
 		return SettingsView{}, errs.Validation(errs.FieldError{Field: fieldModel, Message: msgPickModel})
 	}
 	var view SettingsView

@@ -16,15 +16,20 @@ type FactStore interface {
 
 // RevenueFact is a conversion in the fact's own currency; JourneyRef is "" when it has no journey.
 type RevenueFact struct {
+	ID         string
+	Source     string
+	Reference  string
 	ActivityID string
 	Date       date.Date
 	Revenue    money.Money
 	JourneyRef string
 }
 
+// JourneyTouch is one fact of a journey; Kind is its stage or web metric.
 type JourneyTouch struct {
 	JourneyRef string
 	Touch
+	Kind string
 }
 
 // Credited is each concerned activity's USD credit, 0.00 when the model gives none; WithoutRate counts no-rate facts.
@@ -48,21 +53,23 @@ func journeyRefs(facts []RevenueFact) []string {
 }
 
 func conversions(facts []RevenueFact, touches []JourneyTouch, rates money.Rates) ([]Conversion, int) {
-	byRef := map[string][]Touch{}
+	byRef := map[string][]JourneyTouch{}
 	for _, t := range touches {
-		byRef[t.JourneyRef] = append(byRef[t.JourneyRef], t.Touch)
+		byRef[t.JourneyRef] = append(byRef[t.JourneyRef], t)
 	}
+	stepsByRef := make(map[string][]Touch, len(byRef))
+	for ref, ts := range byRef {
+		stepsByRef[ref] = steps(ts)
+	}
+	dollars, withoutRate := inDollars(facts, rates)
 	out := make([]Conversion, 0, len(facts))
-	withoutRate := 0
-	for _, f := range facts {
-		usd, err := rates.Convert(f.Revenue, money.BaseCurrency)
-		if err != nil {
-			withoutRate++
+	for i, f := range facts {
+		if dollars[i] == nil {
 			continue
 		}
-		c := Conversion{ActivityID: f.ActivityID, Date: f.Date, Revenue: usd.Amount, Journey: f.JourneyRef != ""}
+		c := Conversion{ID: f.ID, ActivityID: f.ActivityID, Date: f.Date, Revenue: *dollars[i], Journey: f.JourneyRef != ""}
 		if c.Journey {
-			c.Touches = byRef[f.JourneyRef]
+			c.Touches = stepsByRef[f.JourneyRef]
 		}
 		out = append(out, c)
 	}

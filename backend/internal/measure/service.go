@@ -69,7 +69,7 @@ func (s *Service) Scope(ctx context.Context, a actor.Actor, f Filter, columns []
 	if err != nil {
 		return Scope{}, err
 	}
-	currency, err := s.currency(ctx, a, f.Currency)
+	currency, err := s.DisplayCurrency(ctx, a, f.Currency)
 	nodes := slices.DeleteFunc(slices.Clone(data.Nodes), func(n allwork.Node) bool {
 		return !slices.Contains(inScope, n.PlanID)
 	})
@@ -77,8 +77,8 @@ func (s *Service) Scope(ctx context.Context, a actor.Actor, f Filter, columns []
 		FinanceAsOf: data.FinanceAsOf}, f), err
 }
 
-// currency is the chosen active currency at its current rate, or else the person's display currency.
-func (s *Service) currency(ctx context.Context, a actor.Actor, code string) (allwork.Currency, error) {
+// DisplayCurrency is the chosen active currency at its current rate, or else the person's display currency.
+func (s *Service) DisplayCurrency(ctx context.Context, a actor.Actor, code string) (allwork.Currency, error) {
 	if code != "" {
 		active, err := s.deps.Currencies.Active(ctx)
 		if err != nil {
