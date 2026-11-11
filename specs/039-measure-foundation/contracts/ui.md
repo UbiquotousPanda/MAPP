@@ -25,6 +25,11 @@ Sidebar: **Reports** (lucide icon `ChartColumnIncreasing`), permission `reports.
 | Revenue | Revenue against goal by month, and the plans, campaigns or activities behind it. |
 | Funnel stages | One funnel stage against goal by month, and where the funnel leaks. |
 
+The page groups them (039-C7): **Performance** (Summary, Revenue, Funnel stages), **Budget and spend** (Plan
+budget, Purchase requests, GSAP link), **Process and governance** (Approvals, Plan details, User access). The groups,
+and each report's ⓘ (Answers · Shows · For), are words of the web app in `features/measure/reports.ts`; the API's
+catalogue is unchanged.
+
 ## Shared parts (`frontend/src/features/measure/shared/`, owned by 039)
 
 | Part | What it does |

@@ -52,6 +52,16 @@ integrator moves them into the decision log.
   so a shared link shows the sharer's filters (US1 scenario 7) and nobody can open another person's view
   (FR-025, US2 scenario 6).
 
+### Session 2026-11-11
+
+Asked by the product owner after the Shell demo preparation.
+
+- **039-C7** Q: How does the Reports page help someone choose a report they don't know? → A: it shows the reports
+  in three groups, each with a heading and one line: **Performance** (Summary, Revenue, Funnel stages), **Budget
+  and spend** (Plan budget, Purchase requests, GSAP link) and **Process and governance** (Approvals, Plan details,
+  User access). A group with no report the person may open is left out. Each report has an ⓘ that says the
+  question it answers, what it shows and who it is for (FR-001).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Open a report and narrow it to what I care about (Priority: P1)
@@ -211,9 +221,10 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 **Reports area and access**
 
 - **FR-001**: The sidebar MUST offer **Reports** to every person who holds `reports.view` in at least one plan. It
-  opens the Reports page, which lists the reports of the Measure module in a fixed order — Plan budget, Approvals,
-  Purchase requests, Plan details, GSAP link, User access, and later Summary, Revenue, Funnel stages — each with its
-  name and a one-line purpose; a report not yet available in the release shows "Coming soon" without a link, and a
+  opens the Reports page, which lists the reports of the Measure module in three groups in a fixed order (039-C7) —
+  Performance: Summary, Revenue, Funnel stages; Budget and spend: Plan budget, Purchase requests, GSAP link; Process
+  and governance: Approvals, Plan details, User access — each with its name, a one-line purpose and an ⓘ saying
+  what it answers, what it shows and who it is for; a report not yet available in the release shows "Coming soon" without a link, and a
   report the person may not open (FR-003) is not listed.
 - **FR-002**: A new scoped permission `reports.view` ("See reports", refusal noun "Seeing reports") MUST be added to
   014 Table A in the Plans and planning group. It MUST be granted to every role, built-in or not, that holds
