@@ -67,6 +67,11 @@
   padding: var(--card-padding);
 }
 
+.body:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
 /*
  * One footer for every panel: the buttons come in order of importance (the primary first) and
  * line up from the right edge, so the primary sits rightmost, Cancel next to it, and the More menu

@@ -68,7 +68,9 @@ export function SidePanel({
               <Button variant="tertiary" icon={<X />} aria-label="Close" />
             </Dialog.Close>
           </div>
-          <div className={styles.body}>{children}</div>
+          <div className={styles.body} role="region" aria-label={title} tabIndex={0}>
+            {children}
+          </div>
           <div className={styles.footer}>{footer}</div>
         </Dialog.Content>
       </Dialog.Portal>
