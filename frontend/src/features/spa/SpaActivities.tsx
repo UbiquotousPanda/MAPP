@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollBox } from '@/features/financials';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { Card } from '@/ui/Card/Card';
 import { SortHeader } from '@/ui/SortHeader/SortHeader';
 import dataTable from '@/ui/Table/Table.module.css';
@@ -8,7 +8,6 @@ import { ActivityRow } from './ActivityRow';
 import type { SortColumn, SpaSort } from './schemas';
 import { firstDirection, sortRows } from './sort';
 import { ACTIVITIES, COLUMNS } from './spa-text';
-import styles from './Spa.module.css';
 
 interface SpaActivitiesProps {
   view: SpaView;
@@ -43,7 +42,7 @@ export function SpaActivities({ view, sort, onSort }: SpaActivitiesProps) {
 
   return (
     <Card title={ACTIVITIES.title}>
-      <ScrollBox label={ACTIVITIES.title} className={styles.scroll}>
+      <ScrollBox label={ACTIVITIES.title}>
         <table className={dataTable.table}>
           <caption className="visually-hidden">{ACTIVITIES.title}</caption>
           <thead>

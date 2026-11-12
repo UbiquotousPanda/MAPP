@@ -5,7 +5,7 @@ import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
 import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
-import { ScrollBox } from '@/features/financials';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { PlanStatusChip } from '@/features/plans';
 import { useFormatters } from '@/format/useFormatters';
 import type { AllocationOption, GlobalBudget } from './api';
@@ -36,7 +36,7 @@ export function WithoutAllocation({
           className={styles.emptyLine}
         >{`Every plan of ${budget.year} you can see has an allocation.`}</p>
       ) : (
-        <ScrollBox label={heading} className={styles.scroll}>
+        <ScrollBox label={heading}>
           <table className={cx(dataTable.table, dataTable.ruledHead, styles.table)}>
             <caption className="visually-hidden">{heading}</caption>
             <thead>

@@ -5,13 +5,13 @@ import { TotalLabel } from '@/ui/Table/TotalLabel';
 import { cx } from '@/ui/cx';
 import { useFormatters } from '@/format/useFormatters';
 import dataTable from '@/ui/Table/Table.module.css';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import gridStyles from './AllWorkGrid.module.css';
 import { monthsAboveText, NOT_PHASED, PHASED_BUDGET_ROW } from './all-work-text';
 import type { AllWorkResult, AllWorkRow, Money } from './all-work-types';
 import styles from './BudgetView.module.css';
 import { isControl, NOTHING } from './cell-text';
 import { RowName } from './RowName';
-import { ScrollBox } from './ScrollBox';
 import type { VisibleRow } from './view-rows';
 
 const ZERO = /^-?0+(\.0+)?$/;

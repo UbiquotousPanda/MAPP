@@ -1,5 +1,5 @@
 import { Card } from '@/ui/Card/Card';
-import { ScrollBox } from '@/features/financials';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import dataTable from '@/ui/Table/Table.module.css';
@@ -36,7 +36,7 @@ export function SpaPeriods({ view, period, onPeriod, onTrace }: SpaPeriodsProps)
       }
     >
       <p className={styles.note}>{PERIODS.tip}</p>
-      <ScrollBox label={PERIODS.title} className={styles.scroll}>
+      <ScrollBox label={PERIODS.title}>
         <table className={dataTable.table}>
           <caption className="visually-hidden">
             {PERIODS.title} by {period}, {view.plan.year}

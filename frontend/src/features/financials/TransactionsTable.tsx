@@ -7,6 +7,7 @@ import dataTable from '@/ui/Table/Table.module.css';
 import { cx } from '@/ui/cx';
 import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { FinancialTransactionRow, FinancialTransactionType } from './api';
 import { transactionHref } from './financials-links';
 import type { SortColumn, SortDirection } from './financials-links';
@@ -17,7 +18,6 @@ import {
   recordLabel,
   TYPE_WORDS,
 } from './financials-text';
-import { ScrollBox } from './ScrollBox';
 import styles from './TransactionsTable.module.css';
 
 /** The type chips: one tone per type, the word carries the meaning. */
@@ -70,7 +70,7 @@ export function TransactionsTable({
   );
 
   return (
-    <ScrollBox label="Transactions" className={styles.scroll}>
+    <ScrollBox label="Transactions">
       <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">Transactions</caption>
         <thead>

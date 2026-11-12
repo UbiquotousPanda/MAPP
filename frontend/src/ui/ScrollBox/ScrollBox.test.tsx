@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ScrollBox } from './ScrollBox';
 
@@ -12,7 +12,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('ScrollBox (design system §5.4, UI audit AW-05)', () => {
+describe('ScrollBox (design system §5.4)', () => {
   it('is a named, focusable region with a cue on the right while the table is wider', async () => {
     widths(1400, 900);
     render(
@@ -38,5 +38,21 @@ describe('ScrollBox (design system §5.4, UI audit AW-05)', () => {
     // The first measurement happens in the next frame.
     await new Promise((resolve) => window.requestAnimationFrame(resolve));
     await waitFor(() => expect(screen.queryByRole('region')).not.toBeInTheDocument());
+  });
+
+  it('shades the start edge once scrolled and the end edge only while columns remain', async () => {
+    widths(1400, 900);
+    render(
+      <ScrollBox label="Transactions">
+        <table />
+      </ScrollBox>,
+    );
+
+    const region = await screen.findByRole('region', { name: 'Transactions, scrolls sideways' });
+    Object.defineProperty(region, 'scrollLeft', { value: 500 });
+    fireEvent.scroll(region);
+
+    await waitFor(() => expect(region.parentElement?.className).toMatch(/cueStart/));
+    expect(region.parentElement?.className).not.toMatch(/cueEnd/);
   });
 });

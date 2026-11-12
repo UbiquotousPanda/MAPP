@@ -8,7 +8,7 @@ import type { TeamRef } from '@/ui/TeamPill/TeamPill';
 import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
-import { ScrollBox } from '@/features/financials';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { ConvertedAmount } from '@/features/line-items';
 import { PinButton } from './PinButton';
 import { PlanCompleteness, PlanStatusChip } from './PlanFacts';
@@ -30,7 +30,7 @@ const TEAMS_SHOWN = 2;
 
 export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTableProps) {
   return (
-    <ScrollBox label="Plans" className={styles.scroll}>
+    <ScrollBox label="Plans">
       <table className={cx(dataTable.table, styles.table)} aria-label="Plans">
         <thead>
           <tr>

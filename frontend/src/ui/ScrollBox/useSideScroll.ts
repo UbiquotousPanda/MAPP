@@ -1,20 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-/** Which edges of a sideways-scrolling box have more content beyond them. */
+// Which edges of a sideways-scrolling box hide content: start once scrolled, end while columns remain.
 export interface SideScroll {
-  /** Content is hidden on the left: the box has been scrolled. */
   start: boolean;
-  /** Content is hidden on the right: there are more columns. */
   end: boolean;
 }
 
 const NONE: SideScroll = { start: false, end: false };
 
-/**
- * The scroll cue of the data table standard (design system §5.4, UI audit AW-05): watches a box
- * that scrolls sideways and says which edges hide content, so the view can shade them and make the
- * box focusable ("<table>, scrolls sideways") only while it really overflows.
- */
 export function useSideScroll<T extends HTMLElement>(): {
   ref: (element: T | null) => void;
   scroll: SideScroll;
@@ -45,7 +38,6 @@ export function useSideScroll<T extends HTMLElement>(): {
       window.cancelAnimationFrame(frame.current);
       frame.current = window.requestAnimationFrame(measure);
     };
-    // Measured in the next frame, once the table is laid out.
     onScroll();
     element.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);

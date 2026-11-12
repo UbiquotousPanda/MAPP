@@ -1,18 +1,3 @@
-.scroll {
-  position: relative;
-  overflow-x: auto;
-  /* A shadow at an edge with more columns beyond it: the white covers scroll, the shadows stay. */
-  background:
-    linear-gradient(to right, var(--surface) 30%, transparent) left center / 32px 100% no-repeat
-      local,
-    linear-gradient(to left, var(--surface) 30%, transparent) right center / 32px 100% no-repeat
-      local,
-    radial-gradient(farthest-side at 0 50%, var(--scroll-shadow), transparent) left center / 12px
-      100% no-repeat scroll,
-    radial-gradient(farthest-side at 100% 50%, var(--scroll-shadow), transparent) right center /
-      12px 100% no-repeat scroll;
-}
-
 .table {
   line-height: var(--leading-sm);
 }

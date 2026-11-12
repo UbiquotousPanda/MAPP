@@ -33,7 +33,7 @@
   opacity: 1;
 }
 
-/* Scrolled: the sticky name column casts the shadow over the columns that slid under it. */
+/* Scrolled: a sticky first column casts its shadow over the columns that slid under it. */
 .cueStart tr > :first-child {
   box-shadow: 8px 0 8px -8px var(--scroll-shadow);
 }

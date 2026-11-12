@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ScrollBox } from '@/features/financials';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { Card } from '@/ui/Card/Card';
 import { HxKey } from '@/ui/HxKey/HxKey';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
@@ -48,7 +48,7 @@ export function PurchaseRequestLinesTable({
   const source = GSAP_SOURCE_WORDS[purchaseRequest.gsapSource];
   return (
     <Card title={LINES_TITLE} subtitle={source ? poSourceText(source) : undefined}>
-      <ScrollBox label={LINES_TITLE} className={styles.scroll}>
+      <ScrollBox label={LINES_TITLE}>
         <table className={dataTable.table}>
           <thead>
             <tr>

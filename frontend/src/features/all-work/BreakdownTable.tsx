@@ -7,13 +7,13 @@ import { DisclosureButton } from '@/ui/DisclosureButton/DisclosureButton';
 import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import gridStyles from './AllWorkGrid.module.css';
 import type { AllWorkBreakdown, BreakdownGroup, BreakdownSubgroup } from './all-work-types';
 import type { GroupRef } from './breakdown-state';
 import styles from './BreakdownTable.module.css';
 import { COLUMN_LABELS, groupToggleText, showInGridText } from './breakdown-text';
 import { BREAKDOWN_SHARE_HELP_KEY } from './column-help';
-import { ScrollBox } from './ScrollBox';
 
 type OpenGroup = (groups: GroupRef[]) => (() => void) | null;
 

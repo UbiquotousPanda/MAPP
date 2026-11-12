@@ -1,4 +1,4 @@
-import { ScrollBox } from '@/features/financials';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { useFormatters } from '@/format/useFormatters';
 import { Card } from '@/ui/Card/Card';
 import { Select } from '@/ui/Select/Select';
@@ -36,7 +36,7 @@ export function SpaDimension({ view, onDimension, onTrace }: SpaDimensionProps) 
       }
     >
       {breakdown.countsInEach && <p className={styles.note}>{DIMENSION.countsInEach}</p>}
-      <ScrollBox label={`Planned cost by ${breakdown.label}`} className={styles.scroll}>
+      <ScrollBox label={`Planned cost by ${breakdown.label}`}>
         <table className={dataTable.table}>
           <caption className="visually-hidden">Planned cost by {breakdown.label}</caption>
           <thead>
