@@ -15,7 +15,7 @@ export interface HxKeyProps {
   copyText?: string;
 }
 
-/** A line's HX key, read-only with Copy (030 FR-016, 032 FR-020): requisitioners type it into GSAP. */
+/** A line's HX key, read-only with Copy: requisitioners type it into GSAP. */
 export function HxKey({ value, hint, copyText }: HxKeyProps) {
   const toast = useToast();
   const hintId = useId();
