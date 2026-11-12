@@ -17,9 +17,8 @@ describe('LineItemsSection (US1)', () => {
       '/line-items/L-1002',
     );
     expect(film).toHaveTextContent('L-1002');
-    expect(film).toHaveTextContent('EUR');
-    expect(film).toHaveTextContent('46,000.00 EUR');
-    expect(film).toHaveTextContent('50,000.00 USD');
+    expect(film).toHaveTextContent('€46,000.00');
+    expect(film).toHaveTextContent('$50,000.00');
     expect(film).toHaveTextContent('Evenly');
     expect(film).toHaveTextContent('All filled in');
     expect(film).toHaveTextContent('Not requested');
@@ -47,10 +46,10 @@ describe('LineItemsSection (US1)', () => {
     const fee = nth(rows, 1);
     const film = nth(rows, 2);
     await waitFor(() =>
-      expect(within(fee).getAllByRole('cell')[3]).toHaveTextContent('30,000.00 USD'),
+      expect(within(fee).getAllByRole('cell')[3]).toHaveTextContent('$30,000.00'),
     );
-    expect(within(fee).getAllByRole('cell')[4]).toHaveTextContent('12,000.00 USD');
-    expect(within(film).getAllByRole('cell')[3]).toHaveTextContent('52,000.00 USD');
+    expect(within(fee).getAllByRole('cell')[4]).toHaveTextContent('$12,000.00');
+    expect(within(film).getAllByRole('cell')[3]).toHaveTextContent('$52,000.00');
     expect(
       within(nth(within(film).getAllByRole('cell'), 3)).getByRole('img', {
         name: 'Committed above planned cost',
@@ -75,13 +74,13 @@ describe('LineItemsSection (US1)', () => {
     expect(
       await screen.findByText('Unassigned planned cost (Sys_Gen_Balance)'),
     ).toBeInTheDocument();
-    expect(screen.getByText('20,000.00 USD')).toBeInTheDocument();
+    expect(screen.getByText('$20,000.00')).toBeInTheDocument();
     expect(screen.getByRole('progressbar', { name: 'Assigned to line items' })).toHaveAttribute(
       'aria-valuenow',
       '83',
     );
-    expect(screen.getByText('100,000.00 of 120,000.00 USD assigned')).toBeInTheDocument();
-    expect(screen.getByText('20,000.00 USD not yet assigned to a line item')).toBeInTheDocument();
+    expect(screen.getByText('$100,000.00 of $120,000.00 assigned')).toBeInTheDocument();
+    expect(screen.getByText('$20,000.00 not yet assigned to a line item')).toBeInTheDocument();
   });
 
   it('shows the grid by month with totals (scenario 2, FR-003)', async () => {
@@ -110,9 +109,9 @@ describe('LineItemsSection (US1)', () => {
     renderLineItemsSection({ body: section });
 
     expect(
-      await screen.findByText("Line items exceed the activity's planned cost by 500.00 USD"),
+      await screen.findByText("Line items exceed the activity's planned cost by $500.00"),
     ).toBeInTheDocument();
-    expect(screen.getByText('-500.00 USD')).toBeInTheDocument();
+    expect(screen.getByText('-$500.00')).toBeInTheDocument();
   });
 
   it('shows the empty state and the whole planned cost as unassigned (scenario 4, FR-004)', async () => {
@@ -137,7 +136,7 @@ describe('LineItemsSection (US1)', () => {
     for (const link of screen.getAllByRole('link', { name: 'Add line item' })) {
       expect(link).toHaveAttribute('href', '/activities/A-1001/line-items/new');
     }
-    expect(screen.getByText('120,000.00 USD not yet assigned to a line item')).toBeInTheDocument();
+    expect(screen.getByText('$120,000.00 not yet assigned to a line item')).toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 
@@ -222,10 +221,10 @@ describe('LineItemsSection (US1)', () => {
     expect(
       screen.getByRole('table', { name: 'Line items spread over time, in EUR' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('92,000.00 of 110,400.00 EUR assigned')).toBeInTheDocument();
-    // Agency fee: 50,000.00 USD typed, shown as 46,000.00 EUR in the display-currency column.
+    expect(screen.getByText('€92,000.00 of €110,400.00 assigned')).toBeInTheDocument();
+    // Agency fee: $50,000.00 typed, shown as €46,000.00 in the display-currency column.
     const fee = closestTo(screen.getByRole('link', { name: 'Agency fee' }), 'tr');
-    expect(within(fee).getAllByRole('cell')[2]).toHaveTextContent('46,000.00 EUR');
+    expect(within(fee).getAllByRole('cell')[2]).toHaveTextContent('€46,000.00');
   });
 
   it('shows a skeleton while loading and Try again after a failure', async () => {

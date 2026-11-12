@@ -59,7 +59,7 @@ describe('051 FR-040, FR-044: a dataset’s page (US3 scenario 5)', () => {
     const cells = within(rows)
       .getAllByRole('cell')
       .map((cell) => cell.textContent);
-    expect(cells.slice(4, 8)).toEqual(['Event 2', '04 Mar 2026', '11', '1,200.00 EUR']);
+    expect(cells.slice(4, 8)).toEqual(['Event 2', '04 Mar 2026', '11', '€1,200.00']);
   });
 
   it('pages through the rows', async () => {

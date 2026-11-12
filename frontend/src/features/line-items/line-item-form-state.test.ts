@@ -87,7 +87,7 @@ describe('changeCurrency (FR-012)', () => {
   it('converts the pre-filled balance and says so', () => {
     const state = changeCurrency(newFormState(formOptions()), 'EUR', CURRENCIES);
     expect(state.plannedCost).toBe('18,400.00');
-    expect(state.costNotes).toEqual(['Changed to 18,400.00 EUR = 20,000.00 USD']);
+    expect(state.costNotes).toEqual(['Changed to €18,400.00 = $20,000.00']);
     expect(state.sources.currency).toBeUndefined();
   });
 

@@ -7,20 +7,12 @@ import styles from './MoneyPair.module.css';
 import { factsOf, RATES_UNKNOWN, rateText, useCurrentRates } from './rates';
 
 export interface MoneyPairProps {
-  /** The amount as typed: in the plan currency (activities) or its own currency. */
   primary: Money | null | undefined;
-  /** The same amount in the reader's display currency, from the API; shown only when it differs. */
   secondary?: Money | null;
-  /** Red, with the words given by the caller (a negative balance). */
   problem?: boolean;
 }
 
-/**
- * An amount in the plan currency with the reader's display currency beside it (016 FR-013, plan
- * "AmountPair"): "40,000.00 GBP ≈ 50,632.91 USD", the second one muted with an ⓘ that says which
- * rates were used (FR-009). When both currencies are the same only the first shows. Amounts use
- * the code form, the one money format of the activity and line-item pages (design system §4.4).
- */
+/** "£40,000.00 ≈ $50,632.91": the display-currency amount muted, with an ⓘ naming the rates. */
 export function MoneyPair({ primary, secondary, problem = false }: MoneyPairProps) {
   const both = Boolean(primary && secondary && secondary.currency !== primary.currency);
   return (
@@ -38,10 +30,7 @@ export function MoneyPair({ primary, secondary, problem = false }: MoneyPairProp
   );
 }
 
-/**
- * The ⓘ that names the rates behind a converted amount: "1 USD = 0.79 GBP · rate of 19 Oct 2026 ·
- * GSAP import" for each currency other than USD (016 FR-009).
- */
+/** "1 USD = 0.79 GBP · rate of 19 Oct 2026 · GSAP import" for each currency other than USD. */
 export function RateTip({ codes }: { codes: string[] }) {
   const { date } = useFormatters();
   const rates = useCurrentRates();

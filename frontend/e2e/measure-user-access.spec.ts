@@ -20,7 +20,7 @@ test('045 US1: a sign-in shows in the report the administrator opens (FR-001 –
   const priya = table.getByRole('row', { name: /Priya Raman/ });
   await expect(priya).toBeVisible();
   await expect(priya).not.toContainText('Never');
-  await expect(page.getByRole('combobox', { name: 'Currency' })).toHaveCount(0);
+  await expect(page.getByRole('main').getByRole('combobox', { name: /Currency/ })).toHaveCount(0);
   await expectNoAxeViolations(page);
 
   await page.getByRole('searchbox', { name: 'Search people' }).fill('priya');

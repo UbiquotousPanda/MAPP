@@ -4,7 +4,6 @@ import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import type { SegmentedFilterOption } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { AttentionCard } from './AttentionCard';
-import { CurrencyPicker } from './CurrencyPicker';
 import { FinancialsCard } from './FinancialsCard';
 import { GettingStartedCard } from './GettingStartedCard';
 import { useHomeSummary } from './api';
@@ -46,7 +45,6 @@ export function HomePage() {
         {!noRole && (
           <div className={styles.actions}>
             <SegmentedFilter label="Scope" options={SCOPES} value={scope} onChange={changeScope} />
-            <CurrencyPicker />
           </div>
         )}
       </div>

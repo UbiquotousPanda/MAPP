@@ -40,7 +40,7 @@ describe('TransactionPanel (015 US3 scenarios 3–4, FR-022)', () => {
     expect(field('Document number')).toHaveTextContent('4500001003');
     expect(field('Line')).toHaveTextContent('10');
     expect(field('Posting date')).toHaveTextContent('08 Jan 2026');
-    expect(field('Amount')).toHaveTextContent('9,800.00 EUR');
+    expect(field('Amount')).toHaveTextContent('€9,800.00');
     expect(field('Amount in USD')).toHaveTextContent('$10,652.17');
     expect(field('Vendor')).toHaveTextContent('V-100103 · Outdoor Frames Ltd');
     expect(field('SWBS code')).toHaveTextContent('GB01-M26-0006');

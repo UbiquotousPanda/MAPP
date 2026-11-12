@@ -106,19 +106,19 @@ test('016 US2, US3 (T089): Priya plans in GBP with USD beside it and phases the 
   // The plan's amounts are in GBP with their USD value (GBP 0.79 per USD in the demo rates).
   await expect(page.getByRole('group', { name: 'Plan facts' })).toContainText('Planned in GBP');
   const summary = page.getByRole('region', { name: 'Summary' });
-  await expect(summary).toContainText('600,000.00 GBP');
-  await expect(summary).toContainText('≈ 759,493.67 USD');
+  await expect(summary).toContainText('£600,000.00');
+  await expect(summary).toContainText('≈ $759,493.67');
 
   const card = page.getByRole('region', { name: 'Budget by month', exact: true });
   const editor = page.getByRole('dialog', { name: `Budget by month — ${name}` });
   await card.getByRole('button', { name: 'Edit budget by month' }).click();
   await editor.getByRole('radio', { name: /^Evenly/ }).check();
-  await expect(editor.getByText('Each month gets 50,000.00 GBP.')).toBeVisible();
+  await expect(editor.getByText('Each month gets £50,000.00.')).toBeVisible();
   await editor.getByRole('button', { name: 'Save budget by month' }).click();
   await expect(editor).toHaveCount(0);
   await expect(
     card.getByRole('row', {
-      name: new RegExp(`^Budget (About Budget )?${'50,000\\.00 GBP '.repeat(12)}600,000\\.00 GBP$`),
+      name: new RegExp(`^Budget (About Budget )?${'£50,000\\.00 '.repeat(12)}£600,000\\.00$`),
     }),
   ).toBeVisible();
 
@@ -131,14 +131,14 @@ test('016 US2, US3 (T089): Priya plans in GBP with USD beside it and phases the 
     .click();
   await editor.getByRole('textbox', { name: new RegExp(`^Q1 ${THIS_YEAR}`) }).fill('100000');
   await expect(
-    editor.getByText('550,000.00 of 600,000.00 GBP phased — 50,000.00 left'),
+    editor.getByText('£550,000.00 of £600,000.00 phased — £50,000.00 left'),
   ).toBeVisible();
   await expectNoAxeViolations(page);
   await editor.getByRole('button', { name: 'Save budget by month' }).click();
   await expect(editor).toHaveCount(0);
   await expect(
     card.getByRole('row', {
-      name: /^Budget (About Budget )?33,333\.33 GBP 33,333\.33 GBP 33,333\.34 GBP 50,000\.00 GBP /,
+      name: /^Budget (About Budget )?£33,333\.33 £33,333\.33 £33,333\.34 £50,000\.00 /,
     }),
   ).toBeVisible();
   await expect(
@@ -157,13 +157,13 @@ test('016 US2, US4 (T089): a GBP activity converts its EUR line item and splits 
   await addLineItem(page, activity.id, '15000.00', 'GBP');
   await addLineItem(page, activity.id, '23000.00', 'EUR');
 
-  // 23,000.00 EUR at 0.92 is 25,000.00 USD, which is 19,750.00 GBP at 0.79.
+  // €23,000.00 at 0.92 is $25,000.00, which is £19,750.00 at 0.79.
   await page.goto(activity.path);
   await expect(page.getByRole('heading', { name: activity.name, level: 1 })).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Summary' })).toContainText('5,250.00 GBP');
+  await expect(page.getByRole('region', { name: 'Summary' })).toContainText('£5,250.00');
   await expect(
     page.getByRole('row', {
-      name: /^EUR line item \S+ L-\d+ 23,000\.00 EUR 19,750\.00 GBP 25,000\.00 USD /,
+      name: /^EUR line item \S+ L-\d+ €23,000\.00 £19,750\.00 \$25,000\.00 /,
     }),
   ).toBeVisible();
 
@@ -177,8 +177,8 @@ test('016 US2, US4 (T089): a GBP activity converts its EUR line item and splits 
   await dialog.getByRole('textbox', { name: /^New activity name/ }).fill(newName);
   await dialog.getByRole('checkbox', { name: /^EUR line item/ }).check();
   const after = dialog.getByRole('region', { name: 'After the split' });
-  await expect(after).toContainText('20,250.00 GBP');
-  await expect(after).toContainText('19,750.00 GBP');
+  await expect(after).toContainText('£20,250.00');
+  await expect(after).toContainText('£19,750.00');
   await expectNoAxeViolations(page);
   await dialog.getByRole('button', { name: 'Split activity' }).click();
   await expectToast(page, `'${activity.name}' split — '${newName}' created.`);

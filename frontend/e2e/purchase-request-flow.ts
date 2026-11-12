@@ -15,7 +15,7 @@ export interface ApprovedActivity extends Named {
   path: string;
 }
 
-/** Priya's 12,000.00 USD Lubricants activity, approved by Daniel Okoro; ends signed in as Daniel. */
+/** Priya's $12,000.00 Lubricants activity, approved by Daniel Okoro; ends signed in as Daniel. */
 export async function approvedActivity(page: Page, label: string): Promise<ApprovedActivity> {
   await signInAs(page, PRIYA);
   const activity = await lubricantsActivity(page, label, '12000.00');

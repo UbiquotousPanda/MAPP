@@ -82,7 +82,7 @@ describe('032 FR-044–FR-048: Purchase requests page', () => {
       '/line-items/L-1006',
     );
     expect(lines).toHaveTextContent('HX1006');
-    expect(lines).toHaveTextContent('9,200.00 EUR');
+    expect(lines).toHaveTextContent('€9,200.00');
     expect(
       screen.getByRole('button', { name: 'Hide the lines of PR for Stand build' }),
     ).toHaveAttribute('aria-expanded', 'true');

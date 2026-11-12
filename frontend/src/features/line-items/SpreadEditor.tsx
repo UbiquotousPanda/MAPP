@@ -250,9 +250,9 @@ function CustomGrid({
         role="status"
         aria-live="polite"
       >
-        {customTotalText(centsInput(sum), centsInput(plannedCost), currency, {
+        {customTotalText(amountText(sum, currency), amountText(plannedCost, currency), {
           sign: difference === 0n ? 0 : difference > 0n ? 1 : -1,
-          amount: centsInput(difference < 0n ? -difference : difference),
+          amount: amountText(difference < 0n ? -difference : difference, currency),
         })}
       </p>
       {difference !== 0n && (

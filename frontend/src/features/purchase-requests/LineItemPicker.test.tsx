@@ -66,7 +66,7 @@ describe('032 FR-010/FR-001: line item picker', () => {
     });
 
     expect(await screen.findByText('Gift boxes (L-1011)')).toBeInTheDocument();
-    expect(screen.getByText('Available to request: 10,000.00 USD')).toBeInTheDocument();
+    expect(screen.getByText('Available to request: $10,000.00')).toBeInTheDocument();
     expect(
       screen.getByText('One purchase request cannot charge two company codes (GB01 and NL02).'),
     ).toBeInTheDocument();

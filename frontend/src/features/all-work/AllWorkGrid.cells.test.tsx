@@ -59,8 +59,8 @@ describe('AllWorkGrid cells (US1)', () => {
     const state = { ...standard2026(), expansion: { mode: 'allExpanded' as const, toggled: [] } };
     renderGrid(gridResult({ columns, rows, displayCurrency: 'EUR' }), state);
 
-    expect(within(bodyRow('Helix launch event')).getByText('12,000.00 EUR')).toBeInTheDocument();
-    expect(within(bodyRow('Venue hire')).getByText('7,110.00 GBP')).toBeInTheDocument();
+    expect(within(bodyRow('Helix launch event')).getByText('€12,000.00')).toBeInTheDocument();
+    expect(within(bodyRow('Venue hire')).getByText('£7,110.00')).toBeInTheDocument();
   });
 
   it('cuts long text with the full text on focus, and labels inactive values (edge cases)', async () => {

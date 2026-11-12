@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
-import { expectNoAxeViolations, signInAs } from './fixtures';
+import { choose, expectNoAxeViolations, signInAs } from './fixtures';
 
 // Planning dashboards and exports (036): the Executive dashboard (US1) and a plan's PowerPoint and PDF (US2).
 
@@ -44,13 +44,16 @@ test('036 US1: the Executive dashboard adds up every market a person may see, an
 
   await page.getByRole('button', { name: 'Table' }).click();
   await expect(page.getByRole('rowheader', { name: 'Mar 2026' })).toBeVisible();
-  await page.getByLabel('Currency', { exact: true }).selectOption('EUR');
+  // D-413: the dashboard follows the top bar's display currency.
+  const currency = page.getByRole('combobox', { name: 'Display currency' });
+  await choose(page, currency, /^EUR/);
   await expect(
     page
       .getByLabel('Summary')
-      .getByText(/^[\d,]+\.\d{2} EUR$/)
+      .getByText(/^€[\d,]+\.\d{2}$/)
       .first(),
   ).toBeVisible();
+  await choose(page, currency, /^USD/);
 
   await markets.getByRole('link', { name: 'Mobility China', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Regional dashboard' })).toBeVisible();

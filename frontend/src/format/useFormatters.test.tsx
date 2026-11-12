@@ -50,7 +50,7 @@ describe('useFormatters', () => {
   it('formats amounts exactly as the API answered them, never converting (P6)', () => {
     renderWithProviders(<Shown />, { user: testUser() });
 
-    expect(screen.getByText('money: 12,500.00 EUR')).toBeInTheDocument();
+    expect(screen.getByText('money: €12,500.00')).toBeInTheDocument();
     expect(screen.getByText('compact: $1.25M')).toBeInTheDocument();
     expect(screen.getByText('none: —')).toBeInTheDocument();
   });

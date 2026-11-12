@@ -12,7 +12,7 @@ import { PurchaseRequestApprovalSection } from './PurchaseRequestApprovalSection
 type Approval = components['schemas']['PurchaseRequestApproval'];
 
 const WARNING =
-  "Line items of activity 'Billboard winter wave' are 25,000.00 USD above its planned cost";
+  "Line items of activity 'Billboard winter wave' are $25,000.00 above its planned cost";
 const REFUSAL = `${WARNING} — ask the owner to lower them, or decline.`;
 const OVERAGE = {
   activity: { type: 'activity', id: 'A-1003', name: 'Billboard winter wave' },

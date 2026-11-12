@@ -1,30 +1,22 @@
-import type { Page } from '@playwright/test';
 import { expect, test } from './support/no-csp-violations';
 import { expectNoAxeViolations, signInAs } from './fixtures';
 
-// An unusable currency or market in the address falls back to the default and says so.
+// An unusable market in the address falls back to the default and says so; a currency is ignored (D-413).
 
 const CARLOS = 'carlos.mendes@shell.com';
 
-async function expectFallbackCurrency(page: Page, asked: string): Promise<void> {
-  await page.goto(`/dashboards/executive?currency=${asked}`);
-  await expect(page.getByRole('heading', { level: 1, name: 'Executive dashboard' })).toBeVisible();
-  await expect(page.getByLabel('Summary')).toBeVisible();
-  await expect(page.getByRole('button', { name: /Try again/ })).toHaveCount(0);
-  await expect(page).toHaveURL(new RegExp(`currency=(?!${asked})[A-Z]{3}`));
-  const used = new URL(page.url()).searchParams.get('currency') ?? '';
-  expect(used).not.toBe(asked);
-  await expect(page.getByLabel('Currency', { exact: true })).toHaveValue(used);
-}
-
-test('038 FR-012 (H-1): an unknown currency falls back to the default, in the filter bar and the address', async ({
+test('D-413: a currency in an old dashboard link is ignored; the top bar chooses it', async ({
   page,
 }) => {
   await signInAs(page, CARLOS);
 
-  await expectFallbackCurrency(page, 'XXX');
+  await page.goto('/dashboards/executive?currency=XXX');
+  await expect(page.getByRole('heading', { level: 1, name: 'Executive dashboard' })).toBeVisible();
+  await expect(page.getByLabel('Summary')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Try again/ })).toHaveCount(0);
+  await expect(page.getByLabel('Currency', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('combobox', { name: 'Display currency' })).toHaveText('USD');
   await expectNoAxeViolations(page);
-  await expectFallbackCurrency(page, 'JPY');
 });
 
 test('038 FR-012 (H-1): an unknown market falls back to the default market', async ({ page }) => {

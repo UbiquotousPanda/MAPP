@@ -13,14 +13,13 @@ export type AttributionModelChoice = components['schemas']['AttributionModelChoi
 export interface DealsParams {
   activityId: string;
   year: number | null;
-  currency: string | null;
   compare: AttributionModel | null;
   page: number;
 }
 
 export const DEALS_KEY = ['reports', 'revenue', 'deals'] as const;
 
-/** The deals behind one activity's attributed revenue (058), for the frame's year and display currency. */
+/** The deals behind one activity's attributed revenue (058), for the frame's year, in the display currency. */
 export function useActivityDeals(params: DealsParams | null) {
   return useQuery({
     queryKey: [...DEALS_KEY, params],
@@ -32,7 +31,6 @@ export function useActivityDeals(params: DealsParams | null) {
             path: { activityId: params?.activityId ?? '' },
             query: {
               ...(params?.year && { year: params.year }),
-              ...(params?.currency && { currency: params.currency }),
               ...(params?.compare && { compare: params.compare }),
               page: params?.page ?? 1,
             },
@@ -49,5 +47,5 @@ export function dealsParams(
   compare: AttributionModel | null,
   page: number,
 ): DealsParams {
-  return { activityId, year: address.year, currency: address.currency, compare, page };
+  return { activityId, year: address.year, compare, page };
 }

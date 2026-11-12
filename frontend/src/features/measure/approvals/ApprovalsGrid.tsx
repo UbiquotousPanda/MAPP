@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { formatMoneyText } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
@@ -146,7 +147,7 @@ function tableOf(grid: ApprovalsGridData): ReportTableData {
         row.submittedOn,
         String(row.level),
         row.purchaseOrderNumber ?? NOTHING,
-        row.amount ? `${row.amount.amount} ${row.amount.currency}` : NOTHING,
+        row.amount ? formatMoneyText(row.amount) : NOTHING,
         row.owner.name,
         row.comments || NOTHING,
       ],

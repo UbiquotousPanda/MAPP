@@ -13,7 +13,7 @@ describe('037 FR-015 budgetCheck', () => {
       'refuse',
       '100,000',
       '150000.00',
-      "The planned cost is 120,000.00 USD; this budget refuses overspending, so it can't be lower than that.",
+      "The planned cost is $120,000.00; this budget refuses overspending, so it can't be lower than that.",
       null,
     ],
     [
@@ -21,7 +21,7 @@ describe('037 FR-015 budgetCheck', () => {
       'refuse',
       '1',
       null,
-      "The planned cost is 120,000.00 USD; this budget refuses overspending, so it can't be lower than that.",
+      "The planned cost is $120,000.00; this budget refuses overspending, so it can't be lower than that.",
       null,
     ],
     [
@@ -30,7 +30,7 @@ describe('037 FR-015 budgetCheck', () => {
       '100,000',
       '100000.00',
       null,
-      'The planned cost is already over this budget by 20,000.00 USD. Anything that adds cost will be refused until it is back within the budget.',
+      'The planned cost is already over this budget by $20,000.00. Anything that adds cost will be refused until it is back within the budget.',
     ],
     ['no budget typed has nothing to go over', 'refuse', '', '150000.00', null, null],
   ] as const)('%s', (_name, mode, typed, stored, error, note) => {
@@ -56,8 +56,8 @@ describe('037 FR-014 overLimitMessages', () => {
 
   it('names every budget a raise would take over, with the overage', () => {
     expect(overLimitMessages(limits, '10000.00', '16,000')).toEqual([
-      "This is 1,000.00 USD over the budget of campaign 'Helix launch', which refuses overspending.",
-      "This is 6,100.00 USD over the budget of plan 'Lubricants', which refuses overspending.",
+      "This is $1,000.00 over the budget of campaign 'Helix launch', which refuses overspending.",
+      "This is $6,100.00 over the budget of plan 'Lubricants', which refuses overspending.",
     ]);
   });
 

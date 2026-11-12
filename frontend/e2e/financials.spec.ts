@@ -38,23 +38,23 @@ test('015 US1 (T021): the activity page shows its GSAP money without a click, li
     'aria-selected',
     'true',
   );
-  await expect(figure(card, 'Committed (POs)')).toContainText('25,000.00 USD');
+  await expect(figure(card, 'Committed (POs)')).toContainText('$25,000.00');
   await expect(figure(card, 'Committed (POs)')).toContainText('31% of planned cost committed');
-  await expect(figure(card, 'Invoiced')).toContainText('22,500.00 USD');
-  await expect(figure(card, 'Paid')).toContainText('20,000.00 USD');
-  await expect(figure(card, 'Accrued (Sep 2026)')).toContainText('2,500.00 USD');
-  await expect(figure(card, 'Not yet committed')).toContainText('55,000.00 USD');
+  await expect(figure(card, 'Invoiced')).toContainText('$22,500.00');
+  await expect(figure(card, 'Paid')).toContainText('$20,000.00');
+  await expect(figure(card, 'Accrued (Sep 2026)')).toContainText('$2,500.00');
+  await expect(figure(card, 'Not yet committed')).toContainText('$55,000.00');
   await expect(card.getByText(SOURCE_LINE)).toBeVisible();
 
   const byLineItem = card.getByRole('table', { name: 'Financial figures by line item' });
   await expect(
     byLineItem.getByRole('row', {
-      name: 'Venue hire 20,000.00 USD 20,000.00 USD 20,000.00 USD 0.00 USD',
+      name: 'Venue hire $20,000.00 $20,000.00 $20,000.00 $0.00',
     }),
   ).toBeVisible();
   await expect(
     byLineItem.getByRole('row', {
-      name: 'Speaker fees 5,000.00 USD 2,500.00 USD 0.00 USD 2,500.00 USD',
+      name: 'Speaker fees $5,000.00 $2,500.00 $0.00 $2,500.00',
     }),
   ).toBeVisible();
   const latest = card.getByRole('table', { name: 'The latest transactions, newest first' });
@@ -72,7 +72,7 @@ test('015 US1 (T021): the activity page shows its GSAP money without a click, li
 
   const billboard = await openActivity(page, 'A-1003', 'Billboard winter wave');
   await expect(
-    billboard.getByRole('row', { name: /^Stand build 10,652\.17 USD Above planned cost/ }),
+    billboard.getByRole('row', { name: /^Stand build \$10,652\.17 Above planned cost/ }),
   ).toBeVisible();
   await billboard
     .getByRole('link', { name: 'Committed above planned cost on 1 line item' })
@@ -86,16 +86,16 @@ test('015 US1 (T021): the activity page shows its GSAP money without a click, li
       "No purchase orders or invoices yet — they appear here once GSAP sends them for this activity's line items.",
     ),
   ).toBeVisible();
-  await expect(figure(launch, 'Committed (POs)')).toContainText('0.00 USD');
-  await expect(figure(launch, 'Not yet committed')).toContainText('120,000.00 USD');
+  await expect(figure(launch, 'Committed (POs)')).toContainText('$0.00');
+  await expect(figure(launch, 'Not yet committed')).toContainText('$120,000.00');
 
   await page.goto('/line-items/L-1004');
   await expect(page.getByRole('heading', { name: 'Speaker fees', level: 1 })).toBeVisible();
   const speaker = financials(page);
-  await expect(figure(speaker, 'Committed (POs)')).toContainText('5,000.00 USD');
-  await expect(figure(speaker, 'Invoiced')).toContainText('2,500.00 USD');
-  await expect(figure(speaker, 'Paid')).toContainText('0.00 USD');
-  await expect(figure(speaker, 'Accrued (Sep 2026)')).toContainText('2,500.00 USD');
+  await expect(figure(speaker, 'Committed (POs)')).toContainText('$5,000.00');
+  await expect(figure(speaker, 'Invoiced')).toContainText('$2,500.00');
+  await expect(figure(speaker, 'Paid')).toContainText('$0.00');
+  await expect(figure(speaker, 'Accrued (Sep 2026)')).toContainText('$2,500.00');
   const transactions = speaker.getByRole('table', {
     name: "The line item's transactions, newest first",
   });
@@ -172,7 +172,7 @@ test('015 US2 (T025): the plan, campaign and initiative add up the same money, i
   // Scenario 4: a reader whose display currency is EUR sees every figure in EUR (USD 1 = EUR 0.92).
   await callApi(page, 'PATCH', '/api/v1/me/preferences', { displayCurrency: 'EUR' });
   await page.goto('/plans/P-1001');
-  await expect(plan).toContainText('32,800.00 EUR');
-  await expect(plan).toContainText('390,400.00 EUR');
+  await expect(plan).toContainText('€32,800.00');
+  await expect(plan).toContainText('€390,400.00');
   await expect(plan).not.toContainText('$');
 });

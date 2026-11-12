@@ -113,9 +113,9 @@ describe('parseAmount and texts', () => {
   });
 
   it('writes amounts with their code and a minus sign (D-143)', () => {
-    expect(amountText(1_086_957n, 'USD')).toBe('10,869.57 USD');
-    expect(amountText(-50_000n, 'USD')).toBe('-500.00 USD');
-    expect(amountText('46000.00', 'EUR')).toBe('46,000.00 EUR');
+    expect(amountText(1_086_957n, 'USD')).toBe('$10,869.57');
+    expect(amountText(-50_000n, 'USD')).toBe('-$500.00');
+    expect(amountText('46000.00', 'EUR')).toBe('€46,000.00');
   });
 
   it('writes months as people read them', () => {

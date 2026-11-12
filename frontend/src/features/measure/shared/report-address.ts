@@ -30,7 +30,6 @@ export interface ReportAddress {
   attributes: AttributeChoice[];
   period: Period;
   show: Show | null;
-  currency: string | null;
   tables: string[];
 }
 
@@ -46,6 +45,7 @@ export const FRAME_PARAMS: readonly string[] = [
   'attr',
   'period',
   'show',
+  // Kept so an old link's currency is dropped at the next change: the top bar sets the currency.
   'currency',
   'table',
 ];
@@ -61,7 +61,6 @@ export const DEFAULT_ADDRESS: ReportAddress = {
   attributes: [],
   period: 'month',
   show: null,
-  currency: null,
   tables: [],
 };
 
@@ -118,7 +117,6 @@ export function readAddress(params: URLSearchParams): ReportAddress {
     ),
     period: oneOf(params, 'period', z.enum(['month', 'quarter'])) ?? 'month',
     show: oneOf(params, 'show', z.enum(['plan', 'campaign', 'initiative', 'activity'])),
-    currency: oneOf(params, 'currency', z.string().regex(/^[A-Z]{3}$/)),
     tables: listOf(params, 'table', widgetKeySchema),
   };
 }
@@ -163,7 +161,6 @@ export function writeAddress(address: ReportAddress): URLSearchParams {
     params.append('period', address.period);
   }
   add('show', address.show === null ? [] : [address.show]);
-  add('currency', address.currency === null ? [] : [address.currency]);
   add('table', address.tables);
   return params;
 }
@@ -183,7 +180,6 @@ export function toQuery(address: ReportAddress): ReportQuery {
     }),
     period: address.period,
     ...(address.show !== null && { show: address.show }),
-    ...(address.currency !== null && { currency: address.currency }),
   };
 }
 
@@ -201,14 +197,13 @@ export function isRestricted(address: ReportAddress): boolean {
   );
 }
 
-/** Every filter but the year back to its default; period, show, currency and tables stay. */
+/** Every filter but the year back to its default; period, show and tables stay. */
 export function resetFilters(address: ReportAddress): ReportAddress {
   return {
     ...DEFAULT_ADDRESS,
     year: address.year,
     period: address.period,
     show: address.show,
-    currency: address.currency,
     tables: address.tables,
   };
 }

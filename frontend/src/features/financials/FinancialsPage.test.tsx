@@ -61,7 +61,7 @@ describe('FinancialsPage (015 US3, FR-020 – FR-021)', () => {
     expect(stand).toHaveTextContent('Purchase order');
     expect(stand).toHaveTextContent('08 Jan 2026');
     expect(stand).toHaveTextContent('Outdoor Frames Ltd');
-    expect(stand).toHaveTextContent('9,800.00 EUR');
+    expect(stand).toHaveTextContent('€9,800.00');
     expect(stand).toHaveTextContent('$10,652.17');
     expect(stand).toHaveTextContent('GB01-M26-0006');
     expect(within(stand).getByRole('link', { name: 'PO 4500001003 / 10' })).toHaveAttribute(
@@ -147,7 +147,7 @@ describe('FinancialsPage (015 US3, FR-020 – FR-021)', () => {
     const stand = within(cards)
       .getAllByRole('listitem')
       .find((card) => card.textContent?.includes('PO 4500001003 / 10'));
-    expect(stand).toHaveTextContent('9,800.00 EUR');
+    expect(stand).toHaveTextContent('€9,800.00');
     expect(stand).toHaveTextContent('Stand build (L-1006)');
   });
 

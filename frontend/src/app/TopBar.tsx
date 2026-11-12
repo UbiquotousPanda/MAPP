@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Link } from 'react-router';
 import { Logo } from '@/ui/Logo/Logo';
 import { LogoTile } from '@/ui/Logo/LogoTile';
@@ -5,6 +6,7 @@ import { ThemeToggle } from '@/ui/ThemeToggle/ThemeToggle';
 import { AccountMenu } from './AccountMenu';
 import { NavDrawer } from './NavDrawer';
 import { NotificationBell } from './NotificationBell';
+import { CurrencyPicker } from './pages';
 import styles from './TopBar.module.css';
 
 /** Below 960 px the name gives way to its tile, and Open menu comes before it. */
@@ -23,6 +25,9 @@ export function TopBar() {
         </span>
       </Link>
       <div className={styles.end}>
+        <Suspense fallback={null}>
+          <CurrencyPicker />
+        </Suspense>
         <ThemeToggle />
         <NotificationBell />
         <AccountMenu />

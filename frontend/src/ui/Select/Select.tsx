@@ -10,7 +10,6 @@ export interface SelectOption {
 }
 
 export interface SelectProps {
-  /** Shown before the control, or only to screen readers with hideLabel. */
   label: string;
   value: string;
   options: SelectOption[];
@@ -18,6 +17,8 @@ export interface SelectProps {
   hideLabel?: boolean;
   /** A consequence of changing it, said at the top of the open menu and to screen readers. */
   note?: string;
+  /** Shown on the closed control instead of the chosen option's label ("USD" for "USD – US dollar"). */
+  valueText?: string;
 }
 
 // Radix keeps "" for "nothing chosen", so an option whose value is "" (All) travels as this instead.
@@ -26,7 +27,8 @@ const toItem = (value: string) => (value === '' ? EMPTY : value);
 const fromItem = (value: string) => (value === EMPTY ? '' : value);
 
 /** A compact single choice with the app's own menu: label beside it, 32 px high, ticked choice. */
-export function Select({ label, value, options, onChange, hideLabel, note }: SelectProps) {
+export function Select(props: SelectProps) {
+  const { label, value, options, onChange, hideLabel, note, valueText } = props;
   const labelId = useId();
   const noteId = useId();
   return (
@@ -40,7 +42,7 @@ export function Select({ label, value, options, onChange, hideLabel, note }: Sel
           aria-labelledby={labelId}
           aria-describedby={note ? noteId : undefined}
         >
-          <Radix.Value />
+          <Radix.Value>{valueText}</Radix.Value>
           <Radix.Icon className={styles.icon}>
             <ChevronDown aria-hidden="true" />
           </Radix.Icon>

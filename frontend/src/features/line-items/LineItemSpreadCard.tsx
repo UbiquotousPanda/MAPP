@@ -1,6 +1,6 @@
 import { Card } from '@/ui/Card/Card';
 import { toCents } from '@/format/decimal';
-import { centsInput, formatMonth, moneyText } from './line-item-math';
+import { amountText, formatMonth, moneyText } from './line-item-math';
 import type { LineItem } from './api';
 import {
   customTotalText,
@@ -54,7 +54,7 @@ export function LineItemSpreadCard({ lineItem }: { lineItem: LineItem }) {
   );
 }
 
-/** "12,000.00 of 10,000.00 EUR spread — 2,000.00 EUR too much" for a saved custom spread. */
+/** "€12,000.00 of €10,000.00 spread — €2,000.00 too much" for a saved custom spread. */
 function customTotal(lineItem: LineItem): string {
   const sum = lineItem.spread.customTotal;
   if (!sum) {
@@ -63,8 +63,9 @@ function customTotal(lineItem: LineItem): string {
   const total = toCents(sum.amount);
   const cost = toCents(lineItem.plannedCost.amount);
   const difference = cost - total;
-  return customTotalText(centsInput(total), centsInput(cost), lineItem.currency.code, {
+  const code = lineItem.currency.code;
+  return customTotalText(amountText(total, code), amountText(cost, code), {
     sign: difference === 0n ? 0 : difference > 0n ? 1 : -1,
-    amount: centsInput(difference < 0n ? -difference : difference),
+    amount: amountText(difference < 0n ? -difference : difference, code),
   });
 }

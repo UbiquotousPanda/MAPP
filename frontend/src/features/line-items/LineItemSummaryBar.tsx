@@ -12,12 +12,11 @@ export interface LineItemSummaryBarProps {
   balance: UnassignedBalance;
   /** What saving changes in the assigned amount, in cents of the balance's currency. */
   change: bigint;
-  layout?: 'bar' | 'rail';
 }
 
 /** "Activity planned cost · Unassigned now · After saving" above the line-item form, red below zero. */
-export function LineItemSummaryBar({ balance, change, layout = 'bar' }: LineItemSummaryBarProps) {
-  const frame = layout === 'rail' ? styles.summaryRail : styles.summaryBar;
+export function LineItemSummaryBar({ balance, change }: LineItemSummaryBarProps) {
+  const frame = styles.summaryBar;
   if (!balance.plannedCost || !balance.balance) {
     return (
       <div className={frame}>

@@ -63,21 +63,6 @@ export function DashboardFilters({ kind, dashboard, onChange }: DashboardFilters
           ))}
         </select>
       </div>
-      <div className={styles.field}>
-        <label htmlFor={`${id}-currency`}>Currency</label>
-        <select
-          id={`${id}-currency`}
-          className={styles.select}
-          value={filters.currency}
-          onChange={(event) => onChange({ currency: event.target.value })}
-        >
-          {choices.currencies.map((currency) => (
-            <option key={currency.code} value={currency.code}>
-              {currency.code} · {currency.name}
-            </option>
-          ))}
-        </select>
-      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 // People, teams, roles and access (features 003 and 014), and My profile.
+export { CurrencyPicker } from './CurrencyPicker';
 export { PeoplePage } from './PeoplePage';
 export { PersonField } from './PersonField';
 export { ProfilePage } from './ProfilePage';
@@ -17,7 +18,7 @@ export { RoleFormPage } from './access/RoleFormPage';
 export { RolePage } from './access/RolePage';
 export { PERMISSIONS } from './access/access-words';
 export { ACCESS_SETTINGS_SECTIONS } from './access/settings-sections';
-export { DISPLAY_CURRENCIES_KEY, useDisplayCurrencies, usePeople } from './api';
+export { useDisplayCurrencies, usePeople } from './api';
 export type { DisplayCurrencyOption } from './api';
 export { PEOPLE_SETTINGS_SECTIONS } from './settings-sections';
 export { currencyLabel } from './texts';

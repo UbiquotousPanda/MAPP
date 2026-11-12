@@ -48,9 +48,9 @@ test('038 FR-019, FR-020 (M-18): warn, then refuse approving a purchase request'
   await action(purchaseRequestsSection(page), 'New purchase request').click();
   const prId = await fillAndSavePurchaseRequest(page, `${nextYear}-03-31`);
   await submitOnScreen(page, prName);
-  // Line items now 15,000.00 USD against 12,000.00 USD planned: 3,000.00 USD above.
+  // Line items now $15,000.00 against $12,000.00 planned: $3,000.00 above.
   await swbsLineItem(page, activity.id, uniqueName('Extra stand'), '5000.00');
-  const warning = `Line items of activity '${activity.name}' are 3,000.00 USD above its planned cost`;
+  const warning = `Line items of activity '${activity.name}' are $3,000.00 above its planned cost`;
 
   try {
     // Warn (the default): the section and the Approve dialog show the overage.
@@ -70,7 +70,7 @@ test('038 FR-019, FR-020 (M-18): warn, then refuse approving a purchase request'
     await setApprovalMode(page, 'Refuse approval');
     await signInAs(page, DANIEL);
     await openPurchaseRequest(page, prId, prName);
-    const refusal = `${warning} — ask the owner to lower them, or decline.`;
+    const refusal = `Line items of activity '${activity.name}' are 3,000.00 USD above its planned cost — ask the owner to lower them, or decline.`;
     const disabled = approval.getByRole('button', { name: 'Approve', exact: true });
     await expect(disabled).toBeDisabled();
     await expect(disabled).toHaveAccessibleDescription(refusal);

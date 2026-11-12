@@ -62,7 +62,7 @@ test('033 US1: from an approved activity to the purchase order and Committed fig
   await page.getByRole('button', { name: 'Create GSAP PR and PO (simulated)' }).click();
   const confirm = page.getByRole('alertdialog', { name: 'Create GSAP PR and PO (simulated)?' });
   await expect(confirm).toContainText(
-    `The simulated GSAP will create a GSAP PR and a purchase order with 1 line (10,000.00 USD) for ${prId}.`,
+    `The simulated GSAP will create a GSAP PR and a purchase order with 1 line ($10,000.00) for ${prId}.`,
   );
   await expectNoAxeViolations(page);
   await confirm.getByRole('button', { name: 'Create', exact: true }).click();
@@ -101,7 +101,7 @@ test('033 US1: from an approved activity to the purchase order and Committed fig
   await signInAs(page, ALEX);
   await openLineItem(page, lineItem);
   const figures = page.getByRole('list', { name: 'Financial figures' });
-  await expect(figures.getByText('10,000.00 USD').first()).toBeVisible();
+  await expect(figures.getByText('$10,000.00').first()).toBeVisible();
   await page.goto(`/financials?year=${new Date().getUTCFullYear() + 1}`);
   await page.getByRole('searchbox', { name: 'Search transactions' }).fill(poNumber);
   await expect(page.getByRole('link', { name: new RegExp(poNumber) }).first()).toBeVisible();

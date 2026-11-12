@@ -78,11 +78,16 @@ test('039 US1: a report opens on the defaults, applies each filter at once and k
   await expect(inView(copy)).toHaveText(filtered);
   await copy.close();
 
-  await choose(page, page.getByRole('combobox', { name: 'Currency' }), /^EUR/);
-  await expect(page).toHaveURL(/currency=EUR/);
+  // 039-C10: the report follows the top bar's display currency and keeps none in its address.
+  await expect(page.getByRole('main').getByRole('combobox', { name: /Currency/ })).toHaveCount(0);
+  const currency = page.getByRole('combobox', { name: 'Display currency' });
+  await choose(page, currency, /^EUR/);
+  await expect(currency).toHaveText('EUR');
+  await expect(page).not.toHaveURL(/currency=/);
   await page.getByRole('button', { name: 'Reset filters' }).first().click();
   await expect(page).not.toHaveURL(/activityStatus=/);
-  await expect(page).toHaveURL(/currency=EUR/);
+  await choose(page, currency, /^USD/);
+  await expect(currency).toHaveText('USD');
 
   await page.goto(`${REPORT}&plan=${outOfScope}`);
   await expect(
@@ -109,7 +114,7 @@ test('039 US2: saved views are personal, open on the default, and come back with
   const button = page.getByRole('button', { name: `View: ${name}` });
   await expect(button).toBeVisible();
 
-  await choose(page, page.getByRole('combobox', { name: 'Currency' }), /^EUR/);
+  await page.getByRole('button', { name: /^Remove filter: Activity status/ }).click();
   await page.getByRole('button', { name: `View: ${name} Modified` }).click();
   await page.getByRole('menuitem', { name: 'Update view…' }).click();
   await page.getByRole('button', { name: 'Update view' }).click();

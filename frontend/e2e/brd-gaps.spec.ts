@@ -178,9 +178,7 @@ test('016: a planner splits an activity in two', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: `Split '${name}'` });
   await dialog.getByRole('textbox', { name: /^New activity name/ }).fill(newName);
   await dialog.getByRole('textbox', { name: /^Planned cost to move/ }).fill('5000.00');
-  await expect(dialog.getByRole('region', { name: 'After the split' })).toContainText(
-    '15,000.00 USD',
-  );
+  await expect(dialog.getByRole('region', { name: 'After the split' })).toContainText('$15,000.00');
   await dialog.getByRole('button', { name: 'Split activity' }).click();
   await expectToast(page, `'${name}' split — '${newName}' created.`);
 

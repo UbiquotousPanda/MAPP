@@ -53,8 +53,8 @@ describe('016 FR-042: Planned cost by on the plan page', () => {
 
     const card = screen.getByRole('region', { name: 'Planned cost breakdown' });
     const table = await within(card).findByRole('table');
-    expect(within(table).getByRole('row', { name: /^Media/ })).toHaveTextContent('23,700.00 GBP');
-    expect(within(table).getByRole('row', { name: /^Total/ })).toHaveTextContent('39,500.00 GBP');
+    expect(within(table).getByRole('row', { name: /^Media/ })).toHaveTextContent('£23,700.00');
+    expect(within(table).getByRole('row', { name: /^Total/ })).toHaveTextContent('£39,500.00');
     const query = lastQuery(api);
     expect({
       plan: query.getAll('plan'),

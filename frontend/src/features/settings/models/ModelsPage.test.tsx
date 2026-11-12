@@ -112,7 +112,7 @@ describe('ModelsPage: details (US1 scenario 3)', () => {
       '/plans/P-1001',
     );
     expect(
-      within(panel).getByText('250,000 INQ → 5,000 MQL → 250 deals → 2,500,000.00 USD revenue'),
+      within(panel).getByText('250,000 INQ → 5,000 MQL → 250 deals → $2,500,000.00 revenue'),
     ).toBeInTheDocument();
     expect(
       within(panel).getByText(

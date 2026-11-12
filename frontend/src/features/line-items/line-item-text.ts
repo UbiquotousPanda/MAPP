@@ -27,8 +27,8 @@ export function planCurrencyColumn(code: string): string {
   return `In plan currency (${code})`;
 }
 
-export function meterText(assigned: string, plannedCost: string, code: string): string {
-  return `${assigned} of ${plannedCost} ${code} assigned`;
+export function meterText(assigned: string, plannedCost: string): string {
+  return `${assigned} of ${plannedCost} assigned`;
 }
 
 export function leftText(amount: string): string {
@@ -81,14 +81,13 @@ export function monthAmountLabel(month: string): string {
 export function customTotalText(
   sum: string,
   cost: string,
-  code: string,
   difference: { sign: number; amount: string },
 ): string {
-  const start = `${sum} of ${cost} ${code} spread — `;
+  const start = `${sum} of ${cost} spread — `;
   if (difference.sign === 0) {
     return `${start}adds up`;
   }
-  return `${start}${difference.amount} ${code} ${difference.sign > 0 ? 'left' : 'too much'}`;
+  return `${start}${difference.amount} ${difference.sign > 0 ? 'left' : 'too much'}`;
 }
 
 export const EYEBROW = 'Line item';
@@ -145,14 +144,9 @@ export interface RatePart {
   code: string;
 }
 
-export function conversionText(
-  amount: string,
-  code: string,
-  rates: RatePart[],
-  dates?: string | null,
-): string {
+export function conversionText(amount: string, rates: RatePart[], dates?: string | null): string {
   const parts = rates.map((part) => `${part.rate} ${part.code}`).join(' and ');
-  return `= ${amount} ${code} at ${parts} per USD${dates ? ` (${dates})` : ''}`;
+  return `= ${amount} at ${parts} per USD${dates ? ` (${dates})` : ''}`;
 }
 
 export function rateDatesText(dates: string[]): string {

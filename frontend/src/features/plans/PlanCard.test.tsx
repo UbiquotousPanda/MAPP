@@ -84,9 +84,9 @@ describe('PlanCard (FR-002)', () => {
     });
 
     expect(screen.getByText('Cross-market')).toBeInTheDocument();
-    expect(moneyLine('Plan budget')).toHaveTextContent('600,000.00 GBP');
-    expect(moneyLine('Plan budget')).toHaveTextContent('1,200,000.00 USD');
-    expect(moneyLine('Planned cost')).toHaveTextContent('480,000.00 GBP≈ about 960,000.00 USD');
+    expect(moneyLine('Plan budget')).toHaveTextContent('£600,000.00');
+    expect(moneyLine('Plan budget')).toHaveTextContent('$1,200,000.00');
+    expect(moneyLine('Planned cost')).toHaveTextContent('£480,000.00≈ about $960,000.00');
   });
 
   it('says "No activities yet" rather than "0 of 0" (functional review X-08)', () => {

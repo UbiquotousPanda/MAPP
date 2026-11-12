@@ -137,7 +137,7 @@ describe('ActivityPage (feature 006, US2): tabs and deep links', () => {
       financials.compareDocumentPosition(lineItems) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(financials.id).toBe('financials');
-    expect(await within(financials).findByText('82,000.00 USD')).toBeVisible();
+    expect(await within(financials).findByText('$82,000.00')).toBeVisible();
     expect(screen.queryByText('From finance (coming later)')).not.toBeInTheDocument();
     expect(lineItems.closest('#line-items')).not.toBeNull();
     expect(screen.queryByRole('region', { name: 'Details' })).not.toBeInTheDocument();

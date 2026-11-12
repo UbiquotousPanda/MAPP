@@ -12,22 +12,29 @@ import { choose } from '@/testing/select';
 import { CurrencyPicker } from './CurrencyPicker';
 
 const CURRENCY_LIST = { body: { items: DISPLAY_CURRENCIES, total: DISPLAY_CURRENCIES.length } };
+const IN_EUROS = testUser({ preferences: { ...testUser().preferences, displayCurrency: 'EUR' } });
 
 function renderPicker(answers: HttpHandler[] = [], user: CurrentUser = testUser()) {
-  const api = mockApi([reply('GET /api/v1/me/display-currencies', CURRENCY_LIST), ...answers]);
+  const api = mockApi([
+    reply('GET /api/v1/me/display-currencies', CURRENCY_LIST),
+    // A saved choice asks every query again, the session too.
+    reply('GET /api/v1/me', { body: IN_EUROS }),
+    ...answers,
+  ]);
   const rendered = renderWithProviders(<CurrencyPicker />, { user });
   return { ...rendered, api };
 }
 
 function picker() {
-  return screen.getByRole('combobox', { name: 'Currency' });
+  return screen.getByRole('combobox', { name: 'Display currency' });
 }
 
 describe('CurrencyPicker', () => {
-  it('offers the currencies My profile offers and starts on the display currency (FR-002, US1 scenario 1, D-217)', async () => {
+  it("shows the display currency's code and offers the currencies My profile offers (FR-002, US1 scenario 1, D-217, D-413)", async () => {
     const { user } = renderPicker();
 
-    await waitFor(() => expect(picker()).toHaveTextContent('USD – US dollar'));
+    expect(picker()).toHaveTextContent(/^USD$/);
+    expect(picker()).toHaveAccessibleDescription('Every page shows its amounts in this currency.');
     await user.click(picker());
     expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
       'EUR – Euro',
@@ -37,7 +44,7 @@ describe('CurrencyPicker', () => {
   });
 
   it('keeps an inactive display currency in the list, because it stays in use (D-201)', async () => {
-    renderPicker(
+    const { user } = renderPicker(
       [
         reply('GET /api/v1/me/display-currencies', {
           body: {
@@ -49,7 +56,8 @@ describe('CurrencyPicker', () => {
       testUser({ preferences: { ...testUser().preferences, displayCurrency: 'CNY' } }),
     );
 
-    await waitFor(() => expect(picker()).toHaveTextContent('CNY – Chinese yuan'));
+    await user.click(picker());
+    expect(await screen.findByRole('option', { name: 'CNY – Chinese yuan' })).toBeInTheDocument();
   });
 
   it('shows the display currency while the list is still loading', () => {
@@ -58,14 +66,14 @@ describe('CurrencyPicker', () => {
     expect(picker().textContent).toBe('USD');
   });
 
-  it('saves the chosen currency as display currency and asks every card again (FR-002, SC-005)', async () => {
+  it('saves the chosen currency as display currency and asks every page again (FR-002, SC-005, D-413)', async () => {
     const { user, api, queryClient } = renderPicker([
       reply('PATCH /api/v1/me/preferences', {
         body: { ...testUser().preferences, displayCurrency: 'EUR' },
       }),
     ]);
     queryClient.setQueryData(['home', 'summary', 'myTeams'], { scope: 'myTeams' });
-    await waitFor(() => expect(picker()).toHaveTextContent('USD – US dollar'));
+    queryClient.setQueryData(['reports', 'frame', 'summary', ''], { filter: {} });
 
     await choose(user, picker(), 'EUR – Euro');
 
@@ -76,7 +84,10 @@ describe('CurrencyPicker', () => {
     );
     expect(api.bodiesOf('PATCH /api/v1/me/preferences')).toEqual([{ displayCurrency: 'EUR' }]);
     expect(queryClient.getQueryState(['home', 'summary', 'myTeams'])?.isInvalidated).toBe(true);
-    expect(picker()).toHaveTextContent('EUR – Euro');
+    expect(queryClient.getQueryState(['reports', 'frame', 'summary', ''])?.isInvalidated).toBe(
+      true,
+    );
+    expect(picker()).toHaveTextContent(/^EUR$/);
   });
 
   it('says when the choice could not be saved, goes back, and saves on Try again (FR-002)', async () => {
@@ -88,17 +99,15 @@ describe('CurrencyPicker', () => {
           : { body: { ...testUser().preferences, displayCurrency: 'EUR' } },
       ),
     ]);
-    await waitFor(() => expect(picker()).toHaveTextContent('USD – US dollar'));
-
     await choose(user, picker(), 'EUR – Euro');
 
     const messages = await findMessages();
     expect(messages).toHaveTextContent("Your choice couldn't be saved.");
-    expect(picker()).toHaveTextContent('USD – US dollar');
+    expect(picker()).toHaveTextContent(/^USD$/);
 
     await user.click(within(messages).getByRole('button', { name: 'Try again' }));
 
-    await waitFor(() => expect(picker()).toHaveTextContent('EUR – Euro'));
+    await waitFor(() => expect(picker()).toHaveTextContent(/^EUR$/));
     expect(api.bodiesOf('PATCH /api/v1/me/preferences')).toEqual([
       { displayCurrency: 'EUR' },
       { displayCurrency: 'EUR' },

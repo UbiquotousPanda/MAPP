@@ -47,9 +47,9 @@ describe('032 FR-036/FR-037: approved version while a change is in review', () =
     const card = screen.getByRole('region', { name: 'Approved version' });
     expect(card).toHaveTextContent('The values approved on 27 Oct 2026');
     expect(within(card).getByRole('row', { name: /L-1006 · HX1006/ })).toHaveTextContent(
-      '6,000.00 EUR',
+      '€6,000.00',
     );
-    expect(card).toHaveTextContent('6,521.74 USD');
+    expect(card).toHaveTextContent('$6,521.74');
     expect(card).toHaveTextContent('Daniel Okoro');
     await expectNoAxeViolations();
   });

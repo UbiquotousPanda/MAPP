@@ -94,7 +94,7 @@ describe('LineItemPage (US4, FR-026)', () => {
     expect(screen.getAllByText('Waiting for activity approval')).toHaveLength(2);
     expect(screen.getByText('L-1001')).toBeInTheDocument();
     expect(screen.getAllByText('Priya Raman').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('50,000.00 USD').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('$50,000.00').length).toBeGreaterThan(0);
     expect(
       screen.getByText(
         'Created by Priya Raman on 12 Mar 2026, last changed by Daniel Okoro on 14 Mar 2026',
@@ -106,7 +106,7 @@ describe('LineItemPage (US4, FR-026)', () => {
     );
     expect(screen.getByRole('button', { name: 'Actions for Agency fee' })).toBeInTheDocument();
     const march = closestTo(screen.getByRole('cell', { name: 'Mar 2026' }), 'tr');
-    expect(within(march).getAllByRole('cell')[1]).toHaveTextContent('16,666.66 USD');
+    expect(within(march).getAllByRole('cell')[1]).toHaveTextContent('$16,666.66');
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
     // Details and Finance coding: two cards with the same header, no heading repeated (LI-03).
     expect(screen.getByRole('region', { name: 'Details' })).toBeInTheDocument();
@@ -115,7 +115,7 @@ describe('LineItemPage (US4, FR-026)', () => {
     expect(within(coding).getByText('Request SWBS code from GSAP')).toBeInTheDocument();
     // GSAP's money, open (015 FR-017): figures and every transaction.
     const financials = await screen.findByRole('region', { name: 'Financials' });
-    expect(within(financials).getAllByText('30,000.00 USD').length).toBeGreaterThan(0);
+    expect(within(financials).getAllByText('$30,000.00').length).toBeGreaterThan(0);
     expect(
       await within(financials).findByRole('table', { name: /transactions, newest first/ }),
     ).toBeInTheDocument();
@@ -134,8 +134,8 @@ describe('LineItemPage (US4, FR-026)', () => {
 
     // The summary card: the amount in its currency, the USD amount and the rate used under it.
     const summary = await screen.findByRole('region', { name: 'Summary' });
-    expect(within(summary).getByText('46,000.00 EUR')).toBeInTheDocument();
-    expect(within(summary).getByText('= 50,000.00 USD at 0.92 EUR per USD')).toBeInTheDocument();
+    expect(within(summary).getByText('€46,000.00')).toBeInTheDocument();
+    expect(within(summary).getByText('= $50,000.00 at 0.92 EUR per USD')).toBeInTheDocument();
   });
 
   it('offers Duplicate, View history and Delete under More', async () => {
@@ -249,7 +249,7 @@ describe('LineItemPage (US4, FR-026)', () => {
       name: "Delete line item 'Agency fee'?",
     });
     expect(dialog).toHaveTextContent(
-      "The activity's unassigned planned cost goes up by 50,000.00 USD.",
+      "The activity's unassigned planned cost goes up by $50,000.00.",
     );
     expect(dialog).toHaveTextContent('It moves to the recycle bin; you can restore it.');
     // The GSAP transactions linked to it stay (015 FR-029), from the Financials section's query.

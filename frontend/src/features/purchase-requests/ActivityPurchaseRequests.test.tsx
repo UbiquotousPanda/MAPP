@@ -26,14 +26,14 @@ describe('032 FR-018: activity Purchase requests section', () => {
   it("shows the activity's total in the plan currency and a row per line item (US1 scenario 5)", async () => {
     renderSection({ body: activitySection() });
 
-    expect(await screen.findByText('6,521.74 USD', { selector: 'dd' })).toBeInTheDocument();
+    expect(await screen.findByText('$6,521.74', { selector: 'dd' })).toBeInTheDocument();
     const row = screen.getByRole('row', { name: /Stand build/ });
     expect(within(row).getByRole('link', { name: 'Stand build' })).toHaveAttribute(
       'href',
       '/line-items/L-1006#purchase-requests',
     );
-    expect(row).toHaveTextContent('6,000.00 EUR');
-    expect(row).toHaveTextContent('3,200.00 EUR');
+    expect(row).toHaveTextContent('€6,000.00');
+    expect(row).toHaveTextContent('€3,200.00');
     expect(row).toHaveTextContent('1');
     await expectNoAxeViolations();
   });

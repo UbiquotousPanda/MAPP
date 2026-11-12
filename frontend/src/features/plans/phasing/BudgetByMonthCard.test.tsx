@@ -139,7 +139,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
       ),
     ]);
 
-    const cell = await screen.findByText('Over by 15,000.00 GBP');
+    const cell = await screen.findByText('Over by £15,000.00');
     expect(cell.className).toMatch(/over/);
     expect(screen.getByRole('columnheader', { name: 'Other years' })).toBeInTheDocument();
   });
@@ -152,7 +152,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
         name: 'Helix UK',
         budgetPhasing: phasing({
           method: 'custom',
-          problem: 'Adds up to 590,000.00 GBP, not the budget 600,000.00 GBP',
+          problem: 'Adds up to £590,000.00, not the budget £600,000.00',
         }),
       },
       [],
@@ -161,7 +161,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
 
     expect(
       screen.getByText(
-        'Budget by month: Adds up to 590,000.00 GBP, not the budget 600,000.00 GBP. Needed to publish.',
+        'Budget by month: Adds up to £590,000.00, not the budget £600,000.00. Needed to publish.',
       ),
     ).toBeInTheDocument();
     expect(await screen.findByText('Not phased')).toBeInTheDocument();
@@ -181,7 +181,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     await user.click(within(dialog).getByRole('radio', { name: /Custom/ }));
     await user.click(within(dialog).getByRole('button', { name: 'Split evenly' }));
     expect(
-      within(dialog).getByText('600,000.00 of 600,000.00 GBP phased — all of it'),
+      within(dialog).getByText('£600,000.00 of £600,000.00 phased — all of it'),
     ).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole('button', { name: 'Quarterly' }));
@@ -189,7 +189,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     await user.clear(q1);
     await user.type(q1, '140000');
     expect(
-      within(dialog).getByText('590,000.00 of 600,000.00 GBP phased — 10,000.00 left'),
+      within(dialog).getByText('£590,000.00 of £600,000.00 phased — £10,000.00 left'),
     ).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Save budget by month' }));
 
@@ -229,7 +229,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Copy from planned cost' }));
 
     expect(within(dialog).getByRole('textbox', { name: 'Jan 2027' })).toHaveValue('40,000.00');
-    expect(within(dialog).getByText('Left out: 5,000.00 GBP in other years.')).toBeInTheDocument();
+    expect(within(dialog).getByText('Left out: £5,000.00 in other years.')).toBeInTheDocument();
   });
 
   it('comes into view with the focus when a completeness link leads to it (T053)', async () => {

@@ -43,7 +43,7 @@ test('C: Settings — an administrator edits a model, a Shell attribute and a cu
   const editModel = page.getByRole('dialog', { name: 'Edit model' });
   await editModel.getByRole('textbox', { name: /^INQ→MQL rate/ }).fill('3');
   await expect(
-    editModel.getByText('250,000 INQ → 7,500 MQL → 375 deals → 3,750,000.00 USD revenue'),
+    editModel.getByText('250,000 INQ → 7,500 MQL → 375 deals → $3,750,000.00 revenue'),
   ).toBeVisible();
   // An unused model has no impact to confirm, so it saves straight away.
   await editModel.getByRole('button', { name: 'Save', exact: true }).click();
@@ -102,8 +102,6 @@ test('D: the plan form offers only members of the chosen teams as owner and refu
   const teams = page.getByRole('combobox', { name: /^Teams/ });
   const owner = page.getByRole('combobox', { name: /^Owner/ });
 
-  await expect(page.getByText('Default: your teams')).toBeVisible();
-  await expect(page.getByText('Default: you', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Remove Global Marketing Ops' })).toBeVisible();
 
   const owners = page.getByRole('listbox', { name: 'Owner' });
@@ -185,7 +183,7 @@ test('E: deleting an activity moves it to the recycle bin with its cost, and Und
   await page.getByRole('menuitem', { name: 'Delete' }).click();
   const dialog = page.getByRole('alertdialog', { name: `Delete activity '${name}'?` });
   await expect(
-    dialog.getByText('The initiative, campaign and plan planned costs go down by 20,000.00 USD.'),
+    dialog.getByText('The initiative, campaign and plan planned costs go down by $20,000.00.'),
   ).toBeVisible();
   await expect(dialog.getByText('It moves to the recycle bin; you can restore it.')).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused();
@@ -201,7 +199,6 @@ test('E: deleting an activity moves it to the recycle bin with its cost, and Und
   // Undo within the toast's 10 seconds brings it back with the same ID (001 FR-026).
   await page.getByRole('button', { name: 'Undo' }).click();
   await expectToast(page, `Activity '${name}' restored`);
-  await page.getByRole('button', { name: 'Expand all' }).click();
   await expect(planTree(page).getByRole('link', { name, exact: true })).toHaveAttribute(
     'href',
     new RegExp(`/activities/${records.activityId}$`),

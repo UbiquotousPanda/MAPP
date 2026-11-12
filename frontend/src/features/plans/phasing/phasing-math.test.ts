@@ -52,10 +52,10 @@ describe('phasingMath (016 data-model §3.3)', () => {
   it('says how much is left or too much (FR-021)', () => {
     const months = [...Array<bigint>(11).fill(cents(50000)), cents(40000)];
     expect(balanceText(balanceOf(months, cents(600000)), 'GBP')).toBe(
-      '590,000.00 of 600,000.00 GBP phased — 10,000.00 left',
+      '£590,000.00 of £600,000.00 phased — £10,000.00 left',
     );
     expect(balanceText(balanceOf(Array<bigint>(12).fill(cents(50000)), cents(590000)), 'GBP')).toBe(
-      '600,000.00 of 590,000.00 GBP phased — 10,000.00 too much',
+      '£600,000.00 of £590,000.00 phased — £10,000.00 too much',
     );
     expect(balanceOf(Array<bigint>(12).fill(cents(50000)), cents(600000)).kind).toBe('exact');
   });

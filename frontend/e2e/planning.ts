@@ -168,7 +168,7 @@ export async function createInitiative(
 }
 
 // As Mei Lin: a plan of next year with one campaign, one initiative and one Created activity
-// "Content production" of 20,000.00 USD from 1 Mar to 31 May.
+// "Content production" of $20,000.00 from 1 Mar to 31 May.
 export async function createPlanningRecords(
   page: Page,
   label: string,

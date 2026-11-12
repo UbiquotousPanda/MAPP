@@ -18,8 +18,6 @@ export function noRoleText(administrators: string[]): string {
 
 export const SECTION_FAILED = "This section couldn't load";
 
-export const CHOICE_NOT_SAVED = "Your choice couldn't be saved.";
-
 export const PLANS_CARD: Record<HomeScope, { label: string; tip: string }> = {
   myTeams: {
     label: "My teams' plans",

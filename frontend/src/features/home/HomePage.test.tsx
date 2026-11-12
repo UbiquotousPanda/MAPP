@@ -28,7 +28,7 @@ function requestsTo(api: ReturnType<typeof mockApi>, path: string) {
 }
 
 describe('HomePage', () => {
-  it('greets the person, with the scope switch and the Currency picker in the header (FR-001, US1 scenario 1, design system §2.4 E)', async () => {
+  it('greets the person, with the scope switch in the header and the currency left to the top bar (FR-001, US1 scenario 1, D-413)', async () => {
     renderHome();
 
     expect(
@@ -36,7 +36,7 @@ describe('HomePage', () => {
     ).toBeInTheDocument();
     const header = screen.getByRole('banner').parentElement ?? document.body;
     expect(within(header).getByRole('group', { name: 'Scope' })).toBeInTheDocument();
-    expect(within(header).getByRole('combobox', { name: 'Currency' })).toHaveTextContent('USD');
+    expect(within(header).queryByRole('combobox')).toBeNull();
     // Home has no create action: no primary button (design system §2.4 E).
     expect(header.querySelector('[class*="primary"]')).toBeNull();
     expect(
@@ -138,7 +138,7 @@ describe('HomePage', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Welcome back, Priya.' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Currency' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Scope' })).toBeInTheDocument();
     // The other cards still show (FR-022).
     expect(await screen.findByText('None of your teams has a plan yet.')).toBeInTheDocument();
   });

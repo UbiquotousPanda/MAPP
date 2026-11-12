@@ -51,7 +51,7 @@ function renderPage(
   return { ...rendered, api };
 }
 
-/** An answer made with the filters asked for, as the API answers a known currency, type or plan. */
+/** An answer made with the filters asked for, as the API answers a known type or plan. */
 function echoing(base: PlanningDashboard) {
   return (request: Request) => {
     const asked = new URL(request.url).searchParams;
@@ -60,7 +60,6 @@ function echoing(base: PlanningDashboard) {
     );
     const filters = {
       ...base.filters,
-      currency: asked.get('currency') ?? base.filters.currency,
       planType: planType ?? base.filters.planType,
       planId: asked.get('planId') ?? base.filters.planId,
     };
@@ -116,12 +115,10 @@ describe('DashboardsPage (036 US1)', () => {
   it('keeps the filters in the address and asks for them (FR-006, FR-007)', async () => {
     const { user, api, router } = renderPage(echoing(dashboard()));
 
-    await user.selectOptions(await screen.findByLabelText('Currency'), 'EUR');
-    await user.selectOptions(screen.getByLabelText('Plan type'), 'strategic');
+    await user.selectOptions(await screen.findByLabelText('Plan type'), 'strategic');
 
-    expect(router.state.location.search).toBe('?planType=strategic&currency=EUR');
+    expect(router.state.location.search).toBe('?planType=strategic');
     const last = queries(api, '/api/v1/dashboards/executive').at(-1);
-    expect(last?.get('currency')).toBe('EUR');
     expect(last?.get('planType')).toBe('strategic');
   });
 
@@ -135,16 +132,16 @@ describe('DashboardsPage (036 US1)', () => {
     expect(queries(api, '/api/v1/dashboards/executive')[0]?.toString()).toBe('');
   });
 
-  it('shows the currency the answer used and corrects the address to it (038 FR-012, H-1)', async () => {
-    const { router } = renderPage(
+  it('ignores a currency in an old link and leaves it to the top bar (D-413)', async () => {
+    const { api } = renderPage(
       { body: dashboard() },
       '/dashboards/executive?currency=XXX&year=2026',
     );
 
-    expect(await screen.findByLabelText('Currency')).toHaveValue('USD');
+    await screen.findByRole('heading', { level: 1, name: 'Executive dashboard' });
+    expect(screen.queryByLabelText('Currency')).toBeNull();
     expect(screen.queryByRole('button', { name: /Try again|Retry/ })).toBeNull();
-    await waitFor(() => expect(router.state.location.search).toBe('?year=2026&currency=USD'));
-    expect(router.state.historyAction).toBe('REPLACE');
+    expect(queries(api, '/api/v1/dashboards/executive')[0]?.toString()).toBe('year=2026');
   });
 
   it('says why there is nothing to show (US1 scenario 13)', async () => {

@@ -1,6 +1,5 @@
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { Select } from '@/ui/Select/Select';
-import type { ReportChoices } from './api';
 import type { Show } from './report-address';
 import { SHOW_WORDS, SHOWS } from './report-text';
 import { useReportAddress } from './useReportAddress';
@@ -30,23 +29,6 @@ export function LevelSwitch({ fallback }: { fallback: Show }) {
       options={SHOWS.map((show) => ({ value: show, label: SHOW_WORDS[show] }))}
       value={address.show ?? fallback}
       onChange={(show) => setAddress({ ...address, show })}
-    />
-  );
-}
-
-interface CurrencyControlProps {
-  currencies: ReportChoices['currencies'];
-  value: string;
-  onChange: (code: string) => void;
-}
-
-export function CurrencyControl({ currencies, value, onChange }: CurrencyControlProps) {
-  return (
-    <Select
-      label="Currency"
-      value={value}
-      options={currencies.map((c) => ({ value: c.code, label: `${c.code} – ${c.name}` }))}
-      onChange={onChange}
     />
   );
 }

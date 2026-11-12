@@ -12,15 +12,15 @@ describe('LineItemCreatePage, cost and currency (US2)', () => {
     await user.selectOptions(screen.getByLabelText('Currency'), 'EUR');
     const cost = screen.getByLabelText('Planned cost');
     expect(cost).toHaveValue('18,400.00');
-    expect(screen.getByText('Changed to 18,400.00 EUR = 20,000.00 USD')).toBeInTheDocument();
+    expect(screen.getByText('Changed to €18,400.00 = $20,000.00')).toBeInTheDocument();
 
     await user.clear(cost);
     await user.type(cost, '10000');
     expect(
-      await screen.findByText(/^= 10,869\.57 USD at 0\.92 EUR per USD \(rate of 0?1 Mar 2026\)$/),
+      await screen.findByText(/^= \$10,869\.57 at 0\.92 EUR per USD \(rate of 0?1 Mar 2026\)$/),
     ).toBeInTheDocument();
     expect(screen.getByText('Calculated')).toBeInTheDocument();
-    expect(screen.getByLabelText('Activity summary')).toHaveTextContent('After saving9,130.43 USD');
+    expect(screen.getByLabelText('Activity summary')).toHaveTextContent('After saving$9,130.43');
   });
 
   it('calculates in the plan currency of a GBP plan, with both rates and their date (016 FR-009, FR-015)', async () => {
@@ -53,15 +53,15 @@ describe('LineItemCreatePage, cost and currency (US2)', () => {
     await user.selectOptions(screen.getByLabelText('Currency'), 'EUR');
     const cost = screen.getByLabelText('Planned cost');
     expect(cost).toHaveValue('29,113.92');
-    expect(screen.getByText('Changed to 29,113.92 EUR = 25,000.00 GBP')).toBeInTheDocument();
+    expect(screen.getByText('Changed to €29,113.92 = £25,000.00')).toBeInTheDocument();
 
     await user.clear(cost);
     await user.type(cost, '23000');
     expect(
       await screen.findByText(
-        /^= 19,750\.00 GBP at 0\.92 EUR and 0\.79 GBP per USD \(rates of 0?1 Mar 2026\)$/,
+        /^= £19,750\.00 at 0\.92 EUR and 0\.79 GBP per USD \(rates of 0?1 Mar 2026\)$/,
       ),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('Activity summary')).toHaveTextContent('After saving5,250.00 GBP');
+    expect(screen.getByLabelText('Activity summary')).toHaveTextContent('After saving£5,250.00');
   });
 });

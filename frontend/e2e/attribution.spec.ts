@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { escapeRegExp, expectNoAxeViolations, signInAs } from './fixtures';
 
-// 050 on the Measure demo's seeded facts (#136): 24,000.00 USD through journey JRN-2C71, 18,500.00 EUR
-// (20,108.70 USD) through JRN-8E05, and 42,000.00 USD on Helix with no journey. Equally distributed shares a
+// 050 on the Measure demo's seeded facts (#136): $24,000.00 through journey JRN-2C71, €18,500.00
+// ($20,108.70) through JRN-8E05, and $42,000.00 on Helix with no journey. Equally distributed shares a
 // journey between its touches; Last touch gives both journeys to Tellus webinar series, their last touch.
 
 const ALEX = 'alex.morgan@shell.com';

@@ -1,6 +1,6 @@
 /** How dates, times and money look on screen (design system §4), in the person's date format. */
 import type { components } from '@/api/generated/schema';
-import { exact } from './decimal';
+import { exact, formatMoneyText, isCurrencyCode, moneyFormat } from './decimal';
 
 export type DateFormat = components['schemas']['DateFormat'];
 
@@ -32,23 +32,6 @@ export const DATE_FORMATS: { value: DateFormat; example: string; label: string }
 
 /** Shown instead of a missing amount or date. Never 0, which would look like a real value. */
 const NOTHING = '—';
-
-/** Intl.NumberFormat formats decimal strings exactly (constitution VI); TS needs the casts. */
-const dollars = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-const amount = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-const compactDollars = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  notation: 'compact',
-  maximumFractionDigits: 2,
-});
-const compactAmount = new Intl.NumberFormat('en-US', {
-  notation: 'compact',
-  maximumFractionDigits: 2,
-});
 
 /** Split by hand: new Date("2026-03-12") is London midnight, the day before in the Americas. */
 export function formatDate(date: string, format: DateFormat = DEFAULT_DATE_FORMAT): string {
@@ -189,27 +172,20 @@ export function formatWaitingTime(since: string, now: Date = new Date()): string
 }
 
 export function formatMoney(value: string | null | undefined, currency: string): string {
-  if (!value) {
-    return NOTHING;
-  }
-  return currency === 'USD'
-    ? dollars.format(exact(value))
-    : `${amount.format(exact(value))} ${currency}`;
+  return value ? formatMoneyText({ amount: value, currency }) : NOTHING;
 }
 
-/** "$1.25M"; amounts under 1,000, or that would round up to "1000T", are shown in full. */
+/** "€1.25M"; amounts under 1,000, or that would round up to "1000T", are shown in full. */
 export function formatMoneyCompact(value: string | null | undefined, currency: string): string {
-  if (!value || Math.abs(Number(value)) < 1000) {
+  if (!value || Math.abs(Number(value)) < 1000 || !isCurrencyCode(currency)) {
     return formatMoney(value, currency);
   }
-  const format = currency === 'USD' ? compactDollars : compactAmount;
-  const parts = format.formatToParts(exact(value));
+  const parts = moneyFormat(currency, true).formatToParts(exact(value));
   const integer = parts.filter((part) => part.type === 'integer').map((part) => part.value);
   if (integer.join('').length > 3) {
     return formatMoney(value, currency);
   }
-  const compact = parts.map((part) => part.value).join('');
-  return currency === 'USD' ? compact : `${compact} ${currency}`;
+  return parts.map((part) => part.value).join('');
 }
 
 function twoDigits(n: number): string {

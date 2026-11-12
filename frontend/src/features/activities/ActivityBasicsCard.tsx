@@ -153,7 +153,7 @@ function workflowLock(stored: StoredActivity | undefined): string | undefined {
   return stored?.status === 'approved' ? WORKFLOW_LOCKED : undefined;
 }
 
-/** "Event · default 25,000.00 USD"; "Event — not allowed by the plan's model". */
+/** "Event · default $25,000.00"; "Event — not allowed by the plan's model". */
 function typeLabel(type: ActivityTypeOption): string {
   const withDefault = type.defaultPlannedCost
     ? `${type.name} · default ${formatMoneyText(type.defaultPlannedCost)}`

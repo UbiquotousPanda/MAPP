@@ -148,8 +148,8 @@ describe('ActivityPage (feature 006, US2)', () => {
     expect(within(header).getByText('Priya Raman')).toBeVisible();
     expect(within(header).getByText('01 Mar – 31 May 2026')).toBeVisible();
     const summary = screen.getByRole('region', { name: 'Summary' });
-    expect(within(summary).getByText('120,000.00 USD')).toBeVisible();
-    expect(within(summary).getByText('20,000.00 USD')).toBeVisible();
+    expect(within(summary).getByText('$120,000.00')).toBeVisible();
+    expect(within(summary).getByText('$20,000.00')).toBeVisible();
     expect(screen.getByRole('link', { name: 'Edit' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
       'href',
@@ -172,9 +172,9 @@ describe('ActivityPage (feature 006, US2)', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Launch film' })).toBeVisible();
     // The plan currency first, the reader's currency beside it (016 FR-013).
     const summary = screen.getByRole('region', { name: 'Summary' });
-    expect(within(summary).getByText('120,000.00 USD')).toBeVisible();
-    expect(within(summary).getByText(/≈ 110,400.00 EUR/)).toBeVisible();
-    expect(within(summary).getByText(/≈ 18,400.00 EUR/)).toBeVisible();
+    expect(within(summary).getByText('$120,000.00')).toBeVisible();
+    expect(within(summary).getByText(/≈ €110,400.00/)).toBeVisible();
+    expect(within(summary).getByText(/≈ €18,400.00/)).toBeVisible();
   });
 
   it('marks an unassigned planned cost below zero in red words', async () => {
@@ -182,9 +182,7 @@ describe('ActivityPage (feature 006, US2)', () => {
       body: launchFilm({ unassignedPlannedCost: { amount: '-500.00', currency: 'USD' } }),
     });
 
-    expect(
-      await screen.findByText('Line items exceed the planned cost by 500.00 USD'),
-    ).toBeVisible();
+    expect(await screen.findByText('Line items exceed the planned cost by $500.00')).toBeVisible();
   });
 
   it('says that a cost or date change restarts the approval of an approved activity (FR-027)', async () => {

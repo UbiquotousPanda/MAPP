@@ -91,17 +91,17 @@ describe('ActivityFormPage, new activity (feature 006, US1)', () => {
         .map((option) => option.textContent),
     ).toEqual([
       'Choose…',
-      'Digital campaign · default 10,000.00 USD',
-      'Event · default 25,000.00 USD',
+      'Digital campaign · default $10,000.00',
+      'Event · default $25,000.00',
       'Sponsorship',
     ]);
-    await user.selectOptions(type, 'Event · default 25,000.00 USD');
+    await user.selectOptions(type, 'Event · default $25,000.00');
 
     expect(screen.getByLabelText('Planned cost')).toHaveValue('25,000.00');
     expect(screen.getByText('From the activity type')).toBeVisible();
 
     // Another type replaces a default it filled in itself, without asking.
-    await user.selectOptions(type, 'Digital campaign · default 10,000.00 USD');
+    await user.selectOptions(type, 'Digital campaign · default $10,000.00');
     expect(screen.getByLabelText('Planned cost')).toHaveValue('10,000.00');
   });
 

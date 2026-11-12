@@ -23,7 +23,6 @@ const ADDRESS: Parameters<typeof useSummaryReport>[0] = {
   attributes: [],
   period: 'month',
   show: null,
-  currency: null,
   tables: [],
 };
 

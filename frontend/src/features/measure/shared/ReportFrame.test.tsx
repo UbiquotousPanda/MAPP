@@ -86,14 +86,14 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
     expect(search(router).getAll('plan')).toEqual([]);
   });
 
-  it("applies a widget's Period and the Currency at once (FR-016 – FR-018)", async () => {
-    const { user, router } = renderFrame(reportFrame());
+  it("applies a widget's Period at once, and has no currency of its own (FR-016, FR-018, 039-C10)", async () => {
+    const { user, router } = renderFrame(reportFrame(), '/reports/plan-budget?currency=EUR');
 
     await user.click(await screen.findByRole('button', { name: 'Quarters' }));
-    await choose(user, screen.getByRole('combobox', { name: 'Currency' }), 'USD – US dollar');
 
     await waitFor(() => expect(search(router).get('period')).toBe('quarter'));
-    expect(search(router).get('currency')).toBe('USD');
+    expect(search(router).get('currency')).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Currency' })).not.toBeInTheDocument();
   });
 
   it('says how many values were left out, never naming them (FR-015)', async () => {

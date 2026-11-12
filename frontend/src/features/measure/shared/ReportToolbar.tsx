@@ -7,7 +7,7 @@ import type { ReportFrame as Frame } from './api';
 import { isRestricted, resetFilters } from './report-address';
 import type { ReportAddress } from './report-address';
 import { chipsOf, withoutChip } from './report-text';
-import { CurrencyControl, YearControl } from './ReportControls';
+import { YearControl } from './ReportControls';
 import { ReportFilters } from './ReportFilters';
 import styles from './ReportFrame.module.css';
 
@@ -18,7 +18,7 @@ interface ReportToolbarProps {
   controls?: ReactNode;
 }
 
-/** The address as the frame applied it: the resolved year and currency, left-out values dropped. */
+/** The address as the frame applied it: the resolved year, left-out values dropped. */
 function appliedAddress(address: ReportAddress, frame: Frame): ReportAddress {
   const f = frame.filter;
   return {
@@ -57,11 +57,6 @@ export function ReportToolbar(props: ReportToolbarProps) {
           onChange={(year) => onChange({ ...address, year, plans: [] })}
         />
         {controls}
-        <CurrencyControl
-          currencies={data.choices.currencies}
-          value={data.filter.currency}
-          onChange={(currency) => onChange({ ...address, currency })}
-        />
       </div>
       <div id={menusId} className={styles.menus} role="group" aria-label="Filters" hidden={!open}>
         <ReportFilters choices={data.choices} applied={applied} onApply={onChange} />

@@ -62,8 +62,8 @@ test('032 US1–US3: raise, submit, approve and route a purchase request to the 
   // The money is reserved on the line item at once (FR-017, FR-018).
   await openLineItem(page, lineItem);
   await expect(section.getByText(prName)).toBeVisible();
-  await expect(section.getByText('10,000.00 USD').first()).toBeVisible();
-  await expect(section.getByText('0.00 USD').first()).toBeVisible();
+  await expect(section.getByText('$10,000.00').first()).toBeVisible();
+  await expect(section.getByText('$0.00').first()).toBeVisible();
   await expect(action(section, 'New purchase request')).toHaveCount(0);
 
   // US2: submitting is refused while the line item has no SWBS code (FR-021).

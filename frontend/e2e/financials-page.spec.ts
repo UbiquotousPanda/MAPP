@@ -39,7 +39,7 @@ test('015 US3 (T030): from the sidebar, a person finds a PO, opens it and follow
   await expect(panel.getByText('Purchase order · FT-1003')).toBeVisible();
   for (const [term, value] of [
     ['Document number', '4500001003'],
-    ['Amount', '9,800.00 EUR'],
+    ['Amount', '€9,800.00'],
     ['Amount in USD', '$10,652.17'],
     ['Vendor', 'V-100103 · Outdoor Frames Ltd'],
     ['Matched by', 'HX key HX1006'],
@@ -147,7 +147,7 @@ test('015 US4 (T035): a generated GSAP extract is checked, imported, and changes
   await expect(page.getByRole('heading', { name: records.activityName, level: 1 })).toBeVisible();
   const card = page.getByRole('region', { name: 'Financials', exact: true });
   const figures = card.getByRole('list', { name: 'Financial figures' }).getByRole('listitem');
-  await expect(figures.filter({ hasText: 'Committed (POs)' })).toContainText('6,000.00 USD');
-  await expect(figures.filter({ hasText: 'Invoiced' })).toContainText('2,500.00 USD');
-  await expect(figures.filter({ hasText: 'Not yet committed' })).toContainText('14,000.00 USD');
+  await expect(figures.filter({ hasText: 'Committed (POs)' })).toContainText('$6,000.00');
+  await expect(figures.filter({ hasText: 'Invoiced' })).toContainText('$2,500.00');
+  await expect(figures.filter({ hasText: 'Not yet committed' })).toContainText('$14,000.00');
 });

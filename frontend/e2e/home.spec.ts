@@ -85,12 +85,14 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await scope.getByRole('button', { name: 'My teams' }).click();
   await expect(teamPlans).toBeVisible();
 
-  const currency = page.getByRole('combobox', { name: 'Currency' });
+  // D-413: the display currency sits in the top bar, beside the theme switch.
+  const currency = page.getByRole('banner').getByRole('combobox', { name: 'Display currency' });
+  await expect(currency).toHaveText('USD');
   await choose(page, currency, 'EUR – Euro');
   await expect(
-    summary.getByRole('link', { name: /^Planned cost vs plan budget: [\d.]+K EUR / }),
+    summary.getByRole('link', { name: /^Planned cost vs plan budget: €[\d.]+K / }),
   ).toBeVisible();
-  await expect(glanceRow).toContainText(/[\d,]+\.\d{2} EUR/);
+  await expect(glanceRow).toContainText(/€[\d,]+\.\d{2}/);
   await choose(page, currency, 'USD – US dollar');
   await expect(
     summary.getByRole('link', { name: /^Planned cost vs plan budget: \$/ }),

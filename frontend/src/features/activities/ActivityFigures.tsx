@@ -95,7 +95,7 @@ function UnassignedCard({
   );
 }
 
-/** "≈ 15,822.78 USD ⓘ": the display-currency amount under a card's value, when it differs. */
+/** "≈ $15,822.78 ⓘ": the display-currency amount under a card's value, when it differs. */
 function Beside({ primary, secondary }: { primary: Money; secondary: Money | null }) {
   if (!secondary || secondary.currency === primary.currency) {
     return null;

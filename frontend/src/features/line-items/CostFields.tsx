@@ -8,7 +8,7 @@ import { useFormatters } from '@/format/useFormatters';
 import styles from './LineItemForm.module.css';
 import { rateOf } from './line-item-form-state';
 import type { LineItemFormState } from './line-item-form-state';
-import { centsInput, convert, parseAmount } from './line-item-math';
+import { amountText, convert, parseAmount } from './line-item-math';
 import type { LineItemCurrency } from './api';
 import {
   CALCULATED,
@@ -93,7 +93,7 @@ export function CostFields({
   );
 }
 
-/** "Calculated = 19,750.00 GBP at 0.92 EUR and 0.79 GBP per USD (rates of 19 Oct 2026)". */
+/** "Calculated = £19,750.00 at 0.92 EUR and 0.79 GBP per USD (rates of 19 Oct 2026)". */
 function Conversion({
   cents,
   from,
@@ -122,8 +122,7 @@ function Conversion({
       <span className={styles.calculated}>{CALCULATED}</span>
       <span>
         {conversionText(
-          centsInput(cents),
-          planCode,
+          amountText(cents, planCode),
           parts.map((part) => ({ rate: formatRate(part.rate), code: part.code })),
           known,
         )}

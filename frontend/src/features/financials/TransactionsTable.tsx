@@ -190,7 +190,7 @@ function Vendor({ row }: { row: FinancialTransactionRow }) {
   );
 }
 
-/** "9,800.00 EUR" with "$10,652.17" under it when the display currency differs. */
+/** "€9,800.00" with "$10,652.17" under it when the display currency differs. */
 function Amount({ row }: { row: FinancialTransactionRow }) {
   const { money } = useFormatters();
   const differs = row.amountDisplay !== null && row.amountDisplay.currency !== row.amount.currency;

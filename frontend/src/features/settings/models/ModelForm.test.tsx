@@ -49,13 +49,13 @@ describe('ModelForm (FR-009, FR-010)', () => {
     await user.type(field(/^Average deal size/), '10k');
 
     expect(
-      screen.getByText('250,000 INQ → 5,000 MQL → 250 deals → 2,500,000.00 USD revenue'),
+      screen.getByText('250,000 INQ → 5,000 MQL → 250 deals → $2,500,000.00 revenue'),
     ).toBeInTheDocument();
 
     await user.clear(field(/^MQL→deal rate/));
     await user.type(field(/^MQL→deal rate/), '10');
     expect(
-      screen.getByText('250,000 INQ → 5,000 MQL → 500 deals → 5,000,000.00 USD revenue'),
+      screen.getByText('250,000 INQ → 5,000 MQL → 500 deals → $5,000,000.00 revenue'),
     ).toBeInTheDocument();
   });
 

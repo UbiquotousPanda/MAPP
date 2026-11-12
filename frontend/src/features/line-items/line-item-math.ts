@@ -1,5 +1,11 @@
 import type { components } from '@/api/generated/schema';
-import { formatAmount, formatCents, parseMoneyInput, toCents } from '@/format/decimal';
+import {
+  formatAmount,
+  formatCents,
+  formatMoneyText,
+  parseMoneyInput,
+  toCents,
+} from '@/format/decimal';
 import { formatMonth as formatMonthLabel } from '@/format/intl';
 import type { DateFormat } from '@/format/intl';
 
@@ -27,7 +33,7 @@ export function parseAmount(text: string): bigint | null {
 
 export function amountText(value: bigint | string, code: string): string {
   const amount = typeof value === 'bigint' ? formatCents(value) : value;
-  return `${formatAmount(amount)} ${code}`;
+  return formatMoneyText({ amount, currency: code });
 }
 
 export function moneyText(money: Money): string {

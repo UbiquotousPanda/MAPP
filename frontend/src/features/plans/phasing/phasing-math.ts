@@ -1,4 +1,10 @@
-import { formatAmount, formatCents, parseMoneyInput, toCents } from '@/format/decimal';
+import {
+  formatAmount,
+  formatCents,
+  formatMoneyText,
+  parseMoneyInput,
+  toCents,
+} from '@/format/decimal';
 import { formatMonth } from '@/format/intl';
 import type { DateFormat } from '@/format/intl';
 
@@ -91,17 +97,21 @@ export function balanceOf(months: bigint[], budget: bigint | null): PhasingBalan
     : { kind: 'tooMuch', phased, budget, difference: phased - budget };
 }
 
+export function moneyText(cents: bigint, currency: string): string {
+  return formatMoneyText({ amount: formatCents(cents), currency });
+}
+
 export function balanceText(balance: PhasingBalance, currency: string): string {
-  const phased = amountText(balance.phased);
+  const phased = moneyText(balance.phased, currency);
   switch (balance.kind) {
     case 'noBudget':
-      return `${phased} ${currency} phased`;
+      return `${phased} phased`;
     case 'exact':
-      return `${phased} of ${amountText(balance.budget)} ${currency} phased — all of it`;
+      return `${phased} of ${moneyText(balance.budget, currency)} phased — all of it`;
     case 'left':
-      return `${phased} of ${amountText(balance.budget)} ${currency} phased — ${amountText(balance.difference)} left`;
+      return `${phased} of ${moneyText(balance.budget, currency)} phased — ${moneyText(balance.difference, currency)} left`;
     case 'tooMuch':
-      return `${phased} of ${amountText(balance.budget)} ${currency} phased — ${amountText(balance.difference)} too much`;
+      return `${phased} of ${moneyText(balance.budget, currency)} phased — ${moneyText(balance.difference, currency)} too much`;
   }
 }
 

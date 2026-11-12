@@ -73,7 +73,14 @@ Asked by the product owner while reviewing the Measure screens before the demo.
 - **039-C9** Q: Where do Period and Show sit? → A: on the widget they change: **Months · Quarters** in the header of
   each time chart, **Plan · Campaign · Initiative · Activity** in the ranked list's header (Plan details, whose
   every widget follows it, shows it above the report as **Count**). The toolbar keeps Year, the report's own
-  choices (a category, a stage) and Currency (FR-016 – FR-018).
+  choices (a category, a stage) and Currency (FR-016 – FR-018). *Currency left the toolbar with 039-C10.*
+
+### Session 2026-11-12 (top bar currency)
+
+- **039-C10** Q: Should a report keep its own Currency choice? → A: no. The person's display currency is chosen in
+  the top bar, beside the theme switch, and every page follows it, reports and shared report links included
+  (D-413). Reports leave the currency out of their address and saved views; a `currency` in an old link or an old
+  saved view is ignored, and the API answers in the reader's display currency (FR-015, FR-018).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -287,7 +294,7 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - **FR-014**: The applied filters MUST appear above the widgets as removable chips naming each restricted filter
   ("Brand: Helix, Pennzoil"); removing a chip applies at once; **Reset filters** returns every filter but the year
   to its default.
-- **FR-015**: The year, filters, period, currency, Show choice and each widget's chart or table choice MUST live in
+- **FR-015**: The year, filters, period, Show choice and each widget's chart or table choice MUST live in
   the page address, so Back, a bookmark and a shared link show the same report (constitution F3, D-368); nothing is
   kept between visits except saved views. A value in the address that no longer exists, is inactive or is outside
   the reader's scope MUST be left out with "N filter values are no longer available and were left out", never
@@ -299,9 +306,10 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   December of the plan year) or Quarters (Q1–Q4); the change applies at once.
 - **FR-017**: Each ranked list MUST offer **Show** in its own header (039-C9): Plan, Campaign, Initiative or
   Activity; the change applies at once.
-- **FR-018**: Every report MUST offer **Currency**: the active currencies, default the person's display currency.
-  Every amount MUST be worked out in US dollars and converted once into the chosen currency at the current rate
-  (D-303), and shown with its currency.
+- **FR-018**: Every report MUST show its amounts in the person's display currency, chosen in the top bar (039-C10,
+  D-413); a report has no Currency control of its own and a shared link shows the reader's display currency.
+  Every amount MUST be worked out in US dollars and converted once into the display currency at the current rate
+  (D-303), and shown with its currency symbol.
 - **FR-019**: Time widgets MUST place a **Today** marker: periods before the current one show actual figures, the
   current period is labelled "in progress", later periods show planned or projected figures; a past year shows
   only actual periods and a future year none.

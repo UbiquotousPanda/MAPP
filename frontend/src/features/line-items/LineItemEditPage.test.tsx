@@ -69,9 +69,7 @@ describe('LineItemEditPage (US4, FR-027)', () => {
     expect(document.title).toBe('Edit Agency fee · SP&A One');
     expect(screen.getByLabelText('Planned cost')).toHaveValue('50,000.00');
     expect(screen.queryByText('Save and add another')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Activity summary')).toHaveTextContent(
-      'Unassigned now20,000.00 USD',
-    );
+    expect(screen.getByLabelText('Activity summary')).toHaveTextContent('Unassigned now$20,000.00');
   });
 
   it('saves coding changes of an approved activity without a dialog (scenario 2, FR-032)', async () => {
@@ -115,9 +113,7 @@ describe('LineItemEditPage (US4, FR-027)', () => {
 
     await user.clear(cost);
     await user.type(cost, '55,000.00');
-    expect(screen.getByLabelText('Activity summary')).toHaveTextContent(
-      'After saving15,000.00 USD',
-    );
+    expect(screen.getByLabelText('Activity summary')).toHaveTextContent('After saving$15,000.00');
     await user.click(button('Save'));
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/line-items/L-1001'));
@@ -263,12 +259,12 @@ describe('LineItemEditPage (US4, FR-027)', () => {
       screen.getAllByText("Outside the activity's dates — allowed, e.g. a deposit").length,
     ).toBeGreaterThan(0);
     expect(
-      screen.getByText('12,000.00 of 10,000.00 EUR spread — 2,000.00 EUR too much'),
+      screen.getByText('€12,000.00 of €10,000.00 spread — €2,000.00 too much'),
     ).toBeInTheDocument();
 
     await user.click(button('Use month total as planned cost'));
     expect(screen.getByLabelText('Planned cost')).toHaveValue('12,000.00');
-    expect(screen.getByText('12,000.00 of 12,000.00 EUR spread — adds up')).toBeInTheDocument();
+    expect(screen.getByText('€12,000.00 of €12,000.00 spread — adds up')).toBeInTheDocument();
     await user.click(button('Save'));
     await waitFor(() => expect(api.bodiesOf(PATCH)).toHaveLength(1));
     expect(api.bodiesOf(PATCH)[0]).toMatchObject({

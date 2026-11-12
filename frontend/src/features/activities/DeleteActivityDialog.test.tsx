@@ -30,7 +30,7 @@ describe('DeleteActivityDialog (feature 006, FR-031)', () => {
 
     expect(dialog).toHaveTextContent('3 line items go with it.');
     expect(dialog).toHaveTextContent(
-      'The initiative, campaign and plan planned costs go down by 120,000.00 USD.',
+      'The initiative, campaign and plan planned costs go down by $120,000.00.',
     );
     expect(dialog).toHaveTextContent('It moves to the recycle bin; you can restore it.');
     expect(dialog).not.toHaveTextContent("It leaves the approvers' inbox.");
@@ -49,7 +49,7 @@ describe('DeleteActivityDialog (feature 006, FR-031)', () => {
     });
 
     expect(dialog).toHaveTextContent(
-      'The initiative, campaign and plan planned costs go down by 110,400.00 EUR.',
+      'The initiative, campaign and plan planned costs go down by €110,400.00.',
     );
   });
 

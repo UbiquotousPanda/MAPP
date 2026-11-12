@@ -80,7 +80,7 @@ Section numbers §1–§10 are kept from version 1, so references in specs and c
 |---|---|
 | **Skip link** | First focusable element: "Skip to main content". Hidden until focused, then shown top-left: `--brand-yellow` fill, `--on-brand-yellow` text, 14 px bold, padding 16, radius 8. |
 | **Environment banner** | `DemoBanner`. 32 px, full width, Text Strong `--banner-bg` with `--banner-text` (Surface) 12 px text, one line, centred. Below 600 px the shorter text "Demo environment — demonstration data only". Not sticky. |
-| **Top bar** | 56 px, `--surface`, 1 px `--hairline` bottom border, full width, sticky at the top. **Left:** at ≥ 960 px the logo zone is 240 px wide, aligned with the sidebar (`Logo`, the name "SP&A One"); below 960 px a 40 px **Open menu** icon button, then `LogoTile`. The home link is named "SP&A One home". **Centre-left:** the global search slot (360–480 px), empty until a search feature is specified; never a fake control. **Right**, 8 px apart: notifications bell (40 px icon button with `CountBadge`), the account button (32 px avatar + first name at ≥ 960 px; avatar only below). The account menu holds the name and role, **My profile**, **Appearance** (Follow the computer · Light · Dark; D-038) and **Sign out**. A help button joins the right group, always in the same place (WCAG 3.2.6), when a help feature exists. |
+| **Top bar** | 56 px, `--surface`, 1 px `--hairline` bottom border, full width, sticky at the top. **Left:** at ≥ 960 px the logo zone is 240 px wide, aligned with the sidebar (`Logo`, the name "SP&A One"); below 960 px a 40 px **Open menu** icon button, then `LogoTile`. The home link is named "SP&A One home". **Centre-left:** the global search slot (360–480 px), empty until a search feature is specified; never a fake control. **Right**, 8 px apart: the **Display currency** select (32 px, shows the code "USD"; its menu lists "USD – US dollar" and the other active currencies under the note that every page shows its amounts in it; the choice is saved for the person and applies to every page, reports and shared report links included; D-413), the light/dark theme switch, notifications bell (40 px icon button with `CountBadge`), the account button (32 px avatar + first name at ≥ 960 px; avatar only below). The account menu holds the name and role, **My profile**, **Appearance** (Follow the computer · Light · Dark; D-038) and **Sign out**. A help button joins the right group, always in the same place (WCAG 3.2.6), when a help feature exists. |
 | **Sidebar** | 240 px, `--surface`, 1 px `--hairline` right border, sticky under the top bar, scrolls on its own. Items 40 px high, padding 0 16 0 20, 20 px icon + 12 px gap + 14 px label in `--ink`. Hover `--hover`, no movement. **Current section: a 4 px `--brand-yellow` bar on the start edge (full item height), `--hover` fill, bold label, `aria-current="page"`.** Group label "More" 12 px bold `--ink-2`, sentence case, 24 px above and 8 px below. Count badges sit at the end of the item. At the bottom: **Collapse sidebar** (40 px, ghost). |
 | **Collapsed rail** | 64 px; icons centred; tooltips on the right; the yellow bar stays on the current item; badges become a small count at the icon's top end. Chosen by the person (saved, D-038) at ≥ 960 px; automatic between 600 and 959 px. |
 | **Drawer** | Below 600 px the sidebar is hidden. **Open menu** opens a 280 px drawer from the left with `--overlay`, focus kept inside, Escape and the close button close it and return the focus. It shows the same items with labels, no tooltips. Bell and account stay in the top bar. |
@@ -101,8 +101,8 @@ overlay 200 · side panel and dialog 210 · menus and popovers 300 · toasts 400
 | Content column | Fluid up to `--content-max` 1300 px, centred; side padding 24 px (16 px below 600 px) |
 | Grid | 12 columns, `--grid-gap` 20 px between columns and between cards |
 | Common spans | Summary cards: 4 per row (3 columns each), or 3 per row (4 each); details: 8 + 4 at ≥ 1280 px; two lists side by side: 6 + 6 |
-| Forms and reading text | One column of at most `--form-max` 720 px, aligned to the **left edge** of the content column (never centred), with an optional right rail (300 px) at ≥ 1280 px |
-| Breakpoints | **< 600** phone · **600–959** tablet · **≥ 960** desktop · one extra **≥ 1280** for the 8 + 4 split and the form rail. No other widths may appear in a media query (§3.12). |
+| Forms and reading text | A form page is one column of at most `--form-page` 960 px, **centred** in the content column: breadcrumb, title, section bar, cards and sticky footer share it (§2.4 C). Reading text (descriptions, notes) stays at most `--form-max` 720 px wide |
+| Breakpoints | **< 600** phone · **600–959** tablet · **≥ 960** desktop · one extra **≥ 1280** for the 8 + 4 split. No other widths may appear in a media query (§3.12). |
 | Alignment | Logo zone, breadcrumb, title, toolbars, cards, tables and footer start on one left edge; page actions, toolbar ends and footer buttons end on one right edge. Every control in a row has the same height, so text baselines line up. |
 | Equal heights | Cards in one grid row stretch to the same height. A list inside a card shows at most 5 rows and a **View all (n)** link, so neighbouring cards stay even. |
 
@@ -165,27 +165,43 @@ Every page is one of these five templates.
 - At ≥ 1280 px a details area may split 8 + 4 (main content + a summary card); cards in the split stretch
   to equal height.
 
-**C. Form page** (new and edit plan, activity, line item)
+**C. Form page** (new and edit plan, activity, line item, purchase request)
 
 ```
- Plans › FY2026 Lubricants Europe › Edit
- Edit plan
- ┌ 2 problems need your attention ┐                            ┌ On this page ───────┐
- ┌ Basics ────────────────────────┐  (form column ≤ 720 px)    │ Basics          ✓   │ ← rail 300 px,
- │ fields …                       │                            │ Dates & cost   2 ▸  │   sticky, ≥ 1280
- └────────────────────────────────┘                            │ Shell attributes 6 ▸│
- ┌ Dates & cost ──────────────────┐                            │ 9 of 15 needed      │
- …                                                             └─────────────────────┘
- ────────────────────────────────────────────────── [Cancel] [Save and add another] [Save]  ← sticky footer
+            Plans › FY2026 Lubricants Europe › Edit
+            Edit plan
+            ┌ Basics ✓  Budget ✓  Shell attributes 3 needed  Goals │ 8 of 11 needed fields filled ┐ ← sticky
+            └━━━━━━━━──────────────────────────────────────────────────────────────────────────────┘   section bar
+            * Required
+            ┌ Basics ──────────────────────────────────────────────────────────────────────────────┐
+            │ Plan name                                                                            │
+            │ Year                                      Plan type                                  │ ← a deliberate pair
+            └──────────────────────────────────────────────────────────────────────────────────────┘
+            ─────────────────────────────────────────────── [Cancel] [Save and add another] [Save]  ← sticky footer
+            |←──────────────────────────── column ≤ 960 px, centred ─────────────────────────────→|
 ```
 
-- One `FormSection` card per section, 20 px apart, in the order of §7.
-- The right rail (≥ 1280 px) lists the sections as links with how many needed fields each still lacks, and
-  the overall count ("9 of 15 needed fields filled"); the line item form shows its summary strip there
-  (planned cost · unassigned now · after saving). Below 1280 px the overall count shows as one line under
-  the header.
-- `FormFooter` is sticky at the bottom of the window across the full content column; buttons are
-  right-aligned on the same right edge as the page actions.
+- `FormPage`: one column of at most `--form-page` 960 px, centred in the content column. The page header,
+  the section bar, the cards and the sticky `FormFooter` all share it, so the title, the cards' left edge
+  and Save line up; nothing sits beside the column.
+- The **section bar** ("On this page", `SectionBar`) sits at the top of the column and sticks under the top
+  bar while the form scrolls: a white bar of section links, each with how many needed fields it still lacks
+  ("2 needed", in the problem text colour) or a green check when all are filled, and on its right, after a
+  divider, the overall count ("9 of 15 needed fields filled", shown only here). A link scrolls to its
+  section and puts the focus on its first field. The section being read is bold with a 3 px yellow bar
+  under it ("you are here"). Links that do not fit scroll sideways and fade out under the count, which
+  stays in view; the bar never wraps. Whatever must stay in view with it goes right under it inside the
+  sticky area (the line item's summary strip: planned cost · unassigned now · after saving). Focused
+  fields and jumped-to sections land below the bar, never under it.
+- One `FormSection` card per section, 20 px apart, in the order of §7; fields one per row.
+- **Deliberate field pairs** (`FieldRow`): only related short fields sit side by side, and only where the
+  column is at least 640 px wide (a container query, so they stack on narrow screens). Plan: Year + Plan type,
+  Teams + Owner, Plan currency + Plan budget, Default finance budget + Default line-item spread, Goal stage +
+  Goal amount. Names, models, descriptions, radio groups and check boxes stay full width. Paired labels align
+  at the top, and when only one of the pair has a "Default: …" hint the other keeps the hint's line, so the
+  two controls line up. Never pair fields just to fill the width.
+- `FormFooter` is sticky at the bottom of the window across the column; buttons are right-aligned on the
+  column's right edge.
 
 **D. Settings section** (Settings hub and its sections)
 
@@ -265,7 +281,7 @@ is one report, in the **report frame** (039):
   when the report has one format and opens a menu when it has several). No primary button — a report acts on
   nothing.
 - **Toolbar**, one left-aligned row on the grey page: **Filters (n)**, **Year**, the report's own choices
-  (Activity category, Funnel stage) and **Currency**. **Filters** folds out All work's filter buttons (§5.2) —
+  (Activity category, Funnel stage); no Currency — reports follow the top bar's display currency (D-413). **Filters** folds out All work's filter buttons (§5.2) —
   Plans, Plan type, Team, Owner, Activity type, Activity status and **More filters** for the Shell attributes by
   level; each change applies at once, and the filters in use show as removable chips with **Reset filters**.
   Changing the year says first, at the top of the Year menu, that it clears the chosen plans.
@@ -481,10 +497,11 @@ icon.
 |---|---|---|---|
 | `--content-max` | 1300 px | `--topbar` | 56 px |
 | `--form-max` | 720 px | `--sidebar` / `--sidebar-collapsed` | 240 / 64 px |
+| `--form-page` | 960 px | | |
 | `--gutter` / `--gutter-sm` | 24 / 16 px | `--grid-gap` | 20 px |
 
 Component sizes (written in the component's CSS until a second component needs them as a token): banner
-32 px; form rail 300 px; drawer 280 px; side panel 480 px (560 px wide variant); dialog 512 px (720 px wide
+32 px; drawer 280 px; side panel 480 px (560 px wide variant); dialog 512 px (720 px wide
 variant); menus 220–288 px; tooltip max 280 px; popover max 320 px; toast 360–480 px.
 
 Breakpoints (§2.2) are 600, 960 and 1280 px; CSS cannot read tokens inside media queries, so the lint rule
@@ -600,18 +617,16 @@ next to the written name, it has no contrast requirement.
 
 - **Right-aligned with tabular figures** in tables, totals and editable amount cells; the column header is
   right-aligned too, with the same padding, so values sit exactly under it (§11, rule 2).
-- **One money format per screen.** By default the symbol form of the person's display currency
-  ("$12,500.00"; compact "$1.25M" in summary cards with the full value on hover and focus). When one screen
-  shows amounts in more than one currency, every amount on that screen uses the code form ("12,500.00
-  USD"). This replaces mixed forms on one page (UI audit AC-04, functional review P-07); it refines
-  decision 007-P4 and needs the product owner's confirmation (implementation plan).
+- **Symbol form for every currency** (en-US symbols: $, €, £, CA$, CN¥…), always two decimals ("$12,500.00",
+  "€12,500.00", "£50,000.00"; compact "$1.25M", "€1.25M" in summary cards with the full value on hover and
+  focus); the code form is no longer used for amounts (D-413). Rates keep codes ("1 USD = 0.79 GBP").
 - Negative values in `--danger-text` with a minus sign ("−$500.00"); never only red.
 - **Nothing is "—"**: an empty amount, a missing value and "no activities yet" show "—", never 0 or
   "$0.00"; a short reason may follow in `--ink-2` ("— · Nothing planned yet").
 - Percentages without a space: "38%" (UK style); shares in the split editor "33.33%".
 - Whole numbers grouped: "1,250".
 - **An amount in another currency than the reader's** (feature 016) shows as an `AmountPair`: the amount in
-  its own currency in full, then a muted "≈ 6,645.57 USD" in the display currency with a `RateTip` ⓘ ("1 USD =
+  its own currency in full, then a muted "≈ $6,645.57" in the display currency with a `RateTip` ⓘ ("1 USD =
   0.79 GBP · rate of 19 Oct 2026 · GSAP import"); one amount only when both currencies are the same.
 - **Grids add up in every display currency** (feature 038 FR-022): a row total is converted once and its
   months share it, the last month with an amount taking the rounding difference; column and grand totals are
@@ -1162,9 +1177,9 @@ proposal awaiting the product owner, see the implementation plan.)
 
 ## 7. Forms
 
-- One column, max 720 px wide, left-aligned in the content column, section headings in the order users
-  think: *Basics → Dates & cost → Shell attributes → Goals → More details*; each section a card on form
-  pages (§5.5 `FormSection`) and the right rail at ≥ 1280 px (§2.4 C).
+- One centred column, max 960 px wide (§2.4 C), section headings in the order users think: *Basics →
+  Dates & cost → Shell attributes → Goals → More details*; each section a card on form pages (§5.5
+  `FormSection`) under the sticky section bar. Fields one per row, except the deliberate pairs of §2.4 C.
 - Labels above fields; the hint between label and field; the note and the problem under it (§5.5).
 - Dependent fields stay visible but locked with a hint until their parent is set ("Choose teams first —
   the owner must belong to one of the plan's teams"). When only one option fits, it is filled in and
@@ -1175,8 +1190,8 @@ proposal awaiting the product owner, see the implementation plan.)
 - Validation messages say what is wrong and how to fix it: "End date must be on or after the start date
   (12 Mar 2026)." — never codes or technical text.
 - Choices follow the one-select rule (§5.5); date fields show the person's date format.
-- The form says how far it is: the rail (or the line under the header) counts the needed fields filled
-  ("9 of 15 needed fields filled").
+- The form says how far it is: the section bar counts the needed fields filled ("9 of 15 needed fields
+  filled").
 
 ---
 
@@ -1330,3 +1345,4 @@ or one component (see the recommendations report for the questions to Shell).
 | 2.5 | 30 Oct 2026 | Measure module kick-off (constitution 4.8.0): report pages — the report frame, filter panel, saved views, today marker, ranked list and the empty states that say why (§2.8). |
 | 2.6 | 1 Nov 2026 | Feature 051, constitution 4.9.0: custom-dashboard charts with Apache ECharts (ADR-0020); chart palettes Categorical, Planning, Levels and Sequential with tokens `--chart-cat-1`…`-8` and `--chart-seq-1`…`-5`; the Dashboards list, the custom-dashboard viewer and the builder layout (§4.7). |
 | 2.7 | 12 Nov 2026 | UI review of the Measure module and Home (D-411, D-412): report toolbar with All work's filter buttons, Period and Show on their widgets, ECharts time charts, ranked-list behaviour (§2.8); `StatStrip`, `Select`, `Pager`, compact `EmptyState` (§5); a quieter chosen `SegmentedFilter`; `--hover-on-card` for hovers inside cards. |
+| 2.8 | 12 Nov 2026 | Form pages redesigned: one centred column of at most `--form-page` 960 px for header, form and footer; the right rail and the count line under the header replaced by a sticky section bar at the top of the column with a yellow "you are here" marker; deliberate field pairs (`FieldRow`) instead of one field per row everywhere (§2.2, §2.4 C, §3, §7). |

@@ -247,7 +247,7 @@ describe('DealsPanel (058 US1)', () => {
     save.mockRestore();
   });
 
-  it('asks for the display currency and shows its figures (scenario 4)', async () => {
+  it('leaves the currency to the display currency and shows its figures (scenario 4, 039-C10)', async () => {
     const { user, api } = renderPage(
       { body: webinarDeals({ credited: { amount: '17206.67', currency: 'EUR' } }) },
       '/reports/revenue?year=2026&currency=EUR',
@@ -255,7 +255,8 @@ describe('DealsPanel (058 US1)', () => {
 
     const { panel } = await openFromTheRow(user);
 
-    await waitFor(() => expect(dealsRequests(api)[0]?.get('currency')).toBe('EUR'));
-    expect(await within(panel).findByText('17,206.67 EUR')).toBeInTheDocument();
+    await waitFor(() => expect(dealsRequests(api)).toHaveLength(1));
+    expect(dealsRequests(api)[0]?.get('currency')).toBeNull();
+    expect(await within(panel).findByText('€17,206.67')).toBeInTheDocument();
   });
 });

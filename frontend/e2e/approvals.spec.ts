@@ -230,7 +230,7 @@ test('008 US5 (T055 journey 5): Priya recalls a submission with a reason, and a 
   await page.getByRole('textbox', { name: /^Planned cost/ }).fill('25000');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   const restart = page.getByRole('alertdialog', { name: 'This activity will need approval again' });
-  await expect(restart.getByText('Planned cost: 20,000.00 USD → 25,000.00 USD')).toBeVisible();
+  await expect(restart.getByText('Planned cost: $20,000.00 → $25,000.00')).toBeVisible();
   await restart.getByRole('button', { name: 'Save and restart approval' }).click();
   await expectToast(page, `Activity '${activity.name}' saved`);
   await expect(page.getByText('Created', { exact: true }).first()).toBeVisible();

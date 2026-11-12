@@ -75,14 +75,14 @@ describe('SpreadEditor (US3, FR-017 – FR-021)', () => {
     renderWithProviders(<Harness start={tenThousandEuros()} />);
 
     expect(screen.getByRole('radio', { name: 'Evenly' })).toBeChecked();
-    expect(screen.getByText('Mar 2026 · 3,333.33 EUR')).toBeInTheDocument();
-    expect(screen.getByText('Apr 2026 · 3,333.33 EUR')).toBeInTheDocument();
-    expect(screen.getByText('May 2026 · 3,333.34 EUR')).toBeInTheDocument();
+    expect(screen.getByText('Mar 2026 · €3,333.33')).toBeInTheDocument();
+    expect(screen.getByText('Apr 2026 · €3,333.33')).toBeInTheDocument();
+    expect(screen.getByText('May 2026 · €3,333.34')).toBeInTheDocument();
 
     await user.click(screen.getByRole('radio', { name: 'All in first month' }));
-    expect(preview()).toBe('Mar 2026 · 10,000.00 EUR');
+    expect(preview()).toBe('Mar 2026 · €10,000.00');
     await user.click(screen.getByRole('radio', { name: 'All in last month' }));
-    expect(preview()).toBe('May 2026 · 10,000.00 EUR');
+    expect(preview()).toBe('May 2026 · €10,000.00');
   });
 
   it('starts Custom from the spread, adds a month before and totals it (scenario 2, FR-018)', async () => {
@@ -92,7 +92,7 @@ describe('SpreadEditor (US3, FR-017 – FR-021)', () => {
     await user.click(screen.getByRole('radio', { name: 'Custom' }));
     expect(screen.getByLabelText('Amount for Mar 2026')).toHaveValue('3,333.33');
     expect(screen.getByLabelText('Amount for May 2026')).toHaveValue('3,333.34');
-    expect(screen.getByText('10,000.00 of 10,000.00 EUR spread — adds up')).toBeInTheDocument();
+    expect(screen.getByText('€10,000.00 of €10,000.00 spread — adds up')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Add month before' }));
     const february = screen.getByLabelText('Amount for Feb 2026');
@@ -101,18 +101,18 @@ describe('SpreadEditor (US3, FR-017 – FR-021)', () => {
       screen.getByText("Outside the activity's dates — allowed, e.g. a deposit"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('12,000.00 of 10,000.00 EUR spread — 2,000.00 EUR too much'),
+      screen.getByText('€12,000.00 of €10,000.00 spread — €2,000.00 too much'),
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Use month total as planned cost' }));
     expect(screen.getByLabelText('Planned cost now')).toHaveTextContent('12,000.00');
-    expect(screen.getByText('12,000.00 of 12,000.00 EUR spread — adds up')).toBeInTheDocument();
+    expect(screen.getByText('€12,000.00 of €12,000.00 spread — adds up')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Add month after' }));
     expect(screen.getByLabelText('Amount for Jun 2026')).toHaveValue('');
     await user.clear(february);
     expect(
-      screen.getByText('10,000.00 of 12,000.00 EUR spread — 2,000.00 EUR left'),
+      screen.getByText('€10,000.00 of €12,000.00 spread — €2,000.00 left'),
     ).toBeInTheDocument();
   });
 
@@ -126,7 +126,7 @@ describe('SpreadEditor (US3, FR-017 – FR-021)', () => {
         "This activity is ongoing (no end date), so 'Evenly' puts everything in the first month — choose Custom to spread it",
       ),
     ).toBeInTheDocument();
-    expect(preview()).toBe('Mar 2026 · 10,000.00 EUR');
+    expect(preview()).toBe('Mar 2026 · €10,000.00');
     await user.click(screen.getByRole('radio', { name: 'All in last month' }));
     expect(
       screen.getByText(

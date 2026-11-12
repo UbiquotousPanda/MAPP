@@ -166,7 +166,7 @@ describe('ActivityFormPage, edit (feature 006, US4)', () => {
     expect(question).toHaveTextContent(
       "Saving returns 'Launch film' to Created; it must be submitted for approval again.",
     );
-    expect(question).toHaveTextContent('Planned cost: 120,000.00 USD → 150,000.00 USD');
+    expect(question).toHaveTextContent('Planned cost: $120,000.00 → $150,000.00');
     await user.click(within(question).getByRole('button', { name: 'Keep editing' }));
     expect(api.bodiesOf('PATCH /api/v1/activities/A-1042')).toEqual([]);
     expect(screen.getByLabelText('Planned cost')).toHaveValue('150,000.00');
@@ -261,9 +261,9 @@ describe('ActivityFormPage, edit (feature 006, US4)', () => {
     const type = await screen.findByLabelText('Activity type');
     await user.selectOptions(type, 'AT-1002');
     const question = await screen.findByRole('alertdialog', {
-      name: "Use the default planned cost of 10,000.00 USD for 'Digital campaign'?",
+      name: "Use the default planned cost of $10,000.00 for 'Digital campaign'?",
     });
-    await user.click(within(question).getByRole('button', { name: 'Keep 120,000.00 USD' }));
+    await user.click(within(question).getByRole('button', { name: 'Keep $120,000.00' }));
     expect(screen.getByLabelText('Planned cost')).toHaveValue('120,000.00');
 
     await user.selectOptions(type, 'AT-1001');

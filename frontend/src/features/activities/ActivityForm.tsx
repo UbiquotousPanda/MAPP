@@ -212,7 +212,7 @@ function attributeErrors(problems: FieldProblem[]): Record<string, string> {
   return errors;
 }
 
-/** "From the activity type", or "Default 5,000.00 USD = 3,950.00 GBP at today's rate" (016 FR-016). */
+/** "From the activity type", or "Default $5,000.00 = £3,950.00 at today's rate" (016 FR-016). */
 function typeDefaultNote(form: ActivityFormData, typeId: string): string {
   const type = form.activityTypes.find((option) => option.id === typeId);
   const usd = type?.defaultPlannedCostUsd;

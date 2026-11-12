@@ -3,6 +3,7 @@ import { http as msw, HttpResponse } from 'msw';
 import type { HttpHandler } from 'msw';
 import { setupServer } from 'msw/node';
 import { NO_BREAKDOWN } from './fixtures/all-work-breakdown';
+import { DISPLAY_CURRENCIES } from './fixtures/home';
 import { configuration } from './fixtures/purchase-request-pages';
 import { ORIGIN, reply } from './replies';
 import { summaryReport } from './fixtures/summary';
@@ -24,6 +25,9 @@ export const FRAME_ANSWERS: HttpHandler[] = [
     body: { waitingForMe: 0, allOpen: 0, approvedThisMonth: 0, declinedThisMonth: 0 },
   }),
   reply('GET /api/v1/notifications', { body: { items: [], total: 0, unread: 0 } }),
+  reply('GET /api/v1/me/display-currencies', {
+    body: { items: DISPLAY_CURRENCIES, total: DISPLAY_CURRENCIES.length },
+  }),
   reply('GET /api/v1/overspend-configuration', {
     body: {
       defaultMode: 'warn',

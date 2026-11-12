@@ -54,7 +54,7 @@ describe('032 FR-029: PR in the approvals inbox', () => {
     const lines = within(panel).getByRole('region', { name: 'Lines' });
     const row = within(lines).getByRole('row', { name: /Stand build/ });
     expect(row).toHaveTextContent('HX1006');
-    expect(row).toHaveTextContent('9,200.00 EUR');
+    expect(row).toHaveTextContent('€9,200.00');
     expect(lines).toHaveTextContent('Total$10,000.00');
     expect(panel).toHaveTextContent('Daniel Okoro');
     expect(within(panel).getByRole('region', { name: 'Approval history' })).toHaveTextContent(

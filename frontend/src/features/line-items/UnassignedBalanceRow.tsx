@@ -2,7 +2,7 @@ import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { cx } from '@/ui/cx';
 import { FieldHelpTip } from '@/features/settings';
 import { toCents } from '@/format/decimal';
-import { amountText, centsInput } from './line-item-math';
+import { amountText, moneyText } from './line-item-math';
 import type { UnassignedBalance } from './api';
 import {
   ALL_ASSIGNED,
@@ -40,11 +40,7 @@ export function UnassignedBalanceRow({ balance }: { balance: UnassignedBalance }
             tone={exceeded ? 'problem' : undefined}
           />
           <span className={styles.meterText}>
-            {meterText(
-              centsInput(toCents(balance.assigned.amount)),
-              centsInput(toCents(balance.plannedCost.amount)),
-              balance.plannedCost.currency,
-            )}
+            {meterText(moneyText(balance.assigned), moneyText(balance.plannedCost))}
           </span>
         </div>
       )}

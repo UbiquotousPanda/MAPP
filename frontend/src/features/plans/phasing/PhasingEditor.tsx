@@ -19,6 +19,7 @@ import {
   amountText,
   balanceOf,
   balanceText,
+  moneyText,
   monthKeys,
   readAmount,
   splitEvenly,
@@ -172,8 +173,8 @@ export function PhasingEditor({
 
         {values.method === 'evenly' && budget !== null && (
           <p className={styles.note}>
-            Each month gets {amountText(first)} {currency}
-            {december !== first && `; December gets ${amountText(december)} ${currency}`}.
+            Each month gets {moneyText(first, currency)}
+            {december !== first && `; December gets ${moneyText(december, currency)}`}.
           </p>
         )}
 

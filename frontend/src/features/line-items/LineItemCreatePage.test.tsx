@@ -46,9 +46,9 @@ describe('LineItemCreatePage (US2)', () => {
     ).toBeInTheDocument();
 
     const summary = screen.getByLabelText('Activity summary');
-    expect(summary).toHaveTextContent('Activity planned cost120,000.00 USD');
-    expect(summary).toHaveTextContent('Unassigned now20,000.00 USD');
-    expect(summary).toHaveTextContent('After saving0.00 USD');
+    expect(summary).toHaveTextContent('Activity planned cost$120,000.00');
+    expect(summary).toHaveTextContent('Unassigned now$20,000.00');
+    expect(summary).toHaveTextContent('After saving$0.00');
 
     const breadcrumb = screen.getByLabelText('Breadcrumb');
     expect(within(breadcrumb).getByRole('link', { name: 'Launch film' })).toHaveAttribute(

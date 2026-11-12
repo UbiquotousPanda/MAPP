@@ -57,7 +57,7 @@ describe('ActivityFinancials (015 US1, FR-011 – FR-015)', () => {
     expect(card).toHaveAttribute('id', 'financials');
     const tiles = await within(card).findByRole('list', { name: 'Financial figures' });
     expect(tiles).toHaveTextContent('Committed (POs)');
-    expect(tiles).toHaveTextContent('82,000.00 USD');
+    expect(tiles).toHaveTextContent('$82,000.00');
     expect(tiles).toHaveTextContent('68% of planned cost committed');
     expect(tiles).toHaveTextContent('Accrued (Mar 2026)');
     expect(tiles).toHaveTextContent('Not yet committed');
@@ -71,7 +71,7 @@ describe('ActivityFinancials (015 US1, FR-011 – FR-015)', () => {
       'href',
       '/line-items/L-1001',
     );
-    expect(nth(within(nth(rows, 2)).getAllByRole('cell'), 1)).toHaveTextContent('52,000.00 USD');
+    expect(nth(within(nth(rows, 2)).getAllByRole('cell'), 1)).toHaveTextContent('$52,000.00');
     expect(nth(within(nth(rows, 2)).getAllByRole('cell'), 1)).toHaveTextContent(
       'Above planned cost',
     );
@@ -102,7 +102,7 @@ describe('ActivityFinancials (015 US1, FR-011 – FR-015)', () => {
         "No purchase orders or invoices yet — they appear here once GSAP sends them for this activity's line items.",
       ),
     ).toBeVisible();
-    expect(screen.getByText('120,000.00 USD')).toBeVisible();
+    expect(screen.getByText('$120,000.00')).toBeVisible();
     expect(screen.queryByRole('link', { name: /View all/ })).not.toBeInTheDocument();
   });
 
