@@ -1,5 +1,5 @@
 import type { ChartTheme } from '@/features/custom-dashboards';
-import { tooltipContent } from '@/features/custom-dashboards';
+import { axisPointer, tooltipContent } from '@/features/custom-dashboards';
 import type { Money } from './api';
 
 export type Tone = 'budget' | 'planned' | 'committed' | 'actual';
@@ -86,7 +86,7 @@ export function reportChartOption(chart: ReportChartData, theme: ChartTheme) {
     tooltip: {
       trigger: 'axis',
       confine: true,
-      axisPointer: { type: 'shadow', shadowStyle: { color: theme.hairline } },
+      axisPointer: axisPointer(theme),
       backgroundColor: theme.surface,
       borderColor: theme.hairline,
       formatter: (params: unknown) => tooltipContent(recoloured(params, colours)),

@@ -1,5 +1,6 @@
 import type { ChartPalette, WidgetDisplay } from '../model';
 import type { Cell, ChartContext } from './chart-data';
+import type { ChartTheme } from './theme';
 import { labelText, tooltipContent } from './tooltip';
 import type { ItemText } from './tooltip';
 
@@ -39,12 +40,18 @@ export function baseOption(ctx: ChartContext, trigger: 'axis' | 'item', fallback
       trigger,
       confine: true,
       formatter: tooltipContent,
+      axisPointer: axisPointer(theme),
       backgroundColor: theme.surface,
       borderColor: theme.hairline,
       textStyle: { color: theme.ink },
     },
     legend: legendOption(ctx),
   };
+}
+
+/** A thin guide line at the hovered period; a shaded band hides the lines under it. */
+export function axisPointer(theme: ChartTheme) {
+  return { type: 'line', lineStyle: { color: theme.ink2, width: 1 } } as const;
 }
 
 export function legendOption(ctx: ChartContext) {
