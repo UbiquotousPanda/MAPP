@@ -16,14 +16,14 @@ function renderPlain(forbidden = false, inView = reportFrame().inView) {
       'GET /api/v1/reports/frame',
       forbidden
         ? { status: 403, body: apiError('forbidden', "Changing access isn't part of your role.") }
-        : { body: reportFrame({ report: 'userAccess', inView }) },
+        : { body: reportFrame({ report: 'planData', inView }) },
     ),
   ]);
   return renderWithProviders(
-    <ReportFrame report="userAccess" filters={false}>
+    <ReportFrame report="planData" filters={false}>
       {() => <p>The widgets</p>}
     </ReportFrame>,
-    { route: '/reports/user-access', user: testUser(), path: '/reports/user-access' },
+    { route: '/reports/plan-data', user: testUser(), path: '/reports/plan-data' },
   );
 }
 
@@ -32,7 +32,9 @@ describe('ReportFrame without the plan filters (045-C1)', () => {
     renderPlain();
 
     expect(await screen.findByText('The widgets')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'User access' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Plan data and access' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
     expect(screen.getByRole('button', { name: 'Export' })).toBeInTheDocument();
     expect(screen.getByText(/^Figures as of/)).toBeInTheDocument();

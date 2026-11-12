@@ -31,7 +31,7 @@ export function catalogue(): ReportCatalogue {
 /** A report frame of 2026 for Priya: two plans, two teams (hers first), Brand with an inactive option still used. */
 export function reportFrame(overrides: Partial<ReportFrame> = {}): ReportFrame {
   return {
-    report: 'planBudget',
+    report: 'budget',
     filter: {
       year: 2026,
       plans: [],

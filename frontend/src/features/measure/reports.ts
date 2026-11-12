@@ -22,20 +22,8 @@ export const REPORT_ROUTES: ReportRoute[] = [
   { key: 'planData', path: 'plan-data', name: 'Plan data and access' },
 ];
 
-/** The old reports, now sections of the five; their pages keep their own title until each lane merges them. */
-export const SECTION_ROUTES: ReportRoute[] = [
-  { key: 'planBudget', path: 'plan-budget', name: 'Plan budget' },
-  { key: 'purchaseRequests', path: 'purchase-requests', name: 'Purchase requests' },
-  { key: 'planDetails', path: 'plan-details', name: 'Plan details' },
-  { key: 'gsapLink', path: 'gsap-link', name: 'GSAP link' },
-  { key: 'userAccess', path: 'user-access', name: 'User access' },
-  { key: 'summary', path: 'summary', name: 'Summary' },
-  { key: 'revenue', path: 'revenue', name: 'Revenue' },
-  { key: 'funnel', path: 'funnel', name: 'Funnel stages' },
-];
-
 export function reportName(key: ReportKey): string {
-  return [...REPORT_ROUTES, ...SECTION_ROUTES].find((r) => r.key === key)?.name ?? 'Report';
+  return REPORT_ROUTES.find((r) => r.key === key)?.name ?? 'Report';
 }
 
 export const REPORT_GROUPS: ReportGroup[] = [

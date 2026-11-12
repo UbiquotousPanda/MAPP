@@ -10916,24 +10916,11 @@ components:
       in: path
       required: true
       description: >-
-        The report's path in the web app's address. The paths after plan-data name the old reports, kept as
-        sections until the merged catalogue replaces them.
+        The report's path in the web app's address. The old reports' addresses redirect to these in the web app;
+        the API answers 404 for them.
       schema:
         type: string
-        enum:
-          - performance
-          - budget
-          - purchasing
-          - approvals
-          - plan-data
-          - plan-budget
-          - purchase-requests
-          - plan-details
-          - gsap-link
-          - user-access
-          - summary
-          - revenue
-          - funnel
+        enum: [performance, budget, purchasing, approvals, plan-data]
     ReportOwnSort:
       name: sort
       in: query
@@ -27981,22 +27968,8 @@ components:
     ReportKey:
       type: string
       description: >-
-        The five reports first; the keys after planData name the old reports, kept as sections until the merged
-        catalogue replaces them.
-      enum:
-        - performance
-        - budget
-        - purchasing
-        - approvals
-        - planData
-        - planBudget
-        - purchaseRequests
-        - planDetails
-        - gsapLink
-        - userAccess
-        - summary
-        - revenue
-        - funnel
+        The five reports of the catalogue (feature 059); saved views of the old nine moved to them.
+      enum: [performance, budget, purchasing, approvals, planData]
     ReportEntry:
       type: object
       additionalProperties: false
@@ -28006,10 +27979,10 @@ components:
           $ref: "#/components/schemas/ReportKey"
         path:
           type: string
-          example: plan-budget
+          example: budget
         name:
           type: string
-          example: Plan budget
+          example: Budget and spend
         purpose:
           type: string
         available:
@@ -28485,8 +28458,13 @@ components:
         notes:
           type: object
           additionalProperties: false
-          required: [notPhased, noDates, otherYears, actualOtherYears]
+          required: [notPhased, noDates, otherYears, linesAbovePlannedCost, actualOtherYears]
           properties:
+            linesAbovePlannedCost:
+              description: Line items above their activity's planned cost, so periods + noDates + otherYears − this = cards.planned.
+              oneOf:
+                - $ref: "#/components/schemas/Money"
+                - type: "null"
             notPhased:
               oneOf:
                 - $ref: "#/components/schemas/Money"
@@ -28706,7 +28684,7 @@ components:
         actualCostReason:
           type: string
           description: attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
-          enum: ["", attributionNotConfigured, noFinancialAccess]
+          enum: ["", attributionNotConfigured, noFinancialAccess, noActualCost]
         roiReason:
           type: string
           description: attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
@@ -28742,7 +28720,7 @@ components:
       properties:
         attribution: { $ref: "#/components/schemas/AttributionStamp" }
         level: { type: string, enum: [plan, campaign, initiative, activity] }
-        sort: { type: string, enum: [actualRevenue, projectedRevenue, goal, performance] }
+        sort: { type: string, enum: [actualRevenue, projectedRevenue, goal, performance, actualCost, roi] }
         order: { type: string, enum: [desc, asc] }
         group: { type: string }
         page: { type: integer }

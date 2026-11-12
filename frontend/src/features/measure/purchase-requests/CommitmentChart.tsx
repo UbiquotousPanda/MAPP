@@ -97,7 +97,7 @@ export function CommitmentChart({
   return (
     <ReportWidget
       wide
-      report="purchaseRequests"
+      report="purchasing"
       widget={widget}
       title={title}
       tip={TIP}

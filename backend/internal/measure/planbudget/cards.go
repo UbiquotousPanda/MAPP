@@ -9,16 +9,9 @@ import (
 func (r *records) total() sums {
 	var t sums
 	for _, id := range r.Matched().Plans {
-		p := r.sumsOf(id)
-		p.budget = nil
-		for _, n := range r.budgetBranch(id) {
-			p.budget = addAmount(p.budget, n.Budget)
-		}
-		if r.financed[id] {
-			p.finBudget = p.budget
-		}
-		t = t.plus(p)
+		t = t.plus(r.sumsOf(id))
 	}
+	t.budget, t.finBudget = r.budgetOf(r.InView)
 	return t
 }
 

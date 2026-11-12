@@ -46,7 +46,7 @@ func BenchmarkGsapLinkOnPostgres_SC001(b *testing.B) {
 
 func gsapLinkPages() []benchPage {
 	return []benchPage{
-		{"frame", alex, "/api/v1/reports/frame?report=gsapLink&year=2026"},
+		{"frame", alex, "/api/v1/reports/frame?report=purchasing&year=2026"},
 		{"swbs", alex, report + "&tab=swbs"},
 		{"waiting", alex, report + "&tab=waiting"},
 		{"orders", alex, report + "&tab=orders"},

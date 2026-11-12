@@ -16,7 +16,7 @@ export function SignInBands({ bands, people, recordedSince }: SignInBandsProps) 
   const fromToday = recordedSince.slice(0, 10) === new Date().toISOString().slice(0, 10);
   return (
     <ReportWidget
-      report="userAccess"
+      report="planData"
       widget="signInBands"
       title="Last sign-in"
       tip="The people of the table by how long ago they last signed in. Never: not since sign-ins were first recorded."

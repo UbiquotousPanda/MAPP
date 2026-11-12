@@ -24,9 +24,9 @@ func TestPostgresStoreReportViewsPersonIsolation_039_FR025(t *testing.T) {
 		return errors.Join(
 			directory.Put(ctx, peoplearea.Person{ID: "U-1002", Name: "Priya Raman", Email: "priya@example.com", Meta: meta}),
 			directory.Put(ctx, peoplearea.Person{ID: "U-1003", Name: "Daniel Okoro", Email: "daniel@example.com", Meta: meta}),
-			store.PutView(ctx, measure.StoredView{ID: "RV-1001", PersonID: "U-1002", Report: measure.KeyPlanBudget,
+			store.PutView(ctx, measure.StoredView{ID: "RV-1001", PersonID: "U-1002", Report: measure.KeyBudget,
 				Name: "Europe", Query: "year=2026", Meta: meta}),
-			store.PutView(ctx, measure.StoredView{ID: "RV-1002", PersonID: "U-1003", Report: measure.KeyPlanBudget,
+			store.PutView(ctx, measure.StoredView{ID: "RV-1002", PersonID: "U-1003", Report: measure.KeyBudget,
 				Name: "Europe", Query: "", Meta: meta}),
 			store.PutView(ctx, measure.StoredView{ID: "RV-1003", PersonID: "U-1002", Report: measure.KeyApprovals,
 				Name: "Mine", Query: "", Meta: meta}))
@@ -36,7 +36,7 @@ func TestPostgresStoreReportViewsPersonIsolation_039_FR025(t *testing.T) {
 	}
 
 	err = db.Read(ctx, func(ctx context.Context) error {
-		priyas, listErr := store.ListViews(ctx, "U-1002", measure.KeyPlanBudget)
+		priyas, listErr := store.ListViews(ctx, "U-1002", measure.KeyBudget)
 		if listErr != nil {
 			return listErr
 		}

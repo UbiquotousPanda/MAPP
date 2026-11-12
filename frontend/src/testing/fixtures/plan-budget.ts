@@ -43,7 +43,13 @@ export function planBudgetReport(overrides: Partial<Report> = {}): Report {
     },
     period: 'month',
     periods: months(),
-    notes: { notPhased: null, noDates: null, otherYears: null, actualOtherYears: usd('50.00') },
+    notes: {
+      notPhased: null,
+      noDates: null,
+      otherYears: null,
+      linesAbovePlannedCost: null,
+      actualOtherYears: usd('50.00'),
+    },
     ...overrides,
   };
 }

@@ -29,9 +29,9 @@ describe('Home: Revenue this year', () => {
     expect(within(card).getByText('$10,000.00')).toBeInTheDocument();
     expect(within(card).getByText('12%')).toBeInTheDocument();
     expect(within(card).getByText('Below plan')).toBeInTheDocument();
-    expect(within(card).getByRole('link', { name: 'Open Summary report' })).toHaveAttribute(
+    expect(within(card).getByRole('link', { name: 'Open Performance report' })).toHaveAttribute(
       'href',
-      '/reports/summary',
+      '/reports/performance',
     );
   });
 

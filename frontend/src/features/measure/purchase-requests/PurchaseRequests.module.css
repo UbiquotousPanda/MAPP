@@ -63,21 +63,7 @@
 }
 
 .toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
   margin-bottom: var(--space-4);
-}
-
-/* The search gives way first, down to 200 px, so the controls share one row where they can. */
-.toolbar input[type='search'] {
-  height: var(--control-sm);
-}
-
-.toolbar > :first-child {
-  flex: 1 1 200px;
-  max-width: 320px;
 }
 
 .field {

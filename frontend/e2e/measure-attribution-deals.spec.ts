@@ -14,7 +14,7 @@ async function openDeals(
   activity: string,
 ): Promise<{ button: Locator; panel: Locator }> {
   await signInAs(page, ALEX);
-  await page.goto(`/reports/revenue?year=2026&show=activity&q=${encodeURIComponent(activity)}`);
+  await page.goto(`/reports/performance?year=2026&show=activity&q=${encodeURIComponent(activity)}`);
   const ranked = page.getByRole('region', { name: 'Ranked list' });
   // The panel is modal, so the page behind it, the figure's button too, is hidden from assistive technology.
   const button = ranked.getByRole('button', {

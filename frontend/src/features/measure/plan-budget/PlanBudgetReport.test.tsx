@@ -20,7 +20,7 @@ vi.mock('echarts/core', async (importOriginal) => ({
 
 function renderPage(
   report: Answer<'GET /api/v1/reports/plan-budget'> = { body: planBudgetReport() },
-  route = '/reports/plan-budget?year=2026',
+  route = '/reports/budget?year=2026',
   ranked: Answer<'GET /api/v1/reports/plan-budget/ranked'> = { body: planBudgetRanked() },
 ) {
   const api = mockApi([
@@ -34,7 +34,7 @@ function renderPage(
   const rendered = renderWithProviders(<PlanBudgetReport />, {
     route,
     user: testUser(),
-    path: '/reports/plan-budget',
+    path: '/reports/budget',
   });
   return { ...rendered, api };
 }
@@ -49,6 +49,7 @@ describe('PlanBudgetReport (040 US1)', () => {
         cards: {
           ...planBudgetReport().cards,
           leftToPlan: { amount: '-25.00', currency: 'USD' },
+          overAllocated: true,
           budgetSpent: null,
         },
       }),
@@ -102,19 +103,20 @@ describe('PlanBudgetReport (040 US1)', () => {
     expect(within(table).getAllByText(/\(in progress\)$/)).toHaveLength(1);
   });
 
-  it('names planned cost without dates and in other years under the chart (FR-005)', async () => {
+  it('names planned cost without dates, in other years and line items above it under the chart (FR-005, D-363)', async () => {
     const usd = (amount: string) => ({ amount, currency: 'USD' });
     const notes = {
       notPhased: null,
       noDates: usd('70.00'),
       otherYears: usd('40.00'),
+      linesAbovePlannedCost: usd('30.00'),
       actualOtherYears: null,
     };
     renderPage({ body: planBudgetReport({ notes }) });
 
     expect(
       await screen.findByText(
-        'Planned cost without dates: $70.00. Planned cost in other years: $40.00.',
+        'Planned cost without dates: $70.00. Planned cost in other years: $40.00. Line items above planned cost: $30.00.',
       ),
     ).toBeInTheDocument();
   });
@@ -145,8 +147,8 @@ describe('PlanBudgetReport (040 US1)', () => {
     await user.click(await screen.findByRole('button', { name: 'Export summary' }));
     await user.click(await screen.findByRole('menuitem', { name: 'CSV (.csv)' }));
 
-    await waitFor(() => expect(asked(api, '/api/v1/reports/plan-budget/export')).toHaveLength(1));
-    const sent = nth(asked(api, '/api/v1/reports/plan-budget/export'), 0);
+    await waitFor(() => expect(asked(api, '/api/v1/reports/budget/export')).toHaveLength(1));
+    const sent = nth(asked(api, '/api/v1/reports/budget/export'), 0);
     expect([sent.get('widget'), sent.get('format')]).toEqual(['cards', 'csv']);
     save.mockRestore();
   });

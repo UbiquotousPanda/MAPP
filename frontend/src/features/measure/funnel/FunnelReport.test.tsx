@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { closestTo, nth } from '@/testing/dom';
@@ -11,13 +11,11 @@ import {
 } from '@/testing/fixtures/revenue';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
-import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
-import { choose } from '@/testing/select';
+import { FunnelStage } from '@/testing/fixtures/performance-stages';
 import type { FunnelCards } from '../revenue/api';
-import { FunnelReport } from './FunnelReport';
 
 // jsdom has no canvas for ECharts to measure text; report-chart.test.ts covers what is drawn.
 vi.mock('echarts/core', async (importOriginal) => ({
@@ -27,7 +25,7 @@ vi.mock('echarts/core', async (importOriginal) => ({
 
 function renderPage(
   report: Answer<'GET /api/v1/reports/funnel'> = { body: funnelReport() },
-  route = '/reports/funnel?year=2026',
+  route = '/reports/performance?year=2026',
   ranked: Answer<'GET /api/v1/reports/funnel/ranked'> = { body: funnelRanked() },
 ) {
   const api = mockApi([
@@ -37,26 +35,19 @@ function renderPage(
     reply('GET /api/v1/settings/activity-categories', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/reports/funnel', report),
     reply('GET /api/v1/reports/funnel/ranked', ranked),
-    reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
   ]);
-  const rendered = renderWithProviders(<FunnelReport />, {
+  const rendered = renderWithProviders(<FunnelStage />, {
     route,
     user: testUser(),
-    path: '/reports/funnel',
+    path: '/reports/performance',
   });
   return { ...rendered, api };
 }
 
-const asked = (api: MockedApi, path: string) =>
-  api.requests.filter((r) => r.path === path).map((r) => new URLSearchParams(r.search));
-
-describe('FunnelReport (049 US2)', () => {
-  it('opens on the first available stage and shows its cards, accessibly (FR-015)', async () => {
+describe('Performance, INQ and MQL stages (049 US2)', () => {
+  it("shows the stage's cards and names the stage above the ranked list, accessibly (FR-015)", async () => {
     renderPage();
 
-    expect(await screen.findByRole('combobox', { name: 'Funnel stage' })).toHaveTextContent(
-      'Inquiries (INQ)',
-    );
     const cards = await screen.findByLabelText('Summary: Inquiries (INQ)');
     for (const label of ['Goal', 'Actual', 'Actual or projected', 'Performance', 'Conversion']) {
       expect(within(cards).getByText(label)).toBeInTheDocument();
@@ -133,58 +124,6 @@ describe('FunnelReport (049 US2)', () => {
     expect(await screen.findByText('Helix launch')).toBeInTheDocument();
   });
 
-  it('keeps the chosen stage in the address and asks every widget for it (FR-015, FR-019)', async () => {
-    const { user, api, router } = renderPage();
-
-    await screen.findByText('Helix launch');
-    await choose(
-      user,
-      screen.getByRole('combobox', { name: 'Funnel stage' }),
-      'Marketing-qualified leads (MQL)',
-    );
-
-    expect(new URLSearchParams(router.state.location.search).get('stage')).toBe('mql');
-    await waitFor(() =>
-      expect(asked(api, '/api/v1/reports/funnel').at(-1)?.get('stage')).toBe('mql'),
-    );
-    expect(asked(api, '/api/v1/reports/funnel/ranked').at(-1)?.get('stage')).toBe('mql');
-  });
-
-  it('restores the stage and category from the address, as a saved view or Back reopens them (US3 scenario 3, FR-019)', async () => {
-    const { api } = renderPage(
-      { body: funnelReport({ stage: 'mql' }) },
-      '/reports/funnel?year=2026&stage=mql&category=uncategorised',
-    );
-
-    expect(await screen.findByRole('combobox', { name: 'Funnel stage' })).toHaveTextContent(
-      'Marketing-qualified leads (MQL)',
-    );
-    expect(screen.getByRole('combobox', { name: 'Activity category' })).toHaveTextContent(
-      'Uncategorised',
-    );
-    const first = nth(asked(api, '/api/v1/reports/funnel'), 0);
-    expect([first.get('stage'), first.get('category')]).toEqual(['mql', 'uncategorised']);
-  });
-
-  it('exports the stage on screen, not the first stage (FR-015, FR-019)', async () => {
-    URL.createObjectURL = () => 'blob:export';
-    URL.revokeObjectURL = () => {};
-    const save = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    const { user, api } = renderPage();
-
-    await screen.findByText('Helix launch');
-    await choose(
-      user,
-      screen.getByRole('combobox', { name: 'Funnel stage' }),
-      'Marketing-qualified leads (MQL)',
-    );
-    await user.click(screen.getByRole('button', { name: 'Export' }));
-
-    await waitFor(() => expect(asked(api, '/api/v1/reports/funnel/export')).toHaveLength(1));
-    expect(nth(asked(api, '/api/v1/reports/funnel/export'), 0).get('stage')).toBe('mql');
-    save.mockRestore();
-  });
-
   it('offers only the sorts the API accepts, so no column sorts silently by Projected (FR-006, D-410)', async () => {
     renderPage();
 
@@ -228,7 +167,7 @@ describe('FunnelReport (049 US2)', () => {
 
   it("ends Volume by month's Table view with the API's column totals, — where a column has none (039 FR-035)", async () => {
     const totals = { goal: 444444, actual: null, projected: 222222, goalAfterYear: 5555 };
-    renderPage({ body: funnelReport({ totals }) }, '/reports/funnel?year=2026&table=periods');
+    renderPage({ body: funnelReport({ totals }) }, '/reports/performance?year=2026&table=periods');
 
     const table = await screen.findByRole('table', { name: 'Volume by month' });
     const total = closestTo(within(table).getByRole('rowheader', { name: 'Total' }), 'tr');

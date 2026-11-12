@@ -166,7 +166,7 @@ export function RequestsGrid({
   return (
     <ReportWidget
       wide
-      report="purchaseRequests"
+      report="purchasing"
       widget="grid"
       title="Purchase requests"
       tip={TIP}

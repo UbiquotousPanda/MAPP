@@ -9,14 +9,12 @@ import { choose } from '@/testing/select';
 import { reply } from '@/testing/replies';
 import type { PlanDetailsReport as Report } from './api';
 import { planDetails } from './plan-details-fixture';
-import { PlanDetailsReport } from './PlanDetailsReport';
-
-const EMPTY = { plans: 0, campaigns: 0, initiatives: 0, activities: 0, lineItems: 0 };
+import { PlanDataReport } from '../plan-data/PlanDataReport';
 
 function renderReport(
   report: Report = planDetails(),
-  frame = reportFrame({ report: 'planDetails' }),
-  route = '/reports/plan-details',
+  frame = reportFrame({ report: 'planData' }),
+  route = '/reports/plan-data',
 ) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
@@ -24,15 +22,15 @@ function renderReport(
     reply('GET /api/v1/reports/plan-details', { body: report }),
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
   ]);
-  const { user } = renderWithProviders(<PlanDetailsReport />, {
+  const { user } = renderWithProviders(<PlanDataReport />, {
     route,
     user: testUser(),
-    path: '/reports/plan-details',
+    path: '/reports/plan-data',
   });
   return Object.assign(api, { user });
 }
 
-describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
+describe('Data completeness (043 US1, FR-005 – FR-016)', () => {
   it('shows the cards, the built-in section and one row per attribute', async () => {
     const api = renderReport();
 
@@ -105,11 +103,7 @@ describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
       },
       builtIn: [],
     });
-    const { user } = renderReport(
-      empty,
-      undefined,
-      '/reports/plan-details?activityStatus=declined',
-    );
+    const { user } = renderReport(empty, undefined, '/reports/plan-data?activityStatus=declined');
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
     expect(screen.queryByText('No data yet')).not.toBeInTheDocument();
@@ -129,17 +123,6 @@ describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
     ).toBeInTheDocument();
   });
 
-  it("shows the frame's empty states: no plans for the year, or filters that exclude everything", async () => {
-    renderReport(
-      planDetails(),
-      reportFrame({ report: 'planDetails', inView: EMPTY }),
-      '/reports/plan-details?planType=crossMarket',
-    );
-
-    expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
-    expect(screen.queryByText('By Company code')).not.toBeInTheDocument();
-  });
-
   it('asks the API for the level chosen (FR-001)', async () => {
     const api = renderReport();
     await screen.findByText('By Company code');
@@ -157,7 +140,7 @@ describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
     renderReport(
       planDetails({ show: 'campaign', builtIn: [], attributes: [], attributesSetUp: false }),
       undefined,
-      '/reports/plan-details?show=campaign',
+      '/reports/plan-data?show=campaign',
     );
 
     expect(

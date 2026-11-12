@@ -12,7 +12,7 @@ import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
 import { choose } from '@/testing/select';
-import { RevenueReport } from '../RevenueReport';
+import { RevenueStage } from '@/testing/fixtures/performance-stages';
 
 const DEALS = 'GET /api/v1/reports/revenue/activities/{activityId}/deals';
 const DEALS_PATH = '/api/v1/reports/revenue/activities/A-1001/deals';
@@ -23,7 +23,7 @@ const AGREEING = { credited: usd('240000.00') };
 
 function renderPage(
   deals: Answer<typeof DEALS> = { body: webinarDeals(AGREEING) },
-  route = '/reports/revenue?year=2026',
+  route = '/reports/performance?year=2026',
 ) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
@@ -35,10 +35,10 @@ function renderPage(
     reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
     reply(DEALS, deals),
   ]);
-  const rendered = renderWithProviders(<RevenueReport />, {
+  const rendered = renderWithProviders(<RevenueStage />, {
     route,
     user: testUser(),
-    path: '/reports/revenue',
+    path: '/reports/performance',
   });
   return { ...rendered, api };
 }
@@ -87,7 +87,7 @@ describe('DealsPanel (058 US1)', () => {
   it('reopens from the address, so a link or Back brings the panel back (FR-007)', async () => {
     const { router } = renderPage(
       { body: webinarDeals() },
-      '/reports/revenue?year=2026&deals=A-1001',
+      '/reports/performance?year=2026&deals=A-1001',
     );
 
     const panel = await screen.findByRole('dialog');
@@ -238,7 +238,7 @@ describe('DealsPanel (058 US1)', () => {
 
     const exports = () =>
       api.requests
-        .filter((r) => r.path === '/api/v1/reports/revenue/export')
+        .filter((r) => r.path === '/api/v1/reports/performance/export')
         .map((r) => new URLSearchParams(r.search));
     await waitFor(() => expect(exports()).toHaveLength(1));
     expect(exports()[0]?.get('widget')).toBe('deals');
@@ -250,7 +250,7 @@ describe('DealsPanel (058 US1)', () => {
   it('leaves the currency to the display currency and shows its figures (scenario 4, 039-C10)', async () => {
     const { user, api } = renderPage(
       { body: webinarDeals({ credited: { amount: '17206.67', currency: 'EUR' } }) },
-      '/reports/revenue?year=2026&currency=EUR',
+      '/reports/performance?year=2026&currency=EUR',
     );
 
     const { panel } = await openFromTheRow(user);

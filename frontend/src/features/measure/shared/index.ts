@@ -24,3 +24,5 @@ export type { ReportChartData, ReportPoint, ReportSeries } from './report-chart'
 export { goalAfterYearText, NOTHING } from './report-text';
 export { StatusMixWidget } from './StatusMixWidget';
 export type { StatusMix, StatusMixItem } from './StatusMixWidget';
+export { GridFilterBar } from './GridFilterBar';
+export type { GridFilter } from './GridFilterBar';

@@ -1,6 +1,5 @@
 import type { components } from '@/api/generated/schema';
 import type { StatusTone } from '@/ui/StatusChip/StatusChip';
-import type { LeagueTableKey } from './schemas';
 
 type Stage = components['schemas']['SummaryStageKey'];
 type Variance = components['schemas']['SummaryVariance'];
@@ -14,20 +13,6 @@ export const STATE_TEXT: Record<string, string> = {
   noGoals: 'The activities in view have no goals yet, so there is nothing to compare against.',
   noPerformanceData: 'No actuals yet — the figures below are projections from each plan’s model.',
   notApproved: 'The activities in view are not approved yet, so their performance data is held.',
-};
-
-export const LEAGUE_COLUMN: Record<LeagueTableKey, string> = {
-  revenue: 'Revenue',
-  performance: 'Performance',
-  cost: 'Actual cost',
-  roi: 'ROI',
-};
-
-export const LEAGUE_TITLE: Record<LeagueTableKey, string> = {
-  revenue: 'Top revenue',
-  performance: 'Top performance',
-  cost: 'Top actual cost',
-  roi: 'Top ROI',
 };
 
 export const VARIANCE_TONE: Record<Variance, StatusTone> = {

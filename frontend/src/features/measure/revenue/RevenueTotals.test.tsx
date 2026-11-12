@@ -8,8 +8,8 @@ import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { reply } from '@/testing/replies';
+import { RevenueStage } from '@/testing/fixtures/performance-stages';
 import type { RevenueReport as RevenueReportData } from './api';
-import { RevenueReport } from './RevenueReport';
 
 // jsdom has no canvas for ECharts to measure text; report-chart.test.ts covers what is drawn.
 vi.mock('echarts/core', async (importOriginal) => ({
@@ -26,10 +26,10 @@ function renderTable(report: RevenueReportData) {
     reply('GET /api/v1/reports/revenue', { body: report }),
     reply('GET /api/v1/reports/revenue/ranked', { body: revenueRanked() }),
   ]);
-  renderWithProviders(<RevenueReport />, {
-    route: '/reports/revenue?year=2026&table=periods',
+  renderWithProviders(<RevenueStage />, {
+    route: '/reports/performance?year=2026&table=periods',
     user: testUser(),
-    path: '/reports/revenue',
+    path: '/reports/performance',
   });
 }
 

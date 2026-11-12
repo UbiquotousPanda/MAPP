@@ -25,7 +25,8 @@ type sortWords struct {
 
 func (revenueReport) sortWords() sortWords {
 	return sortWords{words: map[string]string{SortActualRevenue: wordsActual, SortProjectedRevenue: wordsProjected,
-		SortGoal: wordsGoal, SortPerformance: wordsPerformance}, sorts: revenueSorts(), opening: revenueOpening()}
+		SortGoal: wordsGoal, SortPerformance: wordsPerformance, SortActualCost: "Actual cost", SortROI: "ROI"},
+		sorts: revenueSorts(), opening: revenueOpening()}
 }
 
 func (funnelReport) sortWords() sortWords {

@@ -84,7 +84,7 @@ export function SwbsTab({ tab, total, table, onChange }: SwbsTabProps) {
         />
       </StatStrip>
       <ReportWidget
-        report="gsapLink"
+        report="purchasing"
         widget="swbsBands"
         title="Waiting by time"
         tip="The line items of the table by how long they have waited since their activity was approved."

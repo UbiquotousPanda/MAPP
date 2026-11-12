@@ -3,7 +3,7 @@ import type { ReportKey } from '@/features/measure';
 import type { Permission } from '@/session/access';
 import type { PageHandle } from '@/session/page-handle';
 import { RequirePermission } from '@/session/RequirePermission';
-import { ReportPage, ReportsPage } from './pages';
+import { OldReportRedirect, ReportPage, ReportsPage } from './pages';
 
 interface ReportRoute {
   key: ReportKey;
@@ -12,27 +12,25 @@ interface ReportRoute {
   permission: Permission;
 }
 
-// Every report's address, listed here so the feature loads only when opened. The old reports keep their addresses
-// until the redirects to the five replace them.
+// Every report's address, listed here so the feature loads only when opened.
 const REPORTS: ReportRoute[] = [
   { key: 'performance', path: 'performance', title: 'Performance', permission: 'reports.view' },
   { key: 'budget', path: 'budget', title: 'Budget and spend', permission: 'reports.view' },
   { key: 'purchasing', path: 'purchasing', title: 'Purchasing', permission: 'reports.view' },
   { key: 'approvals', path: 'approvals', title: 'Approvals', permission: 'reports.view' },
   { key: 'planData', path: 'plan-data', title: 'Plan data and access', permission: 'reports.view' },
-  { key: 'planBudget', path: 'plan-budget', title: 'Plan budget', permission: 'reports.view' },
-  {
-    key: 'purchaseRequests',
-    path: 'purchase-requests',
-    title: 'Purchase requests',
-    permission: 'reports.view',
-  },
-  { key: 'planDetails', path: 'plan-details', title: 'Plan details', permission: 'reports.view' },
-  { key: 'gsapLink', path: 'gsap-link', title: 'GSAP link', permission: 'reports.view' },
-  { key: 'userAccess', path: 'user-access', title: 'User access', permission: 'access.manage' },
-  { key: 'summary', path: 'summary', title: 'Summary', permission: 'reports.view' },
-  { key: 'revenue', path: 'revenue', title: 'Revenue', permission: 'reports.view' },
-  { key: 'funnel', path: 'funnel', title: 'Funnel stages', permission: 'reports.view' },
+];
+
+// The nine reports before feature 059 that now live in the five; their links and bookmarks keep working.
+const OLD_REPORTS = [
+  'summary',
+  'revenue',
+  'funnel',
+  'plan-budget',
+  'purchase-requests',
+  'gsap-link',
+  'plan-details',
+  'user-access',
 ];
 
 export const MEASURE_ROUTES: RouteObject[] = [
@@ -54,4 +52,5 @@ export const MEASURE_ROUTES: RouteObject[] = [
     ),
     handle: { title: report.title, wide: true } satisfies PageHandle,
   })),
+  ...OLD_REPORTS.map((path) => ({ path: `/reports/${path}`, element: <OldReportRedirect /> })),
 ];

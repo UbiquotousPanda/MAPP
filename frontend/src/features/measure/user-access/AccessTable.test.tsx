@@ -15,7 +15,7 @@ function renderTable(total = 3) {
       table={{ q: '', teams: [], status: 'active', sort: 'name', page: 1, pageSize: 20 }}
       onChange={onChange}
     />,
-    { route: '/reports/user-access', user: testUser(), path: '/reports/user-access' },
+    { route: '/reports/plan-data?tab=people', user: testUser(), path: '/reports/plan-data' },
   );
   return { onChange, ...rendered };
 }

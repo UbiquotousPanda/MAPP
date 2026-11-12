@@ -79,3 +79,35 @@ func TestRankedFunnel_SortsByGoalAndPerformanceWithoutAFigureLast_D410(t *testin
 		}
 	}
 }
+
+func TestRankedRevenue_SortsByCostAndROI_059_FR003(t *testing.T) {
+	t.Parallel()
+	hidden := roiScope()
+	hidden.Choices.FinancePlans = []string{"P-1"}
+	tests := []struct {
+		sort, order string
+		sc          measure.Scope
+		want        []string
+	}{
+		{revenue.SortActualCost, revenue.OrderDesc, roiScope(), []string{"A-1", "A-2"}},
+		{revenue.SortActualCost, revenue.OrderAsc, roiScope(), []string{"A-2", "A-1"}},
+		{revenue.SortROI, revenue.OrderAsc, roiScope(), []string{"A-2", "A-1"}},
+		{revenue.SortROI, revenue.OrderDesc, roiScope(), []string{"A-1", "A-2"}},
+		{revenue.SortROI, revenue.OrderDesc, hidden, []string{"A-1", "A-2"}},
+		{revenue.SortROI, revenue.OrderAsc, hidden, []string{"A-1", "A-2"}},
+	}
+	for _, tc := range tests {
+		got, err := newFixtureWithReturns(tc.sc, twoPlanGoals(), roiReturns()).RankedRevenue(t.Context(), priya,
+			measure.Filter{Show: "activity"}, revenue.RankedQuery{Sort: tc.sort, Order: tc.order, Size: 10, Page: 1})
+		if err != nil {
+			t.Fatalf("RankedRevenue: %v", err)
+		}
+		ids := []string{}
+		for _, e := range got.Groups[0].Entries {
+			ids = append(ids, e.ID)
+		}
+		if diff := cmp.Diff(tc.want, ids); diff != "" {
+			t.Errorf("%s %s (-want +got):\n%s", tc.sort, tc.order, diff)
+		}
+	}
+}

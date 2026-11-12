@@ -26,7 +26,7 @@ func TestActivitySeriesIn_ReturnsTheScopeItsSeriesWereReadIn_048C10(t *testing.T
 	if err != nil {
 		t.Fatalf("ActivitySeries: %v", err)
 	}
-	if diff := cmp.Diff(alone, series, cmpopts.EquateComparable(money.Amount{})); diff != "" {
+	if diff := cmp.Diff(alone, series, cmpopts.EquateComparable(money.Amount{}, money.Percent{})); diff != "" {
 		t.Errorf("series differ from ActivitySeries (-want +got):\n%s", diff)
 	}
 	if sc.Year != 2026 || len(series) != 1 || !slices.Contains(sc.Matched.Activities, series[0].ID) {

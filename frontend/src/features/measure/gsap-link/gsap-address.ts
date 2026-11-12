@@ -3,8 +3,6 @@ import { WIDE_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 
 export type GsapTab = 'swbs' | 'waiting' | 'orders';
 
-export const GSAP_TABS: GsapTab[] = ['swbs', 'waiting', 'orders'];
-
 export const PAGE_SIZES = WIDE_PAGE_SIZES;
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -59,10 +57,9 @@ function setOrDrop(params: URLSearchParams, name: string, value: string, fallbac
   }
 }
 
-/** The tab, its sort and its page in the address; a new tab, sort or page size starts at page 1. */
-export function useGsapTable() {
+/** The tab's sort and page in the address; a new sort or page size starts at page 1. */
+export function useGsapTable(tab: GsapTab) {
   const [params, setParams] = useAddressParams();
-  const tab = GSAP_TABS.find((t) => t === params.get('tab')) ?? 'swbs';
   const sort = params.get('sort');
   const page = Number(params.get('page'));
   const size = Number(params.get('pageSize'));
@@ -74,11 +71,7 @@ export function useGsapTable() {
   };
   const change = (patch: Partial<GsapTable>) => {
     const next = { ...table, page: 1, ...patch };
-    if (patch.tab !== undefined && patch.tab !== table.tab) {
-      next.sort = defaultSort(patch.tab);
-    }
     const written = new URLSearchParams(params);
-    setOrDrop(written, 'tab', next.tab, 'swbs');
     setOrDrop(written, 'sort', next.sort, defaultSort(next.tab));
     setOrDrop(written, 'page', String(next.page), '1');
     setOrDrop(written, 'pageSize', String(next.pageSize), String(DEFAULT_PAGE_SIZE));

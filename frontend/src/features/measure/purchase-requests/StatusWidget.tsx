@@ -28,7 +28,7 @@ export function StatusWidget({ data, failed, onRetry }: StatusWidgetProps) {
   return (
     <StatusMixWidget
       wide
-      report="purchaseRequests"
+      report="purchasing"
       widget="status"
       title="Purchase requests by status"
       tip={TIP}

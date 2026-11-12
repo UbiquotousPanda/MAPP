@@ -28,11 +28,20 @@ type (
 	}
 )
 
+const (
+	stageMQL, stageINQ                           = "mql", "inq"
+	tabRequests, tabSwbs, tabWaiting, tabOrders  = "requests", "swbs", "waiting", "orders"
+	tabCompleteness, tabPeople                   = "completeness", "people"
+	nameRevenue, namePurchaseRequests            = "Revenue", "Purchase requests"
+	paramVendor, paramOwner, paramStatus, paramQ = "vendor", "requestOwner", "status", "q"
+	widgetStatus                                 = "status"
+)
+
 type entry struct {
 	key, path, name, purpose string
-	requires                 authz.Permission // beyond reports.view; "" for none
 	controls                 frameControls
-	sections                 []string
+	selector, opening        string
+	sections                 []section
 }
 
 type frameControls struct {
@@ -42,55 +51,62 @@ type frameControls struct {
 
 func reports() []entry {
 	return []entry{
-		{KeyPerformance, "performance", "Performance",
-			"Whether the year is on track: projected against goal, each funnel stage and what earned the revenue.", "",
-			frameControls{period: true, showOpensOn: ShowCampaign}, []string{KeySummary, KeyRevenue, KeyFunnel}},
-		{KeyBudget, "budget", "Budget and spend",
-			"Budget, planned cost, committed and actual by month, and which plans, campaigns or activities lead or lag.", "",
-			frameControls{period: true, showOpensOn: ShowCampaign}, []string{KeyPlanBudget}},
-		{KeyPurchasing, "purchasing", "Purchasing",
-			"What is committed to each vendor and owner, and each purchase request's way to its purchase order.", "",
-			frameControls{}, []string{KeyPurchaseRequests, KeyGsapLink}},
-		{KeyApprovals, "approvals", "Approvals",
-			"How many approvals wait, how long decisions take, and every approval round.", "", frameControls{},
-			[]string{KeyApprovals}},
-		{KeyPlanData, "plan-data", "Plan data and access",
-			"How plan data spreads across each Shell attribute and, for administrators, who has which role.", "",
-			frameControls{period: true, showOpensOn: ShowActivity}, []string{KeyPlanDetails, KeyUserAccess}},
+		{key: KeyPerformance, path: "performance", name: "Performance",
+			purpose:  "Whether the year is on track: projected against goal, each funnel stage and what earned the revenue.",
+			controls: frameControls{period: true, showOpensOn: ShowCampaign}, selector: selectorStage, opening: KeyRevenue,
+			sections: []section{
+				{key: KeySummary, widgets: []string{KeyRevenue, KeyFunnel, "conversion"}, keep: []string{"category"}},
+				{key: KeyRevenue, value: KeyRevenue, label: nameRevenue},
+				{key: KeyFunnel, value: stageMQL, label: "MQL"}, {key: KeyFunnel, value: stageINQ, label: "INQ"},
+			}},
+		{key: KeyBudget, path: "budget", name: "Budget and spend",
+			purpose:  "Budget, planned cost, committed and actual by month, and which plans, campaigns or activities lead or lag.",
+			controls: frameControls{period: true, showOpensOn: ShowCampaign}, sections: []section{{key: KeyPlanBudget}}},
+		{key: KeyPurchasing, path: "purchasing", name: "Purchasing",
+			purpose:  "What is committed to each vendor and owner, and each purchase request's way to its purchase order.",
+			selector: selectorTab, opening: tabRequests, sections: purchasingSections()},
+		{key: KeyApprovals, path: "approvals", name: "Approvals",
+			purpose:  "How many approvals wait, how long decisions take, and every approval round.",
+			sections: []section{{key: KeyApprovals}}},
+		{key: KeyPlanData, path: "plan-data", name: "Plan data and access",
+			purpose:  "How plan data spreads across each Shell attribute and, for administrators, who has which role.",
+			controls: frameControls{period: true, showOpensOn: ShowActivity}, selector: selectorTab, opening: tabCompleteness,
+			sections: []section{{key: KeyPlanDetails, value: tabCompleteness, label: "Data completeness"},
+				{key: KeyUserAccess, value: tabPeople, label: "People", requires: authz.AccessManage,
+					noPlanFilters: true}}},
 	}
 }
 
-func sections() []entry {
-	return []entry{
-		{KeyPlanBudget, "plan-budget", "Plan budget", "", "", frameControls{period: true, showOpensOn: ShowCampaign}, nil},
-		{KeyPurchaseRequests, "purchase-requests", "Purchase requests", "", "", frameControls{}, nil},
-		{KeyPlanDetails, "plan-details", "Plan details", "", "", frameControls{period: true, showOpensOn: ShowActivity}, nil},
-		{KeyGsapLink, "gsap-link", "GSAP link", "", "", frameControls{}, nil},
-		{KeyUserAccess, "user-access", "User access", "", authz.AccessManage, frameControls{noPlanFilters: true}, nil},
-		{KeySummary, "summary", "Summary", "", "", frameControls{period: true}, nil},
-		{KeyRevenue, "revenue", "Revenue", "", "", frameControls{period: true, showOpensOn: ShowCampaign}, nil},
-		{KeyFunnel, "funnel", "Funnel stages", "", "", frameControls{period: true, showOpensOn: ShowCampaign}, nil},
+func purchasingSections() []section {
+	return []section{
+		{key: KeyPurchaseRequests, widgets: []string{"cards", widgetStatus, "byVendor", "byOwner"},
+			keep: []string{paramVendor, paramOwner, paramStatus, paramQ}},
+		{key: KeyPurchaseRequests, value: tabRequests, label: namePurchaseRequests, widgets: []string{"grid"}},
+		{key: KeyGsapLink, value: tabSwbs, label: "Waiting for SWBS", widgets: []string{tabSwbs, "swbsBands"}},
+		{key: KeyGsapLink, value: tabWaiting, label: "Waiting for GSAP", widgets: []string{tabWaiting}},
+		{key: KeyGsapLink, value: tabOrders, label: "Purchase orders", widgets: []string{tabOrders}},
 	}
 }
 
-func entries() []entry {
-	return append(reports(), sections()...)
-}
-
+// Keys are the section keys the reports register under, the old reports' keys.
 func Keys() []string {
 	var keys []string
-	for _, e := range entries() {
-		keys = append(keys, e.key)
+	for _, e := range reports() {
+		for _, s := range e.sections {
+			if !slices.Contains(keys, s.key) {
+				keys = append(keys, s.key)
+			}
+		}
 	}
 	return keys
 }
 
 func KeyOfPath(path string) (string, bool) {
-	i := slices.IndexFunc(entries(), func(e entry) bool { return e.path == path })
+	i := slices.IndexFunc(reports(), func(e entry) bool { return e.path == path })
 	if i < 0 {
 		return "", false
 	}
-	return entries()[i].key, true
+	return reports()[i].key, true
 }
 
 // Registry holds the report of each key; app/measure.go fills it, one register function per report (D-369).
@@ -114,7 +130,11 @@ func (r *Registry) Register(report Report) error {
 	return nil
 }
 
+// Get gives a catalogue report composed of its sections, or the report registered under a section key.
 func (r *Registry) Get(key string) (Report, bool) {
+	if i := slices.IndexFunc(reports(), func(e entry) bool { return e.key == key }); i >= 0 {
+		return composed{e: reports()[i], reports: r.reports}, true
+	}
 	report, found := r.reports[key]
 	return report, found
 }
@@ -123,10 +143,7 @@ func (r *Registry) Get(key string) (Report, bool) {
 func (r *Registry) Catalogue(context.Context) ReportCatalogue {
 	items := []ReportEntry{}
 	for _, e := range reports() {
-		available := slices.ContainsFunc(e.sections, func(key string) bool {
-			report, found := r.reports[key]
-			return found && report.Available()
-		})
+		available := composed{e: e, reports: r.reports}.Available()
 		items = append(items, ReportEntry{Key: e.key, Path: e.path, Name: e.name, Purpose: e.purpose, Available: available})
 	}
 	return ReportCatalogue{Items: items}
@@ -144,16 +161,10 @@ func (s stub) Sheets(context.Context, actor.Actor, Filter) ([]WidgetSheet, error
 	return []WidgetSheet{}, nil
 }
 
-// openable refuses a report the person's roles do not open, as the catalogue leaves it out.
-func openable(ctx context.Context, report string) error {
-	i := slices.IndexFunc(entries(), func(e entry) bool { return e.key == report })
-	if i < 0 {
+// openable refuses a report outside the catalogue; a section's own permission is checked when it is shown.
+func openable(report string) error {
+	if !slices.ContainsFunc(reports(), func(e entry) bool { return e.key == report }) {
 		return errs.NotFound(msgNoReport)
-	}
-	if p := entries()[i].requires; p != "" {
-		if a := authz.AvailableAnywhere(ctx, p); !a.Available {
-			return errs.Forbidden(a.Reason)
-		}
 	}
 	return nil
 }

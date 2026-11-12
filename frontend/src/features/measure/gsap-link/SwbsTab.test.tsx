@@ -17,7 +17,7 @@ function renderTab(report = swbsReport()) {
       table={{ tab: 'swbs', sort: '-waiting', page: 1, pageSize: 20 }}
       onChange={onChange}
     />,
-    { route: '/reports/gsap-link', user: testUser(), path: '/reports/gsap-link' },
+    { route: '/reports/purchasing', user: testUser(), path: '/reports/purchasing' },
   );
   return { onChange, ...rendered };
 }

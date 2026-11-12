@@ -28,7 +28,7 @@ const COLUMNS = [BUDGET, PLANNED];
 function List({ data, columns }: { data: RankedData<Figures>; columns: RankedColumn<Figures>[] }) {
   return (
     <RankedList
-      report="planBudget"
+      report="budget"
       data={data}
       error={null}
       onRetry={() => {}}
@@ -46,13 +46,13 @@ function List({ data, columns }: { data: RankedData<Figures>; columns: RankedCol
 
 function renderList(
   data: RankedData<Figures> = planBudgetRanked(),
-  route = '/reports/plan-budget',
+  route = '/reports/budget',
   columns = COLUMNS,
 ) {
   return renderWithProviders(<List data={data} columns={columns} />, {
     route,
     user: testUser(),
-    path: '/reports/plan-budget',
+    path: '/reports/budget',
   });
 }
 
@@ -97,7 +97,7 @@ describe('RankedList (040 US2, US3)', () => {
   it('keeps sort, group and page in the address, a change starting again at page 1 (FR-013, FR-014)', async () => {
     const { user, router } = renderList(
       planBudgetRanked({ total: 30 }),
-      '/reports/plan-budget?year=2026',
+      '/reports/budget?year=2026',
     );
 
     await user.click(screen.getByRole('button', { name: 'Next page' }));
@@ -115,10 +115,7 @@ describe('RankedList (040 US2, US3)', () => {
   });
 
   it('sorts by a column only when it is sortable, and still shows it (FR-013, 049 FR-006)', () => {
-    renderList(planBudgetRanked(), '/reports/plan-budget', [
-      { ...BUDGET, sortable: false },
-      PLANNED,
-    ]);
+    renderList(planBudgetRanked(), '/reports/budget', [{ ...BUDGET, sortable: false }, PLANNED]);
 
     const budget = screen.getByRole('columnheader', { name: 'Budget' });
     expect(within(budget).queryByRole('button')).not.toBeInTheDocument();
@@ -127,7 +124,7 @@ describe('RankedList (040 US2, US3)', () => {
   });
 
   it('sorts high to low first, and the sorted column again flips the order (FR-013)', async () => {
-    const { user, router } = renderList(planBudgetRanked(), '/reports/plan-budget');
+    const { user, router } = renderList(planBudgetRanked(), '/reports/budget');
 
     await user.click(screen.getByRole('button', { name: 'Budget' }));
     expect([search(router).get('sort'), search(router).get('order')]).toEqual(['budget', null]);
@@ -140,10 +137,7 @@ describe('RankedList (040 US2, US3)', () => {
   });
 
   it('reaches page 10, whose number is also the default page size (FR-014)', async () => {
-    const { user, router } = renderList(
-      planBudgetRanked({ total: 120 }),
-      '/reports/plan-budget?page=9',
-    );
+    const { user, router } = renderList(planBudgetRanked({ total: 120 }), '/reports/budget?page=9');
 
     await user.click(screen.getByRole('button', { name: 'Next page' }));
 
@@ -170,9 +164,9 @@ describe('RankedList (040 US2, US3)', () => {
 
   it("moves the focus to the trail's current step after a drill, not to the page (FR-010)", async () => {
     const { user } = renderWithProviders(<DrillingList />, {
-      route: '/reports/plan-budget',
+      route: '/reports/budget',
       user: testUser(),
-      path: '/reports/plan-budget',
+      path: '/reports/budget',
     });
 
     await user.click(screen.getByRole('button', { name: 'Launch events' }));
@@ -182,7 +176,7 @@ describe('RankedList (040 US2, US3)', () => {
   });
 
   it('says which entries are shown and pages through them (FR-014)', async () => {
-    const { user } = renderList(planBudgetRanked({ total: 30 }), '/reports/plan-budget?page=2');
+    const { user } = renderList(planBudgetRanked({ total: 30 }), '/reports/budget?page=2');
 
     const pages = screen.getByRole('navigation', { name: 'Pages' });
     expect(within(pages).getByText('11–20 of 30')).toBeInTheDocument();

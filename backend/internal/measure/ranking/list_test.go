@@ -220,8 +220,8 @@ func TestBuild_TotalsCountAnEntryInTwoGroupsOnce_D414(t *testing.T) {
 	x := ranking.NewIndex(sc)
 	q := ranking.Query{Sort: "n", Order: ranking.OrderDesc, Group: "attr:SA-1", Page: 1, Size: 10}
 	l := ranking.Build(x, "campaign", q, counts{x: x, leaf: map[string]int64{"A-1": 10}})
-	if len(l.Groups) != 2 || l.Groups[0].Totals.N+l.Groups[1].Totals.N != 20 || l.Totals.N != 10 {
-		t.Errorf("Alpha under Helix and Pennzoil: %d groups, totals %d; want two groups of 10 and a total of 10",
+	if len(l.Groups) != 2 || l.Groups[0].Totals.N != 5 || l.Groups[1].Totals.N != 5 || l.Totals.N != 10 {
+		t.Errorf("Alpha under Helix and Pennzoil: %d groups, totals %d; want two groups of 5 (059) and a total of 10",
 			len(l.Groups), l.Totals.N)
 	}
 }

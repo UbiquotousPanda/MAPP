@@ -35,7 +35,7 @@ export function RevenueChart({ report }: { report: RevenueReport }) {
   return (
     <ReportWidget
       wide
-      report="revenue"
+      report="performance"
       widget="periods"
       controls={<PeriodSwitch />}
       title={report.period === 'quarter' ? 'Revenue by quarter' : 'Revenue by month'}

@@ -27,6 +27,6 @@ func purchaseRequestPages() []page {
 		{"report one market", priya, report},
 		{"grid searched and sorted", alex, report + "&q=agency&sort=amount&order=desc&pageSize=100"},
 		{"grid filtered", alex, report + "&status=approved&vendor=none"},
-		{"export grid", alex, "/api/v1/reports/purchase-requests/export?year=2027&widget=grid&format=csv"},
+		{"export grid", alex, "/api/v1/reports/purchasing/export?year=2027&tab=requests&widget=grid&format=csv"},
 	}
 }

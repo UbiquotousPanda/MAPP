@@ -47,7 +47,7 @@ export function AccessTable({ rows, total, table, onChange }: AccessTableProps) 
           label="Export"
           formats={['xlsx', 'csv']}
           download={(format) =>
-            downloadReport('userAccess', address, format, { widget: 'people', own })
+            downloadReport('planData', address, format, { widget: 'people', own })
           }
         />
       </div>

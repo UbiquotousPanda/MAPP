@@ -102,6 +102,38 @@ func TestRanked_TotalsEqualCards_FR015(t *testing.T) {
 	}
 }
 
+func TestRanked_TotalBudgetLeftAndUnspentAreTheCards_039_FR035_040_FR019(t *testing.T) {
+	t.Parallel()
+	sc := scope(everything, true)
+	rate, _ := money.ParseRate("0.92")
+	sc.Currency = allwork.Currency{Code: "EUR", Rate: rate}
+	c := report(t, sc, measure.Filter{}).Cards
+	want := []string{shown(c.Budget), shown(c.LeftToPlan), shown(c.Unspent)}
+	for _, show := range []string{measure.ShowPlan, measure.ShowCampaign, measure.ShowInitiative, measure.ShowActivity} {
+		for _, sort := range []string{"budget", "planned", "committed", "actual", "leftToPlan", "unspent"} {
+			values, _ := url.ParseQuery("sort=" + sort)
+			q, _ := planbudget.ParseRanked(values)
+			r, err := service(sc).Ranked(t.Context(), priya, measure.Filter{Show: show}, q)
+			if err != nil {
+				t.Fatalf("Ranked: %v", err)
+			}
+			got := []string{shown(r.Totals.Budget), shown(r.Totals.LeftToPlan), shown(r.Totals.Unspent)}
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("%s by %s: budget once per branch, as the cards (-want +got):\n%s", show, sort, diff)
+			}
+		}
+	}
+}
+
+func TestRanked_TotalBudgetOfWhatSearchAndDrillKeep_039_FR035(t *testing.T) {
+	t.Parallel()
+	for query, want := range map[string]string{"q=RIM": "300.00", "drill=A-1": "600.00", "drill=P-1": "1000.00"} {
+		if got := shown(ranked(t, measure.Filter{}, query).Totals.Budget); got != want {
+			t.Errorf("%s: total budget %s, want %s (the kept entries' branches, once)", query, got, want)
+		}
+	}
+}
+
 func TestRanked_ListTotalsEveryPageOnceInDisplayCurrency_039_FR035(t *testing.T) {
 	t.Parallel()
 	sc := scope(everything, true)
@@ -117,7 +149,7 @@ func TestRanked_ListTotalsEveryPageOnceInDisplayCurrency_039_FR035(t *testing.T)
 		}
 		got := []string{shown(r.Totals.Budget), shown(r.Totals.Planned), shown(r.Totals.Committed), shown(r.Totals.Actual),
 			r.Totals.Planned.Currency}
-		want := []string{"828.00", shown(cards.Planned), shown(cards.Committed), shown(cards.Actual), "EUR"}
+		want := []string{shown(cards.Budget), shown(cards.Planned), shown(cards.Committed), shown(cards.Actual), "EUR"}
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Errorf("%s: both campaigns once, in euros, whatever the page or groups (-want +got):\n%s", query, diff)
 		}
@@ -185,9 +217,9 @@ func TestSheets_GroupTotalsAsOnScreen_FR016(t *testing.T) {
 	want := [][]sheet.Cell{
 		{sheet.Bold("Priya Raman"), sheet.Bold("Total"), sheet.Text(""), sheet.Money(*dollars(600)), sheet.Money(*dollars(300))},
 		{sheet.Bold("Daniel Okoro"), sheet.Bold("Total"), sheet.Text(""), sheet.Money(*dollars(300)), sheet.Money(*dollars(200))},
-		{sheet.Bold(""), sheet.Bold("Total"), sheet.Text(""), sheet.Money(*dollars(900)), sheet.Money(*dollars(500))},
+		{sheet.Bold(""), sheet.Bold("Total"), sheet.Text(""), sheet.Money(*dollars(1000)), sheet.Money(*dollars(500))},
 	}
 	if diff := cmp.Diff(want, totals, cmpopts.EquateComparable(sheet.Cell{})); diff != "" {
-		t.Errorf("one total row per owner, then the list's, with budget and planned cost (-want +got):\n%s", diff)
+		t.Errorf("one total row per owner, then the list's with the plan's budget once (-want +got):\n%s", diff)
 	}
 }

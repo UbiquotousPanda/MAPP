@@ -57,7 +57,7 @@ func TestUserAccess_NeedsAccessManage_FR002(t *testing.T) {
 	server := apitest.New(t)
 
 	get(t, server.SignIn(t, priya), report, http.StatusForbidden)
-	get(t, server.SignIn(t, priya), "/api/v1/reports/user-access/export?format=xlsx", http.StatusForbidden)
+	get(t, server.SignIn(t, priya), "/api/v1/reports/plan-data/export?tab=people&format=xlsx", http.StatusForbidden)
 }
 
 // TestRows_EqualPeopleTab_SC003: every row's roles, scopes and teams are Settings › Roles and access › People's.

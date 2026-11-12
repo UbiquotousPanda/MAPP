@@ -43,10 +43,11 @@ type Period struct {
 }
 
 type Notes struct {
-	NotPhased        *money.Money `json:"notPhased"`
-	NoDates          *money.Money `json:"noDates"`
-	OtherYears       *money.Money `json:"otherYears"`
-	ActualOtherYears *money.Money `json:"actualOtherYears"`
+	NotPhased             *money.Money `json:"notPhased"`
+	NoDates               *money.Money `json:"noDates"`
+	OtherYears            *money.Money `json:"otherYears"`
+	LinesAbovePlannedCost *money.Money `json:"linesAbovePlannedCost"`
+	ActualOtherYears      *money.Money `json:"actualOtherYears"`
 }
 
 type Report struct {

@@ -73,7 +73,7 @@ describe('CurrencyPicker', () => {
       }),
     ]);
     queryClient.setQueryData(['home', 'summary', 'myTeams'], { scope: 'myTeams' });
-    queryClient.setQueryData(['reports', 'frame', 'summary', ''], { filter: {} });
+    queryClient.setQueryData(['reports', 'frame', 'performance', ''], { filter: {} });
 
     await choose(user, picker(), 'EUR – Euro');
 
@@ -84,7 +84,7 @@ describe('CurrencyPicker', () => {
     );
     expect(api.bodiesOf('PATCH /api/v1/me/preferences')).toEqual([{ displayCurrency: 'EUR' }]);
     expect(queryClient.getQueryState(['home', 'summary', 'myTeams'])?.isInvalidated).toBe(true);
-    expect(queryClient.getQueryState(['reports', 'frame', 'summary', ''])?.isInvalidated).toBe(
+    expect(queryClient.getQueryState(['reports', 'frame', 'performance', ''])?.isInvalidated).toBe(
       true,
     );
     expect(picker()).toHaveTextContent(/^EUR$/);

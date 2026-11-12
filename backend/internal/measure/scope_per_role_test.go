@@ -39,29 +39,29 @@ func scopeIn(scope []string, year string) []string {
 // scopedReport lists the answers that name a report's plans or their records; a report of totals only
 // instead counts the plans it covers.
 type scopedReport struct {
-	key, year string
-	paths     []string
-	covered   func(t *testing.T, c *apitest.Client) int
+	key, frame, year string
+	paths            []string
+	covered          func(t *testing.T, c *apitest.Client) int
 }
 
 func scopedReports() []scopedReport {
 	return []scopedReport{
-		{key: "planBudget", year: "2026", paths: []string{"/reports/plan-budget?year=2026",
+		{key: "planBudget", frame: "budget", year: "2026", paths: []string{"/reports/plan-budget?year=2026",
 			"/reports/plan-budget/ranked?year=2026&show=plan"}},
-		{key: "approvals", year: "2026", paths: []string{"/reports/approvals?year=2026&pageSize=100"}},
-		{key: "purchaseRequests", year: "2027", paths: []string{"/reports/purchase-requests?year=2027&pageSize=100"}},
-		{key: "gsapLink", year: "2026", paths: []string{"/reports/gsap-link?year=2026"}},
-		{key: "revenue", year: "2026", paths: []string{"/reports/revenue/ranked?year=2026&show=plan",
+		{key: "approvals", frame: "approvals", year: "2026", paths: []string{"/reports/approvals?year=2026&pageSize=100"}},
+		{key: "purchaseRequests", frame: "purchasing", year: "2027", paths: []string{"/reports/purchase-requests?year=2027&pageSize=100"}},
+		{key: "gsapLink", frame: "purchasing", year: "2026", paths: []string{"/reports/gsap-link?year=2026"}},
+		{key: "revenue", frame: "performance", year: "2026", paths: []string{"/reports/revenue/ranked?year=2026&show=plan",
 			"/reports/revenue/ranked?year=2026&show=activity"}},
-		{key: "funnel", year: "2026", paths: []string{"/reports/funnel/ranked?year=2026&show=plan",
+		{key: "funnel", frame: "performance", year: "2026", paths: []string{"/reports/funnel/ranked?year=2026&show=plan",
 			"/reports/funnel/ranked?year=2026&show=activity&stage=mql"}},
-		{key: "planDetails", year: "2026", covered: func(t *testing.T, c *apitest.Client) int {
+		{key: "planDetails", frame: "planData", year: "2026", covered: func(t *testing.T, c *apitest.Client) int {
 			t.Helper()
 			var r struct{ Cards struct{ Records int } }
 			getOK(t, c, "/reports/plan-details?year=2026&show=plan").Decode(t, &r)
 			return r.Cards.Records
 		}},
-		{key: "summary", year: "2026", covered: func(t *testing.T, c *apitest.Client) int {
+		{key: "summary", frame: "performance", year: "2026", covered: func(t *testing.T, c *apitest.Client) int {
 			t.Helper()
 			var r struct{ FinanceCovers struct{ Of int } }
 			getOK(t, c, "/reports/summary?year=2026").Decode(t, &r)
@@ -134,7 +134,7 @@ func frameChoices(t *testing.T, c *apitest.Client, report scopedReport) []string
 	var frame struct {
 		Choices struct{ Plans []named } `json:"choices"`
 	}
-	getOK(t, c, "/reports/frame?report="+report.key+"&year="+report.year).Decode(t, &frame)
+	getOK(t, c, "/reports/frame?report="+report.frame+"&year="+report.year).Decode(t, &frame)
 	names := []string{}
 	for _, p := range frame.Choices.Plans {
 		names = append(names, p.Name)

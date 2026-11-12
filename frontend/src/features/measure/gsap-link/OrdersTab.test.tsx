@@ -19,7 +19,7 @@ function renderTab(report: GsapLinkReport = ordersReport()) {
       table={{ tab: 'orders', sort: 'lineItem', page: 1, pageSize: 20 }}
       onChange={onChange}
     />,
-    { route: '/reports/gsap-link?tab=orders', user: testUser(), path: '/reports/gsap-link' },
+    { route: '/reports/purchasing?tab=orders', user: testUser(), path: '/reports/purchasing' },
   );
   return { onChange, ...rendered };
 }

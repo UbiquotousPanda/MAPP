@@ -17,7 +17,7 @@ const DEFAULT_SORT = 'planned';
 /** Plan budget (feature 040): spend pacing by period and the ranked list, in 039's frame. */
 export function PlanBudgetReport() {
   return (
-    <ReportFrame report="planBudget">
+    <ReportFrame report="budget">
       {(frame, address) => <PlanBudgetBody frame={frame} address={address} />}
     </ReportFrame>
   );
@@ -69,7 +69,7 @@ function PlanBudgetBody({ frame, address }: { frame: ReportFrameData; address: R
                 iconOnly
                 formats={['xlsx', 'csv']}
                 download={(format) =>
-                  downloadReport('planBudget', address, format, { widget: 'cards' })
+                  downloadReport('budget', address, format, { widget: 'cards' })
                 }
               />
             </div>
@@ -86,7 +86,7 @@ function PlanBudgetBody({ frame, address }: { frame: ReportFrameData; address: R
       )}
       <RankedList
         levelFallback="campaign"
-        report="planBudget"
+        report="budget"
         data={ranked.data}
         error={ranked.isError ? ranked.error : null}
         onRetry={() => void ranked.refetch()}

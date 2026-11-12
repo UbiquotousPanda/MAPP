@@ -1,35 +1,30 @@
 import { useActivityCategories } from '@/features/settings';
-import { Select } from '@/ui/Select/Select';
+import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
+import type { OwnFilters } from '../shared/ReportToolbar';
 import { useOwnParam } from '../shared/useOwnParam';
 
-const ALL = '';
-const UNCATEGORISED = 'uncategorised';
+const TITLE = 'Activity category';
 
-/** The activity category control (049-C10): narrows the cards, the series and the ranked list. */
-export function CategorySelect({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) {
+/** The activity category (049-C10) behind Filters (n), with its chip: narrows the cards, the series and the list. */
+export function useCategoryFilter(): OwnFilters {
   const categories = useActivityCategories();
-  return (
-    <Select
-      label="Activity category"
-      value={value}
-      options={[
-        { value: ALL, label: 'All categories' },
-        ...(categories.data?.items ?? []).map((c) => ({ value: c.id, label: c.name })),
-        { value: UNCATEGORISED, label: 'Uncategorised' },
-      ]}
-      onChange={onChange}
-    />
-  );
-}
-
-/** The category select bound to the address, for a report's toolbar. */
-export function CategoryControl() {
   const [category, setCategory] = useOwnParam('category');
-  return <CategorySelect value={category} onChange={setCategory} />;
+  const choices = [
+    ...(categories.data?.items ?? []).map((c) => ({ value: c.id, label: c.name })),
+    { value: 'uncategorised', label: 'Uncategorised' },
+  ];
+  const label = choices.find((c) => c.value === category)?.label ?? category;
+  return {
+    menus: (
+      <FilterMenu
+        label={TITLE}
+        choices={choices}
+        selected={category ? [category] : []}
+        multiple={false}
+        summary={category ? label : undefined}
+        onChange={(values) => setCategory(values[0] ?? '')}
+      />
+    ),
+    chips: category ? [{ key: 'category', label: `${TITLE}: ${label}` }] : [],
+  };
 }

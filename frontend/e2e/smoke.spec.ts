@@ -45,7 +45,7 @@ test('US1: wrong password is refused; e-mail case and spaces are ignored (FR-003
   await expect(page.getByRole('heading', { name: 'Welcome back, Priya.' })).toBeVisible();
   // Priya's teams have plans, so Home shows them at a glance (Getting started is for people in no
   // team, or in teams without plans: feature 009).
-  await expect(page.getByRole('region', { name: 'Plans at a glance' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Plans at a glance', exact: true })).toBeVisible();
 });
 
 test('US2, 035 US1: every navigation item opens its page with its tab title, and none says MAPP (FR-010, FR-015, FR-017, SC-003; 035 FR-002)', async ({

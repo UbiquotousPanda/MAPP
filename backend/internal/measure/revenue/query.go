@@ -30,6 +30,8 @@ const (
 	SortProjected        = "projected"
 	SortGoal             = "goal"
 	SortPerformance      = "performance"
+	SortActualCost       = "actualCost"
+	SortROI              = "roi"
 )
 
 // categoryOf reads the category parameter: "" for all categories, "uncategorised", or a category id.
@@ -38,7 +40,7 @@ func categoryOf(values url.Values) string {
 }
 
 func revenueSorts() []string {
-	return []string{SortActualRevenue, SortProjectedRevenue, SortGoal, SortPerformance}
+	return []string{SortActualRevenue, SortProjectedRevenue, SortGoal, SortPerformance, SortActualCost, SortROI}
 }
 func funnelSorts() []string { return []string{SortActual, SortProjected, SortGoal, SortPerformance} }
 

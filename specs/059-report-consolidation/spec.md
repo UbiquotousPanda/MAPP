@@ -29,7 +29,8 @@ view — currently 9, maybe 4/5/6. Merge related data as well if it suits." The 
   and comes from today's endpoints; a merged page composes today's widgets. Only addresses, the catalogue,
   saved-view keys and the frame change. Where two widgets show the same series, one is kept (see the map).
 - **059-C3** — Q: Funnel stages? → A: The stage picker offers what 049's API allows today: **Revenue · MQL ·
-  INQ** (`FunnelReport.availableStages`); Deals stays a figure inside the overview strip, not a stage of its own.
+  INQ** (`FunnelReport.availableStages`). Deals is neither a stage nor a figure in the overview strip (no fact
+  records deals; product owner, 2026-11-13, D-426); deals stay in the deals panel.
 - **059-C4** — Q: Who sees Plan data and access? → A: Each tab keeps its report's permission: Data completeness
   needs `reports.view` (043), People needs `access.manage` (045, `access/routes_measure.go`). Everyone with
   `reports.view` sees the report with Data completeness; only administrators also see People.

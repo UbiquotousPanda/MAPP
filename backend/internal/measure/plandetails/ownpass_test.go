@@ -17,7 +17,7 @@ import (
 
 const (
 	lea      = "lea.santos@shell.com"
-	exported = "/api/v1/reports/plan-details/export?year=2026"
+	exported = "/api/v1/reports/plan-data/export?year=2026&tab=completeness"
 )
 
 func levels() []plandetails.Level {
@@ -234,7 +234,7 @@ func TestOwnPass_AboutStatesControls_039_FR022(t *testing.T) {
 	carlosSees := apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, carlos)
 
 	file := csvOf(t, carlosSees, "&plan=P-1001&period=quarter&currency=EUR&show=campaign&widget=progressCount")
-	want := map[string]string{"Report": "Plan details", "Year": "2026", "Filters": "Plans: FY2026 Lubricants Europe",
+	want := map[string]string{"Report": "Plan data and access", "Section": "Data completeness", "Year": "2026", "Filters": "Plans: FY2026 Lubricants Europe",
 		"Period": "Quarters", "Currency": "EUR"}
 	for label, value := range want {
 		if file.notes[label] != value {

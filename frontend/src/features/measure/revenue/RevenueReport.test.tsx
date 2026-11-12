@@ -16,9 +16,8 @@ import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
-import { choose } from '@/testing/select';
+import { RevenueStage } from '@/testing/fixtures/performance-stages';
 import type { RevenueCards } from './api';
-import { RevenueReport } from './RevenueReport';
 
 // jsdom has no canvas for ECharts to measure text; report-chart.test.ts covers what is drawn.
 vi.mock('echarts/core', async (importOriginal) => ({
@@ -28,7 +27,7 @@ vi.mock('echarts/core', async (importOriginal) => ({
 
 function renderPage(
   report: Answer<'GET /api/v1/reports/revenue'> = { body: revenueReport() },
-  route = '/reports/revenue?year=2026',
+  route = '/reports/performance?year=2026',
   ranked: Answer<'GET /api/v1/reports/revenue/ranked'> = { body: revenueRanked() },
   frame = reportFrame(),
 ) {
@@ -41,10 +40,10 @@ function renderPage(
     reply('GET /api/v1/reports/revenue/ranked', ranked),
     reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
   ]);
-  const rendered = renderWithProviders(<RevenueReport />, {
+  const rendered = renderWithProviders(<RevenueStage />, {
     route,
     user: testUser(),
-    path: '/reports/revenue',
+    path: '/reports/performance',
   });
   return { ...rendered, api };
 }
@@ -52,7 +51,7 @@ function renderPage(
 const asked = (api: MockedApi, path: string) =>
   api.requests.filter((r) => r.path === path).map((r) => new URLSearchParams(r.search));
 
-describe('RevenueReport (049 US1)', () => {
+describe('Performance, Revenue stage (049 US1)', () => {
   it('shows the four cards, names the model behind the goal, and is accessible (FR-010, FR-012)', async () => {
     renderPage();
 
@@ -177,7 +176,7 @@ describe('RevenueReport (049 US1)', () => {
     expect(requests.at(-1)?.search).toContain('sort=actualRevenue');
   });
 
-  it('offers only the sorts the API accepts, so no column sorts silently by Projected (FR-006, D-410)', async () => {
+  it('offers only the sorts the API accepts, cost and ROI among them (FR-006, D-410, 059 FR-003)', async () => {
     renderPage();
 
     await screen.findByText('Helix launch');
@@ -185,7 +184,7 @@ describe('RevenueReport (049 US1)', () => {
       .getAllByRole('columnheader')
       .filter((h) => within(h).queryByRole('button'))
       .map((h) => h.textContent);
-    expect(sortable).toEqual(['Goal', 'Actual', 'Projected', 'Performance']);
+    expect(sortable).toEqual(['Goal', 'Actual', 'Projected', 'Performance', 'Actual cost', 'ROI']);
   });
 
   it('opens on Performance, lowest first, so the most behind is on top (D-410)', async () => {
@@ -213,43 +212,6 @@ describe('RevenueReport (049 US1)', () => {
 
     expect(await screen.findByRole('button', { name: 'Try again' })).toBeInTheDocument();
     expect(await screen.findByText('Helix launch')).toBeInTheDocument();
-  });
-
-  it('keeps the chosen category in the address and asks every widget for it (US3 scenario 3, FR-019)', async () => {
-    const { user, api, router } = renderPage();
-
-    await screen.findByText('Helix launch');
-    await choose(user, screen.getByRole('combobox', { name: 'Activity category' }), 'Asset');
-
-    expect(new URLSearchParams(router.state.location.search).get('category')).toBe('CAT-1001');
-    await waitFor(() =>
-      expect(asked(api, '/api/v1/reports/revenue').at(-1)?.get('category')).toBe('CAT-1001'),
-    );
-    expect(asked(api, '/api/v1/reports/revenue/ranked').at(-1)?.get('category')).toBe('CAT-1001');
-  });
-
-  it('restores the category from the address, as a saved view or Back reopens it (US3 scenario 3, FR-019)', async () => {
-    const { api } = renderPage(undefined, '/reports/revenue?year=2026&category=uncategorised');
-
-    expect(await screen.findByRole('combobox', { name: 'Activity category' })).toHaveTextContent(
-      'Uncategorised',
-    );
-    expect(nth(asked(api, '/api/v1/reports/revenue'), 0).get('category')).toBe('uncategorised');
-  });
-
-  it('exports the report for the chosen category (FR-019)', async () => {
-    URL.createObjectURL = () => 'blob:export';
-    URL.revokeObjectURL = () => {};
-    const save = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    const { user, api } = renderPage();
-
-    await screen.findByText('Helix launch');
-    await choose(user, screen.getByRole('combobox', { name: 'Activity category' }), 'Asset');
-    await user.click(screen.getByRole('button', { name: 'Export' }));
-
-    await waitFor(() => expect(asked(api, '/api/v1/reports/revenue/export')).toHaveLength(1));
-    expect(nth(asked(api, '/api/v1/reports/revenue/export'), 0).get('category')).toBe('CAT-1001');
-    save.mockRestore();
   });
 
   it('names the model behind the projected figures and when it last changed (049 FR-022, SC-006)', async () => {

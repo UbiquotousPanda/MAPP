@@ -80,18 +80,26 @@ describe('ApprovalsGrid (041 US2)', () => {
     expect(screen.queryByRole('link', { name: 'Event stand' })).toBeNull();
   });
 
-  it('filters by record type, status and approver, and clears a choice with All', async () => {
+  it('filters by record type, status and approver behind Filters (n), with chips and Clear filters', async () => {
     const { user, onParams } = renderGrid({ params: { ...DEFAULT_PARAMS, outcomes: ['waiting'] } });
 
-    await choose(user, screen.getByRole('combobox', { name: 'Record type' }), 'Purchase requests');
-    await choose(user, screen.getByRole('combobox', { name: 'Approver' }), 'Bob Ruiz');
-    await choose(user, screen.getByRole('combobox', { name: 'Status' }), 'All');
-
+    expect(screen.getByRole('button', { name: /^Filters/ })).toHaveTextContent('1');
+    const menus = screen.getByRole('group', { name: 'Filters' });
+    await user.click(within(menus).getByRole('button', { name: /^Record type/ }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Purchase requests' }));
     expect(onParams).toHaveBeenCalledWith({ recordTypes: ['purchaseRequest'] });
+    await user.keyboard('{Escape}');
+    await user.click(within(menus).getByRole('button', { name: /^Approver/ }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Bob Ruiz' }));
     expect(onParams).toHaveBeenCalledWith({ approvers: ['U-1001'] });
+    await user.keyboard('{Escape}');
+    await user.click(within(menus).getByRole('button', { name: /^Status/ }));
+    expect(await screen.findByRole('checkbox', { name: 'Not needed' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Remove filter: Status: Waiting' }));
     expect(onParams).toHaveBeenCalledWith({ outcomes: [] });
-    await user.click(screen.getByRole('combobox', { name: 'Status' }));
-    expect(await screen.findByRole('option', { name: 'Not needed' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(onParams).toHaveBeenCalledWith({ recordTypes: [], outcomes: [], approvers: [] });
   });
 
   it('sorts by the column of the heading pressed', async () => {

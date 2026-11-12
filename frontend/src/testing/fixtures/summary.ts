@@ -1,7 +1,6 @@
 import type { components } from '@/api/generated/schema';
 
 type SummaryReport = components['schemas']['SummaryReport'];
-type SummaryLeague = components['schemas']['SummaryLeague'];
 
 const usd = (amount: string) => ({ amount, currency: 'USD' });
 
@@ -85,30 +84,6 @@ export function summaryReport(overrides: Partial<SummaryReport> = {}): SummaryRe
     ],
     states: [],
     financeCovers: { plans: 1, of: 1 },
-    ...overrides,
-  };
-}
-
-export function summaryLeague(
-  table: SummaryLeague['table'],
-  overrides: Partial<SummaryLeague> = {},
-): SummaryLeague {
-  const money = table === 'revenue' || table === 'cost';
-  const value = (amount: string, percent: number) => (money ? usd(amount) : percent);
-  return {
-    table,
-    segment: { id: 'ATTR-R', label: 'Region', level: 'activity' },
-    segments: [
-      { id: 'ATTR-R', label: 'Region', level: 'activity' },
-      { id: 'ATTR-P', label: 'Business unit', level: 'plan' },
-    ],
-    rows: [
-      { key: 'O-1', name: 'North', value: value('600.00', 83), trend: [] },
-      { key: 'O-2', name: 'South', value: value('600.00', 83), trend: [] },
-    ],
-    total: value('1200.00', 83),
-    roi: table === 'roi' ? { model: 'Equally distributed', basis: 'actual' } : null,
-    reason: null,
     ...overrides,
   };
 }

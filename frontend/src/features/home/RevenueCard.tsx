@@ -11,7 +11,7 @@ import styles from './RevenueCard.module.css';
 
 type Variance = components['schemas']['SummaryVariance'];
 
-// The Summary report's own default address, so the report opens on the same figures.
+// Performance's own default address, so the report opens on the same figures.
 const ADDRESS: Parameters<typeof useSummaryReport>[0] = {
   year: null,
   plans: [],
@@ -33,9 +33,9 @@ const VARIANCE: Record<Variance, { word: string; tone: StatusTone }> = {
   noGoal: { word: 'No goal', tone: 'neutral' },
 };
 
-const SUMMARY_REPORT_HREF = '/reports/summary';
+const PERFORMANCE_HREF = '/reports/performance';
 
-/** "Are we on track?": revenue against goal from the Summary report, for people who may see reports. */
+/** "Are we on track?": revenue against goal from the Performance overview, for people who may see reports. */
 export function RevenueCard() {
   return useAccess().has('reports.view') ? <RevenueFigures /> : null;
 }
@@ -54,8 +54,8 @@ function RevenueFigures() {
       title="Revenue this year"
       subtitle="All plans you can see"
       actions={
-        <LinkButton to={SUMMARY_REPORT_HREF} size="sm">
-          Open Summary report
+        <LinkButton to={PERFORMANCE_HREF} size="sm">
+          Open Performance report
         </LinkButton>
       }
     >

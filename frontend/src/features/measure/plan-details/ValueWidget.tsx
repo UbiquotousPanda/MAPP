@@ -41,7 +41,7 @@ export function ValueWidget({ widget, level, address, attributeId, currency }: V
   const periods = widget.key === 'startPeriodCount';
   const card = (
     <ReportWidget
-      report="planDetails"
+      report="planData"
       widget={widget.key}
       title={title}
       tip={tipOf(widget, level)}

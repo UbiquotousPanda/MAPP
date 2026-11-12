@@ -40,104 +40,104 @@ Shared files with one owner: routes (`measure-routes.tsx`), catalogue (`reports.
 
 ## Phase 2: US1 — Performance (lane 1, P1)
 
-- [ ] T007 Before changing anything, record today's demo figures on `/reports/summary?year=2026` (overview strip,
+- [x] T007 Before changing anything, record today's demo figures on `/reports/summary?year=2026` (overview strip,
   ROI and revenue league top five by Country / OU) as the expectations of T015; note any league/ranked mismatch
   for the integrator (plan Analysis 1)
-- [ ] T008 Go, tests first: `TestRankedRevenue_SortsByCostAndROI_059_FR003` in `revenue/ranked_sort_test.go`;
+- [x] T008 Go, tests first: `TestRankedRevenue_SortsByCostAndROI_059_FR003` in `revenue/ranked_sort_test.go`;
   `SortActualCost`, `SortROI` in `revenue/query.go`, `revenueRanking.Key` in `ranked.go`; contract case `sort=roi`
   in `revenue/handler_test.go`
-- [ ] T009 `performance/stage.ts` (stage of the address: `revenue`, `mql`, `inq`; unknown → `revenue` with a flag)
+- [x] T009 `performance/stage.ts` (stage of the address: `revenue`, `mql`, `inq`; unknown → `revenue` with a flag)
   and `performance/StagePicker.tsx` on `ui/SegmentedFilter`, MQL and INQ only when `availableStages` has them;
   delete `funnel/StageSelect.tsx`
-- [ ] T010 Category behind Filters (n) (059-P1): `revenue/CategorySelect.tsx` becomes the own filter menu and chip
+- [x] T010 Category behind Filters (n) (059-P1): `revenue/CategorySelect.tsx` becomes the own filter menu and chip
   passed through `ReportFrame`'s `filters` prop (T005); `CategoryControl` in the toolbar's `end` goes
-- [ ] T011 `performance/PerformanceReport.tsx`: `ReportFrame report="performance"`; overview strip from
+- [x] T011 `performance/PerformanceReport.tsx`: `ReportFrame report="performance"`; overview strip from
   `summary/RevenueSection.tsx` (trend removed) and `summary/FunnelSection.tsx`; then the picker; then
   `RevenueBody` (exported from `revenue/RevenueReport.tsx`, deals panel included) or `FunnelBody` (exported from
   `funnel/FunnelReport.tsx`, conversion trend included); unknown stage shows `ui/InlineAlert`. Delete
   `summary/LeagueTable.tsx`, `summary/SummaryReport.tsx`'s page and the `RevenueReport`/`FunnelReport` page
   wrappers. `Performance.module.css` only for layout
-- [ ] T012 Ranked list: the `groups` that `revenue/` and `funnel/` pass to `shared/RankedControls` gain the Shell
+- [x] T012 Ranked list: the `groups` that `revenue/` and `funnel/` pass to `shared/RankedControls` gain the Shell
   attributes from the frame's choices (`attr:<id>`; the API already adds Not filled in), so no `shared/` change;
   Sort by gains Actual cost and ROI on Revenue, ROI's model and cost basis named through `RoiValue` (FR-003)
-- [ ] T013 Web tests in `performance/PerformanceReport.test.tsx` with MSW `reply()`: loading, data (overview equals
+- [x] T013 Web tests in `performance/PerformanceReport.test.tsx` with MSW `reply()`: loading, data (overview equals
   the summary fixture), error with Try again, no plans, stage switch changes cards, chart, ranked request and the
   address (`stage=mql`), unknown stage notice, category in Filters (n) and in the export params, Group by attribute
   in the ranked request; axe. Move the page-level cases out of `RevenueReport.test.tsx`, `FunnelReport.test.tsx`
   and `SummaryReport.test.tsx` and delete what the new file repeats (D-425)
-- [ ] T014 Existing e2e addresses: `measure-attribution-deals.spec.ts`, `attribution.spec.ts` →
+- [x] T014 Existing e2e addresses: `measure-attribution-deals.spec.ts`, `attribution.spec.ts` →
   `/reports/performance…`
-- [ ] T015 End to end `e2e/measure-performance.spec.ts` (US1 1–4): overview figures equal T007's; MQL changes cards
+- [x] T015 End to end `e2e/measure-performance.spec.ts` (US1 1–4): overview figures equal T007's; MQL changes cards
   and address; group by Country / OU, sort ROI → top five equal T007's; deals panel opens with its figure; axe.
   Delete `measure-summary.spec.ts` and `measure-revenue.spec.ts`, keeping any figure they assert that the new file
   lacks
 
 ## Phase 3: US2 — Purchasing (lane 2, P1)
 
-- [ ] T016 `purchasing/purchasing-tab.ts`: tab of the address (`requests`, `swbs`, `waiting`, `orders`; unknown →
+- [x] T016 `purchasing/purchasing-tab.ts`: tab of the address (`requests`, `swbs`, `waiting`, `orders`; unknown →
   `requests` with a flag); changing tab drops `sort` and `page`
-- [ ] T017 `purchase-requests/`: split `PurchaseRequestsReport.tsx` into an exported overview (cards, status, by
+- [x] T017 `purchase-requests/`: split `PurchaseRequestsReport.tsx` into an exported overview (cards, status, by
   vendor, by owner) and the grid; `GridToolbar.tsx` → `ui/FilterBar` (search through `SearchField delay`, vendor,
   owner, status as menus, `ColumnChooser` in `end`), its debounce code deleted; `RequestsGrid.tsx` empty state
   through `EmptyState onReset`; the "See GSAP purchase orders" link becomes `tab=orders`
-- [ ] T018 `gsap-link/GsapLinkReport.tsx`: export the three tab bodies without the page and its own `Tabs`; delete
+- [x] T018 `gsap-link/GsapLinkReport.tsx`: export the three tab bodies without the page and its own `Tabs`; delete
   the page wrapper
-- [ ] T019 `purchasing/PurchasingReport.tsx`: `ReportFrame report="purchasing"`, overview, `ui/Tabs` Purchase
+- [x] T019 `purchasing/PurchasingReport.tsx`: `ReportFrame report="purchasing"`, overview, `ui/Tabs` Purchase
   requests · Waiting for SWBS · Waiting for GSAP · Purchase orders; unknown tab shows `ui/InlineAlert`
-- [ ] T020 `purchasing/PurchasingReport.test.tsx`: each tab renders its widget for the same filters, `tab` in the
+- [x] T020 `purchasing/PurchasingReport.test.tsx`: each tab renders its widget for the same filters, `tab` in the
   address and the export params, unknown tab notice, loading and error once for the page; axe. Delete the
   page-level cases of `PurchaseRequestsReport.test.tsx` and `GsapLinkReport.test.tsx` the new file repeats
-- [ ] T021 End to end `e2e/measure-purchasing.spec.ts` (US2 1–2): overview by status and commitment by vendor
+- [x] T021 End to end `e2e/measure-purchasing.spec.ts` (US2 1–2): overview by status and commitment by vendor
   figures; Waiting for GSAP equals today's rows, `tab=waiting`; invoiced per line equal in the grid and Purchase
   orders; axe. Merge `measure-purchase-requests.spec.ts` and `measure-gsap-link.spec.ts` into it and delete them;
   `e2e/measure.ts` constants stay
 
 ## Phase 4: US3 — Old links and saved views (lane 3, P1)
 
-- [ ] T022 Go, tests first in `backend/internal/measure/sections_test.go`:
+- [x] T022 Go, tests first in `backend/internal/measure/sections_test.go`:
   `TestSections_SheetsOfTheSectionShown_059_FR011`, `TestSections_PeopleNeedsAccessManage_059_FR007`,
   `TestSections_EveryOldWidgetHasAHome_059_SC002`
-- [ ] T023 `measure/model.go` five keys (old ones kept as section keys); `catalogue.go` five entries with selector,
+- [x] T023 `measure/model.go` five keys (old ones kept as section keys); `catalogue.go` five entries with selector,
   opening value, frame controls and sections, `Register` accepting section keys, `Get` composing; new
   `sections.go` (`Sheets`, `Params`, `Describe` "Section", `Available`). No change in `internal/app/`
-- [ ] T024 Go tests to the new keys and paths (plan Analysis 5): `measure/handler_test.go`,
+- [x] T024 Go tests to the new keys and paths (plan Analysis 5): `measure/handler_test.go`,
   `views_handler_test.go`, `openable_test.go`, `filter_test.go`, `catalogue_test.go`, `scope_per_role_test.go`,
   `views_test.go`, `export_test.go`, `export_controls_test.go`, `frame_test.go`, `store_postgres_test.go`;
   `gsaplink|plandetails|useraccess` `ownpass_test.go`, `handler_test.go`, `bench_postgres_test.go`;
   `planbudget/handler_test.go`; `platform/apibench/reports_test.go`, `measure_purchasereport_test.go`,
   `measure_revenue_test.go`, `measure_summary_test.go`. One new contract case: export `plan-data?tab=people` as a
   non-administrator → 403
-- [ ] T025 Migration `backend/internal/platform/database/migrations/00037_report_consolidation.sql` (plan R3): drop
+- [x] T025 Migration `backend/internal/platform/database/migrations/00037_report_consolidation.sql` (plan R3): drop
   CHECK, defaults, names with the old report's name and the 60-character cut, query rewrite, key, CHECK with five
   keys; no `-- +goose Down`. Run once on a demo database with views on all nine keys (a name clash, two defaults,
   a 60-character name) and record the before and after counts in the pull request (SC-003)
-- [ ] T026 `features/measure/redirects.ts` `redirectOf` and `redirects.test.ts` (one table-driven test, eight rows,
+- [x] T026 `features/measure/redirects.ts` `redirectOf` and `redirects.test.ts` (one table-driven test, eight rows,
   FR-009); wire into `measure-routes.tsx` with `<Navigate replace>`
-- [ ] T027 Links and caches: `home/RevenueCard.tsx` (+ test) → `/reports/performance`;
+- [x] T027 Links and caches: `home/RevenueCard.tsx` (+ test) → `/reports/performance`;
   `people/CurrencyPicker.test.tsx` frame key `'performance'`; `shared/*.test.tsx` router paths to the new
   addresses where they name a report
-- [ ] T028 End to end `e2e/measure-redirects.spec.ts` (US3 1–2): `/reports/revenue?year=2026&group=owner` lands on
+- [x] T028 End to end `e2e/measure-redirects.spec.ts` (US3 1–2): `/reports/revenue?year=2026&group=owner` lands on
   Performance with `stage=revenue`, year 2026, Group by Owner and a known revenue figure; `/reports/gsap-link?tab=orders`
   lands on Purchasing › Purchase orders; a view saved on Performance with `stage=mql` reopens on MQL.
   `measure.spec.ts`: addresses to `/reports/budget` and `/reports/performance`
 
 ## Phase 5: US4 — Plan data and access (lane 2, P2) and Budget and spend (lane 2)
 
-- [ ] T029 `plan-details/PlanDetailsReport.tsx` and `user-access/UserAccessReport.tsx`: export their bodies; Reset
+- [x] T029 `plan-details/PlanDetailsReport.tsx` and `user-access/UserAccessReport.tsx`: export their bodies; Reset
   filters through `EmptyState onReset`; delete the page wrappers
-- [ ] T030 `plan-data/PlanDataReport.tsx`: `ui/Tabs` Data completeness · People on `tab`; People only with
+- [x] T030 `plan-data/PlanDataReport.tsx`: `ui/Tabs` Data completeness · People on `tab`; People only with
   `useAccess()` holding `access.manage`; People in `ReportFrame filters={false}`; unknown or refused tab falls back
   with `ui/InlineAlert`
-- [ ] T031 `plan-data/PlanDataReport.test.tsx`: both tabs for an administrator, People hidden for a viewer, `tab` in
+- [x] T031 `plan-data/PlanDataReport.test.tsx`: both tabs for an administrator, People hidden for a viewer, `tab` in
   the address; axe. Delete the repeated page-level cases of `PlanDetailsReport.test.tsx` and
   `UserAccessReport.test.tsx`. Move `measure-plan-details.spec.ts` and `measure-user-access.spec.ts` into
   `e2e/measure-plan-data.spec.ts` (P2: no new e2e, keep the existing assertions)
-- [ ] T032 `plan-budget/PlanBudgetReport.tsx` `report="budget"`; `PlanBudgetReport.test.tsx` and
+- [x] T032 `plan-budget/PlanBudgetReport.tsx` `report="budget"`; `PlanBudgetReport.test.tsx` and
   `e2e/measure-plan-budget.spec.ts` to `/reports/budget` (FR-004)
 
 ## Phase 6: Labels and filter bars (lane 3, parallel with phases 2–5)
 
-- [ ] T033 `approvals/GridFilters.tsx` → `ui/FilterBar` with `SearchField delay` (debounce code deleted);
+- [x] T033 `approvals/GridFilters.tsx` → `ui/FilterBar` with `SearchField delay` (debounce code deleted);
   `ApprovalsGrid.tsx` empty state through `EmptyState onReset`; `ApprovalsGrid.test.tsx` keeps its cases
 - [ ] T034 FR-012 text: `ReportsPage.tsx` without group subtitles; `REPORT_ABOUT` cut; `ReportFrame` header drops
   the "In view" count where the page's Total rows repeat it; `ReportPreview.tsx` five drawings;

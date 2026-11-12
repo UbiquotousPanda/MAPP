@@ -9,7 +9,7 @@ import { RequestsGrid } from './RequestsGrid';
 import type { RequestsGridProps } from './RequestsGrid';
 import { DEFAULT_PARAMS } from './schemas';
 
-function renderGrid(props: Partial<RequestsGridProps> = {}, route = '/reports/purchase-requests') {
+function renderGrid(props: Partial<RequestsGridProps> = {}, route = '/reports/purchasing') {
   const onParams = vi.fn();
   const rendered = renderWithProviders(
     <RequestsGrid
@@ -18,7 +18,7 @@ function renderGrid(props: Partial<RequestsGridProps> = {}, route = '/reports/pu
       onParams={onParams}
       {...props}
     />,
-    { route, user: testUser(), path: '/reports/purchase-requests' },
+    { route, user: testUser(), path: '/reports/purchasing' },
   );
   return { ...rendered, onParams };
 }
@@ -102,20 +102,26 @@ describe('RequestsGrid (042 US2)', () => {
     expect(onParams).toHaveBeenCalledWith({ sort: 'delivery', order: 'asc' });
   });
 
-  it('filters by vendor, owner and status, and searches after a pause in typing', async () => {
-    const { user, onParams } = renderGrid();
+  it('filters by vendor, owner and status behind Filters (n), and searches after a pause in typing', async () => {
+    const { user, onParams } = renderGrid({
+      params: { ...DEFAULT_PARAMS, vendors: ['Acme'], statuses: ['inReview'] },
+    });
 
-    await choose(user, screen.getByRole('combobox', { name: 'Vendor' }), 'Not filled in');
-    await choose(user, screen.getByRole('combobox', { name: 'Owner' }), 'Alice Ng');
-    await choose(user, screen.getByRole('combobox', { name: 'Status' }), 'In review');
-    await user.type(screen.getByRole('searchbox', { name: 'Search purchase requests' }), 'stand');
-
-    expect(onParams).toHaveBeenCalledWith({ vendors: ['none'] });
+    expect(screen.getByRole('button', { name: /^Filters/ })).toHaveTextContent('2');
+    await user.click(screen.getByRole('button', { name: /^Vendor/ }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Not filled in' }));
+    expect(onParams).toHaveBeenCalledWith({ vendors: ['Acme', 'none'] });
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: /^Owner/ }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Alice Ng' }));
     expect(onParams).toHaveBeenCalledWith({ requestOwners: ['p-alice'] });
-    expect(onParams).toHaveBeenCalledWith({ statuses: ['inReview'] });
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Remove filter: Status: In review' }));
+    expect(onParams).toHaveBeenCalledWith({ statuses: [] });
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(onParams).toHaveBeenCalledWith({ vendors: [], requestOwners: [], statuses: [] });
+    await user.type(screen.getByRole('searchbox', { name: 'Search purchase requests' }), 'stand');
     await waitFor(() => expect(onParams).toHaveBeenCalledWith({ q: 'stand' }));
-    await user.click(screen.getByRole('combobox', { name: 'Vendor' }));
-    expect(await screen.findByRole('option', { name: 'Not filled in' })).toBeInTheDocument();
   });
 
   it('pages by vendors and changes the page size', async () => {
@@ -132,7 +138,7 @@ describe('RequestsGrid (042 US2)', () => {
   });
 
   it('lists the page in the table view, then the Total row', () => {
-    renderGrid({}, '/reports/purchase-requests?table=grid');
+    renderGrid({}, '/reports/purchasing?table=grid');
 
     const rows = screen.getAllByRole('row');
     expect(rows.length).toBe(6);

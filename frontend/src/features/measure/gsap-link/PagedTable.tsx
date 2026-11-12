@@ -57,7 +57,7 @@ export function PagedTable<R>(props: PagedTableProps<R>) {
           label={`Export ${title}`}
           iconOnly
           formats={['xlsx', 'csv']}
-          download={(format) => downloadReport('gsapLink', address, format, { widget, own })}
+          download={(format) => downloadReport('purchasing', address, format, { widget, own })}
         />
       </div>
       <Rows {...props} />

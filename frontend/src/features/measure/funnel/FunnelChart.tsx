@@ -34,7 +34,7 @@ export function FunnelChart({ report }: { report: FunnelReport }) {
   return (
     <ReportWidget
       wide
-      report="funnel"
+      report="performance"
       widget="periods"
       controls={<PeriodSwitch />}
       title={report.period === 'quarter' ? 'Volume by quarter' : 'Volume by month'}

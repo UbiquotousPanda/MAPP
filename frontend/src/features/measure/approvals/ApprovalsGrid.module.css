@@ -1,19 +1,5 @@
 .toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
-}
-
-.toolbar input {
-  height: var(--control-sm);
-}
-
-/* The search gives way first, down to 200 px, so the four controls share one row where they can. */
-.toolbar > :first-child {
-  flex: 1 1 200px;
-  max-width: 320px;
 }
 
 /* A fade on the right edge says more columns sit off-screen; the local layer covers it once scrolled to the end. */

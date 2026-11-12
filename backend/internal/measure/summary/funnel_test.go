@@ -16,11 +16,11 @@ func TestConversion_048_C7(t *testing.T) {
 		StageRevenue: {Actual: 0, Goal: 0},
 	}
 
-	got := conversions([]Stage{StageINQ, StageMQL, StageRevenue}, totals)
+	got := conversions([]Stage{StageINQ, StageMQL, StageRevenue}, totals, ptr[int64](100))
 
 	want := []Conversion{
 		{Stage: StageMQL, Rate: ptr("12.5"), Goal: ptr("10.0"), Variance: ptr(revenue.AbovePlan)},
-		{Stage: StageRevenue, Rate: ptr("0.0"), Goal: ptr("0.0"), Variance: ptr(revenue.NoGoal)},
+		{Stage: StageRevenue, Rate: ptr("0.0"), Variance: ptr(revenue.NoGoal)},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("conversions() (-want +got)\n%s", diff)
@@ -31,7 +31,7 @@ func TestConversion_ZeroPreviousStage_048_C7(t *testing.T) {
 	t.Parallel()
 	totals := map[Stage]Figures{StageINQ: {Actual: 0, Goal: 100}, StageMQL: {Actual: 7, Goal: 10}}
 
-	got := conversions([]Stage{StageINQ, StageMQL}, totals)
+	got := conversions([]Stage{StageINQ, StageMQL}, totals, ptr[int64](100))
 
 	if len(got) != 1 || got[0].Rate != nil || got[0].Goal == nil || *got[0].Goal != "10.0" {
 		t.Errorf("conversions() = %+v, want a dash rate and the goal 10.0", got)

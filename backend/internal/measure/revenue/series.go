@@ -25,6 +25,7 @@ type ActivitySeries struct {
 	Stages         []string
 	ModelName      string
 	ModelChangedAt time.Time
+	InqToMqlRate   *money.Percent
 	FactsHeld      bool
 	AllowedStages  []string
 	Sourced        []string
@@ -98,7 +99,7 @@ func seriesOf(v activityView, byID map[string]allwork.Node, w window) ActivitySe
 		TeamIDs: slices.Clone(byID[n.PlanID].TeamIDs), Attributes: attributesOf(byID, n.ID),
 		Goal:          Goal{INQ: cloned(n.INQ), MQL: cloned(n.MQL), RevenueUSD: cloned(n.Revenue)},
 		HasProjection: p.Present, Stages: stagesOf(v), ModelName: p.Stamp.ModelName,
-		ModelChangedAt: p.Stamp.ModelChangedAt, Months: monthsOf(v, w),
+		ModelChangedAt: p.Stamp.ModelChangedAt, InqToMqlRate: rateOf(v), Months: monthsOf(v, w),
 		FactsHeld: factsHeld(n.Status), AllowedStages: slices.Clone(v.goals.AllowedStages),
 		Sourced: slices.Clone(v.goals.Sourced), ExcludedFacts: v.facts.excluded,
 	}
@@ -124,6 +125,14 @@ func stagesOf(v activityView) []string {
 		}
 	}
 	return stages
+}
+
+func rateOf(v activityView) *money.Percent {
+	if !v.projection.Present {
+		return nil
+	}
+	rate := v.goals.Model.InqToMqlRate
+	return &rate
 }
 
 func cloned[T any](p *T) *T {

@@ -119,7 +119,7 @@ func (*revenueRanking) Part(s revenueSums, share money.Percent) revenueSums {
 }
 func (*revenueRanking) Plus(a, b revenueSums) revenueSums { return addRevenueSums(a, b) }
 func (r *revenueRanking) Shown(s revenueSums) RevenueFigures {
-	f := withPerformance(withROI(s.figures, s.roiCredited), r.display)
+	f := withPerformance(withoutZeroCost(withROI(s.figures, s.roiCredited)), r.display)
 	f.Projection = singleStamp(s.models)
 	return f
 }
@@ -132,11 +132,23 @@ func (*revenueRanking) Key(f RevenueFigures, sort string) (int64, bool) {
 		return centsOf(f.Goal), f.Goal != nil
 	case SortActualRevenue:
 		return centsOf(f.Actual), f.Actual != nil
+	case SortActualCost:
+		return centsOf(f.ActualCost), f.ActualCost != nil
+	case SortROI:
+		return performanceKey(f.ROI)
 	}
 	return centsOf(f.Projected), f.Projected != nil
 }
 
-// performanceKey ranks by the whole percent the entry shows.
+// withoutZeroCost shows nothing paid as no cost data, "—" with its reason, as the league tables did.
+func withoutZeroCost(f RevenueFigures) RevenueFigures {
+	if f.ActualCost != nil && f.ActualCost.Amount.Sign() == 0 {
+		f.ActualCost, f.ActualCostReason = nil, ReasonNoActualCost
+	}
+	return f
+}
+
+// performanceKey ranks by the whole percent the entry shows, performance or ROI.
 func performanceKey(p *float64) (int64, bool) {
 	if p == nil {
 		return 0, false

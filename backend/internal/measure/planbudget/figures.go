@@ -29,6 +29,9 @@ type sums struct {
 	financed                   bool
 	finBudget                  *money.Amount // the budget and planned cost of plans whose finance the person sees
 	finPlanned                 money.Amount
+	id                         string   // the ranked entry these sums are of
+	kept                       []string // the ranked entries a group or list total adds up
+	split                      bool
 }
 
 func newRecords(sc measure.Scope) *records {
@@ -39,7 +42,6 @@ func newRecords(sc measure.Scope) *records {
 	return r
 }
 
-// financedLineItems are the line items in view whose financial data the person may see.
 func (r *records) financedLineItems() []string {
 	var ids []string
 	for _, id := range r.Matched().LineItems {
@@ -107,14 +109,27 @@ func (r *records) spendOf(lineItemID string) (committed, actual, otherYears mone
 func (r *records) counted() []allwork.Node {
 	var out []allwork.Node
 	for _, id := range r.Matched().Plans {
-		out = append(out, r.budgetBranch(id)...)
+		out = append(out, r.budgetBranch(id, r.InView)...)
 	}
 	return out
 }
 
-func (r *records) budgetBranch(id string) []allwork.Node {
+// budgetOf is the budget once per branch of the records in, and that of the plans whose finance the person sees.
+func (r *records) budgetOf(in func(string) bool) (budget, finBudget *money.Amount) {
+	for _, plan := range r.Matched().Plans {
+		for _, n := range r.budgetBranch(plan, in) {
+			budget = addAmount(budget, n.Budget)
+			if r.financed[plan] {
+				finBudget = addAmount(finBudget, n.Budget)
+			}
+		}
+	}
+	return budget, finBudget
+}
+
+func (r *records) budgetBranch(id string, in func(string) bool) []allwork.Node {
 	n := r.Node(id)
-	if n.Level == allwork.LevelInitiative || (n.Budget != nil && r.whole(id)) {
+	if n.Level == allwork.LevelInitiative || (n.Budget != nil && r.whole(id, in)) {
 		if n.Budget == nil {
 			return nil
 		}
@@ -122,19 +137,19 @@ func (r *records) budgetBranch(id string) []allwork.Node {
 	}
 	var out []allwork.Node
 	for _, child := range r.containersBelow(id) {
-		if r.InView(child) {
-			out = append(out, r.budgetBranch(child)...)
+		if in(child) {
+			out = append(out, r.budgetBranch(child, in)...)
 		}
 	}
 	return out
 }
 
-// whole holds when a container and every container below it are in view.
-func (r *records) whole(id string) bool {
-	if !r.InView(id) {
+// whole holds when a container and every container below it are in.
+func (r *records) whole(id string, in func(string) bool) bool {
+	if !in(id) {
 		return false
 	}
-	return !slices.ContainsFunc(r.containersBelow(id), func(child string) bool { return !r.whole(child) })
+	return !slices.ContainsFunc(r.containersBelow(id), func(child string) bool { return !r.whole(child, in) })
 }
 
 func (r *records) containersBelow(id string) []string {

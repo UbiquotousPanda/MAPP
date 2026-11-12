@@ -38,7 +38,7 @@ export function MeasureGallery() {
   return (
     <Card title="ReportWidget and ReportTable">
       <ReportWidget
-        report="planDetails"
+        report="planData"
         widget="galleryBrands"
         title="Activities by brand"
         tip="Activities per Brand value, Not filled in last."

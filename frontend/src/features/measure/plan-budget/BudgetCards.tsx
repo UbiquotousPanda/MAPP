@@ -18,7 +18,6 @@ export function BudgetCards({ cards }: { cards: PlanBudgetCards }) {
     value ? { value: moneyCompact(value), fullValue: money(value) } : { value: NONE };
   const short = (value: Amount) => (value ? moneyCompact(value) : NONE);
   const percent = (value: number | null) => (value === null ? NONE : `${value}%`);
-  const overAllocated = cards.leftToPlan !== null && cards.leftToPlan.amount.startsWith('-');
   return (
     <StatStrip label="Summary">
       <SummaryCard label="Budget" {...amount(cards.budget)} tip="Counted once per branch." />
@@ -32,9 +31,9 @@ export function BudgetCards({ cards }: { cards: PlanBudgetCards }) {
               label="Left to plan"
               value={short(cards.leftToPlan)}
               full={cards.leftToPlan && money(cards.leftToPlan)}
-              danger={overAllocated}
+              danger={cards.overAllocated}
             />
-            {overAllocated && <StatusChip tone="problem">Over-allocated</StatusChip>}
+            {cards.overAllocated && <StatusChip tone="problem">Over-allocated</StatusChip>}
           </>
         }
       />

@@ -10,6 +10,7 @@ import (
 	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/measure/planbudget"
+	"mapp/internal/platform/money"
 )
 
 func report(t *testing.T, sc measure.Scope, f measure.Filter) planbudget.Report {
@@ -152,5 +153,28 @@ func TestPeriods_TodayAndNotes_FR004_FR005(t *testing.T) {
 	if r.Periods[10].ActualToDate != nil || shown(r.Periods[9].ActualToDate) != "180.00" {
 		t.Errorf("actual to date stops at October: %s then %s", shown(r.Periods[9].ActualToDate),
 			shown(r.Periods[10].ActualToDate))
+	}
+}
+
+func TestPeriods_LineItemsAbovePlannedCostNamedSoPeriodsAddUpToTheCard_040_FR005_D336(t *testing.T) {
+	t.Parallel()
+	sc := scope(everything, true)
+	sc.Nodes[6].PlannedCost = dollars(150)
+	for _, period := range []string{measure.PeriodMonth, measure.PeriodQuarter} {
+		r := report(t, sc, measure.Filter{Period: period})
+		last := r.Periods[len(r.Periods)-1]
+		got := []string{shown(r.Cards.Planned), shown(&last.PlannedToDate), shown(r.Notes.LinesAbovePlannedCost)}
+		if diff := cmp.Diff([]string{"450.00", "500.00", "50.00"}, got); diff != "" {
+			t.Errorf("%s: Fleet day plans 150 with 200 of line items; the card keeps 150 and the 50 above is named (-want +got):\n%s",
+				period, diff)
+		}
+	}
+	rate, _ := money.ParseRate("0.92")
+	sc.Currency = allwork.Currency{Code: "EUR", Rate: rate}
+	if got := shown(report(t, sc, measure.Filter{}).Notes.LinesAbovePlannedCost); got != "46.00" {
+		t.Errorf("in euros the note is %s, want 46.00", got)
+	}
+	if n := report(t, scope(everything, true), measure.Filter{}).Notes.LinesAbovePlannedCost; n != nil {
+		t.Errorf("no line items above planned cost, note %s; want none", shown(n))
 	}
 }

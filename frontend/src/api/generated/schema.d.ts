@@ -12549,15 +12549,15 @@ export interface components {
             items: components["schemas"]["ColumnMapping"][];
         };
         /**
-         * @description The five reports first; the keys after planData name the old reports, kept as sections until the merged catalogue replaces them.
+         * @description The five reports of the catalogue (feature 059); saved views of the old nine moved to them.
          * @enum {string}
          */
-        ReportKey: "performance" | "budget" | "purchasing" | "approvals" | "planData" | "planBudget" | "purchaseRequests" | "planDetails" | "gsapLink" | "userAccess" | "summary" | "revenue" | "funnel";
+        ReportKey: "performance" | "budget" | "purchasing" | "approvals" | "planData";
         ReportEntry: {
             key: components["schemas"]["ReportKey"];
-            /** @example plan-budget */
+            /** @example budget */
             path: string;
-            /** @example Plan budget */
+            /** @example Budget and spend */
             name: string;
             purpose: string;
             /** @description False while the report is not built ("Coming soon"). */
@@ -12747,6 +12747,8 @@ export interface components {
             period: "month" | "quarter";
             periods: components["schemas"]["PlanBudgetPeriod"][];
             notes: {
+                /** @description Line items above their activity's planned cost, so periods + noDates + otherYears − this = cards.planned. */
+                linesAbovePlannedCost: components["schemas"]["Money"] | null;
                 notPhased: components["schemas"]["Money"] | null;
                 noDates: components["schemas"]["Money"] | null;
                 otherYears: components["schemas"]["Money"] | null;
@@ -12867,7 +12869,7 @@ export interface components {
              * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
              * @enum {string}
              */
-            actualCostReason: "" | "attributionNotConfigured" | "noFinancialAccess";
+            actualCostReason: "" | "attributionNotConfigured" | "noFinancialAccess" | "noActualCost";
             /**
              * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
              * @enum {string}
@@ -12897,7 +12899,7 @@ export interface components {
             /** @enum {string} */
             level: "plan" | "campaign" | "initiative" | "activity";
             /** @enum {string} */
-            sort: "actualRevenue" | "projectedRevenue" | "goal" | "performance";
+            sort: "actualRevenue" | "projectedRevenue" | "goal" | "performance" | "actualCost" | "roi";
             /** @enum {string} */
             order: "desc" | "asc";
             group: string;
@@ -13939,8 +13941,8 @@ export interface components {
         MappingId: string;
         /** @description The report the frame is for. */
         ReportKey: components["schemas"]["ReportKey"];
-        /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
-        ReportPath: "performance" | "budget" | "purchasing" | "approvals" | "plan-data" | "plan-budget" | "purchase-requests" | "plan-details" | "gsap-link" | "user-access" | "summary" | "revenue" | "funnel";
+        /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
+        ReportPath: "performance" | "budget" | "purchasing" | "approvals" | "plan-data";
         /** @description The report's own sort, which the report validates (039 FR-022); a leading minus sorts descending. */
         ReportOwnSort: string;
         /** @description The report's own tab, which the report validates (044). */
@@ -23794,7 +23796,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
             };
             cookie?: never;
@@ -23825,7 +23827,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
             };
             cookie?: never;
@@ -23852,7 +23854,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
             };
             cookie?: never;
@@ -23884,7 +23886,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
                 /** @example RV-1001 */
                 viewId: components["parameters"]["ReportViewId"];
@@ -23913,7 +23915,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
                 /** @example RV-1001 */
                 viewId: components["parameters"]["ReportViewId"];

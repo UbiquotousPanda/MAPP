@@ -5,7 +5,7 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { StatStrip } from '@/ui/StatStrip/StatStrip';
-import { LevelSwitch, ReportFrame, useReportAddress } from '../shared';
+import { LevelSwitch, useReportAddress } from '../shared';
 import { isRestricted, resetFilters } from '../shared/report-address';
 import type { ReportAddress } from '../shared';
 import { usePlanDetails } from './api';
@@ -15,16 +15,8 @@ import { AttributeWidgets } from './AttributeWidgets';
 import { ValueWidget } from './ValueWidget';
 import styles from './PlanDetails.module.css';
 
-/** Plan details (feature 043): how records and planned cost spread over each Shell attribute of a level. */
-export function PlanDetailsReport() {
-  return (
-    <ReportFrame report="planDetails">
-      {(_frame, address) => <PlanDetails address={address} />}
-    </ReportFrame>
-  );
-}
-
-function PlanDetails({ address }: { address: ReportAddress }) {
+/** Data completeness (feature 043): how records and planned cost spread over each Shell attribute of a level. */
+export function PlanDetailsBody({ address }: { address: ReportAddress }) {
   const report = usePlanDetails(address);
   if (report.isError) {
     return <ErrorState error={report.error} onRetry={() => void report.refetch()} />;

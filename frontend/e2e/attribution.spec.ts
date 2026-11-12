@@ -23,7 +23,7 @@ const LAST_TOUCH: Record<string, string> = {
 };
 
 async function openRevenue(page: Page, activity: string): Promise<Locator> {
-  await page.goto(`/reports/revenue?year=2026&show=activity&q=${encodeURIComponent(activity)}`);
+  await page.goto(`/reports/performance?year=2026&show=activity&q=${encodeURIComponent(activity)}`);
   const ranked = page.getByRole('region', { name: 'Ranked list' });
   await expect(
     ranked.getByRole('rowheader', { name: new RegExp(`^${escapeRegExp(activity)}`) }),
@@ -104,12 +104,12 @@ test('050 US1, US4: a model chosen in Settings restates Revenue, its export and 
     const row = csv.split('\n').find((line) => line.split(',')[2] === WEBINARS);
     expect(row).toContain('44555.56');
 
-    await page.goto('/reports/summary?year=2026');
-    await page.getByRole('button', { name: 'About Top ROI' }).click();
-    await expect(page.getByRole('dialog', { name: 'About Top ROI' })).toContainText(
-      'Attribution: Last touch, on actual cost.',
-    );
-    await expect(page.getByText(/Equally distributed/)).toHaveCount(0);
+    await page.goto('/reports/performance?year=2026');
+    const list = page.getByRole('region', { name: 'Ranked list' });
+    await expect(
+      list.getByText('Revenue credit: all to the last step · ROI on actual cost'),
+    ).toBeVisible();
+    await expect(page.getByText(/split equally across the steps/)).toHaveCount(0);
   } finally {
     await designate(page, 'Equally distributed');
   }

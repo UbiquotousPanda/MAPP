@@ -3,6 +3,8 @@ package measuretest
 
 import (
 	"context"
+	"fmt"
+	"slices"
 
 	"mapp/internal/measure"
 	"mapp/internal/platform/fake"
@@ -24,7 +26,13 @@ func (s Store) GetView(_ context.Context, id string) (measure.StoredView, bool, 
 	return s.views.Get(id)
 }
 
+// PutView refuses a report outside the five, as the report_views CHECK does.
 func (s Store) PutView(ctx context.Context, v measure.StoredView) error {
+	reports := []string{measure.KeyPerformance, measure.KeyBudget, measure.KeyPurchasing, measure.KeyApprovals,
+		measure.KeyPlanData}
+	if !slices.Contains(reports, v.Report) {
+		return fmt.Errorf("measuretest: report_views_report_check refuses %q", v.Report)
+	}
 	return s.views.Put(ctx, v)
 }
 

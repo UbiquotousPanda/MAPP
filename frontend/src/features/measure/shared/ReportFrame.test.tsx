@@ -15,7 +15,7 @@ type Frame = ReturnType<typeof reportFrame>;
 
 function renderFrame(
   frame: Frame | 'forbidden',
-  route = '/reports/plan-budget',
+  route = '/reports/budget',
   filters?: ReportFrameProps['filters'],
 ) {
   const api = mockApi([
@@ -29,7 +29,7 @@ function renderFrame(
     ),
   ]);
   const rendered = renderWithProviders(
-    <ReportFrame report="planBudget" filters={filters}>
+    <ReportFrame report="budget" filters={filters}>
       {() => (
         <>
           <PeriodSwitch />
@@ -37,7 +37,7 @@ function renderFrame(
         </>
       )}
     </ReportFrame>,
-    { route, user: testUser(), path: '/reports/plan-budget' },
+    { route, user: testUser(), path: '/reports/budget' },
   );
   return { ...rendered, api };
 }
@@ -54,7 +54,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
         'In view: 2 plans · 6 campaigns · 2 initiatives · 14 activities · 30 line items',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Plan budget' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Budget and spend' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
     expect(screen.getByText(/2026 · Figures as of/)).toBeInTheDocument();
     expect(screen.getByText('The widgets')).toBeInTheDocument();
@@ -63,10 +63,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
 
   it('names each restricted filter as a chip; removing one or Clear filters applies at once (FR-014)', async () => {
     const frame = reportFrame({ filter: { ...reportFrame().filter, plans: ['P-1001'] } });
-    const { user, router } = renderFrame(
-      frame,
-      '/reports/plan-budget?plan=P-1001&planType=operational',
-    );
+    const { user, router } = renderFrame(frame, '/reports/budget?plan=P-1001&planType=operational');
 
     await user.click(
       await screen.findByRole('button', { name: 'Remove filter: Plans: FY2026 Lubricants' }),
@@ -80,7 +77,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
   it('changes the year at once, saying first that it clears the chosen plans (FR-011, FR-013)', async () => {
     const { user, router } = renderFrame(
       reportFrame({ filter: { ...reportFrame().filter, plans: ['P-1001'] } }),
-      '/reports/plan-budget?plan=P-1001',
+      '/reports/budget?plan=P-1001',
     );
     const year = await screen.findByRole('combobox', { name: /Year/ });
     expect(year).toHaveAccessibleDescription('Another year clears the plan you chose.');
@@ -92,7 +89,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
   });
 
   it("applies a widget's Period at once, and has no currency of its own (FR-016, FR-018, 039-C10)", async () => {
-    const { user, router } = renderFrame(reportFrame(), '/reports/plan-budget?currency=EUR');
+    const { user, router } = renderFrame(reportFrame(), '/reports/budget?currency=EUR');
 
     await user.click(await screen.findByRole('button', { name: 'Quarters' }));
 
@@ -102,7 +99,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
   });
 
   it('says how many values were left out, never naming them (FR-015)', async () => {
-    renderFrame(reportFrame({ leftOut: 2 }), '/reports/plan-budget?plan=P-9999');
+    renderFrame(reportFrame({ leftOut: 2 }), '/reports/budget?plan=P-9999');
 
     expect(
       await screen.findByText('2 filter values are no longer available and were left out'),
@@ -120,7 +117,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
   });
 
   it('says the filters exclude everything, with Reset filters (FR-031)', async () => {
-    renderFrame(reportFrame({ inView: empty }), '/reports/plan-budget?planType=crossMarket');
+    renderFrame(reportFrame({ inView: empty }), '/reports/budget?planType=crossMarket');
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Reset filters' })).toBeInTheDocument();
@@ -130,7 +127,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
     const own = { menus: <p>Category menu</p>, chips: [{ key: 'category', label: 'Events' }] };
     const { user, router } = renderFrame(
       reportFrame(),
-      '/reports/plan-budget?planType=operational&category=AC-1',
+      '/reports/budget?planType=operational&category=AC-1',
       own,
     );
 
@@ -144,7 +141,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
     const frame = reportFrame({ inView: empty });
     renderFrame(
       { ...frame, choices: { ...frame.choices, plans: [] } },
-      '/reports/plan-budget?planType=crossMarket',
+      '/reports/budget?planType=crossMarket',
     );
 
     expect(await screen.findByText('No plans you may see for 2026')).toBeInTheDocument();
@@ -160,10 +157,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
   });
 
   it("keeps the report's own parameters when a control changes (039 B4)", async () => {
-    const { user, router } = renderFrame(
-      reportFrame(),
-      '/reports/plan-budget?tab=waiting&sort=age',
-    );
+    const { user, router } = renderFrame(reportFrame(), '/reports/budget?tab=waiting&sort=age');
 
     await user.click(await screen.findByRole('button', { name: 'Quarters' }));
 

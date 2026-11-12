@@ -53,7 +53,7 @@ export function DealsPanel({ address, openedWith, onRefresh }: DealsPanelProps) 
           label="Export"
           formats={['xlsx', 'csv']}
           download={(format) =>
-            downloadReport('revenue', address, format, {
+            downloadReport('performance', address, format, {
               widget: 'deals',
               own: exportParams(deals.address),
             })

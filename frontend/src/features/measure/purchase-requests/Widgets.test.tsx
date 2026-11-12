@@ -10,10 +10,10 @@ import { CardsRow } from './CardsRow';
 import { CommitmentChart } from './CommitmentChart';
 import { StatusWidget } from './StatusWidget';
 
-const options = (route = '/reports/purchase-requests') => ({
+const options = (route = '/reports/purchasing') => ({
   route,
   user: testUser(),
-  path: '/reports/purchase-requests',
+  path: '/reports/purchasing',
 });
 const report = purchaseRequestsReport();
 
@@ -56,7 +56,7 @@ describe('StatusWidget (042 FR-007)', () => {
   it('lists the same figures in the table view, with the total', () => {
     renderWithProviders(
       <StatusWidget data={report.statusMix} />,
-      options('/reports/purchase-requests?table=status'),
+      options('/reports/purchasing?table=status'),
     );
 
     const rows = screen.getAllByRole('row').map((r) => r.textContent);
@@ -96,7 +96,7 @@ describe('CommitmentChart (042 FR-010 – FR-013)', () => {
         rowLabel="Vendor"
         data={report.byVendor}
       />,
-      options('/reports/purchase-requests?table=byVendor'),
+      options('/reports/purchasing?table=byVendor'),
     );
 
     const rows = screen.getAllByRole('row').map((r) => r.textContent);

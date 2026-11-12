@@ -77,7 +77,7 @@ func TestConversion_NoRateIsNotNoGoal_048_C1(t *testing.T) {
 	t.Parallel()
 	totals := map[Stage]Figures{StageINQ: {Actual: 0, Goal: 100}, StageMQL: {Actual: 0, Goal: 3}}
 
-	got := conversions([]Stage{StageINQ, StageMQL}, totals)
+	got := conversions([]Stage{StageINQ, StageMQL}, totals, ptr[int64](30))
 
 	if len(got) != 1 || got[0].Rate != nil || got[0].Goal == nil || got[0].Variance != nil {
 		t.Errorf("conversions() = %+v, want no rate, the goal 3.0 and no word: the rate is missing, not the goal", got)

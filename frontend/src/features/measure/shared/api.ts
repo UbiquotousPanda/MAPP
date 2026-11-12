@@ -25,14 +25,6 @@ const REPORT_PATHS: Record<ReportKey, ReportPath> = {
   purchasing: 'purchasing',
   approvals: 'approvals',
   planData: 'plan-data',
-  planBudget: 'plan-budget',
-  purchaseRequests: 'purchase-requests',
-  planDetails: 'plan-details',
-  gsapLink: 'gsap-link',
-  userAccess: 'user-access',
-  summary: 'summary',
-  revenue: 'revenue',
-  funnel: 'funnel',
 };
 
 export const REPORTS_KEY = ['reports'] as const;

@@ -83,8 +83,8 @@ func TestRegistry_RefusesUnknownKeyAndSecondRegistration(t *testing.T) {
 
 func TestKeyOfPath(t *testing.T) {
 	t.Parallel()
-	if key, found := measure.KeyOfPath("purchase-requests"); !found || key != "purchaseRequests" {
-		t.Errorf("KeyOfPath(purchase-requests) = %q, %v", key, found)
+	if key, found := measure.KeyOfPath("plan-data"); !found || key != "planData" {
+		t.Errorf("KeyOfPath(plan-data) = %q, %v", key, found)
 	}
 	if _, found := measure.KeyOfPath("finance-budget"); found {
 		t.Error("KeyOfPath(finance-budget) found a report, want none")

@@ -20,12 +20,12 @@ const TABLE = {
 
 function renderWidget(
   props: Partial<ReportWidgetProps> = {},
-  route = '/reports/plan-details',
+  route = '/reports/plan-data',
   user = testUser(),
 ) {
   return renderWithProviders(
     <ReportWidget
-      report="planDetails"
+      report="planData"
       widget="attr12Count"
       title="Activities by Company code"
       tip="Activities per value of Company code."
@@ -33,7 +33,7 @@ function renderWidget(
       table={TABLE}
       {...props}
     />,
-    { route, user, path: '/reports/plan-details' },
+    { route, user, path: '/reports/plan-data' },
   );
 }
 
@@ -66,7 +66,7 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
   });
 
   it('opens on the table when the address says so', () => {
-    renderWidget({}, '/reports/plan-details?table=attr12Count');
+    renderWidget({}, '/reports/plan-data?table=attr12Count');
 
     expect(screen.getByRole('button', { name: 'Table' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.queryByText('The chart')).not.toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
       ...VIEWER.access,
       permissions: VIEWER.access.permissions.filter((p) => p.key !== 'data.export'),
     };
-    renderWidget({}, '/reports/plan-details', { ...VIEWER, access });
+    renderWidget({}, '/reports/plan-data', { ...VIEWER, access });
 
     const exportButton = screen.getByRole('button', { name: /^Export / });
     expect(exportButton).toBeDisabled();
@@ -115,7 +115,7 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
   });
   it('exports what the address shows: the report’s own sort, search and grid filters (FR-022)', async () => {
     const sent = await exported(
-      '/reports/plan-details?sort=amount&order=asc&q=fleet&recordType=activity&recordType=purchaseRequest&outcome=approved',
+      '/reports/plan-data?sort=amount&order=asc&q=fleet&recordType=activity&recordType=purchaseRequest&outcome=approved',
     );
 
     expect([sent.get('widget'), sent.get('sort'), sent.get('order'), sent.get('q')]).toEqual([
@@ -130,7 +130,7 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
 
   it('exports Purchase requests’ and User access’s own filters and a descending order (FR-022)', async () => {
     const sent = await exported(
-      '/reports/plan-details?order=desc&vendor=Acme&vendor=none&requestOwner=P-1002&status=approved&status=closed&columns=name,amount',
+      '/reports/plan-data?order=desc&vendor=Acme&vendor=none&requestOwner=P-1002&status=approved&status=closed&columns=name,amount',
     );
 
     expect([sent.get('order'), sent.get('columns')]).toEqual(['desc', 'name,amount']);
@@ -141,7 +141,7 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
 
   it('exports the activity category, the funnel stage and the Summary league segments (049-C10, 048-C6, FR-022)', async () => {
     const sent = await exported(
-      '/reports/plan-details?category=uncategorised&stage=mql&revenueBy=ATTR-1&performanceBy=ATTR-2&costBy=ATTR-3&roiBy=ATTR-4',
+      '/reports/plan-data?category=uncategorised&stage=mql&revenueBy=ATTR-1&performanceBy=ATTR-2&costBy=ATTR-3&roiBy=ATTR-4',
     );
 
     expect(
@@ -176,8 +176,8 @@ async function exported(route: string): Promise<URLSearchParams> {
   await user.click(screen.getByRole('button', { name: /^Export / }));
   await user.click(await screen.findByRole('menuitem', { name: 'CSV (.csv)' }));
   await waitFor(() =>
-    expect(api.requests.some((r) => r.path === '/api/v1/reports/plan-details/export')).toBe(true),
+    expect(api.requests.some((r) => r.path === '/api/v1/reports/plan-data/export')).toBe(true),
   );
-  const request = api.requests.find((r) => r.path === '/api/v1/reports/plan-details/export');
+  const request = api.requests.find((r) => r.path === '/api/v1/reports/plan-data/export');
   return new URLSearchParams(request?.search);
 }

@@ -6,7 +6,6 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { StatStrip } from '@/ui/StatStrip/StatStrip';
-import { ReportFrame } from '../shared';
 import { AccessControls } from './AccessControls';
 import { AccessTable } from './AccessTable';
 import { useAccessTeams, useUserAccess } from './api';
@@ -16,16 +15,8 @@ import type { AccessTable as Table } from './access-address';
 import { SignInBands } from './SignInBands';
 import styles from './UserAccess.module.css';
 
-/** User access (feature 045): everyone with roles, teams and last sign-in, in 039's page without plan filters. */
-export function UserAccessReport() {
-  return (
-    <ReportFrame report="userAccess" filters={false}>
-      {() => <UserAccessBody />}
-    </ReportFrame>
-  );
-}
-
-function UserAccessBody() {
+/** People (feature 045): everyone with roles, teams and last sign-in, without the plan filters. */
+export function UserAccessBody() {
   const { table, change } = useAccessTable();
   const report = useUserAccess(table);
   const teams = useAccessTeams();

@@ -47,7 +47,7 @@ export function PacingChart({ report }: { report: PlanBudgetReport }) {
   return (
     <ReportWidget
       wide
-      report="planBudget"
+      report="budget"
       widget="periods"
       controls={<PeriodSwitch />}
       title={report.period === 'quarter' ? 'Spend by quarter' : 'Spend by month'}
@@ -70,6 +70,7 @@ function notesOf(report: PlanBudgetReport, money: (m: Money) => string): string[
     n.notPhased && `Budget not phased by month: ${money(n.notPhased)}.`,
     n.noDates && `Planned cost without dates: ${money(n.noDates)}.`,
     n.otherYears && `Planned cost in other years: ${money(n.otherYears)}.`,
+    n.linesAbovePlannedCost && `Line items above planned cost: ${money(n.linesAbovePlannedCost)}.`,
     n.actualOtherYears && `Actual posted in other years: ${money(n.actualOtherYears)}.`,
   ].filter((note): note is string => Boolean(note));
 }

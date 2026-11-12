@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useFormatters } from '@/format/useFormatters';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { RankedList, ReportFrame, useRankedState } from '../shared';
+import { RankedList, useRankedState } from '../shared';
 import type {
   Money,
   RankedColumn,
@@ -13,7 +13,6 @@ import type {
 } from '../shared';
 import { useRevenueReport, useRevenueRanked } from './api';
 import type { RevenueFigures, RevenueRanked, RevenueRankedParams } from './api';
-import { CategoryControl } from './CategorySelect';
 import { useDealsAddress } from './deals/address';
 import { DealsPanel } from './deals/DealsPanel';
 import type { OpenedWith } from './deals/DealsPanel';
@@ -29,16 +28,14 @@ const LEVELS = ['plan', 'campaign', 'initiative', 'activity'];
 const DEFAULT_SORT = 'performance';
 const DEFAULT_ORDER = 'asc';
 
-/** Revenue against goal (feature 049 US1): cards, the period series and 040's ranked list, in 039's frame. */
-export function RevenueReport() {
-  return (
-    <ReportFrame report="revenue" controls={() => <CategoryControl />}>
-      {(frame, address) => <RevenueBody frame={frame} address={address} />}
-    </ReportFrame>
-  );
-}
-
-function RevenueBody({ frame, address }: { frame: ReportFrameData; address: ReportAddress }) {
+/** Revenue against goal (049 US1): cards, the period series, the ranked list and the deals (058). */
+export function RevenueBody({
+  frame,
+  address,
+}: {
+  frame: ReportFrameData;
+  address: ReportAddress;
+}) {
   const { money } = useFormatters();
   const [category] = useOwnParam('category');
   const report = useRevenueReport(address, { category: category || undefined });
@@ -102,14 +99,12 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       label: 'Actual cost',
       value: (f) => (f.actualCost ? money(f.actualCost) : reasonText(f.actualCostReason)),
       empty: (f) => (f.actualCost ? undefined : reasonText(f.actualCostReason)),
-      sortable: false,
     },
     {
       key: 'roi',
       label: 'ROI',
       value: (f) => (f.roi !== null ? `${f.roi}%` : reasonText(f.roiReason)),
       empty: (f) => (f.roi !== null ? undefined : reasonText(f.roiReason)),
-      sortable: false,
     },
     {
       key: 'model',
@@ -143,7 +138,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       )}
       <RankedList
         levelFallback="campaign"
-        report="revenue"
+        report="performance"
         owner
         data={ranked.data}
         error={ranked.isError ? ranked.error : null}
@@ -184,7 +179,14 @@ function rankedParams(
   state: ReturnType<typeof useRankedState>['state'],
   category: string,
 ): RevenueRankedParams {
-  const sorts = ['actualRevenue', 'projectedRevenue', 'goal', 'performance'] as const;
+  const sorts = [
+    'actualRevenue',
+    'projectedRevenue',
+    'goal',
+    'performance',
+    'actualCost',
+    'roi',
+  ] as const;
   return {
     sort: sorts.find((s) => s === state.sort) ?? DEFAULT_SORT,
     order: state.order,

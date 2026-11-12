@@ -19,7 +19,7 @@ function renderTab(report = waitingReport()) {
       table={{ tab: 'waiting', sort: '-waiting', page: 1, pageSize: 20 }}
       onChange={onChange}
     />,
-    { route: '/reports/gsap-link?tab=waiting', user: testUser(), path: '/reports/gsap-link' },
+    { route: '/reports/purchasing?tab=waiting', user: testUser(), path: '/reports/purchasing' },
   );
   return { onChange, ...rendered };
 }

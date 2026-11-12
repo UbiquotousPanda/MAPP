@@ -11,12 +11,12 @@ import { CopyLinkButton, SavedViewsMenu } from './SavedViewsMenu';
 
 type ReportView = components['schemas']['ReportView'];
 
-const VIEWS = '/api/v1/reports/plan-budget/views';
+const VIEWS = '/api/v1/reports/budget/views';
 
 function view(overrides: Partial<ReportView>): ReportView {
   return {
     id: 'RV-1001',
-    report: 'planBudget',
+    report: 'budget',
     name: 'Europe',
     isDefault: false,
     query: 'owner=U-1003',
@@ -45,10 +45,10 @@ function renderMenu(
     reply('PATCH /api/v1/reports/{report}/views/{viewId}', patch),
     reply('DELETE /api/v1/reports/{report}/views/{viewId}', { body: ASIA }),
   ]);
-  const rendered = renderWithProviders(<SavedViewsMenu report="planBudget" />, {
+  const rendered = renderWithProviders(<SavedViewsMenu report="budget" />, {
     route,
     user: testUser(),
-    path: '/reports/plan-budget',
+    path: '/reports/budget',
   });
   return { ...rendered, api };
 }
@@ -58,7 +58,7 @@ const search = (router: { state: { location: { search: string } } }) =>
 
 describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
   it('lists the views, ticks the one on screen and tags the default (FR-026)', async () => {
-    const { user } = renderMenu('/reports/plan-budget?owner=U-1003');
+    const { user } = renderMenu('/reports/budget?owner=U-1003');
 
     await user.click(await screen.findByRole('button', { name: 'View: Europe' }));
 
@@ -73,7 +73,7 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
   });
 
   it('applies a view as an address, so Back returns (FR-026)', async () => {
-    const { user, router } = renderMenu('/reports/plan-budget?owner=U-1003');
+    const { user, router } = renderMenu('/reports/budget?owner=U-1003');
 
     await user.click(await screen.findByRole('button', { name: 'View: Europe' }));
     await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Asia' }));
@@ -83,16 +83,16 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
   });
 
   it('opens on the default view when the address is empty (FR-027)', async () => {
-    const { router } = renderMenu('/reports/plan-budget');
+    const { router } = renderMenu('/reports/budget');
 
     await waitFor(() => expect(search(router)).toBe('?owner=U-1003'));
   });
 
   it('says Modified and updates the view only after asking (FR-026)', async () => {
-    const { user, router, api } = renderMenu('/reports/plan-budget?owner=U-1003');
+    const { user, router, api } = renderMenu('/reports/budget?owner=U-1003');
     await screen.findByRole('button', { name: 'View: Europe' });
 
-    await router.navigate('/reports/plan-budget?owner=U-1003&planType=strategic');
+    await router.navigate('/reports/budget?owner=U-1003&planType=strategic');
     await user.click(await screen.findByRole('button', { name: 'View: Europe Modified' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Update view…' }));
     await user.click(await screen.findByRole('button', { name: 'Update view' }));
@@ -105,7 +105,7 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
   });
 
   it('saves the filters under a new name, and asks before replacing a name in use (FR-024)', async () => {
-    const { user, api } = renderMenu('/reports/plan-budget?owner=U-1004');
+    const { user, api } = renderMenu('/reports/budget?owner=U-1004');
 
     await user.click(await screen.findByRole('button', { name: 'Saved views' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Save current filters…' }));
@@ -123,7 +123,7 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
   });
 
   it('deletes at once and Undo saves the view again with its star (FR-028)', async () => {
-    const { user, api } = renderMenu('/reports/plan-budget');
+    const { user, api } = renderMenu('/reports/budget');
 
     await user.click(await screen.findByRole('button', { name: /View: Europe|Saved views/ }));
     await user.click(await screen.findByRole('menuitem', { name: 'Manage views…' }));
@@ -140,7 +140,7 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
   });
 
   it('stars and renames a view, sending the version it was read at (FR-027, FR-028)', async () => {
-    const { user, api } = renderMenu('/reports/plan-budget');
+    const { user, api } = renderMenu('/reports/budget');
 
     await user.click(await screen.findByRole('button', { name: /View: Europe|Saved views/ }));
     await user.click(await screen.findByRole('menuitem', { name: 'Manage views…' }));
@@ -166,7 +166,7 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
   });
 
   it('says a view was changed in another tab instead of overwriting it (FR-028)', async () => {
-    const { user, router } = renderMenu('/reports/plan-budget?owner=U-1003', {
+    const { user, router } = renderMenu('/reports/budget?owner=U-1003', {
       status: 409,
       body: apiError(
         'version_conflict',
@@ -175,7 +175,7 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
     });
     await screen.findByRole('button', { name: 'View: Europe' });
 
-    await router.navigate('/reports/plan-budget?owner=U-1003&team=T-1001');
+    await router.navigate('/reports/budget?owner=U-1003&team=T-1001');
     await user.click(await screen.findByRole('button', { name: 'View: Europe Modified' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Update view…' }));
     await user.click(await screen.findByRole('button', { name: 'Update view' }));
@@ -192,9 +192,9 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
 describe('Copy link (039 US1 scenario 7)', () => {
   function renderButton() {
     return renderWithProviders(<CopyLinkButton />, {
-      route: '/reports/plan-budget?owner=U-1003',
+      route: '/reports/budget?owner=U-1003',
       user: testUser(),
-      path: '/reports/plan-budget',
+      path: '/reports/budget',
     });
   }
 

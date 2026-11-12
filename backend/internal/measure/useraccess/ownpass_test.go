@@ -18,7 +18,7 @@ import (
 
 const (
 	lea      = "lea.santos@shell.com"
-	exported = "/api/v1/reports/user-access/export?format="
+	exported = "/api/v1/reports/plan-data/export?tab=people&format="
 )
 
 // exportFile is a CSV export read back: the notes before the table, by label, and the table's rows.

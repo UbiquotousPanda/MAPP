@@ -106,9 +106,10 @@ func (b builder) funnelSection(series []revenue.ActivitySeries) FunnelSection {
 			PlansWithout: plansWithout(series, stage)})
 	}
 	out.Stages = append(out.Stages, b.revenueStage(series))
-	out.Conversions = append(out.Conversions, conversions(counted, figures)...)
+	goal, periodGoals := b.conversionGoals(series)
+	out.Conversions = append(out.Conversions, conversions(counted, figures, goal)...)
 	if slices.Contains(counted, StageMQL) && slices.Contains(counted, StageINQ) {
-		out.Trend.Periods = b.conversionTrend(series)
+		out.Trend.Periods = b.conversionTrend(series, periodGoals)
 	}
 	return out
 }
@@ -146,7 +147,7 @@ func optionalCount(t totals) *int64 {
 	return &t.goal
 }
 
-func (b builder) conversionTrend(series []revenue.ActivitySeries) []RatePeriod {
+func (b builder) conversionTrend(series []revenue.ActivitySeries, goals []*int64) []RatePeriod {
 	inq := periodsOf(sumSeries(series, stagePick(StageINQ)).months, b.quarterly)
 	mql := periodsOf(sumSeries(series, stagePick(StageMQL)).months, b.quarterly)
 	out := make([]RatePeriod, 0, len(mql))
@@ -154,8 +155,12 @@ func (b builder) conversionTrend(series []revenue.ActivitySeries) []RatePeriod {
 		if i >= len(inq) {
 			break
 		}
+		var goal *int64
+		if i < len(goals) {
+			goal = goals[i]
+		}
 		out = append(out, RatePeriod{Key: p.key, Label: p.label, State: p.state,
-			Rate: rateOf(p.shownValue(), inq[i].shownValue()), Goal: rateOf(p.goal, inq[i].goal)})
+			Rate: rateOf(p.shownValue(), inq[i].shownValue()), Goal: tenthsText(goal)})
 	}
 	return out
 }

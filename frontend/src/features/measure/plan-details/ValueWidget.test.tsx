@@ -8,7 +8,7 @@ import type { PlanDetailsWidget } from './api';
 import { value, widget } from './plan-details-fixture';
 import { ValueWidget } from './ValueWidget';
 
-function renderWidget(w: PlanDetailsWidget, route = '/reports/plan-details') {
+function renderWidget(w: PlanDetailsWidget, route = '/reports/plan-data') {
   return renderWithProviders(
     <ValueWidget
       widget={w}
@@ -17,7 +17,7 @@ function renderWidget(w: PlanDetailsWidget, route = '/reports/plan-details') {
       attributeId="SA-12"
       currency="EUR"
     />,
-    { route, user: testUser(), path: '/reports/plan-details' },
+    { route, user: testUser(), path: '/reports/plan-data' },
   );
 }
 

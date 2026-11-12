@@ -11,13 +11,13 @@ import {
 import { sheetNames } from './xlsx-read';
 
 // The Reports area's shared frame (039): the Reports page and a report's filters (US1), saved views (US2) and the
-// export (US3), on Plan budget's page, which shows the frame until feature 040 fills it.
+// export (US3), on Budget and spend's page.
 
 const CARLOS = 'carlos.mendes@shell.com';
 const PRIYA = 'priya.raman@shell.com';
 const DANIEL = 'daniel.okoro@shell.com';
 const LEA = 'lea.santos@shell.com';
-const REPORT = '/reports/plan-budget?year=2026';
+const REPORT = '/reports/budget?year=2026';
 
 const inView = (page: Page) => page.getByText(/^In view: /);
 
@@ -109,7 +109,7 @@ test('039 US2: saved views are personal, open on the default, and come back with
   await page.getByRole('button', { name: 'Save view' }).click();
   await expectToast(page, `View '${name}' saved`);
 
-  await page.goto('/reports/plan-budget');
+  await page.goto('/reports/budget');
   await expect(page).toHaveURL(/activityStatus=approved/);
   const button = page.getByRole('button', { name: `View: ${name}` });
   await expect(button).toBeVisible();
@@ -154,7 +154,7 @@ test('039 SC-007: the financial notice on the grey page passes text contrast (#1
   page,
 }) => {
   await signInAs(page, LEA);
-  await page.goto('/reports/revenue?year=2026');
+  await page.goto('/reports/performance?year=2026');
   await expect(page.getByText("You can't see the financial data of these plans")).toBeVisible();
 
   await expectNoAxeViolations(page);

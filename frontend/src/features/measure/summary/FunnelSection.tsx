@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { useFormatters } from '@/format/useFormatters';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { StatStrip } from '@/ui/StatStrip/StatStrip';
@@ -27,17 +26,11 @@ interface StageCell {
 }
 
 const CONVERSION_TIP =
-  "This stage's actual ÷ the previous stage's actual, to one decimal. Its goal is the same ratio of the goals.";
+  "This stage's actual ÷ the previous stage's actual, to one decimal. Its goal is the projection model's conversion rate.";
 const NO_RATE = 'No rate until the stage before has actuals.';
 
-/** The funnel: each stage against goal, the conversions between counted stages and their trend. */
-export function FunnelSection({
-  funnel,
-  details,
-}: {
-  funnel: FunnelSectionData;
-  details?: ReactNode;
-}) {
+/** The funnel: each stage against goal and the conversions between counted stages. */
+export function FunnelSection({ funnel }: { funnel: FunnelSectionData }) {
   const { money } = useFormatters();
   const figure = (v: SummaryFigure) =>
     v === null ? '—' : typeof v === 'number' ? v.toLocaleString('en-GB') : money(v);
@@ -92,10 +85,9 @@ export function FunnelSection({
         <SectionHeading level={2} rank="section" id="summary-funnel">
           Funnel
         </SectionHeading>
-        {details}
       </div>
       <ReportWidget
-        report="summary"
+        report="performance"
         widget="funnel"
         title="Funnel stages"
         tip="Actual or projected volume at each stage any model in view allows, against the activities' goals."
@@ -103,7 +95,6 @@ export function FunnelSection({
         chart={<StageStrip cells={cells} />}
         table={stages}
       />
-      <ConversionTrend periods={funnel.trend.periods} stage={STAGE[funnel.trend.stage]} />
     </section>
   );
 }
@@ -141,7 +132,10 @@ function StageStrip({ cells }: { cells: StageCell[] }) {
   );
 }
 
-function ConversionTrend({ periods, stage }: { periods: Rate[]; stage: string }) {
+/** The conversion rate per period against its goal. */
+export function ConversionTrend({ trend }: { trend: FunnelSectionData['trend'] }) {
+  const { periods } = trend;
+  const stage = STAGE[trend.stage];
   const today = periods.find((p) => p.state === 'inProgress');
   const table: ReportTableData = {
     columns: [
@@ -157,7 +151,7 @@ function ConversionTrend({ periods, stage }: { periods: Rate[]; stage: string })
   return (
     <ReportWidget
       wide
-      report="summary"
+      report="performance"
       widget="conversion"
       controls={<PeriodSwitch />}
       title={`${stage} conversion trend`}
