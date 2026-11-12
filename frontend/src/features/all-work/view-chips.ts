@@ -1,3 +1,4 @@
+import { withAttributeValues } from '@/ui/AttributeFilterMenu/attribute-filter';
 import {
   ACTIVITY_STATUS_LABELS,
   CONTAINER_STATUS_LABELS,
@@ -9,7 +10,7 @@ import {
   STRATEGIC_LABELS,
 } from './all-work-text';
 import type { AllWorkOptions, FilterValue, Filters, ViewState } from './all-work-types';
-import { attributeChipLabel, withAttributeValues } from './attribute-filters';
+import { attributeChipLabel } from './attribute-filters';
 import { ID_FILTERS, NO_FILTERS, VALUE_FILTERS, choicesOf } from './view-state';
 import type { IdFilter } from './view-state';
 

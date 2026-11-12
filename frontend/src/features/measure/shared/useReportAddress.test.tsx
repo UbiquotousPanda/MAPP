@@ -33,4 +33,17 @@ describe('useReportAddress', () => {
 
     expect(result.current.params.get('page')).toBe('3');
   });
+
+  it('applies two quick filter changes each to the latest address, so both survive (D-424)', () => {
+    const { result } = renderOn('year=2026');
+    const [, write] = result.current.address;
+
+    act(() => {
+      write((latest) => ({ ...latest, teams: ['T-1'] }));
+      write((latest) => ({ ...latest, owners: ['U-1'] }));
+    });
+
+    expect(result.current.params.getAll('team')).toEqual(['T-1']);
+    expect(result.current.params.getAll('owner')).toEqual(['U-1']);
+  });
 });

@@ -1,5 +1,6 @@
 import { Funnel, Info, TrendingUp } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router';
+import { Link } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { LinkButton } from '@/ui/Button/Button';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -25,7 +26,7 @@ export function SummaryReport() {
 }
 
 function SummaryBody({ address }: { address: ReportAddress }) {
-  const [search, setSearch] = useSearchParams();
+  const [search, setSearch] = useAddressParams();
   const params = readSummaryParams(search);
   const change = (changes: Partial<SummaryParams>) =>
     setSearch(writeSummaryParams(search, { ...params, ...changes }));

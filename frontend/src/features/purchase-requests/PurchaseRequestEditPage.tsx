@@ -1,4 +1,5 @@
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useAccess } from '@/session/access';
 import type { BreadcrumbItem } from '@/ui/Breadcrumb/Breadcrumb';
 import { purchaseRequestHref } from '@/ui/record-links';
@@ -66,7 +67,7 @@ interface LoadedProps {
 
 function Loaded({ pr, options, onReload }: LoadedProps) {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
+  const [params] = useAddressParams();
   const { show } = useToast();
   const save = useSavePurchaseRequest(pr.id);
   const href = purchaseRequestHref(pr.id);

@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import type { components } from '@/api/generated/schema';
 import { WIDE_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 
@@ -41,7 +41,7 @@ export function sortOf(value: string | null): AccessSort {
 
 /** Search, teams, status, sort and page in the address; any change but the page goes back to page 1. */
 export function useAccessTable() {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const page = Number(params.get('page'));
   const size = Number(params.get('pageSize'));
   const table: AccessTable = {

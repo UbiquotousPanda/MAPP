@@ -23,14 +23,14 @@ function Shown() {
 }
 
 describe('useFormatters', () => {
-  it('uses the defaults when nobody is signed in (FR-024)', () => {
+  it('uses the defaults when nobody is signed in, and also reads dd/mm/yyyy (FR-024, D-424)', () => {
     renderWithProviders(<Shown />);
 
     expect(screen.getByText('format: DD MMM YYYY')).toBeInTheDocument();
     expect(screen.getByText('currency: USD')).toBeInTheDocument();
     expect(screen.getByText('date: 12 Mar 2026')).toBeInTheDocument();
     expect(screen.getByText('range: 01 Feb – 30 Nov 2026')).toBeInTheDocument();
-    expect(screen.getByText('parsed: null')).toBeInTheDocument();
+    expect(screen.getByText('parsed: 2026-03-12')).toBeInTheDocument();
   });
 
   it('shows and reads dates in the person’s format (FR-024, SC-006)', () => {

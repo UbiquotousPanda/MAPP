@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 
 export interface UrlFilters {
   values: Record<string, string | undefined>;
@@ -11,7 +11,7 @@ export interface UrlFilters {
 
 /** The filters of a list, kept in the page address so Back and shared links keep them. */
 export function useUrlFilters(names: readonly string[]): UrlFilters {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const entries = names.map((name): [string, string] => [name, params.get(name) ?? '']);
   const values: Record<string, string | undefined> = Object.fromEntries(entries);
   function update(changes: [string, string][]) {

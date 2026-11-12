@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useOutlet, useParams, useSearchParams } from 'react-router';
+import { useNavigate, useOutlet, useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -50,7 +51,7 @@ export function PlanPage() {
   const [treeSearch, setTreeSearch] = useState('');
   const found = usePlanSearchRows(planId, treeSearch);
   const panel = useOutlet();
-  const [search, setSearch] = useSearchParams();
+  const [search, setSearch] = useAddressParams();
   const tab = planTabOf(search);
   // View history: once the History tab is shown, its heading takes the focus (feature 011).
   const focusHistory = useRef(false);

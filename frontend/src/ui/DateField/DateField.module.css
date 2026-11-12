@@ -1,8 +1,29 @@
+.control {
+  position: relative;
+  width: 100%;
+}
+
 .compact {
-  width: auto;
+  width: 168px;
+}
+
+.input {
+  padding-right: calc(var(--control-sm) + var(--space-2));
+}
+
+.compact .input {
   min-height: var(--control-sm);
   height: var(--control-sm);
   padding-block: 0;
+}
+
+/* Inside the input's border, as tall as it allows. */
+.control .calendar {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  bottom: 1px;
+  height: auto;
 }
 
 .compactField {

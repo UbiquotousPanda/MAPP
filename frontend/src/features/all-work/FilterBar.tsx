@@ -6,6 +6,7 @@ import { YearRangeMenu } from '@/ui/YearRangeMenu/YearRangeMenu';
 import { formatWhole } from '@/format/decimal';
 import { ResultCount } from '@/ui/ResultCount/ResultCount';
 import { countText } from '@/ui/ResultCount/count-text';
+import { AttributeFilterMenu } from '@/ui/AttributeFilterMenu/AttributeFilterMenu';
 import styles from './FilterBar.module.css';
 import {
   ACTIVITY_STATUS_LABELS,
@@ -28,7 +29,6 @@ import type {
   Filters,
   ViewState,
 } from './all-work-types';
-import { AttributeFilterMenu } from './AttributeFilterMenu';
 import { chipsOf, clearFilters, removeChip } from './view-chips';
 import { choicesOf, withYears, yearRange } from './view-state';
 import type { IdFilter, ValueFilter } from './view-state';

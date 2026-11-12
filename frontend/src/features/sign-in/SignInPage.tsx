@@ -1,6 +1,7 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
-import { Navigate, useLocation, useSearchParams } from 'react-router';
+import { Navigate, useLocation } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import type { components } from '@/api/generated/schema';
 import { PublicLayout } from '@/ui/PublicLayout/PublicLayout';
@@ -31,7 +32,7 @@ const NOTICES: Record<SessionEnd, string> = {
 export function SignInPage() {
   usePageTitle('Sign in');
   const { status } = useSession();
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useAddressParams();
 
   if (status === 'loading' || status === 'unreachable') {
     return <SessionCheckPage title="Sign in" />;

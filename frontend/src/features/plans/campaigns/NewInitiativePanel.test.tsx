@@ -51,8 +51,8 @@ describe('NewInitiativePanel (feature 005, US2)', () => {
     expect(field).toHaveAttribute('readonly');
     expect(field).toHaveAccessibleDescription('Change it with Move');
     expect(within(panel).getByText(/Alex Morgan/)).toBeInTheDocument();
-    expect(within(panel).getByLabelText('Start date')).toHaveValue('2026-03-01');
-    expect(within(panel).getByLabelText('End date')).toHaveValue('2026-12-31');
+    expect(within(panel).getByLabelText('Start date')).toHaveValue('01 Mar 2026');
+    expect(within(panel).getByLabelText('End date')).toHaveValue('31 Dec 2026');
     expect(document.title).toBe('New initiative · SP&A One');
   });
 
@@ -79,8 +79,6 @@ describe('NewInitiativePanel (feature 005, US2)', () => {
     expect(
       within(panel).getByText("Must be inside the campaign's dates (01 Mar 2026 – 31 Dec 2026)"),
     ).toBeInTheDocument();
-    expect(within(panel).getByLabelText('Start date')).toHaveAttribute('min', '2026-03-01');
-    expect(within(panel).getByLabelText('End date')).toHaveAttribute('max', '2026-12-31');
 
     await user.type(within(panel).getByLabelText('Initiative name'), 'Early bird');
     await user.click(within(panel).getByRole('button', { name: 'Save' }));

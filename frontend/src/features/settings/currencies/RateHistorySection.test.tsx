@@ -134,7 +134,7 @@ describe('RateDialog: Add rate (016 FR-003, FR-005)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Add rate' }));
     const dialog = await screen.findByRole('dialog', { name: 'Add rate of EUR' });
-    expect(within(dialog).getByLabelText(/^Date/)).toHaveValue('2026-10-20');
+    expect(within(dialog).getByLabelText(/^Date/)).toHaveValue('20 Oct 2026');
     await user.type(within(dialog).getByRole('textbox', { name: /^Rate/ }), '0.93');
     expect(dialog).toHaveTextContent('1 USD = 0.93 EUR · 1 EUR = 1.075269 USD');
     await user.click(within(dialog).getByRole('button', { name: 'Save rate' }));

@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ReportFrame } from '../shared';
 import type { ReportAddress } from '../shared';
 import { useApprovalsReport } from './api';
@@ -10,7 +10,7 @@ import { StatusWidget } from './StatusWidget';
 import styles from './ApprovalsReport.module.css';
 
 function Widgets({ address }: { address: ReportAddress }) {
-  const [search, setSearch] = useSearchParams();
+  const [search, setSearch] = useAddressParams();
   const params = readApprovalsParams(search);
   const report = useApprovalsReport(address, params);
   const retry = () => void report.refetch();

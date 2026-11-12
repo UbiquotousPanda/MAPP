@@ -1,6 +1,7 @@
 import { LayoutDashboard } from 'lucide-react';
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
@@ -39,7 +40,7 @@ interface DashboardsPageProps {
 
 export function DashboardsPage({ kind }: DashboardsPageProps) {
   usePageTitle(TITLES[kind]);
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const navigate = useNavigate();
   const filters = readFilters(params);
   const dashboard = useDashboard(kind, filters);

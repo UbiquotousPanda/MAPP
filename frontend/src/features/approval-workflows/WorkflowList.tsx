@@ -1,5 +1,6 @@
 import { CircleAlert, Plus, Workflow } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { Button } from '@/ui/Button/Button';
 import { CanChange } from '@/ui/CanChange/CanChange';
@@ -24,7 +25,7 @@ const ALL = 'all';
 
 /** What the shown workflows approve, kept in the address (`approves`) like the other filters. */
 function useApprovesFilter() {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const raw = params.get('approves') ?? '';
   const approves = isObjectType(raw) ? raw : ALL;
 

@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import type { ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { cx } from '@/ui/cx';
 import { Pager } from '@/ui/Pager/Pager';
@@ -46,7 +46,7 @@ export function PagedTable<R>(props: PagedTableProps<R>) {
   const { title, widget } = props;
   const headingId = useId();
   const [address] = useReportAddress();
-  const [own] = useSearchParams();
+  const [own] = useAddressParams();
   return (
     <section className={styles.card} aria-labelledby={headingId}>
       <div className={styles.cardHeader}>

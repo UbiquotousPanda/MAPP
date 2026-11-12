@@ -115,8 +115,8 @@ test('051 US2-7: the filters live in the address, so Back shows the same view (F
   await expect(page.getByRole('heading', { level: 1, name: DASHBOARD })).toBeVisible();
 
   const filters = page.getByRole('group', { name: 'Dashboard filters' });
-  await filters.getByLabel('Start date').fill('2026-07-01');
-  await filters.getByLabel('End date').fill('2026-12-31');
+  await filters.getByLabel('Start date', { exact: true }).fill('2026-07-01');
+  await filters.getByLabel('End date', { exact: true }).fill('2026-12-31');
   await expect(page).toHaveURL(/from=2026-07-01&to=2026-12-31/);
   await expect(filters.getByRole('button', { name: 'Reset filters' })).toBeVisible();
   await expect(widget(page, 'Plan budgets')).toContainText('Not filtered by date');
@@ -128,11 +128,11 @@ test('051 US2-7: the filters live in the address, so Back shows the same view (F
   await expect(page.getByRole('heading', { level: 1, name: 'Dashboards' })).toBeVisible();
   await page.goBack();
   await expect(page).toHaveURL(/from=2026-07-01&to=2026-12-31/);
-  await expect(filters.getByLabel('Start date')).toHaveValue('2026-07-01');
+  await expect(filters.getByLabel('Start date', { exact: true })).toHaveValue('01 Jul 2026');
 
   await filters.getByRole('button', { name: 'Reset filters' }).click();
   await expect(page).not.toHaveURL(/from=/);
-  await expect(filters.getByLabel('Start date')).toHaveValue('');
+  await expect(filters.getByLabel('Start date', { exact: true })).toHaveValue('');
 });
 
 test('051 US2-9, FR-005: a dashboard not shared with Mei answers "Dashboard not found"', async ({

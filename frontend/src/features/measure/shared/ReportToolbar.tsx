@@ -6,11 +6,12 @@ import type { ReportAddress } from './report-address';
 import { chipsOf, withoutChip } from './report-text';
 import { YearControl } from './ReportControls';
 import { ReportFilters } from './ReportFilters';
+import type { AddressUpdate } from './useReportAddress';
 
 interface ReportToolbarProps {
   data: Frame;
   address: ReportAddress;
-  onChange: (next: ReportAddress) => void;
+  onChange: (update: AddressUpdate) => void;
   controls?: ReactNode;
 }
 
@@ -39,15 +40,15 @@ export function ReportToolbar(props: ReportToolbarProps) {
           years={data.choices.years}
           value={data.filter.year}
           plansChosen={address.plans.length}
-          onChange={(year) => onChange({ ...address, year, plans: [] })}
+          onChange={(year) => onChange((latest) => ({ ...latest, year, plans: [] }))}
         />
       }
       inUse={chips.length}
       menus={<ReportFilters choices={data.choices} applied={applied} onApply={onChange} />}
       end={controls}
       chips={chips}
-      onRemoveChip={(key) => onChange(withoutChip(address, key))}
-      onClearFilters={() => onChange(resetFilters(address))}
+      onRemoveChip={(key) => onChange((latest) => withoutChip(latest, key))}
+      onClearFilters={() => onChange(resetFilters)}
     />
   );
 }

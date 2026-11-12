@@ -1,6 +1,7 @@
 import { Select } from '@/ui/Select/Select';
+import { LEVEL_LABELS } from '@/ui/AttributeFilterMenu/attribute-filter';
 import type { BreakdownChoice, Grouping } from './all-work-types';
-import { BREAK_DOWN_BY, LEVEL_LABELS, NOTHING_ELSE, THEN_BY } from './breakdown-text';
+import { BREAK_DOWN_BY, NOTHING_ELSE, THEN_BY } from './breakdown-text';
 import styles from './GroupingPickers.module.css';
 
 export interface GroupingPickersProps {

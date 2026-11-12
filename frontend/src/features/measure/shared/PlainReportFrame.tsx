@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -22,7 +22,7 @@ export function PlainReportFrame({ report, children }: ReportFrameProps) {
   const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
   usePageTitle(name);
   const [address] = useReportAddress();
-  const [params] = useSearchParams();
+  const [params] = useAddressParams();
   const frame = useReportFrame(report, address);
   const { dateTime } = useFormatters();
 

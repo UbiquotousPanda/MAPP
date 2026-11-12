@@ -15,7 +15,7 @@ export function PeriodSwitch() {
         { value: 'quarter', label: 'Quarters' },
       ]}
       value={address.period}
-      onChange={(period) => setAddress({ ...address, period })}
+      onChange={(period) => setAddress((latest) => ({ ...latest, period }))}
     />
   );
 }
@@ -28,7 +28,7 @@ export function LevelSwitch({ fallback }: { fallback: Show }) {
       label="Show"
       options={SHOWS.map((show) => ({ value: show, label: SHOW_WORDS[show] }))}
       value={address.show ?? fallback}
-      onChange={(show) => setAddress({ ...address, show })}
+      onChange={(show) => setAddress((latest) => ({ ...latest, show }))}
     />
   );
 }
@@ -36,7 +36,7 @@ export function LevelSwitch({ fallback }: { fallback: Show }) {
 interface YearControlProps {
   years: number[];
   value: number;
-  /** Plans chosen in the filters, which another year clears: said before it happens (FR-011). */
+  /** Plans chosen in the filters, which another year clears: said before it happens. */
   plansChosen: number;
   onChange: (year: number) => void;
 }

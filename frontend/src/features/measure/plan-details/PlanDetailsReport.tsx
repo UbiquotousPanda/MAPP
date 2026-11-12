@@ -51,11 +51,7 @@ function NoRecords({ show, address }: { show: Report['show']; address: ReportAdd
         title="Your filters exclude everything"
         text="No record matches every filter."
         action={
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setAddress(resetFilters(address))}
-          >
+          <Button type="button" variant="secondary" onClick={() => setAddress(resetFilters)}>
             Reset filters
           </Button>
         }

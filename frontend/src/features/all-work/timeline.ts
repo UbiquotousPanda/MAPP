@@ -1,5 +1,6 @@
+import { monthDays } from '@/ui/DatePicker/calendar';
 import type { AllWorkRow, AllWorkStatus } from './all-work-types';
-import { monthDays, quarterDays, yearDays } from './calendar';
+import { quarterDays, yearDays } from './calendar';
 import { statusWord } from './status-words';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

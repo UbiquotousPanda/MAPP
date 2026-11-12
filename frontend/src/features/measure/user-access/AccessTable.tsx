@@ -1,5 +1,6 @@
 import { useId } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useFormatters } from '@/format/useFormatters';
 import { cx } from '@/ui/cx';
 import { Pager } from '@/ui/Pager/Pager';
@@ -34,7 +35,7 @@ interface AccessTableProps {
 export function AccessTable({ rows, total, table, onChange }: AccessTableProps) {
   const headingId = useId();
   const [address] = useReportAddress();
-  const [own] = useSearchParams();
+  const [own] = useAddressParams();
   const { dateTime } = useFormatters();
   return (
     <section className={styles.card} aria-labelledby={headingId}>

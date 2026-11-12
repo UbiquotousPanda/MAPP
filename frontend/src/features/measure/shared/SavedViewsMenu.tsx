@@ -1,6 +1,6 @@
 import { Link2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { ManageViewsPanel } from '@/ui/ManageViewsPanel/ManageViewsPanel';
@@ -26,7 +26,7 @@ type Dialog = 'save' | 'update' | 'manage' | null;
  * address differs from it. A view is an address, so applying one is a navigation and Back returns.
  */
 export function SavedViewsMenu({ report }: { report: ReportKey }) {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const query = params.toString();
   const views = useReportViews(report).data?.items;
   const [appliedId, setAppliedId] = useState<string | null>(null);

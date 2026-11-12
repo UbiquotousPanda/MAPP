@@ -1,7 +1,3 @@
-export const MORE_FILTERS = 'More filters';
-export const SEARCH_ATTRIBUTES = 'Search attributes and values';
-export const NOTHING_TO_CHOOSE = 'Nothing to choose from.';
-
 export const BREAKDOWN = 'Breakdown';
 export const BREAK_DOWN_BY = 'Break down by';
 export const THEN_BY = 'then by';
@@ -10,14 +6,6 @@ export const PLANNED_COST_BY = 'Planned cost by';
 export const NO_PLANNED_COST = 'No planned cost to break down yet.';
 export const NO_PLANNED_COST_TEXT =
   'Planned cost appears here once activities or line items have amounts.';
-
-export const LEVEL_LABELS: Record<string, string> = {
-  plan: 'Plan',
-  campaign: 'Campaign',
-  initiative: 'Initiative',
-  activity: 'Activity',
-  lineItem: 'Line item',
-};
 
 export const COLUMN_LABELS = {
   activities: 'Activities',

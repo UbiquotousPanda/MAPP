@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useAttributeForm } from '@/features/settings';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { useToast } from '@/ui/Toast/useToast';
@@ -23,7 +24,7 @@ const LOADING_TITLE = 'Edit line item';
 /** Edits a line item (?field= focuses a field); no change restarts the activity's approval (D-322). */
 export function LineItemEditPage() {
   const { lineItemId = '' } = useParams();
-  const [search] = useSearchParams();
+  const [search] = useAddressParams();
   const details = useLineItem(lineItemId);
   const activityId = details.data?.activity.id ?? '';
   const options = useLineItemFormOptions(activityId, Boolean(activityId));

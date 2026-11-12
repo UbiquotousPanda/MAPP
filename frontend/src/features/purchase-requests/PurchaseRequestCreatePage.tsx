@@ -1,4 +1,5 @@
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Card } from '@/ui/Card/Card';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { purchaseRequestHref, recordHref } from '@/ui/record-links';
@@ -21,7 +22,7 @@ import styles from './PurchaseRequestForm.module.css';
  * pre-filled from the line item; without a line item, choosing one comes first.
  */
 export function PurchaseRequestCreatePage() {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const lineItemId = params.get('lineItemId') ?? '';
   usePageTitle(NEW_PURCHASE_REQUEST);
 

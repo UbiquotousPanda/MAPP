@@ -56,6 +56,11 @@ const RAW_ELEMENTS = [
     'ui/Tooltip, not a title',
   ),
 ];
+const ROUTER_PARAMS = {
+  name: 'react-router',
+  importNames: ['useSearchParams'],
+  message: 'Use useAddressParams from ui/: its setter builds on the latest address (D-424).',
+};
 const API_CLIENT = {
   name: '@/api/client',
   message: 'Use a query hook from an api.ts module (F2).',
@@ -144,14 +149,19 @@ export default defineConfig([
   {
     files: ['src/**/*.ts'],
     ignores: TESTS,
-    rules: { 'no-restricted-imports': ['error', { patterns: [TEST_ONLY, RADIX] }] },
+    rules: {
+      'no-restricted-imports': ['error', { paths: [ROUTER_PARAMS], patterns: [TEST_ONLY, RADIX] }],
+    },
   },
   {
     // Components draw and handle events; requests go through the query hooks of an api module.
     files: ['src/**/*.tsx'],
     ignores: TESTS,
     rules: {
-      'no-restricted-imports': ['error', { paths: [API_CLIENT], patterns: [TEST_ONLY, RADIX] }],
+      'no-restricted-imports': [
+        'error',
+        { paths: [API_CLIENT, ROUTER_PARAMS], patterns: [TEST_ONLY, RADIX] },
+      ],
     },
   },
   {

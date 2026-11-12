@@ -1,8 +1,8 @@
 import { TriangleAlert } from 'lucide-react';
-import { cx } from '../cx';
+import { DateControl } from '../DateField/DateInput';
+import { useTypedDate } from '../DateField/useTypedDate';
 import { FieldShell } from '../FieldShell/FieldShell';
 import type { FieldMarking } from '../FieldShell/FieldShell';
-import inputs from '../FieldShell/inputs.module.css';
 import { InlineError } from '../InlineError/InlineError';
 import styles from './DateRangeField.module.css';
 
@@ -120,28 +120,22 @@ interface DateInputProps {
 
 function DateInput(props: DateInputProps) {
   const { id, label, value, min, max, error, disabled, required, onChange } = props;
+  const typed = useTypedDate(value, onChange);
+  const problem = typed.problem ?? error;
   const errorId = `${id}-error`;
   return (
     <div className={styles.date}>
       <label htmlFor={id} className={styles.label}>
         {label}
       </label>
-      <input
-        id={id}
-        type="date"
-        value={value}
-        min={min}
-        max={max}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? errorId : undefined}
-        aria-required={required}
-        className={cx(inputs.input, error && inputs.invalid)}
+      <DateControl
+        {...{ id, label, typed, min, max, disabled, required }}
+        invalid={Boolean(problem)}
+        describedBy={problem ? errorId : undefined}
       />
-      {error && (
+      {problem && (
         <InlineError id={errorId} quiet>
-          {error}
+          {problem}
         </InlineError>
       )}
     </div>

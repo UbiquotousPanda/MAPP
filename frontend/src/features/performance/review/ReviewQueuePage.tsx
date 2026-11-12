@@ -1,6 +1,6 @@
 import { ListChecks } from 'lucide-react';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import { forbiddenMessage } from '@/session/access';
@@ -64,7 +64,7 @@ export function ReviewQueuePage() {
   const filters = useUrlFilters(FILTER_NAMES);
   const rows = useReviewRows(reviewFiltersOf(filters.values));
   const sources = usePerformanceSources();
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const [action, setAction] = useState<RowAction | null>(null);
   const refused = forbiddenMessage(rows.error);
   if (refused) {

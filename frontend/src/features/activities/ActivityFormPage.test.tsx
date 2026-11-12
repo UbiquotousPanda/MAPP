@@ -69,8 +69,8 @@ describe('ActivityFormPage, new activity (feature 006, US1)', () => {
     expect(screen.getByText('Initiative').nextElementSibling).toHaveTextContent('Digital & social');
     expect(screen.getByText('Change it later with Move')).toBeVisible();
     expect(await screen.findByLabelText('Owner')).toHaveAccessibleDescription('Needed to submit');
-    expect(screen.getByLabelText('Start date')).toHaveValue('2026-01-01');
-    expect(screen.getByLabelText('End date')).toHaveValue('2026-06-30');
+    expect(screen.getByLabelText('Start date')).toHaveValue('01 Jan 2026');
+    expect(screen.getByLabelText('End date')).toHaveValue('30 Jun 2026');
     expect(
       screen.getByText("Allowed: 01 Jan 2026 – 30 Jun 2026 (the initiative's dates)"),
     ).toBeVisible();

@@ -49,8 +49,8 @@ describe('NewCampaignPanel (feature 005, US1)', () => {
     const panel = await findPanel();
 
     expect(within(panel).getByText(/Priya Raman/)).toBeInTheDocument();
-    expect(within(panel).getByLabelText('Start date')).toHaveValue('2026-01-01');
-    expect(within(panel).getByLabelText('End date')).toHaveValue('2026-12-31');
+    expect(within(panel).getByLabelText('Start date')).toHaveValue('01 Jan 2026');
+    expect(within(panel).getByLabelText('End date')).toHaveValue('31 Dec 2026');
     // Yes/no attributes start as No; the plan's business unit shows its section.
     expect(within(panel).getByRole('checkbox', { name: 'SMP' })).not.toBeChecked();
     expect(within(panel).getByRole('checkbox', { name: 'Shell Helix' })).toBeInTheDocument();

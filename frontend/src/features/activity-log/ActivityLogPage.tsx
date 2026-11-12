@@ -1,5 +1,6 @@
 import { History, SearchX } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router';
+import { Link } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -61,7 +62,7 @@ const CARDS = [
  */
 export function ActivityLogPage() {
   usePageTitle('Activity log');
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const filters = filtersFromParams(params);
   const now = new Date();
   const summary = useLogSummary(todayStart(now), weekStart(now));
@@ -69,8 +70,10 @@ export function ActivityLogPage() {
   const log = useLogEntries(logEntriesKey(query), query, LOG_PAGE_SIZE);
   const filtered = isFiltered(filters);
 
-  const changeFilters = (next: LogFilterState) =>
-    setParams(filtersToParams(next), { replace: true });
+  const changeFilters = (patch: Partial<LogFilterState>) =>
+    setParams((latest) => filtersToParams({ ...filtersFromParams(latest), ...patch }), {
+      replace: true,
+    });
 
   return (
     <>

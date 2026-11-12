@@ -1,6 +1,7 @@
 import { ChevronRight, Landmark, Lock, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { Link, Navigate, useSearchParams } from 'react-router';
+import { Link, Navigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
@@ -26,7 +27,7 @@ import styles from './GlobalBudgetsPage.module.css';
  */
 export function GlobalBudgetsPage() {
   usePageTitle('Global budgets');
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const currentYear = new Date().getFullYear();
   const year = yearOf(params, currentYear);
   const budgets = useGlobalBudgets(year);

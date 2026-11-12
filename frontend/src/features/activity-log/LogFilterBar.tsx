@@ -25,7 +25,8 @@ export const SEARCH_DELAY_MS = 300;
 
 export interface LogFilterBarProps {
   filters: LogFilterState;
-  onChange: (filters: LogFilterState) => void;
+  /** Only the filters that change, so a page applies them to its latest address. */
+  onChange: (patch: Partial<LogFilterState>) => void;
   summary: ActivityLogSummary | undefined;
   record: RecordRef | null;
   count?: ReactNode;
@@ -45,7 +46,6 @@ export function LogFilterBar(props: LogFilterBarProps) {
   const plans = summary?.plans ?? [];
   const chips = filterChips(filters, { people, recordTypes, plans, record, formatDate: date });
 
-  const set = (patch: Partial<LogFilterState>) => onChange({ ...filters, ...patch });
   const oneValue = (label: string, any: string, value: string, choices: FilterChoice[]) => ({
     label,
     multiple: false,
@@ -64,7 +64,7 @@ export function LogFilterBar(props: LogFilterBarProps) {
           label="Search name, ID or person"
           placeholder="Search name, ID or person"
           value={filters.q}
-          onChange={(q) => set({ q })}
+          onChange={(q) => onChange({ q })}
         />
       }
       inUse={filtersInUse(filters)}
@@ -77,7 +77,7 @@ export function LogFilterBar(props: LogFilterBarProps) {
               filters.person,
               people.map((person) => ({ value: person.id, label: person.name })),
             )}
-            onChange={([person = '']) => set({ person })}
+            onChange={([person = '']) => onChange({ person })}
           />
           <FilterMenu
             {...oneValue(
@@ -89,7 +89,7 @@ export function LogFilterBar(props: LogFilterBarProps) {
                 label: typeLabel(choice.type, recordTypes),
               })),
             )}
-            onChange={([type = '']) => set({ type })}
+            onChange={([type = '']) => onChange({ type })}
           />
           <FilterMenu
             label="Action"
@@ -98,7 +98,7 @@ export function LogFilterBar(props: LogFilterBarProps) {
             selected={filters.actions}
             summary={filters.actions.length > 0 ? formatWhole(filters.actions.length) : undefined}
             onChange={(chosen) =>
-              set({ actions: ACTIONS.filter((action) => chosen.includes(action)) })
+              onChange({ actions: ACTIONS.filter((action) => chosen.includes(action)) })
             }
           />
           <FilterMenu
@@ -108,7 +108,7 @@ export function LogFilterBar(props: LogFilterBarProps) {
               filters.plan,
               plans.map((plan) => ({ value: plan.id, label: plan.name })),
             )}
-            onChange={([plan = '']) => set({ plan })}
+            onChange={([plan = '']) => onChange({ plan })}
           />
           <FilterMenu
             label="Date"
@@ -118,7 +118,7 @@ export function LogFilterBar(props: LogFilterBarProps) {
             summary={filters.range ? range?.label : undefined}
             onChange={([value]) => {
               const next = DATE_RANGES.find((choice) => choice.value === value)?.value ?? '';
-              set(next === 'custom' ? { range: next } : { range: next, from: '', to: '' });
+              onChange(next === 'custom' ? { range: next } : { range: next, from: '', to: '' });
             }}
           />
           {filters.range === 'custom' && (
@@ -128,7 +128,7 @@ export function LogFilterBar(props: LogFilterBarProps) {
               from={filters.from}
               to={filters.to}
               error={customRangeError(filters)}
-              onChange={(from, to) => set({ from, to })}
+              onChange={(from, to) => onChange({ from, to })}
             />
           )}
         </>

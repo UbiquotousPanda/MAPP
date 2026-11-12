@@ -652,7 +652,7 @@ next to the written name, it has no contrast requirement.
 ### 4.5 Dates and times
 
 - **One date format: the person's choice** (default `DD MMM YYYY`, "12 Mar 2026"), in text **and in date
-  inputs** (§5.5 `DateRangeField`). Ranges follow D-216 ("01 Mar – 31 May 2026"; "Ongoing from 01 Mar
+  fields** (§5.5 `DateField`, `DateRangeField`). Ranges follow D-216 ("01 Mar – 31 May 2026"; "Ongoing from 01 Mar
   2026").
 - Times are 24-hour: "14:05"; date and time: "12 Mar 2026, 14:05".
 - All dates go through `lib/format.ts` (`useFormatters()`); no component formats a date itself.
@@ -894,7 +894,8 @@ optional first From choice clears the range ("All years", Plans) and an optional
 
 **`DateRangeMenu`** (`ui/DateRangeMenu`, D-421) — a date-range filter ("Submitted", "Created", "Dates"): a
 `FilterMenuButton` ("Created · 01 Oct 2026 – 12 Oct 2026") opening From and To `DateField compact`, each applied
-at once; a range error shows under To and leaves the button without a summary.
+at once and linked: From's calendar takes no day after To, To's none before From (D-424); a range error shows
+under To and leaves the button without a summary.
 
 **`FilterBar`** (`ui/FilterBar`, D-421) — **the one list toolbar**, composed by every list (Plans, Approvals, All
 work, the reports, Purchase requests, the activity log, Financials, the recycle bin, the performance lists and,
@@ -904,17 +905,20 @@ requests' view; Financials' Year and Plan) · **Filters (n)** · then `end`, pus
 `ResultCount` and the page's view switches (Plans' Cards · Table, Purchase requests' Sort). Every other filter
 is in `menus`, the row Filters (n) folds out (`role="group"` named "Filters"): one `FilterMenu` per filter
 (check boxes for several values; radio buttons for one, with an "Any …" first choice), `YearRangeMenu`,
-`DateRangeMenu`, and **More filters** for the Shell attributes; each change applies at once, no Apply button. The
+`DateRangeMenu`, and **More filters** (`ui/AttributeFilterMenu`, D-424: every Shell attribute by level, its values
+and Not filled in as check boxes, searchable) for the Shell attributes; each change applies at once, no Apply button. The
 row folds out by itself when the page opens with a filter in use, or when one comes into use from elsewhere (a
 summary card's link); (n) counts the filters behind the button, not the search or the quick control. A list
 with no filter behind the button has no Filters (n). Below the row: the `FilterChips` with Clear filters, and
 an optional note ("You can still open every plan."). Every control is 32 px. Below 600 px the row wraps and
 Filters (n) is the icon with its badge. **State:** every filter, the search and the quick control live in the
 page address and are written in place (`replace`), so Back leaves the list instead of undoing the filters one
-by one, and a reload or a link keeps them (constitution IX, D-421).
+by one, and a reload or a link keeps them (constitution IX, D-421). Pages read and write the address only through
+`ui/useAddressParams` (lint-enforced): each change applies to the latest address, so two quick changes both
+survive (D-424).
 
 **`Popover`** (`ui/Popover`, D-416) — every panel that floats from a button and is not a menu: filter
-menus (each `FilterMenu`, `YearRangeMenu`, `DateRangeMenu`), a busy day's activities, the completeness problems, the
+menus (each `FilterMenu`, `YearRangeMenu`, `DateRangeMenu`), a date field's calendar, a busy day's activities, the completeness problems, the
 notifications, a `Combobox`'s list. Radix Popover; `Popover.Content` on the floating surface (see `Menu`) with
 `width` `auto` (220–340), `sm` 260, `md` 300, `lg` 360 or `anchor` (its control's width, at least 240) and `padding` `none`, `sm` 4, `md` 8 or `lg` 16 (fields). The
 focus moves into it, Escape or a click outside closes it and the focus returns to its button. Features
@@ -1159,23 +1163,53 @@ radio (`--blue` when chosen) and its label 14 `--ink` in a row at least 24 high,
 headings (12 bold `--ink-2`). Arrow keys move the choice; the group's id is its `name`, so the error summary can
 focus it. Every radio button of the app is one.
 
-**`DateField`** (`ui/DateField`, D-417) — one calendar date in the browser's date input: in forms, the `FieldShell`
-frame (label, marking, note, error; `min`/`max`); in filter bars (`compact`), the label beside a 32 px control like
-`Select`, its problem under it, announced. Used by the rate dialog, the bulk Change field value, purchase-request
-lines, the Approvals filters, and the date filters of the activity log, Purchase requests and the performance lists.
+**`DateField`** (`ui/DateField`, D-417, D-424) — one calendar date, never the browser's date input: in forms, the
+`FieldShell` frame (label, marking, hint, note, error; `min`/`max`); in filter bars (`compact`, 168 wide), the label
+beside a 32 px control like `Select`, its problem under it, announced. The text input **shows the person's date
+format** ("12 Nov 2026") and **accepts typing** in that format, "12 Nov 2026", dd/mm/yyyy or yyyy-mm-dd: a date
+counts as soon as it reads as one and is rewritten in the person's format when the field is left; text that is
+not a date shows "Enter a date like 12 Mar 2026." as the field's problem and leaves the field empty. The value
+stays a calendar date ("YYYY-MM-DD"); a hidden input carries it under the field's `name`. Inside the input on the
+right, a `tertiary` icon button **Choose date** (named "Choose start date", "Choose to date") opens the
+**date picker** in a `Popover` (`md`). Used by the rate dialog, the bulk Change field value, purchase-request
+lines and every `DateRangeMenu`; `DateRangeField` uses the same control.
+
+**Date picker** (`ui/DatePicker`, D-424) — our own calendar, following the WAI-ARIA date picker dialog: a header
+with **Previous month** and **Next month** (`tertiary` icon buttons) and Month and Year `Select`s to jump; the
+month and year announced (`aria-live`) and naming the grid; a `role="grid"` of the month, **weeks from Monday**,
+weekday headers (Mo … Su, full names as `abbr`), days 32 × 32 (above the 24 px target), each named in full
+("Thursday 12 November 2026"); **today** outlined in `--ink` and `aria-current="date"`; the **chosen day** filled
+Primary Yellow with `--on-brand-yellow` text (yellow as "you are here", never yellow text); days outside
+`min`/`max` in `--disabled-text`, `aria-disabled` and named "…, not available", with the reason under the grid
+("Choose a date from 01 Mar 2026 to 31 May 2026.", the grid's description); a footer with **Clear** and
+**Today** (disabled when today is outside the range, the reason above it). It opens on the chosen day, else
+today kept inside the range, with the focus on that day. Light and dark from the tokens.
+
+| Key (in the grid) | Does |
+|---|---|
+| ← / → | Previous / next day |
+| ↑ / ↓ | Same day of the previous / next week |
+| Home / End | First (Monday) / last (Sunday) day of the week |
+| Page Up / Page Down | Same day of the previous / next month (the last day of a shorter month) |
+| Shift + Page Up / Page Down | Same day of the previous / next year |
+| Enter / Space | Choose the day, close, focus back on the Choose date button |
+| Escape | Close without choosing, focus back on the Choose date button |
+| Tab | Moves between the header, the grid and the footer |
+
+All work's Month calendar (`features/all-work/MonthCalendar`) lays out its weeks with the same calendar core
+(`ui/DatePicker/calendar.ts`: month days, Monday-first week rows, month and weekday names).
 
 **`InlineError`** (`ui/InlineError`, D-417) — one problem in one line: a 16 px alert icon and 14/20 `--danger-text`.
 `FieldShell`, `CheckboxField`, `DateRangeField`, `RadioGroup` and `TextField` show a field's problem with it
 (`quiet`: heard with the field through `aria-describedby`); on its own (a dialog's failed action, a gone record)
 it is `role="alert"`. A failure with several lines or a next step is a danger `InlineAlert` instead.
 
-**`DateRangeField`** — two date inputs (start, end) side by side, each `sm` 240 wide, as text inputs that
-**show and accept the person's date format** ("01 Mar 2026"; typing "1/3/26" or "2026-03-01" also works and is
-rewritten on leaving the field), each with a 32 px **Choose date** button that opens a calendar popover
-(month grid, ← → ↑ ↓ move by day, Page Up/Down by month, Enter picks, Escape closes). The allowed range
-limits the choice and is written under both inputs ("Must be inside the campaign's dates (01 Feb – 30 Nov
+**`DateRangeField`** — two dates (start, end) side by side, each the `DateField` control (typed in the person's
+format or chosen on the date picker, D-424), each with its own problem under it. The allowed range
+limits the choice (start no later than end, both inside the parent's dates) and is written under both inputs ("Must be inside the campaign's dates (01 Feb – 30 Nov
 2026)"); a non-blocking warning shows in `--warning-text` with a warning icon. This replaces the browser's
-date input, which shows "12/31/2026" in US-English browsers (UI audit X-15, C-04; functional review P-03).
+date input, which shows "12/31/2026" in US-English browsers and its own calendar (UI audit X-15, C-04; functional
+review P-03; D-424).
 
 **`SplitEditor`** — the chosen values in a small table: value · share (a `DecimalField`, `xs`, right-aligned,
 "%" unit); under it the running total in 14 bold: "100.00% — complete" (`--success-text`), "90.00% — 10.00%
@@ -1573,3 +1607,4 @@ or one component (see the recommendations report for the questions to Shell).
 | 2.12 | 12 Nov 2026 | D-418, display pieces only from `ui/`: `SectionHeading` with five ranks (section 20, panel 18, card 16 Jost 600; sub 16 and label 14 Arial 700), used by `Card` (titles 16/24 as §5.3 says); weights as tokens; `--icon-sm` and `--icon-md`; `ProgressBar busy` and `BarList` (§4.6); `ViewSwitch` and the icon option of `SegmentedFilter`; `SavedViewsMenu`; `SummaryCard to` (LinkSummaryCard retired) and every row of figures a `StatStrip`; `Tag` and `LevelTag other`; `RelativeTime`, `TooltipText` and a `Tooltip` that opens on a tap, no native `title` tooltips; one `ConvertedAmount` naming its rate (§3.2, §3.6, §4.4, §4.6, §5.2, §5.3, §5.4, §5.6). |
 | 2.13 | 12 Nov 2026 | D-423, the last copies move into `ui/`: one `SaveViewDialog` and one `ManageViewsPanel` (with its Rename view dialog) for All work and the reports, their differences as props; `FormErrorSummary` `onGo` and `describe` for the dashboard builder; `NumberField` for bounded whole numbers; `Drawer` for the navigation drawer (§5.1, §5.3, §5.5, §5.8). |
 | 2.14 | 12 Nov 2026 | D-421, one filter pattern: `FilterBar` (search · quick control · Filters (n) · count and view switches; the folding row of filter menus, opening by itself when a filter is in use; chips with Clear filters; state in the address, written in place), `YearRangeMenu` (moved from All work) and `DateRangeMenu`; every toolbar control 32 px (`SearchField size="sm"` and `delay`, `FiltersButton` `sm` by default); no counts in a list's status filter; the chosen segment keeps the group's borders (§3.6, §5.2). |
+| 2.15 | 12 Nov 2026 | D-424, our own date picker: `DateField` and `DateRangeField` are a text input in the person's format (typed dates read in that format, dd/mm/yyyy or yyyy-mm-dd) with a **Choose date** button opening `ui/DatePicker` — month grid from Monday, Month and Year jump, today outlined, the chosen day yellow-filled, days outside the range refused with the reason, Today and Clear, the WAI-ARIA date picker keyboard; no native date input remains; `DateRangeMenu` links From and To in the calendar; All work's Month calendar shares the calendar core; **More filters** is `ui/AttributeFilterMenu`; the address is written through `ui/useAddressParams` (§4.5, §5.2, §5.5). |

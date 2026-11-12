@@ -1,6 +1,6 @@
 import { ChartColumnIncreasing } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
@@ -49,7 +49,7 @@ function FilteredReportFrame({ report, controls, children, comingSoon }: ReportF
   const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
   usePageTitle(name);
   const [address, setAddress] = useReportAddress();
-  const [params] = useSearchParams();
+  const [params] = useAddressParams();
   const frame = useReportFrame(report, address);
   const { dateTime } = useFormatters();
 
@@ -103,7 +103,7 @@ function FilteredReportFrame({ report, controls, children, comingSoon }: ReportF
             <FrameBody
               data={data}
               address={address}
-              onReset={() => setAddress(resetFilters(address))}
+              onReset={() => setAddress(resetFilters)}
               comingSoon={comingSoon}
             >
               {children}

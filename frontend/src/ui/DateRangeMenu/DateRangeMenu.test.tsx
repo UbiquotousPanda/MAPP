@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { testUser } from '@/testing/fixtures/users';
@@ -31,6 +31,23 @@ describe('DateRangeMenu', () => {
     expect(
       screen.getByRole('button', { name: 'Created · 01 Oct 2026 – 12 Oct 2026' }),
     ).toBeInTheDocument();
+  });
+
+  it('keeps To from going before From: the earlier days are not available (D-424)', async () => {
+    const { user } = renderWithProviders(<Harness />, { user: testUser() });
+
+    await user.click(screen.getByRole('button', { name: 'Created' }));
+    await user.type(screen.getByRole('textbox', { name: 'From' }), '2026-10-14');
+    await user.type(screen.getByRole('textbox', { name: 'To' }), '2026-10-20');
+    await user.click(screen.getByRole('button', { name: 'Choose to date' }));
+    const calendar = screen.getByRole('dialog', { name: 'Choose to date' });
+
+    expect(
+      within(calendar).getByRole('button', { name: 'Tuesday 13 October 2026, not available' }),
+    ).toHaveAttribute('aria-disabled', 'true');
+    expect(within(calendar).getByRole('grid')).toHaveAccessibleDescription(
+      'Choose a date from 14 Oct 2026 on.',
+    );
   });
 
   it('shows a range error under To, and the button then claims no filter', async () => {

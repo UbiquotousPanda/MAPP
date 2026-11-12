@@ -1,6 +1,6 @@
 import { CircleCheckBig, SearchX, UserRoundCog } from 'lucide-react';
 import { useRef } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
@@ -56,7 +56,7 @@ const EMPTY_TAB: Record<ApprovalTab, string> = {
 
 export function ApprovalsPage() {
   usePageTitle('Approvals');
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const { tab: chosenTab, previewId, previewKind, delegationsOpen } = approvalsAddressOf(params);
   const search = params.get('q') ?? '';
   const filters = filtersOf(params);
@@ -75,15 +75,19 @@ export function ApprovalsPage() {
   useChosenTabInView(tabsArea, tab);
 
   function changeParams(change: Record<string, string | null>, replace = false) {
-    const next = new URLSearchParams(params);
-    for (const [key, value] of Object.entries(change)) {
-      if (value === null) {
-        next.delete(key);
-      } else {
-        next.set(key, value);
-      }
-    }
-    setParams(next, { replace });
+    setParams(
+      (latest) => {
+        for (const [key, value] of Object.entries(change)) {
+          if (value === null) {
+            latest.delete(key);
+          } else {
+            latest.set(key, value);
+          }
+        }
+        return latest;
+      },
+      { replace },
+    );
   }
 
   const setSearch = (q: string) => changeParams({ q: q || null }, true);

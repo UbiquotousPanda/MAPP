@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useAttributeForm } from '@/features/settings';
 import { Button, LinkButton } from '@/ui/Button/Button';
 import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
@@ -48,7 +49,7 @@ export interface ActivityEditorProps {
 }
 
 export function ActivityEditor({ data, activity }: ActivityEditorProps) {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useAddressParams();
   const navigate = useNavigate();
   const { date } = useFormatters();
   const attributeForm = useAttributeForm('activity');

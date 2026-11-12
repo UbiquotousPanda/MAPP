@@ -1,6 +1,7 @@
 import { History, Lock, ReceiptText, SearchX, Upload } from 'lucide-react';
 import { useState } from 'react';
-import { Outlet, useLocation, useSearchParams } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
@@ -32,7 +33,7 @@ import styles from './FinancialsPage.module.css';
 /** Financials (015 US3): filters and paging live in the address; importers also see SWBS runs. */
 export function FinancialsPage() {
   usePageTitle('Financials');
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const location = useLocation();
   const filters = readFilters(params);
   const transactions = useFinancialTransactions(filters);
@@ -51,7 +52,9 @@ export function FinancialsPage() {
 
   /** New filters: back to page 1 unless the page itself changes; Back leaves the page. */
   function change(patch: Partial<FinancialFilters>) {
-    setParams(writeFilters({ ...filters, page: 1, ...patch }), { replace: true });
+    setParams((latest) => writeFilters({ ...readFilters(latest), page: 1, ...patch }), {
+      replace: true,
+    });
   }
 
   return (

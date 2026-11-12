@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError, conflictMessage } from '@/api/errors';
 import { ClearValuesDialog } from '@/ui/ShellAttributeFields/ClearValuesDialog';
 import { valuesToClear } from '@/ui/ShellAttributeFields/rules';
@@ -43,7 +43,7 @@ export function RecordEdit({
   currency,
 }: RecordEditProps) {
   const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useAddressParams();
   const { show } = useToast();
   const { dateFormat } = useFormatters();
   const update = useUpdateRecord(level, record.id);

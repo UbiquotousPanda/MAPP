@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import type { ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { cx } from '@/ui/cx';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
@@ -45,15 +45,15 @@ export function ReportWidget(props: ReportWidgetProps) {
   const { controls } = props;
   const [address, setAddress] = useReportAddress();
   const titleId = useId();
-  const [params] = useSearchParams();
+  const [params] = useAddressParams();
   const asTable = address.tables.includes(widget);
   const show = (tableView: boolean) =>
-    setAddress({
-      ...address,
+    setAddress((latest) => ({
+      ...latest,
       tables: tableView
-        ? [...address.tables, widget]
-        : address.tables.filter((key) => key !== widget),
-    });
+        ? [...latest.tables, widget]
+        : latest.tables.filter((key) => key !== widget),
+    }));
   const actions = (
     <div className={styles.actions}>
       {controls}

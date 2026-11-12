@@ -18,7 +18,8 @@ function Harness({ initial, onChange }: { initial: LogFilterState; onChange: OnC
   return (
     <LogFilterBar
       filters={filters}
-      onChange={(next) => {
+      onChange={(patch) => {
+        const next = { ...filters, ...patch };
         onChange(next);
         setFilters(next);
       }}

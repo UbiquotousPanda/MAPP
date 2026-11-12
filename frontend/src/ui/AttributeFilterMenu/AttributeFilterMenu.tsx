@@ -1,25 +1,32 @@
 import { Fragment, useState } from 'react';
 import { formatWhole } from '@/format/decimal';
-import { Checkbox } from '@/ui/CheckboxField/CheckboxField';
-import { cx } from '@/ui/cx';
-import { FilterMenuButton } from '@/ui/FilterMenuButton/FilterMenuButton';
-import menu from '@/ui/FilterMenu/FilterMenu.module.css';
-import { Popover } from '@/ui/Popover/Popover';
-import { SearchField } from '@/ui/SearchField/SearchField';
-import type { AttributeFilter, FilterableAttribute } from './all-work-types';
-import { NOT_FILLED_IN, NOT_FILLED_IN_LABEL, withAttributeValues } from './attribute-filters';
+import { Checkbox } from '../CheckboxField/CheckboxField';
+import { cx } from '../cx';
+import menu from '../FilterMenu/FilterMenu.module.css';
+import { FilterMenuButton } from '../FilterMenuButton/FilterMenuButton';
+import { Popover } from '../Popover/Popover';
+import { SearchField } from '../SearchField/SearchField';
+import type { AttributeGroup, AttributeSelection } from './attribute-filter';
+import {
+  LEVEL_LABELS,
+  NOT_FILLED_IN,
+  NOT_FILLED_IN_LABEL,
+  withAttributeValues,
+} from './attribute-filter';
 import styles from './AttributeFilterMenu.module.css';
-import { LEVEL_LABELS, MORE_FILTERS, NOTHING_TO_CHOOSE, SEARCH_ATTRIBUTES } from './breakdown-text';
+
+const MORE_FILTERS = 'More filters';
+const SEARCH_ATTRIBUTES = 'Search attributes and values';
 
 export interface AttributeFilterMenuProps {
   /** The filterable Shell attributes, level by level in Settings' order. */
-  attributes: FilterableAttribute[];
-  selected: AttributeFilter[];
-  onChange: (filters: AttributeFilter[]) => void;
+  attributes: AttributeGroup[];
+  selected: AttributeSelection[];
+  onChange: (filters: AttributeSelection[]) => void;
 }
 
 interface Shown {
-  attribute: FilterableAttribute;
+  attribute: AttributeGroup;
   choices: { value: string; label: string }[];
 }
 
@@ -49,7 +56,7 @@ export function AttributeFilterMenu({ attributes, selected, onChange }: Attribut
             onChange={setSearch}
           />
         </div>
-        {shown.length === 0 && <p className={menu.nothing}>{NOTHING_TO_CHOOSE}</p>}
+        {shown.length === 0 && <p className={menu.nothing}>Nothing to choose from.</p>}
         {shown.map(({ attribute, choices }, index) => (
           <Fragment key={attribute.id}>
             {shown[index - 1]?.attribute.level !== attribute.level && (
@@ -98,7 +105,7 @@ function AttributeChoices({ label, choices, values, onChange }: AttributeChoices
   );
 }
 
-function matching(attributes: FilterableAttribute[], needle: string): Shown[] {
+function matching(attributes: AttributeGroup[], needle: string): Shown[] {
   return attributes.flatMap((attribute) => {
     const all = [
       ...attribute.values.map((option) => ({

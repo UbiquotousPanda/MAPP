@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { WIDGET_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 
 export interface RankedState {
@@ -25,7 +25,7 @@ function sizeOf(text: string | null): RankedState['size'] {
 
 /** The ranked list's part of the address; any change but the page goes back to page 1. */
 export function useRankedState(defaultSort: string, defaultOrder: RankedState['order'] = 'desc') {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const page = Number(params.get('page'));
   const order = params.get('order');
   const state: RankedState = {

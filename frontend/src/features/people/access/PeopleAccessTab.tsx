@@ -1,6 +1,6 @@
 import { CircleAlert, Users } from 'lucide-react';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useCurrentUser } from '@/session/useSession';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
@@ -35,7 +35,7 @@ export function PeopleAccessTab() {
   const people = usePeopleAccess();
   const roles = useRoles();
   const user = useCurrentUser();
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const [query, setQuery] = useState('');
   const [role, setRole] = useState(ALL);
   const openId = openPersonOf(params);

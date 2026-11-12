@@ -1,5 +1,5 @@
 import { ClipboardList, Plus, SearchX } from 'lucide-react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useCurrentUser, useSession } from '@/session/useSession';
 import { Button, LinkButton } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
@@ -46,7 +46,7 @@ export function PlansPage() {
   const { updatePreferences } = useSession();
   const { show } = useToast();
   const canCreate = useAccess().has('plans.create');
-  const [search, setSearch] = useSearchParams();
+  const [search, setSearch] = useAddressParams();
   const filters = readFilters(search, user.id);
   const plans = usePlans({
     status: filters.status,

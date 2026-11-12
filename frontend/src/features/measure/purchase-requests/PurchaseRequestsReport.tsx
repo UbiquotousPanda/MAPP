@@ -1,5 +1,5 @@
 import { ChartColumnIncreasing, FileText } from 'lucide-react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { LinkButton } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ReportFrame } from '../shared';
@@ -13,7 +13,7 @@ import type { RequestsParams } from './schemas';
 import { StatusWidget } from './StatusWidget';
 
 function Widgets({ address, year }: { address: ReportAddress; year: number }) {
-  const [search, setSearch] = useSearchParams();
+  const [search, setSearch] = useAddressParams();
   const params = readRequestsParams(search);
   const report = useRequestsReport(address, params);
   const data = report.data;

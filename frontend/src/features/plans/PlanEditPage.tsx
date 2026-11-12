@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError, conflictMessage } from '@/api/errors';
 import { budgetCheck } from '@/features/overspend';
 import { allows } from '@/session/gate-action';
@@ -63,7 +64,7 @@ export function PlanEditPage() {
 function EditForm({ plan: loaded }: { plan: Plan }) {
   const [plan] = useState(loaded);
   const initial = valuesFromPlan(plan);
-  const [search] = useSearchParams();
+  const [search] = useAddressParams();
   const queryClient = useQueryClient();
   const { show } = useToast();
   const { dateFormat } = useFormatters();

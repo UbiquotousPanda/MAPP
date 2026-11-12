@@ -1,6 +1,7 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { renderWithProviders } from '@/testing/render';
 import { DateRangeField } from './DateRangeField';
 import type { DateRange } from './DateRangeField';
 
@@ -28,8 +29,10 @@ function Example({ start = '', end = '' }: Partial<DateRange>) {
 }
 
 describe('DateRangeField', () => {
-  it('is a group of two labelled date inputs kept inside the allowed range (feature 005)', () => {
-    render(<Example start="2026-03-12" />);
+  it('is a group of two labelled date inputs kept inside the allowed range (feature 005)', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-03-15T12:00:00Z'));
+    const { user } = renderWithProviders(<Example start="2026-03-12" />);
 
     expect(
       screen.getByRole('group', { name: 'Dates Needed to publish' }),
@@ -40,14 +43,21 @@ describe('DateRangeField', () => {
     const end = screen.getByLabelText('End date');
     expect(start).toHaveAttribute('id', 'initiative-startDate');
     expect(end).toHaveAttribute('id', 'initiative-endDate');
-    expect(start).toHaveAttribute('min', '2026-02-01');
-    expect(start).toHaveAttribute('max', '2026-11-30');
-    expect(end).toHaveAttribute('min', '2026-03-12');
-    expect(end).toHaveAttribute('max', '2026-11-30');
+    expect(start).toHaveValue('12 Mar 2026');
+
+    await user.click(screen.getByRole('button', { name: 'Choose end date' }));
+    const calendar = screen.getByRole('dialog', { name: 'Choose end date' });
+    expect(within(calendar).getByRole('grid')).toHaveAccessibleDescription(
+      'Choose a date from 12 Mar 2026 to 30 Nov 2026.',
+    );
+    expect(
+      within(calendar).getByRole('button', { name: 'Wednesday 11 March 2026, not available' }),
+    ).toHaveAttribute('aria-disabled', 'true');
+    vi.useRealTimers();
   });
 
   it('shows each date’s problem under it', () => {
-    render(<Example />);
+    renderWithProviders(<Example />);
 
     const end = screen.getByLabelText('End date');
     expect(end).toHaveAttribute('aria-invalid', 'true');
@@ -57,7 +67,7 @@ describe('DateRangeField', () => {
   });
 
   it('reports both dates when one changes', () => {
-    render(<Example start="2026-03-01" />);
+    renderWithProviders(<Example start="2026-03-01" />);
 
     fireEvent.change(screen.getByLabelText('End date'), { target: { value: '2026-05-31' } });
 
@@ -65,7 +75,7 @@ describe('DateRangeField', () => {
   });
 
   it('locks the end date and says why', () => {
-    render(
+    renderWithProviders(
       <DateRangeField
         label="Dates"
         idPrefix="field"

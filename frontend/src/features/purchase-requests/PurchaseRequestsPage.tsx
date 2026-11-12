@@ -1,5 +1,5 @@
 import { Ban, FileText, Plus, SearchX } from 'lucide-react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { Button, LinkButton } from '@/ui/Button/Button';
 import { Pager } from '@/ui/Pager/Pager';
@@ -35,7 +35,7 @@ import styles from './PurchaseRequestsPage.module.css';
  */
 export function PurchaseRequestsPage() {
   usePageTitle(PURCHASE_REQUESTS);
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const search = readListSearch(params);
   const list = usePurchaseRequestList(toListQuery(search));
   const error = list.error instanceof ApiError ? list.error : null;
@@ -43,7 +43,9 @@ export function PurchaseRequestsPage() {
 
   /** New filters go back to page 1 unless the page itself changes; Back leaves the page. */
   function change(patch: Partial<ListSearch>) {
-    setParams(writeListSearch({ ...search, page: 1, ...patch }), { replace: true });
+    setParams((latest) => writeListSearch({ ...readListSearch(latest), page: 1, ...patch }), {
+      replace: true,
+    });
   }
 
   if (error?.kind === 'forbidden') {

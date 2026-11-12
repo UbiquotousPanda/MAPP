@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { render, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
+import { renderWithProviders } from '@/testing/render';
 import { DateRangeField } from '../DateRangeField/DateRangeField';
 import { MoneyField } from '../MoneyField/MoneyField';
 import { TextAreaField } from '../TextAreaField/TextAreaField';
@@ -51,7 +52,7 @@ function Fields() {
 
 describe('FieldShell marking (038 FR-063, D-364)', () => {
   it('038 FR-063: a field required to save shows a red asterisk after its label instead of the word "Required"', () => {
-    render(<Fields />);
+    renderWithProviders(<Fields />);
 
     expect(screen.queryByText('Required', { exact: true })).not.toBeInTheDocument();
     for (const label of ['Plan name', 'Budget']) {
@@ -64,7 +65,7 @@ describe('FieldShell marking (038 FR-063, D-364)', () => {
   });
 
   it('038 FR-063: the control is aria-required and its description says "required" once', () => {
-    render(<Fields />);
+    renderWithProviders(<Fields />);
 
     const name = screen.getByRole('textbox', { name: 'Plan name' });
     expect(name).toHaveAttribute('aria-required', 'true');
@@ -79,7 +80,7 @@ describe('FieldShell marking (038 FR-063, D-364)', () => {
   });
 
   it('038 FR-063: "Needed to publish" keeps its word tag, with no asterisk and no aria-required', () => {
-    render(<Fields />);
+    renderWithProviders(<Fields />);
 
     const objective = screen.getByRole('textbox', { name: 'Objective' });
     expect(objective).not.toHaveAttribute('aria-required');
@@ -93,8 +94,8 @@ describe('FieldShell marking (038 FR-063, D-364)', () => {
     '038 FR-063, SC-013: axe finds nothing on required fields in the %s theme',
     async (theme) => {
       document.documentElement.dataset.theme = theme;
-      const { container } = render(<Fields />);
-      await expectNoAxeViolations(container);
+      renderWithProviders(<Fields />);
+      await expectNoAxeViolations();
     },
   );
 

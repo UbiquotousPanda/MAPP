@@ -1,6 +1,6 @@
 import { SearchX, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -39,7 +39,7 @@ export function RecycleBinPage() {
   const bin = useRecycleBin();
   // Emptying the bin deletes for good: only for roles with recycleBin.purge (feature 014).
   const { has } = useAccess();
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const search = params.get('q') ?? '';
   const type = params.get('type') ?? 'all';
   // Written in place, so Back leaves the page instead of undoing the filters one by one.

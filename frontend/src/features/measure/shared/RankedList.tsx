@@ -1,7 +1,7 @@
 import { ChevronLeft } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -75,7 +75,7 @@ export function RankedList<F>(props: RankedListProps<F>) {
   const { levelFallback, caption, defaultOrder } = props;
   const { state, change } = useRankedState(defaultSort, defaultOrder);
   const [address] = useReportAddress();
-  const [params] = useSearchParams();
+  const [params] = useAddressParams();
   const box = useRef<HTMLDivElement>(null);
   const focusAfterDrill = useRef(false);
   const drill = (id: string) => {

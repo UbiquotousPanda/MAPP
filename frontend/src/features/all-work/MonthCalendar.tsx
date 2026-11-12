@@ -3,29 +3,14 @@ import { useState } from 'react';
 import type { MouseEvent } from 'react';
 import { Link } from 'react-router';
 import { Button } from '@/ui/Button/Button';
+import { MONTH_NAMES, WEEKDAYS, monthWeeks } from '@/ui/DatePicker/calendar';
 import { Popover } from '@/ui/Popover/Popover';
 import { cx } from '@/ui/cx';
 import { useFormatters } from '@/format/useFormatters';
 import type { AllWorkResult, AllWorkRow } from './all-work-types';
-import { monthWeeks, runsOn } from './calendar';
+import { runsOn } from './calendar';
 import styles from './MonthCalendar.module.css';
 import { rowHref } from './row-href';
-
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /** A day lists this many activities; the rest are behind "+ n more". */
 const SHOWN_PER_DAY = 3;
