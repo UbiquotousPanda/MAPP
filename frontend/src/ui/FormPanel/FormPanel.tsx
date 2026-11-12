@@ -1,9 +1,9 @@
-import { CircleAlert } from 'lucide-react';
 import { useId } from 'react';
-import type { FormEvent, KeyboardEvent, ReactNode } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { useUnsavedChanges } from '../useUnsavedChanges';
 import { Button } from '../Button/Button';
 import { FormErrorSummary } from '../FormErrorSummary/FormErrorSummary';
+import { InlineAlert } from '../InlineAlert/InlineAlert';
 import type { FieldProblem } from '../FormErrorSummary/FormErrorSummary';
 import { SidePanel } from '../SidePanel/SidePanel';
 import styles from './FormPanel.module.css';
@@ -67,15 +67,7 @@ export function FormPanel({
           </>
         }
       >
-        {/* eslint-disable-next-line jsx-a11y-x/no-noninteractive-element-interactions -- Enter from a select inside saves the form; the controls stay the interactive elements */}
-        <form
-          id={formId}
-          noValidate
-          aria-busy={saving}
-          className={styles.form}
-          onSubmit={submit}
-          onKeyDown={submitOnEnterInSelect}
-        >
+        <form id={formId} noValidate aria-busy={saving} className={styles.form} onSubmit={submit}>
           {failure && <FailureMessage failure={failure} />}
           <FormErrorSummary errors={problems} />
           {children}
@@ -86,23 +78,11 @@ export function FormPanel({
   );
 }
 
-/** Enter saves from a choice list too, as browsers do only from text fields. */
-function submitOnEnterInSelect(event: KeyboardEvent<HTMLFormElement>) {
-  if (event.key === 'Enter' && event.target instanceof HTMLSelectElement) {
-    event.preventDefault();
-    event.currentTarget.requestSubmit();
-  }
-}
-
 /** A failure that is not about one field, such as a conflict; screen readers hear it at once. */
 export function FailureMessage({ failure }: { failure: SaveFailure }) {
   return (
-    <div role="alert" className={styles.failure}>
-      <CircleAlert />
-      <div>
-        <p className={styles.failureMessage}>{failure.message}</p>
-        {failure.nextStep && <p>{failure.nextStep}</p>}
-      </div>
-    </div>
+    <InlineAlert tone="danger" role="alert" title={failure.message}>
+      {failure.nextStep && <p>{failure.nextStep}</p>}
+    </InlineAlert>
   );
 }

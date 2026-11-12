@@ -1,6 +1,6 @@
 import { Columns3 } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { Button } from '@/ui/Button/Button';
+import { Popover } from '@/ui/Popover/Popover';
 import { COLUMN_KEYS } from './schemas';
 import type { ColumnKey } from './schemas';
 import { COLUMN_WORDS } from './words';
@@ -35,73 +35,71 @@ export function ColumnChooser({ columns, onChange }: ColumnChooserProps) {
           Columns
         </Button>
       </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content className={styles.chooser} align="end" sideOffset={6} aria-label="Columns">
-          {lastOne && (
-            <p id={LAST_COLUMN_HINT} className={styles.note}>
-              At least one column stays shown.
-            </p>
-          )}
-          <ul className={styles.chooserList}>
-            {columns.map((key, i) => (
-              <li key={key}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked
-                    disabled={lastOne}
-                    aria-describedby={lastOne ? LAST_COLUMN_HINT : undefined}
-                    onChange={() => onChange(columns.filter((c) => c !== key))}
-                  />{' '}
-                  {COLUMN_WORDS[key]}
-                </label>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="tertiary"
-                  disabled={i === 0}
-                  aria-label={`Move ${COLUMN_WORDS[key]} left`}
-                  onClick={() => onChange(moved(columns, i, -1))}
-                >
-                  ←
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="tertiary"
-                  disabled={i === columns.length - 1}
-                  aria-label={`Move ${COLUMN_WORDS[key]} right`}
-                  onClick={() => onChange(moved(columns, i, 1))}
-                >
-                  →
-                </Button>
-              </li>
-            ))}
-            {hidden.map((key) => (
-              <li key={key}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={false}
-                    onChange={() => onChange([...columns, key])}
-                  />{' '}
-                  {COLUMN_WORDS[key]}
-                </label>
-              </li>
-            ))}
-            <li>
+      <Popover.Content width="md" padding="lg" align="end" aria-label="Columns">
+        {lastOne && (
+          <p id={LAST_COLUMN_HINT} className={styles.note}>
+            At least one column stays shown.
+          </p>
+        )}
+        <ul className={styles.chooserList}>
+          {columns.map((key, i) => (
+            <li key={key}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked
+                  disabled={lastOne}
+                  aria-describedby={lastOne ? LAST_COLUMN_HINT : undefined}
+                  onChange={() => onChange(columns.filter((c) => c !== key))}
+                />{' '}
+                {COLUMN_WORDS[key]}
+              </label>
               <Button
                 type="button"
                 size="sm"
                 variant="tertiary"
-                onClick={() => onChange([...COLUMN_KEYS])}
+                disabled={i === 0}
+                aria-label={`Move ${COLUMN_WORDS[key]} left`}
+                onClick={() => onChange(moved(columns, i, -1))}
               >
-                Reset columns
+                ←
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="tertiary"
+                disabled={i === columns.length - 1}
+                aria-label={`Move ${COLUMN_WORDS[key]} right`}
+                onClick={() => onChange(moved(columns, i, 1))}
+              >
+                →
               </Button>
             </li>
-          </ul>
-        </Popover.Content>
-      </Popover.Portal>
+          ))}
+          {hidden.map((key) => (
+            <li key={key}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={false}
+                  onChange={() => onChange([...columns, key])}
+                />{' '}
+                {COLUMN_WORDS[key]}
+              </label>
+            </li>
+          ))}
+          <li>
+            <Button
+              type="button"
+              size="sm"
+              variant="tertiary"
+              onClick={() => onChange([...COLUMN_KEYS])}
+            >
+              Reset columns
+            </Button>
+          </li>
+        </ul>
+      </Popover.Content>
     </Popover.Root>
   );
 }

@@ -17,8 +17,8 @@ function financials(scope: Page | Locator): Locator {
 /** One of the five figures of an activity's or line item's card, such as "Invoiced". */
 function figure(card: Locator, label: string): Locator {
   return card
-    .getByRole('list', { name: 'Financial figures' })
-    .getByRole('listitem')
+    .getByRole('region', { name: 'Financial figures' })
+    .locator(':scope > *')
     .filter({ hasText: label });
 }
 

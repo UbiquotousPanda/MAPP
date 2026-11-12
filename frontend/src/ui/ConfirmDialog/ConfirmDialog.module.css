@@ -23,6 +23,10 @@
   animation: fade-in var(--dur) var(--ease-out);
 }
 
+.lg {
+  width: min(640px, calc(100vw - 32px));
+}
+
 .dialog:focus {
   outline: none;
 }

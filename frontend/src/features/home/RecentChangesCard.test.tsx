@@ -55,7 +55,7 @@ describe('RecentChangesCard', () => {
       '/plans/P-1001/activities/A-1042',
     );
     expect(
-      within(entry).getByRole('button', { name: `just now (${formatDateTime(at)})` }),
+      within(entry).getByRole('button', { name: `just now, ${formatDateTime(at)}` }),
     ).toBeInTheDocument();
   });
 

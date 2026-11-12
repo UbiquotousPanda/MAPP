@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useBulkTargets } from './api';
@@ -40,24 +41,23 @@ export function CopyMoveDialog({ action, records, onClose, onDone }: CopyMoveDia
       {targets.error && <Problem error={targets.error} />}
       {targets.data?.note && <p>{targets.data.note}</p>}
       {targets.data && targets.data.items.length > 0 && (
-        <fieldset className={styles.sentences}>
-          <legend className="visually-hidden">Where to {action} them</legend>
-          <ul className={styles.targets}>
-            {targets.data.items.map((t) => (
-              <li key={t.id} className={styles.target}>
-                <label>
-                  <input
-                    type="radio"
-                    name="target"
-                    checked={target?.id === t.id}
-                    onChange={() => setTarget(t)}
-                  />{' '}
+        <div className={styles.targets}>
+          <RadioGroup
+            label={`Where to ${action} them`}
+            labelHidden
+            name="target"
+            options={targets.data.items.map((t) => ({
+              value: t.id,
+              label: (
+                <span>
                   {t.path} <span className={styles.id}>{t.id}</span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        </fieldset>
+                </span>
+              ),
+            }))}
+            value={target?.id ?? ''}
+            onChange={(id) => setTarget(targets.data?.items.find((t) => t.id === id) ?? null)}
+          />
+        </div>
       )}
     </BulkDialog>
   );

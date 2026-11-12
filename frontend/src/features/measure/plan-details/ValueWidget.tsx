@@ -1,11 +1,11 @@
 import { toCents } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import { BarList } from '@/ui/BarList/BarList';
+import type { BarListItem } from '@/ui/BarList/BarList';
 import { PeriodSwitch, ReportWidget } from '../shared';
 import type { ReportAddress, ReportTableData } from '../shared';
 import { allWorkLink } from './allWorkLink';
 import type { PlanDetailsValue, PlanDetailsWidget } from './api';
-import { BarList } from './BarList';
-import type { Bar } from './BarList';
 import {
   countsInEachText,
   doesNotApplyText,
@@ -46,7 +46,7 @@ export function ValueWidget({ widget, level, address, attributeId, currency }: V
       title={title}
       tip={tipOf(widget, level)}
       note={note === '' ? undefined : note}
-      chart={<BarList title={widget.title} bars={barsOf(widget, money, href)} />}
+      chart={<BarList label={widget.title} items={barsOf(widget, money, href)} />}
       table={tableOf(widget, RECORDS[level].many, currency, money)}
       controls={periods ? <PeriodSwitch /> : undefined}
     />
@@ -59,15 +59,15 @@ function barsOf(
   widget: PlanDetailsWidget,
   money: Money,
   href: (v: PlanDetailsValue) => string | undefined,
-): Bar[] {
+): BarListItem[] {
   const cost = widget.measure === 'plannedCost';
-  const bar = (v: PlanDetailsValue): Bar => ({
+  const bar = (v: PlanDetailsValue): BarListItem => ({
     key: v.key,
     label: v.label,
     size: cost ? Number(toCents(v.plannedCost?.amount ?? '0')) : v.count,
-    text: cost ? money(v.plannedCost) : v.count.toLocaleString('en-GB'),
+    value: cost ? money(v.plannedCost) : v.count.toLocaleString('en-GB'),
     href: href(v),
-    muted: SPECIAL.includes(v.key),
+    colour: SPECIAL.includes(v.key) ? 'var(--chart-budget)' : undefined,
   });
   const regular = widget.values.filter((v) => !SPECIAL.includes(v.key));
   const drawn = widget.other ? regular.slice(0, CHART_VALUES) : regular;
@@ -96,7 +96,6 @@ function tableOf(
       cells: [v.label, v.count.toLocaleString('en-GB'), ...(cost ? [money(v.plannedCost)] : [])],
     })),
     total: [
-      'Total',
       widget.total.count.toLocaleString('en-GB'),
       ...(cost ? [money(widget.total.plannedCost)] : []),
     ],

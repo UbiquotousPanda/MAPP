@@ -16,27 +16,6 @@
   max-width: 320px;
 }
 
-.field {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  white-space: nowrap;
-}
-
-.select {
-  height: var(--control-sm);
-  padding-left: var(--space-3);
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-control);
-  background-color: var(--surface);
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-regular);
-}
-
 /* A fade on the right edge says more columns sit off-screen; the local layer covers it once scrolled to the end. */
 .scroll {
   overflow-x: auto;

@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import type { ApiError } from '@/api/errors';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -32,13 +33,8 @@ export interface RestoreDialogProps {
   onPurge: (item: BinItem) => void;
 }
 
-/**
- * Asks before a restore (FR-018 – FR-026): where the record returns, what changes on the way
- * (status rules, a new name), the notes of its type, and — when its parent is in the recycle bin
- * too — the entries that come back first (**Restore both** / **Restore all <N>**). An entry whose
- * parent was deleted permanently cannot come back: the dialog says why and offers **Delete
- * permanently** instead.
- */
+// An entry whose parent was deleted permanently cannot come back: the dialog says why and offers
+// Delete permanently instead.
 export function RestoreDialog({ item, onClose, onPurge }: RestoreDialogProps) {
   const blockedInList = item.restoreState === 'parentDeletedPermanently';
   const preview = useRestorePreview(item.id, !blockedInList);
@@ -141,15 +137,11 @@ export function RestoreDialog({ item, onClose, onPurge }: RestoreDialogProps) {
       {preview.data ? (
         <PreviewText preview={preview.data} />
       ) : preview.error ? (
-        <p role="alert">{asApiError(preview.error).message}</p>
+        <InlineError>{asApiError(preview.error).message}</InlineError>
       ) : (
         <Skeleton lines={3} />
       )}
-      {failure && (
-        <p role="alert" className={styles.failure}>
-          {failure.message}
-        </p>
-      )}
+      {failure && <InlineError>{failure.message}</InlineError>}
     </ConfirmDialog>
   );
 }

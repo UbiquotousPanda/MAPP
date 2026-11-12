@@ -3,6 +3,7 @@ import { cx } from '@/ui/cx';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { TooltipText } from '@/ui/Tooltip/TooltipText';
 import type { PlanBudgetCards } from './api';
 import styles from './PlanBudget.module.css';
 
@@ -87,9 +88,15 @@ function Pair({ label, value, full, danger = false }: PairProps) {
   return (
     <span className={styles.pair}>
       <span>{label}</span>
-      <span className={cx(styles.pairValue, danger && styles.danger)} title={full ?? undefined}>
-        {value}
-        {full && full !== value && <span className="visually-hidden"> ({full})</span>}
+      <span className={cx(styles.pairValue, danger && styles.danger)}>
+        {full && full !== value ? (
+          <TooltipText tip={full}>
+            {value}
+            <span className="visually-hidden"> ({full})</span>
+          </TooltipText>
+        ) : (
+          value
+        )}
       </span>
     </span>
   );

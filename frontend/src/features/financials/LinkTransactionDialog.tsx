@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { ApiError, conflictMessage } from '@/api/errors';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { FormField } from '@/ui/FormField/FormField';
@@ -17,7 +17,6 @@ import styles from './LinkTransactionDialog.module.css';
 
 const FIELDS = ['lineItemId'] as const;
 
-/** How long the preview waits after the last key. */
 export const PREVIEW_DELAY_MS = 300;
 
 export interface LinkTransactionDialogProps {
@@ -27,12 +26,7 @@ export interface LinkTransactionDialogProps {
   onClose: () => void;
 }
 
-/**
- * Link to a line item (015 US7, FR-026): type the line item's ID, see its name, activity and plan
- * before saving ("Station signage (L-1007) · Grand opening Shanghai · FY2026 Mobility China"),
- * then Link. A missing line item or one in the recycle bin is refused at the field; a change made
- * meanwhile by someone else is refused as a version conflict.
- */
+/** Shows the typed line item before Link; a missing or binned one is refused at the field. */
 export function LinkTransactionDialog({
   transaction,
   onLinked,
@@ -100,10 +94,9 @@ export function LinkTransactionDialog({
     >
       <div className={styles.body}>
         {failure && (
-          <p className={styles.failure} role="alert">
-            <CircleAlert aria-hidden="true" />
+          <InlineAlert tone="danger" role="alert">
             {failure}
-          </p>
+          </InlineAlert>
         )}
         <FormField
           control={form.control}

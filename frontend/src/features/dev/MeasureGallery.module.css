@@ -10,5 +10,5 @@
 
 .label {
   fill: var(--ink);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }

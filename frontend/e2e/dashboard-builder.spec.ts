@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
+import { choose, expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
 import { createPlanningRecords } from './planning';
 import { expect, test } from './support/no-csp-violations';
 
@@ -18,10 +18,10 @@ function inspector(page: Page): Locator {
   return page.getByRole('complementary', { name: 'Inspector' });
 }
 
-/** Picks `label` in a choice field: a select up to ten options, a searchable combobox above. */
-async function choose(field: Locator, label: string) {
-  if ((await field.evaluate((element) => element.tagName)) === 'SELECT') {
-    await field.selectOption({ label });
+/** Picks `label` in a choice field: ui/Select up to ten options, a searchable combobox above. */
+async function chooseIn(field: Locator, label: string) {
+  if ((await field.evaluate((element) => element.tagName)) === 'BUTTON') {
+    await choose(field.page(), field, label);
     return;
   }
   await field.fill(label);
@@ -30,10 +30,10 @@ async function choose(field: Locator, label: string) {
 
 async function chooseData(page: Page, source: string, groupBy: string, measure: string) {
   const panel = inspector(page);
-  await choose(panel.getByLabel(/^Source/), source);
-  await choose(panel.getByLabel(/^Group by/), groupBy);
+  await chooseIn(panel.getByLabel(/^Source/), source);
+  await chooseIn(panel.getByLabel(/^Group by/), groupBy);
   await panel.getByRole('button', { name: 'Add measure' }).click();
-  await choose(panel.getByLabel('What to measure'), measure);
+  await chooseIn(panel.getByLabel('What to measure'), measure);
 }
 
 for (const colorScheme of ['light', 'dark'] as const) {
@@ -175,7 +175,7 @@ test('051 US1-3, SC-001: a widget adds up the planned cost the activity page sho
   expect(shown?.[0]).toBe('20,000.00');
 
   await page.goto(records.activityPath);
-  await expect(page.getByLabel('Summary')).toContainText(`${shown?.[0] ?? ''} USD`);
+  await expect(page.getByLabel('Summary')).toContainText(`$${shown?.[0] ?? ''}`);
 });
 
 test('051 US1-12, FR-002: a Viewer has no Dashboard builder and is refused /builder', async ({

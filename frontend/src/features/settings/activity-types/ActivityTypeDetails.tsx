@@ -6,6 +6,7 @@ import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useFormatters } from '@/format/useFormatters';
 import styles from '@/ui/settings-table.module.css';
 import { CanChange } from '@/ui/CanChange/CanChange';
+import { Tag } from '@/ui/Tag/Tag';
 import { MetaLine } from '../MetaLine';
 import { SETTING_NOUNS } from '../settings-nouns';
 import { UsageLine } from '../UsageLine';
@@ -81,8 +82,8 @@ export function ActivityTypeDetails({ type, actions, onClose }: ActivityTypeDeta
               ) : (
                 <ul role="list" className={styles.chips}>
                   {type.models.map((model) => (
-                    <li key={model.id} className={styles.chip}>
-                      {model.active ? model.name : `${model.name} (inactive)`}
+                    <li key={model.id}>
+                      <Tag>{model.active ? model.name : `${model.name} (inactive)`}</Tag>
                     </li>
                   ))}
                 </ul>

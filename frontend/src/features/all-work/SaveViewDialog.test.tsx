@@ -136,10 +136,10 @@ describe('SaveViewDialog (US6)', () => {
     await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'Q4 review');
     await user.click(within(dialog).getByRole('button', { name: 'Save view' }));
 
-    expect(
-      await within(dialog).findByText("You already have a view called 'Q4 review'.", {
-        selector: 'p',
-      }),
-    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(dialog).getByRole('textbox', { name: 'Name' })).toHaveAccessibleDescription(
+        "required You already have a view called 'Q4 review'.",
+      ),
+    );
   });
 });

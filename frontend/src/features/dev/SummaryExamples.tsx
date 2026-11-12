@@ -1,6 +1,4 @@
-import { ClipboardList, ListChecks } from 'lucide-react';
 import { Card } from '@/ui/Card/Card';
-import { LinkSummaryCard } from '@/ui/SummaryCard/LinkSummaryCard';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { useFormatters } from '@/format/useFormatters';
 import styles from './ComponentGalleryPage.module.css';
@@ -34,11 +32,9 @@ export function SummaryExamples() {
         </div>
       </Card>
 
-      <Card title="LinkSummaryCard" subtitle="The link variant: the whole card opens its list">
+      <Card title="SummaryCard with to" subtitle="The link variant: the whole card opens its list">
         <div className={styles.summaries}>
-          <LinkSummaryCard
-            icon={<ClipboardList />}
-            tint="var(--info)"
+          <SummaryCard
             label="My teams' plans"
             tip="Plans that have at least one of your teams."
             value="3"
@@ -46,15 +42,13 @@ export function SummaryExamples() {
             to="/plans?scope=myTeams"
             linkLabel="open the Plans list"
           />
-          <LinkSummaryCard
-            icon={<ListChecks />}
-            tint="var(--level-campaign)"
+          <SummaryCard
             label="Planned cost"
             tip="The planned cost of every activity in these plans."
             value={moneyCompact({ amount: '1250000', currency: 'USD' })}
             fullValue={money({ amount: '1250000', currency: 'USD' })}
-            to="#main"
-            linkLabel="go to the top of this page"
+            to="/plans"
+            linkLabel="open the Plans list"
           />
         </div>
       </Card>

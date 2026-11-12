@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert, RotateCw } from 'lucide-react';
+import { Clock, RotateCw } from 'lucide-react';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { ApprovalAlert } from '@/features/approvals';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import type { BreadcrumbItem } from '@/ui/Breadcrumb/Breadcrumb';
 import { Button } from '@/ui/Button/Button';
 import type { ChoiceOption } from '@/ui/ChoiceField/ChoiceField';
@@ -121,9 +121,9 @@ export function PurchaseRequestForm(props: PurchaseRequestFormProps) {
           sections={railSections(values, options.attributeForm, options.lineAttributeForm)}
         >
           {stored?.notice && (
-            <ApprovalAlert tone="warning">
+            <InlineAlert tone="warning" icon={Clock}>
               <p>{stored.notice}</p>
-            </ApprovalAlert>
+            </InlineAlert>
           )}
           {save.failure && <Failure failure={save.failure} onReload={props.onReload} />}
           <FormErrorSummary errors={problems} />
@@ -175,26 +175,22 @@ export function PurchaseRequestForm(props: PurchaseRequestFormProps) {
 
 function Failure({ failure, onReload }: { failure: SaveFailure; onReload?: () => void }) {
   return (
-    <div role="alert" className={styles.failure}>
-      <CircleAlert aria-hidden="true" />
-      <div className={styles.failureText}>
-        <p className={styles.failureMessage}>{failure.message}</p>
-        {failure.details.length > 0 && (
-          <ul className={styles.details}>
-            {failure.details.map((detail) => (
-              <li key={detail}>{detail}</li>
-            ))}
-          </ul>
-        )}
-        {failure.nextStep && <p>{failure.nextStep}</p>}
-        {failure.conflict && onReload && (
-          <div>
-            <Button size="sm" icon={<RotateCw />} onClick={onReload}>
-              {RELOAD}
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+    <InlineAlert tone="danger" role="alert" title={failure.message}>
+      {failure.details.length > 0 && (
+        <ul className={styles.details}>
+          {failure.details.map((detail) => (
+            <li key={detail}>{detail}</li>
+          ))}
+        </ul>
+      )}
+      {failure.nextStep && <p>{failure.nextStep}</p>}
+      {failure.conflict && onReload && (
+        <div>
+          <Button size="sm" icon={<RotateCw />} onClick={onReload}>
+            {RELOAD}
+          </Button>
+        </div>
+      )}
+    </InlineAlert>
   );
 }

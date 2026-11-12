@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { findMessages } from '@/testing/render';
+import { choose } from '@/testing/select';
 import {
   BUSINESS_UNIT,
   BUSINESS_UNIT_LOCK,
@@ -103,9 +104,10 @@ describe('ShellAttributeEditorPage: edit (FR-021)', () => {
       ),
     ]);
 
-    await user.selectOptions(
+    await choose(
+      user,
       await screen.findByRole('combobox', { name: /Marking/ }),
-      'neededToSubmit',
+      'Needed to submit',
     );
     await user.click(screen.getByRole('button', { name: 'Save' }));
 

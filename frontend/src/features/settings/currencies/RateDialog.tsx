@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { ApiError, conflictMessage } from '@/api/errors';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
+import { DateField } from '@/ui/DateField/DateField';
 import { DecimalField } from '@/ui/DecimalField/DecimalField';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { FormField } from '@/ui/FormField/FormField';
+import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import { problemOf } from '@/ui/FormPanel/problem-of';
 import { LockedNote } from '@/ui/LockedNote/LockedNote';
 import { useToast } from '@/ui/Toast/useToast';
@@ -17,7 +19,6 @@ import { ImpactWarnings } from '../ImpactWarnings';
 import { CONFLICT_NEXT_STEP } from '../save-failure';
 import { liveRate, rateText } from './rate-input';
 import { futureRateNote } from './rate-words';
-import { RateDateField } from './RateDateField';
 import {
   checkAddRateImpact,
   checkUpdateRateImpact,
@@ -36,7 +37,6 @@ const DATE_FIXED = "A rate's date can't change: add a rate on the new date and d
 const FIELDS = ['date', 'rate'] as const;
 
 export interface RateDialogProps {
-  /** The currency the rate is of, such as "EUR". */
   code: string;
   /** The rate to change; without one, the dialog adds a rate. */
   rate?: ExchangeRateRecord;
@@ -48,13 +48,7 @@ interface PendingSave {
   warnings: ChangeImpact['warnings'];
 }
 
-/**
- * Add rate and Edit rate (016 FR-003 – FR-005): the date (today unless changed; fixed once saved)
- * and the rate per 1 USD with the live line "1 USD = 0.95 EUR · 1 EUR = 1.052632 USD". A rate that
- * changes the current rate first says what it recalculates — line items, and plans planned in the
- * currency, before → after — with **Save rate** or **Keep editing**. A future rate says from when it
- * counts.
- */
+/** A rate that changes the current rate first says what it recalculates, before it is saved. */
 export function RateDialog({ code, rate, onClose }: RateDialogProps) {
   const { show } = useToast();
   const { date: formatDate, dateFormat } = useFormatters();
@@ -162,12 +156,7 @@ export function RateDialog({ code, rate, onClose }: RateDialogProps) {
         busy={saving}
         onSubmit={() => void submit()}
       >
-        {failure && (
-          <div role="alert" className={styles.failure}>
-            <p>{failure.message}</p>
-            {failure.nextStep && <p>{failure.nextStep}</p>}
-          </div>
-        )}
+        {failure && <FailureMessage failure={failure} />}
         {editing ? (
           <dl className={styles.fixedValue}>
             <dt>Date</dt>
@@ -181,7 +170,9 @@ export function RateDialog({ code, rate, onClose }: RateDialogProps) {
             control={form.control}
             name="date"
             render={(field) => (
-              <RateDateField
+              <DateField
+                label="Date"
+                marking="Required"
                 note={future ? futureRateNote(day, formatDate) : undefined}
                 {...field}
               />

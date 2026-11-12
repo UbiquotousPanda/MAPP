@@ -103,21 +103,6 @@
   height: 14px;
 }
 
-.popover {
-  z-index: 60;
-  min-width: 240px;
-  padding: var(--space-1);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-control);
-  background: var(--raised);
-  box-shadow: var(--shadow-md);
-}
-
-/* Dark Raised is 3.9:1 for Text Subtle, so secondary text there is Text Strong (constitution X). */
-:global(:root[data-theme='dark']) .popover {
-  --ink-2: var(--ink);
-}
-
 .count {
   padding: var(--space-1) var(--space-3) var(--space-1);
   color: var(--ink-2);

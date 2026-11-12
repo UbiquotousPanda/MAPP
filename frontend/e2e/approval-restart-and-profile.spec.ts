@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
   action,
-  chooseOption,
+  choose,
   escapeRegExp,
   expectNoAxeViolations,
   expectToast,
@@ -141,8 +141,8 @@ test('My profile: the display currency and date format follow on the Plans list 
 
   await preferences.getByRole('button', { name: 'Edit preferences' }).click();
   const panel = page.getByRole('dialog', { name: 'Edit display preferences' });
-  await chooseOption(panel.getByRole('combobox', { name: 'Display currency' }), 'EUR — Euro');
-  await chooseOption(panel.getByRole('combobox', { name: 'Date format' }), '12/03/2026');
+  await choose(page, panel.getByRole('combobox', { name: 'Display currency' }), /^EUR — Euro/);
+  await choose(page, panel.getByRole('combobox', { name: 'Date format' }), /^12\/03\/2026/);
   await panel.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, 'Your preferences saved');
   await expect(preferences).toContainText('EUR — Euro');
@@ -164,7 +164,9 @@ test('My profile: the display currency and date format follow on the Plans list 
   await expect(page.getByRole('group', { name: 'Plan facts' })).toContainText(
     `01/01/${SEED_YEAR} – 31/12/${SEED_YEAR}`,
   );
-  await expect(page.getByRole('region', { name: 'Summary' })).toContainText('≈ €1,104,000.00');
+  await expect(page.getByRole('region', { name: 'Summary' })).toContainText(
+    '≈ about €1,104,000.00',
+  );
   const planRow = treeRow(page, 'P-1001');
   await expect(planRow).toContainText(`01/01/${SEED_YEAR} – 31/12/${SEED_YEAR}`);
   await expect(planRow).toContainText('€1,104,000.00');

@@ -168,24 +168,6 @@
   list-style: none;
 }
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-chip);
-  background: var(--chip);
-  color: var(--ink);
-  font-size: var(--text-xs);
-}
-
-/* A heading inside a side panel: 16/24 bold, 32 px above the section before it. */
-.sectionTitle {
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-}
-
 .gone {
   color: var(--ink);
   font-size: var(--text-sm);

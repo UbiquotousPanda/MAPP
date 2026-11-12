@@ -43,14 +43,6 @@
   padding: var(--space-4) var(--card-padding);
 }
 
-.heading {
-  margin: 0;
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-md);
-}
-
 /* Dates, people, IDs and amounts stay on one line; only the named long-text cells wrap. */
 .table td {
   white-space: nowrap;
@@ -79,37 +71,4 @@
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.bars {
-  display: grid;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.bar {
-  display: grid;
-  grid-template-columns: minmax(96px, 9rem) 1fr auto;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-sm);
-}
-
-.track {
-  height: 12px;
-  border-radius: var(--radius-control);
-  background: var(--gray-bg);
-}
-
-.fill {
-  display: block;
-  height: 100%;
-  border-radius: var(--radius-control);
-  background: var(--chart-planned);
-}
-
-.fillNever {
-  background: var(--muted);
 }

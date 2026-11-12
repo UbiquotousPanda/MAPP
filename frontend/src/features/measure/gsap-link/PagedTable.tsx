@@ -6,6 +6,8 @@ import { cx } from '@/ui/cx';
 import { Pager } from '@/ui/Pager/Pager';
 import { SortHeader } from '@/ui/SortHeader/SortHeader';
 import dataTable from '@/ui/Table/Table.module.css';
+import { TotalLabel } from '@/ui/Table/TotalLabel';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { downloadReport, ExportMenu, useReportAddress } from '../shared';
 import { PAGE_SIZES } from './gsap-address';
 import type { GsapTable } from './gsap-address';
@@ -34,7 +36,7 @@ export interface PagedTableProps<R> {
   total: number;
   /** Said when the tab has no row at all. */
   empty: string;
-  /** The totals row over every page, one cell per column. */
+  /** The totals row over every page, one cell per column after the first (which reads "Total"). */
   totals?: ReactNode[];
   onChange: (patch: Partial<GsapTable>) => void;
 }
@@ -48,9 +50,9 @@ export function PagedTable<R>(props: PagedTableProps<R>) {
   return (
     <section className={styles.card} aria-labelledby={headingId}>
       <div className={styles.cardHeader}>
-        <h2 id={headingId} className={styles.heading}>
+        <SectionHeading level={2} rank="card" id={headingId}>
           {title}
-        </h2>
+        </SectionHeading>
         <ExportMenu
           label={`Export ${title}`}
           iconOnly
@@ -100,18 +102,17 @@ function Rows<R>(props: PagedTableProps<R>) {
           {totals && (
             <tfoot>
               <tr className={dataTable.total}>
-                {totals.map((cell, i) => {
-                  const Cell = i === 0 ? 'th' : 'td';
-                  return (
-                    <Cell
-                      key={columns[i]?.key ?? i}
-                      scope={i === 0 ? 'row' : undefined}
-                      className={cx(columns[i]?.numeric && dataTable.numeric)}
-                    >
-                      {cell}
-                    </Cell>
-                  );
-                })}
+                <th scope="row">
+                  <TotalLabel />
+                </th>
+                {totals.map((cell, i) => (
+                  <td
+                    key={columns[i + 1]?.key ?? i}
+                    className={cx(columns[i + 1]?.numeric && dataTable.numeric)}
+                  >
+                    {cell}
+                  </td>
+                ))}
               </tr>
             </tfoot>
           )}

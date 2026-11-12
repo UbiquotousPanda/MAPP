@@ -1,0 +1,70 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(96px, 35%) minmax(48px, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-sm);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.linked .row {
+  grid-template-columns: minmax(96px, 35%) minmax(48px, 1fr) auto var(--icon-sm);
+  margin-inline: calc(-1 * var(--space-2));
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-control);
+}
+
+.label {
+  color: var(--ink);
+}
+
+.fill {
+  display: block;
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.row svg {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  color: var(--ink-2);
+}
+
+/* The label's link covers its whole row, so the bar and the figures open it too. */
+.rowLink a::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+}
+
+.rowLink a:hover {
+  text-decoration: none;
+}
+
+.rowLink:hover {
+  background: var(--hover-on-card);
+}
+
+.rowLink:has(a:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+}
+
+.rowLink a:focus-visible {
+  outline: none;
+}

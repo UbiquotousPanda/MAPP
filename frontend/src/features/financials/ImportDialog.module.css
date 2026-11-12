@@ -79,32 +79,6 @@
   cursor: pointer;
 }
 
-.error,
-.failure {
-  display: flex;
-  gap: var(--space-1);
-  color: var(--danger-text);
-}
-
-/* Red is never tinted (constitution X): a framed box with a red bar. */
-.failure {
-  margin-bottom: var(--space-4);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--card-border);
-  border-left: 3px solid var(--danger);
-  border-radius: var(--radius-control);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-}
-
-.error svg,
-.failure svg {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
-}
-
 .checking {
   display: flex;
   align-items: center;

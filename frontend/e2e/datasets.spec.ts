@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import type { Locator, Page } from '@playwright/test';
-import { expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
+import { choose, expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
 import { expect, test } from './support/no-csp-violations';
 
 // Uploaded datasets against the real API: Priya uploads the agency's event leads, corrects a column, charts
@@ -47,7 +47,7 @@ test('051 US3: Priya uploads event leads, corrects a column and charts them (FR-
   await expect(panel(page)).toContainText('Step 2 of 2: Check the columns');
   await expect(panel(page).getByText(/^event-leads\.xlsx · Sheet '.+' · 12 rows$/)).toBeVisible();
   await expect(column(page, 1).getByLabel(/^Name/)).toHaveValue('Event');
-  await expect(column(page, 3).getByLabel(/^Type/)).toHaveValue('number');
+  await expect(column(page, 3).getByLabel(/^Type/)).toHaveText('Number');
   await expect(panel(page).getByRole('region', { name: 'First rows' })).toContainText(
     'Lubricants Expo Hamburg',
   );
@@ -57,10 +57,8 @@ test('051 US3: Priya uploads event leads, corrects a column and charts them (FR-
     .getByLabel(/^Dataset name/)
     .fill(name);
   await column(page, 4).getByLabel(/^Name/).fill('Agency cost');
-  await column(page, 4).getByLabel(/^Type/).selectOption('money');
-  await column(page, 4)
-    .getByLabel(/^Currency/)
-    .selectOption('EUR');
+  await choose(page, column(page, 4).getByLabel(/^Type/), 'Money');
+  await choose(page, column(page, 4).getByLabel(/^Currency/), /^EUR/);
   await expectNoAxeViolations(page);
   await panel(page).getByRole('button', { name: 'Save dataset' }).click();
 
@@ -75,10 +73,10 @@ test('051 US3: Priya uploads event leads, corrects a column and charts them (FR-
   await page.goto('/builder');
   await page.getByRole('button', { name: 'Add key figure' }).click();
   const inspector = page.getByRole('complementary', { name: 'Inspector' });
-  await inspector.getByLabel(/^Source/).selectOption({ label: name });
+  await choose(page, inspector.getByLabel(/^Source/), name);
   await inspector.getByRole('button', { name: 'Add measure' }).click();
-  await inspector.getByLabel('What to measure').selectOption({ label: 'Leads' });
-  await inspector.getByLabel('Aggregation').selectOption({ label: 'Sum' });
+  await choose(page, inspector.getByLabel('What to measure'), 'Leads');
+  await choose(page, inspector.getByLabel('Aggregation'), 'Sum');
   const keyFigure = page.getByRole('group', { name: /^Widget: Key figure,/ });
   await expect(keyFigure.getByText(LEADS_TOTAL, { exact: true })).toBeVisible();
 
@@ -116,7 +114,7 @@ test('051 US3-2: every cell is checked against its type and nothing is stored wh
   await panel(page)
     .getByLabel(/^Dataset name/)
     .fill(name);
-  await column(page, 2).getByLabel(/^Type/).selectOption('number');
+  await choose(page, column(page, 2).getByLabel(/^Type/), 'Number');
   await panel(page).getByRole('button', { name: 'Save dataset' }).click();
 
   await expect(

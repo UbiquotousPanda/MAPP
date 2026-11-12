@@ -42,3 +42,8 @@
   border-left-color: var(--level-line-item);
   background: color-mix(in srgb, var(--level-line-item) 12%, transparent);
 }
+
+.other {
+  border-left-color: var(--status-neutral);
+  background: color-mix(in srgb, var(--status-neutral) 12%, transparent);
+}

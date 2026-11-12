@@ -4,6 +4,7 @@ import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router';
 import { z } from 'zod';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import type { components } from '@/api/generated/schema';
 import { asApiError, isSessionLost } from '@/api/errors';
 import { ApprovalChain, SubmissionOutcomes } from '@/features/approvals';
@@ -154,9 +155,7 @@ function SubmitPurchaseRequestDialog({ purchaseRequest: pr, onClose }: DialogPro
     >
       <div className={styles.dialogBody}>
         {check.isError ? (
-          <p role="alert" className={styles.problem}>
-            {asApiError(check.error).message}
-          </p>
+          <InlineError>{asApiError(check.error).message}</InlineError>
         ) : !data ? (
           <Skeleton lines={4} />
         ) : missing ? (
@@ -173,11 +172,7 @@ function SubmitPurchaseRequestDialog({ purchaseRequest: pr, onClose }: DialogPro
             ) : (
               data.levels.length > 0 && <ApprovalChain upcomingLevels={data.levels} />
             )}
-            {problem && (
-              <p role="alert" className={styles.problem}>
-                {problem}
-              </p>
-            )}
+            {problem && <InlineError>{problem}</InlineError>}
             <FormField
               control={form.control}
               name="comment"

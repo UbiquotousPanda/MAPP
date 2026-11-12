@@ -53,6 +53,17 @@
   font-weight: var(--weight-bold);
 }
 
+.icon {
+  justify-content: center;
+  width: var(--control-sm);
+  padding: 0;
+}
+
+.icon svg {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
+
 .count {
   font-variant-numeric: tabular-nums;
 }

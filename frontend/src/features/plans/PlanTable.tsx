@@ -9,7 +9,7 @@ import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
 import { ScrollBox } from '@/features/financials';
-import { AmountPair } from './AmountPair';
+import { ConvertedAmount } from '@/features/line-items';
 import { PinButton } from './PinButton';
 import { PlanCompleteness, PlanStatusChip } from './PlanFacts';
 import type { PlanSummary } from './api';
@@ -104,7 +104,7 @@ export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTabl
                 </td>
                 <td className={dataTable.numeric}>
                   {figures.budget ? (
-                    <AmountPair
+                    <ConvertedAmount
                       primary={plan.planBudget ?? figures.budget}
                       secondary={figures.budget}
                     />
@@ -114,7 +114,7 @@ export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTabl
                 </td>
                 <td className={dataTable.numeric}>
                   <span className={styles.stack}>
-                    <AmountPair
+                    <ConvertedAmount
                       primary={plan.planPlannedCost ?? figures.plannedCost}
                       secondary={figures.plannedCost}
                     />

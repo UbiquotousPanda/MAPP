@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { Tabs } from '@/ui/Tabs/Tabs';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useDataSources } from '../charts';
 import type { Widget } from '../model';
 import type { BuilderAction, Draft } from './builder-reducer';
@@ -67,7 +68,9 @@ function WidgetInspector({ draft, widget, problems, onAction }: WidgetInspectorP
   return (
     <>
       <div className={styles.group}>
-        <h2 className={styles.widgetTitle}>{widgetName(widget)}</h2>
+        <SectionHeading level={2} rank="card">
+          {widgetName(widget)}
+        </SectionHeading>
         <Button size="sm" variant="tertiary" onClick={() => onAction({ type: 'select', id: null })}>
           Dashboard details
         </Button>

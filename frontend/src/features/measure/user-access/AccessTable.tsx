@@ -5,6 +5,7 @@ import { cx } from '@/ui/cx';
 import { Pager } from '@/ui/Pager/Pager';
 import { SortHeader } from '@/ui/SortHeader/SortHeader';
 import dataTable from '@/ui/Table/Table.module.css';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { downloadReport, ExportMenu, useReportAddress } from '../shared';
 import type { UserAccessRow } from './api';
 import { PAGE_SIZES, sortOf } from './access-address';
@@ -38,9 +39,9 @@ export function AccessTable({ rows, total, table, onChange }: AccessTableProps) 
   return (
     <section className={styles.card} aria-labelledby={headingId}>
       <div className={styles.cardHeader}>
-        <h2 id={headingId} className={styles.heading}>
+        <SectionHeading level={2} rank="card" id={headingId}>
           People
-        </h2>
+        </SectionHeading>
         <ExportMenu
           label="Export"
           formats={['xlsx', 'csv']}

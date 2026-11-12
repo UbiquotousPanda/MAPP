@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { Control } from 'react-hook-form';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { ApiError } from '@/api/errors';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -22,7 +22,6 @@ import type { CopyPlanValues } from '../schemas';
 import styles from './dialogs.module.css';
 import { YearChoice } from './YearChoice';
 
-/** Why the API did not copy: problems for the fields, or a message for the whole form. */
 export interface CopyRefusal {
   problems: FieldProblem[];
   message?: string;
@@ -32,23 +31,14 @@ export interface CopyPlanDialogProps {
   open: boolean;
   planId: string;
   planName: string;
-  /**
-   * Copies with the chosen name, year and contents. Answers why it was refused, or null when the
-   * plan was copied (the caller then closes the dialog and opens the copy).
-   */
+  /** Answers why it was refused, or null when copied (the caller then opens the copy). */
   onCopy: (request: PlanCopyRequest) => Promise<CopyRefusal | null>;
   onClose: () => void;
 }
 
-/** Fields the dialog shows a problem under; any other problem is shown above the form. */
 const DIALOG_FIELDS = ['name', 'year', 'includeContents'] as const;
 
-/**
- * Copy a plan (FR-026 – FR-028): the copy's name (suggested "<name> (copy)" or the next free
- * "(copy n)", editable), the same or the next year (unavailable with the reason when the next year
- * is not a permitted plan year), and whether everything inside comes along, with the counts. Give
- * it a new `key` each time it opens, so it starts from the suggestion.
- */
+/** Give it a new `key` each time it opens, so it starts from the suggestion. */
 export function CopyPlanDialog({ open, planId, planName, onCopy, onClose }: CopyPlanDialogProps) {
   const options = useCopyOptions(planId, open);
   // What the person changed; until then (null) the dialog shows the API's suggestion. The
@@ -90,7 +80,6 @@ export function CopyPlanDialog({ open, planId, planName, onCopy, onClose }: Copy
 
   function submit() {
     const loaded = options.data;
-    // Nothing to copy with until the options are there; the dialog says why meanwhile.
     if (loaded) {
       void form.handleSubmit((values) => copy(loaded, values))();
     }
@@ -103,10 +92,7 @@ export function CopyPlanDialog({ open, planId, planName, onCopy, onClose }: Copy
     if (options.isError) {
       // A plan that is gone stays gone: its message alone, and Cancel closes the dialog.
       return options.error instanceof ApiError && options.error.kind === 'notFound' ? (
-        <p role="alert" className={styles.problem}>
-          <CircleAlert aria-hidden="true" />
-          {options.error.message}
-        </p>
+        <InlineError>{options.error.message}</InlineError>
       ) : (
         <ErrorState error={options.error} onRetry={() => void options.refetch()} />
       );
@@ -131,11 +117,9 @@ export function CopyPlanDialog({ open, planId, planName, onCopy, onClose }: Copy
 interface CopyFieldsProps {
   options: PlanCopyOptions;
   control: Control<CopyPlanValues>;
-  /** A refusal that is not about one of the fields; "" for none. */
   failure: string;
 }
 
-/** The dialog's fields, once the options are loaded. */
 function CopyFields({ options, control, failure }: CopyFieldsProps) {
   const counts = contentsText(options.contents);
 
@@ -185,7 +169,6 @@ function CopyFields({ options, control, failure }: CopyFieldsProps) {
   );
 }
 
-/** Moves the focus to the name field, unless the person already moved it into the form. */
 function focusNameOnArrival(node: HTMLDivElement | null) {
   const active = document.activeElement;
   if (node && !(active instanceof HTMLInputElement)) {

@@ -10,6 +10,7 @@ import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { CustomDashboardSummary } from '../model';
 import { useCustomDashboards } from './api';
 import { BuiltInCards, DashboardCard } from './DashboardCard';
@@ -123,9 +124,9 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   const titleId = useId();
   return (
     <section className={styles.section} aria-labelledby={titleId}>
-      <h2 id={titleId} className={styles.sectionTitle}>
+      <SectionHeading level={2} rank="section" id={titleId}>
         {title}
-      </h2>
+      </SectionHeading>
       {children}
     </section>
   );

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   action,
-  chooseOption,
+  choose,
   escapeRegExp,
   expectNoAxeViolations,
   expectToast,
@@ -33,7 +33,7 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   await expect(page).toHaveURL(/\/plans\/new$/);
   await expect(page.getByRole('heading', { name: 'New plan', level: 1 })).toBeVisible();
   await page.getByRole('textbox', { name: /^Plan name/ }).fill(planName);
-  await chooseOption(page.getByLabel(/^Model/), 'Mobility 1.0');
+  await choose(page, page.getByLabel(/^Model/), /^Mobility 1\.0/);
   await page.getByRole('checkbox', { name: 'Mobility', exact: true }).check();
   await page.getByRole('textbox', { name: /^Plan budget/ }).fill('100000');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
@@ -89,7 +89,7 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   await expect(crumbs.getByRole('link', { name: initiativeName, exact: true })).toBeVisible();
   await expect(page.getByText('From the initiative').first()).toBeVisible();
   await page.getByRole('textbox', { name: /^Activity name/ }).fill(activityName);
-  await chooseOption(page.getByLabel(/^Activity type/), 'Content production');
+  await choose(page, page.getByLabel(/^Activity type/), /^Content production/);
   await page.getByRole('textbox', { name: /^Planned cost/ }).fill('20000');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, `Activity '${activityName}' created`);
@@ -112,7 +112,7 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
     page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: activityName }),
   ).toBeVisible();
   await page.getByRole('textbox', { name: /^Line item name/ }).fill(lineItemName);
-  await chooseOption(page.getByLabel(/^Currency/), 'EUR');
+  await choose(page, page.getByLabel(/^Currency/), /^EUR/);
   await expect(page.getByText('Changed to €18,400.00 = $20,000.00')).toBeVisible();
   await page.getByRole('textbox', { name: /^Planned cost/ }).fill('9200');
   await expect(page.getByText('= $10,000.00 at 0.92 EUR per USD')).toBeVisible();

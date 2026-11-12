@@ -7,6 +7,7 @@ import {
   renderShellAttributesPage,
   rowNames,
 } from '@/testing/fixtures/shell-attribute-pages';
+import { choose } from '@/testing/select';
 import {
   ACTIVITY_ATTRIBUTES,
   BUSINESS_UNIT,
@@ -69,15 +70,12 @@ describe('032 FR-006: Purchase request and PR line levels', () => {
     const { user } = renderAttributeEditor('/settings/shell-attributes/new', PR_FORMS);
 
     await screen.findByRole('heading', { level: 1, name: 'New Shell attribute' });
-    await user.selectOptions(screen.getByRole('combobox', { name: /Level/ }), 'purchaseRequest');
-    expect(offered(/^Marking/)).toEqual(['Optional', 'Needed to submit']);
-    expect(offered(/^Type/)).not.toContain('Multiple choice with % split');
+    await choose(user, screen.getByRole('combobox', { name: /Level/ }), 'Purchase request');
+    expect(await offered(user, /^Marking/)).toEqual(['Optional', 'Needed to submit']);
+    expect(await offered(user, /^Type/)).not.toContain('Multiple choice with % split');
 
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: /Level/ }),
-      'purchaseRequestLine',
-    );
-    expect(offered(/^Marking/)).toEqual(['Optional', 'Needed to submit']);
-    expect(offered(/^Type/)).not.toContain('Multiple choice with % split');
+    await choose(user, screen.getByRole('combobox', { name: /Level/ }), 'PR line');
+    expect(await offered(user, /^Marking/)).toEqual(['Optional', 'Needed to submit']);
+    expect(await offered(user, /^Type/)).not.toContain('Multiple choice with % split');
   });
 });

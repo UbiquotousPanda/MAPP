@@ -4,6 +4,7 @@ import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import dataTable from '@/ui/Table/Table.module.css';
 import { cx } from '@/ui/cx';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { FieldHelpTip } from '@/features/settings';
 import { formatAmount } from '@/format/decimal';
 import { monthColumns, quarterColumns } from './spread-grid-columns';
@@ -51,10 +52,10 @@ export function SpreadGrid({ grid, noDates }: SpreadGridProps) {
   return (
     <div className={styles.grid}>
       <div className={styles.head}>
-        <h3 className={styles.title}>
+        <SectionHeading level={3} rank="sub">
           {GRID_TITLE}
           <FieldHelpTip helpKey="lineItem.spread" label={GRID_TITLE} />
-        </h3>
+        </SectionHeading>
         <SegmentedFilter
           label="Show the spread by"
           options={[

@@ -173,7 +173,7 @@
 .lockedLabel {
   color: var(--ink);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .lockedValue {
@@ -227,7 +227,7 @@
 .linkLabel {
   color: var(--ink);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   overflow-wrap: break-word;
 }
 

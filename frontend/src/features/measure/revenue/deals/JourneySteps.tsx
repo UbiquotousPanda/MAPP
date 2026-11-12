@@ -4,6 +4,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
 import { cx } from '@/ui/cx';
 import { recordHref } from '@/ui/record-links';
+import { Tag } from '@/ui/Tag/Tag';
 import type { Deal, DealStep } from './api';
 import styles from './Deals.module.css';
 
@@ -43,7 +44,7 @@ export function JourneySteps({ deal, comparison }: JourneyStepsProps) {
               <Link to={recordHref('activity', s.activity.id, s.activity.planId)}>
                 {s.activity.name}
               </Link>
-              {s.thisActivity && <span className={styles.tag}>This activity</span>}
+              {s.thisActivity && <Tag>This activity</Tag>}
             </span>
             <span className={styles.when}>{date(s.date)}</span>
             <span className={styles.amount}>

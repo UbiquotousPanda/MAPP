@@ -2,6 +2,7 @@ import { Download } from 'lucide-react';
 import { useId, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { ApiError, asApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
@@ -146,11 +147,7 @@ export function ImportPage() {
               {check.isPending ? 'Checking your file…' : 'Check file'}
             </Button>
           </div>
-          {fileProblem && (
-            <p role="alert" className={styles.problem}>
-              {fileProblem}
-            </p>
-          )}
+          {fileProblem && <InlineError>{fileProblem}</InlineError>}
         </Card>
         {result && (
           <Card title="Check and import">

@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { findMessages } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { MEDIA_CHANNEL } from '@/testing/fixtures/shell-attributes';
 import { offered, renderAttributeEditor } from '@/testing/fixtures/shell-attribute-pages';
 import { reply } from '@/testing/replies';
@@ -21,12 +22,12 @@ describe('ShellAttributeEditorPage: create (FR-016 – FR-019)', () => {
       await screen.findByRole('heading', { level: 1, name: 'New Shell attribute' }),
     ).toBeInTheDocument();
     expect(document.title).toBe('New Shell attribute · SP&A One');
-    expect(screen.getByRole('combobox', { name: /Level/ })).toHaveValue('activity');
+    expect(screen.getByRole('combobox', { name: /Level/ })).toHaveTextContent('Activity');
     expect(screen.getByRole('combobox', { name: /Section/ })).toHaveValue('Shell attributes');
 
     await user.type(screen.getByRole('textbox', { name: /^Label/ }), 'Media reach');
-    await user.selectOptions(screen.getByRole('combobox', { name: /Type/ }), 'singleChoice');
-    await user.selectOptions(screen.getByRole('combobox', { name: /Marking/ }), 'neededToSubmit');
+    await choose(user, screen.getByRole('combobox', { name: /Type/ }), 'Single choice');
+    await choose(user, screen.getByRole('combobox', { name: /Marking/ }), 'Needed to submit');
     for (const label of ['TV', 'Radio', 'Print', 'Online']) {
       await user.click(screen.getByRole('button', { name: 'Add option' }));
       await waitFor(() =>
@@ -60,13 +61,17 @@ describe('ShellAttributeEditorPage: create (FR-016 – FR-019)', () => {
     const { user } = renderAttributeEditor('/settings/shell-attributes/new');
 
     await screen.findByRole('heading', { level: 1, name: 'New Shell attribute' });
-    expect(offered(/^Marking/)).toEqual(['Optional', 'Needed to publish']);
-    expect(offered(/^Type/)).not.toContain('Multiple choice with % split');
+    expect(await offered(user, /^Marking/)).toEqual(['Optional', 'Needed to publish']);
+    expect(await offered(user, /^Type/)).not.toContain('Multiple choice with % split');
 
-    await user.selectOptions(screen.getByRole('combobox', { name: /Level/ }), 'lineItem');
-    expect(offered(/^Marking/)).toEqual(['Optional', 'Needed to submit']);
-    expect(offered(/^Type/)).toContain('Multiple choice with % split');
-    await user.selectOptions(screen.getByRole('combobox', { name: /Type/ }), 'multipleChoiceSplit');
+    await choose(user, screen.getByRole('combobox', { name: /Level/ }), 'Line item');
+    expect(await offered(user, /^Marking/)).toEqual(['Optional', 'Needed to submit']);
+    expect(await offered(user, /^Type/)).toContain('Multiple choice with % split');
+    await choose(
+      user,
+      screen.getByRole('combobox', { name: /Type/ }),
+      'Multiple choice with % split',
+    );
     expect(
       screen.getByText(
         "People split the record's cost over the chosen values; the shares must add up to 100 %.",
@@ -77,7 +82,7 @@ describe('ShellAttributeEditorPage: create (FR-016 – FR-019)', () => {
   it('fixes yes/no attributes as Optional, with the hint (FR-017)', async () => {
     const { user } = renderAttributeEditor('/settings/shell-attributes/new?level=plan');
 
-    await user.selectOptions(await screen.findByRole('combobox', { name: /Type/ }), 'yesNo');
+    await choose(user, await screen.findByRole('combobox', { name: /Type/ }), 'Yes/no');
 
     expect(screen.queryByRole('combobox', { name: /Marking/ })).not.toBeInTheDocument();
     expect(
@@ -89,7 +94,7 @@ describe('ShellAttributeEditorPage: create (FR-016 – FR-019)', () => {
   it('shows every problem it can see at once, without asking the API (US2-2)', async () => {
     const { user, api } = renderAttributeEditor('/settings/shell-attributes/new?level=activity');
 
-    await user.selectOptions(await screen.findByRole('combobox', { name: /Type/ }), 'singleChoice');
+    await choose(user, await screen.findByRole('combobox', { name: /Type/ }), 'Single choice');
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByText('2 problems need your attention')).toBeInTheDocument();
     expect(screen.getAllByText('Enter a label.')).toHaveLength(2);
@@ -127,7 +132,7 @@ describe('ShellAttributeEditorPage: create (FR-016 – FR-019)', () => {
     ]);
 
     await user.type(await screen.findByRole('textbox', { name: /^Label/ }), 'Reach');
-    await user.selectOptions(screen.getByRole('combobox', { name: /Type/ }), 'singleChoice');
+    await choose(user, screen.getByRole('combobox', { name: /Type/ }), 'Single choice');
     await user.click(screen.getByRole('button', { name: 'Add option' }));
     await user.keyboard('Yes');
     await user.click(screen.getByRole('button', { name: 'Save' }));

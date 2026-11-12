@@ -1,8 +1,7 @@
-import { SlidersHorizontal } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
-import { Button } from '@/ui/Button/Button';
 import { FilterChips } from '@/ui/FilterChips/FilterChips';
 import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
+import { FiltersButton } from '@/ui/FilterMenuButton/FilterMenuButton';
 import type { FilterChoice } from '@/ui/FilterMenu/FilterMenu';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { cx } from '@/ui/cx';
@@ -223,16 +222,12 @@ export function FilterBar({ state, options, count, updating, onChange }: FilterB
             onChange={typeSearch}
           />
         </div>
-        <Button
-          size="md"
-          icon={<SlidersHorizontal />}
-          className={styles.drawerButton}
+        <FiltersButton
+          count={chips.length}
           aria-expanded={drawerOpen}
           aria-controls={menusId}
           onClick={() => setDrawerOpen(!drawerOpen)}
-        >
-          {chips.length > 0 ? `Filters (${formatWhole(chips.length)})` : 'Filters'}
-        </Button>
+        />
         <ResultCount>
           {count && countText(count.shown, count.total, countNoun(count.noun))}
           {updating && <span className={styles.updating}> Updating…</span>}

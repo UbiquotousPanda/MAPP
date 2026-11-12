@@ -8,6 +8,7 @@ import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, pending, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { PurchaseRequestCreatePage } from './PurchaseRequestCreatePage';
 
 const DEFAULTS = 'GET /api/v1/purchase-requests/new-defaults';
@@ -38,8 +39,8 @@ function field(id: string): HTMLElement {
 }
 
 async function chooseWorkflows(user: ReturnType<typeof renderCreate>['user']) {
-  await user.selectOptions(field('approvalWorkflowId'), 'WF-1101');
-  await user.selectOptions(field('modificationWorkflowId'), 'WF-1102');
+  await choose(user, field('approvalWorkflowId'), 'Purchase request approval (MoA)');
+  await choose(user, field('modificationWorkflowId'), 'Purchase request change approval (MoA)');
   await user.type(field('lines[0].deliveryDate'), '2026-11-30');
 }
 

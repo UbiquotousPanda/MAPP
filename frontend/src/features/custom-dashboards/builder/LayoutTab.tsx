@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import type { Widget, WidgetLayout } from '../model';
 import { placeMessage } from './announcements';
 import { blockedBy } from './grid';
@@ -53,13 +54,13 @@ export function LayoutTab({ widget, widgets, onPlace }: LayoutTabProps) {
         />
       ))}
       {blocked && (
-        <p className={styles.error} role="alert">
+        <InlineError>
           {placeMessage({
             blocked,
             resizing: typed.x === widget.layout.x && typed.y === widget.layout.y,
             layout: typed,
           })}
-        </p>
+        </InlineError>
       )}
     </div>
   );

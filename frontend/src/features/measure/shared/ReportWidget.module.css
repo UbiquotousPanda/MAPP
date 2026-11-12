@@ -28,16 +28,6 @@
   min-width: 0;
 }
 
-.title {
-  overflow: hidden;
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-md);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .body {
   flex: 1;
   padding: var(--space-4) var(--space-5) var(--space-5);
@@ -48,56 +38,6 @@
   flex: none;
   align-items: center;
   gap: var(--space-2);
-}
-
-/* Chart · Table as two joined icon buttons, the chosen one filled in ink (told by aria-pressed). */
-.switch {
-  display: inline-flex;
-}
-
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--control-sm);
-  height: var(--control-sm);
-  margin-left: -1px;
-  padding: 0;
-  border: 1px solid var(--control-border);
-  background: var(--surface);
-  color: var(--ink);
-  cursor: pointer;
-}
-
-.toggle:first-child {
-  margin-left: 0;
-  border-radius: var(--radius-control) 0 0 var(--radius-control);
-}
-
-.toggle:last-child {
-  border-radius: 0 var(--radius-control) var(--radius-control) 0;
-}
-
-.toggle:hover {
-  background: var(--hover-on-card);
-}
-
-.toggle:focus-visible {
-  position: relative;
-  z-index: 1;
-}
-
-.toggle svg {
-  width: 16px;
-  height: 16px;
-}
-
-.on,
-.on:hover {
-  position: relative;
-  border-color: var(--control-border-hover);
-  background: color-mix(in srgb, var(--ink) 14%, var(--surface));
-  color: var(--ink);
 }
 
 .note {

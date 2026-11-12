@@ -1,7 +1,7 @@
-import { CircleAlert } from 'lucide-react';
-import { useEffect, useEffectEvent, useId, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { components } from '@/api/generated/schema';
+import { DateField } from '@/ui/DateField/DateField';
 import { FilterChips } from '@/ui/FilterChips/FilterChips';
 import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
 import { SearchField } from '@/ui/SearchField/SearchField';
@@ -37,7 +37,6 @@ export interface LogFilterBarProps {
 
 export function LogFilterBar({ filters, onChange, summary, record, count }: LogFilterBarProps) {
   const { date } = useFormatters();
-  const ids = useId();
   const people = summary?.people ?? [];
   const recordTypes = summary?.recordTypes ?? [];
   const plans = summary?.plans ?? [];
@@ -117,35 +116,20 @@ export function LogFilterBar({ filters, onChange, summary, record, count }: LogF
         </div>
         {filters.range === 'custom' && (
           <div className={styles.dates}>
-            <div className={styles.field}>
-              <label htmlFor={`${ids}-from`}>From</label>
-              <input
-                id={`${ids}-from`}
-                type="date"
-                className={styles.control}
-                value={filters.from}
-                onChange={(event) => set({ from: event.target.value })}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor={`${ids}-to`}>To</label>
-              <input
-                id={`${ids}-to`}
-                type="date"
-                className={styles.control}
-                value={filters.to}
-                min={filters.from || undefined}
-                aria-invalid={rangeError ? true : undefined}
-                aria-describedby={rangeError ? `${ids}-to-error` : undefined}
-                onChange={(event) => set({ to: event.target.value })}
-              />
-            </div>
-            {rangeError && (
-              <p id={`${ids}-to-error`} className={styles.error} role="alert">
-                <CircleAlert aria-hidden="true" />
-                {rangeError}
-              </p>
-            )}
+            <DateField
+              label="From"
+              compact
+              value={filters.from}
+              onChange={(from) => set({ from })}
+            />
+            <DateField
+              label="To"
+              compact
+              value={filters.to}
+              min={filters.from || undefined}
+              error={rangeError}
+              onChange={(to) => set({ to })}
+            />
           </div>
         )}
         {count}

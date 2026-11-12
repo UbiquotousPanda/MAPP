@@ -1,8 +1,5 @@
-import { Bookmark } from 'lucide-react';
-import { Button } from '@/ui/Button/Button';
-import { Menu } from '@/ui/Menu/Menu';
+import { SavedViewsMenu } from '@/ui/SavedViewsMenu/SavedViewsMenu';
 import type { SavedView } from './all-work-types';
-import styles from './ViewsMenu.module.css';
 
 export interface ViewsMenuProps {
   /** The person's saved views, by name; undefined while they load. */
@@ -17,53 +14,26 @@ export interface ViewsMenuProps {
   onStandard: () => void;
 }
 
-export function ViewsMenu({
-  views,
-  active,
-  modified,
-  onApply,
-  onSave,
-  onUpdate,
-  onSaveAsNew,
-  onManage,
-  onStandard,
-}: ViewsMenuProps) {
+export function ViewsMenu({ views, active, modified, ...on }: ViewsMenuProps) {
+  const actions = [
+    { label: 'Save current view…', onChoose: on.onSave },
+    ...(active && modified
+      ? [
+          { label: 'Update view', onChoose: on.onUpdate },
+          { label: 'Save as new view…', onChoose: on.onSaveAsNew },
+        ]
+      : []),
+    ...(views && views.length > 0 ? [{ label: 'Manage views…', onChoose: on.onManage }] : []),
+    { label: 'Standard view', onChoose: on.onStandard },
+  ];
   return (
-    <Menu.Root>
-      <Menu.Trigger asChild>
-        <Button icon={<Bookmark />}>
-          {active ? `View: ${active.name}` : 'Saved views'}
-          {modified && ' '}
-          {modified && <span className={styles.modified}>Modified</span>}
-        </Button>
-      </Menu.Trigger>
-      <Menu.Content>
-        {views && views.length === 0 && (
-          <Menu.Note>
-            No saved views yet — set up filters and columns, then choose Save current view.
-          </Menu.Note>
-        )}
-        {views?.map((view) => (
-          <Menu.Choice
-            key={view.id}
-            checked={view.id === active?.id}
-            onChoose={() => onApply(view)}
-          >
-            <span className={styles.name}>{view.name}</span>
-            {view.isDefault && <span className={styles.default}>Default</span>}
-          </Menu.Choice>
-        ))}
-        {views && views.length > 0 && <Menu.Separator />}
-        <Menu.Item onChoose={onSave}>Save current view…</Menu.Item>
-        {active && modified && (
-          <>
-            <Menu.Item onChoose={onUpdate}>Update view</Menu.Item>
-            <Menu.Item onChoose={onSaveAsNew}>Save as new view…</Menu.Item>
-          </>
-        )}
-        {views && views.length > 0 && <Menu.Item onChoose={onManage}>Manage views…</Menu.Item>}
-        <Menu.Item onChoose={onStandard}>Standard view</Menu.Item>
-      </Menu.Content>
-    </Menu.Root>
+    <SavedViewsMenu
+      views={views}
+      active={active}
+      modified={modified}
+      empty="No saved views yet — set up filters and columns, then choose Save current view."
+      onApply={on.onApply}
+      actions={actions}
+    />
   );
 }

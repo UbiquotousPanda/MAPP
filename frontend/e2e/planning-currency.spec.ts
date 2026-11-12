@@ -2,7 +2,6 @@ import { expect, test, type Page } from '@playwright/test';
 import {
   callApi,
   choose,
-  chooseOption,
   expectNoAxeViolations,
   expectToast,
   signInAs,
@@ -96,8 +95,8 @@ test('016 US2, US3 (T089): Priya plans in GBP with USD beside it and phases the 
   const name = uniqueName('GBP plan');
   await page.goto('/plans/new');
   await page.getByRole('textbox', { name: 'Plan name' }).fill(name);
-  await chooseOption(page.getByRole('combobox', { name: 'Model' }), 'Lubricants 1.0');
-  await chooseOption(page.getByRole('combobox', { name: 'Plan currency' }), 'GBP');
+  await choose(page, page.getByRole('combobox', { name: 'Model' }), /^Lubricants 1\.0/);
+  await choose(page, page.getByRole('combobox', { name: 'Plan currency' }), /^GBP/);
   await page.getByRole('textbox', { name: 'Plan budget' }).fill('600000');
   await page.getByRole('checkbox', { name: 'Lubricants', exact: true }).check();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
@@ -107,7 +106,7 @@ test('016 US2, US3 (T089): Priya plans in GBP with USD beside it and phases the 
   await expect(page.getByRole('group', { name: 'Plan facts' })).toContainText('Planned in GBP');
   const summary = page.getByRole('region', { name: 'Summary' });
   await expect(summary).toContainText('£600,000.00');
-  await expect(summary).toContainText('≈ $759,493.67');
+  await expect(summary).toContainText('≈ about $759,493.67');
 
   const card = page.getByRole('region', { name: 'Budget by month', exact: true });
   const editor = page.getByRole('dialog', { name: `Budget by month — ${name}` });

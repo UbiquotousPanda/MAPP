@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { HttpHandler } from 'msw';
 import { mockApi } from '@/testing/mock-api';
 import { findMessages, renderWithProviders } from '@/testing/render';
+import { choose, optionNames } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { launchFilm, PEOPLE } from '@/testing/fixtures/activities';
 import {
@@ -76,7 +77,7 @@ describe('ActivityFormPage, new activity (feature 006, US1)', () => {
     expect(
       screen.getByText("Allowed: 01 Jan 2026 – 30 Jun 2026 (the initiative's dates)"),
     ).toBeVisible();
-    expect(screen.getByLabelText('Approval workflow')).toHaveValue('WF-1001');
+    expect(screen.getByLabelText('Approval workflow')).toHaveTextContent('Lubricants EU approval');
     expect(screen.getByText('The only active approval workflow')).toBeVisible();
     expect(screen.getByText('Save the activity to add its line items')).toBeVisible();
   });
@@ -85,23 +86,19 @@ describe('ActivityFormPage, new activity (feature 006, US1)', () => {
     const { user } = openNewForm();
     const type = await screen.findByLabelText('Activity type');
 
-    expect(
-      within(type)
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual([
+    expect(await optionNames(user, type)).toEqual([
       'Choose…',
       'Digital campaign · default $10,000.00',
       'Event · default $25,000.00',
       'Sponsorship',
     ]);
-    await user.selectOptions(type, 'Event · default $25,000.00');
+    await choose(user, type, 'Event · default $25,000.00');
 
     expect(screen.getByLabelText('Planned cost')).toHaveValue('25,000.00');
     expect(screen.getByText('From the activity type')).toBeVisible();
 
     // Another type replaces a default it filled in itself, without asking.
-    await user.selectOptions(type, 'Digital campaign · default $10,000.00');
+    await choose(user, type, 'Digital campaign · default $10,000.00');
     expect(screen.getByLabelText('Planned cost')).toHaveValue('10,000.00');
   });
 
@@ -118,7 +115,7 @@ describe('ActivityFormPage, new activity (feature 006, US1)', () => {
     ]);
 
     await user.type(await nameField(), 'Trade show');
-    await user.selectOptions(screen.getByLabelText('Activity type'), 'AT-1001');
+    await choose(user, screen.getByLabelText('Activity type'), /^Event/);
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     expect(await screen.findByText("Activity 'Trade show' created")).toBeVisible();
@@ -187,7 +184,7 @@ describe('ActivityFormPage, new activity (feature 006, US1)', () => {
     ]);
 
     await user.type(await nameField(), 'Trade show');
-    await user.selectOptions(screen.getByLabelText('Activity type'), 'AT-1003');
+    await choose(user, screen.getByLabelText('Activity type'), 'Sponsorship');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     const summary = await screen.findByRole('alert');
@@ -224,7 +221,7 @@ describe('ActivityFormPage, new activity (feature 006, US1)', () => {
     ]);
 
     await user.type(await nameField(), 'Trade show');
-    await user.selectOptions(screen.getByLabelText('Activity type'), 'AT-1003');
+    await choose(user, screen.getByLabelText('Activity type'), 'Sponsorship');
     await user.click(screen.getByRole('button', { name: 'Save and add another' }));
 
     expect(await screen.findByText("Activity 'Trade show' created")).toBeVisible();

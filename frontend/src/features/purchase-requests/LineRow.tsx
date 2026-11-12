@@ -9,7 +9,8 @@ import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFields';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
-import { DateField } from './DateField';
+import { DateField } from '@/ui/DateField/DateField';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { problemAt, problemMap } from './form-problems';
 import type { LineValues, PurchaseRequestFormValues } from './form-schema';
 import {
@@ -151,7 +152,9 @@ export function LineRow({
       />
       {attributeForm.sections.length > 0 && (
         <div className={styles.attributes}>
-          <h4 className={styles.attributesTitle}>{LINE_ATTRIBUTES_TITLE}</h4>
+          <SectionHeading level={4} rank="label">
+            {LINE_ATTRIBUTES_TITLE}
+          </SectionHeading>
           <FormField
             control={control}
             name={`lines.${index}.attributes`}

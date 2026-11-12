@@ -10,6 +10,7 @@ import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { Dataset } from '../model';
 import { useUpdateDataset } from './api';
 import type { DatasetUpdate } from './api';
@@ -84,7 +85,9 @@ export function DatasetDetailsForm({ dataset, onClose }: DatasetDetailsFormProps
         name="description"
         render={(field) => <TextAreaField label="Description" rows={3} {...field} />}
       />
-      <h3 className={styles.stepTitle}>Column names</h3>
+      <SectionHeading level={3} rank="sub">
+        Column names
+      </SectionHeading>
       <p className={styles.facts}>Column types are fixed once a dataset is saved.</p>
       {dataset.columns.map((column, index) => (
         <FormField

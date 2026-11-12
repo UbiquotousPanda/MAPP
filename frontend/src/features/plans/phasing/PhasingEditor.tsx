@@ -5,6 +5,7 @@ import { ApiError, conflictMessage } from '@/api/errors';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { FormField } from '@/ui/FormField/FormField';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { useToast } from '@/ui/Toast/useToast';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
@@ -150,24 +151,13 @@ export function PhasingEditor({
           control={form.control}
           name="method"
           render={(field) => (
-            <fieldset className={styles.methods}>
-              <legend className={styles.legend}>How to phase the budget</legend>
-              {METHODS.map((choice) => (
-                <label key={choice.value} className={styles.method}>
-                  <input
-                    type="radio"
-                    name="method"
-                    value={choice.value}
-                    checked={field.value === choice.value}
-                    onChange={() => field.onChange(choice.value)}
-                  />
-                  <span>
-                    <span className={styles.methodLabel}>{choice.label}</span>
-                    <span className={styles.methodText}>{choice.text}</span>
-                  </span>
-                </label>
-              ))}
-            </fieldset>
+            <RadioGroup
+              label="How to phase the budget"
+              name="method"
+              options={METHODS.map(({ value, label, text }) => ({ value, label, hint: text }))}
+              value={field.value}
+              onChange={field.onChange}
+            />
           )}
         />
 

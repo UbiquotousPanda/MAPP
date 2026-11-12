@@ -146,7 +146,7 @@ test('015 US4 (T035): a generated GSAP extract is checked, imported, and changes
   await page.goto(records.activityPath);
   await expect(page.getByRole('heading', { name: records.activityName, level: 1 })).toBeVisible();
   const card = page.getByRole('region', { name: 'Financials', exact: true });
-  const figures = card.getByRole('list', { name: 'Financial figures' }).getByRole('listitem');
+  const figures = card.getByRole('region', { name: 'Financial figures' }).locator(':scope > *');
   await expect(figures.filter({ hasText: 'Committed (POs)' })).toContainText('$6,000.00');
   await expect(figures.filter({ hasText: 'Invoiced' })).toContainText('$2,500.00');
   await expect(figures.filter({ hasText: 'Not yet committed' })).toContainText('$14,000.00');

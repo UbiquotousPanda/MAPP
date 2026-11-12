@@ -168,53 +168,6 @@
   gap: var(--space-4);
 }
 
-.methods {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.legend {
-  margin-bottom: var(--space-2);
-  padding: 0;
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-}
-
-.method {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-}
-
-.method input {
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  accent-color: var(--ink);
-}
-
-.method > span {
-  display: flex;
-  flex-direction: column;
-}
-
-.methodLabel {
-  color: var(--ink);
-  font-weight: var(--weight-bold);
-}
-
-.methodText {
-  color: var(--ink-2);
-  font-size: var(--text-xs);
-  line-height: var(--leading-xs);
-}
-
 .tools {
   display: flex;
   flex-wrap: wrap;

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { HttpHandler } from 'msw';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import {
   approvedActivity,
@@ -83,7 +84,8 @@ describe('LineItemEditPage (US4, FR-027)', () => {
     ]);
     await screen.findByLabelText('Line item name');
 
-    await user.selectOptions(
+    await choose(
+      user,
       screen.getByLabelText('Finance budget item'),
       'Europe – Digital · 2026 Lubricants Budget · LUB-EU-DIG',
     );
@@ -134,7 +136,7 @@ describe('LineItemEditPage (US4, FR-027)', () => {
     ]);
     await screen.findByLabelText('Line item name');
 
-    await user.selectOptions(screen.getByLabelText('Currency'), 'EUR');
+    await choose(user, screen.getByLabelText('Currency'), /^EUR/);
     await user.click(button('Save'));
 
     await waitFor(() => expect(api.bodiesOf(PATCH)).toHaveLength(1));

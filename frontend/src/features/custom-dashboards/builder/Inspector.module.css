@@ -96,36 +96,19 @@
   outline-offset: 2px;
 }
 
-.palettes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
 .paletteChoice {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--ink);
-  font-size: var(--text-sm);
 }
 
 .swatches {
   display: flex;
   gap: var(--space-1);
-  margin-inline-start: auto;
 }
 
 .swatch {
   width: var(--space-3);
   height: var(--space-3);
   border-radius: var(--radius-chip);
-}
-
-.widgetTitle {
-  margin: 0;
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
 }

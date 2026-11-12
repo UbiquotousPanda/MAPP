@@ -13,6 +13,7 @@ import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
 import { formatDate } from '@/format/intl';
 import { recordHref } from '@/ui/record-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
 import { ApprovalChain } from './ApprovalChain';
 import { ApprovalHistory } from './ApprovalHistory';
@@ -147,9 +148,9 @@ function PreviewBody({ preview }: { preview: ApprovalPreview }) {
       {reason && <p className={styles.muted}>{reason}</p>}
 
       <section className={styles.section} aria-labelledby={`${id}-details`}>
-        <h3 id={`${id}-details`} className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id={`${id}-details`}>
           Details
-        </h3>
+        </SectionHeading>
         <dl className={styles.facts}>
           <dt>Plan › campaign › initiative</dt>
           <dd>{activity.path.map((record) => record.name).join(' › ') || '—'}</dd>
@@ -167,9 +168,9 @@ function PreviewBody({ preview }: { preview: ApprovalPreview }) {
       </section>
 
       <section className={styles.section} aria-labelledby={`${id}-line-items`}>
-        <h3 id={`${id}-line-items`} className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id={`${id}-line-items`}>
           Line items
-        </h3>
+        </SectionHeading>
         {lineItems.length === 0 ? (
           <p className={styles.muted}>No line items yet.</p>
         ) : (

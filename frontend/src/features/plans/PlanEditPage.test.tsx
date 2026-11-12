@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { HttpHandler } from 'msw';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { FORM_ANSWERS, plan } from '@/testing/fixtures/plans';
 import { reply } from '@/testing/replies';
@@ -91,7 +92,7 @@ describe('PlanEditPage (US4, FR-018 – FR-023)', () => {
       ),
     ]);
 
-    await user.selectOptions(await screen.findByRole('combobox', { name: /Model/ }), 'MOD-1002');
+    await choose(user, await screen.findByRole('combobox', { name: /Model/ }), 'Mobility 2.0');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     const dialog = await screen.findByRole('alertdialog', { name: 'Change the model?' });
@@ -170,9 +171,10 @@ describe('PlanEditPage (US4, FR-018 – FR-023)', () => {
         'This plan is published. Changes are saved straight away and recorded in the activity log.',
       ),
     ).toBeInTheDocument();
-    await user.selectOptions(
+    await choose(
+      user,
       screen.getByRole('combobox', { name: 'Default line-item spread' }),
-      'lastMonth',
+      'All in last month',
     );
     expect(screen.getByText('Applies to line items created from now on.')).toBeInTheDocument();
   });

@@ -42,20 +42,11 @@ export async function expectToast(page: Page, text: string | RegExp): Promise<vo
   await expect(page.getByText(text).first()).toBeVisible();
 }
 
-/** The action called exactly `name`, link or button; when both exist, the first one wins. */
 export function action(scope: Page | Locator, name: string): Locator {
   return scope
     .getByRole('link', { name, exact: true })
     .or(scope.getByRole('button', { name, exact: true }))
     .first();
-}
-
-export async function chooseOption(select: Locator, text: string): Promise<void> {
-  const option = select
-    .locator('option')
-    .filter({ hasText: new RegExp(`^\\s*${escapeRegExp(text)}`) });
-  const label = (await option.first().textContent())?.trim() ?? text;
-  await select.selectOption({ label });
 }
 
 export function escapeRegExp(text: string): string {

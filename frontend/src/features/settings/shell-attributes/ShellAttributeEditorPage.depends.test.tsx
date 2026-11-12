@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { emptyForm, LUBRICANTS, MEDIA_CHANNEL, PIR } from '@/testing/fixtures/shell-attributes';
 import { offered, renderAttributeEditor } from '@/testing/fixtures/shell-attribute-pages';
+import { choose } from '@/testing/select';
 import { reply } from '@/testing/replies';
 
 describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-023)', () => {
@@ -17,15 +18,15 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     );
 
     await user.type(await screen.findByRole('textbox', { name: /^Label/ }), 'Spot type');
-    await user.selectOptions(screen.getByRole('combobox', { name: /Type/ }), 'singleChoice');
+    await choose(user, screen.getByRole('combobox', { name: /Type/ }), 'Single choice');
     const dependsOn = await screen.findByRole('combobox', { name: /Depends on/ });
     // Only single and multiple choice attributes placed before it (not the % split Brands).
-    expect(offered(/^Depends on/)).toEqual(['None', 'Media channel', 'PIR']);
-    expect(dependsOn).toHaveValue('none');
+    expect(await offered(user, /^Depends on/)).toEqual(['None', 'Media channel', 'PIR']);
+    expect(dependsOn).toHaveTextContent('None');
     expect(dependsOn).toHaveAccessibleDescription(
       'Its options are filtered by the value chosen for that attribute.',
     );
-    await user.selectOptions(dependsOn, 'SA-1010');
+    await choose(user, dependsOn, 'Media channel');
     for (const label of ['TV spot', 'Radio spot']) {
       await user.click(screen.getByRole('button', { name: 'Add option' }));
       await waitFor(() =>
@@ -81,7 +82,7 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     ]);
 
     await user.type(await screen.findByRole('textbox', { name: /^Label/ }), 'Lubricants code');
-    await user.selectOptions(screen.getByRole('combobox', { name: /Type/ }), 'text');
+    await choose(user, screen.getByRole('combobox', { name: /Type/ }), 'Text');
     const condition = await screen.findByRole('group', {
       name: /Shown when the plan's business unit includes/,
     });
@@ -139,8 +140,8 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
 
     const dependsOn = await screen.findByRole('combobox', { name: /Depends on/ });
     // PIR keeps its place, after Media channel only.
-    expect(offered(/^Depends on/)).toEqual(['None', 'Media channel']);
-    await user.selectOptions(dependsOn, 'SA-1010');
+    expect(await offered(user, /^Depends on/)).toEqual(['None', 'Media channel']);
+    await choose(user, dependsOn, 'Media channel');
     const yes = await screen.findByRole('group', { name: 'Yes' });
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
@@ -188,8 +189,8 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     ]);
 
     const dependsOn = await screen.findByRole('combobox', { name: /Depends on/ });
-    expect(dependsOn).toHaveValue('SA-1010');
-    await user.selectOptions(dependsOn, 'none');
+    expect(dependsOn).toHaveTextContent('Media channel');
+    await choose(user, dependsOn, 'None');
     const condition = screen.getByRole('group', {
       name: /Shown when the plan's business unit includes/,
     });

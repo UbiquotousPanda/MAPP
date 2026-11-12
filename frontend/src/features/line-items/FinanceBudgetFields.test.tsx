@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
+import { choose, optionNames } from '@/testing/select';
 import {
   activity,
   BRAND_INACTIVE,
@@ -45,18 +46,15 @@ function Harness({
 }
 
 describe('FinanceBudgetFields (FR-015, FR-016)', () => {
-  it("offers the years and that year's items, the plan's default budget first", () => {
+  it("offers the years and that year's items, the plan's default budget first", async () => {
+    const user = userEvent.setup();
     renderWithProviders(<Harness start={newFormState(formOptions())} />);
 
     const year = screen.getByLabelText('Finance budget year');
-    expect([...year.querySelectorAll('option')].map((o) => o.textContent)).toEqual([
-      'Choose…',
-      '2026',
-      '2027',
-    ]);
+    expect(await optionNames(user, year)).toEqual(['Choose…', '2026', '2027']);
     expect(screen.getByText("The plan's year")).toBeInTheDocument();
     const item = screen.getByLabelText('Finance budget item');
-    expect([...item.querySelectorAll('option')].map((o) => o.textContent)).toEqual([
+    expect(await optionNames(user, item)).toEqual([
       'Choose…',
       'Europe – Digital · 2026 Lubricants Budget · LUB-EU-DIG',
       'Europe – Events · 2026 Lubricants Budget · LUB-EU-EVT',
@@ -78,7 +76,7 @@ describe('FinanceBudgetFields (FR-015, FR-016)', () => {
     };
     renderWithProviders(<Harness start={newFormState(options)} />);
 
-    expect(screen.getByLabelText('Finance budget item')).toHaveValue(DIGITAL.id);
+    expect(screen.getByLabelText('Finance budget item')).toHaveTextContent(DIGITAL.name);
     expect(
       screen.getByText("Pre-selected — the only active item of '2026 Lubricants Budget'"),
     ).toBeInTheDocument();
@@ -89,16 +87,16 @@ describe('FinanceBudgetFields (FR-015, FR-016)', () => {
     const start = withField(newFormState(formOptions()), 'financeBudgetItemId', DIGITAL.id);
     renderWithProviders(<Harness start={start} />);
 
-    await user.selectOptions(screen.getByLabelText('Finance budget year'), '2027');
+    await choose(user, screen.getByLabelText('Finance budget year'), '2027');
     expect(
       screen.getByText(
         "Finance budget item 'Europe – Digital' will be cleared — it belongs to 2026.",
       ),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('Finance budget item')).toHaveValue('');
+    expect(screen.getByLabelText('Finance budget item')).toHaveTextContent('Choose…');
 
-    await user.selectOptions(screen.getByLabelText('Finance budget year'), '2026');
-    expect(screen.getByLabelText('Finance budget item')).toHaveValue(DIGITAL.id);
+    await choose(user, screen.getByLabelText('Finance budget year'), '2026');
+    expect(screen.getByLabelText('Finance budget item')).toHaveTextContent(DIGITAL.name);
   });
 
   it('says when a year has no items yet', () => {
@@ -117,11 +115,9 @@ describe('FinanceBudgetFields (FR-015, FR-016)', () => {
     const start = withField(newFormState(formOptions()), 'financeBudgetItemId', BRAND_INACTIVE.id);
     renderWithProviders(<Harness start={start} items={[...ITEMS, BRAND_INACTIVE]} />);
 
-    expect(
-      screen.getByRole('option', {
-        name: 'Europe – Brand · 2026 Lubricants Budget · LUB-EU-BRD (inactive)',
-      }),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Finance budget item')).toHaveTextContent(
+      'Europe – Brand · 2026 Lubricants Budget · LUB-EU-BRD (inactive)',
+    );
     expect(
       screen.getByText(
         "Choose an active finance budget item — 'Europe – Brand' is no longer active.",

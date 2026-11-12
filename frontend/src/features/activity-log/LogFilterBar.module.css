@@ -19,41 +19,6 @@
   max-width: 360px;
 }
 
-/* A label above its control. */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-  color: var(--ink);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-xs);
-}
-
-/* The date inputs: 40 px, 8 px corners, a 3:1 border (design system §5.5). */
-.control {
-  width: 180px;
-  max-width: 100%;
-  height: var(--control-md);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-control);
-  background-color: var(--surface);
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-regular);
-  line-height: var(--leading-sm);
-}
-
-.control:hover {
-  border-color: var(--control-border-hover);
-}
-
-.control[aria-invalid='true'] {
-  border-color: var(--danger);
-}
-
 /* "Date" written before the date filter, on its centre line. */
 .date {
   display: flex;
@@ -73,42 +38,13 @@
 .dates {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-2);
-}
-
-.dates .control {
-  width: 160px;
-}
-
-.error {
-  display: flex;
-  flex-basis: 100%;
   align-items: flex-start;
-  gap: var(--space-1);
-  color: var(--danger-text);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-}
-
-.error svg {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
+  gap: var(--space-2) var(--space-4);
 }
 
 @media (max-width: 599px) {
   .search {
     flex-basis: 100%;
     max-width: none;
-  }
-
-  .field {
-    flex: 1 1 140px;
-  }
-
-  .control {
-    width: 100%;
   }
 }

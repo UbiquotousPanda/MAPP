@@ -1,7 +1,7 @@
-import { CircleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cx } from '../cx';
 import { InfoTip } from '../InfoTip/InfoTip';
+import { InlineError } from '../InlineError/InlineError';
 import styles from './FieldShell.module.css';
 
 /** "Required" (to save) is a red asterisk after the label; other markings are a ◆ the legend explains. */
@@ -77,10 +77,11 @@ export function FieldShell({
         </div>
       )}
       {error && (
-        <p id={errorId} className={cx(styles.error, styles.full)}>
-          <CircleAlert />
-          {error}
-        </p>
+        <div className={styles.full}>
+          <InlineError id={errorId} quiet>
+            {error}
+          </InlineError>
+        </div>
       )}
     </>
   );

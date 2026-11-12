@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BRAND_OPTION, globalBudget, LUBRICANTS } from '@/testing/fixtures/global-budgets';
 import { budgetRow, renderBudgetPage } from '@/testing/fixtures/global-budget-page';
 import { reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
 
 describe('GlobalBudgetPage allocations (014 US6, FR-030, FR-034)', () => {
   it('changes an allocation with the allocation and plan versions (US6 scenario 2)', async () => {
@@ -105,7 +106,8 @@ describe('GlobalBudgetPage allocations (014 US6, FR-030, FR-034)', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Allocate' }));
     expect(within(dialog).getByText('Choose a plan.')).toBeInTheDocument();
 
-    await user.selectOptions(
+    await choose(
+      user,
       await within(dialog).findByRole('combobox', { name: /Plan/ }),
       'FY2026 Brand Europe',
     );

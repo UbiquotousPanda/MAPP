@@ -80,18 +80,3 @@
 .reserved {
   min-height: 1lh;
 }
-
-.error {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  color: var(--danger-text);
-  font-size: var(--text-xs);
-}
-
-.error svg {
-  flex: none;
-  width: 14px;
-  height: 14px;
-  margin-top: 2px;
-}

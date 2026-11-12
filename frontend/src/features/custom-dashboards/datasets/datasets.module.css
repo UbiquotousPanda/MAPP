@@ -17,34 +17,10 @@
   line-height: var(--leading-sm);
 }
 
-.stepTitle {
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-md);
-}
-
 .fileField {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-}
-
-.problem {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  color: var(--danger-text);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-}
-
-.problem svg {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
 }
 
 .notes {

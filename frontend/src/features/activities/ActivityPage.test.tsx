@@ -173,8 +173,8 @@ describe('ActivityPage (feature 006, US2)', () => {
     // The plan currency first, the reader's currency beside it (016 FR-013).
     const summary = screen.getByRole('region', { name: 'Summary' });
     expect(within(summary).getByText('$120,000.00')).toBeVisible();
-    expect(within(summary).getByText(/≈ €110,400.00/)).toBeVisible();
-    expect(within(summary).getByText(/≈ €18,400.00/)).toBeVisible();
+    expect(within(summary).getByRole('button', { name: 'about €110,400.00' })).toBeVisible();
+    expect(within(summary).getByRole('button', { name: 'about €18,400.00' })).toBeVisible();
   });
 
   it('marks an unassigned planned cost below zero in red words', async () => {

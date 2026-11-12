@@ -1,4 +1,3 @@
-import { CircleAlert } from 'lucide-react';
 import { useWatch } from 'react-hook-form';
 import type { Control } from 'react-hook-form';
 import { plural } from '@/format/text';
@@ -6,6 +5,7 @@ import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import type { ChoiceOption } from '@/ui/ChoiceField/ChoiceField';
 import { FormField } from '@/ui/FormField/FormField';
 import { TextField } from '@/ui/TextField/TextField';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import type { DatasetPreview } from '../model';
 import { KIND_OPTIONS, kindOf } from './schemas';
 import type { DatasetValues } from './schemas';
@@ -55,10 +55,9 @@ export function ColumnTypesForm({
               {column.emptyCount > 0 && ` (${plural(column.emptyCount, 'empty cell')})`}
             </p>
             {problemsOf(column.position).map((message) => (
-              <p key={message} className={styles.problem}>
-                <CircleAlert aria-hidden="true" />
+              <InlineError key={message} quiet>
                 {message}
-              </p>
+              </InlineError>
             ))}
           </fieldset>
         </li>

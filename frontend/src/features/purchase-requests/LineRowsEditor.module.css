@@ -86,12 +86,6 @@
   gap: var(--space-3);
 }
 
-.attributesTitle {
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-}
-
 .add {
   display: flex;
   flex-wrap: wrap;

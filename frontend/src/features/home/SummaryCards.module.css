@@ -1,37 +1,3 @@
-/* One strip of four cells when Home is wide, 2 × 2 below; hairlines split the cells. */
-.cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  overflow: hidden;
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-
-@container home (min-width: 880px) {
-  .cards {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-.cards > * {
-  box-shadow:
-    -1px 0 0 var(--row-divider),
-    0 -1px 0 var(--row-divider);
-}
-
-.placeholder {
-  padding: var(--space-4) var(--space-5);
-}
-
-.failed {
-  padding: var(--card-padding);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
-  background: var(--surface);
-}
-
 .usage {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

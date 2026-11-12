@@ -3,7 +3,7 @@ import type { components } from '@/api/generated/schema';
 import { useFieldHelp } from '@/features/settings';
 import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { formatMoneyText } from '@/format/decimal';
+import { Converted } from '@/features/line-items';
 import { useFormatters } from '@/format/useFormatters';
 import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { differentCurrency } from './plan-currency';
@@ -93,10 +93,10 @@ export function PlanSummaryCards({ plan }: PlanSummaryCardsProps) {
 }
 
 function Beside({ own, display }: { own: Money | null; display: Money | null }) {
-  if (!differentCurrency(own, display) || !display) {
+  if (!own || !display || !differentCurrency(own, display)) {
     return null;
   }
-  return <span className={styles.beside}>≈ {formatMoneyText(display)}</span>;
+  return <Converted from={own.currency} amount={display} />;
 }
 
 function AllocationNote({ allocation }: { allocation: PlanAllocation }) {

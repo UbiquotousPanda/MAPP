@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { Checkbox } from '@/ui/CheckboxField/CheckboxField';
 import { moneyText } from '@/features/line-items';
 import type { ActivitySplitOptions } from './split-api';
 import styles from './SplitActivityDialog.module.css';
@@ -29,9 +30,8 @@ export function SplitLineItems({ lineItems, code, value, onChange }: SplitLineIt
             const id = `${listId}-${item.id}`;
             return (
               <li key={item.id} className={styles.item}>
-                <input
+                <Checkbox
                   id={id}
-                  type="checkbox"
                   checked={value.includes(item.id)}
                   onChange={(event) =>
                     onChange(

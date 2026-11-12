@@ -10,7 +10,7 @@ import { cx } from '@/ui/cx';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { RequestsGridData } from './api';
-import { lineText, NUMERIC, requestText, totalCells, totalText, vendorText } from './cells';
+import { lineText, NUMERIC, requestText, totalText, vendorText } from './cells';
 import type { Format } from './cells';
 import { GridRows } from './GridRows';
 import { GridToolbar } from './GridToolbar';
@@ -99,7 +99,8 @@ function tableOf(grid: RequestsGridData, columns: ColumnKey[], f: Format): Repor
   return {
     columns: columns.map((c) => ({ label: COLUMN_WORDS[c], numeric: NUMERIC.includes(c) })),
     rows,
-    total: totalCells(grid.totals, columns, f),
+    total: columns.slice(1).map((c) => totalText(grid.totals, c, f)),
+    totalCount: columns[0] && totalText(grid.totals, columns[0], f),
   };
 }
 

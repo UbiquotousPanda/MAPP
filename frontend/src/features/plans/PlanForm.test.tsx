@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { HttpHandler } from 'msw';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { FINANCE_BUDGETS, FORM_ANSWERS, planDefaults } from '@/testing/fixtures/plans';
 import { reply } from '@/testing/replies';
@@ -63,7 +64,9 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
       defaults: planDefaults({ modelId: 'MOD-1001' }),
     });
 
-    expect(await screen.findByRole('combobox', { name: /Model/ })).toHaveValue('MOD-1001');
+    expect(await screen.findByRole('combobox', { name: /Model/ })).toHaveTextContent(
+      'Lubricants 1.0',
+    );
     expect(
       screen.getByText('INQ→MQL 2.00 % · MQL→deal 5.00 % · average deal size $10,000.00'),
     ).toBeInTheDocument();
@@ -90,7 +93,7 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
     const { user } = renderForm();
 
     expect(await screen.findAllByText('Choose a model to calculate')).toHaveLength(3);
-    await user.selectOptions(screen.getByRole('combobox', { name: /Model/ }), 'MOD-1001');
+    await choose(user, screen.getByRole('combobox', { name: /Model/ }), 'Lubricants 1.0');
     await user.type(screen.getByRole('textbox', { name: 'Goal amount (INQ)' }), '250000');
 
     expect(screen.getByText('5,000')).toBeInTheDocument();
@@ -116,7 +119,7 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
     });
 
     const budget = await screen.findByRole('combobox', { name: 'Default finance budget' });
-    await waitFor(() => expect(budget).toHaveValue('FB-1001'));
+    await waitFor(() => expect(budget).toHaveTextContent('2026 Lubricants Budget'));
     await chooseYear(user, '2027');
 
     expect(
@@ -124,7 +127,9 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
         "Default finance budget cleared — '2026 Lubricants Budget' belongs to 2026.",
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Default finance budget' })).toHaveValue('none');
+    expect(screen.getByRole('combobox', { name: 'Default finance budget' })).toHaveTextContent(
+      'No default',
+    );
   });
 
   it('says when a year has no finance budgets yet', async () => {

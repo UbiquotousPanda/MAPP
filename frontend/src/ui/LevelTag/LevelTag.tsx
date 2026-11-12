@@ -18,7 +18,15 @@ export interface LevelTagProps {
   level: PlanningLevel | PurchaseLevel;
 }
 
+/** A record type with no level of its own ("currency"), in the levels' shape and a neutral colour. */
+export interface OtherTagProps {
+  other: string;
+}
+
 /** A record's level as a tag on a tint of its colour (design system §4.2); the word carries it. */
-export function LevelTag({ level }: LevelTagProps) {
-  return <span className={cx(styles.tag, styles[level])}>{WORDS[level]}</span>;
+export function LevelTag(props: LevelTagProps | OtherTagProps) {
+  if ('other' in props) {
+    return <span className={cx(styles.tag, styles.other)}>{props.other.toUpperCase()}</span>;
+  }
+  return <span className={cx(styles.tag, styles[props.level])}>{WORDS[props.level]}</span>;
 }

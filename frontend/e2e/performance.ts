@@ -1,6 +1,6 @@
 // 046's end-to-end preparation: every load goes through the seeded Measure demo feed and the screens.
 import { expect, type Page } from '@playwright/test';
-import { callApi, chooseOption } from './fixtures';
+import { callApi, choose, escapeRegExp } from './fixtures';
 
 export const ALEX = 'alex.morgan@shell.com';
 export const DANIEL = 'daniel.okoro@shell.com';
@@ -66,7 +66,11 @@ export async function uploadThroughScreen(page: Page, fileName: string, rows: Fe
   await page.goto('/settings/performance-data/imports');
   await page.getByRole('button', { name: 'Upload a file' }).click();
   const dialog = page.getByRole('dialog', { name: 'Upload a file' });
-  await chooseOption(dialog.getByRole('combobox', { name: /^Data source/ }), FEED);
+  await choose(
+    page,
+    dialog.getByRole('combobox', { name: /^Data source/ }),
+    new RegExp(`^${escapeRegExp(FEED)}`),
+  );
   await dialog.getByLabel(/^File/).setInputFiles({
     name: fileName,
     mimeType: 'text/csv',

@@ -30,7 +30,7 @@
   display: inline;
   color: var(--ink);
   font-size: var(--text-lg);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .readyTitle {
@@ -71,7 +71,7 @@
 .groupTitle {
   color: var(--ink-2);
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .list {

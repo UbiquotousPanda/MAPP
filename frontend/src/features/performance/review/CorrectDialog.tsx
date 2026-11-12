@@ -1,6 +1,6 @@
-import { CircleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { asApiError } from '@/api/errors';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -85,10 +85,9 @@ function CorrectForm({ row, fields, loading, onClose }: CorrectFormProps) {
       onSubmit={() => void form.handleSubmit(save)()}
     >
       {failure && (
-        <p className={styles.failure} role="alert">
-          <CircleAlert aria-hidden="true" />
+        <InlineAlert tone="danger" role="alert">
           {failure}
-        </p>
+        </InlineAlert>
       )}
       {loading ? (
         <Skeleton lines={4} />

@@ -1,6 +1,7 @@
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { problemOf } from '@/ui/FormPanel/problem-of';
 import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import type { TeamRef } from '@/ui/TeamPill/TeamPill';
 import { TeamPicker } from '@/ui/TeamPicker/TeamPicker';
 import type { AccessScopeType, Role } from './api';
@@ -35,33 +36,27 @@ export function ScopeChoice({
       </div>
     );
   }
-  const scopeError = problemOf(problems, `roles.${index}.scope`);
   return (
-    <fieldset className={styles.scope}>
-      <legend className={styles.legend}>{`Where ${role.name} applies`}</legend>
-      {CHOICES.map((type) => (
-        <label key={type} className={styles.radio}>
-          <input
-            type="radio"
-            name={`scope-${role.id}`}
-            value={type}
-            checked={draft.scope === type}
-            onChange={() => onChange({ scope: type })}
+    <div className={styles.scope}>
+      <RadioGroup
+        label={`Where ${role.name} applies`}
+        name={`scope-${role.id}`}
+        options={CHOICES.map((type) => ({ value: type, label: SCOPE_WORDS[type] }))}
+        value={draft.scope}
+        onChange={(scope) => onChange({ scope })}
+        error={problemOf(problems, `roles.${index}.scope`)}
+      >
+        {draft.scope === 'teams' && (
+          <TeamPicker
+            label="Teams"
+            name={`roles.${index}.teamIds`}
+            teams={allTeams}
+            value={draft.teamIds}
+            onChange={(teamIds) => onChange({ teamIds })}
+            error={problemOf(problems, `roles.${index}.teamIds`)}
           />
-          {SCOPE_WORDS[type]}
-        </label>
-      ))}
-      {draft.scope === 'teams' && (
-        <TeamPicker
-          label="Teams"
-          name={`roles.${index}.teamIds`}
-          teams={allTeams}
-          value={draft.teamIds}
-          onChange={(teamIds) => onChange({ teamIds })}
-          error={problemOf(problems, `roles.${index}.teamIds`)}
-        />
-      )}
-      {scopeError && <p className={styles.problem}>{scopeError}</p>}
-    </fieldset>
+        )}
+      </RadioGroup>
+    </div>
   );
 }

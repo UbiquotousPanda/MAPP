@@ -12,7 +12,7 @@ const COMPONENT_CARDS = [
   'Button and LinkButton',
   'PageHeader',
   'SummaryCard',
-  'LinkSummaryCard',
+  'SummaryCard with to',
   'Card',
   'StatusChip',
   'CompletenessChip',

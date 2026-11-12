@@ -1,10 +1,11 @@
 import { useId } from 'react';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { ActivityStatusChip } from '@/ui/ActivityStatusChip/ActivityStatusChip';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
-import { ApprovalAlert } from './ApprovalAlert';
 import { ApprovalChain } from './ApprovalChain';
 import { ApprovalHistory } from './ApprovalHistory';
 import { useActivityApproval } from './api';
@@ -85,7 +86,9 @@ function ApprovalBody({ approval, activity, onShowProblems }: ApprovalBodyProps)
         <ApprovalChain round={round} />
       ) : (
         <div className={styles.upcoming}>
-          <h3 className={styles.subheading}>Not submitted yet</h3>
+          <SectionHeading level={3} rank="sub">
+            Not submitted yet
+          </SectionHeading>
           {approval.upcomingLevels.length > 0 && (
             <ApprovalChain upcomingLevels={approval.upcomingLevels} />
           )}
@@ -131,8 +134,8 @@ function ApprovalNoticeOf({ approval }: { approval: ActivityApproval }) {
     return null;
   }
   return (
-    <ApprovalAlert tone="danger" title={declineBoxText(decline, dateFormat)}>
+    <InlineAlert tone="danger" title={declineBoxText(decline, dateFormat)}>
       {decline.comment && <p className={styles.comment}>{decline.comment}</p>}
-    </ApprovalAlert>
+    </InlineAlert>
   );
 }

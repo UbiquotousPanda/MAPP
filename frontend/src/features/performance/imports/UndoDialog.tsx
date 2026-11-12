@@ -1,12 +1,11 @@
-import { CircleAlert } from 'lucide-react';
 import { useState } from 'react';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { asApiError } from '@/api/errors';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { useToast } from '@/ui/Toast/useToast';
 import { useUndoImport } from './api';
 import { countsSentence } from './imports-text';
 import type { PerformanceImport } from './api';
-import styles from './imports.module.css';
 
 /** Undo states what the import did, and what will change, before anything happens. */
 export function UndoDialog({ load, onClose }: { load: PerformanceImport; onClose: () => void }) {
@@ -36,10 +35,9 @@ export function UndoDialog({ load, onClose }: { load: PerformanceImport; onClose
       onConfirm={() => void confirm()}
     >
       {failure && (
-        <p className={styles.failure} role="alert">
-          <CircleAlert aria-hidden="true" />
+        <InlineAlert tone="danger" role="alert">
           {failure}
-        </p>
+        </InlineAlert>
       )}
       <p>{countsSentence(load.counts)}</p>
       <p>

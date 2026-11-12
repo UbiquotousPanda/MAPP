@@ -5,6 +5,7 @@ import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { closestTo, nth } from '@/testing/dom';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { PEOPLE, RULE_OPTIONS } from '@/testing/fixtures/approval-workflows';
 import { reply } from '@/testing/replies';
@@ -143,8 +144,7 @@ describe('LevelsEditor rules (feature 017, US1 and US2)', () => {
 
     await user.click(screen.getByRole('radio', { name: 'People with a role' }));
     const role = await screen.findByRole('combobox', { name: /^Role/ });
-    await screen.findByRole('option', { name: 'Approver' });
-    await user.selectOptions(role, 'Approver');
+    await choose(user, role, 'Approver');
     await user.click(screen.getByRole('radio', { name: 'All must approve' }));
 
     expect(sent()).toEqual([

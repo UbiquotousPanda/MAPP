@@ -1,5 +1,6 @@
 import { useFormatters } from '@/format/useFormatters';
 import { Select } from '@/ui/Select/Select';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { ReportWidget } from '../shared';
 import type { ReportAddress, ReportTableData } from '../shared';
 import { useSummaryLeague } from './api';
@@ -33,9 +34,9 @@ export function LeagueSection({ address, params, onSegment, covers }: LeagueSect
   return (
     <section className={styles.section} aria-labelledby="summary-leagues">
       <div className={styles.sectionHead}>
-        <h2 id="summary-leagues" className={styles.heading}>
+        <SectionHeading level={2} rank="section" id="summary-leagues">
           {current ? `Top five by ${current.label}` : 'Top five'}
-        </h2>
+        </SectionHeading>
         {lead.data && lead.data.segments.length > 0 && (
           <Select
             label="Segment"
@@ -84,7 +85,7 @@ function LeagueTable({ table, address, category, segment, covers }: LeagueTableP
       { label: LEAGUE_COLUMN[table], numeric: true },
     ],
     rows: (data?.rows ?? []).map((r) => ({ key: r.key, cells: [r.name, shown(r.value)] })),
-    total: data && ['Total', shown(data.total)],
+    total: data && [shown(data.total)],
   };
   const financial = table === 'cost' || table === 'roi';
   const covered =

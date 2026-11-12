@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
+import { choose, optionNames } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { DANIEL, rowOf } from '@/testing/fixtures/approvals';
 import { NO_FILTERS, applyFilters, filterChips, filterOptions } from './approval-filters';
@@ -54,21 +55,19 @@ describe('ApprovalsFilters (feature 008, FR-031)', () => {
     await user.click(screen.getByRole('button', { name: 'Filters' }));
     const popover = await screen.findByRole('dialog', { name: 'Filters' });
     const options = (name: string) =>
-      within(within(popover).getByRole('combobox', { name }))
-        .getAllByRole('option')
-        .map((option) => option.textContent);
+      optionNames(user, within(popover).getByRole('combobox', { name }));
 
-    expect(options('Plan')).toEqual([
+    expect(await options('Plan')).toEqual([
       'Choose…',
       'FY2026 Lubricants Europe',
       'FY2026 Mobility China',
     ]);
-    expect(options('Approval workflow')).toEqual([
+    expect(await options('Approval workflow')).toEqual([
       'Choose…',
       'China BC approval workflow (inactive)',
       'Lubricants EU approval',
     ]);
-    expect(options('Owner')).toEqual(['Choose…', 'Daniel Okoro', 'Priya Raman']);
+    expect(await options('Owner')).toEqual(['Choose…', 'Daniel Okoro', 'Priya Raman']);
   });
 
   it('filters by record type, offering only the types of the rows (031 FR-026)', async () => {
@@ -77,13 +76,13 @@ describe('ApprovalsFilters (feature 008, FR-031)', () => {
     await user.click(screen.getByRole('button', { name: 'Filters' }));
     const popover = await screen.findByRole('dialog', { name: 'Filters' });
     const recordType = within(popover).getByRole('combobox', { name: 'Record type' });
-    expect(
-      within(recordType)
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual(['Choose…', 'Activity', 'Purchase request']);
+    expect(await optionNames(user, recordType)).toEqual([
+      'Choose…',
+      'Activity',
+      'Purchase request',
+    ]);
 
-    await user.selectOptions(recordType, 'purchaseRequest');
+    await choose(user, recordType, 'Purchase request');
 
     expect(screen.getByText('PR-1001')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filters (1)' })).toBeInTheDocument();

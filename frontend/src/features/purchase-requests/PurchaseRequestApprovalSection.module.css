@@ -17,13 +17,6 @@
   line-height: var(--leading-sm);
 }
 
-.heading {
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-md);
-}
-
 .subheading {
   font-weight: var(--weight-bold);
 }
@@ -51,10 +44,6 @@
   color: var(--ink-2);
   font-size: var(--text-sm);
   line-height: var(--leading-sm);
-}
-
-.problem {
-  color: var(--danger-text);
 }
 
 .comment {

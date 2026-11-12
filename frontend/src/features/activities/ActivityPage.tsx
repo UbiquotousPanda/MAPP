@@ -5,7 +5,8 @@ import { Tabs } from '@/ui/Tabs/Tabs';
 import { HistorySection, showHistory } from '@/features/activity-log';
 import { ApprovalSection, useActivityApproval } from '@/features/approvals';
 import type { ApprovalActivity } from '@/features/approvals';
-import { ActivityFinancials, LineItemsSection, Notice } from '@/features/line-items';
+import { ActivityFinancials, LineItemsSection } from '@/features/line-items';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { ActivityPurchaseRequests } from '@/features/purchase-requests';
 import { useAttributeForm } from '@/features/settings';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -173,7 +174,7 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
       <div className={styles.page}>
         {viewOnly && <ViewOnlyNote area="record" />}
         {submitProblems !== null && (
-          <Notice tone="danger" role="alert">
+          <InlineAlert tone="danger" role="alert">
             <p>
               Submitting needs {thingsText(submitProblems)} —{' '}
               <a
@@ -186,7 +187,7 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
                 view list
               </a>
             </p>
-          </Notice>
+          </InlineAlert>
         )}
         <SplitLinks activity={activity} />
         <ActivityStatusNotice activity={activity} approval={approval.data} />

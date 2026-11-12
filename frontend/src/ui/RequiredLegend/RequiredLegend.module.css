@@ -23,7 +23,7 @@
 
 .diamond {
   color: var(--warning);
-  font-size: 14px;
+  font-size: var(--text-sm);
   line-height: 14px;
   vertical-align: top;
 }

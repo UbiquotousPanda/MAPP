@@ -206,7 +206,8 @@ describe('HomePage', () => {
 
     const financials = await screen.findByRole('region', { name: 'Financials · 2026' });
     const summary = screen.getByRole('region', { name: 'Summary' });
-    expect(summary.nextElementSibling).toBe(financials);
+    // The strip's frame holds the Summary region.
+    expect(summary.parentElement?.nextElementSibling).toBe(financials);
     expect(requestsTo(api, '/api/v1/financials/overview')[0]?.search).toBe('?scope=myTeams');
   });
 

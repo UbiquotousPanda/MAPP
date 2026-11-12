@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import type { Widget, WidgetType } from '../model';
 import { BAR_QUERY, BAR_WIDGET } from './builder-fixtures';
@@ -44,10 +45,10 @@ const TWO_MEASURES = {
 describe('051 US1, FR-025: the Style tab offers the options the type draws', () => {
   it('gives a bar chart horizontal bars, data labels and money format', async () => {
     const { user } = renderTab('bar');
-    await user.selectOptions(screen.getByLabelText('Orientation'), 'Horizontal');
+    await choose(user, screen.getByLabelText('Orientation'), 'Horizontal');
     await user.click(screen.getByLabelText('Data labels'));
-    await user.selectOptions(screen.getByLabelText('Number format'), 'Money');
-    await user.selectOptions(screen.getByLabelText('Decimals'), '0');
+    await choose(user, screen.getByLabelText('Number format'), 'Money');
+    await choose(user, screen.getByLabelText('Decimals'), '0');
 
     expect(latest.display).toEqual({
       orientation: 'horizontal',
@@ -93,7 +94,7 @@ describe('051 US1, FR-025: the Style tab offers the options the type draws', () 
     const { user } = renderTab('combo', { query: TWO_MEASURES });
     expect(screen.getByRole('group', { name: 'Planned' })).toBeInTheDocument();
     const second = within(screen.getByRole('group', { name: 'Measure 2' }));
-    await user.selectOptions(second.getByLabelText('Bars or line'), 'Bars');
+    await choose(user, second.getByLabelText('Bars or line'), 'Bars');
     expect(latest.display.measureStyles).toEqual([
       { as: 'bar', axis: 'left' },
       { as: 'bar', axis: 'right' },
@@ -103,7 +104,7 @@ describe('051 US1, FR-025: the Style tab offers the options the type draws', () 
 
   it('compares a key figure with a target, higher being better (US5-2)', async () => {
     const { user } = renderTab('kpi');
-    await user.selectOptions(screen.getByLabelText('Compare with'), 'Target');
+    await choose(user, screen.getByLabelText('Compare with'), 'Target');
     await user.type(screen.getByLabelText(/^Target/), '1000000');
     await user.click(screen.getByLabelText('Higher is better'));
 
@@ -116,7 +117,7 @@ describe('051 US1, FR-025: the Style tab offers the options the type draws', () 
 
   it('says a previous-period comparison needs a date range', async () => {
     const { user } = renderTab('kpi');
-    await user.selectOptions(screen.getByLabelText('Compare with'), 'Previous period');
+    await choose(user, screen.getByLabelText('Compare with'), 'Previous period');
     expect(screen.getByText("Needs a date range in the dashboard's filters.")).toBeInTheDocument();
   });
 

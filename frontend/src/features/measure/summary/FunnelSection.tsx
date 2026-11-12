@@ -3,6 +3,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { ReportChart, ReportWidget, shortPeriod } from '../shared';
 import type { ReportChartData, ReportTableData } from '../shared';
 import type { FunnelSectionData, SummaryFigure } from './api';
@@ -88,9 +89,9 @@ export function FunnelSection({
   return (
     <section className={styles.section} aria-labelledby="summary-funnel">
       <div className={styles.sectionHead}>
-        <h2 id="summary-funnel" className={styles.heading}>
+        <SectionHeading level={2} rank="section" id="summary-funnel">
           Funnel
-        </h2>
+        </SectionHeading>
         {details}
       </div>
       <ReportWidget

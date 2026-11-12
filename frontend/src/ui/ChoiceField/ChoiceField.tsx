@@ -1,12 +1,11 @@
-import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 import { formatWhole } from '@/format/decimal';
 import { plural } from '@/format/text';
-import { cx } from '../cx';
+import { Checkbox } from '../CheckboxField/CheckboxField';
 import { Combobox } from '../Combobox/Combobox';
 import { FieldShell } from '../FieldShell/FieldShell';
 import type { FieldFrameProps } from '../FieldShell/FieldShell';
-import inputs from '../FieldShell/inputs.module.css';
+import { SelectControl } from '../Select/Select';
 import styles from './ChoiceField.module.css';
 
 /** One choice. An inactive one is offered only while it is already chosen. */
@@ -44,7 +43,7 @@ export type ChoiceFieldProps = SingleChoiceFieldProps | MultipleChoiceFieldProps
 const SEARCHABLE_ABOVE = 10;
 const LIST_LIMIT = 50;
 
-// Up to 10 options, or options under group headings: a select starting "Choose…" or check boxes;
+// Up to 10 options, or options under group headings: ui/Select starting "Choose…", or check boxes;
 // more: a searchable Combobox showing at most 50 matches. Inactive options are offered only while
 // chosen, as "<label> (inactive)".
 export function ChoiceField(props: ChoiceFieldProps) {
@@ -94,9 +93,8 @@ export function ChoiceField(props: ChoiceFieldProps) {
               const id = `${name}-${index}`;
               return (
                 <div key={option.id} className={styles.box}>
-                  <input
+                  <Checkbox
                     id={id}
-                    type="checkbox"
                     checked={value.includes(option.id)}
                     disabled={Boolean(disabledReason)}
                     onChange={(event) =>
@@ -120,43 +118,28 @@ export function ChoiceField(props: ChoiceFieldProps) {
   return (
     <FieldShell {...frame} id={name} error={error} note={disabledReason ?? note}>
       {(describedBy, required) => (
-        <select
+        <SelectControl
           id={name}
           name={name}
+          size="md"
           value={offered.some((option) => option.id === props.value) ? props.value : ''}
+          options={[
+            ...(placeholder === null ? [] : [{ value: '', label: placeholder ?? 'Choose…' }]),
+            ...offered.map((option) => ({
+              value: option.id,
+              label: option.label,
+              group: option.group,
+            })),
+          ]}
+          onChange={props.onChange}
           disabled={Boolean(disabledReason)}
-          onChange={(event) => props.onChange(event.target.value)}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={describedBy}
-          aria-required={required}
-          className={cx(inputs.input, inputs.select, error && inputs.invalid)}
-        >
-          {placeholder !== null && <option value="">{placeholder ?? 'Choose…'}</option>}
-          <SelectOptions options={offered} />
-        </select>
+          invalid={Boolean(error)}
+          describedBy={describedBy}
+          required={required}
+        />
       )}
     </FieldShell>
   );
-}
-
-function SelectOptions({ options }: { options: ChoiceOption[] }) {
-  const groups = [...new Set(options.map((option) => option.group))];
-  return groups.map((group) => {
-    const items = options
-      .filter((option) => option.group === group)
-      .map((option) => (
-        <option key={option.id} value={option.id}>
-          {option.label}
-        </option>
-      ));
-    return group === undefined ? (
-      <Fragment key="">{items}</Fragment>
-    ) : (
-      <optgroup key={group} label={group}>
-        {items}
-      </optgroup>
-    );
-  });
 }
 
 function withoutValue(

@@ -20,15 +20,6 @@
   background-color: var(--surface);
 }
 
-.panelTitle {
-  margin: 0;
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-md);
-}
-
 .groupTitle {
   margin: 0 0 var(--space-2);
   color: var(--ink-2);

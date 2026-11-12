@@ -31,15 +31,6 @@
   overflow-wrap: break-word;
 }
 
-.default {
-  padding: 1px var(--space-2);
-  border-radius: var(--radius-chip);
-  background: var(--chip);
-  color: var(--ink);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;

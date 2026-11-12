@@ -14,7 +14,9 @@ import { FormFooter } from '@/ui/FormFooter/FormFooter';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { FormSection } from '@/ui/FormSection/FormSection';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
 import { useToast } from '@/ui/Toast/useToast';
@@ -136,25 +138,17 @@ export function RoleForm({ role, start, catalogue }: RoleFormProps) {
               control={form.control}
               name="defaultScope"
               render={(field) => (
-                <fieldset className={styles.group}>
-                  <legend className={styles.legend}>Default scope</legend>
-                  <p className={styles.note}>
-                    Where the role applies when it is given to someone; it can be changed for each
-                    person.
-                  </p>
-                  {DEFAULT_SCOPES.map((scope) => (
-                    <label key={scope} className={styles.radio}>
-                      <input
-                        type="radio"
-                        name="defaultScope"
-                        value={scope}
-                        checked={field.value === scope}
-                        onChange={() => field.onChange(scope)}
-                      />
-                      {SCOPE_WORDS[scope]}
-                    </label>
-                  ))}
-                </fieldset>
+                <RadioGroup
+                  label="Default scope"
+                  hint="Where the role applies when it is given to someone; it can be changed for each person."
+                  name="defaultScope"
+                  options={DEFAULT_SCOPES.map((scope) => ({
+                    value: scope,
+                    label: SCOPE_WORDS[scope],
+                  }))}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               )}
             />
           </FormSection>
@@ -216,9 +210,9 @@ function PermissionGroups({ catalogue, value, onChange, error }: PermissionGroup
       tabIndex={-1}
     >
       {error && (
-        <p className={styles.problem} id="permissions-problem">
+        <InlineError id="permissions-problem" quiet>
           {error}
-        </p>
+        </InlineError>
       )}
       {catalogue.groups.map((group) => (
         <fieldset key={group.name} className={styles.group}>

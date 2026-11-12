@@ -1,5 +1,6 @@
 import type { DragEvent } from 'react';
 import { cx } from '@/ui/cx';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { WidgetType } from '../model';
 import { WIDGET_TYPES } from '../widget-types';
 import type { WidgetTypeInfo } from '../widget-types';
@@ -25,9 +26,9 @@ export function WidgetPalette({ onAdd }: WidgetPaletteProps) {
 
   return (
     <section aria-labelledby="palette-title" className={cx(styles.panel, styles.palette)}>
-      <h2 id="palette-title" className={styles.panelTitle}>
+      <SectionHeading level={2} rank="card" id="palette-title">
         Widgets
-      </h2>
+      </SectionHeading>
       {GROUPS.map(({ group, title }) => (
         <div key={group}>
           <h3 id={`palette-${group}`} className={styles.groupTitle}>

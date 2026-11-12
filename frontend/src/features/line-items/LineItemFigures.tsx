@@ -5,7 +5,7 @@ import { formatMonth, moneyText } from './line-item-math';
 import type { LineItem, UnassignedBalance } from './api';
 import { conversionText, LABEL, NOT_SPREAD_YET, SPREAD_LABELS } from './line-item-text';
 import styles from './LineItemPage.module.css';
-import { RateTip } from './MoneyPair';
+import { RateTip } from './ConvertedAmount';
 
 const UNASSIGNED_LABEL = "Activity's unassigned planned cost";
 

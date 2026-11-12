@@ -21,4 +21,6 @@ export type { RankedState } from './ranked-params';
 export { ReportChart } from './ReportChart';
 export { countPoint, moneyPoint, moneyUnit, shortPeriod } from './report-chart';
 export type { ReportChartData, ReportPoint, ReportSeries } from './report-chart';
-export { goalAfterYearText } from './report-text';
+export { goalAfterYearText, NOTHING } from './report-text';
+export { StatusMixWidget } from './StatusMixWidget';
+export type { StatusMix, StatusMixItem } from './StatusMixWidget';

@@ -5,7 +5,7 @@ import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
-import { AmountPair } from './AmountPair';
+import { ConvertedAmount } from '@/features/line-items';
 import { PinButton } from './PinButton';
 import styles from './PlanCard.module.css';
 import { BusinessUnitText, PlanCompleteness, PlanStatusChip } from './PlanFacts';
@@ -86,7 +86,7 @@ export function PlanCard({ plan, actions, pinned, onPinToggle }: PlanCardProps) 
         <div>
           <dt>Planned cost</dt>
           <dd>
-            <AmountPair
+            <ConvertedAmount
               primary={plan.planPlannedCost ?? figures.plannedCost}
               secondary={figures.plannedCost}
               inline
@@ -98,7 +98,7 @@ export function PlanCard({ plan, actions, pinned, onPinToggle }: PlanCardProps) 
           <dd>
             {figures.budget ? (
               <>
-                <AmountPair
+                <ConvertedAmount
                   primary={plan.planBudget ?? figures.budget}
                   secondary={figures.budget}
                   inline

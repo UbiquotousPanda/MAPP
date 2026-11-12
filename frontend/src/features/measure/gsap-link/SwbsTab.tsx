@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import { BarList } from '@/ui/BarList/BarList';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { recordHref } from '@/ui/record-links';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
@@ -91,7 +92,7 @@ export function SwbsTab({ tab, total, table, onChange }: SwbsTabProps) {
         table={{
           columns: [{ label: 'Waiting' }, { label: 'Line items', numeric: true }],
           rows: tab.bands.map((b) => ({ key: b.key, cells: [bandText(b), formatWhole(b.count)] })),
-          total: ['Total', formatWhole(tab.waiting)],
+          total: [formatWhole(tab.waiting)],
         }}
       />
       <PagedTable
@@ -111,21 +112,15 @@ export function SwbsTab({ tab, total, table, onChange }: SwbsTabProps) {
 
 /** The bands as bars, each with its count in words, so colour is never the only signal. */
 function BandBars({ bands }: { bands: GsapBand[] }) {
-  const largest = Math.max(1, ...bands.map((b) => b.count));
   return (
-    <ul className={styles.bars} aria-label="Line items by waiting time">
-      {bands.map((b) => (
-        <li key={b.key} className={styles.bar}>
-          <span>{bandText(b)}</span>
-          <span className={styles.track} aria-hidden="true">
-            <span
-              className={styles.fill}
-              style={{ width: `${String((b.count / largest) * 100)}%` }}
-            />
-          </span>
-          <span className={styles.barValue}>{formatWhole(b.count)}</span>
-        </li>
-      ))}
-    </ul>
+    <BarList
+      label="Line items by waiting time"
+      items={bands.map((b) => ({
+        key: b.key,
+        label: bandText(b),
+        value: formatWhole(b.count),
+        size: b.count,
+      }))}
+    />
   );
 }

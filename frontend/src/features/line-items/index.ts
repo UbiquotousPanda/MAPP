@@ -5,8 +5,7 @@ export { LineItemCreatePage } from './LineItemCreatePage';
 export { LineItemEditPage } from './LineItemEditPage';
 export { LineItemPage } from './LineItemPage';
 export { LineItemsSection } from './LineItemsSection';
-export { MoneyPair, RateTip } from './MoneyPair';
-export { Notice } from './Notice';
+export { Converted, ConvertedAmount, RateTip } from './ConvertedAmount';
 export { SpreadEffectNote } from './SpreadEffectNote';
 export {
   linkedTransactionsText,

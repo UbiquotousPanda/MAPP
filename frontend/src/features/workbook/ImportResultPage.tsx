@@ -10,6 +10,7 @@ import { recordHref } from '@/ui/record-links';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useImportDetail, useUndoImport } from './api';
 import type { ImportDetail } from './api';
 import { ProblemsTable } from './CheckResult';
@@ -123,7 +124,9 @@ function Records({ detail }: { detail: ImportDetail }) {
       </ul>
       {detail.kept.length > 0 && (
         <>
-          <h3 className={styles.label}>Kept when the import was undone</h3>
+          <SectionHeading level={3} rank="label">
+            Kept when the import was undone
+          </SectionHeading>
           <ul className={styles.list}>
             {detail.kept.map((k) => (
               <li key={k.id}>

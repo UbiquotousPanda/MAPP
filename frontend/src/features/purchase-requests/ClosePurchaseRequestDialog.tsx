@@ -1,9 +1,11 @@
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { asApiError } from '@/api/errors';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
 import { formatMoneyText } from '@/format/decimal';
 import dataTable from '@/ui/Table/Table.module.css';
+import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { useClosePreview, useClosePurchaseRequest } from './api';
 import type { PurchaseRequest, PurchaseRequestClosePreview } from './api';
 import {
@@ -15,7 +17,6 @@ import {
   closeTitle,
   releasedText,
 } from './page-text';
-import { PreviewDialog } from './PreviewDialog';
 import styles from './PurchaseRequestPage.module.css';
 
 export interface ClosePurchaseRequestDialogProps {
@@ -48,15 +49,15 @@ export function ClosePurchaseRequestDialog({
   }
 
   return (
-    <PreviewDialog
+    <ConfirmDialog
       open={open}
       onOpenChange={onOpenChange}
       title={closeTitle(purchaseRequest.name)}
-      confirm={
-        ready
-          ? { label: CLOSE_PR, onConfirm: () => confirm(ready.version), busy: close.isPending }
-          : undefined
-      }
+      size="lg"
+      cancelLabel="Cancel"
+      {...(ready
+        ? { confirmLabel: CLOSE_PR, onConfirm: () => confirm(ready.version), busy: close.isPending }
+        : { acknowledgeOnly: true })}
     >
       {preview.data ? (
         preview.data.available ? (
@@ -69,12 +70,8 @@ export function ClosePurchaseRequestDialog({
       ) : (
         <Skeleton lines={4} />
       )}
-      {close.error && (
-        <p role="alert" className={styles.problem}>
-          {asApiError(close.error).message}
-        </p>
-      )}
-    </PreviewDialog>
+      {close.error && <InlineError>{asApiError(close.error).message}</InlineError>}
+    </ConfirmDialog>
   );
 }
 

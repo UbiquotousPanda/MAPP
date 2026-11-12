@@ -43,7 +43,7 @@ test('Settings: an activity type, a finance budget item, a dependent option in t
   const code = uniqueName('E2E').replace(' ', '-').toUpperCase();
   await page.getByRole('button', { name: 'New finance budget item' }).click();
   const newItem = page.getByRole('dialog', { name: 'New finance budget item' });
-  await expect(newItem.getByRole('combobox', { name: 'Budget year' })).toHaveValue(
+  await expect(newItem.getByRole('combobox', { name: 'Budget year' })).toHaveText(
     String(THIS_YEAR),
   );
   await expect(

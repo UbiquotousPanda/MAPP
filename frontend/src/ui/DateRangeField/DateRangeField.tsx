@@ -1,8 +1,9 @@
-import { CircleAlert, TriangleAlert } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 import { cx } from '../cx';
 import { FieldShell } from '../FieldShell/FieldShell';
 import type { FieldMarking } from '../FieldShell/FieldShell';
 import inputs from '../FieldShell/inputs.module.css';
+import { InlineError } from '../InlineError/InlineError';
 import styles from './DateRangeField.module.css';
 
 /** A start and an end date, "YYYY-MM-DD" or "" when not set. */
@@ -139,10 +140,9 @@ function DateInput(props: DateInputProps) {
         className={cx(inputs.input, error && inputs.invalid)}
       />
       {error && (
-        <p id={errorId} className={styles.error}>
-          <CircleAlert />
+        <InlineError id={errorId} quiet>
           {error}
-        </p>
+        </InlineError>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { Checkbox } from '@/ui/CheckboxField/CheckboxField';
 import styles from './SelectBox.module.css';
 import type { AllWorkRow } from './all-work-types';
 
@@ -21,8 +22,7 @@ export function RowSelectBox({ row, selection }: { row: AllWorkRow; selection: G
     return <span className={styles.selectSpace} />;
   }
   return (
-    <input
-      type="checkbox"
+    <Checkbox
       className={styles.select}
       aria-label={`Select ${LEVEL_WORDS[row.level] ?? row.level} '${row.name}'`}
       checked={selection.isSelected(row)}
@@ -38,14 +38,11 @@ export function RowSelectBox({ row, selection }: { row: AllWorkRow; selection: G
 
 export function PageSelectBox({ selection }: { selection: GridSelection }) {
   return (
-    <input
-      type="checkbox"
+    <Checkbox
       className={styles.select}
       aria-label="Select all rows on this page"
       checked={selection.page === 'all'}
-      ref={(box) => {
-        if (box) box.indeterminate = selection.page === 'some';
-      }}
+      indeterminate={selection.page === 'some'}
       onChange={selection.togglePage}
     />
   );

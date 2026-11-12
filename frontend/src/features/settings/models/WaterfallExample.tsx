@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import { DecimalField } from '@/ui/DecimalField/DecimalField';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { formatMoneyText, formatWhole, parseWholeInput } from '@/format/decimal';
 import { plural } from '@/format/text';
 import { waterfall } from './waterfall';
@@ -60,9 +61,9 @@ export function WaterfallExample({
   return (
     <section aria-labelledby={titleId} className={styles.example}>
       <div className={styles.header}>
-        <h3 id={titleId} className={styles.title}>
+        <SectionHeading level={3} rank="label" id={titleId}>
           Worked example
-        </h3>
+        </SectionHeading>
         <InfoTip
           label="Worked example"
           text="MQL = inquiries × INQ→MQL rate and deals = MQL × MQL→deal rate, each rounded to a whole number; revenue = deals × average deal size. Each velocity says how many months later a stage lands."

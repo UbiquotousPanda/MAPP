@@ -1,12 +1,13 @@
 import { Plus } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import type { ClipboardEvent } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { problemOf } from '@/ui/FormPanel/problem-of';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { cx } from '@/ui/cx';
-import { FieldHelpTip } from '@/features/settings';
+import { useFieldHelp } from '@/features/settings';
 import { monthFieldId } from './line-item-form-state';
 import type { CustomMonth } from './line-item-form-state';
 import { leftOutText, pastedValues } from './spread-paste';
@@ -76,33 +77,23 @@ export function SpreadEditor({
   onAddMonth,
   onUseTotal,
 }: SpreadEditorProps) {
-  const groupId = useId();
+  const { help } = useFieldHelp();
   const cost = parseAmount(plannedCost) ?? 0n;
 
   return (
     <div className={styles.editor}>
-      <fieldset id="spread" tabIndex={-1} className={styles.methods}>
-        <legend className="visually-hidden">{LABEL.spread}</legend>
-        <div className={styles.radios}>
-          {METHODS.map((option) => (
-            <label key={option} className={styles.radio}>
-              <input
-                type="radio"
-                name={`${groupId}-spread`}
-                value={option}
-                checked={method === option}
-                onChange={() => onMethodChange(option)}
-              />
-              {SPREAD_LABELS[option]}
-            </label>
-          ))}
-          <FieldHelpTip helpKey="lineItem.spread" label={LABEL.spread} />
-        </div>
-        {source && <p className={styles.note}>{source}</p>}
-        {problemOf(problems, 'spread') && (
-          <p className={styles.error}>{problemOf(problems, 'spread')}</p>
-        )}
-      </fieldset>
+      <RadioGroup
+        label={LABEL.spread}
+        labelHidden
+        tip={help('lineItem.spread')}
+        name="spread"
+        layout="row"
+        options={METHODS.map((option) => ({ value: option, label: SPREAD_LABELS[option] }))}
+        value={method}
+        onChange={onMethodChange}
+        note={source}
+        error={problemOf(problems, 'spread')}
+      />
 
       {method !== 'custom' && customTyped && <p className={styles.note}>{LEAVING_CUSTOM}</p>}
 

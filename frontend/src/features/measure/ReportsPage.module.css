@@ -19,14 +19,6 @@
   padding-top: var(--space-2);
 }
 
-.groupTitle {
-  margin: 0;
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-xl);
-  font-weight: var(--weight-heading);
-}
-
 .groupDescription {
   margin: var(--space-1) 0 var(--space-6);
   color: var(--ink);
@@ -241,8 +233,8 @@
 }
 
 .go svg {
-  width: 16px;
-  height: 16px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
   transition: transform 0.2s ease;
 }
 

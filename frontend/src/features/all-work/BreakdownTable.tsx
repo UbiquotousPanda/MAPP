@@ -6,6 +6,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { DisclosureButton } from '@/ui/DisclosureButton/DisclosureButton';
 import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import gridStyles from './AllWorkGrid.module.css';
 import type { AllWorkBreakdown, BreakdownGroup, BreakdownSubgroup } from './all-work-types';
 import type { GroupRef } from './breakdown-state';
@@ -136,9 +137,11 @@ function GroupName({ groups, openGroup }: { groups: GroupRef[]; openGroup?: Open
     return label;
   }
   return (
-    <button type="button" className={styles.open} title={showInGridText(label)} onClick={onOpen}>
-      {label}
-    </button>
+    <Tooltip content={showInGridText(label)}>
+      <button type="button" className={styles.open} onClick={onOpen}>
+        {label}
+      </button>
+    </Tooltip>
   );
 }
 

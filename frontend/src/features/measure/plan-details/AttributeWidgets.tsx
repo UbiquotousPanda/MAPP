@@ -1,5 +1,6 @@
 import { cx } from '@/ui/cx';
 import { Select } from '@/ui/Select/Select';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { ReportAddress } from '../shared';
 import { useOwnParam } from '../shared/useOwnParam';
 import type { PlanDetailsAttributeRow, PlanDetailsReport as Report } from './api';
@@ -33,7 +34,9 @@ export function AttributeWidgets({ report, address }: { report: Report; address:
     <div className={styles.attributes}>
       <nav className={styles.attrNav} aria-label="Shell attributes">
         <div className={styles.attrNavHead}>
-          <h2 className={styles.attrNavTitle}>Shell attributes · {rows.length}</h2>
+          <SectionHeading level={2} rank="label">
+            Shell attributes · {rows.length}
+          </SectionHeading>
           <Select label="Order" hideLabel value={order} options={ORDERS} onChange={setOrder} />
         </div>
         <ul>

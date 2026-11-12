@@ -2,7 +2,6 @@
   min-height: calc(2 * var(--leading-xs));
 }
 
-.bars,
 .months {
   display: flex;
   flex-direction: column;
@@ -10,14 +9,6 @@
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.bar {
-  display: grid;
-  grid-template-columns: minmax(120px, 220px) 1fr auto;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-sm);
 }
 
 .month {
@@ -28,11 +19,12 @@
   font-size: var(--text-sm);
 }
 
+/* The track of ui/ProgressBar, holding one fill per series. */
 .track {
   display: flex;
-  height: 14px;
-  border-radius: 7px;
-  background: var(--hover);
+  height: var(--space-2);
+  border-radius: var(--radius-chip);
+  background: color-mix(in srgb, var(--ink) 14%, var(--surface));
   overflow: hidden;
 }
 
@@ -58,10 +50,10 @@
 
 .swatch {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   margin-right: var(--space-1);
-  border-radius: 2px;
+  border-radius: var(--radius-1);
 }
 
 .note {
@@ -161,18 +153,6 @@
 
 .level2 {
   padding-left: var(--space-10);
-}
-
-.chooser {
-  z-index: 50;
-  min-width: 260px;
-  max-height: var(--radix-popover-content-available-height);
-  overflow-y: auto;
-  padding: var(--space-3);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  box-shadow: var(--shadow-md);
 }
 
 .chooserList {

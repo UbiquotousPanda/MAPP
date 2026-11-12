@@ -100,7 +100,7 @@ test('033 US1: from an approved activity to the purchase order and Committed fig
   // The PO line is a GSAP purchase-order transaction: Committed follows (033 FR-005, SC-001).
   await signInAs(page, ALEX);
   await openLineItem(page, lineItem);
-  const figures = page.getByRole('list', { name: 'Financial figures' });
+  const figures = page.getByRole('region', { name: 'Financial figures' });
   await expect(figures.getByText('$10,000.00').first()).toBeVisible();
   await page.goto(`/financials?year=${new Date().getUTCFullYear() + 1}`);
   await page.getByRole('searchbox', { name: 'Search transactions' }).fill(poNumber);

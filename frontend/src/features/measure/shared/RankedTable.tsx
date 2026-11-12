@@ -7,6 +7,8 @@ import { SortHeader } from '@/ui/SortHeader/SortHeader';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import dataTable from '@/ui/Table/Table.module.css';
 import { TotalLabel } from '@/ui/Table/TotalLabel';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
+import { TooltipText } from '@/ui/Tooltip/TooltipText';
 import type { RankedColumn, RankedData, RankedEntryData } from './RankedList';
 import styles from './RankedList.module.css';
 
@@ -120,27 +122,21 @@ function Rows<F>({ entry, columns, flag, owner, onDrill }: RowsProps<F>) {
         <th scope="row" className={NAME}>
           <div className={styles.nameCell}>
             {child && DRILLS_TO.has(e.level) ? (
-              <button
-                type="button"
-                className={styles.drill}
-                title={`Show what is inside ${e.name}`}
-                onClick={() => onDrill(e.id)}
-              >
-                {e.name}
-                <ChevronRight aria-hidden="true" />
-              </button>
+              <Tooltip content={`Show what is inside ${e.name}`}>
+                <button type="button" className={styles.drill} onClick={() => onDrill(e.id)}>
+                  {e.name}
+                  <ChevronRight aria-hidden="true" />
+                </button>
+              </Tooltip>
             ) : (
               <span className={styles.name}>{e.name}</span>
             )}
             {href && (
-              <Link
-                className={styles.open}
-                to={href}
-                aria-label={`Open ${e.name} in Plan`}
-                title={`Open ${e.name} in Plan`}
-              >
-                <ArrowUpRight aria-hidden="true" />
-              </Link>
+              <Tooltip content={`Open ${e.name} in Plan`}>
+                <Link className={styles.open} to={href} aria-label={`Open ${e.name} in Plan`}>
+                  <ArrowUpRight aria-hidden="true" />
+                </Link>
+              </Tooltip>
             )}
             {word && <StatusChip tone="problem">{word}</StatusChip>}
           </div>
@@ -167,10 +163,9 @@ function Cell<F>({ column, entry }: { column: RankedColumn<F>; entry: RankedEntr
   const why = column.empty?.(entry.figures);
   if (why && why !== '—') {
     return (
-      <span title={why}>
-        <span aria-hidden="true">—</span>
-        <span className="visually-hidden">{why}</span>
-      </span>
+      <TooltipText tip={why} name={why}>
+        —
+      </TooltipText>
     );
   }
   return column.render ? column.render(entry.figures, entry) : column.value(entry.figures);

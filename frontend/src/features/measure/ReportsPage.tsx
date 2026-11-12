@@ -10,6 +10,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { cx } from '@/ui/cx';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { ReportPreview } from './ReportPreview';
 import { REPORT_ABOUT, REPORT_GROUPS, REPORT_ROUTES } from './reports';
 import type { ReportGroup } from './reports';
@@ -59,9 +60,9 @@ function GroupSection({ group, items, index }: GroupProps) {
   const tone = GROUP_TONES[index % GROUP_TONES.length] ?? 'performance';
   return (
     <section className={cx(styles.group, styles[tone])} aria-labelledby={headingId}>
-      <h2 id={headingId} className={styles.groupTitle}>
+      <SectionHeading level={2} rank="section" id={headingId}>
         {group.title}
-      </h2>
+      </SectionHeading>
       <p className={styles.groupDescription}>{group.description}</p>
       <ul className={styles.list}>
         {reports.map((report) => (

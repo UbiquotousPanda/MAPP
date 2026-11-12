@@ -1,3 +1,4 @@
+import { DateField } from '@/ui/DateField/DateField';
 import { ResultCount } from '@/ui/ResultCount/ResultCount';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { Select } from '@/ui/Select/Select';
@@ -44,26 +45,18 @@ export function FilterBar({ search, selects, filters, count }: FilterBarProps) {
           onChange={(value) => set(select.name, value)}
         />
       ))}
-      <label className={styles.field}>
-        From
-        <input
-          type="date"
-          name="since"
-          className={styles.control}
-          value={values.since ?? ''}
-          onChange={(event) => set('since', event.target.value)}
-        />
-      </label>
-      <label className={styles.field}>
-        To
-        <input
-          type="date"
-          name="until"
-          className={styles.control}
-          value={values.until ?? ''}
-          onChange={(event) => set('until', event.target.value)}
-        />
-      </label>
+      <DateField
+        label="From"
+        compact
+        value={values.since ?? ''}
+        onChange={(value) => set('since', value)}
+      />
+      <DateField
+        label="To"
+        compact
+        value={values.until ?? ''}
+        onChange={(value) => set('until', value)}
+      />
       <ResultCount>{count}</ResultCount>
     </div>
   );

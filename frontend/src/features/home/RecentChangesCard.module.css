@@ -44,16 +44,3 @@
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
-
-/* The relative time looks like plain grey text; only its focus ring shows it is a control. */
-.time {
-  margin-top: 2px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-1);
-  background: none;
-  color: var(--ink-2);
-  font: inherit;
-  font-size: var(--text-xs);
-  cursor: default;
-}

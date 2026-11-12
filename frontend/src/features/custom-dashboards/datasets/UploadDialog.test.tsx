@@ -5,6 +5,7 @@ import { expectNoAxeViolations } from '@/testing/axe';
 import { CURRENCIES, dataset, preview } from '@/testing/fixtures/datasets';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { apiError, reply } from '@/testing/replies';
 import { DatasetsPage } from './DatasetsPage';
@@ -53,7 +54,7 @@ describe('051 FR-041: checking a file (US3 scenario 1)', () => {
     const columns = within(panel).getByRole('list', { name: 'Columns' });
     const cost = within(columns).getAllByRole('group')[3] ?? panel;
     expect(within(cost).getByLabelText('Name')).toHaveValue('Cost');
-    expect(within(cost).getByLabelText(/^Type/)).toHaveValue('money');
+    expect(within(cost).getByLabelText(/^Type/)).toHaveTextContent('Money');
     expect(cost).toHaveTextContent('Samples: 12000 · 9500 (1 empty cell)');
     const rows = within(panel).getByRole('table');
     expect(within(rows).getAllByRole('row')).toHaveLength(3);
@@ -140,7 +141,7 @@ describe('051 FR-042: saving the dataset (US3 scenario 2)', () => {
     if (!cost) throw new Error('No cost column');
     await view.user.clear(within(cost).getByLabelText('Name'));
     await view.user.type(within(cost).getByLabelText('Name'), 'Agency cost');
-    await view.user.selectOptions(within(cost).getByLabelText(/^Currency/), 'EUR');
+    await choose(view.user, within(cost).getByLabelText(/^Currency/), /^EUR/);
 
     await view.user.click(within(panel).getByRole('button', { name: 'Save dataset' }));
 

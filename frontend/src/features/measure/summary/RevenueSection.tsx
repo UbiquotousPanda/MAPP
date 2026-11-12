@@ -3,6 +3,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import {
   goalAfterYearText,
   moneyPoint,
@@ -38,9 +39,9 @@ export function RevenueSection({ revenue, notes, details }: RevenueSectionProps)
   return (
     <section className={styles.section} aria-labelledby="summary-revenue">
       <div className={styles.sectionHead}>
-        <h2 id="summary-revenue" className={styles.heading}>
+        <SectionHeading level={2} rank="section" id="summary-revenue">
           Revenue
-        </h2>
+        </SectionHeading>
         {details}
       </div>
       {notes}
@@ -91,7 +92,7 @@ function TrendWidget({ trend, totals }: TrendWidgetProps) {
       cells: [p.label, amount(p.actual), amount(p.projected), amount(p.goal)],
     })),
     total: trend.length
-      ? ['Total', amount(totals.actual), amount(totals.projected), amount(totals.goal)]
+      ? [amount(totals.actual), amount(totals.projected), amount(totals.goal)]
       : undefined,
   };
   return (

@@ -40,35 +40,10 @@ textarea {
   letter-spacing: inherit;
 }
 
-/* Bare selects look like the app's controls and get its chevron; :where leaves any class in charge. */
-:where(select:not([multiple], [size])) {
-  min-height: var(--control-sm);
-  padding-left: var(--space-3);
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-control);
-  background-color: var(--surface);
-  color: var(--ink);
-  font-size: var(--text-sm);
-}
-
-:where(select:not([multiple], [size], :disabled)):hover {
-  border-color: var(--control-border-hover);
-}
-
-select:not([multiple], [size]) {
-  padding-right: var(--space-9);
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
-    linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 13px) 50%;
-  background-size:
-    5px 5px,
-    5px 5px;
-  background-repeat: no-repeat;
-  cursor: pointer;
+/* One colour for every check box and radio button (design system §5.5). */
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--blue);
 }
 
 a {

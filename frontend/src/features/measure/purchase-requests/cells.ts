@@ -43,21 +43,6 @@ export function totalText(t: RequestsGridData['totals'], column: ColumnKey, f: F
   }
 }
 
-/** The grid's Total row over every vendor on every page, as the API adds it up; the first column names it. */
-export function totalCells(
-  t: RequestsGridData['totals'],
-  columns: ColumnKey[],
-  f: Format,
-): string[] {
-  return columns.map((c, i) => {
-    const text = totalText(t, c, f);
-    if (i > 0 || NUMERIC.includes(c)) {
-      return text;
-    }
-    return text ? `Total · ${text}` : 'Total';
-  });
-}
-
 export function requestText(r: RequestData, column: ColumnKey, f: Format): string {
   switch (column) {
     case 'name':

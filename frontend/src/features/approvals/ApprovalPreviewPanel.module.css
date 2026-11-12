@@ -20,13 +20,6 @@
   gap: var(--space-3);
 }
 
-/* Sections inside a side panel: an h3, 16/24 bold (design system §5.5 FormSection). */
-.heading {
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-md);
-}
-
 /* The one key–value layout (design system §5.4 DescriptionList): 200 px labels, then the value;
    the label above its value on phones. */
 .facts {

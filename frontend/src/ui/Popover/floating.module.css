@@ -35,6 +35,12 @@
   width: min(360px, calc(100vw - 32px));
 }
 
+/* As wide as the control it belongs to, such as a Combobox's list. */
+.anchor {
+  width: var(--radix-popover-trigger-width);
+  min-width: 240px;
+}
+
 .padNone {
   padding: 0;
 }

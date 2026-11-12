@@ -91,7 +91,7 @@ export function CommitmentChart({
       key: s.key,
       cells: [s.name, ...s.values.map((v) => money(v)), money(s.total)],
     })),
-    total: data && ['Total', ...data.totals.map((t) => money(t)), money(data.committed)],
+    total: data && [...data.totals.map((t) => money(t)), money(data.committed)],
   };
   return (
     <ReportWidget

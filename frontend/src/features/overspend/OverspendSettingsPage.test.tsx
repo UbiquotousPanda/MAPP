@@ -80,8 +80,11 @@ describe('037 FR-006 FR-007: Settings › Overspend control', () => {
     const reason = "Changing Settings isn't part of your role. Ask Alex Morgan.";
     renderPage([reply(GET, { body: configuration({ canChange: { available: false, reason } }) })]);
 
-    expect(await screen.findByText(reason)).toBeVisible();
+    await screen.findByRole('group', { name: BUDGETS });
     expect(choice(BUDGETS, /^Warn/)).toBeDisabled();
+    expect(screen.getByRole('group', { name: BUDGETS })).toHaveAccessibleDescription(
+      expect.stringContaining(reason),
+    );
     expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
     await expectNoAxeViolations();
   });

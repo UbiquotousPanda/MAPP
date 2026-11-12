@@ -8,6 +8,7 @@ import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { ScrollBox } from '@/features/financials';
 import { PlanStatusChip } from '@/features/plans';
 import { useFormatters } from '@/format/useFormatters';
@@ -31,9 +32,9 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
   return (
     <section className={styles.panel} aria-labelledby="allocations-heading">
       <div className={styles.panelHeader}>
-        <h2 id="allocations-heading" className={styles.heading}>
+        <SectionHeading level={2} rank="card" id="allocations-heading">
           Allocations
-        </h2>
+        </SectionHeading>
         <Button size="sm" icon={<Plus />} onClick={onAllocate}>
           Allocate to a plan
         </Button>

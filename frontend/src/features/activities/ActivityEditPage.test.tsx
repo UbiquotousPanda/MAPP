@@ -4,6 +4,7 @@ import type { HttpHandler } from 'msw';
 import { CONFLICT_NEXT_STEP } from '@/api/errors';
 import { launchFilmSection } from '@/testing/fixtures/line-items';
 import { mockApi } from '@/testing/mock-api';
+import { choose } from '@/testing/select';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { launchFilm, PEOPLE } from '@/testing/fixtures/activities';
@@ -259,14 +260,14 @@ describe('ActivityFormPage, edit (feature 006, US4)', () => {
     const { user } = openEditForm(launchFilm());
 
     const type = await screen.findByLabelText('Activity type');
-    await user.selectOptions(type, 'AT-1002');
+    await choose(user, type, /^Digital campaign/);
     const question = await screen.findByRole('alertdialog', {
       name: "Use the default planned cost of $10,000.00 for 'Digital campaign'?",
     });
     await user.click(within(question).getByRole('button', { name: 'Keep $120,000.00' }));
     expect(screen.getByLabelText('Planned cost')).toHaveValue('120,000.00');
 
-    await user.selectOptions(type, 'AT-1001');
+    await choose(user, type, /^Event/);
     await user.click(await screen.findByRole('button', { name: 'Use default' }));
     expect(screen.getByLabelText('Planned cost')).toHaveValue('25,000.00');
     expect(screen.getByText('From the activity type')).toBeVisible();

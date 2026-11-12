@@ -1,7 +1,8 @@
-import { SlidersHorizontal } from 'lucide-react';
 import { useId } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
+import { DateField } from '@/ui/DateField/DateField';
+import { FiltersButton } from '@/ui/FilterMenuButton/FilterMenuButton';
 import { Popover } from '@/ui/Popover/Popover';
 import { NO_FILTERS, filtersInUse } from './approval-filters';
 import type { ApprovalFilterOptions, ApprovalFilterValues } from './approval-filters';
@@ -23,7 +24,7 @@ export function ApprovalsFilters({ filters, options, onChange }: ApprovalsFilter
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
-        <Button icon={<SlidersHorizontal />}>{inUse > 0 ? `Filters (${inUse})` : 'Filters'}</Button>
+        <FiltersButton count={inUse} />
       </Popover.Trigger>
       <Popover.Content width="lg" padding="lg" sideOffset={8} aria-label="Filters">
         <div className={styles.fields}>
@@ -56,15 +57,15 @@ export function ApprovalsFilters({ filters, options, onChange }: ApprovalsFilter
             onChange={(ownerId) => set({ ownerId })}
           />
           <div className={styles.dates}>
-            <DateInput
-              id={`${id}-from`}
+            <DateField
+              name={`${id}-from`}
               label="Submitted from"
               value={filters.from}
               max={filters.to || undefined}
               onChange={(from) => set({ from })}
             />
-            <DateInput
-              id={`${id}-to`}
+            <DateField
+              name={`${id}-to`}
               label="Submitted to"
               value={filters.to}
               min={filters.from || undefined}
@@ -81,33 +82,5 @@ export function ApprovalsFilters({ filters, options, onChange }: ApprovalsFilter
         )}
       </Popover.Content>
     </Popover.Root>
-  );
-}
-
-interface DateInputProps {
-  id: string;
-  label: string;
-  value: string;
-  min?: string;
-  max?: string;
-  onChange: (value: string) => void;
-}
-
-function DateInput({ id, label, value, min, max, onChange }: DateInputProps) {
-  return (
-    <div className={styles.date}>
-      <label htmlFor={id} className={styles.label}>
-        {label}
-      </label>
-      <input
-        id={id}
-        type="date"
-        className={styles.input}
-        value={value}
-        min={min}
-        max={max}
-        onChange={(event) => onChange(event.target.value)}
-      />
-    </div>
   );
 }

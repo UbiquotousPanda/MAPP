@@ -1,10 +1,11 @@
-import { CircleAlert, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -155,12 +156,7 @@ export function ImportRatesPage() {
                 Reviewing the file…
               </p>
             )}
-            {fileError && (
-              <p id={fileErrorId} role="alert" className={styles.error}>
-                <CircleAlert aria-hidden="true" />
-                {fileError}
-              </p>
-            )}
+            {fileError && <InlineError id={fileErrorId}>{fileError}</InlineError>}
           </div>
         </Card>
         {review && (

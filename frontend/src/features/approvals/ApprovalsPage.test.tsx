@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { HttpHandler } from 'msw';
 import { nth } from '@/testing/dom';
 import { mockApi } from '@/testing/mock-api';
+import { choose } from '@/testing/select';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import {
@@ -150,17 +151,18 @@ describe('ApprovalsPage (feature 008, US3)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Filters' }));
     const filters = await screen.findByRole('dialog', { name: 'Filters' });
-    await user.selectOptions(within(filters).getByRole('combobox', { name: 'Owner' }), 'U-1003');
+    await choose(user, within(filters).getByRole('combobox', { name: 'Owner' }), 'Daniel Okoro');
     await user.keyboard('{Escape}');
 
     expect(screen.getByText('2 of 3 activities')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filters (1)' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Filters (1)' }));
-    await user.selectOptions(
+    await choose(
+      user,
       within(await screen.findByRole('dialog', { name: 'Filters' })).getByRole('combobox', {
         name: 'Plan',
       }),
-      'P-1002',
+      'FY2026 Mobility China',
     );
     await user.keyboard('{Escape}');
 

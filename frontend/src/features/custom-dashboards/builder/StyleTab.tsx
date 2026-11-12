@@ -1,4 +1,5 @@
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
@@ -67,18 +68,13 @@ export function StyleTab({ widget, errorAt, onDisplay, onText }: StyleTabProps) 
         />
       )}
       {shows(type, 'palette') && (
-        <fieldset className={styles.group}>
-          <legend className={styles.rowLegend}>Colours</legend>
-          <div className={styles.palettes}>
-            {PALETTES.map((palette) => (
-              <label key={palette.value} className={styles.paletteChoice}>
-                <input
-                  type="radio"
-                  name={`${prefix}-palette`}
-                  value={palette.value}
-                  checked={(display.palette ?? defaultPalette(type)) === palette.value}
-                  onChange={() => set({ palette: palette.value })}
-                />
+        <RadioGroup
+          label="Colours"
+          name={`${prefix}-palette`}
+          options={PALETTES.map((palette) => ({
+            value: palette.value,
+            label: (
+              <span className={styles.paletteChoice}>
                 {palette.label}
                 <span className={styles.swatches} aria-hidden="true">
                   {palette.tokens.map((token) => (
@@ -89,10 +85,12 @@ export function StyleTab({ widget, errorAt, onDisplay, onText }: StyleTabProps) 
                     />
                   ))}
                 </span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+              </span>
+            ),
+          }))}
+          value={display.palette ?? defaultPalette(type)}
+          onChange={(palette) => set({ palette })}
+        />
       )}
       {shows(type, 'legend') && (
         <div className={styles.pair}>

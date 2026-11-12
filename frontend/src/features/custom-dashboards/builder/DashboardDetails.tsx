@@ -2,6 +2,7 @@ import { Combobox } from '@/ui/Combobox/Combobox';
 import { DateRangeField } from '@/ui/DateRangeField/DateRangeField';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { CustomDashboardFilters } from '../model';
 import { usePlanChoices, useTeamChoices } from './api';
 import type { Choice } from './api';
@@ -27,7 +28,9 @@ export function DashboardDetails({ draft, errorAt, onAction }: DashboardDetailsP
 
   return (
     <div className={styles.tab}>
-      <h2 className={styles.widgetTitle}>Dashboard</h2>
+      <SectionHeading level={2} rank="card">
+        Dashboard
+      </SectionHeading>
       <TextField
         label="Name"
         name={NAME_FIELD_ID}

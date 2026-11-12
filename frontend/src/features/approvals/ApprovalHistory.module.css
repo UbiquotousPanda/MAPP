@@ -4,13 +4,6 @@
   gap: var(--space-3);
 }
 
-.heading {
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-md);
-}
-
 .empty {
   color: var(--ink-2);
   font-size: var(--text-sm);

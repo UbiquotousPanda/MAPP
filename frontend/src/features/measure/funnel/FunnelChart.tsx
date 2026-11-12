@@ -28,7 +28,7 @@ export function FunnelChart({ report }: { report: FunnelReport }) {
       cells: [label(p.key), whole(p.goal), whole(p.actual), whole(p.projected)],
     })),
     total: report.periods.length
-      ? ['Total', whole(totals.goal), whole(totals.actual), whole(totals.projected)]
+      ? [whole(totals.goal), whole(totals.actual), whole(totals.projected)]
       : undefined,
   };
   return (

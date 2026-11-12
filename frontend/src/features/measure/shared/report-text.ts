@@ -1,6 +1,9 @@
 import type { ReportChoices, ReportFrame } from './api';
 import type { ActivityStatus, PlanType, ReportAddress, Show } from './report-address';
 
+/** A figure with no data; never 0. */
+export const NOTHING = '—';
+
 export const PLAN_TYPE_WORDS: Record<PlanType, string> = {
   operational: 'Operational',
   strategic: 'Strategic',

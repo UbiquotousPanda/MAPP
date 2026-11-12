@@ -37,16 +37,6 @@
   font-size: var(--text-sm);
 }
 
-.problem {
-  margin: var(--space-2) 0 0;
-  color: var(--danger-text);
-}
-
-.label {
-  color: var(--ink);
-  font-weight: var(--weight-bold);
-}
-
 .summary {
   margin: 0 0 var(--space-3);
   color: var(--ink);

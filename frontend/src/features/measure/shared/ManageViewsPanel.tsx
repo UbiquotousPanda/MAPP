@@ -2,6 +2,7 @@ import { Star } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
+import { Tag } from '@/ui/Tag/Tag';
 import { useToast } from '@/ui/Toast/useToast';
 import type { ReportKey } from '../reports';
 import { useCreateReportView, useDeleteReportView, useUpdateReportView } from './api';
@@ -81,7 +82,7 @@ export function ManageViewsPanel({ report, open, onOpenChange, views }: ManageVi
             <li key={view.id} className={styles.view}>
               <span className={styles.label}>
                 {view.name}
-                {view.isDefault && <span className={styles.default}>Default</span>}
+                {view.isDefault && <Tag>Default</Tag>}
               </span>
               <div className={styles.actions}>
                 <Button

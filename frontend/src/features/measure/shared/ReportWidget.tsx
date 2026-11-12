@@ -1,4 +1,3 @@
-import { ChartColumn, Table2 } from 'lucide-react';
 import { useId } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
@@ -7,6 +6,8 @@ import { cx } from '@/ui/cx';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { ViewSwitch } from '@/ui/ViewSwitch/ViewSwitch';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { ReportKey } from '../reports';
 import { downloadReport } from './api';
 import { ExportMenu } from './ExportMenu';
@@ -56,21 +57,11 @@ export function ReportWidget(props: ReportWidgetProps) {
   const actions = (
     <div className={styles.actions}>
       {controls}
-      <div className={styles.switch} role="group" aria-label={`Show ${title} as`}>
-        {[false, true].map((tableView) => (
-          <button
-            key={String(tableView)}
-            type="button"
-            className={cx(styles.toggle, asTable === tableView && styles.on)}
-            aria-pressed={asTable === tableView}
-            aria-label={tableView ? 'Table' : 'Chart'}
-            title={tableView ? 'Show as a table' : 'Show as a chart'}
-            onClick={() => show(tableView)}
-          >
-            {tableView ? <Table2 aria-hidden="true" /> : <ChartColumn aria-hidden="true" />}
-          </button>
-        ))}
-      </div>
+      <ViewSwitch
+        label={`Show ${title} as`}
+        value={asTable ? 'table' : 'chart'}
+        onChange={(view) => show(view === 'table')}
+      />
       <ExportMenu
         label={`Export ${title}`}
         iconOnly
@@ -84,9 +75,9 @@ export function ReportWidget(props: ReportWidgetProps) {
       <section className={styles.widget} aria-labelledby={titleId}>
         <div className={styles.head}>
           <div className={styles.titleRow}>
-            <h2 id={titleId} className={styles.title}>
+            <SectionHeading level={2} rank="card" id={titleId}>
               {title}
-            </h2>
+            </SectionHeading>
             <InfoTip label={title} text={tip} />
           </div>
           {actions}

@@ -4,6 +4,7 @@ import { bulkResult, outcome } from '@/testing/fixtures/bulk';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { reply } from '@/testing/replies';
 import { ChangeFieldDialog } from './ChangeFieldDialog';
 
@@ -79,7 +80,7 @@ describe('012 FR-009 – FR-011: Change field', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Change field' });
     expect(await within(dialog).findByText(/edited one record at a time/)).toBeInTheDocument();
-    await user.selectOptions(within(dialog).getByRole('combobox', { name: /^Field/ }), 'End date');
+    await choose(user, within(dialog).getByRole('combobox', { name: /^Field/ }), 'End date');
     await user.type(within(dialog).getByLabelText('Value'), '2026-06-20');
 
     expect(

@@ -1,51 +1,51 @@
+import { ChevronRight } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { cx } from '../cx';
 import { InfoTip } from '../InfoTip/InfoTip';
 import type { StatusTone } from '../StatusChip/StatusChip';
-import { Tooltip } from '../Tooltip/Tooltip';
+import { TooltipText } from '../Tooltip/TooltipText';
 import styles from './SummaryCard.module.css';
 
 export interface SummaryCardProps {
   label: string;
-  /** The number or amount, already formatted ("6", "$1.25M"). */
   value: string | number;
-  /** A plain explanation of the label, shown in an info tip. */
-  tip?: string;
-  /** Colours the value, only when the colour means something (a problem in red). */
+  /** Text for an info tip, or a ready-made tip such as a field's help. */
+  tip?: ReactNode;
   tone?: StatusTone;
-  /** The complete value when `value` is shortened ("$1,250,000.00" for "$1.25M"). */
+  /** The complete value when `value` is shortened, in a tooltip. */
   fullValue?: string;
-  /**
-   * A line under the value (feature 004): "Over-allocated by $12,500.00", "No plan budget set",
-   * or a budget-used ProgressBar.
-   */
   detail?: ReactNode;
+  to?: string;
+  linkLabel?: string;
 }
 
-/** One of the row of summary cards under a page header (design system §2). */
-export function SummaryCard({ label, value, tip, tone, fullValue, detail }: SummaryCardProps) {
+export function SummaryCard(props: SummaryCardProps) {
+  const { label, value, tip, tone, fullValue, detail, to, linkLabel } = props;
   const isShortened = fullValue !== undefined && fullValue !== String(value);
+  const shown = isShortened ? `${value} (${fullValue})` : String(value);
 
   return (
-    <div className={styles.card}>
+    <div className={cx(styles.card, to && styles.linked)}>
+      {to && (
+        <Link to={to} aria-label={`${label}: ${shown} — ${linkLabel}`} className={styles.link} />
+      )}
       <p className={styles.label}>
         {label}
-        {tip && <InfoTip label={label} text={tip} />}
+        {typeof tip === 'string' ? <InfoTip label={label} text={tip} /> : tip}
       </p>
       <p className={cx(styles.value, tone && styles[tone])}>
         {isShortened ? (
-          // A button, so keyboard and screen-reader users can reach the full value too. Its name
-          // starts with the visible text (WCAG 2.5.3): "$1.25M ($1,250,000.00)".
-          <Tooltip content={fullValue}>
-            <button type="button" className={styles.fullValue}>
-              {value} <span className="visually-hidden">({fullValue})</span>
-            </button>
-          </Tooltip>
+          // The name starts with the visible text (WCAG 2.5.3).
+          <TooltipText tip={fullValue}>
+            {value} <span className="visually-hidden">({fullValue})</span>
+          </TooltipText>
         ) : (
           value
         )}
       </p>
       {detail && <div className={styles.detail}>{detail}</div>}
+      {to && <ChevronRight aria-hidden="true" className={styles.chevron} />}
     </div>
   );
 }

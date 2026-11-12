@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import type { DataField, DataSource, Widget, WidgetQuery } from '../model';
@@ -67,9 +68,7 @@ export function DataTab({ widget, query, sources, sourcesFailed, errorAt, onQuer
         Upload data
       </Link>
       {sourcesFailed && (
-        <p className={styles.error} role="alert">
-          The sources could not be loaded. Reload the page to try again.
-        </p>
+        <InlineError>The sources could not be loaded. Reload the page to try again.</InlineError>
       )}
       {cleared && (
         <p className={styles.note} role="status">

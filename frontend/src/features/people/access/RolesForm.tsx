@@ -12,6 +12,7 @@ import type { TeamRef } from '@/ui/TeamPill/TeamPill';
 import { useToast } from '@/ui/Toast/useToast';
 import { useCloseAfterSave } from '@/ui/useCloseAfterSave';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
 import { firstName } from '../texts';
 import { useCheckPersonRolesImpact, useSetPersonRoles } from './api';
@@ -181,9 +182,9 @@ export function RolesForm({ person, roles, allTeams, isYou, onClose }: RolesForm
           }
         />
         <section className={styles.preview} aria-labelledby="roles-preview">
-          <h3 id="roles-preview" className={styles.previewTitle}>
+          <SectionHeading level={3} rank="label" id="roles-preview">
             {`What ${firstName(name)} can do`}
-          </h3>
+          </SectionHeading>
           <ul className={styles.summary} aria-live="polite">
             {summary.map((line) => (
               <li key={line}>{line}</li>

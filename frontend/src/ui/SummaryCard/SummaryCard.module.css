@@ -42,17 +42,6 @@
   font-size: var(--text-xs);
 }
 
-/* The shortened value looks like the plain value; only its focus ring shows it is a control. */
-.fullValue {
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-chip);
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: default;
-}
-
 .neutral {
   color: var(--status-neutral-text);
 }
@@ -75,4 +64,49 @@
 
 .problem {
   color: var(--status-problem-text);
+}
+
+/* The link lies over the whole card; the ⓘ and a shortened value's button stay above it. Two
+   classes, so the chevron's room survives a StatStrip's padding. */
+.card.linked {
+  position: relative;
+  padding-right: var(--space-10);
+  transition: background-color var(--dur) var(--ease-out);
+}
+
+.linked:hover {
+  background: var(--hover-on-card);
+}
+
+.link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.linked button {
+  position: relative;
+  z-index: 2;
+}
+
+.chevron {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  color: var(--ink-2);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linked {
+    transition: none;
+  }
 }

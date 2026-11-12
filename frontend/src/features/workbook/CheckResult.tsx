@@ -2,6 +2,7 @@ import { Download } from 'lucide-react';
 import { Button } from '@/ui/Button/Button';
 import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { ImportCheck, ImportProblem } from './api';
 import { downloadProblems } from './files';
 import styles from './workbook.module.css';
@@ -79,7 +80,9 @@ export function ProblemsTable({
   return (
     <>
       <div className={styles.row}>
-        <h3 className={styles.label}>Problems ({problems.length})</h3>
+        <SectionHeading level={3} rank="label">
+          Problems ({problems.length})
+        </SectionHeading>
         <Button
           variant="tertiary"
           size="sm"

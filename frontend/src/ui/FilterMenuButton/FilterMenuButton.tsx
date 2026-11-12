@@ -1,5 +1,8 @@
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal } from 'lucide-react';
 import type { ComponentProps } from 'react';
+import { formatWhole } from '@/format/decimal';
+import { Button } from '../Button/Button';
+import type { ButtonProps } from '../Button/Button';
 import { cx } from '../cx';
 import styles from './FilterMenuButton.module.css';
 
@@ -21,5 +24,25 @@ export function FilterMenuButton({ label, summary, className, ...props }: Filter
       {summary && <span className={styles.summary}>· {summary}</span>}
       <ChevronDown aria-hidden="true" />
     </button>
+  );
+}
+
+export interface FiltersButtonProps extends Omit<ButtonProps, 'children' | 'icon' | 'variant'> {
+  /** How many filters are in use: "Filters (2)". */
+  count: number;
+}
+
+/** The toolbar's "Filters (n)" button that opens the less-used filters; an icon and a badge on phones. */
+export function FiltersButton({ count, className, ...props }: FiltersButtonProps) {
+  const number = formatWhole(count);
+  return (
+    <Button icon={<SlidersHorizontal />} className={cx(styles.filters, className)} {...props}>
+      <span className={styles.word}>{count > 0 ? `Filters (${number})` : 'Filters'}</span>
+      {count > 0 && (
+        <span className={styles.badge} aria-hidden="true">
+          {number}
+        </span>
+      )}
+    </Button>
   );
 }

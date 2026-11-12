@@ -15,7 +15,7 @@ const TABLE = {
     { key: 'GB01', cells: ['GB01', '12'] },
     { key: 'none', cells: ['Not filled in', '6'] },
   ],
-  total: ['Total', '18'],
+  total: ['18'],
 };
 
 function renderWidget(

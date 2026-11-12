@@ -1,4 +1,3 @@
-import { Lock } from 'lucide-react';
 import { useState } from 'react';
 import { asApiError, conflictMessage, isSessionLost } from '@/api/errors';
 import { localDate } from '@/format/intl';
@@ -7,7 +6,9 @@ import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -79,36 +80,15 @@ function ModelForm({ settings }: { settings: AttributionSettings }) {
         }
       }}
     >
-      {problem && (
-        <p role="alert" className={styles.problem}>
-          {problem}
-        </p>
-      )}
-      <fieldset className={styles.group}>
-        <legend className={styles.legend}>Designated model</legend>
-        {settings.models.map((m) => (
-          <label key={m.key} className={styles.radio}>
-            <input
-              type="radio"
-              name="model"
-              value={m.key}
-              checked={model === m.key}
-              disabled={locked}
-              onChange={() => setModel(m.key)}
-            />
-            <span>
-              <span className={styles.word}>{m.name}</span>
-              <span className={styles.note}>{m.description}</span>
-            </span>
-          </label>
-        ))}
-      </fieldset>
-      {locked && (
-        <p className={styles.lock} role="note">
-          <Lock aria-hidden="true" />
-          <span>{settings.canChange.reason}</span>
-        </p>
-      )}
+      {problem && <InlineError>{problem}</InlineError>}
+      <RadioGroup
+        label="Designated model"
+        name="model"
+        options={settings.models.map((m) => ({ value: m.key, label: m.name, hint: m.description }))}
+        value={model}
+        onChange={setModel}
+        disabledReason={locked ? settings.canChange.reason : undefined}
+      />
       <p className={styles.note}>
         {settings.updatedBy && settings.updatedAt
           ? `Last changed by ${settings.updatedBy.name} on ${date(localDate(settings.updatedAt))}.`

@@ -2,7 +2,7 @@ import type { StatusTone } from '@/ui/StatusChip/StatusChip';
 import { RECORD_TYPES } from './schemas';
 import type { RecordType } from './schemas';
 
-export const NOTHING = '—';
+export { NOTHING } from '../shared';
 
 export const RECORD_WORDS: Record<RecordType, string> = {
   activity: 'Activities',

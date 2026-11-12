@@ -29,7 +29,7 @@ export function RevenueChart({ report }: { report: RevenueReport }) {
       cells: [label(p.key), amount(p.goal), amount(p.actual), amount(p.projected)],
     })),
     total: report.periods.length
-      ? ['Total', amount(totals.goal), amount(totals.actual), amount(totals.projected)]
+      ? [amount(totals.goal), amount(totals.actual), amount(totals.projected)]
       : undefined,
   };
   return (

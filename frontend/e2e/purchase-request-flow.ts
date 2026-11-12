@@ -1,5 +1,5 @@
 import { expect, type Page } from '@playwright/test';
-import { callApi, chooseOption, expectNoAxeViolations, expectToast, signInAs } from './fixtures';
+import { callApi, choose, expectNoAxeViolations, expectToast, signInAs } from './fixtures';
 import { lubricantsActivity } from './lubricants';
 import { decideAs } from './planning-changes';
 import type { Named } from './planning';
@@ -82,13 +82,15 @@ export async function fillAndSavePurchaseRequest(
     .getByRole('listbox', { name: 'MoA approver' })
     .getByRole('option', { name: /^Daniel Okoro/ })
     .click();
-  await chooseOption(
+  await choose(
+    page,
     page.getByRole('combobox', { name: /^Approval workflow(?! for)/ }),
-    'Purchase request approval (MoA)',
+    /^Purchase request approval \(MoA\)/,
   );
-  await chooseOption(
+  await choose(
+    page,
     page.getByRole('combobox', { name: /^Approval workflow for modification/ }),
-    'Purchase request change approval (MoA)',
+    /^Purchase request change approval \(MoA\)/,
   );
   await page
     .getByRole('group', { name: /^Material or service/ })
@@ -104,7 +106,7 @@ export async function fillAndSavePurchaseRequest(
     .fill('Priya Raman');
   await page.getByRole('textbox', { name: 'Vendor', exact: true }).fill('Northlight Events GmbH');
   await page.getByRole('textbox', { name: 'Vendor code', exact: true }).fill('V-100101');
-  await chooseOption(page.getByRole('combobox', { name: /^Email group/ }), 'DE_LUBES');
+  await choose(page, page.getByRole('combobox', { name: /^Email group/ }), /^DE_LUBES/);
   await page.getByLabel(/^Delivery date/).fill(deliveryDate);
   await expectNoAxeViolations(page);
   await page.getByRole('button', { name: 'Save', exact: true }).click();

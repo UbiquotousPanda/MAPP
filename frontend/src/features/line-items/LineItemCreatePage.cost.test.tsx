@@ -3,13 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { formOptions } from '@/testing/fixtures/line-item-forms';
 import { findNameField, renderCreatePage } from '@/testing/fixtures/line-item-pages';
 import { reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
 
 describe('LineItemCreatePage, cost and currency (US2)', () => {
   it('converts the balance when the currency changes and shows the USD amount live (scenario 2, FR-011, FR-012)', async () => {
     const { user } = renderCreatePage();
     await findNameField();
 
-    await user.selectOptions(screen.getByLabelText('Currency'), 'EUR');
+    await choose(user, screen.getByLabelText('Currency'), /^EUR/);
     const cost = screen.getByLabelText('Planned cost');
     expect(cost).toHaveValue('18,400.00');
     expect(screen.getByText('Changed to €18,400.00 = $20,000.00')).toBeInTheDocument();
@@ -50,7 +51,7 @@ describe('LineItemCreatePage, cost and currency (US2)', () => {
     await findNameField();
 
     // The pre-filled balance keeps its plan-currency value in another currency.
-    await user.selectOptions(screen.getByLabelText('Currency'), 'EUR');
+    await choose(user, screen.getByLabelText('Currency'), /^EUR/);
     const cost = screen.getByLabelText('Planned cost');
     expect(cost).toHaveValue('29,113.92');
     expect(screen.getByText('Changed to €29,113.92 = £25,000.00')).toBeInTheDocument();

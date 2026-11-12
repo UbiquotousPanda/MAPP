@@ -1,9 +1,9 @@
-import { Bookmark, Link2 } from 'lucide-react';
+import { Link2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Button } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
-import { Menu } from '@/ui/Menu/Menu';
+import { SavedViewsMenu as ViewsMenu } from '@/ui/SavedViewsMenu/SavedViewsMenu';
 import { useToast } from '@/ui/Toast/useToast';
 import type { ReportKey } from '../reports';
 import { useReportViews, useUpdateReportView } from './api';
@@ -11,7 +11,6 @@ import type { ReportView } from './api';
 import { ManageViewsPanel } from './ManageViewsPanel';
 import { SaveViewDialog } from './SaveViewDialog';
 import { sameQuery, useViewRefusal } from './saved-views';
-import styles from './SavedViews.module.css';
 
 type Dialog = 'save' | 'update' | 'manage' | null;
 
@@ -56,38 +55,24 @@ export function SavedViewsMenu({ report }: { report: ReportKey }) {
 
   return (
     <>
-      <Menu.Root>
-        <Menu.Trigger asChild>
-          <Button size="sm" icon={<Bookmark />}>
-            {active ? `View: ${active.name}` : 'Saved views'}
-            {modified && ' '}
-            {modified && <span className={styles.modified}>Modified</span>}
-          </Button>
-        </Menu.Trigger>
-        <Menu.Content>
-          {views?.length === 0 && (
-            <Menu.Note>No saved views yet — set the filters, then save them.</Menu.Note>
-          )}
-          {views?.map((view) => (
-            <Menu.Choice
-              key={view.id}
-              checked={view.id === active?.id}
-              onChoose={() => apply(view)}
-            >
-              <span className={styles.name}>{view.name}</span>
-              {view.isDefault && <span className={styles.default}>Default</span>}
-            </Menu.Choice>
-          ))}
-          {views && views.length > 0 && <Menu.Separator />}
-          <Menu.Item onChoose={() => setDialog('save')}>
-            {modified ? 'Save as new view…' : 'Save current filters…'}
-          </Menu.Item>
-          {modified && <Menu.Item onChoose={() => setDialog('update')}>Update view…</Menu.Item>}
-          {views && views.length > 0 && (
-            <Menu.Item onChoose={() => setDialog('manage')}>Manage views…</Menu.Item>
-          )}
-        </Menu.Content>
-      </Menu.Root>
+      <ViewsMenu
+        size="sm"
+        views={views}
+        active={active}
+        modified={modified}
+        empty="No saved views yet — set the filters, then save them."
+        onApply={apply}
+        actions={[
+          {
+            label: modified ? 'Save as new view…' : 'Save current filters…',
+            onChoose: () => setDialog('save'),
+          },
+          ...(modified ? [{ label: 'Update view…', onChoose: () => setDialog('update') }] : []),
+          ...(views && views.length > 0
+            ? [{ label: 'Manage views…', onChoose: () => setDialog('manage') }]
+            : []),
+        ]}
+      />
       {dialog === 'save' && (
         <SaveViewDialog
           report={report}

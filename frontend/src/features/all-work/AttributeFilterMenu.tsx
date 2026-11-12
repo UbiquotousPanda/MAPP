@@ -1,5 +1,6 @@
 import { Fragment, useId, useState } from 'react';
 import { formatWhole } from '@/format/decimal';
+import { Checkbox } from '@/ui/CheckboxField/CheckboxField';
 import { cx } from '@/ui/cx';
 import { FilterMenuButton } from '@/ui/FilterMenuButton/FilterMenuButton';
 import menu from '@/ui/FilterMenu/FilterMenu.module.css';
@@ -84,8 +85,7 @@ function AttributeChoices({ label, choices, values, onChange }: AttributeChoices
       <legend className={styles.legend}>{label}</legend>
       {choices.map((choice) => (
         <label key={choice.value} className={menu.choice}>
-          <input
-            type="checkbox"
+          <Checkbox
             checked={values.includes(choice.value)}
             onChange={(event) =>
               onChange(

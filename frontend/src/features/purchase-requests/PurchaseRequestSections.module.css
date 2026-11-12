@@ -18,13 +18,6 @@
   border-bottom: 1px solid var(--row-divider);
 }
 
-.title {
-  color: var(--ink);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-lg);
-}
-
 .action {
   margin-left: auto;
 }

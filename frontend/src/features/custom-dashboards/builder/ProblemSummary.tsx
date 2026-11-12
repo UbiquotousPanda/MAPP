@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import summaryStyles from '@/ui/FormErrorSummary/FormErrorSummary.module.css';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { Widget } from '../model';
 import type { Problem } from './validate';
 import { widgetName } from './widget-defaults';
@@ -33,7 +34,9 @@ export function ProblemSummary({ problems, widgets, onGo }: ProblemSummaryProps)
   return (
     <div ref={summary} tabIndex={-1} className={summaryStyles.summary}>
       <div role="alert">
-        <h2 className={summaryStyles.title}>{title}</h2>
+        <SectionHeading level={2} rank="label">
+          {title}
+        </SectionHeading>
         <ul className={summaryStyles.list}>
           {problems.map((problem) => (
             <li key={`${problem.field}-${problem.message}`}>

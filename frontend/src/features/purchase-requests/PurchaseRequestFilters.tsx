@@ -1,4 +1,5 @@
-import { useEffect, useEffectEvent, useId, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
+import { DateField } from '@/ui/DateField/DateField';
 import { FilterChips } from '@/ui/FilterChips/FilterChips';
 import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
 import { ResultCount } from '@/ui/ResultCount/ResultCount';
@@ -64,7 +65,6 @@ function withNone(choices: Choice[], chosen: string[], none: boolean) {
 export function PurchaseRequestFilters(props: PurchaseRequestFiltersProps) {
   const { search, onChange, total } = props;
   const { date } = useFormatters();
-  const ids = useId();
   const types = withNone(props.types, search.type, search.typeNotCompleted);
   const vendors = withNone(
     withChosen(props.vendors, search.vendor),
@@ -132,14 +132,14 @@ export function PurchaseRequestFilters(props: PurchaseRequestFiltersProps) {
           chosen={search.owner}
           onChange={(owner) => onChange({ owner })}
         />
-        <DateFilter
-          id={`${ids}-from`}
+        <DateField
+          compact
           label={FILTER_LABELS.from}
           value={search.from}
           onChange={(from) => onChange({ from })}
         />
-        <DateFilter
-          id={`${ids}-to`}
+        <DateField
+          compact
           label={FILTER_LABELS.to}
           value={search.to}
           onChange={(to) => onChange({ to })}
@@ -186,28 +186,6 @@ function without(chosen: string[]): string[] {
 function withChosen(choices: Choice[], chosen: string[]): Choice[] {
   const missing = chosen.filter((value) => !choices.some((choice) => choice.value === value));
   return [...choices, ...missing.map((value) => ({ value, label: value }))];
-}
-
-interface DateFilterProps {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}
-
-function DateFilter({ id, label, value, onChange }: DateFilterProps) {
-  return (
-    <div className={styles.field}>
-      <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        type="date"
-        className={styles.control}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
-    </div>
-  );
 }
 
 /** Filters 300 ms after the last key; shows the address's search again when it changes elsewhere. */

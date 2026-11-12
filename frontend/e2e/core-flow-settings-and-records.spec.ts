@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   action,
   callApi,
-  chooseOption,
+  choose,
   escapeRegExp,
   expectToast,
   signInAs,
@@ -132,7 +132,7 @@ test('D: the plan form offers only members of the chosen teams as owner and refu
   // Saving anyway is refused by the API with the same rule, listed in the error summary.
   const planName = uniqueName('Owner rules plan');
   await page.getByRole('textbox', { name: /^Plan name/ }).fill(planName);
-  await chooseOption(page.getByLabel(/^Model/), 'Mobility 1.0');
+  await choose(page, page.getByLabel(/^Model/), /^Mobility 1\.0/);
   await page.getByRole('checkbox', { name: 'Mobility', exact: true }).check();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(

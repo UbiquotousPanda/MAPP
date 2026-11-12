@@ -20,10 +20,6 @@
   min-width: 0;
 }
 
-.drawerButton {
-  flex: none;
-}
-
 .updating {
   color: var(--ink-2);
 }

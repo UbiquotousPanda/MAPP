@@ -1,7 +1,8 @@
 import { useFormatters } from '@/format/useFormatters';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import type { DashboardFigures } from './api';
 import { FINANCE_HIDDEN, percentText } from './dashboard-text';
-import styles from './Dashboards.module.css';
 
 interface FigureCardsProps {
   figures: DashboardFigures;
@@ -41,16 +42,16 @@ export function FigureCards({ figures }: FigureCardsProps) {
     { label: 'Unspent budget', value: money(figures.unspentBudget), note: '' },
   ];
   return (
-    <dl className={styles.figures} aria-label="Summary">
+    <StatStrip label="Summary">
       {cards.map((card) => (
-        <div key={card.label} className={styles.figure}>
-          <dt>{card.label}</dt>
-          <dd className={styles.value}>{card.value}</dd>
-          {card.note && (
-            <dd className={card.problem ? styles.problem : styles.figureNote}>{card.note}</dd>
-          )}
-        </div>
+        <SummaryCard
+          key={card.label}
+          label={card.label}
+          value={card.value}
+          tone={card.problem ? 'problem' : undefined}
+          detail={card.note}
+        />
       ))}
-    </dl>
+    </StatStrip>
   );
 }

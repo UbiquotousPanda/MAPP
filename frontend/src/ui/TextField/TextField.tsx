@@ -1,9 +1,10 @@
-import { CircleAlert, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { cx } from '../cx';
 import { Marking } from '../FieldShell/FieldShell';
 import type { FieldMarking } from '../FieldShell/FieldShell';
 import { InfoTip } from '../InfoTip/InfoTip';
+import { InlineError } from '../InlineError/InlineError';
 import { Tooltip } from '../Tooltip/Tooltip';
 import styles from './TextField.module.css';
 
@@ -94,10 +95,9 @@ export function TextField({
         )}
       </div>
       {error && (
-        <p id={errorId} className={styles.error}>
-          <CircleAlert />
+        <InlineError id={errorId} quiet>
           {error}
-        </p>
+        </InlineError>
       )}
     </div>
   );

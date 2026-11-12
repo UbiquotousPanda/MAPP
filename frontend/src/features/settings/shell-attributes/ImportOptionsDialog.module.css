@@ -1,62 +1,3 @@
-/* The option import dialog (feature 002, US6): the shared dialog look, wide enough for the review. */
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: var(--overlay);
-  animation: fade-in var(--dur) var(--ease-out);
-}
-
-/* The review can be long: the dialog keeps its buttons in view and scrolls its body. */
-.dialog {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  width: min(600px, calc(100vw - 32px));
-  max-height: calc(100vh - 48px);
-  padding: var(--space-6);
-  border-radius: var(--radius-card);
-  background: var(--raised);
-  box-shadow: var(--shadow-lg);
-  transform: translate(-50%, -50%);
-  animation: fade-in var(--dur) var(--ease-out);
-}
-
-.dialog:focus {
-  outline: none;
-}
-
-/* Dark Raised is 3.9:1 for Text Subtle, so secondary text there is Text Strong (constitution X). */
-:global(:root[data-theme='dark']) .dialog {
-  --ink-2: var(--ink);
-}
-
-.title {
-  color: var(--ink);
-  font-size: var(--text-lg);
-  font-weight: 600;
-  overflow-wrap: break-word;
-}
-
-.text {
-  margin-top: var(--space-2);
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-}
-
-.body {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  min-height: 0;
-  margin-top: var(--space-5);
-  overflow-y: auto;
-}
-
 .fileField {
   display: flex;
   flex-direction: column;
@@ -74,11 +15,6 @@
   color: var(--ink);
   font: inherit;
   font-size: var(--text-sm);
-}
-
-.problem {
-  color: var(--status-problem-text);
-  font-size: var(--text-xs);
 }
 
 .checking {
@@ -157,22 +93,8 @@
   color: var(--ink-2);
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  margin-top: var(--space-6);
-}
-
 .spinner {
   animation: spin 1s linear infinite;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
 }
 
 @keyframes spin {

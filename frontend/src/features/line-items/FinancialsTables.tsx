@@ -7,6 +7,7 @@ import { Pager } from '@/ui/Pager/Pager';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import dataTable from '@/ui/Table/Table.module.css';
 import { recordHref } from '@/ui/record-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
 import {
   financialsHref,
@@ -85,7 +86,9 @@ export function Breakdown({ view }: { view: FinancialRecordView }) {
 function TableBlock({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className={styles.block}>
-      <h3 className={styles.subheading}>{title}</h3>
+      <SectionHeading level={3} rank="sub">
+        {title}
+      </SectionHeading>
       <div
         className={styles.scroll}
         role="region"

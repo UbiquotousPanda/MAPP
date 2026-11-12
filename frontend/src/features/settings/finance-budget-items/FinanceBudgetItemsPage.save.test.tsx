@@ -22,7 +22,7 @@ describe('FinanceBudgetItemsPage: create and edit (US5 scenarios 3 and 4, FR-014
     await screen.findByRole('region', { name: '2026 Lubricants Budget' });
     await user.click(screen.getByRole('button', { name: 'New finance budget item' }));
     const form = await screen.findByRole('dialog', { name: 'New finance budget item' });
-    expect(within(form).getByRole('combobox', { name: /^Budget year/ })).toHaveValue('2026');
+    expect(within(form).getByRole('combobox', { name: /^Budget year/ })).toHaveTextContent('2026');
     const budgetName = within(form).getByRole('combobox', { name: /^Budget name/ });
     expect(budgetName).toHaveAccessibleDescription(
       expect.stringContaining('Items with the same year and budget name form one finance budget.'),

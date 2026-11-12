@@ -7,6 +7,7 @@ import { ApiError, conflictMessage } from '@/api/errors';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { FormField } from '@/ui/FormField/FormField';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -144,14 +145,11 @@ export function SplitActivityDialog({ activity, onClose }: SplitActivityDialogPr
         <div className={styles.stack}>
           {failure && <FailureMessage failure={{ message: failure }} />}
           {shownProblems.length > 0 && (
-            <div role="alert" className={styles.problems}>
+            <InlineAlert tone="danger" role="alert">
               {shownProblems.map((message) => (
-                <p key={message}>
-                  <CircleAlert aria-hidden="true" />
-                  {message}
-                </p>
+                <p key={message}>{message}</p>
               ))}
-            </div>
+            </InlineAlert>
           )}
           <FormField
             control={form.control}

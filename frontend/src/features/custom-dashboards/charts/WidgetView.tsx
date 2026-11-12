@@ -7,6 +7,7 @@ import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { cx } from '@/ui/cx';
 import { useToast } from '@/ui/Toast/useToast';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { CustomDashboardFilters, Widget, WidgetData } from '../model';
 import { widgetTypeInfo } from '../widget-types';
 import { useWidgetData, widgetDataRequest } from './api';
@@ -91,9 +92,9 @@ export function WidgetView({
         <header className={styles.header}>
           <div className={styles.heading}>
             {title && (
-              <h2 id={titleId} className={styles.title}>
+              <SectionHeading level={2} rank="card" id={titleId}>
                 {title}
-              </h2>
+              </SectionHeading>
             )}
             {widget.subtitle && <p className={styles.subtitle}>{widget.subtitle}</p>}
           </div>

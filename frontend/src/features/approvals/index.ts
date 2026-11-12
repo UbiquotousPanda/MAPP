@@ -1,6 +1,5 @@
 // Approvals (feature 008): the approvals inbox, the approval section of an activity and
 // delegation.
-export { ApprovalAlert } from './ApprovalAlert';
 export { ApprovalChain } from './ApprovalChain';
 export { ApprovalHistory } from './ApprovalHistory';
 export { ApprovalSection } from './ApprovalSection';

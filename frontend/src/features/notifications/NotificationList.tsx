@@ -16,6 +16,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
 import { cx } from '@/ui/cx';
 import { subjectHref } from '@/ui/subject-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
 import { asApiError, isSessionLost } from '@/api/errors';
 import { useMarkAllRead, useMarkRead, useNotifications } from './api';
@@ -75,9 +76,9 @@ export function NotificationList({ titleId, onClose }: NotificationListProps) {
   return (
     <>
       <div className={styles.header}>
-        <h2 id={titleId} className={styles.title}>
+        <SectionHeading level={2} rank="label" id={titleId}>
           Notifications
-        </h2>
+        </SectionHeading>
         {page && page.unread > 0 && (
           <Button
             variant="tertiary"

@@ -2,6 +2,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { cx } from '@/ui/cx';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { downloadReport, ExportMenu, RankedList, ReportFrame, useRankedState } from '../shared';
 import type { RankedColumn, ReportAddress, ReportFrameData } from '../shared';
 import { usePlanBudget, usePlanBudgetRanked } from './api';
@@ -60,7 +61,9 @@ function PlanBudgetBody({ frame, address }: { frame: ReportFrameData; address: R
         <>
           <div className={styles.summary}>
             <div className={styles.summaryHead}>
-              <h2 className={styles.sectionLabel}>Summary</h2>
+              <SectionHeading level={2} rank="label">
+                Summary
+              </SectionHeading>
               <ExportMenu
                 label="Export summary"
                 iconOnly

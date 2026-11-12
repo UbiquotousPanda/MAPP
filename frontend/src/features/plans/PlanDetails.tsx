@@ -11,7 +11,7 @@ import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import { formatAmount, formatPercent } from '@/format/decimal';
 import { localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
-import { AmountPair } from './AmountPair';
+import { ConvertedAmount } from '@/features/line-items';
 import { PLAN_TYPE_LABELS } from './plan-currency';
 import styles from './PlanDetails.module.css';
 import type { Plan } from './api';
@@ -108,7 +108,7 @@ export function PlanDetails({ plan, basicsExtra, budgetExtra, budgetValue }: Pla
             {budgetExtra}
             <Field label="Plan budget" helpKey="plan.budget">
               {budgetValue ?? (
-                <AmountPair
+                <ConvertedAmount
                   primary={plan.budget ?? plan.figures.budget}
                   secondary={plan.figures.budget}
                   inline

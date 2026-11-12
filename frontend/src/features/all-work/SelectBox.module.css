@@ -7,19 +7,11 @@
 .select,
 .selectSpace {
   flex: none;
-  width: 18px;
-  height: 18px;
-  margin: 1px var(--space-1) 0 0;
+  margin: 0 var(--space-1) 0 0;
 }
 
-.select {
-  accent-color: var(--ink);
-  cursor: pointer;
-}
-
-.select:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+.selectSpace {
+  width: 20px;
 }
 
 .headSelect {

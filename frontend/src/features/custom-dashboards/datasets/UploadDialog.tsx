@@ -1,9 +1,9 @@
-import { CircleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { ApiError, isSessionLost } from '@/api/errors';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FormPanel } from '@/ui/FormPanel/FormPanel';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import type { Dataset, DatasetPreview } from '../model';
 import { usePreviewDataset } from './api';
 import type { DatasetUpload } from './api';
@@ -105,10 +105,9 @@ function ChooseFileStep({
           onChange={(event) => setFile(event.target.files?.[0] ?? null)}
         />
         {problems.map((problem) => (
-          <p key={problem.message} className={styles.problem}>
-            <CircleAlert aria-hidden="true" />
+          <InlineError key={problem.message} quiet>
             {problem.message}
-          </p>
+          </InlineError>
         ))}
       </div>
     </FormPanel>

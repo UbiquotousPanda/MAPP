@@ -150,7 +150,9 @@ describe('RevenueReport (049 US1)', () => {
 
     const list = await screen.findByRole('region', { name: 'Ranked list' });
     const row = await within(list).findByRole('row', { name: /^Launch film/ });
-    expect(within(row).getByTitle('No data has arrived yet.')).toHaveTextContent('—');
+    expect(within(row).getByRole('button', { name: 'No data has arrived yet.' })).toHaveTextContent(
+      '—',
+    );
     expect(
       within(list).getByText(/Attributed revenue: No data has arrived yet\.$/),
     ).toBeInTheDocument();

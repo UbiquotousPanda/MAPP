@@ -1,8 +1,8 @@
-import { SlidersHorizontal } from 'lucide-react';
 import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { FilterChips } from '@/ui/FilterChips/FilterChips';
+import { FiltersButton } from '@/ui/FilterMenuButton/FilterMenuButton';
 import type { ReportFrame as Frame } from './api';
 import { isRestricted, resetFilters } from './report-address';
 import type { ReportAddress } from './report-address';
@@ -41,15 +41,13 @@ export function ReportToolbar(props: ReportToolbarProps) {
   return (
     <div className={styles.toolbar}>
       <div className={styles.toolbarRow}>
-        <Button
+        <FiltersButton
           size="sm"
-          icon={<SlidersHorizontal />}
+          count={chips.length}
           aria-expanded={open}
           aria-controls={menusId}
           onClick={() => setOpen(!open)}
-        >
-          {chips.length > 0 ? `Filters (${chips.length})` : 'Filters'}
-        </Button>
+        />
         <YearControl
           years={data.choices.years}
           value={data.filter.year}

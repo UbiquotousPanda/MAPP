@@ -1,6 +1,7 @@
 /* A small ⓘ next to a label: 24 × 24 px to tap (WCAG 2.5.8), the icon 16 px. */
 .button {
   display: inline-grid;
+  flex: none;
   place-items: center;
   width: 24px;
   height: 24px;

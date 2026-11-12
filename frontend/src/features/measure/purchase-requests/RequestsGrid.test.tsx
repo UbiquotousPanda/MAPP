@@ -140,7 +140,7 @@ describe('RequestsGrid (042 US2)', () => {
 
     const rows = screen.getAllByRole('row');
     expect(rows.length).toBe(6);
-    expect(rows.at(-1)?.textContent).toMatch(/^Total · 1 requests, 2 lines/);
+    expect(rows.at(-1)?.textContent).toMatch(/^Total 1 requests, 2 lines/);
   });
 
   it("ends with the API's Total row over every page, headed Total before the columns (042 FR-029, 039 FR-035)", () => {

@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { asApiError, isSessionLost } from '@/api/errors';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { FormField } from '@/ui/FormField/FormField';
@@ -129,11 +130,7 @@ export function PurchaseRequestDecisionDialog({
             <p>{lastLevelText(section.kind)}</p>
           ))}
         {!approve && <p>{declineText(section.kind, approval.owner?.name ?? 'its owner')}</p>}
-        {problem && (
-          <p role="alert" className={styles.note}>
-            {problem}
-          </p>
-        )}
+        {problem && <InlineError>{problem}</InlineError>}
         <FormField
           control={form.control}
           name="comment"

@@ -1,5 +1,6 @@
 import { ActivityStatusChip } from '@/ui/ActivityStatusChip/ActivityStatusChip';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { moneyText } from '@/features/line-items';
 import type { ActivitySplitSide } from './split-api';
 import styles from './SplitActivityDialog.module.css';
@@ -16,7 +17,9 @@ export function SplitPreview({
 }) {
   return (
     <section aria-label="After the split" className={styles.preview}>
-      <h3 className={styles.legend}>After the split</h3>
+      <SectionHeading level={3} rank="label">
+        After the split
+      </SectionHeading>
       {waiting === 'nothing' ? (
         <p className={styles.hint}>Choose line items or an amount to see both activities.</p>
       ) : waiting === 'loading' || !original || !created ? (

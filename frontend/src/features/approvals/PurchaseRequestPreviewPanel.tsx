@@ -9,6 +9,7 @@ import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
 import { ApprovalChain } from './ApprovalChain';
 import { ApprovalHistory } from './ApprovalHistory';
@@ -136,9 +137,9 @@ function PreviewBody({ preview }: { preview: PurchaseRequestApprovalPreview }) {
     <div className={styles.body}>
       {reason && <p className={styles.muted}>{reason}</p>}
       <section className={styles.section} aria-labelledby={`${id}-details`}>
-        <h3 id={`${id}-details`} className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id={`${id}-details`}>
           Details
-        </h3>
+        </SectionHeading>
         <dl className={styles.facts}>
           <dt>Plan</dt>
           <dd>{pr.plan.name}</dd>
@@ -153,9 +154,9 @@ function PreviewBody({ preview }: { preview: PurchaseRequestApprovalPreview }) {
         </dl>
       </section>
       <section className={styles.section} aria-labelledby={`${id}-lines`}>
-        <h3 id={`${id}-lines`} className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id={`${id}-lines`}>
           Lines
-        </h3>
+        </SectionHeading>
         <div
           className={styles.scroll}
           role="region"

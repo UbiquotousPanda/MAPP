@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { amountText, moneyText, RateTip } from '@/features/line-items';
+import { amountText, Converted, moneyText } from '@/features/line-items';
 import { useFieldHelp } from '@/features/settings';
 import type { Money } from '@/features/line-items';
 import { toCents } from '@/format/decimal';
@@ -95,15 +95,10 @@ function UnassignedCard({
   );
 }
 
-/** "≈ $15,822.78 ⓘ": the display-currency amount under a card's value, when it differs. */
+/** "≈ $15,822.78" under a card's value, when the display currency differs. */
 function Beside({ primary, secondary }: { primary: Money; secondary: Money | null }) {
   if (!secondary || secondary.currency === primary.currency) {
     return null;
   }
-  return (
-    <span className={styles.beside}>
-      ≈ {moneyText(secondary)}
-      <RateTip codes={[primary.currency, secondary.currency]} />
-    </span>
-  );
+  return <Converted from={primary.currency} amount={secondary} />;
 }

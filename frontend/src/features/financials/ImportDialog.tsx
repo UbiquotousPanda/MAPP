@@ -1,7 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert, Download, LoaderCircle } from 'lucide-react';
+import { Download, LoaderCircle } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
@@ -168,10 +170,9 @@ export function ImportDialog({ onClose }: ImportDialogProps) {
       onSubmit={submit}
     >
       {failure && (
-        <p className={styles.failure} role="alert">
-          <CircleAlert aria-hidden="true" />
+        <InlineAlert tone="danger" role="alert">
           {failure}
-        </p>
+        </InlineAlert>
       )}
       {step.kind === 'choose' ? (
         <div className={styles.step}>
@@ -221,10 +222,9 @@ export function ImportDialog({ onClose }: ImportDialogProps) {
               }}
             />
             {fileError && (
-              <p id={`${inputId}-error`} className={styles.error}>
-                <CircleAlert aria-hidden="true" />
+              <InlineError id={`${inputId}-error`} quiet>
                 {fileError}
-              </p>
+              </InlineError>
             )}
           </div>
           {check.isPending && file && (

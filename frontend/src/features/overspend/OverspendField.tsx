@@ -1,10 +1,7 @@
-import { CircleAlert } from 'lucide-react';
-import { useId } from 'react';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import type { OverspendMode } from './api';
 import type { BudgetCheck } from './overspend-check';
 import { MODE_HINTS, MODE_WORDS, MODES, OVERSPEND_LABEL } from './overspend-text';
-import styles from './OverspendField.module.css';
 
 export interface OverspendFieldProps {
   name: string;
@@ -15,7 +12,7 @@ export interface OverspendFieldProps {
   check?: BudgetCheck;
 }
 
-/** "If planned cost exceeds the budget": Warn or Refuse, with what saving would do (037 FR-002). */
+/** "If planned cost exceeds the budget": Warn or Refuse, with what saving would do. */
 export function OverspendField({
   name,
   value,
@@ -23,40 +20,21 @@ export function OverspendField({
   lockedReason,
   check,
 }: OverspendFieldProps) {
-  const id = useId();
-  const locked = Boolean(lockedReason);
-  const described = [locked ? `${id}-lock` : '', check?.error ? `${id}-error` : '']
-    .filter(Boolean)
-    .join(' ');
   return (
-    <fieldset id={name} className={styles.group} aria-describedby={described || undefined}>
-      <legend className={styles.legend}>{OVERSPEND_LABEL}</legend>
-      <div className={styles.options}>
-        {MODES.map((mode) => (
-          <label key={mode} className={styles.radio}>
-            <input
-              type="radio"
-              name={name}
-              value={mode}
-              checked={value === mode}
-              disabled={locked}
-              onChange={() => onChange(mode)}
-            />
-            <span>
-              <span className={styles.word}>{MODE_WORDS[mode]}</span>
-              <span className={styles.hint}>{MODE_HINTS[mode]}</span>
-            </span>
-          </label>
-        ))}
-      </div>
-      {locked && <LockedNote id={`${id}-lock`}>{lockedReason}</LockedNote>}
-      {check?.note && <p className={styles.note}>{check.note}</p>}
-      {check?.error && (
-        <p id={`${id}-error`} className={styles.error}>
-          <CircleAlert aria-hidden="true" />
-          {check.error}
-        </p>
-      )}
-    </fieldset>
+    <RadioGroup
+      label={OVERSPEND_LABEL}
+      name={name}
+      layout="row"
+      options={MODES.map((mode) => ({
+        value: mode,
+        label: MODE_WORDS[mode],
+        hint: MODE_HINTS[mode],
+      }))}
+      value={value}
+      onChange={onChange}
+      disabledReason={lockedReason || undefined}
+      note={check?.note ?? undefined}
+      error={check?.error ?? undefined}
+    />
   );
 }

@@ -109,7 +109,7 @@ describe('GlobalBudgetsPage (014 US6, FR-036)', () => {
     const panel = await screen.findByRole('dialog', { name: 'New global budget' });
     await user.click(within(panel).getByRole('textbox', { name: /Name/ }));
     await user.paste('FY2027 Global brand');
-    await user.selectOptions(within(panel).getByRole('combobox', { name: /Year/ }), '2027');
+    await choose(user, within(panel).getByRole('combobox', { name: /Year/ }), '2027');
     await user.type(within(panel).getByRole('textbox', { name: /Amount/ }), '1.5m');
     await user.click(within(panel).getByRole('combobox', { name: /Owner/ }));
     await user.click(await screen.findByRole('option', { name: /Carlos Mendes/ }));

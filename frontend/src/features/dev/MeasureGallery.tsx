@@ -10,7 +10,7 @@ const BY_BRAND: ReportTableData = {
     { key: 'pennzoil', cells: ['Pennzoil', '7'] },
     { key: 'none', cells: ['Not filled in', '3'] },
   ],
-  total: ['Total', '22'],
+  total: ['22'],
 };
 
 const MOST = 12;

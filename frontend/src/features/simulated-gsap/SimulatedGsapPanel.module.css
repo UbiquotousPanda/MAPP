@@ -25,18 +25,6 @@
   line-height: var(--leading-sm);
 }
 
-.problem {
-  color: var(--danger-text);
-  font-size: var(--text-sm);
-}
-
-.heading {
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-md);
-}
-
 .result {
   display: flex;
   flex-direction: column;

@@ -5,9 +5,8 @@ import { LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { Tooltip } from '@/ui/Tooltip/Tooltip';
+import { RelativeTime } from '@/ui/RelativeTime/RelativeTime';
 import { isPlanningType, recordHref } from '@/ui/record-links';
-import { useFormatters } from '@/format/useFormatters';
 import { useHomeRecentChanges } from './api';
 import type { ActivityLogEntry, HomeScope } from './api';
 import { RECENT_CHANGES, initialsOf, recentSentence } from './home-text';
@@ -68,10 +67,8 @@ const GONE: Partial<Record<string, string>> = {
 };
 
 function RecentChange({ entry }: { entry: ActivityLogEntry }) {
-  const { dateTime, relativeTime } = useFormatters();
   const sentence = recentSentence(entry);
   const href = hrefOf(entry);
-  const fullTime = dateTime(entry.at);
 
   return (
     <li className={styles.entry}>
@@ -89,13 +86,7 @@ function RecentChange({ entry }: { entry: ActivityLogEntry }) {
           <span className={styles.id}>· {sentence.id}</span>
           {GONE[entry.recordNow?.state ?? 'exists']}
         </p>
-        {/* A button, so keyboard and screen-reader users reach the full date too. */}
-        <Tooltip content={fullTime}>
-          <button type="button" className={styles.time}>
-            <time dateTime={entry.at}>{relativeTime(entry.at)}</time>{' '}
-            <span className="visually-hidden">({fullTime})</span>
-          </button>
-        </Tooltip>
+        <RelativeTime at={entry.at} />
       </div>
     </li>
   );

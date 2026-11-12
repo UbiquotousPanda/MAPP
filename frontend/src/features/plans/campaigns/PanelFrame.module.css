@@ -9,30 +9,3 @@
   flex-direction: column;
   gap: var(--space-4);
 }
-
-/* A record that is gone: a red bar, like a failed save (design system §6.4; red is never
-   tinted). */
-.gone {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--card-border);
-  border-left: 4px solid var(--status-problem);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: var(--text-sm);
-}
-
-.gone p {
-  margin: 0;
-}
-
-.gone svg {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
-  color: var(--status-problem-text);
-}

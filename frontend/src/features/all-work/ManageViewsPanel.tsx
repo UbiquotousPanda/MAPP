@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
+import { Tag } from '@/ui/Tag/Tag';
 import { useToast } from '@/ui/Toast/useToast';
 import { useCreateView, useDeleteView, useUpdateView } from './api';
 import type { SavedView } from './all-work-types';
@@ -88,7 +89,7 @@ export function ManageViewsPanel({ open, onOpenChange, views }: ManageViewsPanel
             <li key={view.id} className={styles.view}>
               <div className={styles.name}>
                 <span className={styles.label}>{view.name}</span>
-                {view.isDefault && <span className={styles.default}>Default</span>}
+                {view.isDefault && <Tag>Default</Tag>}
               </div>
               <div className={styles.actions}>
                 <Button size="sm" onClick={() => setDefault(view, !view.isDefault)}>

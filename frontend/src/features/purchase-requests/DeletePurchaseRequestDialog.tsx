@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { asApiError } from '@/api/errors';
 import { invalidateAllButSession } from '@/features/approvals';
 import { useAccess } from '@/session/access';
@@ -9,7 +10,6 @@ import { useUndoableDelete } from '@/ui/useUndoableDelete';
 import { deletePurchaseRequest, purchaseRequestKeys } from './api';
 import type { PurchaseRequest } from './api';
 import { DELETE_PR, deleteText, deleteTitle } from './page-text';
-import styles from './PurchaseRequestPage.module.css';
 
 export interface DeletePurchaseRequestDialogProps {
   purchaseRequest: PurchaseRequest;
@@ -64,11 +64,7 @@ export function DeletePurchaseRequestDialog({
       busy={remove.isPending}
     >
       <p>{deleteText(lineItemIds)}</p>
-      {remove.error && (
-        <p role="alert" className={styles.problem}>
-          {asApiError(remove.error).message}
-        </p>
-      )}
+      {remove.error && <InlineError>{asApiError(remove.error).message}</InlineError>}
     </ConfirmDialog>
   );
 }

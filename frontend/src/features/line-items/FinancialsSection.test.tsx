@@ -46,7 +46,7 @@ describe('ActivityFinancials (015 US1, FR-011 – FR-015)', () => {
       { ...user, preferences: { ...user.preferences, dateFormat: 'DD/MM/YYYY' } },
     );
 
-    const tiles = await screen.findByRole('list', { name: 'Financial figures' });
+    const tiles = await screen.findByRole('region', { name: 'Financial figures' });
     expect(tiles).toHaveTextContent('Accrued (03/2026)');
   });
 
@@ -55,7 +55,7 @@ describe('ActivityFinancials (015 US1, FR-011 – FR-015)', () => {
 
     const card = await screen.findByRole('region', { name: 'Financials' });
     expect(card).toHaveAttribute('id', 'financials');
-    const tiles = await within(card).findByRole('list', { name: 'Financial figures' });
+    const tiles = await within(card).findByRole('region', { name: 'Financial figures' });
     expect(tiles).toHaveTextContent('Committed (POs)');
     expect(tiles).toHaveTextContent('$82,000.00');
     expect(tiles).toHaveTextContent('68% of planned cost committed');

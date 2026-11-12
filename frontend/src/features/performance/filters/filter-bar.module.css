@@ -1,7 +1,7 @@
 .bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
 }
@@ -10,36 +10,6 @@
   flex: 1 1 240px;
   min-width: 0;
   max-width: 320px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-  color: var(--ink);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-xs);
-}
-
-/* The date inputs: 40 px, 8 px corners, a 3:1 border (design system §5.5). */
-.control {
-  width: 180px;
-  max-width: 100%;
-  height: var(--control-md);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-control);
-  background-color: var(--surface);
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-regular);
-  line-height: var(--leading-sm);
-}
-
-.control:hover {
-  border-color: var(--control-border-hover);
 }
 
 @media (max-width: 599px) {

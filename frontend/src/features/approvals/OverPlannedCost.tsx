@@ -1,8 +1,8 @@
 import { Check } from 'lucide-react';
 import { useId } from 'react';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import type { components } from '@/api/generated/schema';
 import { Button } from '@/ui/Button/Button';
-import { ApprovalAlert } from './ApprovalAlert';
 import { overPlannedCostText } from './decision-messages';
 import styles from './ApprovalSection.module.css';
 
@@ -14,11 +14,11 @@ export function OverPlannedCostAlert({ overages }: { overages: readonly Activity
     return null;
   }
   return (
-    <ApprovalAlert tone="warning">
+    <InlineAlert tone="warning">
       {overages.map((overage) => (
         <p key={overage.activity.id}>{overPlannedCostText(overage)}</p>
       ))}
-    </ApprovalAlert>
+    </InlineAlert>
   );
 }
 

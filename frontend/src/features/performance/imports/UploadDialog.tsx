@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert, LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { asApiError } from '@/api/errors';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { FieldShell } from '@/ui/FieldShell/FieldShell';
@@ -88,10 +89,9 @@ export function UploadDialog({ sources, onClose, onLoaded }: UploadDialogProps) 
       onSubmit={() => void form.handleSubmit(send)()}
     >
       {failure && (
-        <p className={styles.failure} role="alert">
-          <CircleAlert aria-hidden="true" />
+        <InlineAlert tone="danger" role="alert">
           {failure}
-        </p>
+        </InlineAlert>
       )}
       <div className={styles.fields}>
         <ChoiceField

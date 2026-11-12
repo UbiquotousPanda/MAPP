@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react';
 import { cx } from '../cx';
 import floating from './floating.module.css';
 
-export type FloatingWidth = 'auto' | 'sm' | 'md' | 'lg';
+export type FloatingWidth = 'auto' | 'sm' | 'md' | 'lg' | 'anchor';
 export type FloatingPadding = 'none' | 'sm' | 'md' | 'lg';
 
 const PADDING: Record<FloatingPadding, string | undefined> = {
@@ -39,4 +39,10 @@ function Content({
 }
 
 /** A popover on the shared floating surface (design system §5.2); Radix handles the focus. */
-export const Popover = { Root: Radix.Root, Trigger: Radix.Trigger, Close: Radix.Close, Content };
+export const Popover = {
+  Root: Radix.Root,
+  Trigger: Radix.Trigger,
+  Anchor: Radix.Anchor,
+  Close: Radix.Close,
+  Content,
+};

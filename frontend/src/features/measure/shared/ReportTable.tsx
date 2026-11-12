@@ -1,4 +1,5 @@
 import dataTable from '@/ui/Table/Table.module.css';
+import { TotalLabel } from '@/ui/Table/TotalLabel';
 
 export interface ReportTableColumn {
   label: string;
@@ -13,8 +14,10 @@ export interface ReportTableRow {
 export interface ReportTableData {
   columns: ReportTableColumn[];
   rows: ReportTableRow[];
-  /** The totals row, where the widget totals. */
+  /** The totals row's figures, one per column after the first; the first cell reads "Total". */
   total?: string[];
+  /** A second line under "Total": "41 requests, 77 lines". */
+  totalCount?: string;
 }
 
 /** A widget's table view: every value the chart draws, with the same labels, then the totals. */
@@ -53,18 +56,17 @@ export function ReportTable({ title, data }: { title: string; data: ReportTableD
         {data.total && (
           <tfoot>
             <tr className={dataTable.total}>
-              {data.total.map((cell, i) => {
-                const Cell = i === 0 ? 'th' : 'td';
-                return (
-                  <Cell
-                    key={data.columns[i]?.label ?? i}
-                    scope={i === 0 ? 'row' : undefined}
-                    className={data.columns[i]?.numeric ? dataTable.numeric : undefined}
-                  >
-                    {cell}
-                  </Cell>
-                );
-              })}
+              <th scope="row">
+                <TotalLabel count={data.totalCount} />
+              </th>
+              {data.total.map((cell, i) => (
+                <td
+                  key={data.columns[i + 1]?.label ?? i}
+                  className={data.columns[i + 1]?.numeric ? dataTable.numeric : undefined}
+                >
+                  {cell}
+                </td>
+              ))}
             </tr>
           </tfoot>
         )}

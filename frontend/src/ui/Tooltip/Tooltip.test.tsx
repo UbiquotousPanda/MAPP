@@ -63,4 +63,23 @@ describe('Tooltip', () => {
     await act(() => vi.advanceTimersByTimeAsync(50));
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
+
+  it('opens on a tap, as a finger cannot hover, and closes on a tap elsewhere', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <p>Elsewhere</p>
+        <Tooltip content="12 Mar 2026, 14:05">
+          <button type="button">3 days ago</button>
+        </Tooltip>
+      </>,
+      { wrapper: TooltipProvider },
+    );
+
+    await user.pointer({ keys: '[TouchA]', target: screen.getByRole('button') });
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('12 Mar 2026, 14:05');
+
+    await user.pointer({ keys: '[TouchA]', target: screen.getByText('Elsewhere') });
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
 });
