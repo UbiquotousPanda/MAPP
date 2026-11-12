@@ -28,7 +28,6 @@ import {
   EMPTY_TEXT,
   EMPTY_TITLE,
   IMPORTS,
-  IMPORTS_DESCRIPTION,
   importPath,
   NO_MATCH,
   ORIGIN_WORDS,
@@ -82,7 +81,6 @@ export function ImportsPage() {
           { label: IMPORTS },
         ]}
         title={IMPORTS}
-        description={IMPORTS_DESCRIPTION}
         actions={
           <>
             <Button icon={<RefreshCw aria-hidden />} onClick={() => setDialog('pull')}>

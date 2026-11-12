@@ -10,9 +10,8 @@ import {
   SHOW_LEVELS_LABELS,
   STRATEGIC_LABELS,
 } from './all-work-text';
-import type { FilterValue, Filters, SavedView, ViewState } from './all-work-types';
+import type { FilterValue, Filters, ViewState } from './all-work-types';
 import { attributeFilterOf } from './attribute-filters';
-import { NAME_MAX, nameTaken, viewNamed } from './view-names';
 import { NO_FILTERS, toQueryParams, withYears } from './view-state';
 
 const ADDRESS_KEYS = [
@@ -161,24 +160,3 @@ function readAddress(params: URLSearchParams): Address {
   });
   return parsed.success ? parsed.data : NO_ADDRESS;
 }
-
-const viewName = z
-  .string()
-  .refine((name) => name.trim() !== '', 'Enter a name for the view.')
-  .refine((name) => [...name.trim()].length <= NAME_MAX, 'Use 60 characters or fewer.');
-
-export const saveViewSchema = z.object({ name: viewName, isDefault: z.boolean() });
-
-export type SaveViewValues = z.infer<typeof saveViewSchema>;
-
-export function renameViewSchema(views: SavedView[], viewId: string) {
-  return z.object({
-    name: viewName.superRefine((name, context) => {
-      if (viewNamed(views, name, viewId)) {
-        context.addIssue({ code: 'custom', message: nameTaken(name) });
-      }
-    }),
-  });
-}
-
-export type RenameViewValues = z.infer<ReturnType<typeof renameViewSchema>>;

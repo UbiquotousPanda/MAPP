@@ -16,11 +16,6 @@ export function PlanListSummary({ summary }: { summary: PlanList['summary'] | un
             label="Plans"
             value={summary.plans}
             tip="Plans in the chosen years, plan types and teams."
-            detail={
-              <span>
-                {summary.draft} draft · {summary.published} published
-              </span>
-            }
           />
           <SummaryCard
             label="Total plan budget"

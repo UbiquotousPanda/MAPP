@@ -69,15 +69,12 @@ export function ActivityLogPage() {
   const log = useLogEntries(logEntriesKey(query), query, LOG_PAGE_SIZE);
   const filtered = isFiltered(filters);
 
-  const changeFilters = (next: LogFilterState, typing = false) =>
-    setParams(filtersToParams(next), { replace: typing });
+  const changeFilters = (next: LogFilterState) =>
+    setParams(filtersToParams(next), { replace: true });
 
   return (
     <>
-      <PageHeader
-        title="Activity log"
-        description="See who changed what, and when. Entries can't be edited or removed."
-      />
+      <PageHeader title="Activity log" />
       <div className={styles.sections}>
         {summary.error ? (
           <ErrorState error={summary.error} onRetry={() => void summary.refetch()} />

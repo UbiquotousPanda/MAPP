@@ -12,7 +12,7 @@ test('US1: a visitor is sent to sign in and comes back after choosing a demo per
   await expect(
     page.getByText('Demo environment — sign-in and data are for demonstration only'),
   ).toBeVisible();
-  await expect(page.getByText('Demo sign-in — Shell single sign-on comes later')).toBeVisible();
+  await expect(page.getByText('Demo sign-in', { exact: true })).toBeVisible();
 
   // The browser may put a space before the comma of this name, so it is matched loosely.
   await page.getByRole('button', { name: /^Sign in as Priya Raman\s*,\s*Marketer$/ }).click();

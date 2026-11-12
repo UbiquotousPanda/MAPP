@@ -69,8 +69,7 @@ export const SETTINGS_OWN_SECTIONS: SettingsSection[] = [
   },
   {
     title: 'Finance budget items',
-    description:
-      'The finance budget items line items link to — a simple list until the Finance module arrives.',
+    description: 'The finance budget items line items link to.',
     path: '/settings/finance-budget-items',
     icon: Wallet,
     overviewKey: 'financeBudgetItems',

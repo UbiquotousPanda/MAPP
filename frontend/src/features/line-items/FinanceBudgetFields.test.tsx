@@ -52,7 +52,6 @@ describe('FinanceBudgetFields (FR-015, FR-016)', () => {
 
     const year = screen.getByLabelText('Finance budget year');
     expect(await optionNames(user, year)).toEqual(['Choose…', '2026', '2027']);
-    expect(screen.getByText("The plan's year")).toBeInTheDocument();
     const item = screen.getByLabelText('Finance budget item');
     expect(await optionNames(user, item)).toEqual([
       'Choose…',

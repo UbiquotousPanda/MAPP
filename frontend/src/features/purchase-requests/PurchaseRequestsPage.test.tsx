@@ -11,6 +11,7 @@ import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, pending, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { openFilters } from '@/testing/filters';
 import { choose } from '@/testing/select';
 import { PurchaseRequestsPage } from './PurchaseRequestsPage';
 
@@ -67,9 +68,10 @@ describe('032 FR-044–FR-048: Purchase requests page', () => {
 
     const table = await screen.findByRole('table', { name: 'Purchase requests by vendor' });
     const [brightside, northlight] = within(table).getAllByRole('rowgroup').slice(1);
-    expect(brightside).toHaveTextContent('Brightside Media BV · 1 purchase request');
+    expect(brightside).toHaveTextContent('Brightside Media BV');
+    expect(brightside).not.toHaveTextContent('· 1 purchase request');
     expect(brightside).toHaveTextContent('$30,000.00');
-    expect(northlight).toHaveTextContent('Northlight Events GmbH · 1 purchase request');
+    expect(northlight).toHaveTextContent('Northlight Events GmbH');
     expect(
       within(northlight ?? table).getByRole('link', { name: 'PR for Stand build' }),
     ).toHaveAttribute('href', '/purchase-requests/PR-1002');
@@ -124,14 +126,17 @@ describe('032 FR-044–FR-048: Purchase requests page', () => {
     await waitFor(() => expect(router.state.location.search).toBe('?type=SO-1201'));
   });
 
-  it('chooses a status from the Status menu', async () => {
+  it('chooses a status from the Status menu behind Filters, written in place (D-421)', async () => {
     const { router, user } = renderPage({ body: listPage() });
     await screen.findByRole('table');
 
+    await openFilters(user);
     await user.click(screen.getByRole('button', { name: 'Status' }));
     await user.click(await screen.findByRole('checkbox', { name: 'Declined' }));
 
     await waitFor(() => expect(router.state.location.search).toBe('?status=declined'));
+    expect(router.state.historyAction).toBe('REPLACE');
+    expect(screen.getByRole('button', { name: 'Filters (1)' })).toBeInTheDocument();
   });
 
   it('shows the Waiting for GSAP view, and keeps the address when coming Back (US5 scenario 4)', async () => {

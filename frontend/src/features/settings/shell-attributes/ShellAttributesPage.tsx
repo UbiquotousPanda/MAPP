@@ -19,7 +19,7 @@ export function ShellAttributesPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Shell attributes' }]}
         title="Shell attributes"
-        description="Shell's own fields on each level's form. Changes apply to every form straight away."
+        description="Changes apply to every form straight away."
         actions={
           <CanChange>
             <LinkButton

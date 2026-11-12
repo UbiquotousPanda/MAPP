@@ -39,35 +39,24 @@ function renderPanel(answers: HttpHandler[] = []) {
 async function findPanel() {
   await screen.findByLabelText('Campaign name');
   // The owner field loads the people itself.
-  await screen.findByText('From the plan');
+  await screen.findByText(/Priya Raman/);
   return screen.getByRole('dialog', { name: 'New campaign' });
 }
 
 describe('NewCampaignPanel (feature 005, US1)', () => {
-  it('names the plan and pre-fills the plan’s owner and year, labelled (US1#1, FR-001, FR-003)', async () => {
+  it('pre-fills the plan’s owner and year (US1#1, FR-001, FR-003)', async () => {
     renderPanel();
     const panel = await findPanel();
 
-    expect(within(panel).getByText("Inside plan 'FY2026 Lubricants Europe'")).toBeInTheDocument();
     expect(within(panel).getByText(/Priya Raman/)).toBeInTheDocument();
     expect(within(panel).getByLabelText('Start date')).toHaveValue('2026-01-01');
     expect(within(panel).getByLabelText('End date')).toHaveValue('2026-12-31');
-    expect(within(panel).getByText("The plan's year")).toBeInTheDocument();
     // Yes/no attributes start as No; the plan's business unit shows its section.
     expect(within(panel).getByRole('checkbox', { name: 'SMP' })).not.toBeChecked();
     expect(within(panel).getByRole('checkbox', { name: 'Shell Helix' })).toBeInTheDocument();
     expect(within(panel).getByRole('button', { name: 'Save' })).toBeEnabled();
     expect(within(panel).getByRole('button', { name: 'Save and add another' })).toBeEnabled();
     expect(document.title).toBe('New campaign · SP&A One');
-  });
-
-  it('drops a default’s label once it is changed (FR-003)', async () => {
-    renderPanel();
-    const panel = await findPanel();
-
-    fireEvent.change(within(panel).getByLabelText('End date'), { target: { value: '2026-06-30' } });
-
-    expect(within(panel).queryByText("The plan's year")).not.toBeInTheDocument();
   });
 
   it('locks Region until a cluster is chosen and fills in a single region (US1#2, FR-009)', async () => {

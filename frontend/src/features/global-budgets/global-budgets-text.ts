@@ -1,7 +1,5 @@
 import { plural } from '@/format/text';
 
-export const PAGE_DESCRIPTION = 'Money for a year, shared out to market plans.';
-
 export const FIGURE_TIPS = {
   amount: 'The money of this global budget for the year, in USD.',
   allocated: 'The part given to plans. Each allocation is that plan’s budget.',

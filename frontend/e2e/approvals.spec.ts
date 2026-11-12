@@ -100,8 +100,8 @@ test('008 US3 (T055 journey 2): Daniel approves and declines from his inbox, old
 
   await signInAs(page, DANIEL);
   await page.goto('/approvals');
-  const waiting = page.getByRole('tab', { name: /^Waiting for me \d+ activit/ });
-  const count = /(\d+)/.exec((await waiting.textContent()) ?? '')?.[1];
+  const listed = page.getByText(/^(\d+) of \1 activit(y|ies)$/);
+  const count = /(\d+)/.exec((await listed.textContent()) ?? '')?.[1];
   // The sidebar badge counts what the Waiting for me tab lists.
   await expect(
     page
@@ -212,7 +212,7 @@ test('008 US5 (T055 journey 5): Priya recalls a submission with a reason, and a 
     name: `Recall the submission of '${activity.name}'?`,
   });
   const reason = 'The agency changed its quote.';
-  await recall.getByRole('textbox', { name: 'Reason (optional)' }).fill(reason);
+  await recall.getByRole('textbox', { name: 'Reason' }).fill(reason);
   await recall.getByRole('button', { name: 'Recall submission' }).click();
   await expect(page.getByText('Created', { exact: true }).first()).toBeVisible();
   const history = section.getByRole('region', { name: 'Approval history' });

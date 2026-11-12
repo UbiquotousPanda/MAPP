@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { allWorkOptions } from '@/testing/fixtures/all-work';
+import { openFilters } from '@/testing/filters';
 import { choose } from '@/testing/select';
 import {
   breakdown,
@@ -59,6 +60,8 @@ describe('016 FR-039: More filters', () => {
     const { api, user } = renderAllWorkPage([OPTIONS]);
     await screen.findByRole('link', { name: 'Helix launch' });
 
+    await openFilters(user);
+
     await user.click(screen.getByRole('button', { name: 'More filters' }));
     const menu = await screen.findByRole('dialog', { name: 'More filters' });
     const brands = within(menu).getByRole('group', { name: 'Brands' });
@@ -78,6 +81,7 @@ describe('016 FR-039: More filters', () => {
   it('finds attributes and values by search, under their level', async () => {
     const { user } = renderAllWorkPage([OPTIONS]);
     await screen.findByRole('link', { name: 'Helix launch' });
+    await openFilters(user);
     await user.click(screen.getByRole('button', { name: 'More filters' }));
     const menu = await screen.findByRole('dialog', { name: 'More filters' });
     expect(within(menu).getByText('Campaign')).toBeVisible();

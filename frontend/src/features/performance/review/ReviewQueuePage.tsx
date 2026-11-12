@@ -27,7 +27,6 @@ import { DismissDialog } from './DismissDialog';
 import {
   EMPTY_TEXT,
   EMPTY_TITLE,
-  NO_HAND_ROWS,
   NO_MATCH,
   REASON_WORDS,
   reasonWord,
@@ -100,7 +99,7 @@ export function ReviewQueuePage() {
         title={REVIEW}
         description={REVIEW_DESCRIPTION}
       />
-      <Card subtitle={NO_HAND_ROWS}>
+      <Card>
         {rows.isError ? (
           <ErrorState error={rows.error} onRetry={() => void rows.refetch()} />
         ) : rows.data ? (

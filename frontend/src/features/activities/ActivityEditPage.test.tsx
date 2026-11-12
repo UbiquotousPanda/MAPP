@@ -86,7 +86,6 @@ describe('ActivityFormPage, edit (feature 006, US4)', () => {
     expect(document.title).toBe('Edit Launch film · SP&A One');
     expect(screen.getByLabelText('Activity name')).toHaveValue('Launch film');
     expect(screen.getByLabelText('Planned cost')).toHaveValue('120,000.00');
-    expect(screen.queryByText('From the initiative')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save and add another' })).toBeNull();
     expect(screen.queryByText('Save the activity to add its line items')).toBeNull();
 

@@ -17,7 +17,6 @@ test('Settings: an activity type, a finance budget item, a dependent option in t
   await page.goto('/settings');
   await page.getByRole('link', { name: 'Activity types', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Activity types', level: 1 })).toBeVisible();
-  await expect(page.getByText('The kinds of work activities can be.')).toBeVisible();
   await expectNoAxeViolations(page);
   const typeName = uniqueName('E2E type');
   await page.getByRole('button', { name: 'New activity type' }).click();

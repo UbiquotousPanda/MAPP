@@ -34,7 +34,6 @@ export function DashboardListPage() {
     <>
       <PageHeader
         title="Dashboards"
-        description="The built-in dashboards and those you and your teams build."
         actions={
           canBuild && (
             <>

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { InlineError } from '@/ui/InlineError/InlineError';
+import { NumberField } from '@/ui/NumberField/NumberField';
 import type { Widget, WidgetLayout } from '../model';
 import { placeMessage } from './announcements';
 import { blockedBy } from './grid';
-import { NumberInput } from './NumberInput';
 import styles from './Inspector.module.css';
 
 export interface LayoutTabProps {
@@ -43,7 +43,7 @@ export function LayoutTab({ widget, widgets, onPlace }: LayoutTabProps) {
   return (
     <div className={styles.tab}>
       {PARTS.map(({ key, label, offset, min, max }) => (
-        <NumberInput
+        <NumberField
           key={key}
           label={label}
           name={`inspector-${widget.id}-layout-${key}`}

@@ -28,7 +28,7 @@ describe('SignInPage', () => {
     expect(
       screen.getByText('Plan your marketing work, from plan to line item.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Demo sign-in — Shell single sign-on comes later')).toBeInTheDocument();
+    expect(screen.getByText('Demo sign-in')).toBeInTheDocument();
     expect(
       await screen.findByText(
         (_text, element) =>
@@ -47,9 +47,6 @@ describe('SignInPage', () => {
     renderSignInPage();
 
     const section = screen.getByRole('region', { name: 'Explore as a demo person' });
-    expect(
-      within(section).getByText('Choose a person to sign in as them — no typing needed.'),
-    ).toBeInTheDocument();
     const alex = await within(section).findByRole('button', {
       name: 'Sign in as Alex Morgan, Marketing administrator',
     });
@@ -206,9 +203,7 @@ describe('SignInPage', () => {
     expect(screen.queryByLabelText('E-mail')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Sign in/ })).not.toBeInTheDocument();
     expect(screen.queryByText('Explore as a demo person')).not.toBeInTheDocument();
-    expect(
-      screen.queryByText('Demo sign-in — Shell single sign-on comes later'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Demo sign-in')).not.toBeInTheDocument();
   });
 
   it('offers Try again when the demo people cannot be loaded (FR-020, edge case)', async () => {

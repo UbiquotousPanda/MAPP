@@ -5,6 +5,7 @@ import {
   expectNoAxeViolations,
   expectToast,
   itemAt,
+  openFilters,
   signInAs,
 } from './fixtures';
 import { changeActivityPlannedCost } from './planning-changes';
@@ -135,6 +136,7 @@ test('An activity deleted from its page is found in the recycle bin and restored
   await expectEntries(log.locator('ol[role="list"]'), lifeOf);
   await expectNoAxeViolations(page);
 
+  await openFilters(page);
   await page.getByRole('button', { name: 'Action', exact: true }).click();
   await page.getByRole('checkbox', { name: 'Restored', exact: true }).click();
   await page.keyboard.press('Escape');
@@ -225,7 +227,6 @@ test('Home: Recent changes shows the latest changes in Mei’s plans, newest fir
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: 'Welcome back, Mei.' })).toBeVisible();
   const card = page.getByRole('region', { name: 'Recent changes' });
-  await expect(card.getByText("Latest changes in your teams' plans")).toBeVisible();
   const items = card.getByRole('listitem');
 
   await expect(items.first()).toContainText(

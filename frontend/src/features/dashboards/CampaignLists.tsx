@@ -43,7 +43,7 @@ function CampaignList({ title, difference, rows }: CampaignListProps) {
       ) : (
         <div className={styles.scroll}>
           <table className={cx(dataTable.table, styles.table)}>
-            <caption>{title}</caption>
+            <caption className="visually-hidden">{title}</caption>
             <thead>
               <tr>
                 {['Campaign', 'Plan', 'Budget', 'Planned cost', difference].map((t, i) => (

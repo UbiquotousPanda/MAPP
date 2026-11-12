@@ -57,7 +57,7 @@ export function PlanGoals({ plan }: { plan: Plan }) {
   };
 
   return (
-    <Card title="Goals" subtitle="The plan's goal beside what its activities plan">
+    <Card title="Goals">
       <table className={dataTable.table}>
         <thead>
           <tr>

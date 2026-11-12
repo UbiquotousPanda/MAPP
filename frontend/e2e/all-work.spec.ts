@@ -17,7 +17,6 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
   // The demo plans' year, named in the address, so the journey holds in any year.
   await page.goto(`/all-work?year=${SEED_YEAR}`);
   await expect(page.getByRole('heading', { name: 'All work', level: 1 })).toBeVisible();
-  await expect(page.getByText('Filter, compare and export all planned work.')).toBeVisible();
   await page.getByRole('button', { name: /^Filters/ }).click();
   const filters = page.getByRole('group', { name: 'Filters' });
   await expect(filters.getByRole('button', { name: `Years · ${SEED_YEAR}` })).toBeVisible();
@@ -41,7 +40,7 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
   await expect(gridRow('Fleet roadshow')).toContainText('Declined');
   await expect(gridRow('Launch film')).toHaveCount(0);
   await expect(count).not.toHaveText(/^(\d+) of \1 activities$/);
-  await page.getByRole('button', { name: 'Clear all' }).click();
+  await page.getByRole('button', { name: 'Clear filters' }).click();
   await expect(page.getByRole('button', { name: /^Remove filter: / })).toHaveCount(0);
   await expect(count).toHaveText(/^(\d+) of \1 activities$/);
 
@@ -63,7 +62,7 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
   await expect(billboard).toContainText(`05 Jan ${SEED_YEAR}`);
   await expect(billboard).toContainText('$45,000.00');
   await expect(billboard.locator('mark')).toHaveText('Billboard');
-  await expect(grid.getByRole('row').filter({ hasText: 'Total 1 activity' })).toContainText(
+  await expect(grid.getByRole('row').filter({ hasText: /^\s*Total\b/ })).toContainText(
     '$45,000.00',
   );
   await expect(page.getByRole('region', { name: 'Summary' })).toContainText('$45K');
@@ -95,7 +94,7 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
   await expect(budget.getByRole('columnheader', { name: 'Jan' })).toBeVisible();
   await expect(budget.getByRole('columnheader', { name: 'Dec' })).toBeVisible();
   await expect(page.getByText('To change how a cost is spread, open its line item')).toBeVisible();
-  const footer = budget.getByRole('row').filter({ hasText: 'Total 1 activity' });
+  const footer = budget.getByRole('row').filter({ hasText: /^\s*Total\b/ });
   await expect(footer).toContainText('$45,000.00');
   await page.getByRole('button', { name: 'Quarterly' }).click();
   await expect(budget.getByRole('columnheader', { name: 'Q1' })).toBeVisible();
@@ -118,7 +117,9 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
   await expectToast(page, `View '${viewName}' saved`);
   await expect(page.getByRole('button', { name: `View: ${viewName}` })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Clear all' }).click();
+  // Clear filters keeps the search, which is cleared on its own.
+  await page.getByRole('button', { name: 'Clear filters' }).click();
+  await page.getByRole('searchbox', { name: 'Search' }).fill('');
   await page.getByRole('tab', { name: 'Grid' }).click();
   await expect(page.getByRole('searchbox', { name: 'Search' })).toHaveValue('');
   await expect(count).toHaveText(/^(\d+) of \1 activities$/);

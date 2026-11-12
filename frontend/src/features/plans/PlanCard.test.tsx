@@ -64,10 +64,10 @@ describe('PlanCard (FR-002)', () => {
     expect(within(moneyLine('Plan budget')).getByText('108% used').className).toMatch(/problem/);
   });
 
-  it('says what is missing: no budget, no owner, no business unit', () => {
+  it('says what is missing: no owner, no business unit; no budget is only "—"', () => {
     renderCard(china);
 
-    expect(screen.getByText('No plan budget set')).toBeInTheDocument();
+    expect(screen.queryByText('No plan budget set')).not.toBeInTheDocument();
     expect(moneyLine('Plan budget')).toHaveTextContent('—');
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.getByText('No owner yet')).toBeInTheDocument();

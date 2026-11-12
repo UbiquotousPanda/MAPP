@@ -71,16 +71,14 @@ describe('LineItemsSection (US1)', () => {
   it('shows the unassigned planned cost with its meter (scenario 1, FR-002)', async () => {
     renderLineItemsSection({ body: launchFilmSection() });
 
-    expect(
-      await screen.findByText('Unassigned planned cost (Sys_Gen_Balance)'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Unassigned planned cost')).toBeInTheDocument();
     expect(screen.getByText('$20,000.00')).toBeInTheDocument();
     expect(screen.getByRole('progressbar', { name: 'Assigned to line items' })).toHaveAttribute(
       'aria-valuenow',
       '83',
     );
     expect(screen.getByText('$100,000.00 of $120,000.00 assigned')).toBeInTheDocument();
-    expect(screen.getByText('$20,000.00 not yet assigned to a line item')).toBeInTheDocument();
+    expect(screen.queryByText(/not yet assigned to a line item/)).not.toBeInTheDocument();
   });
 
   it('shows the grid by month with totals (scenario 2, FR-003)', async () => {
@@ -136,7 +134,6 @@ describe('LineItemsSection (US1)', () => {
     for (const link of screen.getAllByRole('link', { name: 'Add line item' })) {
       expect(link).toHaveAttribute('href', '/activities/A-1001/line-items/new');
     }
-    expect(screen.getByText('$120,000.00 not yet assigned to a line item')).toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 

@@ -603,7 +603,9 @@ amounts (no goods-receipt data exists).
 - **FR-045**: Users MUST be able to search by PR ID, name, vendor, HX key, GSAP PR number and PO number, and
   filter by Status, PR type and Vendor (each with "Not completed"), Owner, Created date range and Waiting for
   GSAP; active filters are visible and removable one by one; filters, search, sort and page live in the
-  address so Back keeps them (013 FR-062).
+  address so Back keeps them (013 FR-062). *Amended by D-421: the search and the Waiting for GSAP view are
+  in the toolbar, the other filters behind **Filters (n)** (Created as one date range), Sort at its end; every
+  change is written in place, so Back leaves the list.*
 - **FR-046**: Users MUST be able to sort by name, ID, status, amount and created date within the vendor
   groups, page through 50 PRs at a time and open the PR or line item behind a row (013 FR-063).
 - **FR-047**: Amounts on the page MUST be in the reader's display currency with the currency code; line

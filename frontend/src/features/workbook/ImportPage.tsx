@@ -95,9 +95,7 @@ export function ImportPage() {
           { label: plan.data.name, to: `/plans/${encodeURIComponent(planId)}` },
           { label: 'Import from Excel' },
         ]}
-        eyebrow="Import"
         title="Import from Excel"
-        description={`Build or update '${plan.data.name}' from a spreadsheet: campaigns, initiatives, activities and line items.`}
       />
       <div className={styles.stack}>
         <ol className={styles.steps} aria-label="Steps">

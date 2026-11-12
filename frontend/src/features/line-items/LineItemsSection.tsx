@@ -26,7 +26,6 @@ import {
   DUPLICATE,
   EDIT,
   EMPTY_SECTION,
-  SECTION_SUBTITLE,
   SECTION_TITLE,
   planCurrencyColumn,
   SPREAD_LABELS,
@@ -75,14 +74,14 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
 
   if (section.isPending) {
     return (
-      <Card title={SECTION_TITLE} subtitle={SECTION_SUBTITLE}>
+      <Card title={SECTION_TITLE}>
         <Skeleton lines={3} />
       </Card>
     );
   }
   if (section.isError) {
     return (
-      <Card title={SECTION_TITLE} subtitle={SECTION_SUBTITLE}>
+      <Card title={SECTION_TITLE}>
         <ErrorState error={section.error} onRetry={() => void section.refetch()} />
       </Card>
     );
@@ -102,11 +101,7 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
         : 'loading';
 
   return (
-    <Card
-      title={SECTION_TITLE}
-      subtitle={SECTION_SUBTITLE}
-      actions={items.length > 0 ? addButton : undefined}
-    >
+    <Card title={SECTION_TITLE} actions={items.length > 0 ? addButton : undefined}>
       <div className={styles.stack}>
         {items.length === 0 ? (
           <EmptyState icon={<ReceiptText />} title={EMPTY_SECTION} action={addButton} />

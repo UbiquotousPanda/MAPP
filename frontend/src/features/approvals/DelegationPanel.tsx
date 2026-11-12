@@ -67,7 +67,6 @@ export function DelegationPanel({ onClose }: DelegationPanelProps) {
           }
         }}
         title="Approval delegation"
-        description="Who approves for whom while someone is away."
         footer={
           <>
             <Button variant="primary" icon={<Plus />} onClick={() => setOpen({ kind: 'form' })}>
@@ -80,9 +79,8 @@ export function DelegationPanel({ onClose }: DelegationPanelProps) {
         <div className={styles.body}>
           {canManageOthers && (
             <CheckboxField
-              label="Everyone"
+              label="Show everyone's delegations"
               name="everyone"
-              hint="Show everyone's delegations, not only yours."
               checked={everyone}
               onChange={setEveryone}
             />

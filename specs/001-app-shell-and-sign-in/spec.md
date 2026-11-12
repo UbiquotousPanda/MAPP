@@ -175,8 +175,8 @@ Undo after the delete brings the record back unchanged.
 - **FR-001**: MAPP MUST show a single sign-in page in Shell's design language (design system v2 §2):
   logo on the brand gradient, "Welcome back", e-mail, password with a show/hide control, **Sign in**, and
   "Explore as a demo person" listing every active demo person with avatar, name and job title.
-- **FR-002**: The sign-in page MUST state "Demo sign-in — Shell single sign-on comes later" and show the
-  shared demo password (decision D-004).
+- **FR-002**: The sign-in page MUST state "Demo sign-in" and show the shared demo password (decision D-004;
+  wording D-422).
 - **FR-003**: MAPP MUST sign a user in when the e-mail matches an active demo person (ignoring letter
   case and surrounding spaces) and the password equals the demo password, or when a demo person is chosen
   from the list.

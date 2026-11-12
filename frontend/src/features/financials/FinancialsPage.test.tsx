@@ -12,9 +12,6 @@ describe('FinancialsPage (015 US3, FR-020 – FR-021)', () => {
     ).toBeInTheDocument();
     expect(document.title).toBe('Financials · SP&A One');
     expect(
-      screen.getByText('Purchase orders, invoices, payments and accruals from GSAP'),
-    ).toBeInTheDocument();
-    expect(
       await screen.findByText(/^GSAP data as of .+ · Demo data \(simulated GSAP\)$/),
     ).toBeInTheDocument();
 
@@ -24,17 +21,14 @@ describe('FinancialsPage (015 US3, FR-020 – FR-021)', () => {
         .getAllByRole('tab')
         .map((tab) => tab.textContent),
     ).toEqual([
-      'All (11)',
+      'All',
       'Purchase orders (4)',
       'Invoices (3)',
       'Payments (2)',
       'Accruals (2)',
       'Not linked (1)',
     ]);
-    expect(within(tabs).getByRole('tab', { name: 'All (11)' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    expect(within(tabs).getByRole('tab', { name: 'All' })).toHaveAttribute('aria-selected', 'true');
 
     // The four totals for the filters (US3 scenario 1).
     expect(screen.getByRole('button', { name: '$47.65K ($47,652.17)' })).toBeInTheDocument();
@@ -114,7 +108,7 @@ describe('FinancialsPage (015 US3, FR-020 – FR-021)', () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
 
-    await user.click(screen.getByRole('tab', { name: 'All (11)' }));
+    await user.click(screen.getByRole('tab', { name: 'All' }));
     expect((await screen.findAllByText('No GSAP data loaded yet.')).length).toBe(2);
   });
 
@@ -124,12 +118,12 @@ describe('FinancialsPage (015 US3, FR-020 – FR-021)', () => {
     renderFinancialsPage('/financials', { body: transactionPage({ counts }) });
 
     const tabs = await screen.findByRole('tablist', { name: 'Transaction type' });
-    await within(tabs).findByRole('tab', { name: 'All (11)' });
+    await within(tabs).findByRole('tab', { name: 'All' });
     expect(
       within(tabs)
         .getAllByRole('tab')
         .map((tab) => tab.textContent),
-    ).toEqual(['All (11)', 'Purchase orders (4)', 'Invoices (3)', 'Payments (2)', 'Accruals (2)']);
+    ).toEqual(['All', 'Purchase orders (4)', 'Invoices (3)', 'Payments (2)', 'Accruals (2)']);
   });
 
   it('shows one card per transaction on a phone (US3 scenario 6)', async () => {

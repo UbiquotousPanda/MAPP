@@ -50,11 +50,7 @@ describe('SettingsPage (FR-001)', () => {
     renderSettings();
 
     expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'Set up the lists and rules every plan uses. Changes here apply to everyone straight away.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Changes apply to everyone straight away.')).toBeInTheDocument();
     expect(document.title).toBe('Settings · SP&A One');
 
     expect(await within(card('Models')).findByText('3 active')).toBeInTheDocument();

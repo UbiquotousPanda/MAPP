@@ -3,8 +3,6 @@ import type { StatusTone } from '@/ui/StatusChip/StatusChip';
 import type { ImportStatus, PerformanceCounts, PerformanceImport } from './api';
 
 export const IMPORTS = 'Imports';
-export const IMPORTS_DESCRIPTION =
-  'Every file uploaded and every simulated pull, with what each did to the figures.';
 export const IMPORTS_PATH = '/settings/performance-data/imports';
 
 export function importPath(importId: string): string {

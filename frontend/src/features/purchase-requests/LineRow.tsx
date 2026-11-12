@@ -13,14 +13,7 @@ import { DateField } from '@/ui/DateField/DateField';
 import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { problemAt, problemMap } from './form-problems';
 import type { LineValues, PurchaseRequestFormValues } from './form-schema';
-import {
-  LABELS,
-  LINE_ATTRIBUTES_TITLE,
-  lineTitle,
-  NO_SWBS,
-  OVERALL_LIMIT_HINT,
-  SWBS_HINT,
-} from './form-text';
+import { LABELS, LINE_ATTRIBUTES_TITLE, lineTitle, NO_SWBS, SWBS_HINT } from './form-text';
 import { HxKey } from './HxKey';
 import styles from './LineRowsEditor.module.css';
 
@@ -129,7 +122,6 @@ export function LineRow({
               name={id('overallLimit')}
               label={LABELS.overallLimit}
               marking="Needed to submit"
-              hint={OVERALL_LIMIT_HINT}
               currency={line.currency}
               error={error('overallLimit')}
             />

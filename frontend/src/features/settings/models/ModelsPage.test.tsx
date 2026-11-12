@@ -34,12 +34,12 @@ describe('ModelsPage: the list (FR-002)', () => {
     const { user, router } = renderModelsPage();
     await screen.findByRole('table');
 
-    await user.click(screen.getByRole('button', { name: 'Inactive 1' }));
+    await user.click(screen.getByRole('button', { name: 'Inactive' }));
     expect(within(table()).getByText('Retail 0.9')).toBeInTheDocument();
     expect(within(table()).queryByText('Lubricants 1.0')).not.toBeInTheDocument();
     expect(within(rowOf('Retail 0.9')).getByText('Inactive')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'All 3' }));
+    await user.click(screen.getByRole('button', { name: 'All' }));
     await user.type(screen.getByRole('searchbox', { name: 'Search models' }), 'mob');
 
     expect(

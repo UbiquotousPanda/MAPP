@@ -32,7 +32,7 @@ export function PurchaseRequestsPanel({ purchaseRequests }: PurchaseRequestsPane
       subtitle={`${purchaseRequests.waitingForGsap} approved and waiting for GSAP`}
     >
       <table className={cx(dataTable.table, styles.table)}>
-        <caption>Purchase requests on these plans by status</caption>
+        <caption className="visually-hidden">Purchase requests on these plans by status</caption>
         <thead>
           <tr>
             <th scope="col">Status</th>

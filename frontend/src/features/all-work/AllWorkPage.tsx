@@ -13,7 +13,7 @@ import { useAccess } from '@/session/access';
 import { refusalText } from '@/session/refusal-text';
 import { useAllWork, useAllWorkOptions, useAllWorkPreferences, usePreferencesSaver } from './api';
 import styles from './AllWorkPage.module.css';
-import { ALL_WORK_DESCRIPTION, VIEW_LABELS } from './all-work-text';
+import { VIEW_LABELS } from './all-work-text';
 import type { Sort, ViewState, ViewType } from './all-work-types';
 import { AllWorkExport } from './AllWorkExport';
 import { AllWorkGrid } from './AllWorkGrid';
@@ -222,7 +222,6 @@ export function AllWorkPage() {
     <>
       <PageHeader
         title="All work"
-        description={ALL_WORK_DESCRIPTION}
         actions={
           <>
             <ViewsControl

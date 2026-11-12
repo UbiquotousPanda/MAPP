@@ -46,5 +46,3 @@ export const EMPTY_TEXT =
   'Every row loaded so far was matched or deliberately left without an activity.';
 export const NO_MATCH = 'Nothing matches these filters';
 export const COMMENT_NEEDED = 'Say why this row is being dismissed.';
-export const NO_HAND_ROWS =
-  'Rows arrive only from uploads and simulated pulls; none can be added by hand.';

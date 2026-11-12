@@ -3,14 +3,21 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Button } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
+import { ManageViewsPanel } from '@/ui/ManageViewsPanel/ManageViewsPanel';
+import type { SavedViewChanges } from '@/ui/ManageViewsPanel/ManageViewsPanel';
+import { useViewRefusal } from '@/ui/SavedViewsMenu/saved-views';
 import { SavedViewsMenu as ViewsMenu } from '@/ui/SavedViewsMenu/SavedViewsMenu';
+import { SaveViewDialog } from '@/ui/SaveViewDialog/SaveViewDialog';
 import { useToast } from '@/ui/Toast/useToast';
 import type { ReportKey } from '../reports';
-import { useReportViews, useUpdateReportView } from './api';
+import {
+  useCreateReportView,
+  useDeleteReportView,
+  useReportViews,
+  useUpdateReportView,
+} from './api';
 import type { ReportView } from './api';
-import { ManageViewsPanel } from './ManageViewsPanel';
-import { SaveViewDialog } from './SaveViewDialog';
-import { sameQuery, useViewRefusal } from './saved-views';
+import { sameQuery } from './saved-views';
 
 type Dialog = 'save' | 'update' | 'manage' | null;
 
@@ -24,6 +31,8 @@ export function SavedViewsMenu({ report }: { report: ReportKey }) {
   const views = useReportViews(report).data?.items;
   const [appliedId, setAppliedId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
+  const changes = useViewChanges(report);
+  const create = useCreateReportView(report);
   const update = useUpdateReportView(report);
   const refused = useViewRefusal();
   const { show } = useToast();
@@ -47,7 +56,7 @@ export function SavedViewsMenu({ report }: { report: ReportKey }) {
       { viewId: view.id, body: { version: view.version, query } },
       {
         onSuccess: (saved) => show({ message: `View '${saved.name}' updated` }),
-        onError: (error) => refused(error, 'name'),
+        onError: (error) => refused(error),
         onSettled: () => setDialog(null),
       },
     );
@@ -75,11 +84,19 @@ export function SavedViewsMenu({ report }: { report: ReportKey }) {
       />
       {dialog === 'save' && (
         <SaveViewDialog
-          report={report}
+          title="Save current filters"
+          defaultLabel="Open this report on this view"
+          replaceText="It will keep the filters you see now."
           views={views ?? []}
-          query={query}
-          onOpenChange={(open) => !open && setDialog(null)}
+          create={(name, isDefault) => create.mutateAsync({ name, query, isDefault })}
+          replace={(view, isDefault) =>
+            update.mutateAsync({
+              viewId: view.id,
+              body: { version: view.version, query, ...(isDefault && { isDefault }) },
+            })
+          }
           onSaved={(view) => setAppliedId(view.id)}
+          onOpenChange={(open) => !open && setDialog(null)}
         />
       )}
       {dialog === 'update' && active && (
@@ -95,13 +112,27 @@ export function SavedViewsMenu({ report }: { report: ReportKey }) {
         </ConfirmDialog>
       )}
       <ManageViewsPanel
-        report={report}
         open={dialog === 'manage'}
         onOpenChange={(open) => !open && setDialog(null)}
         views={views ?? []}
+        changes={changes}
+        star
+        defaultMessage={(name) => `The report now opens on '${name}'`}
       />
     </>
   );
+}
+
+function useViewChanges(report: ReportKey): SavedViewChanges<ReportView> {
+  const create = useCreateReportView(report);
+  const update = useUpdateReportView(report);
+  const remove = useDeleteReportView(report);
+  return {
+    change: (view, change) =>
+      update.mutateAsync({ viewId: view.id, body: { version: view.version, ...change } }),
+    remove: (view) => remove.mutateAsync(view.id),
+    restore: ({ name, query, isDefault }) => create.mutateAsync({ name, query, isDefault }),
+  };
 }
 
 /** Opening the report with nothing in its address applies the default view, once per visit. */

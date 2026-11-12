@@ -31,7 +31,6 @@ export function PurchaseRequestCreatePage() {
         <PageHeader
           breadcrumb={[{ label: 'Plans', to: '/plans' }, { label: NEW_PURCHASE_REQUEST }]}
           title={NEW_PURCHASE_REQUEST}
-          description={PICKER.stepDescription}
         />
         <Card title={PICKER.stepTitle}>
           <LineItemOptionsList

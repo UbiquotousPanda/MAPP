@@ -57,7 +57,6 @@ export function PeoplePage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'People' }]}
         title="People"
-        description="Everyone who can sign in to SP&A One, with their job title and teams."
         actions={
           <CanChange permission="people.manage">
             <Button variant="primary" icon={<Plus />} onClick={() => setForm({ kind: 'new' })}>
@@ -154,7 +153,7 @@ function PeopleCard({ currentUserId, onNew, onOpen, actions }: PeopleCardProps) 
     );
   }
 
-  const { shown, counts } = filterRecords(
+  const { shown } = filterRecords(
     all,
     filters,
     (person) => `${person.name} ${person.email} ${person.jobTitle}`,
@@ -169,7 +168,7 @@ function PeopleCard({ currentUserId, onNew, onOpen, actions }: PeopleCardProps) 
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: PERSON_NOUN }}
       />
       {shown.length === 0 ? (

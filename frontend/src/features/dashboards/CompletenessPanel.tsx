@@ -13,7 +13,7 @@ export function CompletenessPanel({ levels }: CompletenessPanelProps) {
   return (
     <Card title="Plan details" subtitle="Records with every needed field filled in">
       <table className={cx(dataTable.table, styles.table)}>
-        <caption>Completeness by level</caption>
+        <caption className="visually-hidden">Completeness by level</caption>
         <thead>
           <tr>
             {['Level', 'Records', 'All filled in', 'Share'].map((title, i) => (

@@ -135,19 +135,20 @@ Every page is one of these five templates.
 ```
  (breadcrumb row)
  Plans                                                                    [+ New plan]
- Every plan of the year in one place.
  ┌ summary card ┐ ┌ summary card ┐ ┌ summary card ┐ ┌ summary card ┐       ← optional, ≤ 4
  ┌───────────────────────────────────────────────────────────────────────────────────┐
- │ [🔍 Search name or ID ] [All (6)|Draft (2)|Published (4)] [Filters (1)]  4 of 6 plans │ ← toolbar 40 px
+ │ [🔍 Search name or ID ] [All|Draft|Published] [Filters (1)]        4 of 6 plans │ ← toolbar 32 px
+ │ [Years · 2026 ▾] [Plan type ▾] [Show ▾] [BCPIR plans ▾]                          │ ← Filters folded out
  │ (Year: 2026 ×) Clear filters                                                        │ ← filter chips
  │ Name ▲            Owner          Teams              Status      Planned cost    ⋯   │ ← table, §5.4
  └───────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 - The toolbar sits **inside** the table card (16 px 24 px padding) and spans its full width: search,
-  segmented filter, **Filters** button, then — pushed to the right end — the result count ("4 of 6
-  plans"), view switch and **Export** where the page has them. Filter chips go on a second row only while
-  filters are in use.
+  segmented filter, **Filters (n)** button, then — pushed to the right end — the result count ("4 of 6
+  plans"), view switch and **Export** where the page has them: the `FilterBar` of §5.2 (D-421). The filter
+  menus fold out on the second row (by themselves when a filter is in use); filter chips go below only while
+  filters are in use. Lists whose toolbar sits on the grey page (Plans, All work, reports) use the same bar.
 - Empty list: `EmptyState` inside the card; filters hiding everything: "Nothing matches these filters" with
   **Clear filters**.
 - Below 600 px: search takes the first toolbar row; inbox-type lists (Approvals, Home lists) become stacked
@@ -280,10 +281,10 @@ is one report, in the **report frame** (039):
   …", and on the right **Copy link**, **Saved views** and **Export** (all secondary, 32 px; Export downloads at once
   when the report has one format and opens a menu when it has several). No primary button — a report acts on
   nothing.
-- **Toolbar**, one left-aligned row on the grey page: **Filters (n)**, **Year**, the report's own choices
+- **Toolbar**, the list `FilterBar` (§5.2, D-421) on the grey page: **Year**, **Filters (n)**, the report's own choices
   (Activity category, Funnel stage); no Currency — reports follow the top bar's display currency (D-413). **Filters** folds out All work's filter buttons (§5.2) —
   Plans, Plan type, Team, Owner, Activity type, Activity status and **More filters** for the Shell attributes by
-  level; each change applies at once, and the filters in use show as removable chips with **Reset filters**.
+  level; each change applies at once, and the filters in use show as removable chips with **Clear filters**.
   Changing the year says first, at the top of the Year menu, that it clears the chosen plans.
 - **Widgets** sit on a grid whose empty tracks collapse: the KPI **StatStrip** first, then charts, then tables.
   A widget's header holds its title with the ⓘ, then on the right only the controls that change that widget —
@@ -492,8 +493,8 @@ Sticky bars (top bar, table header, form footer) use a 1 px `--hairline` border,
 
 | Token | Value | Used for |
 |---|---|---|
-| `--control-sm` | 32 px | Controls inside tables and card headers, segmented filters, filter chips, the ⋯ of a table row |
-| `--control-md` | **40 px** | **Default** for buttons, inputs, selects, search, page-header actions, menu items, sidebar items, table rows |
+| `--control-sm` | 32 px | Every control of a list toolbar (search, segmented filters, selects, filter buttons, Filters (n), chips — D-421), controls inside tables and card headers, the ⋯ of a table row |
+| `--control-md` | **40 px** | **Default** for buttons, form inputs and selects, page-header actions, menu items, sidebar items, table rows |
 | `--control-lg` | 48 px | Sign-in, form inputs and form-footer buttons below 600 px, tabs |
 | `--icon-sm` | 16 px | Icons in `sm` controls, chips, rows and chevrons (D-418) |
 | `--icon-md` | 20 px | Icons in `md` controls, the sidebar and the top bar (D-418) |
@@ -768,6 +769,19 @@ the views first (the active one ticked, a `Tag` "Default" on the default view, "
 the address differs from the view), then a separator and the actions (Save view, Manage views…). Features
 pass their views and actions; they never build the menu.
 
+**`SaveViewDialog`** (`ui/SaveViewDialog`, D-423) — Save current view or filters: **Name** (required, at most 60
+characters, checked on Save) and a default check box whose words the page gives. A name the person already uses
+(any letter case) asks "Replace your view '<name>'?" first. Features pass `create` and `replace`, which call
+their API; the dialog shows the API's field problems at the name, and "View '<name>' saved" or "updated".
+
+**`ManageViewsPanel`** (`ui/ManageViewsPanel`, D-423) — the `SidePanel` "Your saved views": per view the name
+with a "Default" `Tag`, then the default action, **Rename** (a **Rename view** dialog with the same name rules,
+refusing another view's name) and **Delete**, each named with the view. The default action is **Set as
+default** / **Remove default**, or with `star` one **Default** toggle (`aria-pressed`, star icon) on reports.
+With `deleteQuestion` a delete asks first ("Delete view '<name>'?", red **Delete view**); without it the view
+goes at once and the panel closes. Either way the message offers **Undo**, which saves the view again with its
+default. A view deleted in another tab says so. Features pass `changes` (change, remove, restore).
+
 **`ExportMenu`** (`ui/ExportMenu`, D-416) — **Export** everywhere (All work, reports, report widgets,
 planning dashboards). Props: `formats` (Excel, CSV, PowerPoint, PDF, in the order given), `download`,
 `label`, `size` (`md`, reports `sm`), `iconOnly` (a widget's download icon, named by `label`).
@@ -809,11 +823,13 @@ accepts at most one primary action (a second one is a development-time error).
 
 - Joined buttons 32 high, text 14, padding 0 12; one 1 px `--control-border` around the group, radius 8 on
   the outer corners, 1 px dividers between buttons; no pill shape.
-- Chosen: a quiet ink tint (`--ink` at 14 % over `--surface`), a `--control-border-hover` border and bold
-  `--ink` text; `aria-pressed="true"`. Others: `--surface`, `--ink`; hover `--hover-on-card`. A chosen
-  choice never outweighs the title it sits under.
-- Counts in brackets: "Active (5)". Order and default for record states: **Active · Inactive · All**,
-  default Active; for workflow states: **All · Draft · Published**, default All.
+- Chosen: a quiet ink tint (`--ink` at 14 % over `--surface`) and bold `--ink` text; `aria-pressed="true"`.
+  Its borders stay the group's (a strong border overlapped its neighbours and drew a bright seam in the dark
+  theme, D-421). Others: `--surface`, `--ink`; hover `--hover-on-card`. A chosen choice never outweighs the
+  title it sits under.
+- No counts in a list's status filter (the result count says how many, D-421); a `count` stays for a choice
+  that names something to act on ("Edited 3"). Order and default for record states: **Active · Inactive ·
+  All**, default Active; for workflow states: **All · Draft · Published**, default All.
 - Below 600 px the group scrolls sideways; it never wraps.
 - An option with an `icon` shows the 16 px icon alone in a 32 × 32 button named by its label, with the label
   in a `Tooltip` (D-418).
@@ -833,8 +849,11 @@ access), as their specs set them.
 
 **`SearchField`**
 
-- 40 high, radius 8 (never a pill), 1 px `--control-border`, `--surface`; 16 px magnifier at 12 from the
-  start; text 14 (16 below 600 px) from 36; width 280–360 in toolbars, full width below 600 px.
+- 40 high in forms and panels, **32 (`size="sm"`) in every list toolbar** (D-421); radius 8 (never a pill),
+  1 px `--control-border`, `--surface`; 16 px magnifier at 12 from the start; text 14 (16 below 960 px) from
+  36; width 280–360 in toolbars.
+- `delay` (ms): a list that asks the server reports the text after a pause (Plans 250, others 300), or at once
+  when the box loses the focus, and shows a search set elsewhere (Clear filters, Back) over what was typed.
 - The placeholder says what it searches ("Search name or ID"), `--muted`; the accessible name is a
   hidden label ("Search plans").
 - **Clear search**: 16 px ✕ in a 24 × 24 target at the end, once something is typed; focus returns to the
@@ -845,7 +864,9 @@ access), as their specs set them.
 
 - A chip per filter in use: 32 high, padding 0 8 0 12, `--chip` fill, `--ink` 12/18 bold, radius 4,
   16 px ✕ in a 24 × 24 target; the whole chip is the button "Remove filter: Status: Draft".
-- **Clear filters**: ghost `sm` button after the chips. Nothing shows while no filter is in use.
+- **Clear filters**: ghost `sm` button after the chips, the one wording on every list (no "Clear all", no
+  "Reset filters", D-421); it clears what the chips show and keeps the quick control. Nothing shows while no
+  filter is in use.
 
 **`FilterMenuButton`** (`ui/FilterMenuButton`, D-416) — the button of one filter in a filter bar: 32 high,
 padding 0 8 0 12, radius 8 (like `Select` and `SegmentedFilter`), 1 px `--control-border`, `--surface`, 14 px
@@ -857,18 +878,43 @@ chosen ("Years · 2026"); the summary is part of the button's name. Hover `--hov
 `Popover` (300 wide) of check boxes, or radio buttons for one value; a change applies at once. Inactive
 values say "(inactive)"; a chosen value no longer offered stays listed so it can be removed; above 10
 choices a search box; group headings; an optional first choice that ticks several (Team's "My teams").
-Used by All work, the report filters, Purchase requests (Status, PR type, Vendor, Owner) and the activity
-log (Action). A filter bar holds **only** `SearchField`, `SegmentedFilter`, `Select` (one value from a
+Used in every `FilterBar`'s menus (D-421). A filter bar holds **only** `SearchField`, `SegmentedFilter`, `Select` (one value from a
 short list: Year, Plan, Person, Sort), `FilterMenu` or `FilterMenuButton` + `Popover` (several values, or
 a few fields: Years, More filters), `DateField compact` and the result count — never a native `<select>`.
 
-**`FiltersButton`** (`ui/FilterMenuButton`, D-417) — the **Filters (n)** button that opens or folds away the
-less-used filters (Plans, Approvals, All work, reports): a secondary `Button` (`md` 40, `sm` 32 in report
-toolbars) with a sliders icon, "Filters" or "Filters (2)"; below 600 px a square icon button with the number in
-use on an ink badge, the words staying its name.
+**`FiltersButton`** (`ui/FilterMenuButton`, D-417) — the **Filters (n)** button that folds the filter menus out
+or away: a secondary `sm` (32) `Button` with a sliders icon, "Filters" or "Filters (2)", `aria-expanded` and
+`aria-controls` naming the row; below 600 px a square icon button with the number in use on an ink badge, the
+words staying its name.
+
+**`YearRangeMenu`** (`ui/YearRangeMenu`, moved from All work, D-421) — the **Years** filter: a
+`FilterMenuButton` ("Years · 2026–2027") opening From and To `Select`s; choosing a From moves To along; an
+optional first From choice clears the range ("All years", Plans) and an optional most-years limit with its note
+(All work, 5).
+
+**`DateRangeMenu`** (`ui/DateRangeMenu`, D-421) — a date-range filter ("Submitted", "Created", "Dates"): a
+`FilterMenuButton` ("Created · 01 Oct 2026 – 12 Oct 2026") opening From and To `DateField compact`, each applied
+at once; a range error shows under To and leaves the button without a summary.
+
+**`FilterBar`** (`ui/FilterBar`, D-421) — **the one list toolbar**, composed by every list (Plans, Approvals, All
+work, the reports, Purchase requests, the activity log, Financials, the recycle bin, the performance lists and,
+through `ListToolbar`, Settings, People and Teams). Left to right: `search` (`SearchField size="sm"`) · `quick`
+— the page's one always-shown control, if it has one (a status `SegmentedFilter`, the reports' Year, Purchase
+requests' view; Financials' Year and Plan) · **Filters (n)** · then `end`, pushed to the right: the
+`ResultCount` and the page's view switches (Plans' Cards · Table, Purchase requests' Sort). Every other filter
+is in `menus`, the row Filters (n) folds out (`role="group"` named "Filters"): one `FilterMenu` per filter
+(check boxes for several values; radio buttons for one, with an "Any …" first choice), `YearRangeMenu`,
+`DateRangeMenu`, and **More filters** for the Shell attributes; each change applies at once, no Apply button. The
+row folds out by itself when the page opens with a filter in use, or when one comes into use from elsewhere (a
+summary card's link); (n) counts the filters behind the button, not the search or the quick control. A list
+with no filter behind the button has no Filters (n). Below the row: the `FilterChips` with Clear filters, and
+an optional note ("You can still open every plan."). Every control is 32 px. Below 600 px the row wraps and
+Filters (n) is the icon with its badge. **State:** every filter, the search and the quick control live in the
+page address and are written in place (`replace`), so Back leaves the list instead of undoing the filters one
+by one, and a reload or a link keeps them (constitution IX, D-421).
 
 **`Popover`** (`ui/Popover`, D-416) — every panel that floats from a button and is not a menu: filter
-panels (Filters (n) on Plans and Approvals), a busy day's activities, the completeness problems, the
+menus (each `FilterMenu`, `YearRangeMenu`, `DateRangeMenu`), a busy day's activities, the completeness problems, the
 notifications, a `Combobox`'s list. Radix Popover; `Popover.Content` on the floating surface (see `Menu`) with
 `width` `auto` (220–340), `sm` 260, `md` 300, `lg` 360 or `anchor` (its control's width, at least 240) and `padding` `none`, `sm` 4, `md` 8 or `lg` 16 (fields). The
 focus moves into it, Escape or a click outside closes it and the focus returns to its button. Features
@@ -882,9 +928,9 @@ budgets, Purchase requests) keeps its own words in the same element.
 
 **List toolbar** (layout rule, new)
 
-One 40 px row inside the table card: `SearchField` · `SegmentedFilter` · **Filters (n)** (secondary) ·
-spacer · result count "4 of 6 plans" (14 `--ink-2`) · view switch · **Export** (secondary). Filter chips
-on a second row. Every list writes its count the same way: "*n* of *m* <things>". A toolbar that sits on
+One 32 px row, the `FilterBar` above: `SearchField` · `SegmentedFilter` · **Filters (n)** (secondary) · spacer ·
+result count "4 of 6 plans" (14 `--ink-2`) · view switch · **Export** (secondary). The filter menus fold out on
+the second row; filter chips below them. Every list writes its count the same way: "*n* of *m* <things>". A toolbar that sits on
 the grey page instead (All work, Financials) writes its count, notes and links in Text Strong (§3.1).
 
 ### 5.3 Containers, panels and dialogs
@@ -941,6 +987,12 @@ Financials figures.
   free-form footer content, so every panel gets the same footer (§11, rule 4).
 - Focus moves into the panel and stays there; Escape, Close and a click on the overlay close it (asking
   first when there are unsaved changes); the focus returns to what opened it.
+
+**`Drawer`** (`ui/Drawer`, D-423) — a modal panel that slides in from the left (280 wide, at most 85% of the
+window; `--overlay` behind it; `--shadow-lg`), named by a visually hidden title, with a 40 px close icon button
+in its top right corner (named by `closeLabel`, no tooltip, R14). Focus moves in and stays inside; Escape, the
+close button and a click on the overlay close it; the focus returns to what opened it. The navigation drawer
+uses it.
 
 **`FormPanel`** — a `SidePanel` with a form: footer **Cancel · Save and add another** (when creating
 children) **· Save** (primary); the failure message and `FormErrorSummary` at the top of the body; "Discard
@@ -1070,6 +1122,10 @@ left"; past the limit "3 characters too many"; typing is never cut off).
 figures**; the unit ("USD", "%") inside the end in 14 `--ink-2`; written out on leaving the field
 ("12,500.00"; "Rounded to 1,234.57" as a note); accepts "12500", "12,500.00" and "12.5k".
 
+**`NumberField`** (`ui/NumberField`, D-423) — a whole number between `min` and `max` (a grid size, a row
+count; never money): the field frame above with a native number control, right-aligned tabular figures; the
+up and down arrow keys step by `step` (1) and stop at the bounds; an empty field is no value.
+
 **Choices: one select style** (`ChoiceField`, `Combobox`; UI audit X-15)
 
 | Situation | Control |
@@ -1150,6 +1206,8 @@ stack full width in the same order.
 **`FormErrorSummary`** — an `InlineAlert` of the danger family at the top of the form: title `<h2>` 16/24
 Arial 700 "2 problems need your attention", then each problem as an underlined `--link` link to its field;
 it takes the focus when it appears, so it is read out (FR-020).
+`onGo` takes the person to a problem the page shows itself (a dashboard widget), and `describe` words a
+problem with its place ("<widget>: <problem>").
 
 **`LockedNote`** — a 16 px lock icon and one sentence, 14/20 `--ink-2`, 4 px under the locked control.
 
@@ -1233,7 +1291,7 @@ around it is named "SP&A One home".
 |---|---|
 | `TopBar` (new) | §2.1; replaces `MobileTopBar` at every width |
 | `Sidebar` | §2.1: white, 240 / 64, items 40, the yellow bar with the hover-grey fill, "More" group label, Collapse at the bottom. Account, bell and theme move to the top bar. |
-| `NavDrawer` | §2.1: below 600 px, 280 wide, from the left |
+| `NavDrawer` | §2.1: below 600 px, 280 wide, from the left; a `ui/Drawer` |
 | `AccountMenu` | Opened from the top bar's avatar button; a menu (§5.1 look) with name and role (not a link), My profile, Appearance (three choices, the current one ticked), a separator, Sign out |
 | `NotificationBell` | 40 px ghost icon button with `CountBadge`; opens a 360 wide popover (radius 8, `--shadow-md`) with the notices, **Mark all as read** (ghost) and links |
 | `ThemeToggle` | Becomes the Appearance choice inside `AccountMenu` |
@@ -1247,16 +1305,16 @@ Every user-managed record follows this pattern. Specs refer to it as "the standa
 
 ### 6.1 List
 
-1. Page header with the plural name, a one-line description and **New <thing>** (primary, at the end of
-   the actions).
-2. The list toolbar of §5.2: a search box that says what it searches ("Search name or ID"), a segmented
-   filter for status, a **Filters** button for the rest, removable filter chips, and a result count ("12 of
-   40 plans").
+1. Page header with the plural name and **New <thing>** (primary, at the end of the actions); no description
+   that says what the page is (D-421, D-422).
+2. The list toolbar of §5.2 (`FilterBar`): a search box that says what it searches ("Search name or ID"), a
+   segmented filter for status, a **Filters (n)** button for the rest, removable filter chips with **Clear
+   filters**, and a result count ("12 of 40 plans"); all of it kept in the address, written in place.
 3. Table (or cards for plans) by the data table standard (§5.4): name as a link, status chip, key facts,
    money with currency, a row **⋯ Actions** menu (View · Edit · Duplicate · record-specific actions ·
    Delete last, separated).
 4. Selecting a row opens the record's **details view** — never straight into edit.
-5. Empty state: "No plans yet — create your first plan" with the create button (secondary, because the
+5. Empty state: "No plans yet" with the create button (secondary, because the
    header holds the primary); when filters hide everything: "Nothing matches these filters" with **Clear
    filters**.
 
@@ -1266,7 +1324,8 @@ Every user-managed record follows this pattern. Specs refer to it as "the standa
 - Short records (campaign, initiative, Settings items, person, team, approval workflow) open in a **side
   panel**; long records (plan, activity, line item, Shell attribute) open on a **full page** with sections
   (§2.5).
-- One column; sections in a logical order; defaults pre-filled and labelled ("From the campaign");
+- One column; sections in a logical order; defaults pre-filled without a label naming where they came from,
+  except a pre-filled amount (D-422);
   a field required to save shows a red **\*** after its label, with the legend "\* Required" once before the
   first field (D-364); **Needed to publish** and **Needed to submit** stay words.
 - Footer: **Cancel** · **Save and add another** (for children) · **Save** (primary, last), right-aligned
@@ -1361,7 +1420,7 @@ SP&A, AOP, SMP, INQ, MQL. Hive9 interface terms are replaced:
 | Inspection Window | Details (side panel or page) |
 | Honeycomb | Select (checkboxes and a bulk-action bar) |
 | HUD / heads-up display | Summary cards |
-| Sys_Gen_Balance | Unassigned planned cost (Sys_Gen_Balance) |
+| Sys_Gen_Balance | Unassigned planned cost |
 | Create SWBS Code | Request SWBS code from GSAP |
 | Override Model | Set later stages myself |
 | Evergreen | Ongoing (no end date) |
@@ -1407,7 +1466,7 @@ decision 4, D-313). Automated checks run axe with the tags `wcag2a`, `wcag2aa`, 
   menu alternative.
 - **Consistent help (3.2.6):** help, when it exists, is always in the top bar at the same place.
 - **Redundant entry (3.3.7):** values already given are offered again instead of typed twice (defaults from
-  the parent, "From the campaign").
+  the parent).
 - **Accessible authentication (3.3.8):** sign-in allows paste and password managers; no puzzles.
 - **Errors:** announced and linked from the summary; the focus moves to the summary on a failed save.
 - **Motion and zoom:** respect reduced motion; usable at 200 % zoom and reflowing without sideways scrolling
@@ -1512,3 +1571,5 @@ or one component (see the recommendations report for the questions to Shell).
 | 2.10 | 12 Nov 2026 | D-415: generic elements come only from `ui/`; the data table standard is `ui/Table` (header band, rows, numbers, sticky name, Total row with `TotalLabel`, empty row), with `SortHeader`, `DisclosureButton` and one `Pager` with placements and named page-size sets (§2.8, §5.2, §5.4). |
 | 2.11 | 12 Nov 2026 | D-417, form controls only from `ui/`: `ChoiceField` renders `Select` (form size 40 px, option groups, Enter saves, no native select); `RadioGroup` (column, row, list; hints, groups, locked options) for every radio button; `Checkbox` for bare check boxes; `accent-color` once in `global.css`; `DateField` (form and `compact`); `InlineError` and `InlineAlert` (moved from line items and approvals); `FiltersButton`; `ConfirmDialog`/`FormDialog` `size="lg"` and a show-only `FormDialog`; `Popover` width `anchor`, used by `Combobox` (§5.2, §5.3, §5.5, §5.6, §11 rule 13). |
 | 2.12 | 12 Nov 2026 | D-418, display pieces only from `ui/`: `SectionHeading` with five ranks (section 20, panel 18, card 16 Jost 600; sub 16 and label 14 Arial 700), used by `Card` (titles 16/24 as §5.3 says); weights as tokens; `--icon-sm` and `--icon-md`; `ProgressBar busy` and `BarList` (§4.6); `ViewSwitch` and the icon option of `SegmentedFilter`; `SavedViewsMenu`; `SummaryCard to` (LinkSummaryCard retired) and every row of figures a `StatStrip`; `Tag` and `LevelTag other`; `RelativeTime`, `TooltipText` and a `Tooltip` that opens on a tap, no native `title` tooltips; one `ConvertedAmount` naming its rate (§3.2, §3.6, §4.4, §4.6, §5.2, §5.3, §5.4, §5.6). |
+| 2.13 | 12 Nov 2026 | D-423, the last copies move into `ui/`: one `SaveViewDialog` and one `ManageViewsPanel` (with its Rename view dialog) for All work and the reports, their differences as props; `FormErrorSummary` `onGo` and `describe` for the dashboard builder; `NumberField` for bounded whole numbers; `Drawer` for the navigation drawer (§5.1, §5.3, §5.5, §5.8). |
+| 2.14 | 12 Nov 2026 | D-421, one filter pattern: `FilterBar` (search · quick control · Filters (n) · count and view switches; the folding row of filter menus, opening by itself when a filter is in use; chips with Clear filters; state in the address, written in place), `YearRangeMenu` (moved from All work) and `DateRangeMenu`; every toolbar control 32 px (`SearchField size="sm"` and `delay`, `FiltersButton` `sm` by default); no counts in a list's status filter; the chosen segment keeps the group's borders (§3.6, §5.2). |

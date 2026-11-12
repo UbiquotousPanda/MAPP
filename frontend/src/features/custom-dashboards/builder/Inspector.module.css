@@ -23,8 +23,7 @@
 }
 
 .legend,
-.rowLegend,
-.number label {
+.rowLegend {
   padding: 0;
   color: var(--ink);
   font-size: var(--text-sm);
@@ -69,31 +68,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
-}
-
-.number {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.number input {
-  height: var(--control-md);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-control);
-  background-color: var(--surface);
-  color: var(--ink);
-  font-size: var(--text-sm);
-}
-
-.number input[aria-invalid='true'] {
-  border-color: var(--danger);
-}
-
-.number input:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 .paletteChoice {

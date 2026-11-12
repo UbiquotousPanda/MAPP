@@ -85,9 +85,7 @@ describe('ShellAttributeEditorPage: create (FR-016 – FR-019)', () => {
     await choose(user, await screen.findByRole('combobox', { name: /Type/ }), 'Yes/no');
 
     expect(screen.queryByRole('combobox', { name: /Marking/ })).not.toBeInTheDocument();
-    expect(
-      screen.getByText('Always optional; shown as a tick box that defaults to No.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Shown as a tick box.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Add option' })).not.toBeInTheDocument();
   });
 

@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
+import { nth } from '@/testing/dom';
 import {
   performanceLoad,
   performanceSource,
@@ -92,7 +93,8 @@ describe('ImportsPage', () => {
     );
 
     expect(await screen.findByText('Nothing matches these filters')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    // The empty state's Clear filters, after the chips' own.
+    await user.click(nth(screen.getAllByRole('button', { name: 'Clear filters' }), -1));
 
     expect(router.state.location.search).toBe('');
     expect(await screen.findByText('No imports yet')).toBeInTheDocument();

@@ -65,7 +65,7 @@ describe('ApprovalsReport (041 US1)', () => {
     expect(await screen.findByText('No plans you may see for 2026')).toBeInTheDocument();
   });
 
-  it('says the filters exclude everything, with Reset filters', async () => {
+  it('says the filters exclude everything, with Clear filters', async () => {
     renderReport(
       reportFrame({
         inView: { plans: 0, campaigns: 0, initiatives: 0, activities: 0, lineItems: 0 },
@@ -74,7 +74,7 @@ describe('ApprovalsReport (041 US1)', () => {
     );
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Reset filters' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: 'Clear filters' }).length).toBeGreaterThan(0);
   });
 
   it('shows the standard no-access page without "See reports"', async () => {

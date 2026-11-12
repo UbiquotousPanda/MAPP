@@ -22,7 +22,7 @@ import {
   NOTHING_LEFT,
   preselectedText,
   ROUNDING_HINT,
-  SOURCE,
+  PLANNED_COST_SOURCE,
 } from './line-item-text';
 
 type AttributeValues = components['schemas']['AttributeValues'];
@@ -38,16 +38,7 @@ export interface CustomMonth {
 }
 
 /** The fields that show where their pre-filled value came from. */
-export const SOURCE_FIELDS = [
-  'name',
-  'ownerId',
-  'currency',
-  'plannedCost',
-  'spread',
-  'financeBudgetYear',
-  'financeBudgetItemId',
-  'requestSwbs',
-] as const;
+export const SOURCE_FIELDS = ['plannedCost', 'financeBudgetItemId'] as const;
 
 export type SourceField = (typeof SOURCE_FIELDS)[number];
 
@@ -90,21 +81,13 @@ export function newFormState(options: LineItemFormOptions): LineItemFormState {
     ? options.financeBudgetItems.find((item) => item.id === defaults.financeBudgetItemId)
     : undefined;
   const sources: LineItemFormState['sources'] = {
-    name: SOURCE.name,
-    currency: SOURCE.currency,
     plannedCost:
       defaults.plannedCostSource === 'unassignedBalance'
-        ? SOURCE.plannedCost
+        ? PLANNED_COST_SOURCE
         : defaults.plannedCostSource === 'nothingLeftToAssign'
           ? NOTHING_LEFT
           : NO_COST_TO_PREFILL,
-    spread: SOURCE.spread,
-    financeBudgetYear: SOURCE.year,
-    requestSwbs: SOURCE.requestSwbs,
   };
-  if (defaults.owner) {
-    sources.ownerId = SOURCE.owner;
-  }
   if (preselected) {
     sources.financeBudgetItemId = preselectedText(preselected.budgetName);
   }

@@ -35,9 +35,7 @@ describe('ShellAttributeValues', () => {
     expect(valueOf('Campaign code')).toBe('—');
     expect(valueOf('Target accounts')).toBe('1,200');
     expect(valueOf('Brands')).toBe('Shell Helix');
-    expect(
-      screen.getByText("Shown because the plan's business unit includes Lubricants."),
-    ).toBeInTheDocument();
+    expect(screen.queryByText(/Shown because/)).not.toBeInTheDocument();
   });
 
   it('leaves out attributes hidden for the business unit (FR-026)', () => {

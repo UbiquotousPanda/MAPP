@@ -28,23 +28,13 @@ import {
   CHANGE_IT_WITH_MOVE,
   DATES,
   DESCRIPTION,
-  FROM_THE_CAMPAIGN,
-  FROM_THE_PLAN,
   NAME_LABEL,
   outsidePlanYear,
   OWNER,
   REMAINING_CAMPAIGN_BUDGET,
   REMAINING_PLAN_BUDGET,
-  THE_CAMPAIGNS_DATES,
-  THE_PLANS_YEAR,
 } from './texts';
 import type { RecordLevel } from './texts';
-
-export interface FormDefaults {
-  ownerId: string;
-  startDate: string;
-  endDate: string;
-}
 
 export interface ParentCampaign {
   name: string;
@@ -62,7 +52,6 @@ export interface RecordFormProps {
   planId: string;
   planYear: number;
   campaign?: ParentCampaign;
-  defaults?: FormDefaults;
   parentRemaining: Money | null;
   savedBudget: Money | null;
   currency: string;
@@ -81,7 +70,6 @@ export function RecordForm({
   planId,
   planYear,
   campaign,
-  defaults,
   parentRemaining,
   savedBudget,
   currency,
@@ -95,12 +83,6 @@ export function RecordForm({
   const campaignFieldId = useId();
   const values = useWatch({ control, compute: (all: RecordFormValues) => all });
   const isCampaign = level === 'campaign';
-  const ownerDefaulted = defaults && defaults.ownerId !== '' && values.ownerId === defaults.ownerId;
-  const datesDefaulted =
-    defaults &&
-    defaults.startDate !== '' &&
-    values.startDate === defaults.startDate &&
-    values.endDate === defaults.endDate;
   const allowed =
     campaign?.startDate && campaign.endDate
       ? { start: campaign.startDate, end: campaign.endDate }
@@ -142,7 +124,6 @@ export function RecordForm({
               label={OWNER}
               marking="Needed to publish"
               tip={tip('owner')}
-              hint={ownerDefaulted ? (isCampaign ? FROM_THE_PLAN : FROM_THE_CAMPAIGN) : undefined}
               {...field}
               name={`${level}-ownerId`}
             />
@@ -161,9 +142,6 @@ export function RecordForm({
                   idPrefix={level}
                   marking="Needed to publish"
                   tip={tip('dates')}
-                  hint={
-                    datesDefaulted ? (isCampaign ? THE_PLANS_YEAR : THE_CAMPAIGNS_DATES) : undefined
-                  }
                   start={start.value}
                   end={end.value}
                   onChange={(range) => {

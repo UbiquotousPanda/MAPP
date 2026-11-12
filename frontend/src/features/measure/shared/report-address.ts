@@ -183,7 +183,7 @@ export function toQuery(address: ReportAddress): ReportQuery {
   };
 }
 
-/** Whether any filter restricts the records, the year aside (for Reset filters). */
+/** Whether any filter restricts the records, the year aside (for Clear filters). */
 export function isRestricted(address: ReportAddress): boolean {
   return (
     address.plans.length +

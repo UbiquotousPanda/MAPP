@@ -15,7 +15,7 @@ import { BudgetFigures } from './BudgetFigures';
 import { GlobalBudgetForm } from './GlobalBudgetForm';
 import { useGlobalBudgets } from './api';
 import type { GlobalBudgetSummary } from './api';
-import { emptyText, PAGE_DESCRIPTION } from './global-budgets-text';
+import { emptyText } from './global-budgets-text';
 import { yearOf } from './schemas';
 import styles from './GlobalBudgetsPage.module.css';
 
@@ -40,7 +40,6 @@ export function GlobalBudgetsPage() {
     <>
       <PageHeader
         title="Global budgets"
-        description={PAGE_DESCRIPTION}
         actions={
           <Button variant="primary" icon={<Plus />} onClick={() => setCreating(true)}>
             New global budget
@@ -56,7 +55,9 @@ export function GlobalBudgetsPage() {
               { value: 'all', label: 'All years' },
               ...years.map((choice) => ({ value: String(choice), label: String(choice) })),
             ]}
-            onChange={(value) => setParams(value === String(currentYear) ? {} : { year: value })}
+            onChange={(value) =>
+              setParams(value === String(currentYear) ? {} : { year: value }, { replace: true })
+            }
           />
           {budgets.data && <ResultCount>{plural(budgets.data.total, 'global budget')}</ResultCount>}
         </div>

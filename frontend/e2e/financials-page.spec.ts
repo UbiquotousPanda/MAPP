@@ -26,7 +26,7 @@ test('015 US3 (T030): from the sidebar, a person finds a PO, opens it and follow
   const search = page.getByRole('searchbox', { name: 'Search transactions' });
   await search.fill('keynote');
   const table = page.getByRole('table', { name: 'Transactions' });
-  await expect(page.getByRole('tab', { name: 'All (4)' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'All', exact: true })).toBeVisible();
   await expect(table.getByRole('row')).toHaveCount(5);
   for (const row of await table.getByRole('row').all()) {
     await expect(row).toContainText(/Vendor|Keynote Speakers Ltd/);

@@ -215,7 +215,7 @@ func TestTree_PlansByNameChildrenInPlanTreeOrder_FR011(t *testing.T) {
 	}
 }
 
-// A non-zero balance adds an "Unassigned planned cost (Sys_Gen_Balance)" row, negative when line items exceed it.
+// A non-zero balance adds an "Unassigned planned cost" row, negative when line items exceed it.
 func TestUnassignedRows_OnlyNonZeroBalances_FR012(t *testing.T) {
 	t.Parallel()
 	r := view(seedYear(), Query{})
@@ -232,7 +232,7 @@ func TestUnassignedRows_OnlyNonZeroBalances_FR012(t *testing.T) {
 		t.Errorf("unassigned rows = %q\nwant              %q", unassigned, want)
 	}
 	row := rowOf(r.Rows, "A-1008:unassigned")
-	if row.Name != "Unassigned planned cost (Sys_Gen_Balance)" || row.RecordID != "A-1008" || row.ActivityID != "A-1008" ||
+	if row.Name != "Unassigned planned cost" || row.RecordID != "A-1008" || row.ActivityID != "A-1008" ||
 		row.Status != nil || row.Depth != 4 || moneyText(row.PlannedCost) != "-500.00 USD" {
 		t.Errorf("unassigned row = %+v", row)
 	}

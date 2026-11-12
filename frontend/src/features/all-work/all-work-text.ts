@@ -1,4 +1,3 @@
-import { plural } from '@/format/text';
 import type { ListNoun } from '@/ui/ResultCount/count-text';
 import type { FinanceFilter, Filters, PlanType } from './all-work-types';
 
@@ -8,7 +7,6 @@ export function isLabelled<T extends string>(labels: Record<T, string>) {
 
 export const FILTER_LABELS = {
   year: 'Year',
-  years: 'Years',
   plans: 'Plan',
   planStatuses: 'Plan status',
   containerStatuses: 'Campaign / initiative status',
@@ -42,10 +40,6 @@ export const FINANCE_LABELS: Record<FinanceFilter, string> = {
 export const MAX_YEARS = 5;
 
 export const TOO_MANY_YEARS = 'Choose at most 5 years.';
-
-export function yearsText(from: number, to: number): string {
-  return to > from ? `${from}–${to}` : String(from);
-}
 
 export const PLAN_STATUS_LABELS: Record<Filters['planStatuses'][number], string> = {
   draft: 'Draft',
@@ -83,8 +77,6 @@ export const SHOW_LEVELS_LABELS: Record<Filters['showLevels'], string> = {
   initiativesWithoutActivities: 'Initiatives without activities',
 };
 
-export const ALL_WORK_DESCRIPTION = 'Filter, compare and export all planned work.';
-
 export const VIEW_LABELS = {
   grid: 'Grid',
   calendar: 'Calendar',
@@ -106,7 +98,7 @@ export const COLUMN_TIPS: Partial<Record<string, string>> = {
     'Planned cost not yet split into line items. Only positive balances are added: an activity whose line items are above its planned cost counts as zero here.',
 };
 
-export const UNASSIGNED_ROW_NAME = 'Unassigned planned cost (Sys_Gen_Balance)';
+export const UNASSIGNED_ROW_NAME = 'Unassigned planned cost';
 
 export const CONTEXT_LABEL = 'Shown for context';
 export const CONTEXT_TIP =
@@ -115,10 +107,6 @@ export const CONTEXT_TIP =
 /** The API names what it counts in the plural ("activities"); the count needs both forms. */
 export function countNoun(noun: string): ListNoun {
   return { one: noun === 'activities' ? 'activity' : noun.replace(/s$/, ''), many: noun };
-}
-
-export function totalText(activities: number): string {
-  return plural(activities, 'activity', 'activities');
 }
 
 export function negativeBalanceText(count: number): string {
@@ -137,5 +125,3 @@ export function monthsAboveText(count: number): string {
 export function leftOutMessage(names: string[]): string {
   return `Some parts of this view no longer exist and were left out: ${names.join(', ')}.`;
 }
-
-export const VIEW_GONE = 'This view no longer exists — it may have been deleted in another tab.';

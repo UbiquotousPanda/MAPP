@@ -36,10 +36,7 @@ export function SettingsPage({ sections }: { sections: SettingsSection[] }) {
 
   return (
     <>
-      <PageHeader
-        title="Settings"
-        description="Set up the lists and rules every plan uses. Changes here apply to everyone straight away."
-      />
+      <PageHeader title="Settings" description="Changes apply to everyone straight away." />
       {counts.state === 'failed' && (
         <div role="alert" className={styles.countsFailed}>
           <CircleAlert aria-hidden="true" />

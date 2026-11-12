@@ -125,7 +125,7 @@ filters and compare the "In view" counts with All work's counts for the same yea
 8. **Given** an address that names a plan, a value or a currency that no longer exists or that the reader may
    not see, **When** it is opened, **Then** the report applies everything else and says "1 filter value is no
    longer available and was left out", without naming an out-of-scope record.
-9. **Given** applied filters, **When** Priya removes one chip or presses **Reset filters**, **Then** that filter
+9. **Given** applied filters, **When** Priya removes one chip or presses **Clear filters** (D-421), **Then** that filter
    (or every filter but the year) returns to its default and the report follows at once.
 10. **Given** a report with time widgets, **When** Priya switches **Period** from Months to Quarters or chooses
     another **Currency**, **Then** every figure follows at once, the address keeps the choice,
@@ -209,7 +209,7 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 1. **Given** a year with no plans in Priya's scope, **When** the report opens, **Then** it says "No plans you may
    see for 2027" with the years that have plans, and shows no zeros as if they were figures.
 2. **Given** filters that match no record, **When** they are applied, **Then** every widget is replaced by "Your
-   filters exclude everything" with **Reset filters**.
+   filters exclude everything" with **Clear filters** (D-421).
 3. **Given** a person who may view plans but not see financial data in some of them, **When** a money figure is
    shown, **Then** it covers only the plans where they may, says "Covers 1 of 2 plans", and is "—" with "You can't
    see financial data" when it covers none.
@@ -292,10 +292,10 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - **FR-013**: Every change MUST apply at once, as on All work (039-C8): a filter value, the year, Period,
   Currency, Show, the chart or table choice and removing a chip.
 - **FR-014**: The applied filters MUST appear above the widgets as removable chips naming each restricted filter
-  ("Brand: Helix, Pennzoil"); removing a chip applies at once; **Reset filters** returns every filter but the year
-  to its default.
+  ("Brand: Helix, Pennzoil"); removing a chip applies at once; **Clear filters** returns every filter but the year
+  to its default (D-421; was **Reset filters**).
 - **FR-015**: The year, filters, period, Show choice and each widget's chart or table choice MUST live in
-  the page address, so Back, a bookmark and a shared link show the same report (constitution F3, D-368); nothing is
+  the page address, written in place so Back leaves the report (D-421), and a bookmark and a shared link show the same report (constitution F3, D-368); nothing is
   kept between visits except saved views. A value in the address that no longer exists, is inactive or is outside
   the reader's scope MUST be left out with "N filter values are no longer available and were left out", never
   naming it and never breaking the page (038 FR-012).
@@ -355,7 +355,7 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - **FR-030**: With no filters in the address and no default view, a report MUST open on: the current year, every
   plan of the year in scope, every value ticked including **Not filled in**, Months, the person's display currency.
 - **FR-031**: A report MUST say why it is empty: "No plans you may see for <year>" with the years that have plans;
-  "Your filters exclude everything" with **Reset filters**; a widget-specific "No data yet" naming what would create
+  "Your filters exclude everything" with **Clear filters** (D-421); a widget-specific "No data yet" naming what would create
   it; and never show zeros as if they were figures.
 - **FR-032**: Report pages MUST use Shell's words and the replacements of design system §8 and the build guide §7
   (Reports, Summary cards, Not filled in, Period, Saved views, Show); nothing on screen says Measure, Tactic,

@@ -14,13 +14,7 @@ import { useAttributeForm } from '@/features/settings';
 import { usePurchaseRequestList } from './api';
 import type { PurchaseRequestListPage } from './api';
 import type { Choice } from './list-filters';
-import {
-  CLEAR_FILTERS,
-  LIST_DESCRIPTION,
-  NO_MATCH,
-  NO_PURCHASE_REQUESTS,
-  NOTHING_WAITING,
-} from './list-text';
+import { CLEAR_FILTERS, NO_MATCH, NO_PURCHASE_REQUESTS, NOTHING_WAITING } from './list-text';
 import { PurchaseRequestFilters } from './PurchaseRequestFilters';
 import { NEW_PURCHASE_REQUEST, PURCHASE_REQUESTS, SWITCHED_OFF } from './purchase-request-text';
 import {
@@ -47,9 +41,9 @@ export function PurchaseRequestsPage() {
   const error = list.error instanceof ApiError ? list.error : null;
   const switchedOff = error?.kind === 'notAllowed' || list.data?.purchaseSupport === false;
 
-  /** New filters go back to page 1 unless the page itself changes; typing replaces the address. */
-  function change(patch: Partial<ListSearch>, replace = false) {
-    setParams(writeListSearch({ ...search, page: 1, ...patch }), { replace });
+  /** New filters go back to page 1 unless the page itself changes; Back leaves the page. */
+  function change(patch: Partial<ListSearch>) {
+    setParams(writeListSearch({ ...search, page: 1, ...patch }), { replace: true });
   }
 
   if (error?.kind === 'forbidden') {
@@ -60,7 +54,6 @@ export function PurchaseRequestsPage() {
     <>
       <PageHeader
         title={PURCHASE_REQUESTS}
-        description={LIST_DESCRIPTION}
         actions={
           !switchedOff && (
             <LinkButton to="/purchase-requests/new" icon={<Plus />}>
@@ -97,7 +90,7 @@ interface ToolbarProps {
   search: ListSearch;
   total: number | undefined;
   page: PurchaseRequestListPage | undefined;
-  onChange: (patch: Partial<ListSearch>, replace?: boolean) => void;
+  onChange: (patch: Partial<ListSearch>) => void;
 }
 
 /** The toolbar with the PR type options of Settings and the people to choose owners from. */

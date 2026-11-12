@@ -166,7 +166,7 @@ test('015 US2 (T025): the plan, campaign and initiative add up the same money, i
   await initiative.getByRole('link', { name: 'View all 3 transactions in Financials' }).click();
   await expect(page).toHaveURL(/\/financials\?recordId=I-1002$/);
   await expect(page.getByRole('heading', { name: 'Financials', level: 1 })).toBeVisible();
-  await expect(page.getByRole('tab', { name: 'All (3)' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'All', exact: true })).toBeVisible();
   await expect(page.getByText('3 of 3 transactions')).toBeVisible();
 
   // Scenario 4: a reader whose display currency is EUR sees every figure in EUR (USD 1 = EUR 0.90).

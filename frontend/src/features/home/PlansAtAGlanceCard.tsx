@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router';
 import { Button, LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
-import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
@@ -41,11 +40,7 @@ export function PlansAtAGlanceCard({ scope, onShowEverything }: PlansAtAGlanceCa
   const plans = useHomePlans(scope);
 
   return (
-    <Card
-      title="Plans at a glance"
-      subtitle={PLANS_AT_A_GLANCE.subtitle[scope]}
-      actions={<InfoTip label="Plans at a glance" text={PLANS_AT_A_GLANCE.tip} />}
-    >
+    <Card title="Plans at a glance">
       {plans.isPending ? (
         <Skeleton lines={4} height="18px" />
       ) : plans.isError ? (

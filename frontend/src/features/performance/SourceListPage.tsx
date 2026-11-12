@@ -24,7 +24,6 @@ import {
   FRESHNESS_WORDS,
   NEVER_LOADED,
   PERFORMANCE_DATA,
-  SETTINGS_DESCRIPTION,
 } from './performance-text';
 
 type OpenForm = { kind: 'new' } | { kind: 'edit'; source: PerformanceSource };
@@ -42,7 +41,6 @@ export function SourceListPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: PERFORMANCE_DATA }]}
         title={PERFORMANCE_DATA}
-        description={SETTINGS_DESCRIPTION}
         actions={
           <CanChange
             permission="performance.import"

@@ -33,7 +33,7 @@ export function SubmitDialog({ records, onClose, onDone }: BulkActionDialogProps
       onDone={onDone}
     >
       <TextAreaField
-        label="Comment for the approvers (optional)"
+        label="Comment for the approvers"
         name="comment"
         value={comment}
         onChange={setComment}

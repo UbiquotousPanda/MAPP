@@ -423,8 +423,8 @@ Each requirement traces to **BUS.FIN.080** unless another ID is given.
 - **FR-020** (changes 001 navigation): The sidebar's main group MUST include **Financials** after All work.
   It opens `/financials`.
 - **FR-021**: The Financials page MUST offer the following.
-  - **Tabs**: All · Purchase orders · Invoices · Payments · Accruals · Not linked, each with its count for
-    the other filters.
+  - **Tabs**: All · Purchase orders · Invoices · Payments · Accruals · Not linked, each but All with its
+    count for the other filters (D-421: All's count is the result count's total).
   - **Search** (document number, PO number, vendor code or name, SWBS code, HX key, description, linked
     line item or activity name or ID).
   - **Year**, the linked plan's year (not-linked transactions by posting year; default the current year),

@@ -1,6 +1,5 @@
-import { useEffect, useEffectEvent, useState } from 'react';
-import { DateField } from '@/ui/DateField/DateField';
-import { FilterChips } from '@/ui/FilterChips/FilterChips';
+import { DateRangeMenu } from '@/ui/DateRangeMenu/DateRangeMenu';
+import { FilterBar } from '@/ui/FilterBar/FilterBar';
 import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
 import { ResultCount } from '@/ui/ResultCount/ResultCount';
 import { SearchField } from '@/ui/SearchField/SearchField';
@@ -31,7 +30,7 @@ const NONE = ' none';
 
 export interface PurchaseRequestFiltersProps {
   search: ListSearch;
-  onChange: (patch: Partial<ListSearch>, replace?: boolean) => void;
+  onChange: (patch: Partial<ListSearch>) => void;
   /** The matching purchase requests; undefined while they load. */
   total: number | undefined;
   types: Choice[];
@@ -74,11 +73,19 @@ export function PurchaseRequestFilters(props: PurchaseRequestFiltersProps) {
   const chips = listChips(search, { types: props.types, owners: props.owners, formatDate: date });
 
   return (
-    <div className={styles.toolbar}>
-      <div className={styles.row}>
-        <div className={styles.search}>
-          <DelayedSearch value={search.q} onChange={(q) => onChange({ q }, true)} />
-        </div>
+    <FilterBar
+      className={styles.toolbar}
+      search={
+        <SearchField
+          size="sm"
+          delay={SEARCH_DELAY_MS}
+          label={SEARCH_LABEL}
+          placeholder={SEARCH_PLACEHOLDER}
+          value={search.q}
+          onChange={(q) => onChange({ q })}
+        />
+      }
+      quick={
         <SegmentedFilter
           label="View"
           options={[
@@ -88,70 +95,81 @@ export function PurchaseRequestFilters(props: PurchaseRequestFiltersProps) {
           value={search.waiting ? 'waiting' : 'all'}
           onChange={(view) => onChange({ waiting: view === 'waiting' })}
         />
-        <Select
-          label="Sort"
-          value={search.sort}
-          options={SORT_OPTIONS}
-          onChange={(value) => {
-            const sort = LIST_SORTS.find((each) => each === value);
-            if (sort) {
-              onChange({ sort });
+      }
+      inUse={filtersInUse(search)}
+      menus={
+        <>
+          <CheckFilter
+            label={FILTER_LABELS.status}
+            choices={STATUS_CHOICES}
+            chosen={search.status}
+            onChange={(chosen) =>
+              onChange({ status: STATUS_ORDER.filter((status) => chosen.includes(status)) })
             }
-          }}
-        />
-        {total !== undefined && <ResultCount>{countText(total)}</ResultCount>}
-      </div>
-      <div className={styles.row}>
-        <CheckFilter
-          label={FILTER_LABELS.status}
-          choices={STATUS_CHOICES}
-          chosen={search.status}
-          onChange={(chosen) =>
-            onChange({ status: STATUS_ORDER.filter((status) => chosen.includes(status)) })
-          }
-        />
-        <CheckFilter
-          label={FILTER_LABELS.type}
-          choices={types.choices}
-          chosen={types.chosen}
-          onChange={(chosen) =>
-            onChange({ type: without(chosen), typeNotCompleted: chosen.includes(NONE) })
-          }
-        />
-        <CheckFilter
-          label={FILTER_LABELS.vendor}
-          choices={vendors.choices}
-          chosen={vendors.chosen}
-          onChange={(chosen) =>
-            onChange({ vendor: without(chosen), vendorNotCompleted: chosen.includes(NONE) })
-          }
-        />
-        <CheckFilter
-          label={FILTER_LABELS.owner}
-          choices={props.owners}
-          chosen={search.owner}
-          onChange={(owner) => onChange({ owner })}
-        />
-        <DateField
-          compact
-          label={FILTER_LABELS.from}
-          value={search.from}
-          onChange={(from) => onChange({ from })}
-        />
-        <DateField
-          compact
-          label={FILTER_LABELS.to}
-          value={search.to}
-          onChange={(to) => onChange({ to })}
-        />
-      </div>
-      <FilterChips
-        chips={chips}
-        onRemove={(key) => onChange(withoutChip(search, key))}
-        onClearAll={() => onChange(clearedListSearch(search))}
-      />
-    </div>
+          />
+          <CheckFilter
+            label={FILTER_LABELS.type}
+            choices={types.choices}
+            chosen={types.chosen}
+            onChange={(chosen) =>
+              onChange({ type: without(chosen), typeNotCompleted: chosen.includes(NONE) })
+            }
+          />
+          <CheckFilter
+            label={FILTER_LABELS.vendor}
+            choices={vendors.choices}
+            chosen={vendors.chosen}
+            onChange={(chosen) =>
+              onChange({ vendor: without(chosen), vendorNotCompleted: chosen.includes(NONE) })
+            }
+          />
+          <CheckFilter
+            label={FILTER_LABELS.owner}
+            choices={props.owners}
+            chosen={search.owner}
+            onChange={(owner) => onChange({ owner })}
+          />
+          <DateRangeMenu
+            label={FILTER_LABELS.created}
+            legend={FILTER_LABELS.createdBetween}
+            from={search.from}
+            to={search.to}
+            onChange={(from, to) => onChange({ from, to })}
+          />
+        </>
+      }
+      end={
+        <>
+          {total !== undefined && <ResultCount>{countText(total)}</ResultCount>}
+          <Select
+            label="Sort"
+            value={search.sort}
+            options={SORT_OPTIONS}
+            onChange={(value) => {
+              const sort = LIST_SORTS.find((each) => each === value);
+              if (sort) {
+                onChange({ sort });
+              }
+            }}
+          />
+        </>
+      }
+      chips={chips}
+      onRemoveChip={(key) => onChange(withoutChip(search, key))}
+      onClearFilters={() => onChange({ ...clearedListSearch(search), q: search.q })}
+    />
   );
+}
+
+/** How many filters behind Filters (n) are in use; "Not completed" counts with its filter. */
+function filtersInUse(search: ListSearch): number {
+  return [
+    search.status.length > 0,
+    search.type.length > 0 || search.typeNotCompleted,
+    search.vendor.length > 0 || search.vendorNotCompleted,
+    search.owner.length > 0,
+    search.from !== '' || search.to !== '',
+  ].filter(Boolean).length;
 }
 
 interface CheckFilterProps {
@@ -186,28 +204,4 @@ function without(chosen: string[]): string[] {
 function withChosen(choices: Choice[], chosen: string[]): Choice[] {
   const missing = chosen.filter((value) => !choices.some((choice) => choice.value === value));
   return [...choices, ...missing.map((value) => ({ value, label: value }))];
-}
-
-/** Filters 300 ms after the last key; shows the address's search again when it changes elsewhere. */
-function DelayedSearch({ value, onChange }: { value: string; onChange: (q: string) => void }) {
-  const [draft, setDraft] = useState<{ text: string; over: string } | null>(null);
-  const text = draft && draft.over === value ? draft.text : value;
-  const apply = useEffectEvent((q: string) => onChange(q));
-
-  useEffect(() => {
-    if (!draft || draft.over !== value || draft.text === value) {
-      return;
-    }
-    const timer = setTimeout(() => apply(draft.text), SEARCH_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [draft, value]);
-
-  return (
-    <SearchField
-      label={SEARCH_LABEL}
-      placeholder={SEARCH_PLACEHOLDER}
-      value={text}
-      onChange={(next) => setDraft({ text: next, over: value })}
-    />
-  );
 }

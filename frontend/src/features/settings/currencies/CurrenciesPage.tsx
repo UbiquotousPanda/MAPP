@@ -84,7 +84,6 @@ export function CurrenciesPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Currencies' }]}
         title="Currencies"
-        description="Currencies for line items, plans and display, with their dated rates per 1 USD."
         actions={
           <CanChange permission="exchangeRates.manage">
             <>
@@ -161,11 +160,7 @@ function CurrenciesCard({ currencies, filters, actions }: CurrenciesCardProps) {
 
   // USD always exists (FR-028), so the list is never empty.
   const all = currencies.data.items;
-  const { shown, counts } = filterRecords(
-    all,
-    filters,
-    (currency) => `${currency.code} ${currency.name}`,
-  );
+  const { shown } = filterRecords(all, filters, (currency) => `${currency.code} ${currency.name}`);
 
   return (
     <Card>
@@ -176,7 +171,7 @@ function CurrenciesCard({ currencies, filters, actions }: CurrenciesCardProps) {
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: CURRENCY_NOUN }}
       />
       {shown.length === 0 ? (

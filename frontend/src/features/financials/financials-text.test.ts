@@ -43,7 +43,7 @@ describe('financialsText (015 plan, "User-visible messages")', () => {
       accrual: 2,
       notLinked: 1,
     };
-    expect(tabLabel('all', tabCounts)).toBe('All (11)');
+    expect(tabLabel('all', tabCounts)).toBe('All');
     expect(tabLabel('purchaseOrder', tabCounts)).toBe('Purchase orders (4)');
     expect(tabLabel('notLinked', undefined)).toBe('Not linked');
   });

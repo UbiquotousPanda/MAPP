@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 describe('PlansPage search', () => {
-  it('leaves the address alone once the person has moved on before the search settles (004 FR-001, FR-003)', async () => {
+  it('writes the search onto the list, never onto the page a link opens before it settles (004 FR-001, FR-003)', async () => {
     mockApi([reply('GET /api/v1/plans', { body: seedList() })]);
     // Mounted on every path, as the list stays on screen while the next page's code loads.
     const { router } = renderWithProviders(<PlansPage />, {
@@ -23,15 +23,18 @@ describe('PlansPage search', () => {
       path: '*',
     });
     const box = await screen.findByRole('searchbox', { name: 'Search plans' });
+    await screen.findAllByRole('article');
     vi.useFakeTimers();
 
-    fireEvent.change(box, { target: { value: 'Core plan' } });
     const plan = nth(
       screen
         .getAllByRole('link', { name: /.+/ })
         .filter((a) => /\/plans\/P-\d+$/.test(a.getAttribute('href') ?? '')),
       0,
     );
+    fireEvent.change(box, { target: { value: 'Core plan' } });
+    // A pointer on the link takes the focus from the box first, which settles the search.
+    fireEvent.blur(box);
     fireEvent.click(plan);
     await act(() => router.navigate(plan.getAttribute('href') ?? ''));
     await act(() => vi.advanceTimersByTimeAsync(1000));

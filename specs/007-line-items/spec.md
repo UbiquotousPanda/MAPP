@@ -29,8 +29,8 @@ that the rows, the balance, its meter and the monthly totals agree to the cent.
 1. **Given** "Launch film" (planned cost 120,000.00 USD, 1 Mar – 31 May 2026) with "Agency fee"
    50,000.00 USD and "Film production" 46,000.00 EUR, **When** the user opens the activity, **Then** each
    row shows name, ID, currency, local amount, USD amount (50,000.00 USD for the EUR line at 0.92), spread
-   method, completeness chip and SWBS request chip, and the row "Unassigned planned cost
-   (Sys_Gen_Balance)" shows 20,000.00 USD with the meter "100,000.00 of 120,000.00 USD assigned".
+   method, completeness chip and SWBS request chip, and the row "Unassigned planned cost"
+   shows 20,000.00 USD with the meter "100,000.00 of 120,000.00 USD assigned".
 2. **Given** the same activity, **Then** the grid shows Mar, Apr and May 2026 with each line item's
    amounts in USD and a totals row; **When** the user switches to **Quarterly**, **Then** the months are
    summed into Q1 and Q2 2026.
@@ -64,7 +64,8 @@ spend type and saving; confirm the unassigned balance becomes 0.00 USD.
    spread is Evenly and default finance budget "2026 Lubricants Budget", **When** the user chooses **Add
    line item**, **Then** the page opens with name "Launch film – line item", owner Priya Raman, currency
    USD, planned cost 20,000.00, spread Evenly, budget year 2026, the items of "2026 Lubricants Budget"
-   listed first and **Request SWBS code from GSAP** on — each labelled with its source — and a summary bar
+   listed first and **Request SWBS code from GSAP** on — only the planned cost labelled with its source
+   (D-422) — and a summary bar
    "Activity planned cost 120,000.00 USD · Unassigned now 20,000.00 USD · After saving 0.00 USD".
 2. **Given** the user selects EUR and types 10,000, **Then** the amount shows "= 10,869.57 USD at 0.92 EUR
    per USD" and the summary bar "After saving 9,130.43 USD".
@@ -193,10 +194,10 @@ its amount (confirmation, activity becomes *Created*), duplicate it and delete t
 - **FR-001**: The activity page's Line items section MUST list one row per line item, in creation order,
   with name (link), ID, currency, planned cost in local currency, planned cost in USD, spread method,
   completeness chip and SWBS request chip (domain model §2.4).
-- **FR-002**: Below the rows, the system row "Unassigned planned cost (Sys_Gen_Balance)" MUST show the
-  balance of domain model §4.3 with a meter "<assigned> of <planned cost> USD assigned", the message "<X>
-  not yet assigned to a line item", "All of the planned cost is assigned" at 0.00, or, in red, "Line items
-  exceed the activity's planned cost by <X>"; an ⓘ explains the formula.
+- **FR-002**: Below the rows, the system row "Unassigned planned cost" MUST show the balance of domain
+  model §4.3 with a meter "<assigned> of <planned cost> USD assigned" and, at 0.00, "All of the planned
+  cost is assigned" or, in red, "Line items exceed the activity's planned cost by <X>"; a positive balance
+  has no message beyond its amount and meter (D-422); an ⓘ explains the formula.
 - **FR-003**: The section MUST show a spread grid with one column per month of the activity plus any month
   used by a custom spread (marked "Outside the activity's dates"), a **Monthly / Quarterly** switch
   (quarters add up their months; display only), and a totals row per period and overall, in USD.
@@ -215,7 +216,8 @@ its amount (confirmation, activity becomes *Created*), duplicate it and delete t
   Cost and currency → Spread over time → Finance coding (spend type, GL code, spend category, contracted
   spend, contracted amount and any other line-item Shell attributes from feature 002) → Link to finance
   budget → GSAP request → "From finance (coming later)", collapsed.
-- **FR-008**: The form MUST pre-fill, each labelled with its source: name "<activity name> – line item"
+- **FR-008**: The form MUST pre-fill (only the planned cost labelled with its source, or with the note
+  when nothing is pre-filled, D-422): name "<activity name> – line item"
   (with " 2", " 3"… when taken); owner = activity owner; currency USD; planned cost = current unassigned
   balance when positive (otherwise empty, with a note); spread = the plan's default line-item spread;
   budget year = the plan's year; finance budget item as in FR-015; **Request SWBS code from GSAP** on

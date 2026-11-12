@@ -139,6 +139,32 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
     );
   });
 
+  it('stars and renames a view, sending the version it was read at (FR-027, FR-028)', async () => {
+    const { user, api } = renderMenu('/reports/plan-budget');
+
+    await user.click(await screen.findByRole('button', { name: /View: Europe|Saved views/ }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Manage views…' }));
+    const panel = await screen.findByRole('dialog', { name: 'Your saved views' });
+    expect(within(panel).getByRole('button', { name: 'Default Europe' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await user.click(within(panel).getByRole('button', { name: 'Default Asia' }));
+    await user.click(within(panel).getByRole('button', { name: 'Rename Asia' }));
+    const rename = await screen.findByRole('dialog', { name: 'Rename view' });
+    const name = within(rename).getByRole('textbox', { name: 'Name' });
+    await user.clear(name);
+    await user.type(name, 'Asia Pacific');
+    await user.click(within(rename).getByRole('button', { name: 'Rename view' }));
+
+    await waitFor(() =>
+      expect(api.bodiesOf(`PATCH ${VIEWS}/RV-1002`)).toEqual([
+        { version: 1, isDefault: true },
+        { version: 1, name: 'Asia Pacific' },
+      ]),
+    );
+  });
+
   it('says a view was changed in another tab instead of overwriting it (FR-028)', async () => {
     const { user, router } = renderMenu('/reports/plan-budget?owner=U-1003', {
       status: 409,

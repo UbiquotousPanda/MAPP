@@ -121,7 +121,7 @@ function MonthTable({ months }: MonthlyChartProps) {
   return (
     <div className={styles.scroll}>
       <table className={cx(dataTable.table, styles.table)}>
-        <caption>
+        <caption className="visually-hidden">
           Planned cost spread by month and actual paid by posting month, with running totals
         </caption>
         <thead>

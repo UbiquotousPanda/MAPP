@@ -3,12 +3,12 @@ import { Link } from 'react-router';
 import { InlineError } from '@/ui/InlineError/InlineError';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
+import { NumberField } from '@/ui/NumberField/NumberField';
 import type { DataField, DataSource, Widget, WidgetQuery } from '../model';
 import { widgetTypeInfo } from '../widget-types';
 import type { Need } from '../widget-types';
 import { FiltersEditor } from './FiltersEditor';
 import { MeasuresEditor } from './MeasuresEditor';
-import { NumberInput } from './NumberInput';
 import { changeSource, groupOf, withDimension, withoutMeasure } from './query-edits';
 import { choices } from './choices';
 import styles from './Inspector.module.css';
@@ -225,7 +225,7 @@ function SortAndLimit({ prefix, query, errorAt, onQuery }: SortAndLimitProps) {
           placeholder={null}
         />
       </div>
-      <NumberInput
+      <NumberField
         label="Show top"
         name={`${prefix}-limit`}
         value={query.limit}

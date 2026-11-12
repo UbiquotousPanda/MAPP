@@ -136,7 +136,7 @@ export function PurchaseRequestDecisionDialog({
           name="comment"
           render={(field) => (
             <TextAreaField
-              label={approve ? 'Comment (optional)' : 'Why are you declining it?'}
+              label={approve ? 'Comment' : 'Why are you declining it?'}
               marking={approve ? undefined : 'Required'}
               rows={3}
               maxLength={COMMENT_MAX}

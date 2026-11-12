@@ -168,11 +168,7 @@ function TeamsCard({ onNew, onOpen, actions }: TeamsCardProps) {
     );
   }
 
-  const { shown, counts } = filterRecords(
-    all,
-    filters,
-    (team) => `${team.name} ${team.description}`,
-  );
+  const { shown } = filterRecords(all, filters, (team) => `${team.name} ${team.description}`);
 
   return (
     <Card>
@@ -183,7 +179,7 @@ function TeamsCard({ onNew, onOpen, actions }: TeamsCardProps) {
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: TEAM_NOUN }}
       />
       {shown.length === 0 ? (

@@ -72,14 +72,12 @@ export function PlanCard({ plan, actions, pinned, onPinToggle }: PlanCardProps) 
         <BusinessUnitText units={plan.businessUnit} />
       </div>
       <div className={`${styles.row} ${styles.progress}`}>
-        {figures.budget ? (
+        {figures.budget && (
           <ProgressBar
             value={used}
             label="Budget used"
             tone={figures.overBudget ? 'problem' : undefined}
           />
-        ) : (
-          <span className={styles.muted}>No plan budget set</span>
         )}
       </div>
       <dl className={styles.money}>

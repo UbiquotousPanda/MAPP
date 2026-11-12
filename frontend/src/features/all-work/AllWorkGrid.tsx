@@ -4,7 +4,7 @@ import dataTable from '@/ui/Table/Table.module.css';
 import { TotalLabel } from '@/ui/Table/TotalLabel';
 import { cx } from '@/ui/cx';
 import styles from './AllWorkGrid.module.css';
-import { COLUMN_TIPS, totalText } from './all-work-text';
+import { COLUMN_TIPS } from './all-work-text';
 import type { AllWorkColumn, AllWorkResult, AllWorkRow, Sort } from './all-work-types';
 import { CellValue } from './CellValue';
 import { isNumeric } from './cell-text';
@@ -81,7 +81,7 @@ export function AllWorkGrid({
           <tfoot>
             <tr className={dataTable.total}>
               <th scope="row" className={styles.nameCell}>
-                <TotalLabel count={totalText(totals.activities)} />
+                <TotalLabel />
               </th>
               {columns.map((column, index) => (
                 <td key={column.key} className={cx(isNumeric(column) && dataTable.numeric)}>

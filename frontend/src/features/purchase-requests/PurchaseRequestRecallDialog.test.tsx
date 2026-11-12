@@ -38,7 +38,7 @@ describe('032 FR-024/FR-037: recall a change in review', () => {
       'The open level is cancelled. The approved version is restored.',
     );
     await expectNoAxeViolations();
-    await user.type(within(dialog).getByLabelText('Reason (optional)'), ' Wrong amount ');
+    await user.type(within(dialog).getByLabelText('Reason'), ' Wrong amount ');
     await user.click(within(dialog).getByRole('button', { name: 'Recall' }));
 
     expect(await screen.findByText("Change of 'PR for Stand build' recalled")).toBeVisible();

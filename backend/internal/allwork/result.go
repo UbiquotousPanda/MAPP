@@ -6,7 +6,7 @@ import (
 	"mapp/internal/platform/date"
 )
 
-const unassignedName = "Unassigned planned cost (Sys_Gen_Balance)"
+const unassignedName = "Unassigned planned cost"
 
 type input struct {
 	query      Query

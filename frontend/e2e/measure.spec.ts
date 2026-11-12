@@ -84,7 +84,7 @@ test('039 US1: a report opens on the defaults, applies each filter at once and k
   await choose(page, currency, /^EUR/);
   await expect(currency).toHaveText('EUR');
   await expect(page).not.toHaveURL(/currency=/);
-  await page.getByRole('button', { name: 'Reset filters' }).first().click();
+  await page.getByRole('button', { name: 'Clear filters' }).first().click();
   await expect(page).not.toHaveURL(/activityStatus=/);
   await choose(page, currency, /^USD/);
   await expect(currency).toHaveText('USD');

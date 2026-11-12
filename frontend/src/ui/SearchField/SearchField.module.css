@@ -1,5 +1,5 @@
-/* A 40 px input with 8 px corners like every other field (no pill), a magnifier on the left
-   and Clear search on the right. */
+/* A 40 px input (32 px in a toolbar) with 8 px corners like every other field (no pill), a
+   magnifier on the left and Clear search on the right. */
 .search {
   position: relative;
   width: 100%;
@@ -71,6 +71,15 @@
 .clear svg {
   width: 16px;
   height: 16px;
+}
+
+.small .input {
+  height: var(--control-sm);
+}
+
+.small .clear {
+  width: var(--space-6);
+  height: var(--space-6);
 }
 
 /* Phones and tablets: 16 px text, so the browser does not zoom into the field (Shell). */

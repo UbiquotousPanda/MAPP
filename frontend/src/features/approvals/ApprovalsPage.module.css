@@ -17,26 +17,6 @@
   }
 }
 
-/* The list toolbar (design system §5.2): search · Filters · the count pushed to the right end. */
 .toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
   margin-bottom: var(--space-4);
-}
-
-.search {
-  flex: 0 1 320px;
-  min-width: 0;
-}
-
-.chips {
-  margin-bottom: var(--space-4);
-}
-
-@media (max-width: 599px) {
-  .search {
-    flex-basis: 100%;
-  }
 }

@@ -30,7 +30,6 @@ export function DatasetsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Dashboards', to: '/dashboards' }, { label: 'Datasets' }]}
         title="Datasets"
-        description="Data from your own CSV and Excel files, to chart beside SP&A One data."
         actions={
           <Button variant="primary" icon={<Upload />} onClick={upload}>
             Upload data

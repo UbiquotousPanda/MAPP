@@ -54,9 +54,6 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
 
   await action(page, 'Add campaign').click();
   const campaignPanel = page.getByRole('dialog', { name: 'New campaign' });
-  await expect(campaignPanel.getByText(`Inside plan '${planName}'`)).toBeVisible();
-  await expect(campaignPanel.getByText('From the plan')).toBeVisible();
-  await expect(campaignPanel.getByText("The plan's year")).toBeVisible();
   await campaignPanel.getByRole('textbox', { name: /^Campaign name/ }).fill(campaignName);
   await campaignPanel.getByRole('textbox', { name: /^Campaign budget/ }).fill('50000');
   // Cluster (5 options) is a check-box group; Region is filled in because it has one option here,
@@ -72,8 +69,6 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   await page.getByRole('button', { name: `Actions for ${campaignName}` }).click();
   await page.getByRole('menuitem', { name: 'Add initiative' }).click();
   const initiativePanel = page.getByRole('dialog', { name: 'New initiative' });
-  await expect(initiativePanel.getByText(`Inside campaign '${campaignName}'`)).toBeVisible();
-  await expect(initiativePanel.getByText('From the campaign')).toBeVisible();
   await initiativePanel.getByRole('textbox', { name: /^Initiative name/ }).fill(initiativeName);
   await initiativePanel.getByRole('textbox', { name: /^Initiative budget/ }).fill('40000');
   await initiativePanel.getByRole('button', { name: 'Save', exact: true }).click();
@@ -87,7 +82,6 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   await expect(crumbs.getByRole('link', { name: planName, exact: true })).toBeVisible();
   await expect(crumbs.getByRole('link', { name: campaignName, exact: true })).toBeVisible();
   await expect(crumbs.getByRole('link', { name: initiativeName, exact: true })).toBeVisible();
-  await expect(page.getByText('From the initiative').first()).toBeVisible();
   await page.getByRole('textbox', { name: /^Activity name/ }).fill(activityName);
   await choose(page, page.getByLabel(/^Activity type/), /^Content production/);
   await page.getByRole('textbox', { name: /^Planned cost/ }).fill('20000');
@@ -130,7 +124,7 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   await expect(lineItemRow).toContainText('€9,200.00');
   await expect(lineItemRow).toContainText('$10,222.22');
   await expect(page.getByText('$10,222.22 of $20,000.00 assigned')).toBeVisible();
-  await expect(page.getByText('$9,777.78 not yet assigned to a line item').first()).toBeVisible();
+  await expect(page.getByText('$9,777.78', { exact: true }).first()).toBeVisible();
 
   await expect(page.getByText('Created', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: '10 fields needed' })).toBeVisible();

@@ -39,6 +39,7 @@
    below it is a card. On the grey page secondary text is Text Strong (constitution X). */
 .list {
   --ink-2: var(--ink);
+  --link: var(--ink);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -51,42 +52,6 @@
   border-radius: var(--radius-card);
   background: var(--surface);
   overflow: hidden;
-}
-
-/* One 40 px row: search · status · Filters, then the count and the layout at the right end. */
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.search {
-  flex: 1 1 240px;
-  min-width: 0;
-  max-width: 360px;
-}
-
-.status {
-  min-width: 0;
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-.end {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
-  margin-left: auto;
-}
-
-.chips {
-  --link: var(--ink);
-
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
 }
 
 .hint {
@@ -118,27 +83,5 @@
 @media (min-width: 1280px) {
   .cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-/* Phones: the layout moves into the Filters menu; the count stays for screen readers (the status
-   buttons and the summary show the numbers). */
-@media (max-width: 599px) {
-  .search {
-    flex-basis: 100%;
-    max-width: none;
-  }
-
-  .layout {
-    display: none;
-  }
-
-  .end {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 }

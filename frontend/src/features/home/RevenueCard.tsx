@@ -52,7 +52,7 @@ function RevenueFigures() {
   return (
     <Card
       title="Revenue this year"
-      subtitle="Every plan you can see, against its activities' goals"
+      subtitle="All plans you can see"
       actions={
         <LinkButton to={SUMMARY_REPORT_HREF} size="sm">
           Open Summary report

@@ -66,9 +66,6 @@ describe('ActivityAttributes and ActivityGoals (feature 006, FR-014, FR-015, FR-
     expect(screen.getByRole('region', { name: 'Shell attributes' })).toBeVisible();
     expect(value('Brands')).toHaveTextContent('Shell Helix');
     expect(value('Cluster')).toHaveTextContent('—');
-    expect(
-      screen.getByText("Shown because the plan's business unit includes Lubricants."),
-    ).toBeVisible();
     expect(screen.queryByText('Fleet card')).not.toBeInTheDocument();
   });
 

@@ -13,13 +13,15 @@ interface GlobalBudgetsPanelProps {
 export function GlobalBudgetsPanel({ budgets }: GlobalBudgetsPanelProps) {
   const { money } = useFormatters();
   return (
-    <Card title="Global budgets" subtitle="As the Global budgets page counts them">
+    <Card title="Global budgets">
       {budgets.length === 0 ? (
         <p className={styles.note}>No global budgets for this year.</p>
       ) : (
         <div className={styles.scroll}>
           <table className={cx(dataTable.table, styles.table)}>
-            <caption>Global budgets of the year and their allocations</caption>
+            <caption className="visually-hidden">
+              Global budgets of the year and their allocations
+            </caption>
             <thead>
               <tr>
                 {['Global budget', 'Amount', 'Allocated', 'Unallocated', 'Planned cost'].map(

@@ -35,7 +35,7 @@ export function AccessPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Roles and access' }]}
         title="Roles and access"
-        description="Who can see and change what, by role and market. Changes apply on each person's next action."
+        description="Changes apply on each person's next action."
       />
       <div className={styles.page}>
         <Tabs label="Roles and access" tabs={TABS} value={tab} onChange={chooseTab}>

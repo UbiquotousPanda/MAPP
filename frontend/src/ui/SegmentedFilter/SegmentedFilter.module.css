@@ -43,11 +43,9 @@
   z-index: 1;
 }
 
-/* The chosen choice: a quiet ink tint, a strong border and bold text; also told by aria-pressed. */
+/* Chosen: tint and bold only; a strong border would overlap its neighbours' as a bright seam in dark mode. */
 .pressed,
 .pressed:hover {
-  position: relative;
-  border-color: var(--control-border-hover);
   background: color-mix(in srgb, var(--ink) 14%, var(--surface));
   color: var(--ink);
   font-weight: var(--weight-bold);

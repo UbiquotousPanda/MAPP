@@ -65,7 +65,7 @@ export function CostFields({
         note={
           currency && !currency.active
             ? inactiveCurrencyNote(currency.code, formatRate(currency.ratePerUsd))
-            : state.sources.currency
+            : undefined
         }
       />
       <div>

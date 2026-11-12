@@ -82,7 +82,7 @@ export function WorkflowList({ all, filters, onNew, actions }: WorkflowListProps
 function WorkflowTable({ all, filters, actions }: Omit<WorkflowListProps, 'onNew'>) {
   const { approves, setApproves, clear } = useApprovesFilter();
   const ofKind = all.filter((workflow) => approves === ALL || workflow.objectType === approves);
-  const { shown, counts } = filterRecords(ofKind, filters, (workflow) => workflow.name);
+  const { shown } = filterRecords(ofKind, filters, (workflow) => workflow.name);
   const kindOptions = [
     { value: ALL, label: 'Any' },
     ...OBJECT_TYPES.map((type) => ({
@@ -101,7 +101,7 @@ function WorkflowTable({ all, filters, actions }: Omit<WorkflowListProps, 'onNew
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         filters={
           <SegmentedFilter
             label="Approves"

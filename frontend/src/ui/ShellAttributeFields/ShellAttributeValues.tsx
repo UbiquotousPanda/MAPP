@@ -2,13 +2,7 @@ import { Link } from 'react-router';
 import { businessUnitOf, isEmptyValue, isVisible } from './rules';
 import type { AttributeForm, AttributeValues } from './rules';
 import styles from './ShellAttributeFields.module.css';
-import {
-  conditionUnits,
-  hasConditions,
-  NO_BUSINESS_UNIT_NOTE,
-  shownBecauseText,
-  valueText,
-} from './texts';
+import { hasConditions, NO_BUSINESS_UNIT_NOTE, valueText } from './texts';
 
 export interface ShellAttributeValuesProps {
   form: AttributeForm;
@@ -61,9 +55,6 @@ export function ShellAttributeValues({
         return (
           <div key={section.name} className={styles.section}>
             {Heading && <Heading className={styles.heading}>{section.name}</Heading>}
-            {section.conditional && (
-              <p className={styles.note}>{shownBecauseText(conditionUnits(form, shown, units))}</p>
-            )}
             <dl className={styles.values}>
               {shown.map((attribute) => (
                 <div key={attribute.id} className={styles.pair}>

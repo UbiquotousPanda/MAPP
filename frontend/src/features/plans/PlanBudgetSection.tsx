@@ -226,7 +226,6 @@ function CurrencyField(props: CurrencyFieldProps) {
       value={value}
       onChange={onChange}
       disabledReason={lock}
-      note="All amounts in this plan use this currency."
       error={error}
     />
   );

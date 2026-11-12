@@ -44,7 +44,6 @@ describe('AttentionCard', () => {
     expect(
       item.getByRole('link', { name: "Open approval for activity 'Launch film'" }),
     ).toHaveAttribute('href', '/plans/P-1001/activities/A-1042#approval');
-    expect(card()).toHaveTextContent('Things you own that have a problem');
   });
 
   it('says what each reason is and links to where it is fixed (FR-011, US3 scenarios 2 and 3)', async () => {

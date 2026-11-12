@@ -85,7 +85,7 @@ export function SubmitDialog({
           name="comment"
           render={(field) => (
             <TextAreaField
-              label="Comment for the approvers (optional)"
+              label="Comment for the approvers"
               rows={3}
               maxLength={COMMENT_MAX}
               {...field}

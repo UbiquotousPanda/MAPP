@@ -139,7 +139,7 @@ function FrameBody({ data, address, onReset, comingSoon, children }: FrameBodyPr
         text="No record matches every filter."
         action={
           <Button type="button" variant="secondary" onClick={onReset}>
-            Reset filters
+            Clear filters
           </Button>
         }
       />

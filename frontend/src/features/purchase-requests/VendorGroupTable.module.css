@@ -26,11 +26,6 @@
   font-weight: var(--weight-bold);
 }
 
-.muted {
-  color: var(--ink);
-  font-weight: var(--weight-regular);
-}
-
 .name {
   display: flex;
   align-items: flex-start;
@@ -49,12 +44,4 @@
 .linesRow > td {
   padding-left: calc(var(--card-padding) + var(--space-6));
   background: var(--surface);
-}
-
-.linesCaption {
-  padding-bottom: var(--space-2);
-  color: var(--ink-2);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  text-align: left;
 }

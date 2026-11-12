@@ -69,7 +69,7 @@ export function ModelsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Models' }]}
         title="Models"
-        description="The rulebooks plans use. Changes apply to every plan using the model."
+        description="Changes apply to every plan using the model."
         actions={
           <CanChange>
             <Button variant="primary" icon={<Plus />} onClick={newModel}>
@@ -147,7 +147,7 @@ function ModelsCard({ models, filters, actions, onNew }: ModelsCardProps) {
     );
   }
 
-  const { shown, counts } = filterRecords(all, filters, (model) => model.name);
+  const { shown } = filterRecords(all, filters, (model) => model.name);
 
   return (
     <Card>
@@ -158,7 +158,7 @@ function ModelsCard({ models, filters, actions, onNew }: ModelsCardProps) {
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: MODEL_NOUN }}
       />
       {shown.length === 0 ? (

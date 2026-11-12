@@ -119,7 +119,7 @@ export function ImportRatesPage() {
           { label: 'Import GSAP rates' },
         ]}
         title="Import GSAP rates"
-        description="Import the GSAP daily rate extract until GSAP sends rates by itself. SP&A One reads the file and connects to no system."
+        description="Import the GSAP daily rate extract."
       />
       <div className={styles.stack}>
         <Card title="Rate file">

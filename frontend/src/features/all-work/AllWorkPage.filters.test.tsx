@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { closestTo } from '@/testing/dom';
+import { openFilters } from '@/testing/filters';
 import { gridResult } from '@/testing/fixtures/all-work';
 import { renderAllWorkPage, rowNames, viewQueries } from '@/testing/fixtures/all-work-page';
 import { reply } from '@/testing/replies';
@@ -39,6 +40,8 @@ describe('AllWorkPage filters and search (US2)', () => {
     ]);
     expect(await screen.findByText('3 of 3 activities')).toBeInTheDocument();
 
+    await openFilters(user);
+
     await user.click(screen.getByRole('button', { name: 'Activity status' }));
     await user.click(
       within(await screen.findByRole('dialog', { name: 'Activity status' })).getByRole('checkbox', {
@@ -57,7 +60,7 @@ describe('AllWorkPage filters and search (US2)', () => {
       'Helix launch',
       'Helix digital',
       'Helix social ads',
-      'Total 3 activities',
+      'Total',
     ]);
     expect(screen.getAllByText('Shown for context')).toHaveLength(3);
     const summary = screen.getByRole('region', { name: 'Summary' });
@@ -92,7 +95,7 @@ describe('AllWorkPage filters and search (US2)', () => {
       'Helix launch',
       'Helix digital',
       'Helix social ads',
-      'Total 3 activities',
+      'Total',
     ]);
     const activity = closestTo(screen.getByRole('rowheader', { name: /Helix social ads/ }), 'tr');
     expect([...activity.querySelectorAll('mark')].map((mark) => mark.textContent)).toEqual([
@@ -109,6 +112,7 @@ describe('AllWorkPage filters and search (US2)', () => {
       ),
     ]);
     await screen.findByText('3 of 3 activities');
+    await openFilters(user);
     await user.click(screen.getByRole('button', { name: 'Activity status' }));
     await user.click(
       within(await screen.findByRole('dialog')).getByRole('checkbox', { name: 'Declined' }),

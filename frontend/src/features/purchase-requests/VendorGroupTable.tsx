@@ -14,7 +14,7 @@ import type {
   PurchaseRequestVendorGroup,
 } from './api';
 import { HxKey } from './HxKey';
-import { countText, NOT_COMPLETED, TABLE_LABEL, WAITING_MARK } from './list-text';
+import { NOT_COMPLETED, TABLE_LABEL, WAITING_MARK } from './list-text';
 import { FIELD_LABELS, FILLED_BY_GSAP, HX_LABEL, linesText } from './purchase-request-text';
 import { PurchaseRequestStatusChip } from './PurchaseRequestStatusChip';
 import styles from './VendorGroupTable.module.css';
@@ -90,7 +90,6 @@ function VendorGroup({ group, rows, open, onToggle }: VendorGroupProps) {
       <tr className={styles.vendor}>
         <th scope="rowgroup" colSpan={3}>
           <span className={styles.vendorName}>{group.label || NOT_COMPLETED}</span>
-          <span className={styles.muted}> · {countText(group.purchaseRequests)}</span>
         </th>
         <td className={dataTable.numeric}>{money(group.amountDisplay)}</td>
         <td className={dataTable.numeric}>{money(group.invoicedDisplay)}</td>
@@ -170,7 +169,7 @@ function LinesTable({ name, lines }: { name: string; lines: PurchaseRequestRowLi
   const { money, date } = useFormatters();
   return (
     <table className={dataTable.table}>
-      <caption className={styles.linesCaption}>{`${linesText(lines.length)} of ${name}`}</caption>
+      <caption className="visually-hidden">{`${linesText(lines.length)} of ${name}`}</caption>
       <thead>
         <tr>
           {LINE_COLUMNS.map((column) => (

@@ -33,11 +33,6 @@ const TITLES: Record<DashboardKind, string> = {
   regional: 'Regional dashboard',
 };
 
-const DESCRIPTIONS: Record<DashboardKind, string> = {
-  executive: 'Budget, planned cost and spend of every market you can see.',
-  regional: 'Budget, planned cost and spend of one market, plan by plan.',
-};
-
 interface DashboardsPageProps {
   kind: DashboardKind;
 }
@@ -75,7 +70,6 @@ export function DashboardsPage({ kind }: DashboardsPageProps) {
       <PageHeader
         eyebrow="Dashboards"
         title={TITLES[kind]}
-        description={DESCRIPTIONS[kind]}
         actions={
           dashboard.data?.canExport && (
             <ExportMenu

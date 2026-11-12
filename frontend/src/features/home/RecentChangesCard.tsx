@@ -9,7 +9,7 @@ import { RelativeTime } from '@/ui/RelativeTime/RelativeTime';
 import { isPlanningType, recordHref } from '@/ui/record-links';
 import { useHomeRecentChanges } from './api';
 import type { ActivityLogEntry, HomeScope } from './api';
-import { RECENT_CHANGES, initialsOf, recentSentence } from './home-text';
+import { NO_RECENT_CHANGES, initialsOf, recentSentence } from './home-text';
 import styles from './RecentChangesCard.module.css';
 import { SectionError } from './SectionError';
 
@@ -20,7 +20,6 @@ export function RecentChangesCard({ scope }: { scope: HomeScope }) {
   return (
     <Card
       title="Recent changes"
-      subtitle={RECENT_CHANGES.subtitle[scope]}
       actions={
         <LinkButton size="sm" to="/activity-log">
           View activity log
@@ -32,7 +31,7 @@ export function RecentChangesCard({ scope }: { scope: HomeScope }) {
       ) : changes.isError ? (
         <SectionError onRetry={() => void changes.refetch()} />
       ) : changes.data.items.length === 0 ? (
-        <EmptyState compact icon={<History />} title={RECENT_CHANGES.empty} />
+        <EmptyState compact icon={<History />} title={NO_RECENT_CHANGES} />
       ) : (
         <ul className={styles.entries}>
           {changes.data.items.map((entry) => (

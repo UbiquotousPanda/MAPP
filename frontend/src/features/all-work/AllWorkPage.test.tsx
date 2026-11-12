@@ -28,7 +28,6 @@ describe('AllWorkPage (US1)', () => {
     const { api } = renderAllWorkPage();
 
     expect(screen.getByRole('heading', { level: 1, name: 'All work' })).toBeInTheDocument();
-    expect(screen.getByText('Filter, compare and export all planned work.')).toBeInTheDocument();
     expect(document.title).toBe('All work · SP&A One');
     // Nothing is created here: Views and Export are the page's only actions (FR-002).
     expect(await screen.findByRole('button', { name: 'Export' })).toBeInTheDocument();
@@ -51,7 +50,7 @@ describe('AllWorkPage (US1)', () => {
       'Fleet roadshow',
       'FY2026 Mobility China',
       'Retail push',
-      'Total 3 activities',
+      'Total',
     ]);
 
     const query = nth(viewQueries(api), 0);
@@ -123,7 +122,8 @@ describe('AllWorkPage (US1)', () => {
     expect(nth(viewQueries(api), 0).getAll('owner')).toEqual(['U-1003']);
     expect(router.state.location.search).toBe('?year=2026&activityStatus=complete&owner=U-1003');
 
-    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    // The empty state's Clear filters, after the chips' own.
+    await user.click(nth(screen.getAllByRole('button', { name: 'Clear filters' }), -1));
 
     expect(await screen.findByRole('link', { name: 'Helix launch' })).toBeInTheDocument();
     const last = viewQueries(api).at(-1);
@@ -137,23 +137,17 @@ describe('AllWorkPage (US1)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Expand all' }));
     expect(rowNames()).toContain('Venue hire');
-    expect(
-      rowNames().filter((name) => name === 'Unassigned planned cost (Sys_Gen_Balance)'),
-    ).toHaveLength(2);
+    expect(rowNames().filter((name) => name === 'Unassigned planned cost')).toHaveLength(2);
 
     const unassigned = screen.getByRole('switch', { name: 'Unassigned planned cost' });
     expect(unassigned).toHaveAttribute('aria-checked', 'true');
     await user.click(unassigned);
     expect(unassigned).toHaveAttribute('aria-checked', 'false');
-    expect(rowNames()).not.toContain('Unassigned planned cost (Sys_Gen_Balance)');
+    expect(rowNames()).not.toContain('Unassigned planned cost');
     expect(rowNames()).toContain('Venue hire');
 
     await user.click(screen.getByRole('button', { name: 'Collapse all' }));
-    expect(rowNames()).toEqual([
-      'FY2026 Lubricants Europe',
-      'FY2026 Mobility China',
-      'Total 3 activities',
-    ]);
+    expect(rowNames()).toEqual(['FY2026 Lubricants Europe', 'FY2026 Mobility China', 'Total']);
   });
 
   it('says when the data was read and asks again with Refresh', async () => {
@@ -262,7 +256,7 @@ describe('AllWorkPage (US1)', () => {
     expect(
       screen.getByText('Continued: FY2026 Lubricants Europe › Helix launch › Helix digital'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('rowheader', { name: 'Total 60 activities' })).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'Total' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
 
     await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '100');

@@ -9,7 +9,6 @@ import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { differentCurrency } from './plan-currency';
 import type { Plan } from './api';
 import styles from './PlanSummaryCards.module.css';
-import { APPROVAL_PROGRESS } from './plan-text';
 
 type Money = components['schemas']['Money'];
 type PlanAllocation = components['schemas']['PlanAllocation'];
@@ -73,10 +72,8 @@ export function PlanSummaryCards({ plan }: PlanSummaryCardsProps) {
               label="Budget used"
               tone={figures.overBudget ? 'problem' : undefined}
             />
-          ) : figures.budget ? (
-            <span>Plan budget is 0</span>
           ) : (
-            noBudget
+            figures.budget && <span>Plan budget is 0</span>
           )
         }
       />
@@ -86,7 +83,7 @@ export function PlanSummaryCards({ plan }: PlanSummaryCardsProps) {
           figures.activities === 0 ? '—' : `${figures.activitiesApproved} of ${figures.activities}`
         }
         tip={help('plan.activitiesApproved')}
-        detail={<span>{APPROVAL_PROGRESS[figures.approvalProgress].word}</span>}
+        detail={figures.approvalProgress === 'noActivities' && <span>No activities yet</span>}
       />
     </StatStrip>
   );

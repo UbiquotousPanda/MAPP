@@ -109,7 +109,7 @@ test('017 (T048 journey 6): the workflow form with conditions and errors and the
     const end = form.getByRole('textbox', { name: 'End date' });
     await tabTo(page, end);
     await end.fill(isoDate(2));
-    await tabTo(page, form.getByRole('textbox', { name: 'Note (optional)' }));
+    await tabTo(page, form.getByRole('textbox', { name: 'Note' }));
     await page.keyboard.type('Away at a customer workshop');
     await expectNoAxeViolations(page);
     await tabTo(page, form.getByRole('button', { name: 'Save', exact: true }));

@@ -87,7 +87,6 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
               maxLength={120}
               {...field}
               onChange={(value) => change('name', value)}
-              hint={state.sources.name}
             />
           )}
         />
@@ -101,7 +100,6 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
               marking="Needed to submit"
               {...field}
               onChange={(value) => change('ownerId', value)}
-              hint={state.sources.ownerId}
             />
           )}
         />
@@ -139,7 +137,6 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
           dates={dates}
           customMonths={state.customMonths}
           customTyped={state.customTyped}
-          source={state.sources.spread}
           problems={problems}
           onMethodChange={(method) =>
             update((s) => changeSpreadMethod(s, method, dates, activity.planYear))
@@ -204,7 +201,7 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
               name={field.name}
               checked={field.value}
               onChange={(checked) => change('requestSwbs', checked)}
-              hint={[SWBS_HELP, state.sources.requestSwbs].filter(Boolean).join(' ')}
+              hint={SWBS_HELP}
               error={field.error}
               disabledReason={props.storedSwbsCode ? SWBS_KEPT_ON : undefined}
             />

@@ -30,10 +30,7 @@ export function ProfilePage() {
 
   return (
     <>
-      <PageHeader
-        title="My profile"
-        description="Your details, teams and access, and how SP&A One shows dates and money to you."
-      />
+      <PageHeader title="My profile" />
       <div className={styles.cards}>
         <DetailsCard user={user} onEdit={() => setOpen('details')} />
         <PreferencesCard onEdit={() => setOpen('preferences')} />

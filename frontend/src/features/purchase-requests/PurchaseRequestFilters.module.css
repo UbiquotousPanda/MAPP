@@ -1,29 +1,5 @@
-/* The list toolbar (design system §5.2): two rows of controls, then the chips of the filters in use. */
+/* The list toolbar (design system §5.2) across the top of the card. */
 .toolbar {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   padding: var(--space-4) var(--card-padding);
   border-bottom: 1px solid var(--hairline);
-}
-
-/* Controls side by side on one centre line; they wrap when narrow. */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3) var(--space-2);
-}
-
-.search {
-  flex: 1 1 320px;
-  min-width: 0;
-  max-width: 480px;
-}
-
-@media (max-width: 599px) {
-  .search {
-    flex-basis: 100%;
-    max-width: none;
-  }
 }

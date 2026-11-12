@@ -1,12 +1,7 @@
-import { useId } from 'react';
-import { Button } from '@/ui/Button/Button';
-import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
-import { DateField } from '@/ui/DateField/DateField';
-import { FiltersButton } from '@/ui/FilterMenuButton/FilterMenuButton';
-import { Popover } from '@/ui/Popover/Popover';
-import { NO_FILTERS, filtersInUse } from './approval-filters';
+import { DateRangeMenu } from '@/ui/DateRangeMenu/DateRangeMenu';
+import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
+import type { ChoiceOption } from '@/ui/ChoiceField/ChoiceField';
 import type { ApprovalFilterOptions, ApprovalFilterValues } from './approval-filters';
-import styles from './ApprovalsFilters.module.css';
 
 export interface ApprovalsFiltersProps {
   filters: ApprovalFilterValues;
@@ -15,72 +10,41 @@ export interface ApprovalsFiltersProps {
   onChange: (filters: ApprovalFilterValues) => void;
 }
 
+type OneValueKey = 'kind' | 'planId' | 'workflowId' | 'ownerId';
+
 /** The choices come from the tab's rows, so no filter offers a value that matches nothing. */
 export function ApprovalsFilters({ filters, options, onChange }: ApprovalsFiltersProps) {
-  const id = useId();
-  const inUse = filtersInUse(filters);
   const set = (change: Partial<ApprovalFilterValues>) => onChange({ ...filters, ...change });
-
+  const menu = (key: OneValueKey, label: string, any: string, choices: ChoiceOption[]) => (
+    <FilterMenu
+      label={label}
+      multiple={false}
+      choices={[
+        { value: '', label: any },
+        ...choices.map((choice) => ({ value: choice.id, label: choice.label })),
+      ]}
+      selected={[filters[key]]}
+      summary={
+        filters[key]
+          ? (choices.find((c) => c.id === filters[key])?.label ?? filters[key])
+          : undefined
+      }
+      onChange={([value = '']) => set({ [key]: value })}
+    />
+  );
   return (
-    <Popover.Root>
-      <Popover.Trigger asChild>
-        <FiltersButton count={inUse} />
-      </Popover.Trigger>
-      <Popover.Content width="lg" padding="lg" sideOffset={8} aria-label="Filters">
-        <div className={styles.fields}>
-          <ChoiceField
-            label="Record type"
-            name={`${id}-kind`}
-            options={options.kinds}
-            value={filters.kind}
-            onChange={(kind) => set({ kind })}
-          />
-          <ChoiceField
-            label="Plan"
-            name={`${id}-plan`}
-            options={options.plans}
-            value={filters.planId}
-            onChange={(planId) => set({ planId })}
-          />
-          <ChoiceField
-            label="Approval workflow"
-            name={`${id}-workflow`}
-            options={options.workflows}
-            value={filters.workflowId}
-            onChange={(workflowId) => set({ workflowId })}
-          />
-          <ChoiceField
-            label="Owner"
-            name={`${id}-owner`}
-            options={options.owners}
-            value={filters.ownerId}
-            onChange={(ownerId) => set({ ownerId })}
-          />
-          <div className={styles.dates}>
-            <DateField
-              name={`${id}-from`}
-              label="Submitted from"
-              value={filters.from}
-              max={filters.to || undefined}
-              onChange={(from) => set({ from })}
-            />
-            <DateField
-              name={`${id}-to`}
-              label="Submitted to"
-              value={filters.to}
-              min={filters.from || undefined}
-              onChange={(to) => set({ to })}
-            />
-          </div>
-        </div>
-        {inUse > 0 && (
-          <div className={styles.footer}>
-            <Button variant="tertiary" size="sm" onClick={() => onChange(NO_FILTERS)}>
-              Clear filters
-            </Button>
-          </div>
-        )}
-      </Popover.Content>
-    </Popover.Root>
+    <>
+      {menu('kind', 'Record type', 'Any record type', options.kinds)}
+      {menu('planId', 'Plan', 'Any plan', options.plans)}
+      {menu('workflowId', 'Approval workflow', 'Any workflow', options.workflows)}
+      {menu('ownerId', 'Owner', 'Anyone', options.owners)}
+      <DateRangeMenu
+        label="Submitted"
+        legend="Submitted between"
+        from={filters.from}
+        to={filters.to}
+        onChange={(from, to) => set({ from, to })}
+      />
+    </>
   );
 }

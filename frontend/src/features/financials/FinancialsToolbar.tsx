@@ -1,14 +1,16 @@
-import { FilterChips } from '@/ui/FilterChips/FilterChips';
+import { FilterBar } from '@/ui/FilterBar/FilterBar';
 import type { FilterChip } from '@/ui/FilterChips/FilterChips';
+import { SearchField } from '@/ui/SearchField/SearchField';
 import { Select } from '@/ui/Select/Select';
 import { ResultCount } from '@/ui/ResultCount/ResultCount';
 import { countText } from '@/ui/ResultCount/count-text';
 import type { FinancialRecordRef, FinancialTransactionPage } from './api';
-import { DelayedSearch } from './DelayedSearch';
 import { clearedFilters } from './financials-links';
 import type { FinancialFilters } from './financials-links';
-import { TRANSACTIONS } from './financials-text';
+import { SEARCH_PLACEHOLDER, TRANSACTIONS } from './financials-text';
 import styles from './FinancialsPage.module.css';
+
+const SEARCH_DELAY_MS = 300;
 
 const LEVEL_WORDS: Record<FinancialRecordRef['type'], string> = {
   plan: 'Plan',
@@ -23,10 +25,10 @@ const LEVEL_WORDS: Record<FinancialRecordRef['type'], string> = {
 interface FinancialsToolbarProps {
   filters: FinancialFilters;
   page: FinancialTransactionPage | undefined;
-  onChange: (patch: Partial<FinancialFilters>, replace?: boolean) => void;
+  onChange: (patch: Partial<FinancialFilters>) => void;
 }
 
-/** Search, Year and Plan, the count at the end; the record and plan filters as chips below. */
+/** Search, Year and Plan (no Filters (n): these are all its filters), the count; chips below. */
 export function FinancialsToolbar({ filters, page, onChange }: FinancialsToolbarProps) {
   const choices = page?.choices;
   const year = filters.year ?? page?.year ?? choices?.currentYear;
@@ -49,31 +51,41 @@ export function FinancialsToolbar({ filters, page, onChange }: FinancialsToolbar
   }
 
   return (
-    <div className={styles.toolbar}>
-      <div className={styles.row}>
-        <div className={styles.search}>
-          <DelayedSearch value={filters.q} onChange={(q) => onChange({ q }, true)} />
-        </div>
-        <Select
-          label="Year"
-          value={year === undefined ? '' : String(year)}
-          options={years.map((choice) => ({ value: String(choice), label: String(choice) }))}
-          onChange={(value) => onChange({ year: Number(value), planId: '' })}
+    <FilterBar
+      className={styles.toolbar}
+      search={
+        <SearchField
+          size="sm"
+          delay={SEARCH_DELAY_MS}
+          label="Search transactions"
+          placeholder={SEARCH_PLACEHOLDER}
+          value={filters.q}
+          onChange={(q) => onChange({ q })}
         />
-        <Select
-          label="Plan"
-          value={filters.planId}
-          options={planOptions(plans, filters.planId)}
-          onChange={(planId) => onChange({ planId })}
-        />
-        {page && <ResultCount>{countText(page.total, page.counts.all, TRANSACTIONS)}</ResultCount>}
-      </div>
-      <FilterChips
-        chips={chips}
-        onRemove={(key) => onChange({ [key]: '' })}
-        onClearAll={() => onChange(clearedFilters(filters))}
-      />
-    </div>
+      }
+      quick={
+        <>
+          <Select
+            label="Year"
+            value={year === undefined ? '' : String(year)}
+            options={years.map((choice) => ({ value: String(choice), label: String(choice) }))}
+            onChange={(value) => onChange({ year: Number(value), planId: '' })}
+          />
+          <Select
+            label="Plan"
+            value={filters.planId}
+            options={planOptions(plans, filters.planId)}
+            onChange={(planId) => onChange({ planId })}
+          />
+        </>
+      }
+      end={
+        page && <ResultCount>{countText(page.total, page.counts.all, TRANSACTIONS)}</ResultCount>
+      }
+      chips={chips}
+      onRemoveChip={(key) => onChange({ [key]: '' })}
+      onClearFilters={() => onChange(clearedFilters(filters))}
+    />
   );
 }
 

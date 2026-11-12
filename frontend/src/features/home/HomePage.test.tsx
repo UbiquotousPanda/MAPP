@@ -156,9 +156,7 @@ describe('HomePage', () => {
       'false',
     );
     expect(
-      screen.getByText(
-        'Your own activities, what needs your attention and your approvals always cover all plans.',
-      ),
+      screen.getByText('My activities, attention and approvals always cover all plans.'),
     ).toBeInTheDocument();
     expect(await screen.findByRole('region', { name: 'Plans at a glance' })).toBeInTheDocument();
   });
@@ -176,7 +174,6 @@ describe('HomePage', () => {
     expect(
       await screen.findByRole('link', { name: 'All plans: 0 — open the Plans list' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Live roll-up across all plans')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Everything' })).toHaveAttribute(
       'aria-pressed',
       'true',

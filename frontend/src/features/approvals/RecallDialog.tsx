@@ -96,7 +96,7 @@ export function RecallDialog({ approval, onClose }: RecallDialogProps) {
           name="reason"
           render={(field) => (
             <TextAreaField
-              label="Reason (optional)"
+              label="Reason"
               rows={3}
               maxLength={REASON_MAX}
               {...field}

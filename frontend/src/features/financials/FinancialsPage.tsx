@@ -19,15 +19,7 @@ import { useFinancialTransactions } from './api';
 import type { FinancialTransactionPage } from './api';
 import { clearedFilters, filtersInUse, TABS, writeFilters } from './financials-links';
 import type { FinancialFilters, FinancialTab } from './financials-links';
-import {
-  NO_ACCESS,
-  NO_DATA,
-  NO_MATCH,
-  PAGE_SUBTITLE,
-  sourceLine,
-  TAB_LABELS,
-  tabLabel,
-} from './financials-text';
+import { NO_ACCESS, NO_DATA, NO_MATCH, sourceLine, TAB_LABELS, tabLabel } from './financials-text';
 import { FinancialsToolbar } from './FinancialsToolbar';
 import { FinancialTotals } from './FinancialTotals';
 import { ImportDialog } from './ImportDialog';
@@ -57,16 +49,15 @@ export function FinancialsPage() {
   const forbidden =
     transactions.error instanceof ApiError && transactions.error.kind === 'forbidden';
 
-  /** New filters: back to page 1 unless the page itself changes; typing replaces the address. */
-  function change(patch: Partial<FinancialFilters>, replace = false) {
-    setParams(writeFilters({ ...filters, page: 1, ...patch }), { replace });
+  /** New filters: back to page 1 unless the page itself changes; Back leaves the page. */
+  function change(patch: Partial<FinancialFilters>) {
+    setParams(writeFilters({ ...filters, page: 1, ...patch }), { replace: true });
   }
 
   return (
     <>
       <PageHeader
         title="Financials"
-        description={PAGE_SUBTITLE}
         actions={
           <>
             <Button variant="tertiary" icon={<History />} onClick={() => setOpen('history')}>

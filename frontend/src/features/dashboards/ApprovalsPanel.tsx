@@ -29,7 +29,7 @@ export function ApprovalsPanel({ approvals }: ApprovalsPanelProps) {
     },
   ];
   return (
-    <Card title="Approvals" subtitle="Activities and purchase requests of these plans">
+    <Card title="Approvals">
       {none && <p className={styles.note}>No approvals yet.</p>}
       <dl className={styles.stats}>
         {stats.map((stat) => (
@@ -40,7 +40,7 @@ export function ApprovalsPanel({ approvals }: ApprovalsPanelProps) {
         ))}
       </dl>
       <table className={cx(dataTable.table, styles.table)}>
-        <caption>Activities by approval status</caption>
+        <caption className="visually-hidden">Activities by approval status</caption>
         <thead>
           <tr>
             <th scope="col">Status</th>

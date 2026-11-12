@@ -38,13 +38,6 @@
   overflow-x: auto;
 }
 
-.table caption {
-  padding: 0 0 var(--space-2);
-  color: var(--ink-2);
-  font-size: var(--text-xs);
-  text-align: left;
-}
-
 .table th,
 .table td {
   white-space: nowrap;

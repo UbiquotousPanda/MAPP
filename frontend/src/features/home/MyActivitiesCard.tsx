@@ -37,7 +37,7 @@ export function MyActivitiesCard() {
   return (
     // The card's place on Home, for the "Activities I own" card's link.
     <div id="my-activities" className={styles.anchor}>
-      <Card title="My activities" subtitle="Activities you own, by status">
+      <Card title="My activities">
         {activities.isPending ? (
           <Skeleton lines={4} height="18px" />
         ) : activities.isError ? (

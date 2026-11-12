@@ -130,7 +130,7 @@ the Over 48 hours count of one row by hand.
 *Filters exclude everything*
 
 12. **Given** filters that match no activity (for example a team with no plans this year), **Then** the tab
-    shows 039's "Your filters exclude everything" state with **Reset filters**, and the cards show 0.
+    shows 039's "Your filters exclude everything" state with **Clear filters** (D-421), and the cards show 0.
 
 ---
 
@@ -303,7 +303,7 @@ the export, the report supplies the rows.
 - **FR-017**: The report MUST use 039's filters, Currency, saved views, "as of" line, widget table view and export
   as 039 defines them, and MUST NOT add filters of its own. *(D-368)*
 - **FR-018**: Each tab MUST render one of 039's states: data; "No plans you may see for <year>"; "No data yet",
-  naming what is missing; "Your filters exclude everything" with **Reset filters**; and on Purchase orders "You
+  naming what is missing; "Your filters exclude everything" with **Clear filters** (D-421); and on Purchase orders "You
   can't see financial data". *(D-368; client 019 FR-020)*
 - **FR-019**: Each tab's export, and each sheet of the report's export, MUST hold every row in the current sort
   with the screen's columns, hidden amounts and totals. *(client 019 FR-014; 039 FR-022)*

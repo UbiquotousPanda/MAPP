@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { callApi, choose, escapeRegExp, expectNoAxeViolations, signInAs } from './fixtures';
+import { callApi, chooseFilter, escapeRegExp, expectNoAxeViolations, signInAs } from './fixtures';
 import {
   changeActivityPlannedCost,
   changeLineItemPlannedCost,
@@ -45,9 +45,6 @@ test('US2: the cards, filters, chips, details and record links of the activity l
   await page.goto('/activity-log');
   await expect(page.getByRole('heading', { level: 1, name: 'Activity log' })).toBeVisible();
   await expect(page).toHaveTitle('Activity log · SP&A One');
-  await expect(
-    page.getByText("See who changed what, and when. Entries can't be edited or removed."),
-  ).toBeVisible();
   await expect(page.getByRole('button', { name: /^(Edit|Delete)\b/ })).toHaveCount(0);
   await expectNoAxeViolations(page);
 
@@ -55,7 +52,7 @@ test('US2: the cards, filters, chips, details and record links of the activity l
   await expect(page).toHaveURL(/[?&]range=today\b/);
   await expect(chip(page, 'Date: Today')).toBeVisible();
 
-  await choose(page, page.getByRole('combobox', { name: 'Person', exact: true }), 'Mei Lin');
+  await chooseFilter(page, 'Person', 'Mei Lin');
   await expect(chip(page, 'Person: Mei Lin')).toBeVisible();
   await page.getByRole('button', { name: 'Action', exact: true }).click();
   await page.getByRole('checkbox', { name: 'Changed', exact: true }).click();

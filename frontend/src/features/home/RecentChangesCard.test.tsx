@@ -186,14 +186,13 @@ describe('RecentChangesCard', () => {
     ]);
   });
 
-  it('opens the activity log and says which plans it covers (FR-015, FR-016)', async () => {
+  it('opens the activity log (FR-015, FR-016)', async () => {
     const { api } = renderCard('myTeams');
 
     expect(within(card()).getByRole('link', { name: 'View activity log' })).toHaveAttribute(
       'href',
       '/activity-log',
     );
-    expect(card()).toHaveTextContent("Latest changes in your teams' plans");
     expect(await within(card()).findByText('No changes yet in these plans.')).toBeInTheDocument();
     expect(api.requests.map((request) => request.search)).toEqual(['?scope=myTeams']);
   });
@@ -201,7 +200,6 @@ describe('RecentChangesCard', () => {
   it('covers all plans under Everything (FR-003)', async () => {
     const { api } = renderCard('everything');
 
-    expect(card()).toHaveTextContent('Latest changes in all plans');
     await within(card()).findByText('No changes yet in these plans.');
     expect(api.requests.map((request) => request.search)).toEqual(['?scope=everything']);
   });

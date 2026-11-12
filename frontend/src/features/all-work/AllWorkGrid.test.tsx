@@ -159,7 +159,7 @@ describe('AllWorkGrid (US1)', () => {
     await user.click(screen.getByRole('button', { name: 'Expand Helix social ads' }));
 
     const unassigned = screen.getAllByRole('rowheader', {
-      name: /Unassigned planned cost \(Sys_Gen_Balance\)/,
+      name: /Unassigned planned cost/,
     });
     expect(unassigned).toHaveLength(1);
     const row = closestTo(nth(unassigned, 0), 'tr');
@@ -225,7 +225,7 @@ describe('AllWorkGrid (US1)', () => {
   it('closes the grid with the totals row (FR-014)', () => {
     renderGrid();
 
-    const totals = screen.getByRole('rowheader', { name: 'Total 3 activities' });
+    const totals = screen.getByRole('rowheader', { name: 'Total' });
     const row = closestTo(totals, 'tr');
     expect(within(row).getByText('$2,000,000.00')).toBeInTheDocument();
     expect(within(row).getByText('$17,000.00')).toBeInTheDocument();
@@ -307,6 +307,6 @@ describe('AllWorkGrid (US1)', () => {
       ),
     ).toBeInTheDocument();
     // The totals row closes every page.
-    expect(screen.getByRole('rowheader', { name: 'Total 3 activities' })).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'Total' })).toBeInTheDocument();
   });
 });

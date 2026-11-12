@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 import { asApiError } from '@/api/errors';
 import { LinkButton } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
+import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -16,10 +17,10 @@ import { BuilderHeader } from './BuilderHeader';
 import { Canvas } from './Canvas';
 import { DETAIL_FIELD_IDS, NAME_FIELD_ID, widgetHandleId } from './canvas-dom';
 import { Inspector } from './Inspector';
-import { ProblemSummary } from './ProblemSummary';
 import { useBuilderSave } from './useBuilderSave';
 import { useEditorShortcuts } from './useEditorShortcuts';
 import type { Problem } from './validate';
+import { widgetName } from './widget-defaults';
 import { WidgetPalette } from './WidgetPalette';
 import styles from './Builder.module.css';
 
@@ -46,6 +47,11 @@ export function BuilderEditor({ dashboard }: BuilderEditorProps) {
       ? widgetHandleId(problem.widgetId)
       : (DETAIL_FIELD_IDS[problem.field] ?? NAME_FIELD_ID);
     document.getElementById(target)?.focus();
+  }
+
+  function describe(problem: Problem): string {
+    const widget = state.draft.widgets.find((each) => each.id === problem.widgetId);
+    return widget ? `${widgetName(widget)}: ${problem.message}` : problem.message;
   }
 
   function saveSharing(teamIds: string[]) {
@@ -77,7 +83,7 @@ export function BuilderEditor({ dashboard }: BuilderEditorProps) {
         onSave={() => void saving.save()}
       />
       {saving.failure && <FailureMessage failure={{ message: saving.failure }} />}
-      <ProblemSummary problems={saving.problems} widgets={state.draft.widgets} onGo={goTo} />
+      <FormErrorSummary errors={saving.problems} onGo={goTo} describe={describe} />
       <div className={styles.narrow}>
         <p>The builder needs a wider window.</p>
         {dashboardId && (

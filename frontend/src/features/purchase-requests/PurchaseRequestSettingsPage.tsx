@@ -22,11 +22,9 @@ import { usePurchaseRequestConfiguration, useSavePurchaseRequestConfiguration } 
 import type { LinesOnApproved, PurchaseRequestConfiguration } from './api';
 import { LINES_ON_APPROVED_WORDS, PURCHASE_REQUESTS } from './purchase-request-text';
 import {
-  CONFIG_DESCRIPTION,
   CONFIG_NOUN,
   CONFIG_SAVED,
   LINES_ON_APPROVED,
-  LINES_ON_APPROVED_HINT,
   NEVER_CHANGED,
   OFF,
   ON,
@@ -62,7 +60,6 @@ export function PurchaseRequestSettingsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: PURCHASE_REQUESTS }]}
         title={PURCHASE_REQUESTS}
-        description={CONFIG_DESCRIPTION}
       />
       <Card>
         {config.data ? (
@@ -163,7 +160,6 @@ function SettingsForm({ config }: { config: PurchaseRequestConfiguration }) {
         render={(field) => (
           <RadioGroup
             label={LINES_ON_APPROVED}
-            hint={LINES_ON_APPROVED_HINT}
             name={field.name}
             options={LINE_CHOICES.map((choice) => ({
               value: choice,

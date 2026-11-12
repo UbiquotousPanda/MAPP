@@ -95,7 +95,6 @@ export function ActivityForm({
       <ActivityBasicsCard
         control={form.control}
         form={data}
-        value={value}
         stored={stored}
         onChooseType={chooseType}
       />

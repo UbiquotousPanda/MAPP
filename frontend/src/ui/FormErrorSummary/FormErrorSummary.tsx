@@ -7,13 +7,21 @@ export interface FieldProblem {
   message: string;
 }
 
-export interface FormErrorSummaryProps {
-  errors: FieldProblem[];
+export interface FormErrorSummaryProps<P extends FieldProblem> {
+  errors: readonly P[];
   fieldId?: (field: string) => string;
+  /** Takes the person to a problem the page shows itself, instead of focusing its field by id. */
+  onGo?: (problem: P) => void;
+  describe?: (problem: P) => string;
 }
 
 /** Lists every problem as a link to its field and takes the focus, so the problems are read out. */
-export function FormErrorSummary({ errors, fieldId = (field) => field }: FormErrorSummaryProps) {
+export function FormErrorSummary<P extends FieldProblem>({
+  errors,
+  fieldId = (field) => field,
+  onGo,
+  describe = (problem) => problem.message,
+}: FormErrorSummaryProps<P>) {
   const summary = useRef<HTMLDivElement>(null);
 
   // A new list means a new failed attempt: bring the person here again.
@@ -30,8 +38,12 @@ export function FormErrorSummary({ errors, fieldId = (field) => field }: FormErr
       ? '1 problem needs your attention'
       : `${errors.length} problems need your attention`;
 
-  function goToField(field: string) {
-    document.getElementById(fieldId(field))?.focus();
+  function goTo(problem: P) {
+    if (onGo) {
+      onGo(problem);
+    } else {
+      document.getElementById(fieldId(problem.field))?.focus();
+    }
   }
 
   return (
@@ -47,10 +59,10 @@ export function FormErrorSummary({ errors, fieldId = (field) => field }: FormErr
                   onClick={(event) => {
                     // Move the focus ourselves: following the #link would change the page address.
                     event.preventDefault();
-                    goToField(error.field);
+                    goTo(error);
                   }}
                 >
-                  {error.message}
+                  {describe(error)}
                 </a>
               </li>
             ))}

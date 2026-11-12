@@ -44,9 +44,9 @@ describe('ActivityCategoriesPage: the list (FR-018)', () => {
     const { user, router } = renderActivityCategoriesPage();
     await screen.findByRole('table');
 
-    await user.click(screen.getByRole('button', { name: 'Inactive 1' }));
+    await user.click(screen.getByRole('button', { name: 'Inactive' }));
     expect(within(rowOf('Legacy')).getByText('Inactive')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'All 3' }));
+    await user.click(screen.getByRole('button', { name: 'All' }));
 
     expect(within(table()).getAllByRole('rowheader')).toHaveLength(3);
     expect(router.state.location.search).toBe('?status=all');

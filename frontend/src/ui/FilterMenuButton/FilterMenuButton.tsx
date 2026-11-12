@@ -33,10 +33,15 @@ export interface FiltersButtonProps extends Omit<ButtonProps, 'children' | 'icon
 }
 
 /** The toolbar's "Filters (n)" button that opens the less-used filters; an icon and a badge on phones. */
-export function FiltersButton({ count, className, ...props }: FiltersButtonProps) {
+export function FiltersButton({ count, className, size = 'sm', ...props }: FiltersButtonProps) {
   const number = formatWhole(count);
   return (
-    <Button icon={<SlidersHorizontal />} className={cx(styles.filters, className)} {...props}>
+    <Button
+      icon={<SlidersHorizontal />}
+      size={size}
+      className={cx(styles.filters, className)}
+      {...props}
+    >
       <span className={styles.word}>{count > 0 ? `Filters (${number})` : 'Filters'}</span>
       {count > 0 && (
         <span className={styles.badge} aria-hidden="true">

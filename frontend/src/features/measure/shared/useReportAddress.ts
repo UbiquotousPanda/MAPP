@@ -2,7 +2,7 @@ import { useSearchParams } from 'react-router';
 import { FRAME_PARAMS, readAddress, writeAddress } from './report-address';
 import type { ReportAddress } from './report-address';
 
-/** Canonical address; a report's own parameters (a tab, a sort) are kept after the frame's. */
+/** A report's own parameters are kept after the frame's; written in place, so Back leaves the report. */
 export function useReportAddress(): [ReportAddress, (next: ReportAddress) => void] {
   const [params, setParams] = useSearchParams();
   const current = readAddress(params);
@@ -14,7 +14,7 @@ export function useReportAddress(): [ReportAddress, (next: ReportAddress) => voi
         written.append(name, value);
       }
     }
-    setParams(written);
+    setParams(written, { replace: true });
   };
   return [current, write];
 }

@@ -14,7 +14,6 @@ import styles from './ActivityForm.module.css';
 import { ACTIVITY_SECTION } from './activity-form-progress';
 import { NoTypesText } from './NoTypesNotice';
 
-const FROM_INITIATIVE = 'From the initiative';
 const WORKFLOW_LOCKED = "It can't change while the activity is submitted or approved.";
 /** While a round is open the person can recall the submission first (008 FR-013). */
 const WORKFLOW_RECALL = 'Recall the activity to choose another workflow.';
@@ -23,7 +22,6 @@ const NO_WORKFLOW = 'No approval workflow is active — an administrator sets th
 export interface ActivityBasicsCardProps {
   control: Control<FormState>;
   form: ActivityFormData;
-  value: FormState;
   stored?: StoredActivity;
   onChooseType: (typeId: string) => void;
 }
@@ -32,15 +30,10 @@ export interface ActivityBasicsCardProps {
 export function ActivityBasicsCard({
   control,
   form,
-  value,
   stored,
   onChooseType,
 }: ActivityBasicsCardProps) {
-  const { context, defaults } = form;
-  const ownerFromInitiative = Boolean(defaults?.owner && value.ownerId === defaults.owner.id);
-  const onlyWorkflow = Boolean(
-    defaults?.approvalWorkflowId && value.approvalWorkflowId === defaults.approvalWorkflowId,
-  );
+  const { context } = form;
   const noTypes = form.activityTypes.length === 0;
   const { help } = useFieldHelp();
 
@@ -115,7 +108,6 @@ export function ActivityBasicsCard({
             label="Owner"
             marking="Needed to submit"
             tip={help('activity.owner')}
-            hint={ownerFromInitiative ? FROM_INITIATIVE : undefined}
             {...field}
             name={fieldId('ownerId')}
           />
@@ -129,7 +121,6 @@ export function ActivityBasicsCard({
             label="Approval workflow"
             marking="Needed to submit"
             tip={help('activity.approvalWorkflow')}
-            hint={onlyWorkflow ? 'The only active approval workflow' : undefined}
             options={form.approvalWorkflows.map((workflow) => ({
               id: workflow.id,
               label: workflow.name,

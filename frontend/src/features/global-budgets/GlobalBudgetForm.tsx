@@ -123,7 +123,7 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
   return (
     <FormPanel
       title={budget ? 'Edit global budget' : 'New global budget'}
-      description="Money for one year, shared out to market plans. Amounts are in USD."
+      description="Amounts are in USD."
       isDirty={form.formState.isDirty}
       saving={saving}
       problems={problems}

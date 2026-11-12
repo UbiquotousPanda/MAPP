@@ -18,7 +18,7 @@ import {
   reasonLinkOf,
   reasonText,
 } from './attention-text';
-import { ATTENTION_SUBTITLE, SHOW_FEWER, viewAllText } from './home-text';
+import { SHOW_FEWER, viewAllText } from './home-text';
 import { SectionError } from './SectionError';
 
 /**
@@ -39,7 +39,7 @@ export function AttentionCard() {
   const [showAll, setShowAll] = useState(false);
 
   return (
-    <Card title="Needs your attention" subtitle={ATTENTION_SUBTITLE}>
+    <Card title="Needs your attention">
       {attention.isPending ? (
         <Skeleton lines={4} height="18px" />
       ) : attention.isError ? (

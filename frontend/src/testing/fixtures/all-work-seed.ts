@@ -93,7 +93,7 @@ export function seedRows(columns: string[] = DEFAULT_COLUMNS): AllWorkRow[] {
     {
       key: 'A-1001:unassigned',
       level: 'unassigned',
-      name: 'Unassigned planned cost (Sys_Gen_Balance)',
+      name: 'Unassigned planned cost',
       depth: 4,
       parentKey: 'A-1001',
       planId: 'P-1001',
@@ -132,7 +132,7 @@ export function seedRows(columns: string[] = DEFAULT_COLUMNS): AllWorkRow[] {
     {
       key: 'A-1002:unassigned',
       level: 'unassigned',
-      name: 'Unassigned planned cost (Sys_Gen_Balance)',
+      name: 'Unassigned planned cost',
       depth: 4,
       parentKey: 'A-1002',
       planId: 'P-1001',

@@ -16,9 +16,6 @@ export function titled(typeLabel: string, name: string): string {
   return `${capitalise(typeLabel)} '${name}'`;
 }
 
-export const BIN_DESCRIPTION =
-  'Deleted records stay here until you restore them or delete them permanently.';
-
 export const EMPTY_BIN_TEXT =
   'When you delete a plan, campaign, initiative, activity or line item, it comes here so you can bring it back.';
 

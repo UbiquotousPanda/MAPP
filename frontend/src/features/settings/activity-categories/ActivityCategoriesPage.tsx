@@ -166,7 +166,7 @@ function CategoriesCard({ categories, filters, actions, onNew }: CategoriesCardP
     );
   }
 
-  const { shown, counts } = filterRecords(all, filters, (category) => category.name);
+  const { shown } = filterRecords(all, filters, (category) => category.name);
 
   return (
     <Card>
@@ -177,7 +177,7 @@ function CategoriesCard({ categories, filters, actions, onNew }: CategoriesCardP
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: CATEGORY_NOUN }}
       />
       {shown.length === 0 ? (

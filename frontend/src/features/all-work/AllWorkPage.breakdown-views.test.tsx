@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { allWorkOptions, savedView, standard2026 } from '@/testing/fixtures/all-work';
+import { openFilters } from '@/testing/filters';
 import { choose } from '@/testing/select';
 import { breakdown, BRANDS, SPEND_TYPE } from '@/testing/fixtures/all-work-breakdown';
 import { renderAllWorkPage } from '@/testing/fixtures/all-work-page';
@@ -31,6 +32,7 @@ async function breakdownByThen(user: ReturnType<typeof renderAllWorkPage>['user'
   await screen.findByRole('link', { name: 'Helix launch' });
   await user.click(screen.getByRole('tab', { name: 'Breakdown' }));
   await screen.findByRole('table', { name: 'Breakdown' });
+  await openFilters(user);
   await user.click(screen.getByRole('button', { name: 'More filters' }));
   const brands = await screen.findByRole('group', { name: 'Brands' });
   await user.click(within(brands).getByRole('checkbox', { name: 'Helix' }));

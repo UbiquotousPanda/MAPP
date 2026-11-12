@@ -20,7 +20,7 @@ import { FixedField } from './FixedField';
 import type { AttributeValues } from './schemas';
 import styles from './ShellAttributes.module.css';
 
-const YES_NO_HINT = 'Always optional; shown as a tick box that defaults to No.';
+const YES_NO_HINT = 'Shown as a tick box.';
 const SPLIT_HINT =
   "People split the record's cost over the chosen values; the shares must add up to 100 %.";
 

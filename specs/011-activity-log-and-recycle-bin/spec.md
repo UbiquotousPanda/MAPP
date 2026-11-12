@@ -189,7 +189,9 @@ result and the activity-log entries.
   - **Search** on record name, ID or person.
 
   Filters apply at once to the whole log, not only to the entries loaded. Each one shows as a removable
-  chip, with **Clear all** and "Showing N of M entries".
+  chip, with **Clear filters** and "Showing N of M entries". *Amended by D-421: Person, Record type, Action,
+  Plan and Date (a custom range under **Dates**) are filter buttons behind **Filters (n)** (design system
+  §5.2), and every change is written in place in the address, so Back leaves the page.*
 - **FR-004**: Entries MUST be listed newest first and grouped by day in the user's local time ("Today",
   "Yesterday", then "Monday 12 Oct 2026"), each group header showing its count.
   *Amended by [038 FR-058](../038-qa-findings/spec.md) (D-362): the date in the heading follows the person's date
@@ -245,7 +247,8 @@ result and the activity-log entries.
   Expanding a row MUST list its contents as a tree with names and IDs.
 - **FR-016**: The page MUST offer search by name or ID that also searches the contents of each entry
   ("Contains A-1042 'Launch film'"). It MUST also offer pill filters (All · Plans · Campaigns ·
-  Initiatives · Activities · Line items, plus any other type present) and "Showing N of M".
+  Initiatives · Activities · Line items, plus any other type present) and "Showing N of M". *Since D-421 the
+  search and the type live in the address (`q`, `type`), written in place.*
 - **FR-017**: A row whose parent is missing MUST say why on the row:
   - "Its <parent level> '<name>' is also in the recycle bin"; or
   - "Can't be restored — its <parent level> '<name>' was permanently deleted".

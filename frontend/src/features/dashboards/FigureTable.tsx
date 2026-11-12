@@ -27,7 +27,7 @@ export function FigureTable({ caption, nameTitle, extraTitles = [], rows }: Figu
   return (
     <div className={styles.scroll}>
       <table className={cx(dataTable.table, styles.table)}>
-        <caption>{caption}</caption>
+        <caption className="visually-hidden">{caption}</caption>
         <thead>
           <tr>
             <th scope="col">{nameTitle}</th>

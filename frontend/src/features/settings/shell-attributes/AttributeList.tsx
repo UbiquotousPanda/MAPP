@@ -134,12 +134,6 @@ export function AttributeList({ filters }: { filters: AttributeFilters }) {
         attribute.level === each && hasStatus(attribute, status) && hasHelpState(attribute, help),
     ).length,
   }));
-  const statusCounts = {
-    active: ofLevel.filter((attribute) => hasStatus(attribute, 'active')).length,
-    inactive: ofLevel.filter((attribute) => hasStatus(attribute, 'inactive')).length,
-    all: ofLevel.length,
-  };
-
   return (
     <div className={styles.stack}>
       {/* The list toolbar sits inside the list's card, as on every Settings list (§2.4 A). */}
@@ -159,7 +153,7 @@ export function AttributeList({ filters }: { filters: AttributeFilters }) {
             value: q,
             onChange: filters.setQ,
           }}
-          status={{ value: status, onChange: filters.setStatus, counts: statusCounts }}
+          status={{ value: status, onChange: filters.setStatus }}
           filters={
             <SegmentedFilter
               label="Help"

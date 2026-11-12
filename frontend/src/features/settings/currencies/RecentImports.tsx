@@ -5,7 +5,7 @@ import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import settingsStyles from '@/ui/settings-table.module.css';
 import dataTable from '@/ui/Table/Table.module.css';
-import { RECENT_IMPORTS, useRateImports } from './rates-api';
+import { useRateImports } from './rates-api';
 import type { RateImport } from './rates-api';
 import styles from './rates.module.css';
 
@@ -18,7 +18,7 @@ export function RecentImports() {
   const { date, dateTime, dateRange } = useFormatters();
 
   return (
-    <Card title="Recent imports" subtitle={`The last ${RECENT_IMPORTS} GSAP rate files imported`}>
+    <Card title="Recent imports">
       {!imports.data ? (
         imports.isError ? (
           <ErrorState error={imports.error} onRetry={() => void imports.refetch()} />

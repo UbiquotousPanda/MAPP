@@ -18,7 +18,6 @@ import { useImport } from './api';
 import type { PerformanceImport } from './api';
 import { ImportCounts } from './ImportCounts';
 import {
-  countsSentence,
   IMPORTS,
   IMPORTS_PATH,
   NOT_EDITABLE,
@@ -83,7 +82,7 @@ function Summary({ load }: { load: PerformanceImport }) {
         }
       />
       <div className={styles.stack}>
-        <Card title="Summary" subtitle={countsSentence(load.counts)}>
+        <Card title="Summary">
           <ImportCounts load={load} />
         </Card>
         <p className={styles.note}>{NOT_EDITABLE}</p>

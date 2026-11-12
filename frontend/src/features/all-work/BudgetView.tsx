@@ -6,7 +6,7 @@ import { cx } from '@/ui/cx';
 import { useFormatters } from '@/format/useFormatters';
 import dataTable from '@/ui/Table/Table.module.css';
 import gridStyles from './AllWorkGrid.module.css';
-import { monthsAboveText, NOT_PHASED, PHASED_BUDGET_ROW, totalText } from './all-work-text';
+import { monthsAboveText, NOT_PHASED, PHASED_BUDGET_ROW } from './all-work-text';
 import type { AllWorkResult, AllWorkRow, Money } from './all-work-types';
 import styles from './BudgetView.module.css';
 import { isControl, NOTHING } from './cell-text';
@@ -79,7 +79,7 @@ export function BudgetView({ result, rows, continued, search, onToggle, onOpen }
           <tfoot>
             <tr className={dataTable.total}>
               <th scope="row" className={gridStyles.nameCell}>
-                <TotalLabel count={totalText(totals.activities)} />
+                <TotalLabel />
               </th>
               <td className={dataTable.numeric}>
                 <Amount value={totals.planBudget} />

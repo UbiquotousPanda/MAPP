@@ -69,7 +69,6 @@ export function ActivityTypesPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Activity types' }]}
         title="Activity types"
-        description="The kinds of work activities can be."
         actions={
           <CanChange>
             <Button variant="primary" icon={<Plus />} onClick={newType}>
@@ -156,7 +155,7 @@ function ActivityTypesCard({ types, filters, actions, onNew }: ActivityTypesCard
     );
   }
 
-  const { shown, counts } = filterRecords(all, filters, (type) => type.name);
+  const { shown } = filterRecords(all, filters, (type) => type.name);
 
   return (
     <Card>
@@ -167,7 +166,7 @@ function ActivityTypesCard({ types, filters, actions, onNew }: ActivityTypesCard
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: TYPE_NOUN }}
       />
       {shown.length === 0 ? (

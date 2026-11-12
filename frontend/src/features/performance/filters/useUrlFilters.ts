@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router';
 export interface UrlFilters {
   values: Record<string, string | undefined>;
   set: (name: string, value: string) => void;
+  /** Several filters in one change of the address. */
+  setEach: (values: Record<string, string>) => void;
   clear: () => void;
   inUse: boolean;
 }
@@ -31,6 +33,7 @@ export function useUrlFilters(names: readonly string[]): UrlFilters {
   return {
     values,
     set: (name, value) => update([[name, value]]),
+    setEach: (values) => update(Object.entries(values)),
     clear: () => update(names.map((name) => [name, ''])),
     inUse: entries.some(([, value]) => value !== ''),
   };

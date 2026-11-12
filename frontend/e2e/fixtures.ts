@@ -85,3 +85,18 @@ export async function choose(
   await combobox.click();
   await page.getByRole('option', { name: option, exact: typeof option === 'string' }).click();
 }
+
+/** Folds out the filter menus behind Filters (n) (ui/FilterBar), unless they are out already. */
+export async function openFilters(page: Page): Promise<void> {
+  const button = page.getByRole('button', { name: /^Filters/ });
+  if ((await button.getAttribute('aria-expanded')) !== 'true') {
+    await button.click();
+  }
+}
+
+export async function chooseFilter(page: Page, filter: string, value: string): Promise<void> {
+  await openFilters(page);
+  await page.getByRole('button', { name: new RegExp(`^${filter}( ·|$)`) }).click();
+  await page.getByRole('radio', { name: value, exact: true }).click();
+  await page.keyboard.press('Escape');
+}

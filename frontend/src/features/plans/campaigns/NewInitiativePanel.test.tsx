@@ -37,16 +37,15 @@ function renderPanel(answers: HttpHandler[] = []) {
 /** The panel once its form is shown (the loading panel is another one). */
 async function findPanel() {
   await screen.findByLabelText('Initiative name');
-  await screen.findByText('From the campaign');
+  await screen.findByText(/Alex Morgan/);
   return screen.getByRole('dialog', { name: 'New initiative' });
 }
 
 describe('NewInitiativePanel (feature 005, US2)', () => {
-  it('fixes the campaign and takes owner and dates from it, labelled (US2#1, FR-002, FR-003)', async () => {
+  it('fixes the campaign and takes owner and dates from it (US2#1, FR-002, FR-003)', async () => {
     renderPanel();
     const panel = await findPanel();
 
-    expect(within(panel).getByText("Inside campaign 'Helix launch'")).toBeInTheDocument();
     const field = within(panel).getByLabelText('Campaign');
     expect(field).toHaveValue('Helix launch');
     expect(field).toHaveAttribute('readonly');
@@ -54,7 +53,6 @@ describe('NewInitiativePanel (feature 005, US2)', () => {
     expect(within(panel).getByText(/Alex Morgan/)).toBeInTheDocument();
     expect(within(panel).getByLabelText('Start date')).toHaveValue('2026-03-01');
     expect(within(panel).getByLabelText('End date')).toHaveValue('2026-12-31');
-    expect(within(panel).getByText("The campaign's dates")).toBeInTheDocument();
     expect(document.title).toBe('New initiative · SP&A One');
   });
 
@@ -103,7 +101,6 @@ describe('NewInitiativePanel (feature 005, US2)', () => {
 
     expect(within(panel).getByLabelText('Start date')).toHaveValue('');
     expect(within(panel).getByLabelText('Start date')).not.toHaveAttribute('min');
-    expect(within(panel).queryByText("The campaign's dates")).not.toBeInTheDocument();
     expect(within(panel).queryByText(/Must be inside/)).not.toBeInTheDocument();
   });
 

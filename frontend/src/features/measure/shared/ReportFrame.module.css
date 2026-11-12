@@ -6,36 +6,6 @@
 }
 
 /* Filters (n), Year and Currency on one row; the filter buttons and the chips below it, as on All work. */
-.toolbar {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.toolbarRow,
-.menus {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
-}
-
-.menus {
-  gap: var(--space-2);
-}
-
-.menus[hidden] {
-  display: none;
-}
-
-.chipsRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
 .inline {
   display: inline-flex;
   align-items: center;

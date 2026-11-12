@@ -56,11 +56,6 @@ describe('ImportSummaryPage', () => {
       '1',
       '2',
     ]);
-    expect(
-      screen.getByText(
-        'It read 20 rows: 12 matched, 3 held, 1 unattributed, 2 rejected and 2 unmatched.',
-      ),
-    ).toBeVisible();
     expect(screen.getByText(/An import can't be edited/)).toBeVisible();
     await expectNoAxeViolations();
   });

@@ -46,7 +46,7 @@ describe('CampaignPanel — details (feature 005, US3)', () => {
     const goals = within(panel).getByRole('region', { name: /Goals/ });
     expect(within(goals).getAllByText('—')).toHaveLength(3);
 
-    const initiatives = within(panel).getByRole('region', { name: 'Initiatives (1)' });
+    const initiatives = within(panel).getByRole('region', { name: 'Initiatives' });
     expect(within(initiatives).getByRole('link', { name: 'Digital & social' })).toHaveAttribute(
       'href',
       '/plans/P-1001/initiatives/I-1001',
@@ -147,7 +147,7 @@ describe('CampaignPanel — details (feature 005, US3)', () => {
     ]);
     const panel = await findDetails();
 
-    const initiatives = within(panel).getByRole('region', { name: 'Initiatives (0)' });
+    const initiatives = within(panel).getByRole('region', { name: 'Initiatives' });
     expect(
       within(initiatives).getByText(
         'No initiatives yet — an initiative groups similar work inside a campaign.',

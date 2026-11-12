@@ -19,9 +19,7 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Welcome back, Priya.', level: 1 })).toBeVisible();
   await expect(
-    page.getByText(
-      'Your own activities, what needs your attention and your approvals always cover all plans.',
-    ),
+    page.getByText('My activities, attention and approvals always cover all plans.'),
   ).toBeVisible();
   const scope = page.getByRole('group', { name: 'Scope' });
   await expect(scope.getByRole('button', { name: 'My teams' })).toHaveAttribute(
@@ -53,18 +51,15 @@ test('Home: the summary cards and sections for a planner and an approver, with w
 
   // Other journeys add plans of next year, so the newest of the team's plans is read, not the seed's.
   const glance = page.getByRole('region', { name: 'Plans at a glance' });
-  await expect(glance.getByText('Live roll-up across your teams')).toBeVisible();
   const glanceRow = glance.getByRole('row').nth(1);
   await expect(glanceRow).toContainText(/Published|Draft/);
   await expect(glanceRow).toContainText('Lubricants Europe');
   await expect(glanceRow).toContainText(/\d+ of \d+ approved/);
 
   const attention = page.getByRole('region', { name: 'Needs your attention' });
-  await expect(attention.getByText('Things you own that have a problem')).toBeVisible();
   await expect(attention.getByText(/^Declined by Daniel Okoro on /).first()).toBeVisible();
 
   const mine = page.getByRole('region', { name: 'My activities' });
-  await expect(mine.getByText('Activities you own, by status')).toBeVisible();
   await expect(mine.getByRole('button', { name: /^Declined \d+$/ })).toHaveAttribute(
     'aria-expanded',
     'true',
@@ -81,7 +76,6 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await expect(
     summary.getByRole('link', { name: /^All plans: \d+ — open the Plans list$/ }),
   ).toBeVisible();
-  await expect(glance.getByText('Live roll-up across all plans')).toBeVisible();
   await scope.getByRole('button', { name: 'My teams' }).click();
   await expect(teamPlans).toBeVisible();
 

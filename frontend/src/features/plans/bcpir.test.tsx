@@ -1,13 +1,12 @@
-import { screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { plan } from '@/testing/fixtures/plans';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
-import { BcpirChoice } from './BcpirChoice';
 import { DEFAULT_FILTERS } from './list-preferences';
 import { chipReset, filterChips } from './plan-list-chips';
 import { PlanHeader } from './PlanHeader';
+import { PlansFilters } from './PlansFilters';
 
 describe('013 FR-003: the BCPIR plans filter of the Plans list', () => {
   it('shows a chip while it is in use, and its removal includes every plan again', () => {
@@ -21,10 +20,14 @@ describe('013 FR-003: the BCPIR plans filter of the Plans list', () => {
 
   it('offers All plans, Only BCPIR plans and No BCPIR plans', async () => {
     const onChange = vi.fn();
-    renderWithProviders(<BcpirChoice name="bcpir" value="include" onChange={onChange} />);
+    const { user } = renderWithProviders(
+      <PlansFilters filters={DEFAULT_FILTERS} years={[2026]} onChange={onChange} />,
+    );
 
-    expect(screen.getByRole('radio', { name: 'All plans' })).toBeChecked();
-    await userEvent.click(screen.getByRole('radio', { name: 'Only BCPIR plans' }));
+    await user.click(screen.getByRole('button', { name: 'BCPIR plans' }));
+    const menu = await screen.findByRole('dialog', { name: 'BCPIR plans' });
+    expect(within(menu).getByRole('radio', { name: 'All plans' })).toBeChecked();
+    await user.click(within(menu).getByRole('radio', { name: 'Only BCPIR plans' }));
 
     expect(onChange).toHaveBeenCalledWith({ bcpir: 'only' });
   });

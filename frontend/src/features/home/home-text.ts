@@ -18,12 +18,12 @@ export function noRoleText(administrators: string[]): string {
 
 export const SECTION_FAILED = "This section couldn't load";
 
-export const PLANS_CARD: Record<HomeScope, { label: string; tip: string }> = {
+export const PLANS_CARD: Record<HomeScope, { label: string; tip?: string }> = {
   myTeams: {
     label: "My teams' plans",
     tip: 'Plans that have at least one of your teams.',
   },
-  everything: { label: 'All plans', tip: 'Every plan in SP&A One.' },
+  everything: { label: 'All plans' },
 };
 
 export function planCountsText(published: number, draft: number): string {
@@ -70,15 +70,9 @@ export function plansWithoutBudgetText(count: number): string {
     : `Includes ${formatWhole(count)} plans with no budget`;
 }
 
-export const SCOPE_HINT =
-  'Your own activities, what needs your attention and your approvals always cover all plans.';
+export const SCOPE_HINT = 'My activities, attention and approvals always cover all plans.';
 
 export const PLANS_AT_A_GLANCE = {
-  tip: 'Every plan your teams work on, the teams on it, and live status rolled up from its activities.',
-  subtitle: {
-    myTeams: 'Live roll-up across your teams',
-    everything: 'Live roll-up across all plans',
-  } satisfies Record<HomeScope, string>,
   empty: {
     myTeams: 'None of your teams has a plan yet.',
     everything: 'No plans yet — create the first one on the Plans page.',
@@ -96,10 +90,6 @@ export function approvedPercent(approved: number, activities: number): number {
 export function viewAllPlansText(total: number): string {
   return `View all ${formatWhole(total)} plans`;
 }
-
-export const WAITING_SUBTITLE = 'Activities waiting at a level you approve';
-
-export const ATTENTION_SUBTITLE = 'Things you own that have a problem';
 
 export function viewAllText(total: number): string {
   return `View all (${formatWhole(total)})`;
@@ -143,13 +133,7 @@ export function lineItemsNeedAttentionText(count: number): string {
     : `${formatWhole(count)} line items need attention`;
 }
 
-export const RECENT_CHANGES = {
-  subtitle: {
-    myTeams: "Latest changes in your teams' plans",
-    everything: 'Latest changes in all plans',
-  } satisfies Record<HomeScope, string>,
-  empty: 'No changes yet in these plans.',
-};
+export const NO_RECENT_CHANGES = 'No changes yet in these plans.';
 
 /** "planned cost", "name and GL code", "a, b and c"; over three: "a, b, c and 2 more fields". */
 export function changedFieldsText(labels: string[]): string {

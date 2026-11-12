@@ -27,7 +27,6 @@ import {
   OVERSPEND_CONTROL,
   SAVE,
   SETTING_SAVED,
-  SETTINGS_DESCRIPTION,
   lastChangedText,
 } from './overspend-text';
 import styles from './OverspendSettingsPage.module.css';
@@ -45,7 +44,6 @@ export function OverspendSettingsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: OVERSPEND_CONTROL }]}
         title={OVERSPEND_CONTROL}
-        description={SETTINGS_DESCRIPTION}
       />
       <Card>
         {config.data ? (

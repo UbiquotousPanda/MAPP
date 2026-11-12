@@ -25,21 +25,17 @@ describe('LineItemCreatePage (US2)', () => {
         name: 'Launch film',
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("From the activity's name")).toBeInTheDocument();
     expect(screen.getByLabelText('Currency')).toHaveTextContent(/^USD/);
     expect(screen.getByLabelText('Planned cost')).toHaveValue('20,000.00');
     expect(screen.getByText("The activity's unassigned planned cost")).toBeInTheDocument();
     expect(screen.getByLabelText('Evenly')).toBeChecked();
-    expect(screen.getByText("The plan's default")).toBeInTheDocument();
     expect(screen.getByLabelText('Finance budget year')).toHaveTextContent('2026');
-    expect(screen.getByText("The plan's year")).toBeInTheDocument();
     expect(
       screen.getByText(
         "Items of '2026 Lubricants Budget', the plan's default finance budget, are listed first.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Request SWBS code from GSAP')).toBeChecked();
-    expect(screen.getByText(/On by default/)).toBeInTheDocument();
     expect(
       screen.getByText(
         'Filled by the simulated GSAP once the activity is approved and the request is sent',

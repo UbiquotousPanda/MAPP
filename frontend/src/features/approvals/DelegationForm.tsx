@@ -182,9 +182,7 @@ export function DelegationForm({
       <FormField
         control={form.control}
         name="note"
-        render={(field) => (
-          <TextAreaField label="Note (optional)" rows={3} maxLength={NOTE_MAX} {...field} />
-        )}
+        render={(field) => <TextAreaField label="Note" rows={3} maxLength={NOTE_MAX} {...field} />}
       />
     </FormPanel>
   );

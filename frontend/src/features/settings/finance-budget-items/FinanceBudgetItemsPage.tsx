@@ -89,7 +89,7 @@ export function FinanceBudgetItemsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Finance budget items' }]}
         title="Finance budget items"
-        description="The finance budget items line items link to. A simple list until the Finance module arrives."
+        description="The finance budget items line items link to."
         actions={
           <CanChange>
             <Button variant="primary" icon={<Plus />} onClick={newItem}>

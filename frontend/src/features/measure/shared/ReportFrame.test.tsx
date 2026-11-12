@@ -56,7 +56,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
     await expectNoAxeViolations();
   });
 
-  it('names each restricted filter as a chip; removing one or Reset filters applies at once (FR-014)', async () => {
+  it('names each restricted filter as a chip; removing one or Clear filters applies at once (FR-014)', async () => {
     const frame = reportFrame({ filter: { ...reportFrame().filter, plans: ['P-1001'] } });
     const { user, router } = renderFrame(
       frame,
@@ -68,7 +68,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
     );
     await waitFor(() => expect(search(router).getAll('plan')).toEqual([]));
     expect(search(router).get('planType')).toBe('operational');
-    await user.click(screen.getByRole('button', { name: 'Reset filters' }));
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     await waitFor(() => expect(search(router).toString()).toBe(''));
   });
 
@@ -114,11 +114,11 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
     expect(screen.getByText('There are plans for 2025.')).toBeInTheDocument();
   });
 
-  it('says the filters exclude everything, with Reset filters (FR-031)', async () => {
+  it('says the filters exclude everything, with Clear filters (FR-031)', async () => {
     renderFrame(reportFrame({ inView: empty }), '/reports/plan-budget?planType=crossMarket');
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Reset filters' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: 'Clear filters' }).length).toBeGreaterThan(0);
   });
 
   it('says there are no plans for the year before blaming the filters (FR-031)', async () => {

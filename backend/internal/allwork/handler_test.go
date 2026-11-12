@@ -182,7 +182,7 @@ func TestExport_XlsxAndCsvContentTypeAndDisposition_FR034(t *testing.T) {
 	if csv.Status != http.StatusOK || csv.Header.Get("Content-Type") != "text/csv" ||
 		!strings.Contains(csv.Header.Get("Content-Disposition"), `filename="SP&A One All work - Budget & cost - 2026 - 12 Mar 2026.csv"`) ||
 		!strings.HasPrefix(body, "\xEF\xBB\xBFView,Budget & cost\nYear,2026\nFilters,None\n") ||
-		!strings.Contains(body, "Exported by,Priya Raman\n") || strings.Contains(body, "Unassigned planned cost (Sys_Gen_Balance)") ||
+		!strings.Contains(body, "Exported by,Priya Raman\n") || strings.Contains(body, "Unassigned planned cost") ||
 		!strings.Contains(body, "Total · 10 activities") {
 		t.Errorf("csv = %d %v\n%s", csv.Status, csv.Header, body)
 	}

@@ -1,8 +1,6 @@
 import { formatWhole } from '@/format/decimal';
 import type { ListSort } from './schemas';
 
-export const LIST_DESCRIPTION =
-  'Purchase requests of your plans, grouped by vendor. The requisitioner works from Waiting for GSAP.';
 export const SEARCH_LABEL = 'Search purchase requests';
 export const SEARCH_PLACEHOLDER = 'Search ID, name, vendor, HX key, GSAP PR or PO number';
 export const VIEW_ALL = 'All';
@@ -23,6 +21,8 @@ export const FILTER_LABELS = {
   owner: 'Owner',
   from: 'Created from',
   to: 'Created to',
+  created: 'Created',
+  createdBetween: 'Created between',
 } as const;
 
 export const SORT_WORDS: Record<ListSort, string> = {

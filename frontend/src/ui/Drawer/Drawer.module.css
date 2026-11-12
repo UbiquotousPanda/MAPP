@@ -6,7 +6,7 @@
   animation: fade-in var(--dur) var(--ease-out);
 }
 
-/* The drawer slides in from the left and holds the expanded sidebar. */
+/* The drawer slides in from the left. */
 .drawer {
   position: fixed;
   top: 0;
@@ -23,7 +23,7 @@
   outline: none;
 }
 
-/* Close menu sits in the top right corner, on the logo's row. */
+/* The close button sits in the top right corner, on the content's first row. */
 .close {
   position: absolute;
   top: var(--space-2);

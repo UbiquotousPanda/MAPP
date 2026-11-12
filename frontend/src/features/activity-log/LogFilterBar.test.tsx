@@ -1,16 +1,16 @@
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { logSummary } from '@/testing/fixtures/activity-log';
-import { choose } from '@/testing/select';
+import { openFilters } from '@/testing/filters';
 import { LogFilterBar, SEARCH_DELAY_MS } from './LogFilterBar';
 import { NO_FILTERS } from './log-filters';
 import type { LogFilterState } from './log-filters';
 
-type OnChange = (filters: LogFilterState, typing?: boolean) => void;
+type OnChange = (filters: LogFilterState) => void;
 
 /** The filter bar with its filters kept in state, as the page keeps them in the address. */
 function Harness({ initial, onChange }: { initial: LogFilterState; onChange: OnChange }) {
@@ -18,9 +18,9 @@ function Harness({ initial, onChange }: { initial: LogFilterState; onChange: OnC
   return (
     <LogFilterBar
       filters={filters}
-      onChange={(...args) => {
-        onChange(...args);
-        setFilters(args[0]);
+      onChange={(next) => {
+        onChange(next);
+        setFilters(next);
       }}
       summary={logSummary()}
       record={{ type: 'activity', id: 'A-1042', name: 'Film shoot' }}
@@ -44,10 +44,14 @@ describe('LogFilterBar', () => {
 
   it('offers the summary’s people, record types and plans (FR-003)', async () => {
     const { user } = renderBar();
+    await openFilters(user);
 
     const options = async (name: string) => {
-      await user.click(screen.getByRole('combobox', { name }));
-      const shown = screen.getAllByRole('option').map((option) => option.textContent);
+      await user.click(screen.getByRole('button', { name }));
+      const menu = await screen.findByRole('dialog', { name });
+      const shown = within(menu)
+        .getAllByRole('radio')
+        .map((radio) => radio.closest('label')?.textContent);
       await user.keyboard('{Escape}');
       return shown;
     };
@@ -62,8 +66,10 @@ describe('LogFilterBar', () => {
 
   it('filters by person and shows the filter as a chip (FR-003)', async () => {
     const { user, onChange } = renderBar();
+    await openFilters(user);
 
-    await choose(user, screen.getByRole('combobox', { name: 'Person' }), 'Daniel Okoro');
+    await user.click(screen.getByRole('button', { name: 'Person' }));
+    await user.click(await screen.findByRole('radio', { name: 'Daniel Okoro' }));
 
     expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, person: 'U-1003' });
     expect(
@@ -73,6 +79,7 @@ describe('LogFilterBar', () => {
 
   it('ticks several actions in one menu, kept in the menu’s order (FR-003)', async () => {
     const { user, onChange } = renderBar();
+    await openFilters(user);
 
     await user.click(screen.getByRole('button', { name: 'Action' }));
     await user.click(screen.getByRole('checkbox', { name: 'Permanently deleted' }));
@@ -89,12 +96,16 @@ describe('LogFilterBar', () => {
 
   it('chooses a date range, and Custom dates with their error (FR-003)', async () => {
     const { user, onChange } = renderBar();
+    await openFilters(user);
 
-    await user.click(screen.getByRole('button', { name: 'This week' }));
+    await user.click(screen.getByRole('button', { name: 'Date' }));
+    await user.click(await screen.findByRole('radio', { name: 'This week' }));
     expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, range: 'week' });
     expect(screen.getByRole('button', { name: 'Remove filter: Date: This week' })).toBeVisible();
 
-    await user.click(screen.getByRole('button', { name: 'Custom' }));
+    await user.click(screen.getByRole('radio', { name: 'Custom' }));
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Dates' }));
     await user.type(screen.getByLabelText('From'), '2026-10-12');
     await user.type(screen.getByLabelText('To'), '2026-10-01');
 
@@ -125,7 +136,7 @@ describe('LogFilterBar', () => {
     await act(() => vi.advanceTimersByTimeAsync(SEARCH_DELAY_MS));
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith({ ...NO_FILTERS, q: 'film' }, true);
+    expect(onChange).toHaveBeenCalledWith({ ...NO_FILTERS, q: 'film' });
     expect(screen.getByRole('button', { name: "Remove filter: Search: 'film'" })).toBeVisible();
   });
 

@@ -293,7 +293,10 @@ own action.
   oldest submission first (**Decided by me**: latest decision first).
 - **FR-031**: The page MUST offer search by activity name or ID and filters for plan, workflow, owner and
   submitted date range, with removable chips, a result count and the empty states of design system
-  §6.1 ("Nothing is waiting for you. You're all caught up." on an empty **Waiting for me**).
+  §6.1 ("Nothing is waiting for you. You're all caught up." on an empty **Waiting for me**). *Amended by
+  D-421: the filters (with Record type, 031 FR-026) are filter buttons behind **Filters (n)** (design system
+  §5.2); the search and filters live in the address (`q`, `type`, `plan`, `workflow`, `owner`, `from`, `to`),
+  written in place, so Back and a reload keep them; the tabs show no counts (the summary cards do).*
 - **FR-032**: Selecting a row MUST open a preview side panel with the activity's status, completeness,
   plan › campaign › initiative, owner, dates, planned cost, type and description; its line items (name,
   planned cost in local currency and USD, spend type, GL code, finance budget item); the unassigned

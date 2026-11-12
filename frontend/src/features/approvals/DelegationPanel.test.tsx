@@ -65,7 +65,9 @@ describe('DelegationPanel (feature 017, US4)', () => {
     expect(ended).toHaveTextContent('Priya Raman → Alex Morgan');
     expect(within(ended).queryByRole('button')).not.toBeInTheDocument();
     // Only someone who may manage everyone's delegations sees the switch.
-    expect(within(panel).queryByRole('checkbox', { name: 'Everyone' })).not.toBeInTheDocument();
+    expect(
+      within(panel).queryByRole('checkbox', { name: "Show everyone's delegations" }),
+    ).not.toBeInTheDocument();
   });
 
   it('says what to do when there is no delegation yet', async () => {
@@ -156,7 +158,7 @@ describe('DelegationPanel (feature 017, US4)', () => {
       ),
     ]);
 
-    const everyone = await screen.findByRole('checkbox', { name: 'Everyone' });
+    const everyone = await screen.findByRole('checkbox', { name: "Show everyone's delegations" });
     await user.click(everyone);
     expect(await screen.findByText('Carlos Mendes → Alex Morgan')).toBeInTheDocument();
     expect(api.requests.some((r) => r.search === '?scope=all')).toBe(true);

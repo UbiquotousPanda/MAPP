@@ -37,15 +37,7 @@ describe('newFormState (FR-008)', () => {
       financeBudgetItemId: '',
       requestSwbs: true,
     });
-    expect(state.sources).toEqual({
-      name: "From the activity's name",
-      ownerId: 'From the activity',
-      currency: 'Default',
-      plannedCost: "The activity's unassigned planned cost",
-      spread: "The plan's default",
-      financeBudgetYear: "The plan's year",
-      requestSwbs: 'On by default',
-    });
+    expect(state.sources).toEqual({ plannedCost: "The activity's unassigned planned cost" });
   });
 
   it('says why the planned cost is empty (edge cases, D-144)', () => {
@@ -88,7 +80,6 @@ describe('changeCurrency (FR-012)', () => {
     const state = changeCurrency(newFormState(formOptions()), 'EUR', CURRENCIES);
     expect(state.plannedCost).toBe('18,400.00');
     expect(state.costNotes).toEqual(['Changed to €18,400.00 = $20,000.00']);
-    expect(state.sources.currency).toBeUndefined();
   });
 
   it('adds the rounding hint when the USD value cannot match to the cent', () => {

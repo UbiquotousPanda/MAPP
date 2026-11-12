@@ -49,8 +49,6 @@ export interface SpreadEditorProps {
   customMonths: CustomMonth[];
   /** Custom amounts were typed or saved: leaving Custom says they will be replaced. */
   customTyped: boolean;
-  /** Where the method came from ("The plan's default"), until it is changed. */
-  source?: string;
   problems: FieldProblem[];
   onMethodChange: (method: SpreadMethod) => void;
   onMonthChange: (month: string, amount: string) => void;
@@ -70,7 +68,6 @@ export function SpreadEditor({
   dates,
   customMonths,
   customTyped,
-  source,
   problems,
   onMethodChange,
   onMonthChange,
@@ -91,7 +88,6 @@ export function SpreadEditor({
         options={METHODS.map((option) => ({ value: option, label: SPREAD_LABELS[option] }))}
         value={method}
         onChange={onMethodChange}
-        note={source}
         error={problemOf(problems, 'spread')}
       />
 

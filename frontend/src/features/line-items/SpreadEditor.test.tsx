@@ -35,7 +35,6 @@ function Harness({ start, dates = MAR_MAY }: { start: LineItemFormState; dates?:
         dates={dates}
         customMonths={state.customMonths}
         customTyped={state.customTyped}
-        source={state.sources.spread}
         problems={[]}
         onMethodChange={(method) => setState((s) => changeSpreadMethod(s, method, dates, 2026))}
         onMonthChange={(month, amount) => setState((s) => changeCustomMonth(s, month, amount))}

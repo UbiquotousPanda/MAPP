@@ -127,7 +127,7 @@ function SignInChoices() {
 
   return (
     <>
-      <InlineAlert tone="info" title="Demo sign-in — Shell single sign-on comes later">
+      <InlineAlert tone="info" title="Demo sign-in">
         {demoPeople.data && (
           <p>
             All demo people share the password <code>{demoPeople.data.password}</code>.
@@ -158,7 +158,6 @@ function DemoPeopleSection({ query, onChoose }: DemoPeopleSectionProps) {
       <SectionHeading level={2} rank="sub" id={headingId}>
         Explore as a demo person
       </SectionHeading>
-      <p className={styles.hint}>Choose a person to sign in as them — no typing needed.</p>
       <DemoPeopleContent query={query} onChoose={onChoose} />
     </section>
   );

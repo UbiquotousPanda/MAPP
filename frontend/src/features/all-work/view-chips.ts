@@ -72,12 +72,14 @@ export function removeChip(state: ViewState, chipKey: string): ViewState {
   return { ...state, filters: withoutValue(state.filters, filter, value) };
 }
 
+/** Nothing matches: clears the search and every filter. */
 export function clearAll(state: ViewState): ViewState {
   return { ...state, filters: NO_FILTERS, search: '' };
 }
 
-export function hasFilters(state: ViewState): boolean {
-  return chipsOf(state).length > 0 || state.search.trim() !== '';
+/** The chips' Clear filters: every filter, the search stays. */
+export function clearFilters(state: ViewState): ViewState {
+  return { ...state, filters: NO_FILTERS };
 }
 
 function optionLabel(

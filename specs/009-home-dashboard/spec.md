@@ -198,9 +198,7 @@ empty screen.
 
 **Plans at a glance**
 
-- **FR-008**: A content card **Plans at a glance** (ⓘ "Every plan your teams work on, the teams on it,
-  and live status rolled up from its activities."; subtitle "Live roll-up across your teams" or "across
-  all plans") MUST list the plans in scope with: plan name (link), ID, year and AOP tag; status chip;
+- **FR-008**: A content card **Plans at a glance** (no subtitle or ⓘ, D-422) MUST list the plans in scope with: plan name (link), ID, year and AOP tag; status chip;
   teams as coloured pills with a dot, the user's own teams first; number of campaigns; number of
   activities; approval progress as a bar with "n of m approved" or "No activities"; budget used as a bar
   with a percentage (red above 100 %, "—" without a plan budget); planned cost.

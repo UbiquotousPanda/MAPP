@@ -65,7 +65,7 @@ export function FieldHelpPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Field help' }]}
         title="Field help"
-        description="What each built-in field means, shown in the ⓘ beside it. A change shows on the next page anyone opens."
+        description="A change shows on the next page anyone opens."
       />
       <SettingsViewOnlyNote />
       {!entries.data ? (

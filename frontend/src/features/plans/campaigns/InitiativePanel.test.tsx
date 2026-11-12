@@ -104,9 +104,6 @@ describe('InitiativePanel (feature 005, US3)', () => {
     const money = within(panel).getByRole('region', { name: 'Budget and cost' });
     expect(within(money).getByText('Remaining campaign budget')).toBeInTheDocument();
     expect(within(money).getByText('Over-allocated by $50,000.00')).toBeInTheDocument();
-    expect(
-      within(panel).getByText('Activities: 3 (1 approved) · Line items: 5'),
-    ).toBeInTheDocument();
     await waitFor(() =>
       expect(within(panel).getByRole('region', { name: 'Activities' })).toHaveTextContent(
         launchFilmRow().name,
@@ -115,10 +112,16 @@ describe('InitiativePanel (feature 005, US3)', () => {
   });
 
   it('says when nothing is below it yet', async () => {
-    renderPanel(DETAILS);
+    renderPanel(DETAILS, [
+      reply(
+        'GET /api/v1/plans/{planId}/activities',
+        { body: { items: [], total: 0 } },
+        { planId: 'P-1001' },
+      ),
+    ]);
     const panel = await screen.findByRole('dialog', { name: 'Digital & social' });
 
-    expect(within(panel).getByText('No activities yet.')).toBeInTheDocument();
+    expect(await within(panel).findByText('No activities yet.')).toBeInTheDocument();
   });
 
   it('offers View history and feature 006’s actions under More', async () => {
