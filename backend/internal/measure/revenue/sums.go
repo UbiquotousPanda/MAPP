@@ -42,12 +42,11 @@ func stageMeasure(stage string) measureOf {
 	}
 }
 
-// monthlySums keeps pastActual by month for a quarter in progress; counted and projects tell a real zero from none.
+// monthlySums adds actualOrProjected per activity, as the ranked list does; counted and projects tell a zero from none.
 type monthlySums struct {
-	actual, pastActual, projected, goal [projection.Months]int64
-	unprojected                         [projection.Months]int64
-	counted, projects                   [projection.Months]bool
-	activityGoals                       int64
+	actual, actualOrProjected, projected, goal [projection.Months]int64
+	counted, projects                          [projection.Months]bool
+	activityGoals                              int64
 }
 
 func sumMonths(series []ActivitySeries, m measureOf) monthlySums {
@@ -56,13 +55,8 @@ func sumMonths(series []ActivitySeries, m measureOf) monthlySums {
 		for i, month := range a.Months {
 			f := m.month(month)
 			sums.actual[i] += int64Of(f.Actual)
-			if month.State == StatePast {
-				sums.pastActual[i] += int64Of(f.Actual)
-			}
+			sums.actualOrProjected[i] += actualOrProjectedIn(month, f)
 			sums.projected[i] += int64Of(f.Projected)
-			if month.State == StateInProgress && f.Projected == nil {
-				sums.unprojected[i] += int64Of(f.Actual)
-			}
 			sums.counted[i] = sums.counted[i] || f.Actual != nil
 			sums.projects[i] = sums.projects[i] || f.Projected != nil
 			sums.goal[i] += int64Of(f.Goal)
@@ -72,11 +66,26 @@ func sumMonths(series []ActivitySeries, m measureOf) monthlySums {
 	return sums
 }
 
-// total is actual or projected over the year, the month in progress counted once, through projected.
+// actualOrProjectedIn counts the month in progress once: its actual so far plus its projection's share of the days
+// left, rounded half up.
+func actualOrProjectedIn(month Month, f Figure[int64]) int64 {
+	switch month.State {
+	case StatePast:
+		return int64Of(f.Actual)
+	case StateInProgress:
+		if month.Days == 0 {
+			return int64Of(f.Actual)
+		}
+		share := (int64Of(f.Projected)*int64(month.DaysLeft)*2 + int64(month.Days)) / (2 * int64(month.Days))
+		return int64Of(f.Actual) + share
+	}
+	return int64Of(f.Projected)
+}
+
 func (s monthlySums) total() int64 {
 	var total int64
-	for i := range projection.Months {
-		total += s.pastActual[i] + s.projected[i] + s.unprojected[i]
+	for _, v := range s.actualOrProjected {
+		total += v
 	}
 	return total
 }

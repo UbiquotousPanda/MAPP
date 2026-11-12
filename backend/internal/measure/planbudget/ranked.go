@@ -20,7 +20,7 @@ func (f rankedFigures) Of(id string) sums {
 	return s
 }
 
-func (rankedFigures) Part(s sums, share money.Percent) sums {
+func (rankedFigures) Part(s sums, share ranking.Slice) sums {
 	return s.times(share)
 }
 
@@ -74,7 +74,7 @@ func (rankedFigures) Key(f Figures, sort string) (int64, bool) {
 }
 
 // times is the part of the sums a % split gives, each amount rounded half up to the cent.
-func (s sums) times(part money.Percent) sums {
+func (s sums) times(part ranking.Slice) sums {
 	scale := func(a money.Amount) money.Amount { return money.FromCents(part.OfWhole(a.Cents())) }
 	scaled := func(a *money.Amount) *money.Amount {
 		if a == nil {

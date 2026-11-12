@@ -117,6 +117,20 @@ describe('DealsPanel (058 US1)', () => {
     ).toHaveTextContent(/^—$/);
   });
 
+  it('shows a credit of $0.00 when the model gives the activity nothing from its deals, as the list does (FR-011)', async () => {
+    renderPage(
+      { body: webinarDeals({ credited: usd('0.00') }) },
+      '/reports/performance?year=2026&deals=A-1001',
+    );
+
+    const panel = await screen.findByRole('dialog');
+
+    expect(await within(panel).findByText('Credited to this activity')).toBeInTheDocument();
+    expect(
+      within(panel).getByText('Credited to this activity').nextElementSibling,
+    ).toHaveTextContent(/^\$0\.00$/);
+  });
+
   it('says "No data has arrived yet" when no deal of the year touches the activity (FR-019)', async () => {
     const { user } = renderPage({
       body: webinarDeals({ deals: [], total: 0, credited: usd('0.00'), reason: '' }),

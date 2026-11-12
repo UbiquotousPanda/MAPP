@@ -53,7 +53,7 @@ func TestActivitySeries_GivesEachMonthItsActualProjectedAndGoal_048C10_FR021_FR0
 	// Each figure reads actual / projected / goal; the fixed clock sits in July.
 	want := []string{
 		"2026-02 actual inq 1000/—/28000 mql —/—/620 usd 500000/—/0",
-		"2026-07 inProgress inq 0/31000/31000 mql —/600/600 usd 0/30000000/30000000",
+		"2026-07 inProgress inq —/31000/31000 mql —/600/600 usd —/30000000/30000000",
 		"2026-12 planned inq —/31000/31000 mql —/600/600 usd —/30000000/30000000",
 	}
 	var gotMonths []string
@@ -217,33 +217,19 @@ func TestActivitySeries_SumsToTheRevenueCards_048C10_SC002(t *testing.T) {
 	}
 }
 
-// addSeriesMonth adds a month's actual so far, and its actual or projected: actual once past, projected otherwise.
+// addSeriesMonth adds a month's actual so far, and its actual or projected: the actual once past, the projection
+// ahead, and in the month in progress its actual plus the projection's share of the days left.
 func addSeriesMonth(m revenue.Month, actual, total money.Amount) (money.Amount, money.Amount) {
 	f := m.RevenueUSD
 	if f.Actual != nil {
-		actual = actual.Add(*f.Actual)
+		actual, total = actual.Add(*f.Actual), total.Add(*f.Actual)
 	}
-	if m.State == revenue.StatePast && f.Actual != nil {
-		return actual, total.Add(*f.Actual)
+	if m.State == revenue.StatePast || f.Projected == nil {
+		return actual, total
 	}
-	if f.Projected != nil {
-		total = total.Add(*f.Projected)
+	share := f.Projected.Cents()
+	if m.State == revenue.StateInProgress {
+		share = (share*int64(m.DaysLeft)*2 + int64(m.Days)) / (2 * int64(m.Days))
 	}
-	return actual, total
-}
-
-func TestActivitySeries_CountsTheRevenueFactsLeftOutForWantOfARate_FR024_046C7(t *testing.T) {
-	t.Parallel()
-	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}
-	facts := []revenue.FactTotal{
-		{ActivityID: "A-1", Stage: "revenue", Month: "2026-02", Currency: "USD", AmountMinor: 500_000, FactCount: 2},
-		{ActivityID: "A-1", Stage: "revenue", Month: "2026-03", Currency: "EUR", AmountMinor: 900_000, FactCount: 3},
-		{ActivityID: "A-1", Stage: "revenue", Month: "2026-04", Currency: "JPY", AmountMinor: 100, FactCount: 1},
-	}
-
-	got := seriesOf(t, newFixtureWith(oneActivityScope(), goals, facts), "")
-
-	if len(got) != 1 || got[0].ExcludedFacts != 4 {
-		t.Fatalf("series = %+v, want 4 facts left out: 3 in EUR and 1 in JPY have no rate", got)
-	}
+	return actual, total.Add(money.FromCents(share))
 }

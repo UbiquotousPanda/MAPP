@@ -61,7 +61,7 @@ func (f *fakes) Credit(context.Context, authz.Scope, []string, int) (attribution
 
 func (f *fakes) service() *Service {
 	deps := Deps{Series: f, PlanGoals: f, Spending: f, Categories: f, Segments: f, Credits: f}
-	return NewService(fakeRead{}, deps, func() time.Time { return time.Date(2026, 6, 15, 0, 0, 0, 0, time.UTC) })
+	return NewService(fakeRead{}, deps, func() time.Time { return time.Date(2026, 6, 16, 0, 0, 0, 0, time.UTC) })
 }
 
 // newFakes holds one projected activity in plan one and one without a model in plan two; every figure is in
@@ -78,7 +78,7 @@ func newFakes() *fakes {
 	}
 }
 
-// projected: INQ 10, MQL 2 and 100.00 a month; June in progress has 4, 1 and 50.00 so far; its model converts 20 %.
+// projected: INQ 10, MQL 2 and 100.00 a month; June in progress, 15 of 30 days left, has 4, 1 and 50.00 so far.
 func projected(id, plan string) revenue.ActivitySeries {
 	rate := money.PercentFromHundredths(2000)
 	s := revenue.ActivitySeries{ID: id, Name: "Activity " + id, PlanID: plan, HasProjection: true, InqToMqlRate: &rate,
@@ -92,7 +92,7 @@ func projected(id, plan string) revenue.ActivitySeries {
 			m.State = revenue.StatePast
 			m.INQ.Actual, m.MQL.Actual, m.RevenueUSD.Actual = ptr[int64](10), ptr[int64](2), ptr(money.FromCents(10_000))
 		case i == pastMonths:
-			m.State = revenue.StateInProgress
+			m.State, m.Days, m.DaysLeft = revenue.StateInProgress, 30, 15
 			m.INQ.Actual, m.MQL.Actual, m.RevenueUSD.Actual = ptr[int64](4), ptr[int64](1), ptr(money.FromCents(5_000))
 		}
 		if i >= pastMonths {

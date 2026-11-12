@@ -219,9 +219,8 @@ func TestReport_ActualIsCountedFactsByFactDate_FR021(t *testing.T) {
 	}
 }
 
-// A real defect: July (the fixed clock's month) carries both an Actual and a Projected figure, and the
-// cards summed both into the total, double-counting it. A fact landing in July must move Actual, never the
-// total: July's own Projected figure already stands for that month.
+// July, the month in progress, carries both an Actual and a Projected figure; the total takes July's actual so far
+// plus the share of its projection for the days left, so a July fact moves the total by exactly itself.
 func TestReport_TotalDoesNotCountTheMonthInProgressTwice_FR010(t *testing.T) {
 	t.Parallel()
 	sc := oneActivityScope()
@@ -245,8 +244,8 @@ func TestReport_TotalDoesNotCountTheMonthInProgressTwice_FR010(t *testing.T) {
 	if afterReport.Cards.Actual.Value == nil || afterReport.Cards.Actual.Value.Amount.Cents() != 5_000_000 {
 		t.Fatalf("actual card = %v, want exactly the 50,000.00 USD July fact", afterReport.Cards.Actual.Value)
 	}
-	if afterReport.Cards.Projected.Value.Amount.Cents() != beforeReport.Cards.Projected.Value.Amount.Cents() {
-		t.Errorf("total = %s after a July fact, want it unchanged from %s: July's model figure already covers July",
+	if afterReport.Cards.Projected.Value.Amount.Cents() != beforeReport.Cards.Projected.Value.Amount.Cents()+5_000_000 {
+		t.Errorf("total = %s after a July fact, want %s plus the 50,000.00 fact, counted once",
 			afterReport.Cards.Projected.Value.Amount, beforeReport.Cards.Projected.Value.Amount)
 	}
 }

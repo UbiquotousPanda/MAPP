@@ -84,3 +84,35 @@ func TestReports_WithNoPlanInViewShowNoGridOfZeros_FR008_FR009(t *testing.T) {
 		assertNoFigure(t, "INQ "+p.Key, [3]*int64{p.Actual, p.Projected, p.Goal})
 	}
 }
+
+// January and March have facts; February, April to July and August, the month in progress, have none.
+func TestPeriods_AMonthWithoutAFactHasNoActualBesideCountedMonths_FR009_D426(t *testing.T) {
+	t.Parallel()
+	facts := []revenue.FactTotal{
+		{ActivityID: "A-1", Stage: "revenue", Month: "2026-01", Currency: "USD", AmountMinor: 10_000, FactCount: 1},
+		{ActivityID: "A-1", Stage: "revenue", Month: "2026-03", Currency: "USD", AmountMinor: 5_000, FactCount: 1},
+		{ActivityID: "A-1", Stage: "inq", Month: "2026-01", Counts: 4, FactCount: 1},
+		{ActivityID: "A-1", Stage: "inq", Month: "2026-03", Counts: 2, FactCount: 1},
+	}
+	s := newFixtureAt(midAugust, oneActivityScope(), inYearModel(), facts)
+	want := map[string][]bool{measure.PeriodMonth: {true, false, true, false, false, false, false, false},
+		measure.PeriodQuarter: {true, false, false}}
+	for _, period := range bothPeriods {
+		f := measure.Filter{Period: period, Show: measure.ShowActivity}
+		r := revenueIn(t, s, period)
+		inq, err := s.FunnelReport(t.Context(), priya, f, revenue.StageINQ)
+		if err != nil {
+			t.Fatalf("FunnelReport: %v", err)
+		}
+		for i, has := range want[period] {
+			if (r.Periods[i].Actual != nil) != has || (inq.Periods[i].Actual != nil) != has {
+				t.Errorf("%s: revenue actual %v, INQ actual %v, want a figure %v", r.Periods[i].Key,
+					r.Periods[i].Actual, inq.Periods[i].Actual, has)
+			}
+		}
+		if centsOf(r.Totals.Actual) != 15_000 || derefOr(inq.Totals.Actual) != 6 {
+			t.Errorf("%s: totals %v and %v, want the months with data, 150.00 and 6", period, r.Totals.Actual,
+				inq.Totals.Actual)
+		}
+	}
+}

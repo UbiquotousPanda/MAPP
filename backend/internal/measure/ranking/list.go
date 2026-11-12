@@ -4,15 +4,13 @@ import (
 	"cmp"
 	"slices"
 	"strings"
-
-	"mapp/internal/platform/money"
 )
 
 // Figures is what a report ranks by: S adds up and splits, F is what an entry shows, and Key is the whole number a
 // sort ranks F by (cents for money, a count for a count); without one the entry goes last.
 type Figures[S, F any] interface {
 	Of(id string) S
-	Part(s S, share money.Percent) S
+	Part(s S, share Slice) S
 	Plus(a, b S) S
 	Shown(s S) F
 	Key(f F, sort string) (int64, bool)
@@ -20,7 +18,7 @@ type Figures[S, F any] interface {
 
 type placed[F any] struct {
 	id    string
-	share *money.Percent
+	share *Slice
 	entry Entry[F]
 }
 
@@ -108,7 +106,7 @@ func (b builder[S, F]) page(groups []*groupAcc[S, F]) []Group[F] {
 	return out
 }
 
-func (b builder[S, F]) childrenOf(id string, share *money.Percent) []Entry[F] {
+func (b builder[S, F]) childrenOf(id string, share *Slice) []Entry[F] {
 	children := []Entry[F]{}
 	for _, child := range b.x.ChildrenInView(id) {
 		children = append(children, b.entryOf(child, b.part(b.fig.Of(child), share)))
@@ -117,7 +115,7 @@ func (b builder[S, F]) childrenOf(id string, share *money.Percent) []Entry[F] {
 	return children
 }
 
-func (b builder[S, F]) part(s S, share *money.Percent) S {
+func (b builder[S, F]) part(s S, share *Slice) S {
 	if share == nil {
 		return s
 	}

@@ -16,8 +16,13 @@ const (
 // share is one group an entry belongs to; part is its share of the entry under a % split, nil for all of it.
 type share struct {
 	key, label string
-	part       *money.Percent
+	part       *Slice
 }
+
+// Slice is a split entry's share up to To less its share up to From, so the rounded parts add up to the entry exactly.
+type Slice struct{ From, To money.Percent }
+
+func (s Slice) OfWhole(n int64) int64 { return s.To.OfWhole(n) - s.From.OfWhole(n) }
 
 func (x *Index) groupsOf(id, group string) []share {
 	n := x.byID[id]
@@ -51,6 +56,7 @@ func (x *Index) attributeGroups(id, attributeID string) []share {
 	attribute := x.attributes[attributeID]
 	equal := equalShares(len(value.OptionIDs))
 	out := make([]share, 0, len(value.OptionIDs))
+	var from money.Percent
 	for i, optionID := range value.OptionIDs {
 		g := share{key: optionID, label: optionID}
 		for _, option := range attribute.Options {
@@ -58,18 +64,20 @@ func (x *Index) attributeGroups(id, attributeID string) []share {
 				g.label = option.Label
 			}
 		}
-		if p, split := value.Shares[optionID]; split {
-			g.part = &p
-		} else if len(equal) > 1 {
-			g.part = &equal[i]
+		p, split := value.Shares[optionID]
+		if !split && len(equal) > 1 {
+			p, split = equal[i], true
+		}
+		if split {
+			to := money.PercentFromHundredths(from.Hundredths() + p.Hundredths())
+			g.part, from = &Slice{From: from, To: to}, to
 		}
 		out = append(out, g)
 	}
 	return out
 }
 
-// equalShares split a plain multiple choice as a % split of 100/n each, the first options taking the remainder, so
-// the shares add up to 100.00 %.
+// equalShares split a plain multiple choice 100/n each, the first options taking the remainder of 100.00 %.
 func equalShares(n int) []money.Percent {
 	if n == 0 {
 		return nil

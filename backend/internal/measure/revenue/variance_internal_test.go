@@ -22,7 +22,7 @@ var varianceCases = []struct {
 
 func sumsOf(total, goal int64) monthlySums {
 	var sums monthlySums
-	sums.projected[0], sums.activityGoals = total, goal
+	sums.actualOrProjected[0], sums.activityGoals = total, goal
 	return sums
 }
 

@@ -1,6 +1,7 @@
 package revenue
 
 import (
+	"mapp/internal/measure/ranking"
 	"mapp/internal/platform/money"
 )
 
@@ -45,13 +46,13 @@ func addRevenueFigures(a, b RevenueFigures) RevenueFigures {
 }
 
 // revenueTimes is the share of f a % split gives, each amount rounded half up to the cent.
-func revenueTimes(f RevenueFigures, part money.Percent) RevenueFigures {
+func revenueTimes(f RevenueFigures, part ranking.Slice) RevenueFigures {
 	f.Goal, f.Actual, f.Projected = partOf(f.Goal, part), partOf(f.Actual, part), partOf(f.Projected, part)
 	f.AttributedRevenue, f.ActualCost = partOf(f.AttributedRevenue, part), partOf(f.ActualCost, part)
 	return f
 }
 
-func partOf(m *money.Money, part money.Percent) *money.Money {
+func partOf(m *money.Money, part ranking.Slice) *money.Money {
 	if m == nil {
 		return nil
 	}

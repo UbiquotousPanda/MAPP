@@ -199,10 +199,8 @@ function DealsLoaded({
       <dl className={styles.totals}>
         <div className={styles.total}>
           <dt className={styles.totalLabel}>Credited to this activity</dt>
-          <dd className={styles.totalValue}>
-            {Number(data.credited.amount) === 0 ? '—' : money(data.credited)}
-          </dd>
-          {data.comparison && data.comparisonCredited && (
+          <dd className={styles.totalValue}>{data.total === 0 ? '—' : money(data.credited)}</dd>
+          {data.total > 0 && data.comparison && data.comparisonCredited && (
             <dd className={styles.compare}>
               {money(data.comparisonCredited)} under {data.comparison.name}
             </dd>

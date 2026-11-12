@@ -38,7 +38,7 @@ func (c counts) Of(id string) count {
 	return s
 }
 
-func (counts) Part(s count, share money.Percent) count {
+func (counts) Part(s count, share ranking.Slice) count {
 	return count{N: share.OfWhole(s.N), Has: s.Has}
 }
 func (counts) Plus(a, b count) count               { return count{N: a.N + b.N, Has: a.Has || b.Has} }

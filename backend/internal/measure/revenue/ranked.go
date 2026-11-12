@@ -114,7 +114,7 @@ func (r *revenueRanking) Of(id string) revenueSums {
 	return s
 }
 
-func (*revenueRanking) Part(s revenueSums, share money.Percent) revenueSums {
+func (*revenueRanking) Part(s revenueSums, share ranking.Slice) revenueSums {
 	return revenueSums{figures: revenueTimes(s.figures, share), roiCredited: partOf(s.roiCredited, share), models: s.models}
 }
 func (*revenueRanking) Plus(a, b revenueSums) revenueSums { return addRevenueSums(a, b) }
@@ -186,7 +186,7 @@ func (r *funnelRanking) Of(id string) funnelSums {
 	return s
 }
 
-func (*funnelRanking) Part(s funnelSums, share money.Percent) funnelSums {
+func (*funnelRanking) Part(s funnelSums, share ranking.Slice) funnelSums {
 	return funnelSums{figures: funnelTimes(s.figures, share), previous: share.OfWhole(s.previous), models: s.models}
 }
 

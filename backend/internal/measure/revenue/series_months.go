@@ -1,6 +1,8 @@
 package revenue
 
 import (
+	"time"
+
 	"mapp/internal/platform/money"
 	"mapp/internal/projection"
 )
@@ -14,18 +16,22 @@ func monthsOf(v activityView, w window) []Month {
 	for i := range months {
 		state := periodState(i, 1, todayIndex)
 		months[i] = Month{Key: periodKey(w.year, i, 1), State: state,
-			INQ:        figureAt(countsOf(facts.counts[StageINQ]), countsOf(inq.Months), i, state),
-			MQL:        figureAt(countsOf(facts.counts[StageMQL]), countsOf(mql.Months), i, state),
-			RevenueUSD: figureAt(amountsOf(facts.revenue), amountsOf(v.projection.Revenue), i, state)}
+			INQ:        figureAt(facts.inq[i], countsOf(inq.Months), i, state),
+			MQL:        figureAt(facts.mql[i], countsOf(mql.Months), i, state),
+			RevenueUSD: figureAt(facts.revenue[i], amountsOf(v.projection.Revenue), i, state)}
+		if state == StateInProgress {
+			months[i].Days = time.Date(w.year, time.Month(i+2), 0, 0, 0, 0, 0, time.UTC).Day()
+			months[i].DaysLeft = months[i].Days - w.today.Day() + 1
+		}
 	}
 	return months
 }
 
-// figureAt reads month i of one measure; actual and planned are nil when there is nothing counted or projected.
-func figureAt[T int64 | money.Amount](actual, planned []T, i int, state string) Figure[T] {
+// figureAt reads month i of one measure; actual is nil without a fact that month, planned without a projection.
+func figureAt[T int64 | money.Amount](actual *T, planned []T, i int, state string) Figure[T] {
 	var f Figure[T]
-	if state != StateFuture && i < len(actual) {
-		f.Actual = cloned(&actual[i])
+	if state != StateFuture {
+		f.Actual = cloned(actual)
 	}
 	if i < len(planned) {
 		f.Goal = cloned(&planned[i])

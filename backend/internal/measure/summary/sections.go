@@ -73,25 +73,29 @@ func (b builder) total(t totals) *money.Money {
 	return b.money(t.actualOrProjected())
 }
 
+// coverageOf leaves a plan whose model lacks INQ or MQL out of that stage on both sides; its activities share its model.
 func coverageOf(series []revenue.ActivitySeries, plans map[string]revenue.Goal) []Coverage {
-	var activities, planned [3]int64
-	for _, s := range series {
-		addGoals(&activities, s.Goal)
-	}
-	for _, g := range plans {
-		addGoals(&planned, g)
-	}
-	out := make([]Coverage, 0, len(activities))
+	out := make([]Coverage, 0, 3)
 	for i, stage := range []Stage{StageINQ, StageMQL, StageRevenue} {
-		out = append(out, Coverage{Stage: stage, Percent: goalCoverage(activities[i], planned[i])})
+		kept := series
+		if stage != StageRevenue {
+			kept = revenue.AllowingStage(series, string(stage))
+		}
+		var activities, planned int64
+		counted := map[string]bool{}
+		for _, s := range kept {
+			activities += goalsOf(s.Goal)[i]
+			if g, found := plans[s.PlanID]; found && !counted[s.PlanID] {
+				counted[s.PlanID], planned = true, planned+goalsOf(g)[i]
+			}
+		}
+		out = append(out, Coverage{Stage: stage, Percent: goalCoverage(activities, planned)})
 	}
 	return out
 }
 
-func addGoals(sums *[3]int64, g revenue.Goal) {
-	sums[0] += valueOf(g.INQ)
-	sums[1] += valueOf(g.MQL)
-	sums[2] += valueOf(cents(g.RevenueUSD))
+func goalsOf(g revenue.Goal) [3]int64 {
+	return [3]int64{valueOf(g.INQ), valueOf(g.MQL), valueOf(cents(g.RevenueUSD))}
 }
 
 func (b builder) funnelSection(series []revenue.ActivitySeries) FunnelSection {
@@ -99,8 +103,8 @@ func (b builder) funnelSection(series []revenue.ActivitySeries) FunnelSection {
 	figures := map[Stage]Figures{}
 	out := FunnelSection{Conversions: []Conversion{}, Trend: ConversionTrend{Stage: StageMQL, Periods: []RatePeriod{}}}
 	for _, stage := range counted {
-		t := sumSeries(series, stagePick(stage))
-		figures[stage] = Figures{Actual: t.actual(), Goal: t.goal}
+		t := sumSeries(revenue.AllowingStage(series, string(stage)), stagePick(stage))
+		figures[stage] = Figures{Actual: t.actual(), Goal: t.goal, NoActual: !t.anyActual()}
 		out.Stages = append(out.Stages, StageFigures{Stage: stage, ActualOrProjected: figureIfAny(countOf(t)),
 			Goal: optionalCount(t), Performance: performanceOf(t.actualOrProjected(), t.goal),
 			PlansWithout: plansWithout(series, stage)})
@@ -148,8 +152,7 @@ func optionalCount(t totals) *int64 {
 }
 
 func (b builder) conversionTrend(series []revenue.ActivitySeries, goals []*int64) []RatePeriod {
-	inq := periodsOf(sumSeries(series, stagePick(StageINQ)).months, b.quarterly)
-	mql := periodsOf(sumSeries(series, stagePick(StageMQL)).months, b.quarterly)
+	inq, mql := b.stagePeriods(series, StageINQ), b.stagePeriods(series, StageMQL)
 	out := make([]RatePeriod, 0, len(mql))
 	for i, p := range mql {
 		if i >= len(inq) {
@@ -160,9 +163,13 @@ func (b builder) conversionTrend(series []revenue.ActivitySeries, goals []*int64
 			goal = goals[i]
 		}
 		out = append(out, RatePeriod{Key: p.key, Label: p.label, State: p.state,
-			Rate: rateOf(p.shownValue(), inq[i].shownValue()), Goal: tenthsText(goal)})
+			Rate: trendRate(p, inq[i]), Goal: tenthsText(goal)})
 	}
 	return out
+}
+
+func (b builder) stagePeriods(series []revenue.ActivitySeries, stage Stage) []period {
+	return periodsOf(sumSeries(revenue.AllowingStage(series, string(stage)), stagePick(stage)).months, b.quarterly)
 }
 
 // countedStages are the counted stages any model in view allows, in funnel order, as Revenue's Funnel offers them.

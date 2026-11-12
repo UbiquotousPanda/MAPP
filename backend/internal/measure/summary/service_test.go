@@ -35,7 +35,8 @@ func TestRevenueSection_048_FR005_C2(t *testing.T) {
 
 	got := report(t, newFakes(), measure.Filter{}).Revenue
 
-	// A-1: 5 past months of 100.00, then June's and six more months' projections of 100.00; A-2's 200.00 counts too.
+	// A-1: 5 past months of 100.00, June's 50.00 so far and half its 100.00 for the days left, six more months'
+	// projections of 100.00; A-2's 200.00 counts too.
 	want := RevenueSection{PeriodLabel: "FY 2026", ActualOrProjected: usd(140_000), Goal: usd(1_000_000),
 		Performance:  Performance{Percent: ptr(14), Variance: revenue.BelowPlan},
 		GoalCoverage: []Coverage{{StageINQ, ptr(50)}, {StageMQL, ptr(50)}, {StageRevenue, ptr(50)}}}
@@ -70,9 +71,9 @@ func TestFunnelSection_048_FR009_FR010(t *testing.T) {
 
 	got := report(t, newFakes(), measure.Filter{}).Funnel
 
-	// INQ: 50 past + 10 in June + 60 ahead = 120 against 100; conversion so far 11 MQL of 54 INQ.
-	wantINQ := StageFigures{Stage: StageINQ, ActualOrProjected: ptr[int64](120), Goal: ptr[int64](100),
-		Performance: Performance{Percent: ptr(120), Variance: revenue.AbovePlan}}
+	// INQ: 50 past + June's 4 so far and 5 for its days left + 60 ahead = 119 against 100; conversion so far 11 MQL of 54 INQ.
+	wantINQ := StageFigures{Stage: StageINQ, ActualOrProjected: ptr[int64](119), Goal: ptr[int64](100),
+		Performance: Performance{Percent: ptr(119), Variance: revenue.AbovePlan}}
 	if !cmp.Equal(wantINQ, got.Stages[0]) || len(got.Stages) != 3 || got.Stages[2].Stage != StageRevenue {
 		t.Errorf("stages = %+v, want INQ %+v, then MQL and Revenue", got.Stages, wantINQ)
 	}

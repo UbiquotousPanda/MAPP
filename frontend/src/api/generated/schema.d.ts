@@ -13050,7 +13050,7 @@ export interface components {
             stage: "inq" | "mql";
             /** @description Every stage any model in view allows, in funnel order (049-C11). */
             availableStages: ("inq" | "mql")[];
-            /** @description Plans whose model does not allow the selected stage (049-C11, FR-018). */
+            /** @description Plans whose model does not allow the selected stage; their activities count in none of the stage's figures (049-C11, FR-018, D-426). */
             uncoveredCount: number;
             cards: components["schemas"]["FunnelCards"];
             /** @enum {string} */

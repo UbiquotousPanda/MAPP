@@ -12,6 +12,9 @@ func conversions(stages []Stage, totals map[Stage]Figures, goal *int64) []Conver
 	out := make([]Conversion, 0, len(stages))
 	for i := 1; i < len(stages); i++ {
 		stage, previous := totals[stages[i]], totals[stages[i-1]]
+		if stage.NoActual || previous.NoActual {
+			previous.Actual = 0
+		}
 		g := goal
 		if stages[i] != StageMQL {
 			g = nil

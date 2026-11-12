@@ -29,10 +29,12 @@ const (
 	uncategorisedCategory = "Uncategorised"
 )
 
+// Figures are a stage's year; NoActual says no fact of the stage was counted, so a rate on it is "—".
 type Figures struct {
 	Actual    int64
 	Projected int64
 	Goal      int64
+	NoActual  bool
 }
 
 type Performance struct {

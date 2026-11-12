@@ -38,16 +38,17 @@ type Goal struct {
 	RevenueUSD *money.Amount
 }
 
+// Month is one month of an activity; DaysLeft (today included) and Days are set only for the month in progress.
 type Month struct {
-	Key        string
-	State      string
-	INQ, MQL   Figure[int64]
-	RevenueUSD Figure[money.Amount]
+	Key            string
+	State          string
+	DaysLeft, Days int
+	INQ, MQL       Figure[int64]
+	RevenueUSD     Figure[money.Amount]
 }
 
-// Figure is one measure in one month. Actual is set up to the month in progress once the activity has a counted fact
-// of the measure; Projected from the month in progress on. Goal places the goal in time with the plan's model and
-// drops what lands after the plan year. Projected and Goal are nil when the model projects no such measure.
+// Figure is one measure in one month: Actual where a fact was counted that month up to today, Projected from the month in
+// progress on, Goal across the plan year; Projected and Goal are nil when the model projects no such measure.
 type Figure[T int64 | money.Amount] struct {
 	Actual, Projected, Goal *T
 }
