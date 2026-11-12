@@ -64,7 +64,7 @@ test('033 US1: from an approved activity to the purchase order and Committed fig
   await expect(page.getByText('Nothing matches these filters')).toBeVisible();
   await page.goto(`/purchase-requests?q=${poNumber}`);
   await expect(
-    page.getByRole('region', { name: 'Purchase requests by vendor' }).getByRole('link', {
+    page.getByRole('table', { name: 'Purchase requests by vendor' }).getByRole('link', {
       name: prName,
       exact: true,
     }),

@@ -82,10 +82,6 @@
   color: var(--ink);
 }
 
-.scroll {
-  overflow-x: auto;
-}
-
 .headerTip {
   display: inline-flex;
   align-items: center;

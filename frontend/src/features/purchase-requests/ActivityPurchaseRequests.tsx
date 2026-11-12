@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { recordHref } from '@/ui/record-links';
 import { formatMoneyText, formatWhole } from '@/format/decimal';
 import dataTable from '@/ui/Table/Table.module.css';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { useActivityPurchaseRequests } from './api';
 import type { ActivityPurchaseRequests as Section } from './api';
 import { FIELD_LABELS, PURCHASE_REQUESTS } from './purchase-request-text';
@@ -38,7 +39,7 @@ function Loaded({ section }: { section: Section }) {
       {section.lineItems.length === 0 ? (
         <p className={styles.note}>{NO_ACTIVITY_PRS}</p>
       ) : (
-        <div className={styles.scroll}>
+        <ScrollBox label="Purchase requests by line item">
           <table className={dataTable.table}>
             <caption className="visually-hidden">Purchase requests by line item</caption>
             <thead>
@@ -71,7 +72,7 @@ function Loaded({ section }: { section: Section }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollBox>
       )}
     </>
   );

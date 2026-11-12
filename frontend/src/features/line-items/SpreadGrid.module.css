@@ -18,16 +18,10 @@
 }
 
 /* Many months scroll sideways inside the card, never the page (edge case "Many months"). */
-.scroll {
-  position: relative;
-  overflow-x: auto;
+.frame {
+  overflow: hidden;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-control);
-}
-
-.scroll:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 table.table {

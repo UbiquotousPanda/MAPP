@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useFormatters } from '@/format/useFormatters';
 import dataTable from '@/ui/Table/Table.module.css';
 import { cx } from '@/ui/cx';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { DashboardFigures } from './api';
 import styles from './Dashboards.module.css';
 
@@ -25,7 +26,7 @@ const FIGURE_TITLES = ['Budget', 'Planned cost', 'Committed', 'Actual', 'Left to
 export function FigureTable({ caption, nameTitle, extraTitles = [], rows }: FigureTableProps) {
   const { money } = useFormatters();
   return (
-    <div className={styles.scroll}>
+    <ScrollBox label={caption}>
       <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">{caption}</caption>
         <thead>
@@ -62,6 +63,6 @@ export function FigureTable({ caption, nameTitle, extraTitles = [], rows }: Figu
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollBox>
   );
 }

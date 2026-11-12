@@ -6,6 +6,7 @@ import { monthsAboveText } from '@/features/all-work';
 import dataTable from '@/ui/Table/Table.module.css';
 import { cx } from '@/ui/cx';
 import { ViewSwitch } from '@/ui/ViewSwitch/ViewSwitch';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { DashboardMonths, Money } from './api';
 import { FINANCE_HIDDEN, monthLabel } from './dashboard-text';
 import styles from './Dashboards.module.css';
@@ -119,7 +120,7 @@ function Bars({ months }: MonthlyChartProps) {
 function MonthTable({ months }: MonthlyChartProps) {
   const { money } = useFormatters();
   return (
-    <div className={styles.scroll}>
+    <ScrollBox label="Planned cost and actual paid by month">
       <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">
           Planned cost spread by month and actual paid by posting month, with running totals
@@ -147,6 +148,6 @@ function MonthTable({ months }: MonthlyChartProps) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollBox>
   );
 }

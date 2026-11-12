@@ -9,6 +9,7 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import dataTable from '@/ui/Table/Table.module.css';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import styles from './BudgetByMonth.module.css';
 import { useBudgetByMonth } from './api';
 import type { BudgetPhasing, PhasingLevel } from './api';
@@ -102,12 +103,7 @@ export function BudgetByMonthCard({
       ...(row.noDates ? [{ label: 'No dates', planned: row.noDates }] : []),
     ];
     return (
-      <div
-        className={styles.scroll}
-        role="region"
-        aria-label="Budget by month, scrolls sideways"
-        tabIndex={0}
-      >
+      <ScrollBox label="Budget by month">
         <table className={`${dataTable.table} ${styles.table}`}>
           <caption className="visually-hidden">
             Budget by {view === 'months' ? 'month' : 'quarter'} of {record.name} in {amountsIn},{' '}
@@ -158,7 +154,7 @@ export function BudgetByMonthCard({
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollBox>
     );
   }
 

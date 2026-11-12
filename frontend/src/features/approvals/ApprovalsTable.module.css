@@ -1,7 +1,5 @@
 /* The table reaches over the card's padding; its first and last cells keep the card's 24 px. */
-.scroll {
-  position: relative;
-  overflow-x: auto;
+.bleed {
   margin: 0 calc(-1 * var(--card-padding)) calc(-1 * var(--card-padding));
 }
 

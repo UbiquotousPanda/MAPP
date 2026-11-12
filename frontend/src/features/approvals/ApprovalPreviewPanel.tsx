@@ -15,6 +15,7 @@ import { formatDate } from '@/format/intl';
 import { recordHref } from '@/ui/record-links';
 import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { ApprovalChain } from './ApprovalChain';
 import { ApprovalHistory } from './ApprovalHistory';
 import { useApprovalPreview } from './api';
@@ -228,48 +229,44 @@ function LineItems({ items }: { items: PreviewLineItem[] }) {
   }
 
   return (
-    // Focusable, so the keyboard can scroll it sideways when it is wider than the panel.
-    <div
-      className={styles.scroll}
-      role="region"
-      aria-label="Line items, scrolls sideways"
-      tabIndex={0}
-    >
-      <table className={cx(dataTable.table, styles.table)}>
-        <thead>
-          <tr>
-            <th scope="col">Line item</th>
-            <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
-              Planned cost
-            </th>
-            <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
-              {converted}
-            </th>
-            <th scope="col">Spend type</th>
-            <th scope="col">GL code</th>
-            <th scope="col">Finance budget item</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.id}>
-              <th scope="row">
-                {item.name}
-                <span className={styles.id}>{item.id}</span>
+    <div className={styles.frame}>
+      <ScrollBox label="Line items">
+        <table className={cx(dataTable.table, styles.table)}>
+          <thead>
+            <tr>
+              <th scope="col">Line item</th>
+              <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
+                Planned cost
               </th>
-              <td className={cx(dataTable.numeric, styles.amount)}>
-                {format.money(item.plannedCost)}
-              </td>
-              <td className={cx(dataTable.numeric, styles.amount)}>
-                {format.money(item.plannedCostDisplay)}
-              </td>
-              <td>{item.spendType || '—'}</td>
-              <td>{item.glCode || '—'}</td>
-              <td>{item.financeBudgetItem || '—'}</td>
+              <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
+                {converted}
+              </th>
+              <th scope="col">Spend type</th>
+              <th scope="col">GL code</th>
+              <th scope="col">Finance budget item</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.id}>
+                <th scope="row">
+                  {item.name}
+                  <span className={styles.id}>{item.id}</span>
+                </th>
+                <td className={cx(dataTable.numeric, styles.amount)}>
+                  {format.money(item.plannedCost)}
+                </td>
+                <td className={cx(dataTable.numeric, styles.amount)}>
+                  {format.money(item.plannedCostDisplay)}
+                </td>
+                <td>{item.spendType || '—'}</td>
+                <td>{item.glCode || '—'}</td>
+                <td>{item.financeBudgetItem || '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ScrollBox>
     </div>
   );
 }

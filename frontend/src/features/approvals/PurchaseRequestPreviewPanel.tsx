@@ -11,6 +11,7 @@ import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
 import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { ApprovalChain } from './ApprovalChain';
 import { ApprovalHistory } from './ApprovalHistory';
 import { PurchaseRequestDecisionDialog } from './PurchaseRequestDecisionDialog';
@@ -157,37 +158,34 @@ function PreviewBody({ preview }: { preview: PurchaseRequestApprovalPreview }) {
         <SectionHeading level={3} rank="sub" id={`${id}-lines`}>
           Lines
         </SectionHeading>
-        <div
-          className={styles.scroll}
-          role="region"
-          aria-label="Lines, scrolls sideways"
-          tabIndex={0}
-        >
-          <table className={cx(dataTable.table, styles.table)}>
-            <thead>
-              <tr>
-                <th scope="col">Line item</th>
-                <th scope="col">HX key</th>
-                <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
-                  Amount
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {pr.lines.map((line) => (
-                <tr key={line.id}>
-                  <th scope="row">
-                    {line.lineItem.name}
-                    <span className={styles.id}>{line.lineItem.id}</span>
+        <div className={styles.frame}>
+          <ScrollBox label="Lines">
+            <table className={cx(dataTable.table, styles.table)}>
+              <thead>
+                <tr>
+                  <th scope="col">Line item</th>
+                  <th scope="col">HX key</th>
+                  <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
+                    Amount
                   </th>
-                  <td>{line.hxKey}</td>
-                  <td className={cx(dataTable.numeric, styles.amount)}>
-                    {format.money(line.amount)}
-                  </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pr.lines.map((line) => (
+                  <tr key={line.id}>
+                    <th scope="row">
+                      {line.lineItem.name}
+                      <span className={styles.id}>{line.lineItem.id}</span>
+                    </th>
+                    <td>{line.hxKey}</td>
+                    <td className={cx(dataTable.numeric, styles.amount)}>
+                      {format.money(line.amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </ScrollBox>
         </div>
         <p className={styles.unassigned}>
           <span>Total</span>

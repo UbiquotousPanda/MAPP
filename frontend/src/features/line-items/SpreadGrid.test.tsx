@@ -99,12 +99,9 @@ describe('SpreadGrid (FR-003, FR-020)', () => {
     ).toBeInTheDocument();
   });
 
-  it('keeps the line-item names in a sticky first column, scrolling inside the card', () => {
+  it('keeps the line-item names in a sticky first column', () => {
     renderGrid();
     const name = screen.getByRole('rowheader', { name: 'Agency fee' });
     expect(name.className).toMatch(/sticky/);
-    expect(
-      screen.getByRole('region', { name: 'Line items spread over time, in USD' }),
-    ).toHaveAttribute('tabindex', '0');
   });
 });

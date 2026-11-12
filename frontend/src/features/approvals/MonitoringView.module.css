@@ -41,8 +41,7 @@
 }
 
 /* The table touches the card's edges, right under the card's header divider. */
-.scroll {
-  overflow-x: auto;
+.bleed {
   margin: calc(-1 * var(--card-padding));
 }
 
@@ -121,11 +120,6 @@
 /* Workflow names wrap at word boundaries, never to one word per line. */
 .workflowCol {
   min-width: 160px;
-}
-
-.scroll:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: -2px;
 }
 
 .stack {

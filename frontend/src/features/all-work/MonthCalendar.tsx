@@ -7,6 +7,7 @@ import { MONTH_NAMES, WEEKDAYS, monthWeeks } from '@/ui/DatePicker/calendar';
 import { Popover } from '@/ui/Popover/Popover';
 import { cx } from '@/ui/cx';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { AllWorkResult, AllWorkRow } from './all-work-types';
 import { runsOn } from './calendar';
 import styles from './MonthCalendar.module.css';
@@ -62,7 +63,7 @@ export function MonthCalendar({ result, onOpen }: MonthCalendarProps) {
           />
         </div>
       </div>
-      <div className={styles.scroll}>
+      <ScrollBox label={title}>
         <table className={styles.grid}>
           <caption className="visually-hidden">{title}</caption>
           <thead>
@@ -93,7 +94,7 @@ export function MonthCalendar({ result, onOpen }: MonthCalendarProps) {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollBox>
     </div>
   );
 }

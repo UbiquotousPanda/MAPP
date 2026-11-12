@@ -13,6 +13,7 @@ import type { components } from '@/api/generated/schema';
 import { allows, gateItem } from '@/session/gate-action';
 import { cx } from '@/ui/cx';
 import { fieldHref, recordHref } from '@/ui/record-links';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { useFinancialRecord } from './gsap-financials';
 import type { FinancialFiguresData } from './gsap-financials';
 import { moneyText } from './line-item-math';
@@ -106,62 +107,61 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
         {items.length === 0 ? (
           <EmptyState icon={<ReceiptText />} title={EMPTY_SECTION} action={addButton} />
         ) : (
-          <div
-            className={styles.scroll}
-            role="region"
-            aria-label="Line items table, scrolls sideways"
-            tabIndex={0}
-          >
-            <table className={cx(dataTable.table, styles.table)}>
-              <caption className="visually-hidden">{SECTION_TITLE}</caption>
-              <thead>
-                <tr>
-                  <th scope="col" className={styles.nameColumn}>
-                    Name
-                  </th>
-                  <th scope="col" className={dataTable.numeric}>
-                    Planned cost
-                  </th>
-                  {planColumn && (
-                    <th scope="col" className={dataTable.numeric}>
-                      {planCurrencyColumn(planColumn)}
+          <div className={styles.bleed}>
+            <ScrollBox label="Line items table">
+              <table className={cx(dataTable.table, styles.table)}>
+                <caption className="visually-hidden">{SECTION_TITLE}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" className={styles.nameColumn}>
+                      Name
                     </th>
-                  )}
-                  <th scope="col" className={dataTable.numeric}>
-                    {usdColumn(displayCode)}
-                  </th>
-                  <th scope="col" className={dataTable.numeric}>
-                    {`Committed (${displayCode})`}
-                  </th>
-                  <th scope="col" className={dataTable.numeric}>
-                    {`Invoiced (${displayCode})`}
-                  </th>
-                  <th scope="col">Spread</th>
-                  <th scope="col">Completeness</th>
-                  <th scope="col">SWBS request</th>
-                  <th scope="col">
-                    <span className="visually-hidden">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <Row
-                    key={item.id}
-                    item={item}
-                    planColumn={planColumn !== null}
-                    gsap={figuresOf(item.id)}
-                    highlighted={item.id === highlight}
-                    onSelectField={(field) => void navigate(fieldHref('lineItem', item.id, field))}
-                    onView={() => void navigate(recordHref('lineItem', item.id))}
-                    onEdit={() => void navigate(`${recordHref('lineItem', item.id)}/edit`)}
-                    onDuplicate={() => actions.duplicate(item, activity)}
-                    onDelete={() => actions.remove(item, activity)}
-                    access={access}
-                  />
-                ))}
-              </tbody>
-            </table>
+                    <th scope="col" className={dataTable.numeric}>
+                      Planned cost
+                    </th>
+                    {planColumn && (
+                      <th scope="col" className={dataTable.numeric}>
+                        {planCurrencyColumn(planColumn)}
+                      </th>
+                    )}
+                    <th scope="col" className={dataTable.numeric}>
+                      {usdColumn(displayCode)}
+                    </th>
+                    <th scope="col" className={dataTable.numeric}>
+                      {`Committed (${displayCode})`}
+                    </th>
+                    <th scope="col" className={dataTable.numeric}>
+                      {`Invoiced (${displayCode})`}
+                    </th>
+                    <th scope="col">Spread</th>
+                    <th scope="col">Completeness</th>
+                    <th scope="col">SWBS request</th>
+                    <th scope="col">
+                      <span className="visually-hidden">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <Row
+                      key={item.id}
+                      item={item}
+                      planColumn={planColumn !== null}
+                      gsap={figuresOf(item.id)}
+                      highlighted={item.id === highlight}
+                      onSelectField={(field) =>
+                        void navigate(fieldHref('lineItem', item.id, field))
+                      }
+                      onView={() => void navigate(recordHref('lineItem', item.id))}
+                      onEdit={() => void navigate(`${recordHref('lineItem', item.id)}/edit`)}
+                      onDuplicate={() => actions.duplicate(item, activity)}
+                      onDelete={() => actions.remove(item, activity)}
+                      access={access}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </ScrollBox>
           </div>
         )}
         <UnassignedBalanceRow balance={balance} />

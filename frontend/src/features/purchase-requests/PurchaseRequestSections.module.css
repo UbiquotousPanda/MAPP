@@ -69,10 +69,6 @@
   line-height: var(--leading-sm);
 }
 
-.scroll {
-  overflow-x: auto;
-}
-
 .secondary {
   display: block;
   color: var(--ink-2);

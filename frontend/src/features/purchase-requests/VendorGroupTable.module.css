@@ -1,7 +1,3 @@
-.scroll {
-  overflow-x: auto;
-}
-
 .table tbody th,
 .table tbody td {
   vertical-align: top;

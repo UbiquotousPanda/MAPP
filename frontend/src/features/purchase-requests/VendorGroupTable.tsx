@@ -8,6 +8,7 @@ import { cx } from '@/ui/cx';
 import { purchaseRequestHref, recordHref } from '@/ui/record-links';
 import { localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type {
   PurchaseRequestListPage,
   PurchaseRequestRow,
@@ -46,7 +47,7 @@ export function VendorGroupTable({ page }: { page: PurchaseRequestListPage }) {
     );
 
   return (
-    <div className={styles.scroll} role="region" aria-label={TABLE_LABEL} tabIndex={0}>
+    <ScrollBox label={TABLE_LABEL}>
       <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">{TABLE_LABEL}</caption>
         <thead>
@@ -68,7 +69,7 @@ export function VendorGroupTable({ page }: { page: PurchaseRequestListPage }) {
           />
         ))}
       </table>
-    </div>
+    </ScrollBox>
   );
 }
 

@@ -2,6 +2,7 @@ import { Card } from '@/ui/Card/Card';
 import { formatMoneyText } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import dataTable from '@/ui/Table/Table.module.css';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { PurchaseRequest, PurchaseRequestVersion } from './api';
 import { Detail, DetailsList } from './Details';
 import { APPROVED_VERSION_TITLE, approvedOnText, inactive } from './page-text';
@@ -39,7 +40,7 @@ function VersionCard({ version }: { version: PurchaseRequestVersion }) {
             {formatMoneyText(version.amountDisplay)}
           </Detail>
         </DetailsList>
-        <div className={styles.scroll}>
+        <ScrollBox label={`${APPROVED_VERSION_TITLE}: lines`}>
           <table className={dataTable.table}>
             <caption className="visually-hidden">{`${APPROVED_VERSION_TITLE}: lines`}</caption>
             <thead>
@@ -67,7 +68,7 @@ function VersionCard({ version }: { version: PurchaseRequestVersion }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollBox>
       </div>
     </Card>
   );

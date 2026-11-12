@@ -59,16 +59,10 @@
   color: var(--ink-2);
 }
 
-.scroll {
-  position: relative;
-  overflow-x: auto;
+.frame {
+  overflow: hidden;
   border: 1px solid var(--row-divider);
   border-radius: var(--radius-control);
-}
-
-.scroll:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 .table tbody th,

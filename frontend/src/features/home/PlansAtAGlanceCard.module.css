@@ -1,21 +1,11 @@
-/* The table touches the card's edges; a shadow shows at an edge with more columns beyond it. */
-.scroll {
-  position: relative;
+/* The table touches the card's edges; the clip keeps the scroll fade inside the card's corners. */
+.bleed {
   margin: calc(-1 * var(--card-padding));
-  overflow-x: auto;
+  overflow: hidden;
   border-radius: 0 0 var(--radius-card) var(--radius-card);
-  background:
-    linear-gradient(to right, var(--surface) 30%, transparent) left center / 32px 100% no-repeat
-      local,
-    linear-gradient(to left, var(--surface) 30%, transparent) right center / 32px 100% no-repeat
-      local,
-    radial-gradient(farthest-side at 0 50%, var(--scroll-shadow), transparent) left center / 12px
-      100% no-repeat scroll,
-    radial-gradient(farthest-side at 100% 50%, var(--scroll-shadow), transparent) right center /
-      12px 100% no-repeat scroll;
 }
 
-.scroll + .more {
+.bleed + .more {
   margin-top: calc(var(--card-padding) + var(--space-3));
 }
 

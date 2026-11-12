@@ -9,6 +9,7 @@ import dataTable from '@/ui/Table/Table.module.css';
 import { recordHref } from '@/ui/record-links';
 import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import {
   financialsHref,
   TRANSACTIONS_PAGE_SIZE,
@@ -89,14 +90,7 @@ function TableBlock({ title, children }: { title: string; children: ReactNode })
       <SectionHeading level={3} rank="sub">
         {title}
       </SectionHeading>
-      <div
-        className={styles.scroll}
-        role="region"
-        aria-label={`${title}, scrolls sideways`}
-        tabIndex={0}
-      >
-        {children}
-      </div>
+      <ScrollBox label={title}>{children}</ScrollBox>
     </div>
   );
 }

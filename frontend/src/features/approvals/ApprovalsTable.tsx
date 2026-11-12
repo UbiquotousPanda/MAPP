@@ -9,6 +9,7 @@ import dataTable from '@/ui/Table/Table.module.css';
 import { formatWaitingTime, localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
 import type { Formatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { ApprovalRow, ApprovalTab } from './api';
 import { progressText } from './chain-messages';
 import type { PreviewSubject } from './schemas';
@@ -42,41 +43,43 @@ export function ApprovalsTable({ rows, tab, onOpen }: ApprovalsTableProps) {
   }
 
   return (
-    <div className={styles.scroll}>
-      <table className={cx(dataTable.table, styles.table)}>
-        <thead>
-          <tr>
-            <th scope="col" className={styles.nameCol}>
-              Record
-            </th>
-            <th scope="col">Record type</th>
-            <th scope="col" className={styles.pathCol}>
-              Plan › campaign
-            </th>
-            <th scope="col">Owner</th>
-            <th scope="col" className={dataTable.numeric}>
-              Planned cost
-            </th>
-            <th scope="col" className={styles.workflowCol}>
-              Workflow
-            </th>
-            <th scope="col">Level</th>
-            <th scope="col">Submitted</th>
-            {decided && <th scope="col">My decision</th>}
-            {decided && <th scope="col">Status</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <Row
-              key={`${row.subject.kind}-${row.subject.id}`}
-              row={row}
-              decided={decided}
-              onOpen={onOpen}
-            />
-          ))}
-        </tbody>
-      </table>
+    <div className={styles.bleed}>
+      <ScrollBox label="Approvals">
+        <table className={cx(dataTable.table, styles.table)}>
+          <thead>
+            <tr>
+              <th scope="col" className={styles.nameCol}>
+                Record
+              </th>
+              <th scope="col">Record type</th>
+              <th scope="col" className={styles.pathCol}>
+                Plan › campaign
+              </th>
+              <th scope="col">Owner</th>
+              <th scope="col" className={dataTable.numeric}>
+                Planned cost
+              </th>
+              <th scope="col" className={styles.workflowCol}>
+                Workflow
+              </th>
+              <th scope="col">Level</th>
+              <th scope="col">Submitted</th>
+              {decided && <th scope="col">My decision</th>}
+              {decided && <th scope="col">Status</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <Row
+                key={`${row.subject.kind}-${row.subject.id}`}
+                row={row}
+                decided={decided}
+                onOpen={onOpen}
+              />
+            ))}
+          </tbody>
+        </table>
+      </ScrollBox>
     </div>
   );
 }

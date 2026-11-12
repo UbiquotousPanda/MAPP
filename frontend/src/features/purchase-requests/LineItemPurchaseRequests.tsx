@@ -5,6 +5,7 @@ import { purchaseRequestHref } from '@/ui/record-links';
 import { formatMoneyText } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import dataTable from '@/ui/Table/Table.module.css';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { useLineItemPurchaseRequests } from './api';
 import type { LineItemPurchaseRequests as Section, Money } from './api';
 import { FIELD_LABELS, NEW_PURCHASE_REQUEST } from './purchase-request-text';
@@ -94,7 +95,7 @@ function Figures({ requested, available }: { requested: Money; available: Money 
 function Rows({ section }: { section: Section }) {
   const { money, date } = useFormatters();
   return (
-    <div className={styles.scroll}>
+    <ScrollBox label="Purchase requests">
       <table className={dataTable.table}>
         <caption className="visually-hidden">{`Purchase requests on ${section.lineItemId}`}</caption>
         <thead>
@@ -134,6 +135,6 @@ function Rows({ section }: { section: Section }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollBox>
   );
 }

@@ -7,6 +7,7 @@ import { cx } from '@/ui/cx';
 import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { FieldHelpTip } from '@/features/settings';
 import { formatAmount } from '@/format/decimal';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { monthColumns, quarterColumns } from './spread-grid-columns';
 import {
   EMPTY,
@@ -67,59 +68,61 @@ export function SpreadGrid({ grid, noDates }: SpreadGridProps) {
         />
       </div>
       {noDates && <p className={styles.note}>{GRID_NO_DATES}</p>}
-      <div className={styles.scroll} role="region" aria-label={gridCaption(code)} tabIndex={0}>
-        <table className={cx(dataTable.table, dataTable.bottomHead, styles.table)}>
-          <caption className="visually-hidden">{gridCaption(code)}</caption>
-          <thead>
-            <tr>
-              <th scope="col" className={cx(dataTable.sticky, styles.name)}>
-                {LINE_ITEM_COLUMN}
-              </th>
-              {shown.columns.map((column) => (
-                <th key={column.key} scope="col" className={dataTable.numeric}>
-                  <span className={styles.period}>{column.label}</span>
-                  {column.outsideActivityDates && (
-                    <span className={styles.outside}>
-                      {OUTSIDE_DATES}
-                      <InfoTip label={`${column.label} outside the dates`} text={OUTSIDE_TIP} />
-                    </span>
-                  )}
+      <div className={styles.frame}>
+        <ScrollBox label={gridCaption(code)}>
+          <table className={cx(dataTable.table, dataTable.bottomHead, styles.table)}>
+            <caption className="visually-hidden">{gridCaption(code)}</caption>
+            <thead>
+              <tr>
+                <th scope="col" className={cx(dataTable.sticky, styles.name)}>
+                  {LINE_ITEM_COLUMN}
                 </th>
+                {shown.columns.map((column) => (
+                  <th key={column.key} scope="col" className={dataTable.numeric}>
+                    <span className={styles.period}>{column.label}</span>
+                    {column.outsideActivityDates && (
+                      <span className={styles.outside}>
+                        {OUTSIDE_DATES}
+                        <InfoTip label={`${column.label} outside the dates`} text={OUTSIDE_TIP} />
+                      </span>
+                    )}
+                  </th>
+                ))}
+                <th scope="col" className={dataTable.numeric}>
+                  {TOTAL}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown.rows.map((row) => (
+                <tr key={row.lineItemId}>
+                  <th scope="row" className={cx(dataTable.sticky, styles.name)}>
+                    {row.name}
+                  </th>
+                  {shown.columns.map((column, index) => (
+                    <td key={column.key} className={dataTable.numeric}>
+                      {amount(row.cells[index] ?? null)}
+                    </td>
+                  ))}
+                  <td className={dataTable.numeric}>{amount(row.total)}</td>
+                </tr>
               ))}
-              <th scope="col" className={dataTable.numeric}>
-                {TOTAL}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {shown.rows.map((row) => (
-              <tr key={row.lineItemId}>
+            </tbody>
+            <tfoot>
+              <tr className={dataTable.total}>
                 <th scope="row" className={cx(dataTable.sticky, styles.name)}>
-                  {row.name}
+                  {TOTAL}
                 </th>
                 {shown.columns.map((column, index) => (
                   <td key={column.key} className={dataTable.numeric}>
-                    {amount(row.cells[index] ?? null)}
+                    {amount(shown.totals[index] ?? null)}
                   </td>
                 ))}
-                <td className={dataTable.numeric}>{amount(row.total)}</td>
+                <td className={dataTable.numeric}>{amount(shown.total)}</td>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className={dataTable.total}>
-              <th scope="row" className={cx(dataTable.sticky, styles.name)}>
-                {TOTAL}
-              </th>
-              {shown.columns.map((column, index) => (
-                <td key={column.key} className={dataTable.numeric}>
-                  {amount(shown.totals[index] ?? null)}
-                </td>
-              ))}
-              <td className={dataTable.numeric}>{amount(shown.total)}</td>
-            </tr>
-          </tfoot>
-        </table>
+            </tfoot>
+          </table>
+        </ScrollBox>
       </div>
     </div>
   );

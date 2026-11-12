@@ -3,6 +3,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { Card } from '@/ui/Card/Card';
 import dataTable from '@/ui/Table/Table.module.css';
 import { cx } from '@/ui/cx';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { DashboardGlobalBudget } from './api';
 import styles from './Dashboards.module.css';
 
@@ -17,7 +18,7 @@ export function GlobalBudgetsPanel({ budgets }: GlobalBudgetsPanelProps) {
       {budgets.length === 0 ? (
         <p className={styles.note}>No global budgets for this year.</p>
       ) : (
-        <div className={styles.scroll}>
+        <ScrollBox label="Global budgets">
           <table className={cx(dataTable.table, styles.table)}>
             <caption className="visually-hidden">
               Global budgets of the year and their allocations
@@ -50,7 +51,7 @@ export function GlobalBudgetsPanel({ budgets }: GlobalBudgetsPanelProps) {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollBox>
       )}
     </Card>
   );

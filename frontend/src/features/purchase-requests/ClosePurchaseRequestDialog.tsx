@@ -6,6 +6,7 @@ import { useToast } from '@/ui/Toast/useToast';
 import { formatMoneyText } from '@/format/decimal';
 import dataTable from '@/ui/Table/Table.module.css';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { useClosePreview, useClosePurchaseRequest } from './api';
 import type { PurchaseRequest, PurchaseRequestClosePreview } from './api';
 import {
@@ -79,7 +80,7 @@ function ClosePreviewLines({ preview }: { preview: PurchaseRequestClosePreview }
   return (
     <div className={styles.dialogText}>
       <p>{CLOSE_INTRO}</p>
-      <div className={styles.scroll}>
+      <ScrollBox label="Lines">
         <table className={dataTable.table}>
           <thead>
             <tr>
@@ -110,7 +111,7 @@ function ClosePreviewLines({ preview }: { preview: PurchaseRequestClosePreview }
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollBox>
       <p>{releasedText(preview.releasedDisplay)}</p>
       <p>{CLOSE_FINAL}</p>
     </div>

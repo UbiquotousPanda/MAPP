@@ -34,10 +34,6 @@
   gap: var(--space-6);
 }
 
-.scroll {
-  overflow-x: auto;
-}
-
 .table th,
 .table td {
   white-space: nowrap;

@@ -3,6 +3,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { Card } from '@/ui/Card/Card';
 import dataTable from '@/ui/Table/Table.module.css';
 import { cx } from '@/ui/cx';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { DashboardCampaignRow } from './api';
 import styles from './Dashboards.module.css';
 
@@ -41,7 +42,7 @@ function CampaignList({ title, difference, rows }: CampaignListProps) {
       {rows.length === 0 ? (
         <p className={styles.note}>None.</p>
       ) : (
-        <div className={styles.scroll}>
+        <ScrollBox label={title}>
           <table className={cx(dataTable.table, styles.table)}>
             <caption className="visually-hidden">{title}</caption>
             <thead>
@@ -69,7 +70,7 @@ function CampaignList({ title, difference, rows }: CampaignListProps) {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollBox>
       )}
     </Card>
   );

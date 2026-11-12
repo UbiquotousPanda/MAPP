@@ -157,7 +157,7 @@ export async function openFromWaitingForGsap(page: Page, id: string, name: strin
   await page.getByRole('button', { name: 'Waiting for GSAP', exact: true }).click();
   await expect(page).toHaveURL(/waiting=true/);
   await page.getByRole('searchbox', { name: 'Search purchase requests' }).fill(id);
-  const table = page.getByRole('region', { name: 'Purchase requests by vendor' });
+  const table = page.getByRole('table', { name: 'Purchase requests by vendor' });
   await table.getByRole('link', { name, exact: true }).click();
   await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
 }
