@@ -34,11 +34,11 @@ catalogue is unchanged.
 
 | Part | What it does |
 |---|---|
-| `ReportFrame` | Page header (breadcrumb Reports › report, title, meta row: year, "Figures as of …"), Saved views, Export; left `FilterPanel`; `InViewLine`, `FilterChips`; the controls row; the report's widgets as children; the empty states of FR-031 |
-| `FilterPanel` | Year, Plans, Plan type, Team, Owner, Activity type, Activity status, level tabs with attribute groups; counters, Select all, Clear all, search above ten values; **Apply** with "Changes not applied yet"; collapses to **Filters (n)** below 1024 px |
+| `ReportFrame` | Page header (breadcrumb Reports › report, title, meta row: year, "Figures as of …"), Saved views, Export; `ReportToolbar` (**Filters (n)**, Year, the report's own controls, Currency, "In view"), `FilterChips`; the report's widgets as children; the empty states of FR-031 |
+| `ReportFilters` | All work's `FilterMenu` per filter — Plans, Plan type, Team, Owner, Activity type, Activity status — and its `AttributeFilterMenu` (**More filters**, Shell attributes by level); folded behind **Filters (n)**; each change applies at once (039-C8) |
 | `FilterChips` | One removable chip per restricted filter; **Reset filters** |
 | `InViewLine` | "In view: 1 plan · 6 campaigns · …" |
-| `PeriodControl`, `ShowControl`, `CurrencyControl` | Apply at once; in the address |
+| `PeriodSwitch`, `LevelSwitch`, `CurrencyControl`, `YearControl` | Apply at once; in the address; Period and Show sit in the header of the widget they change (039-C9) |
 | `ReportWidget` | Title, ⓘ tip, **Chart · Table** switch (in the address), export menu (CSV, Excel), skeleton, error with **Try again**, "—" with reason; children draw the chart (036's SVG bars and lines, chart tokens) |
 | `ReportTable` | The table view of a widget: same labels, totals row |
 | `SavedViewsMenu` | List with star, active mark, "Modified" with **Update view** / **Save as new view**, **Save current filters**, rename, delete with Undo toast |

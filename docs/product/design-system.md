@@ -255,23 +255,35 @@ list, the plan header and All work's plan rows.
 
 ### 2.8 Report pages (the Measure module, features 039–050)
 
-`/reports` lists the reports the person may open, each with a one-line purpose; `/reports/<report>` is one
-report. Every report uses the **report frame** (039): breadcrumb Reports › report, the title, a meta row with
-the year and "Figures as of …", **Export** (secondary, the whole report as Excel) and **Saved views** (a menu:
-the person's views with a star for the default, *Save current filters*, *Reset*); no primary button — a report
-acts on nothing. Under the header, a left **filter panel** (year, plans, a tab per level for Shell attributes
-with *Not filled in*, owner, activity type, status, team; counters "(selected / all)"; a search box above ten
-values; Select all / Clear all per group; **Apply** at the bottom) that collapses on narrow screens; the page
-keeps the filters in its address. Above the widgets: **Period** (Months · Quarters), **Show** (Plan · Campaign ·
-Initiative · Activity where the report ranks records) and the display currency. Widgets are cards: summary
-cards first, then charts, then tables; every chart has a **Table** toggle and its own export (CSV · Excel); time
-charts carry the **today marker** with actual to its left and planned or projected to its right, in the 036
-chart tokens (§4.7) and never yellow or red. A **ranked list** shows two levels: opening a row puts it on top
-and lists its level below; **Back** steps up; every row carries a link to its record. Empty states say why:
-"No plans you may see for 2027", "You can't see financial data", "No performance data yet — upload a file in
-Settings › Performance data", "Your filters exclude everything" with **Reset filters**. Financial figures the
-person may not see show "—" and the count of plans the figure covers. Reports are read-only for everyone;
-there is no View-only note because there is nothing to change.
+`/reports` lists the reports the person may open in three groups (Performance, Budget and spend, Process and
+governance), as tiles: a 96 px illustration in the group's chart colour, the report's name, the question it
+answers in bold and the audience; the whole tile is one link and the ⓘ holds the longer purpose. `/reports/<report>`
+is one report, in the **report frame** (039):
+
+- **Header**: breadcrumb Reports › report, the title, the meta line "2026 · Figures as of … · In view: 2 plans ·
+  …", and on the right **Copy link**, **Saved views** and **Export** (all secondary, 32 px; Export downloads at once
+  when the report has one format and opens a menu when it has several). No primary button — a report acts on
+  nothing.
+- **Toolbar**, one left-aligned row on the grey page: **Filters (n)**, **Year**, the report's own choices
+  (Activity category, Funnel stage) and **Currency**. **Filters** folds out All work's filter buttons (§5.2) —
+  Plans, Plan type, Team, Owner, Activity type, Activity status and **More filters** for the Shell attributes by
+  level; each change applies at once, and the filters in use show as removable chips with **Reset filters**.
+  Changing the year says first, at the top of the Year menu, that it clears the chosen plans.
+- **Widgets** sit on a grid whose empty tracks collapse: the KPI **StatStrip** first, then charts, then tables.
+  A widget's header holds its title with the ⓘ, then on the right only the controls that change that widget —
+  **Months · Quarters** on time charts, **Plan · Campaign · Initiative · Activity** on the ranked list — the
+  icon-only **Chart · Table** switch and an icon-only download named "Export <widget>". Headers never wrap; a
+  long title ends in an ellipsis.
+- **Charts** use ECharts (ADR-0020) at a fixed 260 px height: compact y-axis labels, hairline gridlines, an axis
+  tooltip with exact values, a legend of the series that have data, and **Today** as a dashed `--ink-2` line that
+  keeps its period's label. Goals are outline bars behind the filled actual or projected bars.
+- **Ranked list**: the name column stays put while the table scrolls sideways (a fade at the right edge says
+  there is more); a parent's name drills in (chevron), the ↗ icon opens the record; an empty figure is "—" with
+  its reason as a tooltip, and a reason true of every row is said once above the table; performance is the % with
+  a status chip (Above plan · On plan · Below plan); the shared **Pager** below.
+- Empty states say why — "No plans you may see for 2027", "Your filters exclude everything" with **Reset
+  filters**, "No purchase requests in 2026" with where to look instead. Financial figures the person may not see
+  show "—" and the count of plans the figure covers. Reports are read-only for everyone.
 
 ---
 
@@ -726,11 +738,16 @@ accepts at most one primary action (a second one is a development-time error).
 
 - Joined buttons 32 high, text 14, padding 0 12; one 1 px `--control-border` around the group, radius 8 on
   the outer corners, 1 px dividers between buttons; no pill shape.
-- Chosen: `--ink` fill, `--surface` text (10.37 light, 12.00 dark), bold; `aria-pressed="true"`. Others:
-  `--surface`, `--ink`; hover `--hover`.
+- Chosen: a quiet ink tint (`--ink` at 14 % over `--surface`), a `--control-border-hover` border and bold
+  `--ink` text; `aria-pressed="true"`. Others: `--surface`, `--ink`; hover `--hover-on-card`. A chosen
+  choice never outweighs the title it sits under.
 - Counts in brackets: "Active (5)". Order and default for record states: **Active · Inactive · All**,
   default Active; for workflow states: **All · Draft · Published**, default All.
 - Below 600 px the group scrolls sideways; it never wraps.
+
+**`Pager`** (one for every paged table) — "1–50 of 120" (or "No rows") on the left; **Rows per page** (`Select`)
+and icon-only **Previous page** / **Next page** on the right; the buttons are left out when everything fits on
+one page.
 
 **`SearchField`**
 
@@ -783,6 +800,11 @@ the grey page instead (All work, Financials) writes its count, notes and links i
   in dark mode, UI audit D-01).
 - Rows: 4 per row at ≥ 960 px; pages with 5 or 6 values use 3 per row; 2 per row below 960 px; an odd
   last card spans the full row below 600 px.
+
+**`StatStrip`** — a row of `SummaryCard`s joined into one card split by hairlines: up to five in a row, six to
+ten in two even rows, two per row when its container is under 760 px (an odd last card spans the row). Values are
+compact ("$650K") with the full amount on hover and focus. Used by every report, All work, Plans, the plan page
+and Home (whose four cards are one strip of links).
 
 **`SidePanel`** (one panel layout)
 
@@ -912,7 +934,7 @@ figures**; the unit ("USD", "%") inside the end in 14 `--ink-2`; written out on 
 
 | Situation | Control |
 |---|---|
-| One of up to 10 options | A native `<select>` drawn exactly like an input (same height, border, radius, padding), `appearance: none`, a 16 px chevron at the end. Used by forms, the Plans year filter and the Home currency picker alike. |
+| One of up to 10 options | In forms: a native `<select>` drawn exactly like an input (`ChoiceField`). In toolbars, filters and pagers: **`Select`** (Radix) — the label beside it, 32 px, a chevron, its own menu on `--raised` with the chosen option ticked; arrow keys and type-ahead work. Any bare `<select>` still gets the input look and chevron from `global.css`. |
 | One of more than 10 options | `Combobox` (searchable) |
 | Several of up to 6 options | Checkboxes in columns (auto-fill, min 200 wide) — not a long vertical list (UI audit AF-01) |
 | Several of more than 6 options | `Combobox` with `multiple`; chosen values as removable chips under the input |
@@ -997,7 +1019,7 @@ line per activity: "Line items of activity 'Launch film' are 25,000.00 USD above
 approver). With Refuse approval, **Approve** stays visible but disabled, described by that reason; Decline and
 Recall stay enabled.
 
-**`EmptyState`** — centred in its card, padding 48 24; a 48 px outline icon in `--ink-2`; title Jost 600
+**`EmptyState`** — `compact` inside a card among others (Home): icon, words and action on one 32 px row. Otherwise centred in its card, padding 48 24; a 48 px outline icon in `--ink-2`; title Jost 600
 20/28; one sentence 14 `--ink-2` (max 480 wide; Text Strong in a not-found or no-access message, which
 sits on the grey page without a card, §3.1); the action. **The action is a secondary button when the
 page header already holds the same primary action** ("New plan"), and the primary only when the page has
@@ -1307,3 +1329,4 @@ or one component (see the recommendations report for the questions to Shell).
 | 2.4 | 29 Oct 2026 | Feature 038: grids add up in every display currency (§4.4); `ConfirmDialog acknowledgeOnly` (§5.3); the approve warning and disabled Approve for approval over planned cost (§5.6). |
 | 2.5 | 30 Oct 2026 | Measure module kick-off (constitution 4.8.0): report pages — the report frame, filter panel, saved views, today marker, ranked list and the empty states that say why (§2.8). |
 | 2.6 | 1 Nov 2026 | Feature 051, constitution 4.9.0: custom-dashboard charts with Apache ECharts (ADR-0020); chart palettes Categorical, Planning, Levels and Sequential with tokens `--chart-cat-1`…`-8` and `--chart-seq-1`…`-5`; the Dashboards list, the custom-dashboard viewer and the builder layout (§4.7). |
+| 2.7 | 12 Nov 2026 | UI review of the Measure module and Home (D-411, D-412): report toolbar with All work's filter buttons, Period and Show on their widgets, ECharts time charts, ranked-list behaviour (§2.8); `StatStrip`, `Select`, `Pager`, compact `EmptyState` (§5); a quieter chosen `SegmentedFilter`; `--hover-on-card` for hovers inside cards. |
