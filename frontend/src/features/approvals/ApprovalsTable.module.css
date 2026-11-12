@@ -80,6 +80,7 @@
 .dots {
   display: inline-flex;
   flex: none;
+  flex-direction: column;
 }
 
 .chips {
