@@ -209,6 +209,7 @@ describe('SummaryReport (048 US1, US2)', () => {
       actual: null,
       projected: { amount: '700.00', currency: 'USD' },
       goal: null,
+      goalAfterYear: { amount: '50.00', currency: 'USD' },
     };
     renderPage(
       { body: { ...report, revenue: { ...report.revenue, trendTotals } } },
@@ -219,5 +220,6 @@ describe('SummaryReport (048 US1, US2)', () => {
     const total = closestTo(within(table).getByRole('rowheader', { name: 'Total' }), 'tr');
     expect(total.closest('tfoot')).not.toBeNull();
     expect(total.textContent).toBe('Total—$700.00—');
+    expect(screen.getByText('Goal landing after December: $50.00.')).toBeVisible();
   });
 });

@@ -109,3 +109,8 @@ export function withoutChip(address: ReportAddress, key: string): ReportAddress 
   }
   return { ...address, [key]: [] };
 }
+
+/** Under a period table's Total, so the Total and this add up to the goal card. */
+export function goalAfterYearText(amount: string): string {
+  return `Goal landing after December: ${amount}.`;
+}

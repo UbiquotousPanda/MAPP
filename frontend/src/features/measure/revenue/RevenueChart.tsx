@@ -1,5 +1,6 @@
 import { useFormatters } from '@/format/useFormatters';
 import {
+  goalAfterYearText,
   moneyPoint,
   moneyUnit,
   PeriodSwitch,
@@ -46,7 +47,14 @@ export function RevenueChart({ report }: { report: RevenueReport }) {
         />
       }
       table={table}
-      note={report.reason ? reasonText(report.reason) : undefined}
+      note={
+        [
+          report.reason && reasonText(report.reason),
+          totals.goalAfterYear !== null && goalAfterYearText(money(totals.goalAfterYear)),
+        ]
+          .filter(Boolean)
+          .join(' ') || undefined
+      }
     />
   );
 }

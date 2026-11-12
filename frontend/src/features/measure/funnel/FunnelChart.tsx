@@ -1,5 +1,12 @@
 import { useFormatters } from '@/format/useFormatters';
-import { countPoint, PeriodSwitch, ReportChart, ReportWidget, shortPeriod } from '../shared';
+import {
+  countPoint,
+  goalAfterYearText,
+  PeriodSwitch,
+  ReportChart,
+  ReportWidget,
+  shortPeriod,
+} from '../shared';
 import type { ReportChartData, ReportTableData } from '../shared';
 import type { FunnelPeriod, FunnelReport } from '../revenue/api';
 import { reasonText } from './reasons';
@@ -39,7 +46,14 @@ export function FunnelChart({ report }: { report: FunnelReport }) {
         />
       }
       table={table}
-      note={report.reason ? reasonText(report.reason) : undefined}
+      note={
+        [
+          report.reason && reasonText(report.reason),
+          totals.goalAfterYear !== null && goalAfterYearText(whole(totals.goalAfterYear)),
+        ]
+          .filter(Boolean)
+          .join(' ') || undefined
+      }
     />
   );
 }

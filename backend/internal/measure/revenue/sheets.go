@@ -104,6 +104,9 @@ func revenuePeriodsSheet(periods []RevenuePeriod, t RevenueTotals) sheet.Sheet {
 	if len(periods) > 0 {
 		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), moneyCell(t.Goal), moneyCell(t.Actual), moneyCell(t.Projected)})
 	}
+	if t.GoalAfterYear != nil {
+		rows = append(rows, []sheet.Cell{sheet.Text(LabelGoalAfterYear), moneyCell(t.GoalAfterYear)})
+	}
 	return sheet.Sheet{Name: sheetPeriods, Rows: rows}
 }
 
@@ -212,6 +215,9 @@ func funnelPeriodsSheet(periods []FunnelPeriod, t FunnelTotals) sheet.Sheet {
 	}
 	if len(periods) > 0 {
 		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), int64Cell(t.Goal), int64Cell(t.Actual), int64Cell(t.Projected)})
+	}
+	if t.GoalAfterYear != nil {
+		rows = append(rows, []sheet.Cell{sheet.Text(LabelGoalAfterYear), int64Cell(t.GoalAfterYear)})
 	}
 	return sheet.Sheet{Name: sheetPeriods, Rows: rows}
 }

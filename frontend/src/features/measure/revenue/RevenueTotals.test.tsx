@@ -43,7 +43,12 @@ describe('Revenue by month table (039 FR-035)', () => {
     const usd = (amount: string) => ({ amount, currency: 'USD' });
     renderTable(
       revenueReport({
-        totals: { goal: usd('2730000.00'), actual: usd('350000.01'), projected: usd('360000.00') },
+        totals: {
+          goal: usd('2730000.00'),
+          actual: usd('350000.01'),
+          projected: usd('360000.00'),
+          goalAfterYear: null,
+        },
       }),
     );
 
@@ -53,9 +58,25 @@ describe('Revenue by month table (039 FR-035)', () => {
   });
 
   it('shows "—" for a column the API has no total for, never 0.00', async () => {
-    renderTable(revenueReport({ totals: { goal: null, actual: null, projected: null } }));
+    renderTable(
+      revenueReport({ totals: { goal: null, actual: null, projected: null, goalAfterYear: null } }),
+    );
 
     expect((await totalRow()).textContent).toBe('Total———');
+  });
+
+  it('says under the table how much goal lands after December, so the Total adds up to the card (D-414)', async () => {
+    const usd = (amount: string) => ({ amount, currency: 'USD' });
+    const totals = {
+      goal: usd('900.00'),
+      actual: null,
+      projected: null,
+      goalAfterYear: usd('100.00'),
+    };
+    renderTable(revenueReport({ totals }));
+
+    await totalRow();
+    expect(screen.getByText('Goal landing after December: $100.00.')).toBeVisible();
   });
 
   it('has no Total row when the table has no period', async () => {

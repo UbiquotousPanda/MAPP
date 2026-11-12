@@ -218,7 +218,8 @@ The lead exports a widget or the whole page to discuss it.
 - **FR-006**: The section MUST show Goal coverage per stage (048-C2).
 - **FR-007**: The trend chart MUST plot actual or projected and goal per period, split at today with the current
   period in progress and a labelled Today marker, and have a table view (client 016 FR-028, FR-048) ending with
-  039 FR-035's Total row: actual, projected and goal each over the year, from the API.
+  039 FR-035's Total row: actual, projected and goal each over the year, from the API, and the goal after December
+  when there is one (039 FR-035).
 - **FR-008**: The figures MUST equal the Revenue report's (049) for the same filters and category (048-C3).
 
 **Funnel section** *(US1)*

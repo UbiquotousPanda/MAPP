@@ -21,3 +21,4 @@ export type { RankedState } from './ranked-params';
 export { ReportChart } from './ReportChart';
 export { countPoint, moneyPoint, moneyUnit, shortPeriod } from './report-chart';
 export type { ReportChartData, ReportPoint, ReportSeries } from './report-chart';
+export { goalAfterYearText } from './report-text';

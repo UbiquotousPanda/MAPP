@@ -3,7 +3,14 @@ import { useFormatters } from '@/format/useFormatters';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { StatStrip } from '@/ui/StatStrip/StatStrip';
-import { moneyPoint, moneyUnit, ReportChart, ReportWidget, shortPeriod } from '../shared';
+import {
+  goalAfterYearText,
+  moneyPoint,
+  moneyUnit,
+  ReportChart,
+  ReportWidget,
+  shortPeriod,
+} from '../shared';
 import type { ReportChartData, ReportTableData } from '../shared';
 import type { RevenueSectionData, SummaryTrendPeriod } from './api';
 import { varianceText } from '../revenue/variance';
@@ -102,6 +109,7 @@ function TrendWidget({ trend, totals }: TrendWidgetProps) {
         />
       }
       table={table}
+      note={totals.goalAfterYear ? goalAfterYearText(money(totals.goalAfterYear)) : undefined}
     />
   );
 }

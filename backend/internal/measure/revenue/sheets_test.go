@@ -35,9 +35,15 @@ func TestRevenueReport_SheetsExportEveryWidget_FR007(t *testing.T) {
 	if len(sheets[0].Sheet.Rows) != 5 {
 		t.Errorf("cards rows = %d, want 5 (header + 4 figures)", len(sheets[0].Sheet.Rows))
 	}
-	periods := sheets[1].Sheet.Rows
-	if len(periods) != 14 || periods[13][0] != sheet.Bold("Total") {
-		t.Errorf("periods rows = %d ending %v, want 14: header, 12 months, then the Total line", len(periods), periods[len(periods)-1])
+	checkPeriodsEndWithTotals(t, sheets[1].Sheet.Rows)
+}
+
+// The fixture's model carries part of the goal past December, so the Total line is followed by that part.
+func checkPeriodsEndWithTotals(t *testing.T, periods [][]sheet.Cell) {
+	t.Helper()
+	if len(periods) != 15 || periods[13][0] != sheet.Bold("Total") || periods[14][0] != sheet.Text(revenue.LabelGoalAfterYear) {
+		t.Errorf("periods rows = %d ending %v, want 15: header, 12 months, the Total line, then the goal after December",
+			len(periods), periods[len(periods)-1])
 	}
 }
 

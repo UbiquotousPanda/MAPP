@@ -80,6 +80,10 @@ func trendSheet(r RevenueSection, currency string) sheet.Sheet {
 	if t := r.TrendTotals; len(r.Trend) > 0 {
 		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), sheet.Text(""), moneyCell(t.Actual), moneyCell(t.Projected),
 			moneyCell(t.Goal)})
+		if t.GoalAfterYear != nil {
+			rows = append(rows, []sheet.Cell{sheet.Text(revenue.LabelGoalAfterYear), sheet.Text(""), sheet.Text(""), sheet.Text(""),
+				moneyCell(t.GoalAfterYear)})
+		}
 	}
 	return sheet.Sheet{Name: "Revenue trend", Rows: rows}
 }

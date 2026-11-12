@@ -90,6 +90,17 @@ func TestRevenuePeriodTotals_GoalIsTheYearsMonthsWhenPartLandsAfterTheYear_039_F
 		t.Errorf("Goal total %v, months %d, card %v; want the months' sum, below the card", report.Totals.Goal, months,
 			report.Cards.Goal.Value)
 	}
+	if after := centsOf(report.Totals.GoalAfterYear); months+after != centsOf(report.Cards.Goal.Value) || after <= 0 {
+		t.Errorf("goal after the year %v; want the card less the Total, so the two add up to the card", report.Totals.GoalAfterYear)
+	}
+}
+
+func TestRevenuePeriodTotals_NoGoalAfterTheYearWhenEveryGoalLandsInIt_D414(t *testing.T) {
+	t.Parallel()
+	report := revenueIn(t, newFixtureWith(oneActivityScope(), inYearModel(), nil), measure.PeriodMonth)
+	if report.Totals.GoalAfterYear != nil {
+		t.Errorf("goal after the year = %v, want none when the whole goal lands inside the year", report.Totals.GoalAfterYear)
+	}
 }
 
 func TestRevenuePeriodTotals_AColumnWithoutAFigureIsNull_039_FR035(t *testing.T) {

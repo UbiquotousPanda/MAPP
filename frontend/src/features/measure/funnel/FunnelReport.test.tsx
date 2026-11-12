@@ -227,12 +227,13 @@ describe('FunnelReport (049 US2)', () => {
   });
 
   it("ends Volume by month's Table view with the API's column totals, — where a column has none (039 FR-035)", async () => {
-    const totals = { goal: 444444, actual: null, projected: 222222 };
+    const totals = { goal: 444444, actual: null, projected: 222222, goalAfterYear: 5555 };
     renderPage({ body: funnelReport({ totals }) }, '/reports/funnel?year=2026&table=periods');
 
     const table = await screen.findByRole('table', { name: 'Volume by month' });
     const total = closestTo(within(table).getByRole('rowheader', { name: 'Total' }), 'tr');
     expect(total.closest('tfoot')).not.toBeNull();
     expect(total.textContent).toBe('Total444,444—222,222');
+    expect(screen.getByText('Goal landing after December: 5,555.')).toBeVisible();
   });
 });

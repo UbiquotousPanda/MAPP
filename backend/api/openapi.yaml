@@ -28618,13 +28618,18 @@ components:
       description: >-
         The period table's Total row (039 FR-035, D-414): each column's periods added up over the year, the same in
         month and quarter view, converted once from US dollars; null where no period of the column has a figure.
-      required: [goal, actual, projected]
+      required: [goal, actual, projected, goalAfterYear]
       properties:
         goal:
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         actual:
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        goalAfterYear:
+          description: >-
+            The goal card less the Goal total, both as shown: the part a model's velocity carries past December (D-414).
+            Null when every goal lands inside the year.
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
     RevenueReport:
       type: object
@@ -28936,11 +28941,12 @@ components:
           type: object
           additionalProperties: false
           description: The period table's Total row, as RevenuePeriodTotals but whole counts.
-          required: [goal, actual, projected]
+          required: [goal, actual, projected, goalAfterYear]
           properties:
             goal: { type: [integer, "null"] }
             actual: { type: [integer, "null"] }
             projected: { type: [integer, "null"] }
+            goalAfterYear: { type: [integer, "null"] }
         projection:
           description: The first model in view, kept for compatibility; projections names every one.
           oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
@@ -29354,13 +29360,15 @@ components:
               type: object
               additionalProperties: false
               description: The trend table's Total row, as RevenuePeriodTotals (039 FR-035, D-414).
-              required: [actual, projected, goal]
+              required: [actual, projected, goal, goalAfterYear]
               properties:
                 actual:
                   $ref: "#/components/schemas/PrReportMoney"
                 projected:
                   $ref: "#/components/schemas/PrReportMoney"
                 goal:
+                  $ref: "#/components/schemas/PrReportMoney"
+                goalAfterYear:
                   $ref: "#/components/schemas/PrReportMoney"
         funnel:
           type: object

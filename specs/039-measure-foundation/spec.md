@@ -375,6 +375,9 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   quarter) end with one too: each column's own periods added up over the year in view, the same in month and
   quarter view, "—" for a column with no figure in any period. The period in progress sits in both Actual and
   Projected, so it counts once in each column and the row never adds the two; Actual or projected stays the card's.
+  When a model's velocity carries part of the goal past December, the Goal total stays its column's sum and a note
+  under the table, "Goal landing after December: …", gives the rest from the API (also the export's last line), so
+  the two add up to the Goal card exactly.
   Tables of people, approval steps, average days, stage volumes and conversion rates have no Total row, nor has
   Plan budget's Spend by month or quarter, whose running to-date columns already end on the year (040 FR-007).
 

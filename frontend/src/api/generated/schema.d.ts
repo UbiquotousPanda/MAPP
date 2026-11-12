@@ -12825,6 +12825,8 @@ export interface components {
             goal: components["schemas"]["Money"] | null;
             actual: components["schemas"]["Money"] | null;
             projected: components["schemas"]["Money"] | null;
+            /** @description The goal card less the Goal total, both as shown: the part a model's velocity carries past December (D-414). Null when every goal lands inside the year. */
+            goalAfterYear: components["schemas"]["Money"] | null;
         };
         RevenueReport: {
             cards: components["schemas"]["RevenueCards"];
@@ -13054,6 +13056,7 @@ export interface components {
                 goal: number | null;
                 actual: number | null;
                 projected: number | null;
+                goalAfterYear: number | null;
             };
             /** @description The first model in view, kept for compatibility; projections names every one. */
             projection: components["schemas"]["ProjectionStamp"] | null;
@@ -13246,6 +13249,7 @@ export interface components {
                     actual: components["schemas"]["PrReportMoney"];
                     projected: components["schemas"]["PrReportMoney"];
                     goal: components["schemas"]["PrReportMoney"];
+                    goalAfterYear: components["schemas"]["PrReportMoney"];
                 };
             };
             funnel: {

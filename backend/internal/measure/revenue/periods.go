@@ -48,12 +48,28 @@ func revenuePeriods(sums monthlySums, period string, w window, display money.Dis
 func revenueTotals(sums monthlySums, display money.Display) RevenueTotals {
 	v := sums.yearOf()
 	return RevenueTotals{Goal: shownOf(display, v.goal), Actual: shownOf(display, v.actual),
-		Projected: shownOf(display, v.projected)}
+		Projected: shownOf(display, v.projected), GoalAfterYear: GoalAfterYear(display, sums.activityGoals, v.goal)}
 }
 
 func funnelTotals(sums monthlySums) FunnelTotals {
 	v := sums.yearOf()
-	return FunnelTotals{Goal: v.goal, Actual: v.actual, Projected: v.projected}
+	out := FunnelTotals{Goal: v.goal, Actual: v.actual, Projected: v.projected}
+	if after := sums.activityGoals - int64Of(v.goal); after > 0 {
+		out.GoalAfterYear = &after
+	}
+	return out
+}
+
+// LabelGoalAfterYear names the export line under the Total that reconciles it with the goal card.
+const LabelGoalAfterYear = "Goal landing after December"
+
+// GoalAfterYear is the goal card less the Goal total, both as shown, so the Total and this add up to the card exactly.
+func GoalAfterYear(display money.Display, whole int64, inYear *int64) *money.Money {
+	after := shownIn(display, whole).Sub(shownIn(display, int64Of(inYear)))
+	if after.Sign() <= 0 {
+		return nil
+	}
+	return &money.Money{Amount: after, Currency: display.Currency()}
 }
 
 func shownOf(display money.Display, c *int64) *money.Money {

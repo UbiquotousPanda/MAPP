@@ -68,9 +68,10 @@ type RevenueSection struct {
 
 // TrendTotals is the trend table's Total row: each column over the year; nil where no period has a figure.
 type TrendTotals struct {
-	Actual    *money.Money `json:"actual"`
-	Projected *money.Money `json:"projected"`
-	Goal      *money.Money `json:"goal"`
+	Actual        *money.Money `json:"actual"`
+	Projected     *money.Money `json:"projected"`
+	Goal          *money.Money `json:"goal"`
+	GoalAfterYear *money.Money `json:"goalAfterYear"`
 }
 
 type Coverage struct {

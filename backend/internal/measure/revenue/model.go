@@ -61,11 +61,13 @@ type RevenuePeriod struct {
 	InProgress bool         `json:"inProgress"`
 }
 
-// RevenueTotals is the period table's Total row; a column with no figure in any period is nil.
+// RevenueTotals is the period table's Total row; a column with no figure in any period is nil. GoalAfterYear is
+// the goal card less the Goal total, the part a model's velocity carries past December, nil when there is none.
 type RevenueTotals struct {
-	Goal      *money.Money `json:"goal"`
-	Actual    *money.Money `json:"actual"`
-	Projected *money.Money `json:"projected"`
+	Goal          *money.Money `json:"goal"`
+	Actual        *money.Money `json:"actual"`
+	Projected     *money.Money `json:"projected"`
+	GoalAfterYear *money.Money `json:"goalAfterYear"`
 }
 
 type RevenueReport struct {
@@ -113,9 +115,10 @@ type FunnelPeriod struct {
 }
 
 type FunnelTotals struct {
-	Goal      *int64 `json:"goal"`
-	Actual    *int64 `json:"actual"`
-	Projected *int64 `json:"projected"`
+	Goal          *int64 `json:"goal"`
+	Actual        *int64 `json:"actual"`
+	Projected     *int64 `json:"projected"`
+	GoalAfterYear *int64 `json:"goalAfterYear"`
 }
 
 type FunnelReport struct {
