@@ -27,10 +27,7 @@ export function ReportsPage() {
   }
   return (
     <>
-      <PageHeader
-        title="Reports"
-        description="Your plans, approvals, purchase requests and their figures."
-      />
+      <PageHeader title="Reports" />
       {catalogue.data ? (
         REPORT_GROUPS.map((group, index) => (
           <GroupSection
