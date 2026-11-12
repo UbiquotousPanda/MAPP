@@ -1,0 +1,35 @@
+/* Pagers lie on the grey page or a card; on grey, secondary text is Text Strong (constitution X). */
+.pager {
+  --ink-2: var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+}
+
+.range {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.controls,
+.buttons {
+  display: flex;
+  align-items: center;
+}
+
+.controls {
+  gap: var(--space-4);
+}
+
+.buttons {
+  gap: var(--space-1);
+}
+
+.pager .step:disabled {
+  background: transparent;
+}

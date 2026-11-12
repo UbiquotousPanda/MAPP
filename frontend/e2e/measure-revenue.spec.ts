@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { signInAs } from './fixtures';
+import { signInAs, choose } from './fixtures';
 
 // 049's P1 stories end to end: "Fleet card launch", the only demo activity with INQ, MQL and a revenue
 // goal, rolls up to its initiative "Fleet cards" at the ranked list's default Campaign level.
@@ -67,10 +67,10 @@ test('049 US2: a funnel stage shows cards, a chart and conversion against goal',
   await expect(fleetCards).toContainText('60,000');
   await expect(fleetCards).toContainText('%');
 
-  await stageSelect.selectOption({ label: 'MQL' });
+  await choose(page, stageSelect, 'Marketing-qualified leads (MQL)');
   await expect(ranked.getByRole('row', { name: /Fleet cards/ })).toContainText('2,000');
 
-  await page.getByRole('combobox', { name: 'Group by' }).selectOption({ label: 'Plan' });
+  await choose(page, page.getByRole('combobox', { name: 'Group by' }), 'Plan');
   await expect(page.getByText('FY2026 Mobility China')).toBeVisible();
 
   await expectNoAxeViolationsExceptOpenLinkTargetSize(page);

@@ -1,6 +1,7 @@
 import { ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { useId } from 'react';
+import { Select } from '@/ui/Select/Select';
 import type { PlanListFilters } from './list-preferences';
 import { PLAN_TYPE_LABELS, PLAN_TYPES } from './plan-currency';
 import styles from './PlansFilters.module.css';
@@ -12,6 +13,8 @@ export interface PlansFiltersProps {
   served016?: boolean;
   onChange: (next: Partial<PlanListFilters>) => void;
 }
+
+const ALL_YEARS = { value: '', label: 'All years' };
 
 const LAYOUTS = [
   ['cards', 'Cards'],
@@ -37,7 +40,10 @@ function yearChoices(years: number[], filters: PlanListFilters): number[] {
 export function PlansFilters({ filters, years, served016 = true, onChange }: PlansFiltersProps) {
   const id = useId();
   const count = filtersInUse(filters);
-  const choices = yearChoices(years, filters);
+  const yearOptions = yearChoices(years, filters).map((year) => ({
+    value: String(year),
+    label: String(year),
+  }));
   const allYears = filters.yearFrom === null || filters.yearTo === null;
 
   function chooseFrom(text: string) {
@@ -80,61 +86,30 @@ export function PlansFilters({ filters, years, served016 = true, onChange }: Pla
         <Popover.Content className={styles.menu} align="start" sideOffset={6} aria-label="Filters">
           {!served016 ? (
             <div className={styles.field}>
-              <label htmlFor={`${id}-from`} className={styles.label}>
-                Year
-              </label>
-              <select
-                id={`${id}-from`}
-                className={styles.select}
+              <Select
+                label="Year"
                 value={allYears ? '' : String(filters.yearFrom)}
-                onChange={(event) => chooseFrom(event.target.value)}
-              >
-                <option value="">All years</option>
-                {choices.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+                options={[ALL_YEARS, ...yearOptions]}
+                onChange={chooseFrom}
+              />
             </div>
           ) : (
             <fieldset className={styles.field}>
               <legend className={styles.label}>Years</legend>
-              <div className={styles.row}>
-                <label className={styles.sublabel} htmlFor={`${id}-from`}>
-                  From
-                  <select
-                    id={`${id}-from`}
-                    className={styles.select}
-                    value={allYears ? '' : String(filters.yearFrom)}
-                    onChange={(event) => chooseFrom(event.target.value)}
-                  >
-                    <option value="">All years</option>
-                    {choices.map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className={styles.sublabel} htmlFor={`${id}-to`}>
-                  To
-                  <select
-                    id={`${id}-to`}
-                    className={styles.select}
-                    value={allYears ? '' : String(filters.yearTo)}
-                    disabled={allYears}
-                    onChange={(event) => chooseTo(event.target.value)}
-                  >
-                    {allYears && <option value="">All years</option>}
-                    {choices.map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
+              <Select
+                label="From"
+                value={allYears ? '' : String(filters.yearFrom)}
+                options={[ALL_YEARS, ...yearOptions]}
+                onChange={chooseFrom}
+              />
+              {!allYears && (
+                <Select
+                  label="To"
+                  value={String(filters.yearTo)}
+                  options={yearOptions}
+                  onChange={chooseTo}
+                />
+              )}
             </fieldset>
           )}
           {served016 && (

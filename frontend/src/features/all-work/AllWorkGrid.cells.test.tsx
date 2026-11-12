@@ -81,7 +81,7 @@ describe('AllWorkGrid cells (US1)', () => {
     );
     const { user } = renderGrid(gridResult({ rows }));
 
-    const campaign = bodyRow('Helix launch$');
+    const campaign = bodyRow('Helix launch ?Campaign$');
     expect(within(campaign).getByText('Tom Weber (inactive)')).toBeInTheDocument();
     await user.tab();
     within(campaign).getByText(description).focus();

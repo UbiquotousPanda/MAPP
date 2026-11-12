@@ -5,6 +5,7 @@ import { setupServer } from 'msw/node';
 import { NO_BREAKDOWN } from './fixtures/all-work-breakdown';
 import { configuration } from './fixtures/purchase-request-pages';
 import { ORIGIN, reply } from './replies';
+import { summaryReport } from './fixtures/summary';
 
 export interface RecordedRequest {
   method: string;
@@ -35,6 +36,7 @@ export const FRAME_ANSWERS: HttpHandler[] = [
   }),
   reply('GET /api/v1/field-help', { body: { items: [], total: 0, shellAttributesWithoutHelp: 0 } }),
   reply('GET /api/v1/purchase-request-configuration', { body: configuration() }),
+  reply('GET /api/v1/reports/summary', { body: summaryReport() }),
   ...NO_BREAKDOWN,
 ];
 

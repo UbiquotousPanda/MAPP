@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import { Popover } from 'radix-ui';
-import { useId } from 'react';
+import { Select } from '@/ui/Select/Select';
 import { cx } from '@/ui/cx';
 import { FILTER_LABELS, MAX_YEARS, TOO_MANY_YEARS, yearsText } from './all-work-text';
 import menuStyles from './FilterMenu.module.css';
@@ -15,14 +15,10 @@ export interface YearRangeMenuProps {
   onChange: (from: number, to: number) => void;
 }
 
-/**
- * Years (016 FR-034): the filter button "Years · 2026" or "Years · 2026–2028" opens From and To,
- * two selects drawn like every select. A range of at most five years: choosing a From moves To
- * along when needed, and To offers only the years that keep the range within five
- * ("Choose at most 5 years.").
- */
+const yearOption = (year: number) => ({ value: String(year), label: String(year) });
+
+// To offers only the years that keep the range within five; choosing a From moves To along.
 export function YearRangeMenu({ years, from, to, onChange }: YearRangeMenuProps) {
-  const id = useId();
   const label = FILTER_LABELS.years;
   // The chosen years stay offered, also when no plan has them (any more).
   const offered = [...new Set([...years, from, to])].sort((a, b) => a - b);
@@ -50,41 +46,20 @@ export function YearRangeMenu({ years, from, to, onChange }: YearRangeMenuProps)
         >
           <fieldset className={styles.fields}>
             <legend className={styles.legend}>Plans of the years</legend>
-            <label className={styles.field} htmlFor={`${id}-from`}>
-              From
-              <select
-                id={`${id}-from`}
-                className={styles.select}
-                value={from}
-                onChange={(event) => chooseFrom(Number(event.target.value))}
-              >
-                {offered.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={styles.field} htmlFor={`${id}-to`}>
-              To
-              <select
-                id={`${id}-to`}
-                className={styles.select}
-                value={to}
-                aria-describedby={`${id}-hint`}
-                onChange={(event) => onChange(from, Number(event.target.value))}
-              >
-                {toChoices.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              label="From"
+              value={String(from)}
+              options={offered.map(yearOption)}
+              onChange={(year) => chooseFrom(Number(year))}
+            />
+            <Select
+              label="To"
+              value={String(to)}
+              options={toChoices.map(yearOption)}
+              note={TOO_MANY_YEARS}
+              onChange={(year) => onChange(from, Number(year))}
+            />
           </fieldset>
-          <p id={`${id}-hint`} className={styles.hint}>
-            {TOO_MANY_YEARS}
-          </p>
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>

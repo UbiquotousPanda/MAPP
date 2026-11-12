@@ -31,16 +31,16 @@ describe('013 FR-003: the BCPIR plans filter of the Plans list', () => {
 });
 
 describe('013 FR-002, FR-014: the plan header', () => {
-  it('marks a BCPIR plan and links to its SP&A view', () => {
-    renderWithProviders(<PlanHeader plan={plan({ bcpir: true })} moreItems={[]} />, {
-      user: testUser(),
-    });
+  it('marks a BCPIR plan and leads to its SP&A view from More', async () => {
+    const { router, user } = renderWithProviders(
+      <PlanHeader plan={plan({ bcpir: true })} moreItems={[]} />,
+      { user: testUser() },
+    );
 
     expect(screen.getByRole('group', { name: 'Plan facts' })).toHaveTextContent('BCPIR');
-    expect(screen.getByRole('link', { name: 'SP&A view' })).toHaveAttribute(
-      'href',
-      '/plans/P-1001/spa',
-    );
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'SP&A view' }));
+    expect(router.state.location.pathname).toBe('/plans/P-1001/spa');
   });
 
   it('shows no marker on another plan', () => {

@@ -2,38 +2,61 @@
   margin-bottom: var(--space-3);
 }
 
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: var(--space-4);
+}
+
 .bars {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* Name and figures on one line, the bar under them across the whole card. */
 .bar {
   display: grid;
-  grid-template-columns: minmax(120px, 220px) 1fr auto;
-  align-items: center;
-  gap: var(--space-3);
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-3);
   font-size: var(--text-sm);
 }
 
+.bar .track {
+  grid-column: 1 / -1;
+}
+
 .track {
-  height: 12px;
-  border-radius: 6px;
+  height: 8px;
+  border-radius: 4px;
   background: var(--gray-bg);
 }
 
 .fill {
   display: block;
   height: 100%;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .value {
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
+}
+
+.waitingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.waitingRow .waiting {
+  margin: 0;
 }
 
 .waiting {

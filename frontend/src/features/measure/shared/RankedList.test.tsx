@@ -1,10 +1,12 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { useSearchParams } from 'react-router';
 import type { components } from '@/api/generated/schema';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { planBudgetRanked } from '@/testing/fixtures/plan-budget';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { RankedList } from './RankedList';
 import type { RankedColumn, RankedData } from './RankedList';
 
@@ -22,12 +24,8 @@ const PLANNED: RankedColumn<Figures> = {
 };
 const COLUMNS = [BUDGET, PLANNED];
 
-function renderList(
-  data: RankedData<Figures> = planBudgetRanked(),
-  route = '/reports/plan-budget',
-  columns = COLUMNS,
-) {
-  return renderWithProviders(
+function List({ data, columns }: { data: RankedData<Figures>; columns: RankedColumn<Figures>[] }) {
+  return (
     <RankedList
       report="planBudget"
       data={data}
@@ -40,9 +38,35 @@ function renderList(
       ]}
       defaultSort="planned"
       flag={(f) => (f.overAllocated ? 'Over-allocated' : undefined)}
-    />,
-    { route, user: testUser(), path: '/reports/plan-budget' },
+      caption="Figures in US dollars"
+    />
   );
+}
+
+function renderList(
+  data: RankedData<Figures> = planBudgetRanked(),
+  route = '/reports/plan-budget',
+  columns = COLUMNS,
+) {
+  return renderWithProviders(<List data={data} columns={columns} />, {
+    route,
+    user: testUser(),
+    path: '/reports/plan-budget',
+  });
+}
+
+const DRILLED = planBudgetRanked({
+  trail: [
+    { id: 'P-1001', level: 'plan', name: 'FY2026 Lubricants' },
+    { id: 'C-1001', level: 'campaign', name: 'Helix launch' },
+    { id: 'I-1001', level: 'initiative', name: 'Launch events' },
+  ],
+});
+
+/** Answers like the API: the drilled list once the address asks for a drill. */
+function DrillingList() {
+  const [params] = useSearchParams();
+  return <List data={params.get('drill') ? DRILLED : planBudgetRanked()} columns={COLUMNS} />;
 }
 
 const search = (router: { state: { location: { search: string } } }) =>
@@ -53,8 +77,9 @@ describe('RankedList (040 US2, US3)', () => {
     renderList();
 
     const rows = screen.getAllByRole('row').map((row) => row.textContent);
-    expect(rows[1]).toMatch(/^Helix launchOpen/);
-    expect(rows[2]).toMatch(/^Launch eventsOpen/);
+    expect(rows[1]).toMatch(/^Helix launch/);
+    expect(rows[2]).toMatch(/^Launch events/);
+    expect(screen.getByRole('link', { name: 'Open Helix launch in Plan' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Planned cost' })).toHaveAttribute(
       'aria-sort',
       'descending',
@@ -74,10 +99,10 @@ describe('RankedList (040 US2, US3)', () => {
       '/reports/plan-budget?year=2026',
     );
 
-    await user.click(screen.getByRole('button', { name: 'Next' }));
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
     expect(search(router).get('page')).toBe('2');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Sort by' }), 'budget');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Group by' }), 'owner');
+    await user.click(screen.getByRole('button', { name: 'Budget' }));
+    await choose(user, screen.getByRole('combobox', { name: 'Group by' }), 'Owner');
 
     const params = search(router);
     expect([
@@ -88,17 +113,29 @@ describe('RankedList (040 US2, US3)', () => {
     ]).toEqual(['budget', 'owner', null, '2026']);
   });
 
-  it('offers a column under Sort by only when it is sortable, and still shows it (FR-013, 049 FR-006)', () => {
+  it('sorts by a column only when it is sortable, and still shows it (FR-013, 049 FR-006)', () => {
     renderList(planBudgetRanked(), '/reports/plan-budget', [
       { ...BUDGET, sortable: false },
       PLANNED,
     ]);
 
-    const options = within(screen.getByRole('combobox', { name: 'Sort by' })).getAllByRole(
-      'option',
+    const budget = screen.getByRole('columnheader', { name: 'Budget' });
+    expect(within(budget).queryByRole('button')).not.toBeInTheDocument();
+    const planned = screen.getByRole('columnheader', { name: 'Planned cost' });
+    expect(within(planned).getByRole('button', { name: 'Planned cost' })).toBeInTheDocument();
+  });
+
+  it('sorts high to low first, and the sorted column again flips the order (FR-013)', async () => {
+    const { user, router } = renderList(planBudgetRanked(), '/reports/plan-budget');
+
+    await user.click(screen.getByRole('button', { name: 'Budget' }));
+    expect([search(router).get('sort'), search(router).get('order')]).toEqual(['budget', null]);
+    await user.click(screen.getByRole('button', { name: 'Budget' }));
+    expect(search(router).get('order')).toBe('asc');
+    expect(screen.getByRole('columnheader', { name: 'Budget' })).toHaveAttribute(
+      'aria-sort',
+      'ascending',
     );
-    expect(options.map((o) => o.textContent)).toEqual(['Planned cost']);
-    expect(screen.getByRole('columnheader', { name: 'Budget' })).toBeInTheDocument();
   });
 
   it('reaches page 10, whose number is also the default page size (FR-014)', async () => {
@@ -107,20 +144,13 @@ describe('RankedList (040 US2, US3)', () => {
       '/reports/plan-budget?page=9',
     );
 
-    await user.click(screen.getByRole('button', { name: 'Next' }));
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
 
     expect(search(router).get('page')).toBe('10');
   });
 
   it('opens a child as the new top with a trail, and Back goes up one level (FR-010)', async () => {
-    const drilled = planBudgetRanked({
-      trail: [
-        { id: 'P-1001', level: 'plan', name: 'FY2026 Lubricants' },
-        { id: 'C-1001', level: 'campaign', name: 'Helix launch' },
-        { id: 'I-1001', level: 'initiative', name: 'Launch events' },
-      ],
-    });
-    const { user, router } = renderList(drilled);
+    const { user, router } = renderList(DRILLED);
 
     await user.click(screen.getByRole('button', { name: 'Launch events' }));
     expect(search(router).get('drill')).toBe('I-1001');
@@ -135,5 +165,42 @@ describe('RankedList (040 US2, US3)', () => {
     renderList(planBudgetRanked({ drillLost: true }));
 
     expect(screen.getByText(/no longer in view/)).toBeInTheDocument();
+  });
+
+  it("moves the focus to the trail's current step after a drill, not to the page (FR-010)", async () => {
+    const { user } = renderWithProviders(<DrillingList />, {
+      route: '/reports/plan-budget',
+      user: testUser(),
+      path: '/reports/plan-budget',
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Launch events' }));
+
+    const trail = await screen.findByRole('navigation', { name: 'Drill trail' });
+    await waitFor(() => expect(within(trail).getByText('Launch events')).toHaveFocus());
+  });
+
+  it('says which entries are shown and pages through them (FR-014)', async () => {
+    const { user } = renderList(planBudgetRanked({ total: 30 }), '/reports/plan-budget?page=2');
+
+    const pages = screen.getByRole('navigation', { name: 'Pages' });
+    expect(within(pages).getByText('11–20 of 30')).toBeInTheDocument();
+    expect(within(pages).getByRole('combobox', { name: 'Rows per page' })).toBeInTheDocument();
+    await user.click(within(pages).getByRole('button', { name: 'Previous page' }));
+    expect(within(pages).getByText('1–10 of 30')).toBeInTheDocument();
+  });
+
+  it('offers no page buttons when everything fits on one page (FR-014)', () => {
+    renderList();
+
+    const pages = screen.getByRole('navigation', { name: 'Pages' });
+    expect(within(pages).getByText('1–2 of 2')).toBeInTheDocument();
+    expect(within(pages).queryByRole('button', { name: 'Next page' })).not.toBeInTheDocument();
+  });
+
+  it('shows the caption once above the table (050 FR-008)', () => {
+    renderList();
+
+    expect(screen.getAllByText('Figures in US dollars')).toHaveLength(1);
   });
 });

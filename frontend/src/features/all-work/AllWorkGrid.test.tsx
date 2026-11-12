@@ -86,7 +86,7 @@ describe('AllWorkGrid (US1)', () => {
       'Unassigned planned cost',
     ]);
     const plan = bodyRow('FY2026 Lubricants Europe');
-    expect(within(plan).getByText('PLAN')).toBeInTheDocument();
+    expect(within(plan).getByText('Plan')).toBeInTheDocument();
     expect(within(plan).getByRole('link', { name: 'FY2026 Lubricants Europe' })).toHaveAttribute(
       'href',
       '/plans/P-1001',
@@ -95,7 +95,7 @@ describe('AllWorkGrid (US1)', () => {
     expect(within(plan).getByText('Published')).toBeInTheDocument();
     expect(within(plan).getByText('01 Jan 2026')).toBeInTheDocument();
     expect(within(plan).getByText('$1,200,000.00')).toBeInTheDocument();
-    expect(within(bodyRow('Helix launch$')).getByText('CAMPAIGN')).toBeInTheDocument();
+    expect(within(bodyRow('Helix launch ?Campaign$')).getByText('Campaign')).toBeInTheDocument();
     expect(within(bodyRow('Helix digital')).getByRole('link')).toHaveAttribute(
       'href',
       '/plans/P-1001/initiatives/I-1001',
@@ -148,7 +148,9 @@ describe('AllWorkGrid (US1)', () => {
 
     screen.getByRole('button', { name: 'Collapse FY2026 Lubricants Europe' }).focus();
     await user.keyboard(' ');
-    expect(screen.queryByRole('rowheader', { name: /Helix launch$/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('rowheader', { name: /Helix launch ?Campaign$/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the unassigned planned cost under an open activity, in red with a minus sign when negative (FR-012)', async () => {
@@ -244,7 +246,7 @@ describe('AllWorkGrid (US1)', () => {
   it('writes the approval roll-up as "Partly approved", "In progress" only for running activities (functional review A-02)', () => {
     renderGrid();
 
-    const campaign = bodyRow('Helix launch$');
+    const campaign = bodyRow('Helix launch ?Campaign$');
     expect(within(campaign).getByText('Partly approved')).toBeInTheDocument();
     expect(within(campaign).queryByText('In progress')).not.toBeInTheDocument();
   });

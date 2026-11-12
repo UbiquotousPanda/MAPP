@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
 import { cx } from '@/ui/cx';
 import styles from './PlanDetails.module.css';
@@ -18,13 +19,15 @@ export function BarList({ title, bars }: { title: string; bars: Bar[] }) {
   return (
     <ul className={styles.bars} aria-label={title}>
       {bars.map((bar) => (
-        <li key={bar.key} className={styles.bar}>
+        <li key={bar.key} className={cx(styles.bar, bar.href && styles.barLinked)}>
           {bar.href ? (
-            <Link to={bar.href} className={styles.barLabel}>
+            <Link to={bar.href} className={styles.barLabel} title={bar.label}>
               {bar.label}
             </Link>
           ) : (
-            <span className={styles.barLabel}>{bar.label}</span>
+            <span className={styles.barLabel} title={bar.label}>
+              {bar.label}
+            </span>
           )}
           <span className={styles.track} aria-hidden="true">
             <span
@@ -33,6 +36,7 @@ export function BarList({ title, bars }: { title: string; bars: Bar[] }) {
             />
           </span>
           <span className={styles.barValue}>{bar.text}</span>
+          {bar.href ? <ChevronRight aria-hidden="true" className={styles.chevron} /> : <span />}
         </li>
       ))}
     </ul>

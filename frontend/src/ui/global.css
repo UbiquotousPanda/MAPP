@@ -1,9 +1,3 @@
-/*
- * Base styles for every page (feature 001 research R13 and R17, Shell-aligned look of
- * 2026-10-20). Values come from tokens.css; everything else is styled by each component's own
- * Name.module.css.
- */
-
 *,
 *::before,
 *::after {
@@ -21,7 +15,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Components set the spacing of their own headings and paragraphs. */
 h1,
 h2,
 h3,
@@ -30,7 +23,6 @@ p {
   margin: 0;
 }
 
-/* Headings use the heading face (Jost, standing in for Shell's typeface); text stays Arial. */
 h1,
 h2,
 h3,
@@ -40,13 +32,43 @@ h4 {
   line-height: 1.3;
 }
 
-/* Form controls use the page's font instead of the browser's. */
 button,
 input,
 select,
 textarea {
   font: inherit;
   letter-spacing: inherit;
+}
+
+/* Bare selects look like the app's controls and get its chevron; :where leaves any class in charge. */
+:where(select:not([multiple], [size])) {
+  min-height: var(--control-sm);
+  padding-left: var(--space-3);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+:where(select:not([multiple], [size], :disabled)):hover {
+  border-color: var(--control-border-hover);
+}
+
+select:not([multiple], [size]) {
+  padding-right: var(--space-9);
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
+    linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%;
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
 }
 
 a {
@@ -63,23 +85,27 @@ p a {
   text-decoration: underline;
 }
 
-/* Numbers in tables line up: Arial's digits have one width, and so does every other face here. */
 table {
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
 }
 
-/* Keyboard focus is always visible: a 2 px Text Strong ring with a 2 px gap (constitution X). */
 :focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
-/*
- * Hidden on screen, still read by screen readers (collapsed sidebar labels, table column names,
- * "Loading…"). It is absolutely positioned, so every box that scrolls sideways around it must be
- * `position: relative`: otherwise the 1 px label escapes the box and widens the whole page.
- */
+/* A field already has a border: its ring sits on that border, not as a second ring outside it. */
+:where(
+  input:not([type='checkbox'], [type='radio']),
+  textarea,
+  select,
+  [role='combobox']
+):focus-visible {
+  outline-offset: -1px;
+}
+
+/* Absolutely positioned: a box scrolling sideways around it must be position: relative, or it widens the page. */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -92,7 +118,6 @@ table {
   border: 0;
 }
 
-/* "Skip to main content": the first thing a keyboard user reaches; visible only while focused. */
 .skip-link {
   position: absolute;
   top: var(--space-2);
@@ -116,7 +141,6 @@ input[type='password']::-ms-reveal {
   display: none;
 }
 
-/* People who ask their computer for less motion get none: no slides, fades or shimmer. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

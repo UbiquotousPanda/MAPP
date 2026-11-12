@@ -1,23 +1,26 @@
 import { FieldHelpTip } from '@/features/settings';
-import { formatAmount, toCents } from '@/format/decimal';
+import { formatCents, toCents } from '@/format/decimal';
+import { formatMoney } from '@/format/intl';
 import styles from './BudgetByMonth.module.css';
 import type { BudgetByMonthPeriods } from './api';
-import { amountText, overBy } from './phasing-math';
+import { overBy } from './phasing-math';
 
 type Money = { amount: string; currency: string };
 
-/** "50,000.00" without the currency (the caption names it); "—" for none. */
+/** "$50,000.00" like every other amount on the page; "—" for none and for zero. */
 function amount(value: Money | null | undefined): string {
-  return value ? formatAmount(value.amount) : '—';
+  return value && toCents(value.amount) !== 0n ? formatMoney(value.amount, value.currency) : '—';
 }
 
-/** The sum of a row's amounts; null when none of them is set. */
-function totalOf(values: (Money | null)[]): string | null {
+/** The sum of a row's amounts; "—" when none of them is set. */
+function totalOf(values: (Money | null)[]): string {
   const set = values.filter((value): value is Money => value !== null);
-  if (set.length === 0) {
-    return null;
+  const [first] = set;
+  if (!first) {
+    return '—';
   }
-  return amountText(set.reduce((total, value) => total + toCents(value.amount), 0n));
+  const cents = set.reduce((total, value) => total + toCents(value.amount), 0n);
+  return amount({ amount: formatCents(cents), currency: first.currency });
 }
 
 function RowHead({ label, helpKey }: { label: string; helpKey?: string }) {
@@ -76,7 +79,7 @@ export function PeriodRow({
               —
             </td>
           ))}
-      <td className={`${styles.number} ${styles.total}`}>{total ?? '—'}</td>
+      <td className={`${styles.number} ${styles.total}`}>{total}</td>
     </tr>
   );
 }
@@ -94,6 +97,7 @@ export function DifferenceRow({
       <RowHead label="Difference" helpKey="phasing.difference" />
       {periods.difference.map((value, index) => {
         const over = periods.over[index];
+        const currency = periods.budget[index]?.currency ?? value?.currency ?? 'USD';
         const by = over
           ? overBy(
               periods.budget[index]?.amount,
@@ -103,7 +107,7 @@ export function DifferenceRow({
           : 0n;
         return (
           <td key={index} className={`${styles.number} ${over ? styles.over : ''}`}>
-            {over && by > 0n ? `Over by ${amountText(by)}` : amount(value)}
+            {over && by > 0n ? `Over by ${formatMoney(formatCents(by), currency)}` : amount(value)}
           </td>
         );
       })}
@@ -112,7 +116,7 @@ export function DifferenceRow({
           —
         </td>
       ))}
-      <td className={`${styles.number} ${styles.total}`}>{totalOf(periods.difference) ?? '—'}</td>
+      <td className={`${styles.number} ${styles.total}`}>{totalOf(periods.difference)}</td>
     </tr>
   );
 }

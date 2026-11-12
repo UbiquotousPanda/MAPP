@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { allWorkOptions, savedView, standard2026 } from '@/testing/fixtures/all-work';
+import { choose } from '@/testing/select';
 import { breakdown, BRANDS, SPEND_TYPE } from '@/testing/fixtures/all-work-breakdown';
 import { renderAllWorkPage } from '@/testing/fixtures/all-work-page';
 import { http, reply } from '@/testing/replies';
@@ -34,7 +35,7 @@ async function breakdownByThen(user: ReturnType<typeof renderAllWorkPage>['user'
   const brands = await screen.findByRole('group', { name: 'Brands' });
   await user.click(within(brands).getByRole('checkbox', { name: 'Helix' }));
   await user.keyboard('{Escape}');
-  await user.selectOptions(screen.getByRole('combobox', { name: 'then by' }), 'activityType');
+  await choose(user, screen.getByRole('combobox', { name: 'then by' }), 'Activity type');
 }
 
 describe('016 FR-043: saved views and export carry the Breakdown', () => {
@@ -46,7 +47,7 @@ describe('016 FR-043: saved views and export carry the Breakdown', () => {
     const { api, user } = renderAllWorkPage([...answers, created], RANGE);
     await breakdownByThen(user);
 
-    await user.click(screen.getByRole('button', { name: 'Views' }));
+    await user.click(screen.getByRole('button', { name: 'Saved views' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Save current view…' }));
     const dialog = await screen.findByRole('dialog', { name: 'Save current view' });
     await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'Helix by spend');
@@ -79,7 +80,7 @@ describe('016 FR-043: saved views and export carry the Breakdown', () => {
     ]);
     await screen.findByRole('link', { name: 'Helix launch' });
 
-    await user.click(screen.getByRole('button', { name: /^View/ }));
+    await user.click(screen.getByRole('button', { name: /^(View|Saved views)/ }));
     await user.click(await screen.findByRole('menuitemcheckbox', { name: 'By brand' }));
 
     await waitFor(() => {
@@ -101,7 +102,7 @@ describe('016 FR-043: saved views and export carry the Breakdown', () => {
     await breakdownByThen(user);
 
     await user.click(screen.getByRole('button', { name: 'Export' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Spreadsheet (.xlsx)' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Excel (.xlsx)' }));
 
     await waitFor(() =>
       expect(api.requests.some((r) => r.path === '/api/v1/all-work/export')).toBe(true),

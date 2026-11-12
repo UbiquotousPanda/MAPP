@@ -9,6 +9,7 @@ import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { PlannedCostByCard } from './PlannedCostByCard';
 
 const PLAN = { id: 'P-1004', name: 'FY2027 Lubricants UK', year: 2027 };
@@ -50,7 +51,7 @@ describe('016 FR-042: Planned cost by on the plan page', () => {
   it('shows the plan’s planned cost by Spend type in the plan currency (US6 scenario 6)', async () => {
     const { api } = renderCard();
 
-    const card = screen.getByRole('region', { name: 'Planned cost by' });
+    const card = screen.getByRole('region', { name: 'Planned cost breakdown' });
     const table = await within(card).findByRole('table');
     expect(within(table).getByRole('row', { name: /^Media/ })).toHaveTextContent('23,700.00 GBP');
     expect(within(table).getByRole('row', { name: /^Total/ })).toHaveTextContent('39,500.00 GBP');
@@ -68,9 +69,10 @@ describe('016 FR-042: Planned cost by on the plan page', () => {
     const { api, user } = renderCard();
     await screen.findByRole('table');
 
-    await user.selectOptions(
+    await choose(
+      user,
       screen.getByRole('combobox', { name: 'Break down by' }),
-      'attr:SA-1020',
+      'Brands (Activity)',
     );
 
     await waitFor(() => expect(lastQuery(api).get('by')).toBe('attr:SA-1020'));
@@ -97,7 +99,7 @@ describe('016 FR-042: Planned cost by on the plan page', () => {
 
   it('keeps its place while the groups load', () => {
     renderCard(() => new Promise<never>(() => {}));
-    expect(screen.getByRole('region', { name: 'Planned cost by' })).toBeVisible();
+    expect(screen.getByRole('region', { name: 'Planned cost breakdown' })).toBeVisible();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 });

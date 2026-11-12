@@ -1,6 +1,7 @@
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { useFormatters } from '@/format/useFormatters';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import styles from './PlansPage.module.css';
 import type { PlanList } from './api';
 
@@ -8,7 +9,7 @@ import type { PlanList } from './api';
 export function PlanListSummary({ summary }: { summary: PlanList['summary'] | undefined }) {
   const { money, moneyCompact } = useFormatters();
   return (
-    <section className={styles.summary} aria-label="Summary">
+    <StatStrip label="Summary">
       {summary ? (
         <>
           <SummaryCard
@@ -42,6 +43,6 @@ export function PlanListSummary({ summary }: { summary: PlanList['summary'] | un
           </div>
         ))
       )}
-    </section>
+    </StatStrip>
   );
 }

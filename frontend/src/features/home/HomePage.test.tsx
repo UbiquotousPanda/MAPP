@@ -6,6 +6,7 @@ import { mockApi } from '@/testing/mock-api';
 import { findMessages, renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { EMPTY_SUMMARY, HOME_ANSWERS, overviewOf, summaryOf } from '@/testing/fixtures/home';
+import { summaryReport } from '@/testing/fixtures/summary';
 import { reply } from '@/testing/replies';
 import { HomePage } from './HomePage';
 
@@ -13,7 +14,11 @@ const NO_TEAM_SENTENCE =
   "You're not in a team yet. Plans belong to teams — add yourself to one on the Teams page.";
 
 function renderHome(answers: HttpHandler[] = [], user: CurrentUser = testUser()) {
-  const api = mockApi([...HOME_ANSWERS, ...answers]);
+  const api = mockApi([
+    ...HOME_ANSWERS,
+    ...answers,
+    reply('GET /api/v1/reports/summary', { body: summaryReport() }),
+  ]);
   const rendered = renderWithProviders(<HomePage />, { user, path: '/' });
   return { ...rendered, api };
 }
@@ -29,9 +34,9 @@ describe('HomePage', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Welcome back, Priya.' }),
     ).toBeInTheDocument();
-    const header = screen.getByRole('banner');
+    const header = screen.getByRole('banner').parentElement ?? document.body;
     expect(within(header).getByRole('group', { name: 'Scope' })).toBeInTheDocument();
-    expect(within(header).getByRole('combobox', { name: 'Currency' })).toHaveValue('USD');
+    expect(within(header).getByRole('combobox', { name: 'Currency' })).toHaveTextContent('USD');
     // Home has no create action: no primary button (design system §2.4 E).
     expect(header.querySelector('[class*="primary"]')).toBeNull();
     expect(

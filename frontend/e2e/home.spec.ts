@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { chooseOption, expectNoAxeViolations, signInAs } from './fixtures';
+import { choose, expectNoAxeViolations, signInAs } from './fixtures';
 
 // The Home dashboard (009) for a planner and an approver, against the real API with the demo data
 // (backend/seed); other journeys add plans, so the tests read only what they own or the seed's records.
@@ -86,12 +86,12 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await expect(teamPlans).toBeVisible();
 
   const currency = page.getByRole('combobox', { name: 'Currency' });
-  await chooseOption(currency, 'EUR — Euro');
+  await choose(page, currency, 'EUR – Euro');
   await expect(
     summary.getByRole('link', { name: /^Planned cost vs plan budget: [\d.]+K EUR / }),
   ).toBeVisible();
   await expect(glanceRow).toContainText(/[\d,]+\.\d{2} EUR/);
-  await chooseOption(currency, 'USD — US dollar');
+  await choose(page, currency, 'USD – US dollar');
   await expect(
     summary.getByRole('link', { name: /^Planned cost vs plan budget: \$/ }),
   ).toBeVisible();

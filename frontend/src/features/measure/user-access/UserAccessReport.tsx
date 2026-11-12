@@ -5,6 +5,7 @@ import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { ReportFrame } from '../shared';
 import { AccessControls } from './AccessControls';
 import { AccessTable } from './AccessTable';
@@ -84,7 +85,7 @@ function Results({ report, table, onChange }: ResultsProps) {
   }
   return (
     <>
-      <div className={styles.cards} aria-label="Summary">
+      <StatStrip label="Summary">
         <SummaryCard label="People" value={formatWhole(report.cards.people)} />
         <SummaryCard
           label="Signed in within 30 days"
@@ -95,7 +96,7 @@ function Results({ report, table, onChange }: ResultsProps) {
           value={formatWhole(report.cards.neverSignedIn)}
           tip="Not since sign-in times were first recorded."
         />
-      </div>
+      </StatStrip>
       <SignInBands
         bands={report.bands}
         people={report.cards.people}

@@ -12,6 +12,12 @@ import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
 import { PlanBudgetReport } from './PlanBudgetReport';
 
+// jsdom has no canvas for ECharts to measure text; report-chart.test.ts covers what is drawn.
+vi.mock('echarts/core', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  init: () => ({ setOption() {}, resize() {}, dispose() {} }),
+}));
+
 function renderPage(
   report: Answer<'GET /api/v1/reports/plan-budget'> = { body: planBudgetReport() },
   route = '/reports/plan-budget?year=2026',
@@ -36,7 +42,7 @@ const asked = (api: MockedApi, path: string) =>
   api.requests.filter((r) => r.path === path).map((r) => new URLSearchParams(r.search));
 
 describe('PlanBudgetReport (040 US1)', () => {
-  it('shows the ten cards, "—" where a figure has none, and is accessible (FR-002)', async () => {
+  it('shows five headline cards with the other five figures under them, "—" where a figure has none, accessibly (FR-002)', async () => {
     renderPage({
       body: planBudgetReport({
         cards: {
@@ -110,6 +116,23 @@ describe('PlanBudgetReport (040 US1)', () => {
         'Planned cost without dates: $70.00. Planned cost in other years: $40.00.',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('leaves Budget out of the chart when it is not phased by month, and says why (FR-004, FR-005)', async () => {
+    const usd = (amount: string) => ({ amount, currency: 'USD' });
+    const report = planBudgetReport();
+    renderPage({
+      body: {
+        ...report,
+        periods: report.periods.map((p) => ({ ...p, budget: usd('0.00') })),
+        notes: { ...report.notes, notPhased: usd('1000.00') },
+      },
+    });
+
+    expect(
+      await screen.findByRole('img', { name: /^Planned cost and actual by period; today is in/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/^Budget not phased by month: \$1,000\.00\./)).toBeInTheDocument();
   });
 
   it('exports the summary cards on their own (FR-016)', async () => {

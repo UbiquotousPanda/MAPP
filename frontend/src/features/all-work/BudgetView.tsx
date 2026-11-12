@@ -1,5 +1,6 @@
 import { TriangleAlert } from 'lucide-react';
 import type { MouseEvent } from 'react';
+import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { cx } from '@/ui/cx';
 import { useFormatters } from '@/format/useFormatters';
 import gridStyles from './AllWorkGrid.module.css';
@@ -11,9 +12,11 @@ import { RowName } from './RowName';
 import { ScrollBox } from './ScrollBox';
 import type { VisibleRow } from './view-rows';
 
+const ZERO = /^-?0+(\.0+)?$/;
+
 export interface BudgetViewProps {
   result: AllWorkResult;
-  /** The rows of the page on screen (D-115). */
+  /** The rows of the page on screen. */
   rows: VisibleRow[];
   continued: string;
   search: string;
@@ -21,17 +24,22 @@ export interface BudgetViewProps {
   onOpen: (row: AllWorkRow) => void;
 }
 
-// Every amount comes from the API, already spread and added up (D-114); with Compare with phased
+// Every amount comes from the API, already spread and added up; with Compare with phased
 // budget a planned cost above its period's phased budget is red with a warning sign.
 export function BudgetView({ result, rows, continued, search, onToggle, onOpen }: BudgetViewProps) {
   const { periods, totals, summary } = result;
 
   return (
     <div className={gridStyles.grid}>
-      <p className={styles.note}>To change how a cost is spread, open its line item</p>
-      {summary.negativeBalanceCount > 0 && (
-        <p className={styles.note}>{monthsAboveText(summary.negativeBalanceCount)}</p>
-      )}
+      <p className={styles.note}>
+        To change how a cost is spread, open its line item
+        {summary.negativeBalanceCount > 0 && (
+          <InfoTip
+            label="months above planned cost"
+            text={monthsAboveText(summary.negativeBalanceCount)}
+          />
+        )}
+      </p>
       {continued && <p className={gridStyles.continued}>Continued: {continued}</p>}
       <ScrollBox label="Budget & cost">
         <table className={gridStyles.table}>
@@ -133,7 +141,7 @@ function BudgetRow({ visible, periodCount, search, onToggle, onOpen }: BudgetRow
   const over = new Set(row.overPeriods ?? []);
   const isContainer =
     row.level === 'plan' || row.level === 'campaign' || row.level === 'initiative';
-  // A negative balance is not spread; the activity says so instead (FR-023).
+  // A negative balance is not spread; the activity says so instead.
   const exceeded =
     row.level === 'activity' && row.balance?.amount.startsWith('-') ? row.balance : undefined;
 
@@ -178,14 +186,14 @@ function BudgetRow({ visible, periodCount, search, onToggle, onOpen }: BudgetRow
 
 interface AmountProps {
   value: Money | null | undefined;
-  /** The planned cost is above the period's phased budget (016 FR-038): red with a sign. */
+  /** The planned cost is above the period's phased budget: red with a sign. */
   abovePhased?: boolean;
 }
 
-/** "—" when there is none, red with a minus sign when negative, red with a sign above phased budget. */
+/** "—" when there is none or it is zero, red with a minus sign when negative, red with a sign above phased budget. */
 function Amount({ value, abovePhased = false }: AmountProps) {
   const { money } = useFormatters();
-  if (!value) {
+  if (!value || ZERO.test(value.amount)) {
     return <span className={styles.empty}>{NOTHING}</span>;
   }
   return (

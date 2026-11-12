@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SearchField } from '@/ui/SearchField/SearchField';
+import { Select } from '@/ui/Select/Select';
 import type { RequestsGridData } from './api';
 import { ColumnChooser } from './ColumnChooser';
 import type { RequestsParams } from './schemas';
@@ -21,21 +22,12 @@ function Choice(props: {
   onChange: (value: string) => void;
 }) {
   return (
-    <label className={styles.field}>
-      {props.label}
-      <select
-        className={styles.select}
-        value={props.value}
-        onChange={(event) => props.onChange(event.target.value)}
-      >
-        <option value="">All</option>
-        {props.options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <Select
+      label={props.label}
+      value={props.value}
+      options={[{ value: '', label: 'All' }, ...props.options]}
+      onChange={props.onChange}
+    />
   );
 }
 

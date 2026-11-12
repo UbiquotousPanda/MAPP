@@ -11,7 +11,7 @@ import { exportAllWork } from './api';
 type Format = 'xlsx' | 'csv';
 
 const FORMATS: { format: Format; label: string }[] = [
-  { format: 'xlsx', label: 'Spreadsheet (.xlsx)' },
+  { format: 'xlsx', label: 'Excel (.xlsx)' },
   { format: 'csv', label: 'CSV (.csv)' },
 ];
 

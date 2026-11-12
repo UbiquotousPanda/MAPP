@@ -16,13 +16,13 @@ function renderWidget(props: Partial<AverageWidgetProps> = {}, route = '/reports
 }
 
 describe('AverageWidget (041 FR-009 – FR-011)', () => {
-  it('shows the average and each approver, slowest first', async () => {
+  it('shows the average and each approver, slowest first, naming decisions as decisions', async () => {
     renderWidget();
 
     expect(screen.getByText('1.3 days')).toBeInTheDocument();
     expect(screen.getByText('Over 3 decided rounds')).toBeInTheDocument();
     const approvers = screen.getAllByRole('listitem').map((item) => item.textContent);
-    expect(approvers).toEqual(['Bob Ruiz1.5 days · 2', 'Erin Poe1.0 days · 1']);
+    expect(approvers).toEqual(['Bob Ruiz1.5 days · 2 decisions', 'Erin Poe1.0 days · 1 decision']);
     await expectNoAxeViolations();
   });
 

@@ -42,6 +42,7 @@ export function PlainReportFrame({ report, children }: ReportFrameProps) {
               <SavedViewsMenu report={report} />
               <ExportMenu
                 label="Export"
+                size="sm"
                 formats={['xlsx']}
                 download={(format) => downloadReport(report, address, format, { own: params })}
               />

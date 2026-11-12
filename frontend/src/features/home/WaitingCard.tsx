@@ -33,7 +33,7 @@ export function WaitingCard() {
       ) : waiting.isError ? (
         <SectionError onRetry={() => void waiting.refetch()} />
       ) : waiting.data.items.length === 0 ? (
-        <EmptyState icon={<Hourglass />} title={NOTHING_WAITING} />
+        <EmptyState compact icon={<Hourglass />} title={NOTHING_WAITING} />
       ) : (
         <>
           <ul className={styles.rows}>

@@ -28,6 +28,10 @@ describe('StatusWidget (041 FR-006 – FR-008)', () => {
     expect(screen.getByText('Replaced by a new submission')).toBeInTheDocument();
     expect(screen.getByText('Approved automatically')).toBeInTheDocument();
     expect(screen.getAllByText('2 · 25 %')).toHaveLength(2);
+    expect(screen.getByRole('link', { name: 'Go to Approvals to decide' })).toHaveAttribute(
+      'href',
+      '/approvals',
+    );
     await expectNoAxeViolations();
   });
 
@@ -60,6 +64,7 @@ describe('StatusWidget (041 FR-006 – FR-008)', () => {
     renderWidget({ data: noApprovalsReport().statusMix });
 
     expect(screen.getByText(/No approvals yet\. They start when/)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Go to Approvals to decide' })).toBeNull();
     expect(screen.queryByRole('group', { name: 'Record type' })).toBeNull();
   });
 

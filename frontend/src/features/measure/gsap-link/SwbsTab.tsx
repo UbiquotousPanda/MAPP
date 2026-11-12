@@ -1,15 +1,19 @@
 import { Link } from 'react-router';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { recordHref } from '@/ui/record-links';
+import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { ReportWidget } from '../shared';
 import type { GsapBand, GsapSwbsRow, GsapSwbsTab } from './api';
 import type { GsapTable } from './gsap-address';
-import { pathText, waitingText } from './gsap-text';
+import { bandText, pathText, TAB_LABELS, waitingText } from './gsap-text';
 import { PagedTable } from './PagedTable';
 import type { PagedColumn } from './PagedTable';
 import styles from './GsapLink.module.css';
+import { PathCell } from './PathCell';
 
 interface SwbsTabProps {
   tab: GsapSwbsTab;
@@ -18,9 +22,12 @@ interface SwbsTabProps {
   onChange: (patch: Partial<GsapTable>) => void;
 }
 
-/** SWBS not received (044 US1): line items Ready to send to GSAP, waiting since their activity was approved. */
+/** Waiting for SWBS code (044 US1): line items Ready to send to GSAP, waiting since their activity was approved. */
 export function SwbsTab({ tab, total, table, onChange }: SwbsTabProps) {
   const { dateTime } = useFormatters();
+  if (tab.waiting === 0) {
+    return <EmptyState compact title="Nothing is waiting for an SWBS code" />;
+  }
   const columns: PagedColumn<GsapSwbsRow>[] = [
     {
       key: 'lineItem',
@@ -32,7 +39,7 @@ export function SwbsTab({ tab, total, table, onChange }: SwbsTabProps) {
         </>
       ),
     },
-    { key: 'plan', label: 'Plan › Activity', cell: (r) => pathText(r.path) },
+    { key: 'plan', label: 'Plan › Activity', cell: (r) => <PathCell text={pathText(r.path)} /> },
     { key: 'owner', label: 'Activity owner', cell: (r) => r.owner || '—' },
     { key: 'companyCode', label: 'Company code', cell: (r) => r.companyCode || '—' },
     {
@@ -56,7 +63,7 @@ export function SwbsTab({ tab, total, table, onChange }: SwbsTabProps) {
   ];
   return (
     <div className={styles.body}>
-      <div className={styles.cards} aria-label="Summary">
+      <StatStrip label="Summary">
         <SummaryCard
           label="Waiting"
           value={formatWhole(tab.waiting)}
@@ -65,10 +72,16 @@ export function SwbsTab({ tab, total, table, onChange }: SwbsTabProps) {
         <SummaryCard
           label="Over 48 hours"
           value={formatWhole(tab.overTurnaround)}
-          tone={tab.overTurnaround > 0 ? 'problem' : undefined}
+          detail={
+            tab.overTurnaround > 0 && (
+              <span>
+                <StatusChip tone="review">Past turnaround</StatusChip>
+              </span>
+            )
+          }
           tip="Waiting longer than GSAP's 48-hour turnaround since the activity was approved."
         />
-      </div>
+      </StatStrip>
       <ReportWidget
         report="gsapLink"
         widget="swbsBands"
@@ -77,12 +90,12 @@ export function SwbsTab({ tab, total, table, onChange }: SwbsTabProps) {
         chart={<BandBars bands={tab.bands} />}
         table={{
           columns: [{ label: 'Waiting' }, { label: 'Line items', numeric: true }],
-          rows: tab.bands.map((b) => ({ key: b.key, cells: [b.label, formatWhole(b.count)] })),
+          rows: tab.bands.map((b) => ({ key: b.key, cells: [bandText(b), formatWhole(b.count)] })),
           total: ['Total', formatWhole(tab.waiting)],
         }}
       />
       <PagedTable
-        title="SWBS not received"
+        title={TAB_LABELS.swbs}
         widget="swbs"
         columns={columns}
         rows={tab.rows}
@@ -103,7 +116,7 @@ function BandBars({ bands }: { bands: GsapBand[] }) {
     <ul className={styles.bars} aria-label="Line items by waiting time">
       {bands.map((b) => (
         <li key={b.key} className={styles.bar}>
-          <span>{b.label}</span>
+          <span>{bandText(b)}</span>
           <span className={styles.track} aria-hidden="true">
             <span
               className={styles.fill}

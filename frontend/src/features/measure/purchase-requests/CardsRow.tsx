@@ -1,55 +1,38 @@
 import { useFormatters } from '@/format/useFormatters';
-import { ReportWidget } from '../shared';
-import type { ReportTableData } from '../shared';
+import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import type { CardsData } from './api';
+import { COMMITTED, COMMITTED_TIP } from './words';
 import styles from './PurchaseRequests.module.css';
-
-const TIP =
-  'Purchase requests, lines and vendors in view. Committed is the amount of the Approved and Closed lines; ' +
-  'Invoiced is the invoices less credit notes on their purchase order lines.';
 
 export interface CardsRowProps {
   data?: CardsData;
   failed?: boolean;
-  onRetry?: () => void;
 }
 
-export function CardsRow({ data, failed, onRetry }: CardsRowProps) {
+/** The report's totals as one strip; a failed load shows nothing here, as the widgets below offer Try again. */
+export function CardsRow({ data, failed }: CardsRowProps) {
   const { money } = useFormatters();
-  const cards = data && [
-    { label: 'Purchase requests', value: String(data.purchaseRequests) },
-    { label: 'Lines', value: String(data.lines) },
-    { label: 'Vendors', value: String(data.vendors) },
-    { label: 'Committed', value: money(data.committed) },
-    { label: 'Invoiced', value: money(data.invoiced) },
-  ];
-  const table: ReportTableData = {
-    columns: [{ label: 'Card' }, { label: 'Value', numeric: true }],
-    rows: (cards ?? []).map((c) => ({ key: c.label, cells: [c.label, c.value] })),
-  };
+  if (failed) {
+    return null;
+  }
+  if (!data) {
+    return <Skeleton lines={2} height="32px" />;
+  }
   return (
-    <ReportWidget
-      wide
-      report="purchaseRequests"
-      widget="cards"
-      title="Summary"
-      tip={TIP}
-      loading={!data && !failed}
-      failed={failed}
-      onRetry={onRetry}
-      table={table}
-      chart={
-        cards && (
-          <dl className={styles.cards}>
-            {cards.map((c) => (
-              <div key={c.label} className={styles.card}>
-                <dt>{c.label}</dt>
-                <dd>{c.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )
-      }
-    />
+    <div className={styles.cards}>
+      <StatStrip label="Summary">
+        <SummaryCard label="Purchase requests" value={data.purchaseRequests} />
+        <SummaryCard label="Lines" value={data.lines} />
+        <SummaryCard label="Vendors" value={data.vendors} />
+        <SummaryCard label={COMMITTED} value={money(data.committed)} tip={COMMITTED_TIP} />
+        <SummaryCard
+          label="Invoiced"
+          value={money(data.invoiced)}
+          tip="The invoices less credit notes on the purchase order lines of these requests."
+        />
+      </StatStrip>
+    </div>
   );
 }

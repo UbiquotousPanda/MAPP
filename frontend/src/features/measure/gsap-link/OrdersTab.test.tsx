@@ -38,7 +38,7 @@ describe('OrdersTab (044 US3, FR-004, FR-011 – FR-013, FR-016)', () => {
       'href',
       '/purchase-requests/PR-1001',
     );
-    expect(within(table).getByText('Lines 10, 20')).toBeInTheDocument();
+    expect(within(table).getByText('PO lines 10, 20')).toBeInTheDocument();
     expect(within(table).getByText('Keynote Speakers Ltd')).toBeInTheDocument();
     await expectNoAxeViolations();
   });
@@ -50,6 +50,22 @@ describe('OrdersTab (044 US3, FR-004, FR-011 – FR-013, FR-016)', () => {
       'row',
     );
     expect(totals.at(-1)).toHaveTextContent(/^Total.*30,800\.00.*24,500\.00.*12,000\.00/);
+  });
+
+  it('leaves out the request columns when no row on the page has one (FR-011)', () => {
+    const report = ordersReport();
+    if (!report.orders) {
+      throw new Error('The fixture has no Purchase orders tab.');
+    }
+    const rows = report.orders.rows.map((r) => ({ ...r, purchaseRequestId: '', gsapPrNumber: '' }));
+    renderTab(ordersReport({ orders: { ...report.orders, rows } }));
+
+    const table = screen.getByRole('table', { name: 'Purchase orders' });
+    expect(within(table).queryByRole('button', { name: 'GSAP PR number' })).not.toBeInTheDocument();
+    expect(
+      within(table).queryByRole('button', { name: 'Purchase request' }),
+    ).not.toBeInTheDocument();
+    expect(within(table).getAllByRole('row').at(-1)).toHaveTextContent(/^Total.*30,800\.00/);
   });
 
   it('says which plans the amounts cover (FR-004)', () => {

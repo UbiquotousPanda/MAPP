@@ -6,8 +6,7 @@ import { renderWithProviders } from '@/testing/render';
 import { swbsReport } from './gsap-link-fixture';
 import { SwbsTab } from './SwbsTab';
 
-function renderTab() {
-  const report = swbsReport();
+function renderTab(report = swbsReport()) {
   if (!report.swbs) {
     throw new Error('The fixture has no SWBS tab.');
   }
@@ -31,7 +30,7 @@ describe('SwbsTab (044 US1, FR-005 – FR-007)', () => {
     const summary = screen.getByLabelText('Summary');
     expect(within(summary).getByText('Waiting')).toBeInTheDocument();
     expect(within(summary).getByText('Over 48 hours')).toBeInTheDocument();
-    const table = screen.getByRole('table', { name: 'SWBS not received' });
+    const table = screen.getByRole('table', { name: 'Waiting for SWBS code' });
     expect(within(table).getAllByText('FY2026 Lubricants › Launch › Retail › Stand')).toHaveLength(
       2,
     );
@@ -42,6 +41,27 @@ describe('SwbsTab (044 US1, FR-005 – FR-007)', () => {
     await expectNoAxeViolations();
   });
 
+  it('marks lateness as a warning chip, not a red figure, and names the table export (FR-006)', () => {
+    renderTab();
+
+    const summary = screen.getByLabelText('Summary');
+    expect(within(summary).getByText('Past turnaround')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Export Waiting for SWBS code' }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows only a short empty state when no line item waits (FR-005)', () => {
+    const report = swbsReport();
+    if (!report.swbs) {
+      throw new Error('The fixture has no SWBS tab.');
+    }
+    renderTab(swbsReport({ swbs: { ...report.swbs, waiting: 0, overTurnaround: 0, rows: [] } }));
+
+    expect(screen.getByText('Nothing is waiting for an SWBS code')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Summary')).not.toBeInTheDocument();
+  });
+
   it('draws Waiting by time with a table view that adds up to Waiting (FR-007, SC-006)', async () => {
     const { user } = renderTab();
 
@@ -49,7 +69,7 @@ describe('SwbsTab (044 US1, FR-005 – FR-007)', () => {
     await user.click(screen.getByRole('button', { name: 'Table' }));
 
     const bands = screen.getByRole('table', { name: 'Waiting by time' });
-    expect(within(bands).getByRole('row', { name: 'Under 48 hours 1' })).toBeInTheDocument();
+    expect(within(bands).getByRole('row', { name: '48 hours or less 1' })).toBeInTheDocument();
     expect(within(bands).getByRole('row', { name: 'Total 2' })).toBeInTheDocument();
   });
 

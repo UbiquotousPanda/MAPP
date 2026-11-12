@@ -1,5 +1,5 @@
-import { screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { screen, waitFor, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { nth } from '@/testing/dom';
 import { reportFrame } from '@/testing/fixtures/reports';
@@ -9,8 +9,15 @@ import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { TABLES } from './schemas';
 import { SummaryReport } from './SummaryReport';
+
+// jsdom has no canvas for ECharts to measure text; report-chart.test.ts covers what is drawn.
+vi.mock('echarts/core', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  init: () => ({ setOption() {}, resize() {}, dispose() {} }),
+}));
 
 const LEAGUE = '/api/v1/reports/summary/league/';
 
@@ -38,30 +45,39 @@ function renderPage(
 }
 
 describe('SummaryReport (048 US1, US2)', () => {
-  it('shows revenue against goal with its word and Goal coverage, and is accessible (FR-005, FR-006, 048-C1)', async () => {
+  it('shows revenue against goal with its word, and the goals planned in activities apart from it, accessibly (FR-005, FR-006, 048-C1)', async () => {
     renderPage();
 
     const cards = await screen.findByLabelText('Revenue figures');
     expect(within(cards).getByText('12%')).toBeInTheDocument();
     expect(within(cards).getByText('Below plan')).toBeInTheDocument();
-    expect(within(cards).getByText('INQ 50% · MQL 50% · Revenue 50%')).toBeInTheDocument();
+    expect(within(cards).queryByText(/INQ 50%/)).toBeNull();
+    expect(screen.getByText('INQ 50% · MQL 50% · Revenue 50%')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Revenue' })).toBeInTheDocument();
     await screen.findAllByText('North');
     await expectNoAxeViolations();
   });
 
-  it('shows the funnel stages and the MQL conversion with its goal and word (FR-009, FR-010)', async () => {
+  it('shows the funnel stages and the MQL conversion with its goal and word in one strip (FR-009, FR-010)', async () => {
     renderPage();
 
-    const conversions = await screen.findByLabelText('Conversions');
-    expect(within(conversions).getByText('20.4%')).toBeInTheDocument();
-    expect(within(conversions).getByText('Goal 20.0% · Above plan')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: /today is in Jun 2026/ })).toBeInTheDocument();
+    const stages = await screen.findByLabelText('Stage figures');
+    const inq = nth(within(stages).getAllByText('INQ'), 0).closest('div');
+    expect(inq).toHaveTextContent('120Goal 100 · 120%Above plan');
+    const conversion = within(stages).getByText('MQL conversion').closest('div');
+    expect(conversion).toHaveTextContent('MQL conversion20.4%Goal 20.0%Above plan');
+    expect(
+      screen.getByRole('img', { name: /^Revenue actual or projected .*today is in Jun 2026/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: /^Conversion rate .*today is in Jun 2026/ }),
+    ).toBeInTheDocument();
   });
 
   it.each([
     ['nothingMatches' as const, 'No activities match the filters.'],
     ['noGoals' as const, /have no goals yet/],
-    ['noPerformanceData' as const, 'No performance data has arrived yet.'],
+    ['noPerformanceData' as const, /No actuals yet — the figures below are projections/],
     ['notApproved' as const, /not approved yet/],
   ])('names the %s state instead of showing zeros (FR-018)', async (state, text) => {
     renderPage({ body: summaryReport({ states: [state] }) });
@@ -82,19 +98,24 @@ describe('SummaryReport (048 US1, US2)', () => {
     expect((await screen.findAllByText('North')).length).toBe(4);
   });
 
-  it('reloads only the league table whose segment changes, and keeps it in the address (048-C6)', async () => {
-    const { user, api } = renderPage();
+  it('changes the segment of the four league tables with one choice, and keeps it in the address (048-C6)', async () => {
+    const { user, api, router } = renderPage();
     await screen.findAllByText('North');
+    expect(screen.getByRole('heading', { level: 2, name: 'Top five by Region' })).toBeVisible();
     const before = api.requests.filter((r) => r.path.startsWith(LEAGUE)).length;
 
-    await user.selectOptions(
-      nth(screen.getAllByRole('combobox', { name: 'Segment' }), 0),
-      'ATTR-P',
-    );
+    await choose(user, screen.getByRole('combobox', { name: 'Segment' }), 'Business unit');
 
+    await waitFor(() =>
+      expect(api.requests.filter((r) => r.path.startsWith(LEAGUE)).length).toBe(before + 4),
+    );
     const after = api.requests.filter((r) => r.path.startsWith(LEAGUE)).slice(before);
-    expect(after.map((r) => r.path)).toEqual([`${LEAGUE}revenue`]);
-    expect(after[0]?.search).toContain('segment=ATTR-P');
+    expect(after.map((r) => r.path).sort()).toEqual(
+      TABLES.map(({ table }) => `${LEAGUE}${table}`).sort(),
+    );
+    expect(after.every((r) => r.search.includes('segment=ATTR-P'))).toBe(true);
+    const search = router.state.location.search;
+    expect(TABLES.every(({ param }) => search.includes(`${param}=ATTR-P`))).toBe(true);
   });
 
   it('offers a reset when the filters exclude everything (FR-018)', async () => {
@@ -106,10 +127,7 @@ describe('SummaryReport (048 US1, US2)', () => {
   it('says which plans cost and ROI cover when some financial data is hidden (FR-003)', async () => {
     renderPage({ body: summaryReport({ financeCovers: { plans: 1, of: 2 } }) });
 
-    expect(await screen.findByText('Covers 1 of 2 plans')).toBeInTheDocument();
-    expect(
-      await screen.findByText('Equally distributed, on actual cost · Covers 1 of 2 plans'),
-    ).toBeInTheDocument();
+    expect(await screen.findAllByText('Covers 1 of 2 plans')).toHaveLength(2);
   });
 
   it('shows the league tables without segments when no attribute is a segment (048-C4)', async () => {
@@ -117,7 +135,9 @@ describe('SummaryReport (048 US1, US2)', () => {
       summaryLeague(table, { segment: null, segments: [], rows: [] }),
     );
 
-    expect(await screen.findAllByText(/^Top .* by segment$/)).toHaveLength(4);
+    expect(await screen.findByRole('heading', { level: 2, name: 'Top five' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Top revenue' })).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Segment' })).toBeNull();
   });
 
   it('says which stage leaves out plans whose model does not have it (048-C7)', async () => {
@@ -137,22 +157,41 @@ describe('SummaryReport (048 US1, US2)', () => {
     report.funnel.conversions = [{ stage: 'mql', rate: null, goal: '3.0', variance: null }];
     renderPage({ body: report });
 
-    expect(await screen.findByText('Goal 3.0% · —')).toBeInTheDocument();
+    const conversion = (await screen.findByText('MQL conversion')).closest('div');
+    expect(conversion).toHaveTextContent(
+      'MQL conversion—Goal 3.0%No rate until the stage before has actuals.',
+    );
   });
 
-  it('says why an ROI is a dash beside its model (FR-015, 050 FR-008)', async () => {
+  it('says in one line why ROI is a dash when no row has one (FR-015, 050 FR-008)', async () => {
     renderPage(undefined, undefined, (table) =>
-      summaryLeague(table, table === 'roi' ? { total: null, reason: 'No cost recorded' } : {}),
+      summaryLeague(
+        table,
+        table === 'roi'
+          ? {
+              total: null,
+              reason: 'No revenue is credited to these activities',
+              rows: [{ key: 'O-1', name: 'North', value: null, trend: [] }],
+            }
+          : {},
+      ),
     );
 
     expect(
-      await screen.findByText('Equally distributed, on actual cost · No cost recorded'),
+      await screen.findByText(
+        'No revenue is credited to these activities, so ROI can’t be worked out',
+      ),
     ).toBeInTheDocument();
+    expect(screen.getAllByText('North')).toHaveLength(3);
   });
 
-  it('names the attribution model and cost basis beside ROI (FR-015, 050 FR-008)', async () => {
-    renderPage();
+  it('names the attribution model and cost basis in the ROI tip (FR-015, 050 FR-008)', async () => {
+    const { user } = renderPage();
 
-    expect(await screen.findByText('Equally distributed, on actual cost')).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'About Top ROI' }));
+
+    expect(
+      await screen.findByText(/Attribution: Equally distributed, on actual cost\./),
+    ).toBeInTheDocument();
   });
 });

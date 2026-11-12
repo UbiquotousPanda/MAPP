@@ -1,7 +1,8 @@
+import { ChartColumn, Table2 } from 'lucide-react';
+import { useId } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { Button } from '@/ui/Button/Button';
-import { Card } from '@/ui/Card/Card';
 import { cx } from '@/ui/cx';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -31,13 +32,17 @@ export interface ReportWidgetProps {
   failed?: boolean;
   onRetry?: () => void;
   wide?: boolean;
+  /** Controls that change only this widget, such as Months · Quarters, before Chart · Table. */
+  controls?: ReactNode;
 }
 
 /** A widget with its tip, Chart · Table switch in the address, export, and its own loading and failure. */
 export function ReportWidget(props: ReportWidgetProps) {
   const { report, widget, title, tip, chart, table, note, empty, loading, failed, onRetry, wide } =
     props;
+  const { controls } = props;
   const [address, setAddress] = useReportAddress();
+  const titleId = useId();
   const [params] = useSearchParams();
   const asTable = address.tables.includes(widget);
   const show = (tableView: boolean) =>
@@ -49,23 +54,25 @@ export function ReportWidget(props: ReportWidgetProps) {
     });
   const actions = (
     <div className={styles.actions}>
-      <InfoTip label={title} text={tip} />
+      {controls}
       <div className={styles.switch} role="group" aria-label={`Show ${title} as`}>
         {[false, true].map((tableView) => (
-          <Button
+          <button
             key={String(tableView)}
             type="button"
-            size="sm"
-            variant={asTable === tableView ? 'secondary' : 'tertiary'}
+            className={cx(styles.toggle, asTable === tableView && styles.on)}
             aria-pressed={asTable === tableView}
+            aria-label={tableView ? 'Table' : 'Chart'}
+            title={tableView ? 'Show as a table' : 'Show as a chart'}
             onClick={() => show(tableView)}
           >
-            {tableView ? 'Table' : 'Chart'}
-          </Button>
+            {tableView ? <Table2 aria-hidden="true" /> : <ChartColumn aria-hidden="true" />}
+          </button>
         ))}
       </div>
       <ExportMenu
-        label="Export"
+        label={`Export ${title}`}
+        iconOnly
         formats={['csv', 'xlsx']}
         download={(format) => downloadReport(report, address, format, { widget, own: params })}
       />
@@ -73,25 +80,36 @@ export function ReportWidget(props: ReportWidgetProps) {
   );
   return (
     <div className={cx(frame.cell, wide && frame.wide)}>
-      <Card title={title} actions={actions}>
-        {note && <p className={styles.note}>{note}</p>}
-        {failed ? (
-          <div className={styles.failed} role="alert">
-            <p>This part of the report couldn&apos;t be loaded</p>
-            <Button type="button" variant="secondary" size="sm" onClick={onRetry}>
-              Try again
-            </Button>
+      <section className={styles.widget} aria-labelledby={titleId}>
+        <div className={styles.head}>
+          <div className={styles.titleRow}>
+            <h2 id={titleId} className={styles.title}>
+              {title}
+            </h2>
+            <InfoTip label={title} text={tip} />
           </div>
-        ) : loading ? (
-          <Skeleton lines={5} height="20px" />
-        ) : empty ? (
-          <p className={styles.empty}>{empty}</p>
-        ) : table && asTable ? (
-          <ReportTable title={title} data={table} />
-        ) : (
-          chart
-        )}
-      </Card>
+          {actions}
+        </div>
+        <div className={styles.body}>
+          {note && <p className={styles.note}>{note}</p>}
+          {failed ? (
+            <div className={styles.failed} role="alert">
+              <p>This part of the report couldn&apos;t be loaded</p>
+              <Button type="button" variant="secondary" size="sm" onClick={onRetry}>
+                Try again
+              </Button>
+            </div>
+          ) : loading ? (
+            <Skeleton lines={5} height="20px" />
+          ) : empty ? (
+            <p className={styles.empty}>{empty}</p>
+          ) : table && asTable ? (
+            <ReportTable title={title} data={table} />
+          ) : (
+            chart
+          )}
+        </div>
+      </section>
     </div>
   );
 }

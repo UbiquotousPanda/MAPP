@@ -44,6 +44,7 @@ export function MyActivitiesCard() {
           <SectionError onRetry={() => void activities.refetch()} />
         ) : activities.data.groups.length === 0 ? (
           <EmptyState
+            compact
             icon={<ListChecks />}
             title={NO_ACTIVITIES}
             action={<LinkButton to="/plans">Go to Plans</LinkButton>}

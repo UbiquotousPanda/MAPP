@@ -139,7 +139,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
       ),
     ]);
 
-    const cell = await screen.findByText('Over by 15,000.00');
+    const cell = await screen.findByText('Over by 15,000.00 GBP');
     expect(cell.className).toMatch(/over/);
     expect(screen.getByRole('columnheader', { name: 'Other years' })).toBeInTheDocument();
   });

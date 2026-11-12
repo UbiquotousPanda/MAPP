@@ -6,6 +6,8 @@ import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
+import { PeriodSwitch } from './ReportControls';
 import { ReportFrame } from './ReportFrame';
 
 type Frame = ReturnType<typeof reportFrame>;
@@ -22,8 +24,13 @@ function renderFrame(frame: Frame | 'forbidden', route = '/reports/plan-budget')
     ),
   ]);
   const rendered = renderWithProviders(
-    <ReportFrame report="planBudget" period show="activity">
-      {() => <p>The widgets</p>}
+    <ReportFrame report="planBudget">
+      {() => (
+        <>
+          <PeriodSwitch />
+          <p>The widgets</p>
+        </>
+      )}
     </ReportFrame>,
     { route, user: testUser(), path: '/reports/plan-budget' },
   );
@@ -65,11 +72,25 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
     await waitFor(() => expect(search(router).toString()).toBe(''));
   });
 
-  it('applies Period, Show and Currency at once (FR-016 – FR-018)', async () => {
+  it('changes the year at once, saying first that it clears the chosen plans (FR-011, FR-013)', async () => {
+    const { user, router } = renderFrame(
+      reportFrame({ filter: { ...reportFrame().filter, plans: ['P-1001'] } }),
+      '/reports/plan-budget?plan=P-1001',
+    );
+    const year = await screen.findByRole('combobox', { name: /Year/ });
+    expect(year).toHaveAccessibleDescription('Another year clears the plan you chose.');
+
+    await choose(user, year, '2025');
+
+    await waitFor(() => expect(search(router).get('year')).toBe('2025'));
+    expect(search(router).getAll('plan')).toEqual([]);
+  });
+
+  it("applies a widget's Period and the Currency at once (FR-016 – FR-018)", async () => {
     const { user, router } = renderFrame(reportFrame());
 
     await user.click(await screen.findByRole('button', { name: 'Quarters' }));
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'USD');
+    await choose(user, screen.getByRole('combobox', { name: 'Currency' }), 'USD – US dollar');
 
     await waitFor(() => expect(search(router).get('period')).toBe('quarter'));
     expect(search(router).get('currency')).toBe('USD');

@@ -1,5 +1,4 @@
 import { useId } from 'react';
-import { LevelTag } from '@/ui/LevelTag/LevelTag';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { cx } from '@/ui/cx';
 import gridStyles from './AllWorkGrid.module.css';
@@ -7,6 +6,7 @@ import type { AllWorkResult, AllWorkRow } from './all-work-types';
 import { hasNoDates, todayOffset } from './calendar';
 import { CalendarRow } from './CalendarRow';
 import styles from './CalendarView.module.css';
+import { LEVEL_LABELS } from './breakdown-text';
 import { RecordLink } from './RecordLink';
 import { ScrollBox } from './ScrollBox';
 import { statusWord } from './status-words';
@@ -21,7 +21,7 @@ const RANGE_YEAR_MIN_PX = 320;
 
 export interface CalendarViewProps {
   result: AllWorkResult;
-  /** The rows of the page on screen (D-115). */
+  /** The rows of the page on screen. */
   rows: VisibleRow[];
   continued: string;
   search: string;
@@ -126,10 +126,10 @@ export function CalendarView({
           <ul className={styles.undatedList}>
             {undated.map((row) => (
               <li key={row.key} className={styles.undatedItem}>
-                {row.level !== 'unassigned' && <LevelTag level={row.level} />}
                 <RecordLink row={row} onOpen={onOpen} className={styles.undatedLink}>
                   {row.name}
                 </RecordLink>
+                <span className={styles.undatedLevel}>{LEVEL_LABELS[row.level]}</span>
                 {row.status && (
                   <StatusChip tone={row.status.tone}>{statusWord(row.status.label)}</StatusChip>
                 )}

@@ -15,10 +15,15 @@ interface ExportMenuProps {
   label: string;
   formats: ExportFormat[];
   download: (format: ExportFormat) => Promise<string>;
+  /** md in a page header beside Saved views; sm inside a widget. */
+  size?: 'sm' | 'md';
+  /** Only the download icon, named by label: in a widget's crowded header. */
+  iconOnly?: boolean;
 }
 
 /** Export, or the reason it is unavailable: "Exporting isn't part of your role". */
-export function ExportMenu({ label, formats, download }: ExportMenuProps) {
+export function ExportMenu(props: ExportMenuProps) {
+  const { label, formats, download, size = 'sm', iconOnly = false } = props;
   const access = useAccess();
   const { show } = useToast();
   const [preparing, setPreparing] = useState(false);
@@ -29,13 +34,14 @@ export function ExportMenu({ label, formats, download }: ExportMenuProps) {
     return (
       <Button
         variant="secondary"
-        size="sm"
+        size={size}
         icon={<Download />}
         disabled
         title={reason}
+        aria-label={iconOnly ? label : undefined}
         aria-description={reason}
       >
-        {label}
+        {iconOnly ? null : label}
       </Button>
     );
   }
@@ -54,18 +60,29 @@ export function ExportMenu({ label, formats, download }: ExportMenuProps) {
     }
   }
 
+  const trigger = (onClick?: () => void) => (
+    <Button
+      variant="secondary"
+      size={size}
+      icon={preparing ? <LoaderCircle /> : <Download />}
+      aria-busy={preparing || undefined}
+      aria-label={iconOnly ? (preparing ? 'Preparing your file…' : label) : undefined}
+      title={iconOnly ? label : undefined}
+      onClick={onClick}
+    >
+      {iconOnly ? null : preparing ? 'Preparing your file…' : label}
+    </Button>
+  );
+
+  // One format: the button downloads it; a menu of one choice is a click for nothing.
+  const only = formats.length === 1 ? formats[0] : undefined;
+  if (only) {
+    return trigger(() => void exportAs(only));
+  }
+
   return (
     <DropdownMenu.Root modal={false}>
-      <DropdownMenu.Trigger asChild>
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={preparing ? <LoaderCircle /> : <Download />}
-          aria-busy={preparing || undefined}
-        >
-          {preparing ? 'Preparing your file…' : label}
-        </Button>
-      </DropdownMenu.Trigger>
+      <DropdownMenu.Trigger asChild>{trigger()}</DropdownMenu.Trigger>{' '}
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           className={styles.menu}

@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { components } from '@/api/generated/schema';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { testUser } from '@/testing/fixtures/users';
@@ -7,7 +7,7 @@ import { mockApi } from '@/testing/mock-api';
 import { findMessages, renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
-import { SavedViewsMenu } from './SavedViewsMenu';
+import { CopyLinkButton, SavedViewsMenu } from './SavedViewsMenu';
 
 type ReportView = components['schemas']['ReportView'];
 
@@ -158,6 +158,38 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
     expect(
       await within(messages).findByText(
         'This view was changed in another tab — reload it to see the latest',
+      ),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('Copy link (039 US1 scenario 7)', () => {
+  function renderButton() {
+    return renderWithProviders(<CopyLinkButton />, {
+      route: '/reports/plan-budget?owner=U-1003',
+      user: testUser(),
+      path: '/reports/plan-budget',
+    });
+  }
+
+  it('copies the address with its filters and says so', async () => {
+    const { user } = renderButton();
+
+    await user.click(screen.getByRole('button', { name: 'Copy link' }));
+
+    expect(await navigator.clipboard.readText()).toBe(window.location.href);
+    expect(within(await findMessages()).getByText('Link copied')).toBeInTheDocument();
+  });
+
+  it('says where to copy it from when the browser refuses', async () => {
+    const { user } = renderButton();
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denied'));
+
+    await user.click(screen.getByRole('button', { name: 'Copy link' }));
+
+    expect(
+      within(await findMessages()).getByText(
+        "The link couldn't be copied. Copy it from the address bar instead.",
       ),
     ).toBeInTheDocument();
   });

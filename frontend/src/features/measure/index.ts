@@ -17,6 +17,7 @@ export type { ReportKey } from './reports';
 export { RankedList, ReportTable, ReportWidget } from './shared';
 export type { RankedColumn, RankedData } from './shared';
 export type { ReportTableData } from './shared';
+export { useSummaryReport } from './summary/api';
 
 export const REPORT_PAGES: Record<ReportKey, ComponentType> = {
   planBudget: PlanBudgetReport,

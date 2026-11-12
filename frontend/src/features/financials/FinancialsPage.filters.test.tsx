@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { nth } from '@/testing/dom';
+import { choose } from '@/testing/select';
 import {
   ALL_ROWS,
   FT_1006,
@@ -76,11 +77,11 @@ describe('FinancialsPage search, tabs and filters (015 US3, FR-021)', () => {
     await waitFor(() => expect(router.state.location.search).toContain('sort=amount%3Aasc'));
 
     expect(await screen.findByText('1–50 of 120')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Next' }));
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
     await waitFor(() => expect(router.state.location.search).toContain('page=2'));
     expect(await screen.findByText('51–100 of 120')).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Per page' }), '100');
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '100');
     await waitFor(() => expect(router.state.location.search).toContain('pageSize=100'));
     expect(router.state.location.search).not.toContain('page=2');
   });

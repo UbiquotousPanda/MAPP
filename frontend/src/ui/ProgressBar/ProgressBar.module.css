@@ -5,7 +5,7 @@
   height: 8px;
   overflow: hidden;
   border-radius: var(--radius-chip);
-  background: var(--chip);
+  background: color-mix(in srgb, var(--ink) 14%, var(--surface));
 }
 
 .fill {

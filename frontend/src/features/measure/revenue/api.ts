@@ -22,7 +22,7 @@ export interface OwnParams {
 }
 
 export interface RevenueRankedParams extends OwnParams {
-  sort?: 'actualRevenue' | 'projectedRevenue';
+  sort?: components['parameters']['RevenueRankedSort'];
   order?: 'desc' | 'asc';
   group?: string;
   size?: 10 | 25 | 50;
@@ -32,7 +32,7 @@ export interface RevenueRankedParams extends OwnParams {
 }
 
 export interface FunnelRankedParams extends OwnParams {
-  sort?: 'actual' | 'projected';
+  sort?: components['parameters']['FunnelRankedSort'];
   order?: 'desc' | 'asc';
   group?: string;
   size?: 10 | 25 | 50;

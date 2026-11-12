@@ -26,7 +26,12 @@ describe('PlanPage actions and history (US5, US6, FR-026 – FR-031)', () => {
     expect(
       await screen.findByText("Plan 'FY2026 Lubricants Europe' published"),
     ).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Unpublish' })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('group', { name: 'Plan facts' })).toHaveTextContent('Published'),
+    );
+    expect(screen.queryByRole('button', { name: 'Publish' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    expect(await screen.findByRole('menuitem', { name: 'Unpublish' })).toBeInTheDocument();
     expect(screen.getByRole('banner')).toHaveTextContent('Published');
   });
 
@@ -93,6 +98,7 @@ describe('PlanPage actions and history (US5, US6, FR-026 – FR-031)', () => {
 
     await user.click(await screen.findByRole('button', { name: 'More' }));
     expect((await screen.findAllByRole('menuitem')).map((item) => item.textContent)).toEqual([
+      'SP&A view',
       'Copy',
       'View history',
       'Import from Excel',

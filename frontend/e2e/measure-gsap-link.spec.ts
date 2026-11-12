@@ -19,8 +19,10 @@ test('044 US1: line items waiting for an SWBS code, sorted in the address, and o
   await page.getByRole('link', { name: 'GSAP link' }).click();
 
   await expect(page.getByRole('heading', { level: 1, name: 'GSAP link' })).toBeVisible();
-  await expect(page.getByRole('tab', { name: 'SWBS not received', selected: true })).toBeVisible();
-  const table = page.getByRole('table', { name: 'SWBS not received' });
+  await expect(
+    page.getByRole('tab', { name: 'Waiting for SWBS code', selected: true }),
+  ).toBeVisible();
+  const table = page.getByRole('table', { name: 'Waiting for SWBS code' });
   await expect(table.getByRole('link', { name: 'Stand build' })).toBeVisible();
   await expect(page.getByRole('list', { name: 'Line items by waiting time' })).toBeVisible();
   await expectNoAxeViolations(page);
@@ -39,7 +41,8 @@ test('044 US1: line items waiting for an SWBS code, sorted in the address, and o
 test('044 US2: the Waiting for GSAP tab in the address, with its cards (FR-001, FR-008 – FR-010)', async ({
   page,
 }) => {
-  await signInAs(page, PRIYA);
+  // The Measure demo routes a request GSAP has not answered; with none waiting the tab shows only an empty state.
+  await signInAs(page, SEES_MEASURE_PLAN);
   await page.goto('/reports/gsap-link');
 
   await page.getByRole('tab', { name: 'Waiting for GSAP' }).click();
@@ -51,7 +54,9 @@ test('044 US2: the Waiting for GSAP tab in the address, with its cards (FR-001, 
   await expectNoAxeViolations(page);
 
   await page.goBack();
-  await expect(page.getByRole('tab', { name: 'SWBS not received', selected: true })).toBeVisible();
+  await expect(
+    page.getByRole('tab', { name: 'Waiting for SWBS code', selected: true }),
+  ).toBeVisible();
 });
 
 test('044 with the Measure demo (#48): the routed request waits for GSAP and the ordered ones are on Purchase orders', async ({
@@ -80,14 +85,14 @@ test('044 US4: a tab exports as CSV and Excel with its sort, and the report as o
 }) => {
   await signInAs(page, PRIYA);
   await page.goto('/reports/gsap-link?sort=lineItem');
-  const table = page.getByRole('region', { name: 'SWBS not received' });
+  const table = page.getByRole('region', { name: 'Waiting for SWBS code' });
   await expect(table.getByRole('link', { name: 'Stand build' })).toBeVisible();
 
   for (const [format, extension] of [
     ['CSV (.csv)', '.csv'],
     ['Excel (.xlsx)', '.xlsx'],
   ] as const) {
-    await table.getByRole('button', { name: 'Export' }).click();
+    await table.getByRole('button', { name: 'Export Waiting for SWBS code' }).click();
     const downloading = page.waitForEvent('download');
     await page.getByRole('menuitem', { name: format }).click();
     expect((await downloading).suggestedFilename()).toMatch(
@@ -95,10 +100,9 @@ test('044 US4: a tab exports as CSV and Excel with its sort, and the report as o
     );
   }
 
-  // The page header's Export comes before the tab's.
-  await page.getByRole('button', { name: 'Export' }).first().click();
+  // The page header's Export downloads the workbook at once.
   const downloading = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'Excel (.xlsx)' }).click();
+  await page.getByRole('button', { name: 'Export', exact: true }).first().click();
   expect((await downloading).suggestedFilename()).toMatch(
     /^SP&A One – GSAP link – \d{4} – .+\.xlsx$/,
   );

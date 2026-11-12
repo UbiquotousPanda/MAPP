@@ -1,4 +1,5 @@
 import { useFormatters } from '@/format/useFormatters';
+import { LinkButton } from '@/ui/Button/Button';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
@@ -52,22 +53,29 @@ function Bars({ mix }: { mix: StatusMix }) {
   const { dateTime } = useFormatters();
   return (
     <>
-      <p className={styles.waiting}>
-        {mix.waiting.count} waiting
-        {mix.waiting.oldestSince && ` · oldest since ${dateTime(mix.waiting.oldestSince)}`}
-      </p>
+      <div className={styles.waitingRow}>
+        <p className={styles.waiting}>
+          {mix.waiting.count} waiting
+          {mix.waiting.oldestSince && ` · oldest since ${dateTime(mix.waiting.oldestSince)}`}
+        </p>
+        {mix.waiting.count > 0 && (
+          <LinkButton size="sm" to="/approvals">
+            Go to Approvals to decide
+          </LinkButton>
+        )}
+      </div>
       <ul className={styles.bars}>
         {mix.items.map((item) => (
           <li key={item.outcome} className={styles.bar}>
             <span>{OUTCOME_WORDS[item.outcome] ?? item.outcome}</span>
+            <span className={styles.value}>
+              {item.count} · {item.sharePercent} %
+            </span>
             <span className={styles.track} aria-hidden="true">
               <span
                 className={styles.fill}
                 style={{ width: `${item.sharePercent}%`, background: BAR_COLOURS[item.outcome] }}
               />
-            </span>
-            <span className={styles.value}>
-              {item.count} · {item.sharePercent} %
             </span>
           </li>
         ))}

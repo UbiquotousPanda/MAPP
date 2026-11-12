@@ -18,6 +18,7 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
   await page.goto(`/all-work?year=${SEED_YEAR}`);
   await expect(page.getByRole('heading', { name: 'All work', level: 1 })).toBeVisible();
   await expect(page.getByText('Filter, compare and export all planned work.')).toBeVisible();
+  await page.getByRole('button', { name: /^Filters/ }).click();
   const filters = page.getByRole('group', { name: 'Filters' });
   await expect(filters.getByRole('button', { name: `Years · ${SEED_YEAR}` })).toBeVisible();
   const count = page.getByText(/^\d+ of \d+ activit(y|ies)$/);
@@ -51,6 +52,11 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
     .check();
   await page.keyboard.press('Escape');
   await page.getByRole('searchbox', { name: 'Search' }).fill('Billboard');
+  await expect(count).toHaveText(/^1 of \d+ activities$/);
+  // The filters and the search are in the address, so a reload keeps them.
+  await expect(page).toHaveURL(/activityStatus=complete.*search=Billboard/);
+  await page.reload();
+  await expect(page.getByRole('searchbox', { name: 'Search' })).toHaveValue('Billboard');
   await expect(count).toHaveText(/^1 of \d+ activities$/);
   const billboard = gridRow('Billboard winter wave').filter({ hasText: 'A-1003' });
   await expect(billboard).toContainText('Complete');
@@ -104,7 +110,7 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
   ]);
 
   const viewName = uniqueName('E2E view');
-  await page.getByRole('button', { name: 'Views' }).click();
+  await page.getByRole('button', { name: 'Saved views' }).click();
   await page.getByRole('menuitem', { name: 'Save current view…' }).click();
   const save = page.getByRole('dialog', { name: 'Save current view' });
   await save.getByRole('textbox', { name: /^Name/ }).fill(viewName);

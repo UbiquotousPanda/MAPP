@@ -15,6 +15,7 @@ import {
   viewQueries,
 } from '@/testing/fixtures/all-work-page';
 import { reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { resetAllWorkStore } from './all-work-store';
 
 afterEach(() => {
@@ -31,7 +32,7 @@ describe('AllWorkPage (US1)', () => {
     expect(document.title).toBe('All work · SP&A One');
     // Nothing is created here: Views and Export are the page's only actions (FR-002).
     expect(await screen.findByRole('button', { name: 'Export' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Views' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Saved views' })).toBeInTheDocument();
 
     expect(
       await screen.findByRole('link', { name: 'FY2026 Lubricants Europe' }),
@@ -120,7 +121,7 @@ describe('AllWorkPage (US1)', () => {
     expect(screen.getByText('Try removing a filter or changing the search.')).toBeInTheDocument();
     expect(nth(viewQueries(api), 0).getAll('activityStatus')).toEqual(['complete']);
     expect(nth(viewQueries(api), 0).getAll('owner')).toEqual(['U-1003']);
-    expect(router.state.location.search).toBe('');
+    expect(router.state.location.search).toBe('?year=2026&activityStatus=complete&owner=U-1003');
 
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
 
@@ -253,19 +254,19 @@ describe('AllWorkPage (US1)', () => {
     const result = manyActivities(60);
     const { user } = renderAllWorkPage([reply('GET /api/v1/all-work', { body: result })]);
 
-    expect(await screen.findByText('Rows 1–50 of 63')).toBeInTheDocument();
+    expect(await screen.findByText('1–50 of 63')).toBeInTheDocument();
     expect(rowNames()).toHaveLength(51);
-    await user.click(screen.getByRole('button', { name: 'Next' }));
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
 
-    expect(screen.getByText('Rows 51–63 of 63')).toBeInTheDocument();
+    expect(screen.getByText('51–63 of 63')).toBeInTheDocument();
     expect(
       screen.getByText('Continued: FY2026 Lubricants Europe › Helix launch › Helix digital'),
     ).toBeInTheDocument();
     expect(screen.getByRole('rowheader', { name: 'Total · 60 activities' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Rows per page' }), '100');
-    expect(screen.getByText('Rows 1–63 of 63')).toBeInTheDocument();
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '100');
+    expect(screen.getByText('1–63 of 63')).toBeInTheDocument();
   });
 
   it('names a refused filter in a message and sets it back (plan "States")', async () => {

@@ -1,13 +1,20 @@
 import { toCents } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
-import { ReportWidget } from '../shared';
+import { PeriodSwitch, ReportWidget } from '../shared';
 import type { ReportAddress, ReportTableData } from '../shared';
 import { allWorkLink } from './allWorkLink';
 import type { PlanDetailsValue, PlanDetailsWidget } from './api';
 import { BarList } from './BarList';
 import type { Bar } from './BarList';
-import { countsInEachText, doesNotApplyText, RECORDS, tipOf } from './plan-details-text';
+import {
+  countsInEachText,
+  doesNotApplyText,
+  RECORDS,
+  shortTitle,
+  tipOf,
+} from './plan-details-text';
 import type { Level } from './plan-details-text';
+import styles from './PlanDetails.module.css';
 
 const SPECIAL = ['none', 'doesNotApply', 'noDates', 'outsideYear'];
 const CHART_VALUES = 10;
@@ -30,17 +37,21 @@ export function ValueWidget({ widget, level, address, attributeId, currency }: V
       ? allWorkLink(address, widget.filterParam, v.key, attributeId)
       : undefined;
   const note = noteOf(widget, level);
-  return (
+  const title = shortTitle(widget, level);
+  const periods = widget.key === 'startPeriodCount';
+  const card = (
     <ReportWidget
       report="planDetails"
       widget={widget.key}
-      title={widget.title}
+      title={title}
       tip={tipOf(widget, level)}
       note={note === '' ? undefined : note}
       chart={<BarList title={widget.title} bars={barsOf(widget, money, href)} />}
       table={tableOf(widget, RECORDS[level].many, currency, money)}
+      controls={periods ? <PeriodSwitch /> : undefined}
     />
   );
+  return periods ? <div className={styles.fullRow}>{card}</div> : card;
 }
 
 /** The ten largest values, Other, then Not filled in, Does not apply and the date values. */

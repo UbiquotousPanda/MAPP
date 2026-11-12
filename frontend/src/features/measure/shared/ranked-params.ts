@@ -12,7 +12,6 @@ export interface RankedState {
 
 const SIZES = [10, 25, 50] as const;
 const DEFAULTS = new Map<string, unknown>([
-  ['order', 'desc'],
   ['group', 'none'],
   ['size', 10],
   ['page', 1],
@@ -25,22 +24,24 @@ function sizeOf(text: string | null): RankedState['size'] {
 }
 
 /** The ranked list's part of the address; any change but the page goes back to page 1. */
-export function useRankedState(defaultSort: string) {
+export function useRankedState(defaultSort: string, defaultOrder: RankedState['order'] = 'desc') {
   const [params, setParams] = useSearchParams();
   const page = Number(params.get('page'));
+  const order = params.get('order');
   const state: RankedState = {
     sort: params.get('sort') ?? defaultSort,
-    order: params.get('order') === 'asc' ? 'asc' : 'desc',
+    order: order === 'asc' || order === 'desc' ? order : defaultOrder,
     group: params.get('group') ?? 'none',
     size: sizeOf(params.get('size')),
     page: Number.isInteger(page) && page > 1 ? page : 1,
     q: params.get('q') ?? '',
     drill: params.get('drill') ?? '',
   };
+  const defaults = new Map([...DEFAULTS, ['sort', defaultSort], ['order', defaultOrder]]);
   const change = (patch: Partial<RankedState>) => {
     const next = new URLSearchParams(params);
     for (const [name, value] of Object.entries({ ...patch, page: patch.page ?? 1 })) {
-      const unset = value === (name === 'sort' ? defaultSort : DEFAULTS.get(name));
+      const unset = value === defaults.get(name);
       if (unset) {
         next.delete(name);
       } else {

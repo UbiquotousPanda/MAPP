@@ -69,7 +69,7 @@ test('050 US1–US3: Revenue credits the seeded journeys and names the model and
 
   const ranked = await openRevenue(page, CASE_STUDIES);
   await expect(
-    ranked.getByRole('columnheader', { name: /^ROI \(Equally distributed, on actual cost\)/ }),
+    ranked.getByText('Revenue credit: split equally across the steps · ROI on actual cost'),
   ).toBeVisible();
   await expect(await figure(ranked, CASE_STUDIES, /^Actual cost/)).toHaveText('$32,608.70');
   await expect(await figure(ranked, CASE_STUDIES, /^ROI/)).toHaveText('-59%');
@@ -90,7 +90,7 @@ test('050 US1, US4: a model chosen in Settings restates Revenue, its export and 
     await expectCredits(page, LAST_TOUCH);
     const ranked = await openRevenue(page, CASE_STUDIES);
     await expect(
-      ranked.getByRole('columnheader', { name: /^ROI \(Last touch, on actual cost\)/ }),
+      ranked.getByText('Revenue credit: all to the last step · ROI on actual cost'),
     ).toBeVisible();
     await expect(await figure(ranked, CASE_STUDIES, /^ROI/)).toHaveText('-100%');
 

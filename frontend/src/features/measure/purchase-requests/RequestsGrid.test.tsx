@@ -4,6 +4,7 @@ import { expectNoAxeViolations } from '@/testing/axe';
 import { purchaseRequestsGrid } from '@/testing/fixtures/purchase-requests-report';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { RequestsGrid } from './RequestsGrid';
 import type { RequestsGridProps } from './RequestsGrid';
 import { DEFAULT_PARAMS } from './schemas';
@@ -107,16 +108,17 @@ describe('RequestsGrid (042 US2)', () => {
   it('filters by vendor, owner and status, and searches after a pause in typing', async () => {
     const { user, onParams } = renderGrid();
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Vendor' }), 'none');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Owner' }), 'p-alice');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'inReview');
+    await choose(user, screen.getByRole('combobox', { name: 'Vendor' }), 'Not filled in');
+    await choose(user, screen.getByRole('combobox', { name: 'Owner' }), 'Alice Ng');
+    await choose(user, screen.getByRole('combobox', { name: 'Status' }), 'In review');
     await user.type(screen.getByRole('searchbox', { name: 'Search purchase requests' }), 'stand');
 
     expect(onParams).toHaveBeenCalledWith({ vendors: ['none'] });
     expect(onParams).toHaveBeenCalledWith({ requestOwners: ['p-alice'] });
     expect(onParams).toHaveBeenCalledWith({ statuses: ['inReview'] });
     await waitFor(() => expect(onParams).toHaveBeenCalledWith({ q: 'stand' }));
-    expect(screen.getByRole('option', { name: 'Not filled in' })).toBeInTheDocument();
+    await user.click(screen.getByRole('combobox', { name: 'Vendor' }));
+    expect(await screen.findByRole('option', { name: 'Not filled in' })).toBeInTheDocument();
   });
 
   it('pages by vendors and changes the page size', async () => {
@@ -124,9 +126,9 @@ describe('RequestsGrid (042 US2)', () => {
       grid: { ...purchaseRequestsGrid(), total: 60, page: 2, pageSize: 25 },
     });
 
-    expect(screen.getByText('Vendors 26–50 of 60')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Next' }));
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Vendors per page' }), '10');
+    expect(screen.getByText('26–50 of 60')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '10');
 
     expect(onParams).toHaveBeenCalledWith({ page: 3 });
     expect(onParams).toHaveBeenCalledWith({ pageSize: 10 });

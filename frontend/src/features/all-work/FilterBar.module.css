@@ -1,8 +1,7 @@
 /*
- * The filter bar under the view tabs (design system §5.2 list toolbar): the search and the count
- * on one row, the filter buttons on the next (they wrap), then the chips while filters are in
- * use. Below 600 px the filter buttons fold into a Filters (n) drawer (UI audit AW-03, PH-04).
- * It sits on the grey page, so its secondary text and links are Text Strong (constitution X).
+ * The search, Filters (n) and the count on one row; Filters opens the filter buttons below it, and
+ * the chips say what is in use while they are folded away. On the grey page, secondary text and
+ * links are Text Strong (constitution X).
  */
 .bar {
   --ink-2: var(--ink);
@@ -26,7 +25,6 @@
 }
 
 .drawerButton {
-  display: none;
   flex: none;
 }
 
@@ -44,9 +42,13 @@
 }
 
 .menus {
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+.menus.open {
+  display: flex;
 }
 
 .results {
@@ -92,17 +94,5 @@
     flex: 1 1 100%;
     margin: 0;
     text-align: left;
-  }
-
-  .drawerButton {
-    display: inline-flex;
-  }
-
-  .menus {
-    display: none;
-  }
-
-  .menus.open {
-    display: flex;
   }
 }

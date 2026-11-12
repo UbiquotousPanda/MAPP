@@ -15,8 +15,15 @@ import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import type { FunnelCards } from '../revenue/api';
 import { FunnelReport } from './FunnelReport';
+
+// jsdom has no canvas for ECharts to measure text; report-chart.test.ts covers what is drawn.
+vi.mock('echarts/core', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  init: () => ({ setOption() {}, resize() {}, dispose() {} }),
+}));
 
 function renderPage(
   report: Answer<'GET /api/v1/reports/funnel'> = { body: funnelReport() },
@@ -47,17 +54,15 @@ describe('FunnelReport (049 US2)', () => {
   it('opens on the first available stage and shows its cards, accessibly (FR-015)', async () => {
     renderPage();
 
-    expect(await screen.findByDisplayValue('INQ')).toBeInTheDocument();
-    const cards = await screen.findByLabelText('Summary');
-    for (const label of [
-      'INQ goal',
-      'INQ actual',
-      'INQ actual or projected',
-      'Performance',
-      'Conversion',
-    ]) {
+    expect(await screen.findByRole('combobox', { name: 'Funnel stage' })).toHaveTextContent(
+      'Inquiries (INQ)',
+    );
+    const cards = await screen.findByLabelText('Summary: Inquiries (INQ)');
+    for (const label of ['Goal', 'Actual', 'Actual or projected', 'Performance', 'Conversion']) {
       expect(within(cards).getByText(label)).toBeInTheDocument();
     }
+    const ranked = screen.getByRole('region', { name: 'Ranked list' });
+    expect(within(ranked).getByText('Stage: Inquiries (INQ)')).toBeInTheDocument();
     await expectNoAxeViolations();
   });
 
@@ -83,7 +88,7 @@ describe('FunnelReport (049 US2)', () => {
       }),
     });
 
-    const cards = await screen.findByLabelText('Summary');
+    const cards = await screen.findByLabelText(/^Summary/);
     expect(within(cards).getByText('—')).toBeInTheDocument();
   });
 
@@ -100,11 +105,13 @@ describe('FunnelReport (049 US2)', () => {
         body: funnelRankedWith(value, variance),
       });
 
-      const summary = await screen.findByLabelText('Summary');
+      const summary = await screen.findByLabelText(/^Summary/);
       expect(within(summary).getByText(word)).toBeInTheDocument();
       const ranked = screen.getByRole('region', { name: 'Ranked list' });
-      const shown = value === null ? '—' : `${value}% · ${word}`;
-      expect((await within(ranked).findAllByText(shown)).length).toBeGreaterThan(0);
+      const row = await within(ranked).findByRole('row', { name: /^Helix launch/ });
+      for (const shown of value === null ? ['—'] : [`${value}%`, word]) {
+        expect(within(row).getAllByText(shown).length).toBeGreaterThan(0);
+      }
       await expectNoAxeViolations();
     },
   );
@@ -130,7 +137,11 @@ describe('FunnelReport (049 US2)', () => {
     const { user, api, router } = renderPage();
 
     await screen.findByText('Helix launch');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Funnel stage' }), 'MQL');
+    await choose(
+      user,
+      screen.getByRole('combobox', { name: 'Funnel stage' }),
+      'Marketing-qualified leads (MQL)',
+    );
 
     expect(new URLSearchParams(router.state.location.search).get('stage')).toBe('mql');
     await waitFor(() =>
@@ -145,8 +156,12 @@ describe('FunnelReport (049 US2)', () => {
       '/reports/funnel?year=2026&stage=mql&category=uncategorised',
     );
 
-    expect(await screen.findByDisplayValue('MQL')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Uncategorised')).toBeInTheDocument();
+    expect(await screen.findByRole('combobox', { name: 'Funnel stage' })).toHaveTextContent(
+      'Marketing-qualified leads (MQL)',
+    );
+    expect(screen.getByRole('combobox', { name: 'Activity category' })).toHaveTextContent(
+      'Uncategorised',
+    );
     const first = nth(asked(api, '/api/v1/reports/funnel'), 0);
     expect([first.get('stage'), first.get('category')]).toEqual(['mql', 'uncategorised']);
   });
@@ -158,32 +173,46 @@ describe('FunnelReport (049 US2)', () => {
     const { user, api } = renderPage();
 
     await screen.findByText('Helix launch');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Funnel stage' }), 'MQL');
-    await user.click(nth(screen.getAllByRole('button', { name: 'Export' }), 0));
-    await user.click(await screen.findByRole('menuitem', { name: 'Excel (.xlsx)' }));
+    await choose(
+      user,
+      screen.getByRole('combobox', { name: 'Funnel stage' }),
+      'Marketing-qualified leads (MQL)',
+    );
+    await user.click(screen.getByRole('button', { name: 'Export' }));
 
     await waitFor(() => expect(asked(api, '/api/v1/reports/funnel/export')).toHaveLength(1));
     expect(nth(asked(api, '/api/v1/reports/funnel/export'), 0).get('stage')).toBe('mql');
     save.mockRestore();
   });
 
-  it('offers only the sorts the API accepts, so no column sorts silently by Projected (FR-006)', async () => {
+  it('offers only the sorts the API accepts, so no column sorts silently by Projected (FR-006, D-410)', async () => {
     renderPage();
 
     await screen.findByText('Helix launch');
-    const sortBy = screen.getByRole('combobox', { name: 'Sort by' });
-    const values = within(sortBy)
-      .getAllByRole('option')
-      .map((o) => o.getAttribute('value'));
-    expect(values).toEqual(['actual', 'projected']);
+    const sortable = screen
+      .getAllByRole('columnheader')
+      .filter((h) => within(h).queryByRole('button'))
+      .map((h) => h.textContent);
+    expect(sortable).toEqual(['Goal', 'Actual', 'Projected', 'Performance']);
   });
 
   it('names the model behind the projected figures and when it last changed (049 FR-022, SC-006)', async () => {
+    const { user } = renderPage();
+
+    const summary = await screen.findByLabelText(/^Summary/);
+    expect(within(summary).getByText('From Lubricants 1.0')).toBeInTheDocument();
+    await user.click(within(summary).getByRole('button', { name: 'About Actual or projected' }));
+    expect(
+      await screen.findByText(/Projected from Lubricants 1\.0, last changed [^T:]+ 2026\.$/),
+    ).toBeInTheDocument();
+  });
+
+  it("names the model behind each row's projection in its own column (049 SC-006)", async () => {
     renderPage();
 
-    const summary = await screen.findByLabelText('Summary');
+    const ranked = await screen.findByRole('region', { name: 'Ranked list' });
     expect(
-      within(summary).getByText(/^Projected from Lubricants 1\.0, last changed [^T:]+ 2026\.$/),
+      await within(ranked).findByRole('columnheader', { name: 'Projection model' }),
     ).toBeInTheDocument();
   });
 });

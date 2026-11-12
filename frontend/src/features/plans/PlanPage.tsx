@@ -11,7 +11,7 @@ import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import type { TabItem } from '@/ui/Tabs/Tabs';
 import { HistorySection, showHistory } from '@/features/activity-log';
 import { usePageTitle } from '@/ui/usePageTitle';
-import { allows, moreItemFor } from '@/session/gate-action';
+import { allows, gateItem, moreItemFor } from '@/session/gate-action';
 import { useWorkbookMenu } from '@/features/workbook';
 import { BudgetByMonthCard } from './phasing/BudgetByMonthCard';
 import { useCampaignTreeContent } from './campaigns/useCampaignTreeContent';
@@ -153,7 +153,10 @@ export function PlanPage() {
         },
         data.access?.edit,
       ),
-      ...moreItemFor(status, data.access?.publish),
+      // Unpublish is a less-used action: always in More, never a header button.
+      ...(data.status === 'draft'
+        ? moreItemFor(status, data.access?.publish)
+        : gateItem(status, data.access?.publish)),
       ...actions.copyItem(data),
       { label: 'View history', onSelect: viewHistory },
       ...workbookItems,
@@ -166,9 +169,8 @@ export function PlanPage() {
           plan={data}
           moreItems={moreItems}
           statusAction={
-            allows(data.access?.publish) && (
-              <Button onClick={status.onSelect}>{status.label}</Button>
-            )
+            data.status === 'draft' &&
+            allows(data.access?.publish) && <Button onClick={status.onSelect}>Publish</Button>
           }
         />
         <div className={styles.body}>

@@ -6,6 +6,7 @@ import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import type { TeamRef } from '@/ui/TeamPill/TeamPill';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
+import { ScrollBox } from '@/features/financials';
 import { AmountPair } from './AmountPair';
 import { PinButton } from './PinButton';
 import { PlanCompleteness, PlanStatusChip } from './PlanFacts';
@@ -27,7 +28,7 @@ const TEAMS_SHOWN = 2;
 
 export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTableProps) {
   return (
-    <div className={styles.scroll}>
+    <ScrollBox label="Plans" className={styles.scroll}>
       <table className={styles.table} aria-label="Plans">
         <thead>
           <tr>
@@ -141,7 +142,7 @@ export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTabl
           })}
         </tbody>
       </table>
-    </div>
+    </ScrollBox>
   );
 }
 

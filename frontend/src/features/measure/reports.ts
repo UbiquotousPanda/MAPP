@@ -18,7 +18,7 @@ export interface ReportGroup {
 /** The catalogue's reports in its order (039 data-model §3): their address, page title and owning feature. */
 export const REPORT_ROUTES: ReportRoute[] = [
   { key: 'planBudget', path: 'plan-budget', name: 'Plan budget', feature: '040' },
-  { key: 'approvals', path: 'approvals', name: 'Approvals', feature: '041' },
+  { key: 'approvals', path: 'approvals', name: 'Approval performance', feature: '041' },
   { key: 'purchaseRequests', path: 'purchase-requests', name: 'Purchase requests', feature: '042' },
   { key: 'planDetails', path: 'plan-details', name: 'Plan details', feature: '043' },
   { key: 'gsapLink', path: 'gsap-link', name: 'GSAP link', feature: '044' },
@@ -62,7 +62,7 @@ export const REPORT_ABOUT: Record<ReportKey, string> = {
   gsapLink:
     "Has everything sent to GSAP come back? Line items still waiting for their SWBS code, purchase requests GSAP hasn't answered, and each line item's purchase orders. For finance and operations.",
   approvals:
-    'Where is work waiting for a decision? How many activities and purchase requests wait for approval, how long each approver takes, and every approval round. For team leaders and administrators.',
+    'Where is work waiting for a decision? How many activities and purchase requests wait for approval, how long each approver takes, and every approval round. For team leaders and administrators. To decide on an approval, open the Approvals page.',
   planDetails:
     'Is our plan data complete and well tagged? How activities and planned cost spread across each Shell attribute, and which records leave one empty. For administrators and data owners.',
   userAccess:

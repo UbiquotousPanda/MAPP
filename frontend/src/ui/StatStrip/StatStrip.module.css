@@ -1,0 +1,40 @@
+.frame {
+  container-type: inline-size;
+}
+
+.strip {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Each card loses its own box; a hairline on its left and top splits it from its neighbours, and the
+   strip clips the lines on its outer edge, so a wrapped row is split the same way. */
+.strip > * {
+  min-height: 0;
+  padding: var(--space-4) var(--space-5);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow:
+    -1px 0 0 var(--row-divider),
+    0 -1px 0 var(--row-divider);
+}
+
+.strip > * > :first-child {
+  min-height: 0;
+}
+
+@container (width < 760px) {
+  .strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .strip > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}

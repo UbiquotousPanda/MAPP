@@ -52,7 +52,7 @@ describe('ViewsMenu (US6)', () => {
   it('applies a view once the menu has closed (FR-030)', async () => {
     const { user, onApply } = renderMenu();
 
-    await user.click(screen.getByRole('button', { name: 'Views' }));
+    await user.click(screen.getByRole('button', { name: 'Saved views' }));
     await user.click(await screen.findByRole('menuitemcheckbox', { name: /Lubricants by month/ }));
 
     await waitFor(() => expect(onApply).toHaveBeenCalledWith(BY_MONTH));
@@ -81,7 +81,7 @@ describe('ViewsMenu (US6)', () => {
   it('explains how to save a view when there is none', async () => {
     const { user, onSave } = renderMenu({ views: [] });
 
-    await user.click(screen.getByRole('button', { name: 'Views' }));
+    await user.click(screen.getByRole('button', { name: 'Saved views' }));
 
     expect(
       await screen.findByText(
@@ -96,11 +96,11 @@ describe('ViewsMenu (US6)', () => {
   it('goes back to the standard view', async () => {
     const { user, onStandard, onManage } = renderMenu();
 
-    await user.click(screen.getByRole('button', { name: 'Views' }));
+    await user.click(screen.getByRole('button', { name: 'Saved views' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Standard view' }));
     await waitFor(() => expect(onStandard).toHaveBeenCalled());
 
-    await user.click(screen.getByRole('button', { name: 'Views' }));
+    await user.click(screen.getByRole('button', { name: 'Saved views' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Manage views…' }));
     await waitFor(() => expect(onManage).toHaveBeenCalled());
   });

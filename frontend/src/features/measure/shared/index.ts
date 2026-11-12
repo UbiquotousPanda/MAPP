@@ -2,6 +2,7 @@
 export { ReportFrame } from './ReportFrame';
 export type { ReportFrameProps } from './ReportFrame';
 export { ReportWidget } from './ReportWidget';
+export { LevelSwitch, PeriodSwitch } from './ReportControls';
 export type { ReportWidgetProps } from './ReportWidget';
 export { ReportTable } from './ReportTable';
 export type { ReportTableData, ReportTableColumn, ReportTableRow } from './ReportTable';
@@ -17,3 +18,6 @@ export { RankedList } from './RankedList';
 export type { RankedColumn, RankedData, RankedEntryData, RankedListProps } from './RankedList';
 export { useRankedState } from './ranked-params';
 export type { RankedState } from './ranked-params';
+export { ReportChart } from './ReportChart';
+export { countPoint, moneyPoint, moneyUnit, shortPeriod } from './report-chart';
+export type { ReportChartData, ReportPoint, ReportSeries } from './report-chart';

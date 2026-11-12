@@ -2,6 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  white-space: nowrap;
 }
 
 /* The row's quick action: a 24 px icon button, faded until the row is hovered or has the focus,

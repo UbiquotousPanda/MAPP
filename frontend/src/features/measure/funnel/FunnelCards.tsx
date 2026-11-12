@@ -1,12 +1,12 @@
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { useFormatters } from '@/format/useFormatters';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { varianceText } from '../revenue/variance';
 import { reasonText } from './reasons';
 import type { FunnelCards as FunnelCardsData, FunnelReport } from '../revenue/api';
 import { projectionLine } from '../revenue/projection-line';
-import styles from './Funnel.module.css';
-
-const STAGE_WORDS: Record<string, string> = { inq: 'INQ', mql: 'MQL' };
+import { modelsLine, projectedTip } from '../revenue/projection-detail';
+import { stageName } from './stage-words';
 
 /** The fixed Funnel card set for one stage: goal, actual, projected, performance, conversion (049-C9). */
 export function FunnelCards({
@@ -19,43 +19,46 @@ export function FunnelCards({
   projections: FunnelReport['projections'];
 }) {
   const { date } = useFormatters();
-  const name = STAGE_WORDS[stage] ?? stage;
   const whole = (value: number | null) =>
     value === null ? null : Math.round(value).toLocaleString();
   return (
-    <div className={styles.cards} aria-label="Summary">
+    <StatStrip label={`Summary: ${stageName(stage)}`}>
       <SummaryCard
-        label={`${name} goal`}
-        value={whole(cards.goal.value) ?? reasonText(cards.goal.reason)}
+        label="Goal"
+        value={whole(cards.goal.value) ?? '—'}
+        detail={whole(cards.goal.value) ? undefined : why(cards.goal.reason)}
       />
       <SummaryCard
-        label={`${name} actual`}
-        value={whole(cards.actual.value) ?? reasonText(cards.actual.reason)}
+        label="Actual"
+        value={whole(cards.actual.value) ?? '—'}
+        detail={whole(cards.actual.value) ? undefined : why(cards.actual.reason)}
         tip="Facts matched to the activities in view, to today."
       />
       <SummaryCard
-        label={`${name} actual or projected`}
-        value={whole(cards.projected.value) ?? reasonText(cards.projected.reason)}
-        detail={projectionLine(projections, date)}
+        label="Actual or projected"
+        value={whole(cards.projected.value) ?? '—'}
+        tip={projectedTip(projectionLine(projections, date))}
+        detail={
+          whole(cards.projected.value) ? modelsLine(projections) : why(cards.projected.reason)
+        }
       />
       <SummaryCard
         label="Performance"
-        value={
-          cards.performance.value !== null
-            ? `${cards.performance.value}%`
-            : varianceText(cards.performance.variance)
-        }
-        detail={cards.performance.value !== null && varianceText(cards.performance.variance)}
+        value={cards.performance.value !== null ? `${cards.performance.value}%` : '—'}
+        detail={varianceText(cards.performance.variance)}
       />
       <SummaryCard
         label="Conversion"
-        value={
-          cards.conversion.value !== null
-            ? `${cards.conversion.value}%`
-            : reasonText(cards.conversion.reason)
-        }
+        value={cards.conversion.value !== null ? `${cards.conversion.value}%` : '—'}
+        detail={cards.conversion.value !== null ? undefined : why(cards.conversion.reason)}
         tip="This stage's actual over the previous stage's actual."
       />
-    </div>
+    </StatStrip>
   );
+}
+
+/** The reason under a "—" value, left out when it would only repeat the dash. */
+function why(reason: Parameters<typeof reasonText>[0]): string | undefined {
+  const text = reasonText(reason);
+  return text === '—' ? undefined : text;
 }

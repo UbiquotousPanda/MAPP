@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { DEFAULT_FILTERS, PAGE_SIZES } from './financials-links';
-import type { FinancialFilters, PageSize } from './financials-links';
+import type { FinancialFilters } from './financials-links';
 
 /** The largest file the API takes (FR-004): 700 KB. */
 const MAX_FILE_BYTES = 700 * 1024;
@@ -44,10 +44,6 @@ export function readFilters(params: URLSearchParams): FinancialFilters {
     page: parsed(pageSchema, params.get('page'), 1),
     pageSize: parsed(pageSizeSchema, params.get('pageSize'), DEFAULT_FILTERS.pageSize),
   };
-}
-
-export function pageSizeOf(text: string): PageSize | null {
-  return parsed(pageSizeSchema, text, null);
 }
 
 export const importFileSchema = z.object({

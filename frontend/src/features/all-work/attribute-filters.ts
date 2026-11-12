@@ -12,6 +12,13 @@ export function attrParams(filters: AttributeFilter[] | undefined): string[] {
     .map((filter) => `${filter.attributeId}:${filter.values.join(',')}`);
 }
 
+/** Reads one `attr` parameter as written by attrParams; anything else reads as no filter. */
+export function attributeFilterOf(param: string): AttributeFilter[] {
+  const [attributeId = '', list = ''] = param.split(':');
+  const values = list.split(',').filter((value) => value !== '');
+  return attributeId !== '' && values.length > 0 ? [{ attributeId, values }] : [];
+}
+
 export function withAttributeValues(
   filters: AttributeFilter[] | undefined,
   attributeId: string,

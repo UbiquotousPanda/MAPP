@@ -1,0 +1,122 @@
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.label {
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: 280px;
+  height: var(--control-sm);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.trigger > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trigger:hover,
+.trigger[data-state='open'] {
+  border-color: var(--control-border-hover);
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  color: var(--ink-2);
+  transition: transform 0.15s ease;
+}
+
+.icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.trigger[data-state='open'] .icon {
+  transform: rotate(180deg);
+}
+
+/* The menu: at least as wide as its control, scrolling past 320 px, above the filter popup. */
+.content {
+  z-index: 60;
+  min-width: var(--radix-select-trigger-width);
+  max-height: min(320px, var(--radix-select-content-available-height));
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-control);
+  background: var(--raised);
+  box-shadow: var(--shadow-lg);
+  animation: open 0.12s ease-out;
+}
+
+.viewport {
+  padding: var(--space-1);
+}
+
+.note {
+  margin: 0 0 var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--row-divider);
+  color: var(--ink);
+  font-size: var(--text-xs);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--control-sm);
+  padding: var(--space-1) var(--space-8) var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius-control) - 2px);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.item[data-highlighted] {
+  background: var(--hover-on-card);
+  outline: none;
+}
+
+.item[data-state='checked'] {
+  font-weight: var(--weight-bold);
+}
+
+.tick {
+  position: absolute;
+  right: var(--space-2);
+  display: inline-flex;
+}
+
+.tick svg {
+  width: 16px;
+  height: 16px;
+}
+
+@keyframes open {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}

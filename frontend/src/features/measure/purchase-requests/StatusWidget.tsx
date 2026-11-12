@@ -29,7 +29,8 @@ function Bars({ mix }: { mix: StatusMixData }) {
   return (
     <>
       <p className={styles.note}>
-        {mix.total} purchase requests · {mix.waitingForGsap} waiting for GSAP
+        {mix.total} {mix.total === 1 ? 'purchase request' : 'purchase requests'} ·{' '}
+        {mix.waitingForGsap} waiting for GSAP
       </p>
       <ul className={styles.bars}>
         {mix.items.map((item) => (
@@ -73,6 +74,7 @@ export function StatusWidget({ data, failed, onRetry }: StatusWidgetProps) {
   };
   return (
     <ReportWidget
+      wide
       report="purchaseRequests"
       widget="status"
       title="Purchase requests by status"

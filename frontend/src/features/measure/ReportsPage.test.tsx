@@ -15,14 +15,16 @@ describe('ReportsPage (039 FR-001, 039-C7, US1 scenarios 1 and 2)', () => {
     renderWithProviders(<ReportsPage />, { user: testUser() });
 
     const items = await screen.findAllByRole('listitem');
-    expect(items.map((item) => item.querySelector('a, span')?.textContent)).toEqual([
+    expect(
+      items.map((item) => within(item).getByRole('heading', { level: 3 }).textContent),
+    ).toEqual([
       'Summary',
       'Revenue',
       'Funnel stages',
       'Plan budget',
       'Purchase requests',
       'GSAP link',
-      'Approvals',
+      'Approval performance',
       'Plan details',
     ]);
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
@@ -38,7 +40,8 @@ describe('ReportsPage (039 FR-001, 039-C7, US1 scenarios 1 and 2)', () => {
     );
     expect(screen.queryByRole('link', { name: 'Plan budget' })).not.toBeInTheDocument();
     expect(screen.getAllByText('Coming soon')).toHaveLength(7);
-    expect(screen.getByText('What Plan budget answers.')).toBeInTheDocument();
+    expect(screen.getByText('Are we on budget?')).toBeInTheDocument();
+    expect(screen.queryByText('What Plan budget answers.')).not.toBeInTheDocument();
     await expectNoAxeViolations();
   });
 
@@ -52,6 +55,18 @@ describe('ReportsPage (039 FR-001, 039-C7, US1 scenarios 1 and 2)', () => {
     const tip = screen.getByRole('dialog', { name: 'About Plan budget' });
     expect(tip).toHaveTextContent(/^Are we on budget\?/);
     expect(tip).toHaveTextContent('For planners, team leaders and finance.');
+  });
+
+  it('names the Approvals report "Approval performance" and points to the Approvals page to decide (039-C7)', async () => {
+    mockApi([reply('GET /api/v1/reports', { body: catalogue() })]);
+    renderWithProviders(<ReportsPage />, { user: testUser() });
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'About Approval performance' }));
+
+    expect(screen.getByRole('dialog', { name: 'About Approval performance' })).toHaveTextContent(
+      /open the Approvals page\.$/,
+    );
   });
 
   it('leaves out a group with no report the person may open (039-C7)', async () => {

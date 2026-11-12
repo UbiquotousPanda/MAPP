@@ -6,7 +6,6 @@ import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
-import { FilterChips } from '@/ui/FilterChips/FilterChips';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -17,45 +16,24 @@ import { useReportFrame } from './api';
 import type { ReportFrame as Frame } from './api';
 import { downloadReport } from './api';
 import { ExportMenu } from './ExportMenu';
-import { FilterPanel } from './FilterPanel';
 import { PlainReportFrame } from './PlainReportFrame';
-import { DEFAULT_ADDRESS, isRestricted, resetFilters, writeAddress } from './report-address';
-import type { ReportAddress, Show } from './report-address';
-import { chipsOf, coverageText, inViewText, leftOutText, withoutChip } from './report-text';
-import { CurrencyControl, InViewLine, PeriodControl, ShowControl } from './ReportControls';
-import { SavedViewsMenu } from './SavedViewsMenu';
+import { isRestricted, resetFilters } from './report-address';
+import type { ReportAddress } from './report-address';
+import { coverageText, inViewText, leftOutText } from './report-text';
+import { ReportToolbar } from './ReportToolbar';
+import { CopyLinkButton, SavedViewsMenu } from './SavedViewsMenu';
 import { useReportAddress } from './useReportAddress';
 import styles from './ReportFrame.module.css';
 
 export interface ReportFrameProps {
   report: ReportKey;
-  /** The controls the report uses; Currency is always offered. */
-  period?: boolean;
-  show?: Show;
+  /** The report's own controls (a category, a stage), placed in the toolbar beside Year. */
+  controls?: (address: ReportAddress) => ReactNode;
   /** The report's widgets for the frame; absent for a report not built yet. */
   children?: (frame: Frame, address: ReportAddress) => ReactNode;
   comingSoon?: string;
   /** False for a report the plan filters do not apply to (User access, 045-C1): header, saved views and export only. */
   filters?: boolean;
-}
-
-/** The address as the frame applied it: the resolved year and currency, left-out values dropped. */
-function appliedAddress(address: ReportAddress, frame: Frame): ReportAddress {
-  const f = frame.filter;
-  return {
-    ...address,
-    year: f.year,
-    plans: f.plans,
-    teams: f.teams,
-    owners: f.owners,
-    activityTypes: f.activityTypes,
-  };
-}
-
-/** The panel starts a new draft when the applied filters change, not when Period, Show or Currency do. */
-function panelKey(applied: ReportAddress): string {
-  const { period, show, currency, tables } = DEFAULT_ADDRESS;
-  return writeAddress({ ...applied, period, show, currency, tables }).toString();
 }
 
 export function ReportFrame(props: ReportFrameProps) {
@@ -67,7 +45,7 @@ export function ReportFrame(props: ReportFrameProps) {
 }
 
 /** What every report page shares (contracts/ui.md). */
-function FilteredReportFrame({ report, period, show, children, comingSoon }: ReportFrameProps) {
+function FilteredReportFrame({ report, controls, children, comingSoon }: ReportFrameProps) {
   const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
   usePageTitle(name);
   const [address, setAddress] = useReportAddress();
@@ -84,13 +62,22 @@ function FilteredReportFrame({ report, period, show, children, comingSoon }: Rep
       <PageHeader
         breadcrumb={[{ label: 'Reports', to: '/reports' }, { label: name }]}
         title={name}
-        meta={data && `${data.filter.year} · Figures as of ${dateTime(data.generatedAt)}`}
+        meta={
+          data && (
+            <span>
+              {data.filter.year} · Figures as of {dateTime(data.generatedAt)} ·{' '}
+              <span>{inViewText(data.inView)}</span>
+            </span>
+          )
+        }
         actions={
           data && (
             <>
               <SavedViewsMenu report={report} />
+              <CopyLinkButton />
               <ExportMenu
                 label="Export"
+                size="sm"
                 formats={['xlsx']}
                 download={(format) => downloadReport(report, address, format, { own: params })}
               />
@@ -100,58 +87,19 @@ function FilteredReportFrame({ report, period, show, children, comingSoon }: Rep
       />
       {data ? (
         <div className={styles.layout} aria-busy={frame.isFetching || undefined}>
-          <FilterPanel
-            key={panelKey(appliedAddress(address, data))}
-            choices={data.choices}
-            applied={appliedAddress(address, data)}
-            year={data.filter.year}
-            onApply={setAddress}
+          <ReportToolbar
+            data={data}
+            address={address}
+            onChange={setAddress}
+            controls={controls?.(address)}
           />
-          <section className={styles.content} aria-label={name}>
-            <InViewLine text={inViewText(data.inView)} />
-            <div className={styles.chipsRow}>
-              <FilterChips
-                chips={chipsOf(appliedAddress(address, data), data.choices)}
-                onRemove={(key) => setAddress(withoutChip(address, key))}
-              />
-              {isRestricted(address) && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="tertiary"
-                  onClick={() => setAddress(resetFilters(address))}
-                >
-                  Reset filters
-                </Button>
-              )}
-            </div>
-            {data.leftOut > 0 && (
-              <p className={styles.note} role="status">
-                {leftOutText(data.leftOut)}
-              </p>
-            )}
+          <div className={styles.notes}>
+            {data.leftOut > 0 && <p role="status">{leftOutText(data.leftOut)}</p>}
             {coverageText(data.finance.plans, data.finance.of) && (
-              <p className={styles.note}>{coverageText(data.finance.plans, data.finance.of)}</p>
+              <p>{coverageText(data.finance.plans, data.finance.of)}</p>
             )}
-            <div className={styles.controls}>
-              {period && (
-                <PeriodControl
-                  value={address.period}
-                  onChange={(p) => setAddress({ ...address, period: p })}
-                />
-              )}
-              {show && (
-                <ShowControl
-                  value={address.show ?? show}
-                  onChange={(s) => setAddress({ ...address, show: s })}
-                />
-              )}
-              <CurrencyControl
-                currencies={data.choices.currencies}
-                value={data.filter.currency}
-                onChange={(c) => setAddress({ ...address, currency: c })}
-              />
-            </div>
+          </div>
+          <section className={styles.content} aria-label={name}>
             <FrameBody
               data={data}
               address={address}

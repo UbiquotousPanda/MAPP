@@ -11,6 +11,7 @@ import { ScrollBox } from './ScrollBox';
 import { PageSelectBox } from './SelectBox';
 import type { GridSelection } from './SelectBox';
 import type { VisibleRow } from './view-rows';
+import selectStyles from './SelectBox.module.css';
 
 export interface AllWorkGridProps {
   result: AllWorkResult;
@@ -51,8 +52,10 @@ export function AllWorkGrid({
           <thead>
             <tr>
               <th scope="col" className={styles.nameHead}>
-                {selection && <PageSelectBox selection={selection} />}
-                Name
+                <span className={selectStyles.headSelect}>
+                  {selection && <PageSelectBox selection={selection} />}
+                  Name
+                </span>
               </th>
               {columns.map((column) => (
                 <ColumnHeading key={column.key} column={column} sort={sort} onSort={onSort} />

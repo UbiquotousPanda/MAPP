@@ -13,7 +13,7 @@ import { OrdersTab } from './OrdersTab';
 import { SwbsTab } from './SwbsTab';
 import { WaitingTab } from './WaitingTab';
 
-/** GSAP link (feature 044): SWBS not received, Waiting for GSAP and Purchase orders, in 039's frame. */
+/** GSAP link (feature 044): Waiting for SWBS code, Waiting for GSAP and Purchase orders, in 039's frame. */
 export function GsapLinkReport() {
   return (
     <ReportFrame report="gsapLink">

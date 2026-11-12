@@ -8,6 +8,7 @@ import { findMessages, renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { DISPLAY_CURRENCIES } from '@/testing/fixtures/home';
 import { reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { CurrencyPicker } from './CurrencyPicker';
 
 const CURRENCY_LIST = { body: { items: DISPLAY_CURRENCIES, total: DISPLAY_CURRENCIES.length } };
@@ -22,20 +23,17 @@ function picker() {
   return screen.getByRole('combobox', { name: 'Currency' });
 }
 
-function optionTexts() {
-  return within(picker())
-    .getAllByRole('option')
-    .map((option) => option.textContent);
-}
-
 describe('CurrencyPicker', () => {
   it('offers the currencies My profile offers and starts on the display currency (FR-002, US1 scenario 1, D-217)', async () => {
-    renderPicker();
+    const { user } = renderPicker();
 
-    await waitFor(() =>
-      expect(optionTexts()).toEqual(['EUR — Euro', 'GBP — Pound sterling', 'USD — US dollar']),
-    );
-    expect(picker()).toHaveValue('USD');
+    await waitFor(() => expect(picker()).toHaveTextContent('USD – US dollar'));
+    await user.click(picker());
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'EUR – Euro',
+      'GBP – Pound sterling',
+      'USD – US dollar',
+    ]);
   });
 
   it('keeps an inactive display currency in the list, because it stays in use (D-201)', async () => {
@@ -51,15 +49,13 @@ describe('CurrencyPicker', () => {
       testUser({ preferences: { ...testUser().preferences, displayCurrency: 'CNY' } }),
     );
 
-    await waitFor(() => expect(optionTexts()).toContain('CNY — Chinese yuan'));
-    expect(picker()).toHaveValue('CNY');
+    await waitFor(() => expect(picker()).toHaveTextContent('CNY – Chinese yuan'));
   });
 
   it('shows the display currency while the list is still loading', () => {
     renderPicker([reply('GET /api/v1/me/display-currencies', () => new Promise<never>(() => {}))]);
 
-    expect(optionTexts()).toEqual(['USD']);
-    expect(picker()).toHaveValue('USD');
+    expect(picker().textContent).toBe('USD');
   });
 
   it('saves the chosen currency as display currency and asks every card again (FR-002, SC-005)', async () => {
@@ -69,9 +65,9 @@ describe('CurrencyPicker', () => {
       }),
     ]);
     queryClient.setQueryData(['home', 'summary', 'myTeams'], { scope: 'myTeams' });
-    await waitFor(() => expect(optionTexts()).toHaveLength(3));
+    await waitFor(() => expect(picker()).toHaveTextContent('USD – US dollar'));
 
-    await user.selectOptions(picker(), 'EUR');
+    await choose(user, picker(), 'EUR – Euro');
 
     await waitFor(() =>
       expect(queryClient.getQueryData<CurrentUser>(SESSION_KEY)?.preferences.displayCurrency).toBe(
@@ -80,7 +76,7 @@ describe('CurrencyPicker', () => {
     );
     expect(api.bodiesOf('PATCH /api/v1/me/preferences')).toEqual([{ displayCurrency: 'EUR' }]);
     expect(queryClient.getQueryState(['home', 'summary', 'myTeams'])?.isInvalidated).toBe(true);
-    expect(picker()).toHaveValue('EUR');
+    expect(picker()).toHaveTextContent('EUR – Euro');
   });
 
   it('says when the choice could not be saved, goes back, and saves on Try again (FR-002)', async () => {
@@ -92,17 +88,17 @@ describe('CurrencyPicker', () => {
           : { body: { ...testUser().preferences, displayCurrency: 'EUR' } },
       ),
     ]);
-    await waitFor(() => expect(optionTexts()).toHaveLength(3));
+    await waitFor(() => expect(picker()).toHaveTextContent('USD – US dollar'));
 
-    await user.selectOptions(picker(), 'EUR');
+    await choose(user, picker(), 'EUR – Euro');
 
     const messages = await findMessages();
     expect(messages).toHaveTextContent("Your choice couldn't be saved.");
-    expect(picker()).toHaveValue('USD');
+    expect(picker()).toHaveTextContent('USD – US dollar');
 
     await user.click(within(messages).getByRole('button', { name: 'Try again' }));
 
-    await waitFor(() => expect(picker()).toHaveValue('EUR'));
+    await waitFor(() => expect(picker()).toHaveTextContent('EUR – Euro'));
     expect(api.bodiesOf('PATCH /api/v1/me/preferences')).toEqual([
       { displayCurrency: 'EUR' },
       { displayCurrency: 'EUR' },

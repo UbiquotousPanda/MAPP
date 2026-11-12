@@ -1,4 +1,4 @@
-import revenueStyles from '../Revenue.module.css';
+import { Select } from '@/ui/Select/Select';
 import { isModel } from './address';
 import type { AttributionModel } from './api';
 
@@ -20,19 +20,14 @@ interface CompareSelectProps {
 export function CompareSelect({ designated, value, onChange }: CompareSelectProps) {
   const others = MODEL_NAMES.filter(([key]) => key !== designated);
   return (
-    <label className={revenueStyles.field}>
-      Compare with
-      <select
-        value={value ?? ''}
-        onChange={(e) => onChange(isModel(e.target.value) ? e.target.value : null)}
-      >
-        <option value="">No comparison</option>
-        {others.map(([key, name]) => (
-          <option key={key} value={key}>
-            {name}
-          </option>
-        ))}
-      </select>
-    </label>
+    <Select
+      label="Compare with"
+      value={value ?? ''}
+      options={[
+        { value: '', label: 'No comparison' },
+        ...others.map(([key, name]) => ({ value: key, label: name })),
+      ]}
+      onChange={(next) => onChange(isModel(next) ? next : null)}
+    />
   );
 }

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import {
@@ -19,33 +19,30 @@ const options = (route = '/reports/purchase-requests') => ({
 const report = purchaseRequestsReport();
 
 describe('CardsRow (042 FR-006)', () => {
-  it('shows the five cards, and the same values in the table view', async () => {
+  it('shows the five figures in one strip, naming what Committed counts', async () => {
     renderWithProviders(<CardsRow data={report.cards} />, options());
 
-    expect(screen.getByText('Committed').nextSibling?.textContent).toBe('$3,800.00');
-    expect(screen.getByText('Invoiced').nextSibling?.textContent).toBe('$700.00');
-    expect(screen.getByText('Vendors').nextSibling?.textContent).toBe('4');
+    const strip = screen.getByRole('region', { name: 'Summary' });
+    expect(
+      within(strip).getByText('Committed by approved purchase requests').nextSibling?.textContent,
+    ).toBe('$3,800.00');
+    expect(within(strip).getByText('Invoiced').nextSibling?.textContent).toBe('$700.00');
+    expect(within(strip).getByText('Vendors').nextSibling?.textContent).toBe('4');
+    expect(screen.queryByRole('group', { name: /Show .* as/ })).toBeNull();
     await expectNoAxeViolations();
-  });
-
-  it('shows a table, a skeleton and an error with Try again', async () => {
-    const onRetry = vi.fn();
-    const table = renderWithProviders(
-      <CardsRow data={report.cards} />,
-      options('/reports/purchase-requests?table=cards'),
-    );
-    expect(screen.getAllByRole('row').map((r) => r.textContent)).toContain('Lines10');
-    table.router.navigate('/reports/purchase-requests');
-
-    const failed = renderWithProviders(<CardsRow failed onRetry={onRetry} />, options());
-    await failed.user.click(screen.getByRole('button', { name: 'Try again' }));
-    expect(onRetry).toHaveBeenCalledOnce();
   });
 
   it('shows a loading skeleton', () => {
     renderWithProviders(<CardsRow />, options());
 
     expect(screen.getByText('Loading…')).toBeInTheDocument();
+  });
+
+  it('shows nothing when the report failed, as the widgets below offer Try again', () => {
+    renderWithProviders(<CardsRow failed />, options());
+
+    expect(screen.queryByText('Loading…')).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Summary' })).toBeNull();
   });
 });
 

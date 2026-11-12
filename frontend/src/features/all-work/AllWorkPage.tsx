@@ -3,6 +3,7 @@ import { ApiError } from '@/api/errors';
 import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { Pager } from '@/ui/Pager/Pager';
 import { Tabs } from '@/ui/Tabs/Tabs';
 import { useToast } from '@/ui/Toast/useToast';
 import type { TabItem } from '@/ui/Tabs/Tabs';
@@ -25,7 +26,6 @@ import { ExportMenu } from './ExportMenu';
 import { FilterBar } from './FilterBar';
 import { GridSkeleton } from './GridSkeleton';
 import { MonthCalendar } from './MonthCalendar';
-import { Pager } from './Pager';
 import { SummaryCards } from './SummaryCards';
 import { useAllWorkSession } from './useAllWorkSession';
 import { useOpenRecord } from './useOpenRecord';
@@ -35,7 +35,7 @@ import { ViewToolbar } from './ViewToolbar';
 import { clearAll } from './view-chips';
 import { continuedPath, pageOf, toggleRow, visibleRows } from './view-rows';
 import { nextSort } from './view-columns';
-import { standardState, toQueryParams, withoutRefused, yearRange } from './view-state';
+import { PAGE_SIZES, standardState, toQueryParams, withoutRefused, yearRange } from './view-state';
 import { gridSelection, matchingRecords } from './grid-selection';
 
 const TABS: TabItem<ViewType>[] = [
@@ -47,7 +47,7 @@ const TABS: TabItem<ViewType>[] = [
 
 /**
  * All work (feature 010): every plan of a year as a Grid, Calendar or Budget & cost view under one state
- * that survives moving around (FR-009); the Grid's rows are ticked for bulk actions (feature 012).
+ * that survives moving around; the Grid's rows are ticked for bulk actions.
  */
 export function AllWorkPage() {
   const access = useAccess();
@@ -207,8 +207,10 @@ export function AllWorkPage() {
       )}
       {result && result.rows.length > 0 && !monthLayout && (
         <Pager
-          page={page}
+          page={page.page}
           pageSize={entry.pageSize}
+          total={page.total}
+          sizes={PAGE_SIZES}
           onPage={session.setPage}
           onPageSize={session.setPageSize}
         />

@@ -15,13 +15,18 @@ interface SignInBandsProps {
 export function SignInBands({ bands, people, recordedSince }: SignInBandsProps) {
   const { date } = useFormatters();
   const largest = Math.max(1, ...bands.map((b) => b.count));
+  const fromToday = recordedSince.slice(0, 10) === new Date().toISOString().slice(0, 10);
   return (
     <ReportWidget
       report="userAccess"
       widget="signInBands"
       title="Last sign-in"
       tip="The people of the table by how long ago they last signed in. Never: not since sign-ins were first recorded."
-      note={`Sign-ins recorded since ${date(recordedSince)}`}
+      note={
+        fromToday
+          ? 'Sign-ins are recorded from today; no earlier ones are known.'
+          : `Sign-ins recorded since ${date(recordedSince)}`
+      }
       chart={
         <ul className={styles.bars} aria-label="People by last sign-in">
           {bands.map((b) => (

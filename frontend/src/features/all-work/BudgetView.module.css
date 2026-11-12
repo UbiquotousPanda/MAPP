@@ -1,5 +1,8 @@
-/* "To change how a cost is spread, open its line item" (FR-024): the view is read-only. */
+/* "To change how a cost is spread, open its line item": the view is read-only. */
 .note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
   margin: 0;
   padding: var(--space-2) var(--space-6);
   border-bottom: 1px solid var(--hairline);
@@ -35,7 +38,7 @@
   }
 }
 
-/* The Phased budget row under a plan, campaign or initiative (016 FR-038): quieter, in italics. */
+/* The Phased budget row under a plan, campaign or initiative: quieter, in italics. */
 .phasedRow th,
 .phasedRow td {
   color: var(--ink-2);

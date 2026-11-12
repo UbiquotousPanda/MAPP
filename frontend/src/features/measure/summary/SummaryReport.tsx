@@ -1,12 +1,14 @@
+import { Funnel, Info, TrendingUp } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router';
+import { LinkButton } from '@/ui/Button/Button';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { ReportFrame } from '../shared';
 import type { ReportAddress } from '../shared';
-import { CategorySelect } from '../revenue/CategorySelect';
+import { CategoryControl } from '../revenue/CategorySelect';
 import { useSummaryReport } from './api';
 import { FunnelSection } from './FunnelSection';
-import { LeagueTable } from './LeagueTable';
+import { LeagueSection } from './LeagueTable';
 import { RevenueSection } from './RevenueSection';
 import { TABLES, readSummaryParams, writeSummaryParams } from './schemas';
 import type { SummaryParams } from './schemas';
@@ -16,7 +18,7 @@ import styles from './Summary.module.css';
 /** The Summary report (feature 048): revenue against goal, the funnel and four league tables, in 039's frame. */
 export function SummaryReport() {
   return (
-    <ReportFrame report="summary" period>
+    <ReportFrame report="summary" controls={() => <CategoryControl />}>
       {(_frame, address) => <SummaryBody address={address} />}
     </ReportFrame>
   );
@@ -34,29 +36,37 @@ function SummaryBody({ address }: { address: ReportAddress }) {
   const details = (path: string) => `/reports/${path}?${search.toString()}`;
   return (
     <div className={styles.body}>
-      <div className={styles.controls}>
-        <CategorySelect value={params.category} onChange={(category) => change({ category })} />
-        <Link className={styles.link} to={details('revenue')}>
-          Revenue details
-        </Link>
-        <Link className={styles.link} to={details('funnel')}>
-          Funnel details
-        </Link>
-      </div>
       {report.data ? (
         <>
-          {report.data.states.map((state) => (
-            <p key={state} className={styles.state} role="status">
-              {STATE_TEXT[state] ?? state}{' '}
-              {state === 'nothingMatches' && (
-                <Link className={styles.link} to="/reports/summary">
-                  Reset the filters
-                </Link>
-              )}
-            </p>
-          ))}
-          <RevenueSection revenue={report.data.revenue} />
-          <FunnelSection funnel={report.data.funnel} />
+          <RevenueSection
+            revenue={report.data.revenue}
+            details={
+              <LinkButton size="sm" icon={<TrendingUp />} to={details('revenue')}>
+                Revenue details
+              </LinkButton>
+            }
+            notes={report.data.states.map((state) => (
+              <p key={state} className={styles.state} role="status">
+                <Info aria-hidden="true" />
+                <span>
+                  {STATE_TEXT[state] ?? state}{' '}
+                  {state === 'nothingMatches' && (
+                    <Link className={styles.link} to="/reports/summary">
+                      Reset the filters
+                    </Link>
+                  )}
+                </span>
+              </p>
+            ))}
+          />
+          <FunnelSection
+            funnel={report.data.funnel}
+            details={
+              <LinkButton size="sm" icon={<Funnel />} to={details('funnel')}>
+                Funnel details
+              </LinkButton>
+            }
+          />
         </>
       ) : report.isError ? (
         <ErrorState error={report.error} onRetry={() => void report.refetch()} />
@@ -65,19 +75,14 @@ function SummaryBody({ address }: { address: ReportAddress }) {
           <Skeleton lines={4} height="24px" />
         </div>
       )}
-      <section className={styles.leagues} aria-label="League tables">
-        {TABLES.map(({ table, param }) => (
-          <LeagueTable
-            key={table}
-            table={table}
-            address={address}
-            category={params.category}
-            segment={params[param]}
-            onSegment={(segment) => change({ [param]: segment })}
-            covers={report.data?.financeCovers}
-          />
-        ))}
-      </section>
+      <LeagueSection
+        address={address}
+        params={params}
+        onSegment={(segment) =>
+          change(Object.fromEntries(TABLES.map(({ param }) => [param, segment])))
+        }
+        covers={report.data?.financeCovers}
+      />
     </div>
   );
 }

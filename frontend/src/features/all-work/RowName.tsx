@@ -2,10 +2,11 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
 import { Link } from 'react-router';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
-import { LevelTag } from '@/ui/LevelTag/LevelTag';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
+import { cx } from '@/ui/cx';
 import { CONTEXT_LABEL, CONTEXT_TIP } from './all-work-text';
+import { LEVEL_LABELS } from './breakdown-text';
 import type { AllWorkRow } from './all-work-types';
 import { Highlight } from './Highlight';
 import { rowHref } from './row-href';
@@ -36,7 +37,11 @@ export function RowName({ visible, search, showStatus, onToggle, onOpen, childre
   }
 
   const link = (
-    <Link to={rowHref(row)} className={styles.link} onClick={open}>
+    <Link
+      to={rowHref(row)}
+      className={cx(styles.link, row.level === 'plan' && styles.planLink)}
+      onClick={open}
+    >
       <Highlight text={row.name} search={search} />
     </Link>
   );
@@ -58,8 +63,10 @@ export function RowName({ visible, search, showStatus, onToggle, onOpen, childre
       )}
       <div className={styles.text}>
         <div className={styles.line}>
-          {row.level !== 'unassigned' && <LevelTag level={row.level} />}
           {row.name.length > LONG_NAME ? <Tooltip content={row.name}>{link}</Tooltip> : link}
+          {LEVEL_LABELS[row.level] && (
+            <span className={styles.level}>{LEVEL_LABELS[row.level]}</span>
+          )}
           {row.level === 'plan' && row.year !== undefined && (
             <span className={styles.year}>{row.year}</span>
           )}

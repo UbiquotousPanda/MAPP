@@ -48,7 +48,7 @@ describe('RecentChangesCard', () => {
     await within(card()).findByRole('link', { name: 'Launch film' });
     const entry = nth(entries(), 0);
     expect(sentenceOf(entry)).toBe(
-      "Priya Raman changed planned cost of activity 'Launch film' (A-1042)",
+      'Priya Raman changed planned cost of activity Launch film · A-1042',
     );
     expect(within(entry).getByRole('link', { name: 'Launch film' })).toHaveAttribute(
       'href',
@@ -115,8 +115,8 @@ describe('RecentChangesCard', () => {
 
     await within(card()).findByRole('link', { name: 'Helix launch' });
     expect(entries().map(sentenceOf)).toEqual([
-      "Daniel Okoro published plan 'FY2026 Lubricants Europe' (P-1001)",
-      "Priya Raman created campaign 'Helix launch' (C-1001)",
+      'Daniel Okoro published plan FY2026 Lubricants Europe · P-1001',
+      'Priya Raman created campaign Helix launch · C-1001',
     ]);
     expect(within(card()).getByRole('link', { name: 'FY2026 Lubricants Europe' })).toHaveAttribute(
       'href',
@@ -152,8 +152,8 @@ describe('RecentChangesCard', () => {
 
     await within(card()).findAllByRole('listitem');
     expect(entries().map(sentenceOf)).toEqual([
-      "Priya Raman deleted activity 'Trade show' (A-1043) (in recycle bin)",
-      "Priya Raman changed planned cost of activity 'Spring radio' (A-1044) (permanently deleted)",
+      'Priya Raman deleted activity Trade show · A-1043 (in recycle bin)',
+      'Priya Raman changed planned cost of activity Spring radio · A-1044 (permanently deleted)',
     ]);
     expect(within(card()).queryByRole('link', { name: 'Trade show' })).not.toBeInTheDocument();
     expect(within(card()).queryByRole('link', { name: 'Spring radio' })).not.toBeInTheDocument();
@@ -181,8 +181,8 @@ describe('RecentChangesCard', () => {
 
     await within(card()).findAllByRole('link', { name: 'Launch film' });
     expect(entries().map(sentenceOf)).toEqual([
-      "Priya Raman changed name, planned cost and GL code of activity 'Launch film' (A-1042)",
-      "Priya Raman changed name, region, start date and 2 more fields of activity 'Launch film' (A-1042)",
+      'Priya Raman changed name, planned cost and GL code of activity Launch film · A-1042',
+      'Priya Raman changed name, region, start date and 2 more fields of activity Launch film · A-1042',
     ]);
   });
 

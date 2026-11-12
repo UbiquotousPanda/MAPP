@@ -1,5 +1,5 @@
 import { RotateCw } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
@@ -48,23 +48,19 @@ export function DealsPanel({ address, openedWith, onRefresh }: DealsPanelProps) 
       title={openedWith?.name ?? 'Attributed revenue'}
       description={SCOPE_SENTENCE}
       footer={
-        <>
-          <Button variant="secondary" onClick={deals.close}>
-            Close
-          </Button>
-          <ExportMenu
-            label="Export"
-            formats={['xlsx', 'csv']}
-            download={(format) =>
-              downloadReport('revenue', address, format, {
-                widget: 'deals',
-                own: exportParams(deals.address),
-              })
-            }
-          />
-        </>
+        <ExportMenu
+          label="Export"
+          formats={['xlsx', 'csv']}
+          download={(format) =>
+            downloadReport('revenue', address, format, {
+              widget: 'deals',
+              own: exportParams(deals.address),
+            })
+          }
+        />
       }
     >
+      {open && <FocusTitle />}
       {deals.address.activityId && (
         <DealsBody
           key={deals.address.activityId}
@@ -78,6 +74,24 @@ export function DealsPanel({ address, openedWith, onRefresh }: DealsPanelProps) 
       )}
     </SidePanel>
   );
+}
+
+/** The panel opens on its heading, not on the close button, so reading starts at the activity's name. */
+function FocusTitle() {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    // After the dialog's own focus on its first button, which runs once this effect has.
+    const frame = requestAnimationFrame(() => {
+      const title = ref.current?.closest('[role="dialog"]')?.querySelector('h2');
+      if (title) {
+        title.tabIndex = -1;
+        title.classList.add(styles.focusedTitle ?? '');
+        title.focus();
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  return <span ref={ref} hidden />;
 }
 
 /** The export names the activity and the comparison through the report's own parameters. */
@@ -184,7 +198,9 @@ function DealsLoaded({
       <dl className={styles.totals}>
         <div className={styles.total}>
           <dt className={styles.totalLabel}>Credited to this activity</dt>
-          <dd className={styles.totalValue}>{money(data.credited)}</dd>
+          <dd className={styles.totalValue}>
+            {Number(data.credited.amount) === 0 ? '—' : money(data.credited)}
+          </dd>
           {data.comparison && data.comparisonCredited && (
             <dd className={styles.compare}>
               {money(data.comparisonCredited)} under {data.comparison.name}
@@ -210,7 +226,7 @@ function DealsLoaded({
       <Notes data={data} />
       <CompareSelect designated={data.model.key} value={compare} onChange={onCompare} />
       {data.deals.length === 0 ? (
-        <EmptyState title="No data has arrived yet" text={noDealsText(data)} />
+        <NoDeals data={data} />
       ) : (
         <ul className={styles.deals} aria-label="Deals">
           {data.deals.map((d) => (
@@ -266,11 +282,21 @@ function Notes({ data }: { data: ActivityDeals }) {
   );
 }
 
-function noDealsText(data: ActivityDeals): string {
+function NoDeals({ data }: { data: ActivityDeals }) {
   if (data.reason === 'notApproved') {
-    return 'This activity is not approved yet, so its facts are held until it is.';
+    return (
+      <EmptyState
+        title="This activity isn't approved yet"
+        text="Its facts are held until it is approved, so no deal counts for it yet."
+      />
+    );
   }
-  return `No deal in ${data.year} credits or was booked on this activity.`;
+  return (
+    <EmptyState
+      title="No data has arrived yet"
+      text={`No deal in ${data.year} credits or was booked on this activity.`}
+    />
+  );
 }
 
 function changedSince(data: ActivityDeals, openedWith: OpenedWith | null): boolean {

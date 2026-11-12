@@ -8,9 +8,7 @@ import styles from './ViewsMenu.module.css';
 export interface ViewsMenuProps {
   /** The person's saved views, by name; undefined while they load. */
   views: SavedView[] | undefined;
-  /** The view applied last, if it still exists. */
   active: SavedView | null;
-  /** What is shown differs from the active view (FR-030). */
   modified: boolean;
   onApply: (view: SavedView) => void;
   onSave: () => void;
@@ -21,10 +19,6 @@ export interface ViewsMenuProps {
 }
 
 /**
- * **Views** (US6, FR-029 – FR-031): the person's saved views with the active one ticked and the
- * default one tagged, then Save current view…, Update view and Save as new view… when the view
- * is Modified, Manage views… and Standard view. The button names the active view.
- *
  * The chosen item runs only after the menu has closed and given the focus back to the button, so
  * a dialog opened from it returns the focus there too.
  */
@@ -45,7 +39,7 @@ export function ViewsMenu({
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger asChild>
         <Button icon={<Bookmark />}>
-          {active ? `View: ${active.name}` : 'Views'}
+          {active ? `View: ${active.name}` : 'Saved views'}
           {modified && ' '}
           {modified && <span className={styles.modified}>Modified</span>}
         </Button>

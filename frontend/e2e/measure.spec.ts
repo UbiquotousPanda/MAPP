@@ -1,6 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
-import { callApi, expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
+import {
+  callApi,
+  expectNoAxeViolations,
+  expectToast,
+  signInAs,
+  uniqueName,
+  choose,
+} from './fixtures';
 import { sheetNames } from './xlsx-read';
 
 // The Reports area's shared frame (039): the Reports page and a report's filters (US1), saved views (US2) and the
@@ -46,17 +53,18 @@ test('039 US1: a report opens on the defaults, filters on Apply and keeps everyt
   await page.goto(REPORT);
   await expect(inView(page)).toContainText(` ${allWork.count.total} activit`);
   await expectNoAxeViolations(page);
-  const levels = page.getByRole('tablist', { name: 'Shell attributes by level' });
-  await levels.scrollIntoViewIfNeeded();
-  for (const level of ['Plan', 'Campaign', 'Initiative', 'Activity', 'Line item']) {
-    await expect(levels.getByRole('tab', { name: level })).toBeInViewport({ ratio: 1 });
-  }
-
   const unfiltered = await inView(page).innerText();
-  const status = page.getByRole('group', { name: /^Activity status/ });
-  await status.getByRole('checkbox', { name: 'Created' }).uncheck();
-  await expect(page.getByText('Changes not applied yet')).toBeVisible();
-  await page.getByRole('button', { name: 'Apply' }).click();
+  await page.getByRole('button', { name: /^Filters/ }).click();
+  const filters = page.getByRole('group', { name: 'Filters' });
+  await filters.getByRole('button', { name: 'More filters' }).click();
+  await expect(page.getByRole('dialog', { name: 'More filters' })).toContainText('Activity');
+  await page.keyboard.press('Escape');
+  await filters.getByRole('button', { name: 'Activity status' }).click();
+  await page
+    .getByRole('dialog', { name: 'Activity status' })
+    .getByRole('checkbox', { name: 'Approved' })
+    .check();
+  await page.keyboard.press('Escape');
   await expect(page).toHaveURL(/activityStatus=/);
   // The line changes once the frame has read the filtered year; read it only then.
   await expect(inView(page)).not.toHaveText(unfiltered);
@@ -68,7 +76,7 @@ test('039 US1: a report opens on the defaults, filters on Apply and keeps everyt
   await expect(inView(copy)).toHaveText(filtered);
   await copy.close();
 
-  await page.getByRole('combobox', { name: 'Currency' }).selectOption('EUR');
+  await choose(page, page.getByRole('combobox', { name: 'Currency' }), /^EUR/);
   await expect(page).toHaveURL(/currency=EUR/);
   await page.getByRole('button', { name: 'Reset filters' }).first().click();
   await expect(page).not.toHaveURL(/activityStatus=/);
@@ -99,7 +107,7 @@ test('039 US2: saved views are personal, open on the default, and come back with
   const button = page.getByRole('button', { name: `View: ${name}` });
   await expect(button).toBeVisible();
 
-  await page.getByRole('combobox', { name: 'Currency' }).selectOption('EUR');
+  await choose(page, page.getByRole('combobox', { name: 'Currency' }), /^EUR/);
   await page.getByRole('button', { name: `View: ${name} Modified` }).click();
   await page.getByRole('menuitem', { name: 'Update view…' }).click();
   await page.getByRole('button', { name: 'Update view' }).click();
@@ -126,9 +134,8 @@ test('039 US3: Export downloads the report with In view and About this export (F
   await page.goto(REPORT);
   await expect(inView(page)).toBeVisible();
 
-  await page.getByRole('button', { name: 'Export', exact: true }).first().click();
   const downloading = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'Excel (.xlsx)' }).click();
+  await page.getByRole('button', { name: 'Export', exact: true }).first().click();
   const download = await downloading;
 
   expect(download.suggestedFilename()).toMatch(/\.xlsx$/);

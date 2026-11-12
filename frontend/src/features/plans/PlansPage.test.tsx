@@ -9,6 +9,7 @@ import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { seedList } from '@/testing/fixtures/plans';
 import { reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { remember, DEFAULT_FILTERS } from './list-preferences';
 import { PlansPage } from './PlansPage';
 
@@ -87,7 +88,7 @@ describe('PlansPage (US2, FR-001 – FR-004)', () => {
     // The year is one of the less-used filters behind Filters (design system §2.4 A).
     await user.click(screen.getByRole('button', { name: 'Filters' }));
     // Until 016's API is merged the list takes one year and knows no plan types.
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Year' }), '2026');
+    await choose(user, screen.getByRole('combobox', { name: 'Year' }), '2026');
     expect(screen.queryByRole('group', { name: 'Plan type' })).not.toBeInTheDocument();
     await user.keyboard('{Escape}');
 
@@ -112,16 +113,16 @@ describe('PlansPage (US2, FR-001 – FR-004)', () => {
 
     await screen.findAllByRole('article');
     await user.click(screen.getByRole('button', { name: 'Filters' }));
-    const to = screen.getByRole('combobox', { name: 'To' });
-    expect(to).toBeDisabled();
-    expect(
-      within(screen.getByRole('combobox', { name: 'From' }))
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual(['All years', '2025', '2026']);
-
-    await user.selectOptions(screen.getByRole('combobox', { name: 'From' }), '2025');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'To' }), '2026');
+    // With All years there is no end year to choose, so To appears only once From has a year.
+    expect(screen.queryByRole('combobox', { name: 'To' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('combobox', { name: 'From' }));
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'All years',
+      '2025',
+      '2026',
+    ]);
+    await user.click(screen.getByRole('option', { name: '2025' }));
+    await choose(user, await screen.findByRole('combobox', { name: 'To' }), '2026');
     await user.click(screen.getByRole('checkbox', { name: 'Strategic' }));
     await user.click(screen.getByRole('checkbox', { name: 'Cross-market' }));
     await user.keyboard('{Escape}');

@@ -10,6 +10,8 @@ import type { AllWorkResult } from './all-work-types';
 import { BudgetView } from './BudgetView';
 import { visibleRows } from './view-rows';
 
+const ABOUT_MONTHS = 'About months above planned cost';
+
 const OPEN_ALL = { ...standard2026(), expansion: { mode: 'allExpanded' as const, toggled: [] } };
 
 function renderBudget(result: AllWorkResult = budgetResult()) {
@@ -91,7 +93,7 @@ describe('BudgetView (US4)', () => {
       May: '$1,000.00',
       Total: '$3,000.00',
     });
-    expect(cellsOf(/^ACTIVITYHelix launch event/)).toMatchObject({
+    expect(cellsOf(/^Helix launch event ?Activity/)).toMatchObject({
       Mar: '$4,000.00',
       May: '$4,000.00',
       Total: '$12,000.00',
@@ -114,14 +116,14 @@ describe('BudgetView (US4)', () => {
   it('adds up containers per period, with the plan budget on container rows only (FR-024)', () => {
     renderBudget();
 
-    expect(cellsOf(/^PLANFY2026 Lubricants Europe/)).toMatchObject({
+    expect(cellsOf(/^FY2026 Lubricants Europe ?Plan/)).toMatchObject({
       'Plan budget': '$1,200,000.00',
       Mar: '$4,000.00',
       Apr: '$6,000.00',
       Jun: '$2,000.00',
       Total: '$18,000.00',
     });
-    expect(cellsOf(/^CAMPAIGNRetail push/)).toMatchObject({ 'Plan budget': '—', Total: '—' });
+    expect(cellsOf(/^Retail push ?Campaign/)).toMatchObject({ 'Plan budget': '—', Total: '—' });
   });
 
   it('closes with the period totals, the grand total and the plans’ budget (FR-024)', () => {
@@ -153,7 +155,7 @@ describe('BudgetView (US4)', () => {
   it('shows quarters, each the sum of its months (US4 scenario 3, FR-022)', () => {
     renderBudget(budgetResult('quarter'));
 
-    expect(cellsOf(/^PLANFY2026 Lubricants Europe/)).toMatchObject({
+    expect(cellsOf(/^FY2026 Lubricants Europe ?Plan/)).toMatchObject({
       Q1: '$4,000.00',
       Q2: '$14,000.00',
       Q3: '—',
@@ -223,22 +225,39 @@ describe('BudgetView (US4)', () => {
     expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ key: 'L-1001' }));
   });
 
-  it('says why the months add up to more than planned cost (038 FR-024, L-2)', () => {
+  it('says in an ⓘ on the note why the months add up to more than planned cost (038 FR-024, L-2)', async () => {
     const result = budgetResult();
-    renderBudget({ ...result, summary: { ...result.summary, negativeBalanceCount: 2 } });
+    const { user } = renderBudget({
+      ...result,
+      summary: { ...result.summary, negativeBalanceCount: 2 },
+    });
+
+    await user.click(screen.getByRole('button', { name: ABOUT_MONTHS }));
 
     expect(
-      screen.getByText(
+      await screen.findByText(
         '2 activities have line items above their planned cost, so their months add up to more than their planned cost.',
       ),
     ).toBeInTheDocument();
   });
 
-  it('says nothing of it when no activity is above its planned cost (038 FR-024)', () => {
+  it('writes — for a zero amount, as for no amount', () => {
+    const result = budgetResult();
+    const rows = result.rows.map((row) =>
+      row.key === 'L-1001'
+        ? { ...row, periods: [usd('0.00'), ...(row.periods ?? []).slice(1)] }
+        : row,
+    );
+    renderBudget({ ...result, rows });
+
+    expect(cellsOf(/Venue hire/)).toMatchObject({ Jan: '—', Mar: '$3,000.00' });
+  });
+
+  it('has no ⓘ when no activity is above its planned cost (038 FR-024)', () => {
     const result = budgetResult();
     renderBudget({ ...result, summary: { ...result.summary, negativeBalanceCount: 0 } });
 
-    expect(screen.queryByText(/so their months add up/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: ABOUT_MONTHS })).not.toBeInTheDocument();
   });
 });
 

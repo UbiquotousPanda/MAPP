@@ -1,8 +1,3 @@
-/*
- * A summary card that is one link (design system §5.3): the card lifts on hover without moving,
- * and the keyboard focus ring goes round the whole card. The card fills its grid cell, so cards in
- * one row have the same height.
- */
 .card {
   position: relative;
   display: grid;
@@ -10,28 +5,32 @@
   grid-template-rows: subgrid;
   row-gap: 0;
   min-width: 0;
-  border-radius: var(--radius-card);
-  transition: box-shadow var(--dur) var(--ease-out);
+  transition: background-color var(--dur) var(--ease-out);
 }
 
-/*
- * Label, value and line under it are three rows shared by the cards of a row (subgrid), so a
- * label that wraps to three lines on a phone moves every value of its row down with it: the
- * values of a row stay at one height (plan 2.1 acceptance).
- */
+/* Label, value and line are rows shared across the strip (subgrid), so a row's values line up. */
 .card > div {
   display: grid;
   grid-row: 1 / -1;
   grid-template-rows: subgrid;
   row-gap: 0;
   align-content: start;
+  min-height: 0;
+  padding: var(--space-4) var(--space-5);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-lift);
+  background-color: var(--hover);
 }
 
-/* The link covers the whole card. */
+.card p:first-child {
+  min-height: 0;
+}
+
 .link {
   position: absolute;
   inset: 0;
@@ -41,19 +40,14 @@
 
 .link:focus-visible {
   outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
-/* The ⓘ and the full-value button inside the card stay above the link. */
 .card button {
   position: relative;
   z-index: 2;
 }
 
-/*
- * The label ends before the chevron, so a label of two lines never puts its ⓘ under it; the ⓘ
- * keeps its 24 × 24 target when the label wraps (WCAG 2.5.8).
- */
 .card p:first-child {
   padding-right: var(--space-5);
 }
@@ -62,10 +56,9 @@
   flex: none;
 }
 
-/* The chevron at the top end says the card opens something. */
 .chevron {
   position: absolute;
-  top: var(--space-5);
+  top: var(--space-4);
   right: var(--space-4);
   width: 16px;
   height: 16px;

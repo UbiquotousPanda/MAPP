@@ -35,26 +35,27 @@ test('048 US1: the Summary report shows revenue against goal, equal to the Reven
   await expect(page.getByRole('heading', { name: 'Summary', level: 1 })).toBeVisible();
   const figures = page.getByLabel('Revenue figures');
   expect(await cardValue(figures, 'Actual or projected')).toBe(revenue);
-  await expect(figures.getByText('Goal coverage')).toBeVisible();
-  await expect(page.getByLabel('Conversions')).toBeVisible();
+  await expect(page.getByText('Goals planned in activities')).toBeVisible();
+  await expect(page.getByLabel('Stage figures').getByText('MQL conversion')).toBeVisible();
 
   await expectNoAxeViolations(page);
 });
 
-test('048 US2: changing one league table segment reloads that table and keeps it in the address', async ({
+test('048 US2: the one Segment choice reloads the league tables and keeps it in the address', async ({
   page,
 }) => {
   test.slow();
   await signInAs(page, ALEX);
   await page.goto('/reports/summary?year=2026');
 
-  const segment = page.getByRole('combobox', { name: 'Segment' }).first();
+  const segment = page.getByRole('combobox', { name: 'Segment' });
   await expect(segment).toBeVisible();
   const options = await segment.locator('option').allInnerTexts();
   test.skip(options.length < 2, 'the demo data offers one segment only');
 
   const reloaded = page.waitForRequest((r) => r.url().includes('/reports/summary/league/revenue'));
-  await segment.selectOption({ index: 1 });
+  await segment.click();
+  await page.getByRole('option').nth(1).click();
   await reloaded;
   await expect(page).toHaveURL(/revenueBy=/);
 });

@@ -6,6 +6,7 @@ import { reportFrame } from '@/testing/fixtures/reports';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
 import { userAccessReport } from './user-access-fixture';
@@ -68,6 +69,23 @@ describe('UserAccessReport (045 US1, FR-001, FR-005 – FR-008, FR-012)', () => 
     await user.click(within(table).getByRole('button', { name: 'Last sign-in' }));
     expect(router.state.location.search).toBe('?status=all&sort=-lastSignedIn');
     expect(lastSearch(api)).toContain('sort=-lastSignedIn');
+  });
+
+  it('filters by one team from a compact Team choice, kept in the address (FR-006)', async () => {
+    const { router, user } = renderReport();
+    await screen.findByRole('table', { name: 'People' });
+
+    await choose(user, screen.getByRole('combobox', { name: 'Team' }), 'Lubricants Europe');
+    expect(router.state.location.search).toMatch(/^\?team=T-\d+$/);
+  });
+
+  it('says plainly when sign-ins are recorded only from today (FR-008)', async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    renderReport({ body: userAccessReport({ recordedSince: today }) });
+
+    expect(
+      await screen.findByText('Sign-ins are recorded from today; no earlier ones are known.'),
+    ).toBeInTheDocument();
   });
 
   it('says no one matches a search, with Clear search (FR-012)', async () => {

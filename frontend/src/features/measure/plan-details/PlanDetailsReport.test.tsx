@@ -1,10 +1,11 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { reportFrame } from '@/testing/fixtures/reports';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { reply } from '@/testing/replies';
 import type { PlanDetailsReport as Report } from './api';
 import { planDetails } from './plan-details-fixture';
@@ -35,15 +36,43 @@ describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
   it('shows the cards, the built-in section and one row per attribute', async () => {
     const api = renderReport();
 
-    expect(await screen.findByText('Activities by Company code')).toBeInTheDocument();
+    expect(await screen.findByText('By Company code')).toBeInTheDocument();
     expect(screen.getByText('20 of 28 (71 %)')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Built-in fields' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Company code' })).toBeInTheDocument();
-    expect(screen.getByText('79 % filled in')).toBeInTheDocument();
+    const nav = screen.getByRole('navigation', { name: 'Shell attributes' });
+    expect(
+      within(nav).getByRole('button', { name: 'Company code 79 % filled in' }),
+    ).toBeInTheDocument();
     expect(api.requests.find((r) => r.path === '/api/v1/reports/plan-details')?.search).toContain(
       'period=month',
     );
     await expectNoAxeViolations();
+  });
+
+  it('lists the attributes worst filled in first by default, or in Settings order (FR-012)', async () => {
+    const report = planDetails();
+    const [first] = report.attributes;
+    if (!first) {
+      throw new Error('The fixture has no attribute.');
+    }
+    const brands = {
+      ...first,
+      attributeId: 'SA-20',
+      label: 'Brands',
+      widgets: first.widgets.map((w) => ({ ...w, filledInPercent: w.filledInPercent && 40 })),
+    };
+    const { user } = renderReport(planDetails({ attributes: [first, brands] }));
+    const nav = await screen.findByRole('navigation', { name: 'Shell attributes' });
+    const names = () =>
+      within(nav)
+        .getAllByRole('button')
+        .map((b) => b.textContent);
+
+    expect(names()).toEqual(['Brands 40 % filled in', 'Company code 79 % filled in']);
+    expect(screen.getByRole('region', { name: 'Brands' })).toBeInTheDocument();
+    await choose(user, within(nav).getByRole('combobox', { name: 'Order' }), 'Settings order');
+    expect(names()).toEqual(['Company code 79 % filled in', 'Brands 40 % filled in']);
   });
 
   it('says "No data yet" when no record of the level is in view, and offers no export (FR-016)', async () => {
@@ -63,7 +92,7 @@ describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
       screen.getByText("Activities create this report's data; there are none in view."),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open the plans' })).toHaveAttribute('href', '/plans');
-    expect(screen.queryByText('Activities by Company code')).not.toBeInTheDocument();
+    expect(screen.queryByText('By Company code')).not.toBeInTheDocument();
   });
 
   it('says the filters exclude every record of the level, and resets them (FR-016)', async () => {
@@ -108,7 +137,7 @@ describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
     );
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
-    expect(screen.queryByText('Activities by Company code')).not.toBeInTheDocument();
+    expect(screen.queryByText('By Company code')).not.toBeInTheDocument();
   });
 
   it('opens on the level in the address (FR-001)', async () => {

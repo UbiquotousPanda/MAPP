@@ -1,8 +1,22 @@
-/* Inside the list's card: wide content scrolls sideways here, never the page (design system §5.4). */
+/* Wide content scrolls sideways here, never the page; an edge with more columns beyond it shows a
+   soft shadow (design system §5.4). */
 .scroll {
   position: relative;
   overflow-x: auto;
-  border-top: 1px solid var(--hairline);
+  background:
+    linear-gradient(to right, var(--surface) 30%, transparent) left center / 32px 100% no-repeat
+      local,
+    linear-gradient(to left, var(--surface) 30%, transparent) right center / 32px 100% no-repeat
+      local,
+    radial-gradient(farthest-side at 0 50%, var(--scroll-shadow), transparent) left center / 12px
+      100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, var(--scroll-shadow), transparent) right center /
+      12px 100% no-repeat scroll;
+}
+
+.scroll:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
 }
 
 .table {

@@ -45,7 +45,7 @@ export function AttentionCard() {
       ) : attention.isError ? (
         <SectionError onRetry={() => void attention.refetch()} />
       ) : attention.data.items.length === 0 ? (
-        <EmptyState icon={<CircleCheckBig />} title={NOTHING_NEEDS_ATTENTION} />
+        <EmptyState compact icon={<CircleCheckBig />} title={NOTHING_NEEDS_ATTENTION} />
       ) : (
         <>
           <ul className={styles.items}>

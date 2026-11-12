@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
+import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { ApprovalsGridData, ApprovalsRowData } from './api';
@@ -11,7 +12,7 @@ import { GridFilters } from './GridFilters';
 import { GridPager } from './GridPager';
 import { PAGE_SIZES } from './schemas';
 import type { ApprovalsParams, SortKey } from './schemas';
-import { NOTHING, OUTCOME_WORDS, recordWord } from './words';
+import { NOTHING, OUTCOME_TONES, OUTCOME_WORDS, oneRecordWord, waitingText } from './words';
 import styles from './ApprovalsGrid.module.css';
 
 const COLUMNS: { key: SortKey; label: string; numeric?: boolean }[] = [
@@ -83,7 +84,14 @@ function SortHeading(props: {
   );
 }
 
-function Row({ row, onRead }: { row: ApprovalsRowData; onRead: (row: ApprovalsRowData) => void }) {
+interface RowProps {
+  row: ApprovalsRowData;
+  onRead: (row: ApprovalsRowData) => void;
+  showOrder: boolean;
+  today: string;
+}
+
+function Row({ row, onRead, showOrder, today }: RowProps) {
   const { date, money } = useFormatters();
   const long = row.comments.length > LONG_COMMENT;
   return (
@@ -92,13 +100,19 @@ function Row({ row, onRead }: { row: ApprovalsRowData; onRead: (row: ApprovalsRo
       <th scope="row" className={styles.name}>
         {row.canOpen ? <Link to={recordHref(row)}>{row.itemName}</Link> : row.itemName}
       </th>
-      <td>{recordWord(row.recordType)}</td>
+      <td>{oneRecordWord(row.recordType)}</td>
       <td>{row.approver?.name ?? NOTHING}</td>
       <td>{row.decidedOn ? date(row.decidedOn) : NOTHING}</td>
-      <td>{OUTCOME_WORDS[row.outcome] ?? row.outcome}</td>
+      <td>
+        <StatusChip tone={OUTCOME_TONES[row.outcome] ?? 'neutral'}>
+          {row.outcome === 'waiting'
+            ? waitingText(row.submittedOn, today)
+            : (OUTCOME_WORDS[row.outcome] ?? row.outcome)}
+        </StatusChip>
+      </td>
       <td>{date(row.submittedOn)}</td>
       <td className={styles.numeric}>{row.level}</td>
-      <td>{row.purchaseOrderNumber ?? NOTHING}</td>
+      {showOrder && <td>{row.purchaseOrderNumber ?? NOTHING}</td>}
       <td className={styles.numeric}>{row.amount ? money(row.amount) : NOTHING}</td>
       <td>{row.owner.name}</td>
       <td className={styles.commentCell}>
@@ -125,7 +139,7 @@ function tableOf(grid: ApprovalsGridData): ReportTableData {
       cells: [
         row.itemId,
         row.itemName,
-        recordWord(row.recordType),
+        oneRecordWord(row.recordType),
         row.approver?.name ?? NOTHING,
         row.decidedOn ?? NOTHING,
         OUTCOME_WORDS[row.outcome] ?? row.outcome,
@@ -170,6 +184,9 @@ export function ApprovalsGrid({
   const reset = () => onParams({ q: '', recordTypes: [], approvers: [], outcomes: [] });
   const note = financeNote(covers);
   const empty: ReportTableData = { columns: [{ label: 'Record ID' }], rows: [] };
+  const showOrder = Boolean(grid?.items.some((row) => row.purchaseOrderNumber));
+  const columns = COLUMNS.filter((c) => showOrder || c.key !== 'purchaseOrder');
+  const today = new Date().toLocaleDateString('en-CA');
   return (
     <>
       <ReportWidget
@@ -197,7 +214,7 @@ export function ApprovalsGrid({
                     </caption>
                     <thead>
                       <tr>
-                        {COLUMNS.map((c) => (
+                        {columns.map((c) => (
                           <SortHeading key={c.key} column={c} params={params} onParams={onParams} />
                         ))}
                       </tr>
@@ -208,6 +225,8 @@ export function ApprovalsGrid({
                           key={`${row.itemId}-${row.level}-${i}`}
                           row={row}
                           onRead={setReading}
+                          showOrder={showOrder}
+                          today={today}
                         />
                       ))}
                     </tbody>

@@ -67,10 +67,10 @@ describe('ExportMenu (US7)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Export' }));
     expect((await screen.findAllByRole('menuitem')).map((item) => item.textContent)).toEqual([
-      'Spreadsheet (.xlsx)',
+      'Excel (.xlsx)',
       'CSV (.csv)',
     ]);
-    await user.click(screen.getByRole('menuitem', { name: 'Spreadsheet (.xlsx)' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Excel (.xlsx)' }));
 
     const messages = await findMessages();
     expect(within(messages).getByText(`Exported '${XLSX_NAME}'`)).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe('ExportMenu (US7)', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Export' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Spreadsheet (.xlsx)' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Excel (.xlsx)' }));
 
     const button = await screen.findByRole('button', { name: 'Preparing your file…' });
     expect(button).toHaveAttribute('aria-busy', 'true');
@@ -148,7 +148,7 @@ describe('ExportMenu (US7)', () => {
     });
 
     await user.click(screen.getByRole('button', { name: 'Export' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Spreadsheet (.xlsx)' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Excel (.xlsx)' }));
 
     const messages = await findMessages();
     expect(within(messages).getByText('Choose a year from 2000 to 2100.')).toBeInTheDocument();
@@ -165,7 +165,7 @@ describe('ExportMenu (US7)', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Export' }));
-    const item = await screen.findByRole('menuitem', { name: 'Spreadsheet (.xlsx)' });
+    const item = await screen.findByRole('menuitem', { name: 'Excel (.xlsx)' });
     expect(item).toHaveAttribute('aria-disabled', 'true');
     expect(item).toHaveAccessibleDescription(reason);
     await user.click(item);

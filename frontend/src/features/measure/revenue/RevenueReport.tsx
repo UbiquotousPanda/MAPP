@@ -13,7 +13,7 @@ import type {
 } from '../shared';
 import { useRevenueReport, useRevenueRanked } from './api';
 import type { RevenueFigures, RevenueRanked, RevenueRankedParams } from './api';
-import { CategorySelect } from './CategorySelect';
+import { CategoryControl } from './CategorySelect';
 import { useDealsAddress } from './deals/address';
 import { DealsPanel } from './deals/DealsPanel';
 import type { OpenedWith } from './deals/DealsPanel';
@@ -21,16 +21,18 @@ import { RevenueCards } from './RevenueCards';
 import { RevenueChart } from './RevenueChart';
 import { reasonText } from './reasons';
 import styles from './Revenue.module.css';
-import { useOwnParam } from './useOwnParam';
+import { useOwnParam } from '../shared/useOwnParam';
 import { performanceText } from './variance';
+import { PerformanceCell } from './PerformanceCell';
 
 const LEVELS = ['plan', 'campaign', 'initiative', 'activity'];
-const DEFAULT_SORT = 'projectedRevenue';
+const DEFAULT_SORT = 'performance';
+const DEFAULT_ORDER = 'asc';
 
 /** Revenue against goal (feature 049 US1): cards, the period series and 040's ranked list, in 039's frame. */
 export function RevenueReport() {
   return (
-    <ReportFrame report="revenue" period show="campaign">
+    <ReportFrame report="revenue" controls={() => <CategoryControl />}>
       {(frame, address) => <RevenueBody frame={frame} address={address} />}
     </ReportFrame>
   );
@@ -38,9 +40,9 @@ export function RevenueReport() {
 
 function RevenueBody({ frame, address }: { frame: ReportFrameData; address: ReportAddress }) {
   const { money } = useFormatters();
-  const [category, setCategory] = useOwnParam('category');
+  const [category] = useOwnParam('category');
   const report = useRevenueReport(address, { category: category || undefined });
-  const { state } = useRankedState(DEFAULT_SORT);
+  const { state } = useRankedState(DEFAULT_SORT, DEFAULT_ORDER);
   const ranked = useRevenueRanked(address, rankedParams(state, category));
   const show = address.show ?? 'campaign';
   const queryClient = useQueryClient();
@@ -56,9 +58,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
   };
   const attributedCell = (f: RevenueFigures, entry: RankedEntryData<RevenueFigures>) => {
     const amount = f.attributedRevenue;
-    if (!amount || entry.level !== 'activity') {
-      return amount ? money(amount) : reasonText(f.attributedRevenueReason);
-    }
+    if (!amount || entry.level !== 'activity') return amount ? money(amount) : '—';
     return (
       <button
         type="button"
@@ -71,7 +71,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
     );
   };
   const columns: RankedColumn<RevenueFigures>[] = [
-    { key: 'goal', label: 'Goal', value: (f) => (f.goal ? money(f.goal) : '—'), sortable: false },
+    { key: 'goal', label: 'Goal', value: (f) => (f.goal ? money(f.goal) : '—') },
     {
       key: 'actualRevenue',
       label: 'Actual',
@@ -86,29 +86,37 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
       key: 'performance',
       label: 'Performance',
       value: (f) => performanceText(f.performance, f.variance),
-      sortable: false,
+      render: (f) => <PerformanceCell figures={f} />,
     },
     {
       key: 'attributedRevenue',
-      label: attributedLabel(ranked.data?.attribution),
+      label: 'Attributed revenue',
       value: (f) =>
         f.attributedRevenue ? money(f.attributedRevenue) : reasonText(f.attributedRevenueReason),
       render: attributedCell,
+      empty: (f) => (f.attributedRevenue ? undefined : reasonText(f.attributedRevenueReason)),
       sortable: false,
     },
     {
       key: 'actualCost',
       label: 'Actual cost',
       value: (f) => (f.actualCost ? money(f.actualCost) : reasonText(f.actualCostReason)),
+      empty: (f) => (f.actualCost ? undefined : reasonText(f.actualCostReason)),
       sortable: false,
     },
     {
       key: 'roi',
-      label: roiLabel(ranked.data?.attribution),
+      label: 'ROI',
       value: (f) => (f.roi !== null ? `${f.roi}%` : reasonText(f.roiReason)),
+      empty: (f) => (f.roi !== null ? undefined : reasonText(f.roiReason)),
       sortable: false,
     },
-    { key: 'model', label: 'Model', value: (f) => f.projection?.modelName ?? '—', sortable: false },
+    {
+      key: 'model',
+      label: 'Projection model',
+      value: (f) => f.projection?.modelName ?? '—',
+      sortable: false,
+    },
   ];
   const { plans, of } = frame.finance;
   const groups = [
@@ -121,9 +129,6 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
   ];
   return (
     <div className={styles.body}>
-      <div className={styles.controls}>
-        <CategorySelect value={category} onChange={setCategory} />
-      </div>
       {report.data ? (
         <>
           <RevenueCards cards={report.data.cards} projections={report.data.projections} />
@@ -137,6 +142,7 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
         </div>
       )}
       <RankedList
+        levelFallback="campaign"
         report="revenue"
         owner
         data={ranked.data}
@@ -145,6 +151,8 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
         columns={columns}
         groups={groups}
         defaultSort={DEFAULT_SORT}
+        defaultOrder={DEFAULT_ORDER}
+        caption={ranked.data && attributionCaption(ranked.data.attribution)}
       />
       {plans > 0 && plans < of && (
         <p className={styles.note}>
@@ -158,22 +166,27 @@ function RevenueBody({ frame, address }: { frame: ReportFrameData; address: Repo
 
 type Attribution = RevenueRanked['attribution'];
 
-/** The model behind attributed revenue and the cost an ROI divides by, named beside them. */
-function attributedLabel(stamp: Attribution | undefined): string {
-  return stamp ? `Attributed revenue (${stamp.model})` : 'Attributed revenue';
-}
+const MODEL_WORDS: Record<string, string> = {
+  'First touch': 'all to the first step',
+  'Last touch': 'all to the last step',
+  'Equally distributed': 'split equally across the steps',
+  'Linear time decay': 'more to each later step',
+  'U-shaped': 'most to the first and last steps',
+};
 
-function roiLabel(stamp: Attribution | undefined): string {
-  return stamp ? `ROI (${stamp.model}, on ${stamp.basis} cost)` : 'ROI';
+/** The model behind attributed revenue and the cost an ROI divides by, said once in plain words. */
+function attributionCaption(stamp: Attribution): string {
+  const credit = MODEL_WORDS[stamp.model] ?? stamp.model;
+  return `Revenue credit: ${credit} · ROI on ${stamp.basis} cost`;
 }
 
 function rankedParams(
   state: ReturnType<typeof useRankedState>['state'],
   category: string,
 ): RevenueRankedParams {
-  const sorts = ['actualRevenue', 'projectedRevenue'] as const;
+  const sorts = ['actualRevenue', 'projectedRevenue', 'goal', 'performance'] as const;
   return {
-    sort: sorts.find((s) => s === state.sort) ?? 'projectedRevenue',
+    sort: sorts.find((s) => s === state.sort) ?? DEFAULT_SORT,
     order: state.order,
     size: state.size,
     page: state.page,

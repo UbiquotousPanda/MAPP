@@ -12,8 +12,8 @@ import { BusinessUnitText, PlanCompleteness, PlanStatusChip } from './PlanFacts'
 import type { PlanSummary } from './api';
 import { changesNothingIn } from './plan-access';
 import { activitiesApprovedText } from './plan-text';
-import { PlanTypeTag } from './PlanTypeTag';
-import { BcpirTag } from './BcpirTag';
+import { Middots } from './Middots';
+import { PLAN_TYPE_LABELS, planTypeOf } from './plan-currency';
 import { FoundIn } from './FoundIn';
 
 export interface PlanCardProps {
@@ -34,12 +34,15 @@ export function PlanCard({ plan, actions, pinned, onPinToggle }: PlanCardProps) 
             <Link to={`/plans/${encodeURIComponent(plan.id)}`}>{plan.name}</Link>
           </h2>
           <p className={styles.id}>
-            <span>
-              {plan.id} · {plan.year}
-              {plan.aop && ' · AOP'}
-            </span>
-            <PlanTypeTag plan={plan} />
-            <BcpirTag plan={plan} />
+            <Middots>
+              {[
+                <span key="id">{plan.id}</span>,
+                <span key="year">{plan.year}</span>,
+                plan.aop && <span key="aop">AOP</span>,
+                <span key="type">{PLAN_TYPE_LABELS[planTypeOf(plan)]}</span>,
+                plan.bcpir && <span key="bcpir">BCPIR</span>,
+              ]}
+            </Middots>
           </p>
           <FoundIn foundIn={plan.foundIn} />
         </div>
@@ -68,7 +71,7 @@ export function PlanCard({ plan, actions, pinned, onPinToggle }: PlanCardProps) 
         {plan.teams.length > 0 && <TeamPills teams={plan.teams} />}
         <BusinessUnitText units={plan.businessUnit} />
       </div>
-      <div className={styles.row}>
+      <div className={`${styles.row} ${styles.progress}`}>
         {figures.budget ? (
           <ProgressBar
             value={used}

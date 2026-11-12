@@ -4,6 +4,7 @@ import { approvalsGrid, LONG_COMMENT } from '@/testing/fixtures/approvals-report
 import { testUser } from '@/testing/fixtures/users';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { ApprovalsGrid } from './ApprovalsGrid';
 import type { ApprovalsGridProps } from './ApprovalsGrid';
 import { DEFAULT_PARAMS } from './schemas';
@@ -44,6 +45,32 @@ describe('ApprovalsGrid (041 US2)', () => {
     await expectNoAxeViolations();
   });
 
+  it('says how many days a waiting step has waited since its submission', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 2, 20, 12));
+    try {
+      renderGrid();
+
+      const waiting = screen.getByRole('row', { name: /Event stand/ });
+      expect(within(waiting).getByText('Waiting 10 days')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('leaves out the Purchase order column when no row on the page has one', () => {
+    const grid = approvalsGrid();
+    grid.items = grid.items.map((row) => ({ ...row, purchaseOrderNumber: null }));
+    renderGrid({ grid });
+
+    const headings = screen.getAllByRole('columnheader').map((h) => h.textContent);
+    expect(headings).not.toContain('Purchase order');
+    expect(headings.at(0)).toBe('Record ID');
+    expect(headings.at(-1)).toBe('Comments');
+    const automatic = screen.getByRole('row', { name: /Webinar/ });
+    expect(within(automatic).getAllByRole('cell')).toHaveLength(headings.length - 1);
+  });
+
   it('links a record name only when the person may open it', () => {
     renderGrid();
 
@@ -74,17 +101,15 @@ describe('ApprovalsGrid (041 US2)', () => {
   it('filters by record type, status and approver, and clears a choice with All', async () => {
     const { user, onParams } = renderGrid({ params: { ...DEFAULT_PARAMS, outcomes: ['waiting'] } });
 
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Record type' }),
-      'purchaseRequest',
-    );
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Approver' }), 'U-1001');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Status' }), '');
+    await choose(user, screen.getByRole('combobox', { name: 'Record type' }), 'Purchase requests');
+    await choose(user, screen.getByRole('combobox', { name: 'Approver' }), 'Bob Ruiz');
+    await choose(user, screen.getByRole('combobox', { name: 'Status' }), 'All');
 
     expect(onParams).toHaveBeenCalledWith({ recordTypes: ['purchaseRequest'] });
     expect(onParams).toHaveBeenCalledWith({ approvers: ['U-1001'] });
     expect(onParams).toHaveBeenCalledWith({ outcomes: [] });
-    expect(screen.getByRole('option', { name: 'Not needed' })).toBeInTheDocument();
+    await user.click(screen.getByRole('combobox', { name: 'Status' }));
+    expect(await screen.findByRole('option', { name: 'Not needed' })).toBeInTheDocument();
   });
 
   it('searches after a pause in typing', async () => {
@@ -100,10 +125,10 @@ describe('ApprovalsGrid (041 US2)', () => {
     const grid = { ...approvalsGrid(), total: 120, page: 2, pageSize: 50 };
     const { user, onParams } = renderGrid({ grid });
 
-    expect(screen.getByText('Rows 51–100 of 120')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Next' }));
-    await user.click(screen.getByRole('button', { name: 'Previous' }));
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Rows per page' }), '10');
+    expect(screen.getByText('51–100 of 120')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
+    await user.click(screen.getByRole('button', { name: 'Previous page' }));
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '10');
 
     expect(onParams).toHaveBeenCalledWith({ page: 3 });
     expect(onParams).toHaveBeenCalledWith({ page: 1 });

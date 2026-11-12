@@ -66,9 +66,19 @@ describe('WaitingTab (044 US2, FR-004, FR-008 – FR-010, FR-016)', () => {
     expect(onChange).toHaveBeenLastCalledWith({ sort: 'plan' });
   });
 
-  it('says when no request waits', () => {
-    renderTab(waitingReport({ total: 0 }));
+  it('says when no request waits, with no strip of zeros (FR-008)', () => {
+    const report = waitingReport();
+    if (!report.waiting) {
+      throw new Error('The fixture has no Waiting for GSAP tab.');
+    }
+    renderTab(
+      waitingReport({
+        total: 0,
+        waiting: { ...report.waiting, waiting: 0, overTurnaround: 0, amount: null, rows: [] },
+      }),
+    );
 
-    expect(screen.getByText('No purchase request is waiting for GSAP.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing is waiting for GSAP')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Summary')).not.toBeInTheDocument();
   });
 });

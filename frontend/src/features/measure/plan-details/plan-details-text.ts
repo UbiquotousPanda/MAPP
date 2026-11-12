@@ -22,6 +22,18 @@ export function tipOf(widget: PlanDetailsWidget, level: Level): string {
   }
 }
 
+/** "By activity type" for "Activities by activity type": the ⓘ names the measure, so the narrow card keeps the whole title. */
+export function shortTitle(widget: PlanDetailsWidget, level: Level): string {
+  const rest = (prefix: string) => widget.title.slice(prefix.length);
+  const records = `${RECORDS[level].many} by `;
+  if (widget.title.startsWith(records)) {
+    return `By ${rest(records)}`;
+  }
+  return widget.title.startsWith('Planned cost by ')
+    ? `Cost by ${rest('Planned cost by ')}`
+    : widget.title;
+}
+
 export function countsInEachText(level: Level): string {
   return `${RECORDS[level].many} with several values count in each group; the total counts them once.`;
 }

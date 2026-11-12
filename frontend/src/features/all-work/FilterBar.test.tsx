@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { nth } from '@/testing/dom';
+import { choose } from '@/testing/select';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { allWorkOptions, standard2026 } from '@/testing/fixtures/all-work';
@@ -147,7 +148,7 @@ describe('FilterBar (US2)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Years · 2026' }));
     const menu = await screen.findByRole('dialog', { name: 'Years' });
-    await user.selectOptions(within(menu).getByRole('combobox', { name: 'From' }), '2027');
+    await choose(user, within(menu).getByRole('combobox', { name: 'From' }), '2027');
 
     expect(current().year).toBe(2027);
     expect(current()).not.toHaveProperty('yearTo');
@@ -164,14 +165,17 @@ describe('FilterBar (US2)', () => {
     await user.click(screen.getByRole('button', { name: 'Years · 2026' }));
     const menu = await screen.findByRole('dialog', { name: 'Years' });
     const to = within(menu).getByRole('combobox', { name: 'To' });
-    // 2031 would be a sixth year: To offers 2026 to 2030 only.
-    expect(
-      within(to)
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual(['2026', '2027', '2028', '2029', '2030']);
     expect(to).toHaveAccessibleDescription('Choose at most 5 years.');
-    await user.selectOptions(to, '2028');
+    await user.click(to);
+    // 2031 would be a sixth year: To offers 2026 to 2030 only.
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      '2026',
+      '2027',
+      '2028',
+      '2029',
+      '2030',
+    ]);
+    await user.click(screen.getByRole('option', { name: '2028' }));
 
     expect(current()).toMatchObject({ year: 2026, yearFrom: 2026, yearTo: 2028, period: 'year' });
     expect(screen.getByRole('button', { name: 'Years · 2026–2028' })).toBeInTheDocument();

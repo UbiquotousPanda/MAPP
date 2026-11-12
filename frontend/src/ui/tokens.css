@@ -91,8 +91,10 @@
   --chart-seq-4: #336094;
   --chart-seq-5: #003c88;
 
-  --banner-bg: var(--ink);
-  --banner-text: var(--surface);
+  --banner-bg: var(--chip);
+  --banner-text: var(--ink);
+  /* Hover inside a card: the dark Hover Background is darker than Surface, so it would not show there. */
+  --hover-on-card: color-mix(in srgb, var(--ink) 8%, var(--surface));
 
   --level-plan: #003c88;
   --level-campaign: #87217d;

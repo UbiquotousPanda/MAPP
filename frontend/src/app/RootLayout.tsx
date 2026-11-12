@@ -4,13 +4,13 @@ import { SessionProvider } from '@/session/SessionProvider';
 import { PageLoading } from './PageLoading';
 
 /**
- * The root of every page (plan "Router"): the session around the whole app, the scroll position
- * restored when people go Back or Forward, and the page of the current address.
+ * The root of every page: the session, the scroll position per page (a filter, sort or page change
+ * rewrites only the query, so the page stays where it was), and the page of the current address.
  */
 export function RootLayout() {
   return (
     <SessionProvider>
-      <ScrollRestoration />
+      <ScrollRestoration getKey={(location) => location.pathname} />
       <Suspense fallback={<PageLoading />}>
         <Outlet />
       </Suspense>

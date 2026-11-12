@@ -5,9 +5,7 @@
   min-width: 0;
 }
 
-/* Three summary cards in a row from 960 px (design system §2.2: 3 per row), two per row below;
-   on phones an odd first card (Plans) takes the whole first row, so no card is left over at the
-   end (UI audit P-06). */
+/* On phones an odd first summary card takes the whole first row, so none is left over at the end. */
 .summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -37,7 +35,16 @@
   background: var(--surface);
 }
 
-/* The list's card: the toolbar across its full width, then the table (or the list's state). */
+/* The toolbar sits on the page like All work's and the reports'; the table or the list's state
+   below it is a card. On the grey page secondary text is Text Strong (constitution X). */
+.list {
+  --ink-2: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
 .listCard {
   min-width: 0;
   border: 1px solid var(--card-border);
@@ -52,7 +59,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-4) var(--card-padding);
 }
 
 .search {
@@ -88,17 +94,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: 0 var(--card-padding) var(--space-4);
 }
 
 .hint {
   margin: 0;
   color: var(--ink-2);
   font-size: var(--text-sm);
-}
-
-.state {
-  border-top: 1px solid var(--row-divider);
 }
 
 .skeletonList {
@@ -108,8 +109,7 @@
   padding: var(--space-4) var(--card-padding);
 }
 
-/* Plan cards: one column on phones, two on tablets, three from 1280 px. Each card spans seven
-   rows of this grid (PlanCard, subgrid), so its rows line up with the cards beside it. */
+/* Each card spans seven rows of this grid (subgrid), so its rows line up with the cards beside it. */
 .cards {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -128,9 +128,8 @@
   }
 }
 
-/* Phones (UI audit P-06): two rows before the first plan — the search, then the status and the
-   Filters icon button. The layout moves into the Filters menu; the count stays for screen
-   readers (the status buttons and the summary show the numbers). */
+/* Phones: the layout moves into the Filters menu; the count stays for screen readers (the status
+   buttons and the summary show the numbers). */
 @media (max-width: 599px) {
   .search {
     flex-basis: 100%;

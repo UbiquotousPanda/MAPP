@@ -4,12 +4,15 @@ import { RankedList, ReportFrame, useRankedState } from '../shared';
 import type { RankedColumn, ReportAddress, ReportFrameData } from '../shared';
 import { useFunnelReport, useFunnelRanked } from '../revenue/api';
 import type { FunnelFigures, FunnelRankedParams } from '../revenue/api';
-import { CategorySelect } from '../revenue/CategorySelect';
-import { useOwnParam } from '../revenue/useOwnParam';
+import { CategoryControl } from '../revenue/CategorySelect';
+import { useOwnParam } from '../shared/useOwnParam';
 import { performanceText } from '../revenue/variance';
+import { PerformanceCell } from '../revenue/PerformanceCell';
 import { FunnelCards } from './FunnelCards';
 import { FunnelChart } from './FunnelChart';
-import { StageSelect } from './StageSelect';
+import { stageName } from './stage-words';
+import { StageControl } from './StageSelect';
+import { isStage } from './stages';
 import styles from './Funnel.module.css';
 
 const LEVELS = ['plan', 'campaign', 'initiative', 'activity'];
@@ -18,15 +21,23 @@ const DEFAULT_SORT = 'projected';
 /** One funnel stage against goal (feature 049 US2): cards, series and 040's ranked list, in 039's frame. */
 export function FunnelReport() {
   return (
-    <ReportFrame report="funnel" period show="campaign">
+    <ReportFrame
+      report="funnel"
+      controls={(address) => (
+        <>
+          <StageControl address={address} />
+          <CategoryControl />
+        </>
+      )}
+    >
       {(frame, address) => <FunnelBody frame={frame} address={address} />}
     </ReportFrame>
   );
 }
 
 function FunnelBody({ frame, address }: { frame: ReportFrameData; address: ReportAddress }) {
-  const [category, setCategory] = useOwnParam('category');
-  const [stage, setStage] = useOwnParam('stage');
+  const [category] = useOwnParam('category');
+  const [stage] = useOwnParam('stage');
   const report = useFunnelReport(address, {
     category: category || undefined,
     stage: isStage(stage) ? stage : undefined,
@@ -37,14 +48,14 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
   const show = address.show ?? 'campaign';
   const whole = (value: number | null) => (value === null ? '—' : value.toLocaleString());
   const columns: RankedColumn<FunnelFigures>[] = [
-    { key: 'goal', label: 'Goal', value: (f) => whole(f.goal), sortable: false },
+    { key: 'goal', label: 'Goal', value: (f) => whole(f.goal) },
     { key: 'actual', label: 'Actual', value: (f) => whole(f.actual) },
     { key: 'projected', label: 'Projected', value: (f) => whole(f.projected) },
     {
       key: 'performance',
       label: 'Performance',
       value: (f) => performanceText(f.performance, f.variance),
-      sortable: false,
+      render: (f) => <PerformanceCell figures={f} />,
     },
     {
       key: 'conversion',
@@ -52,7 +63,12 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
       value: (f) => (f.conversion !== null ? `${f.conversion}%` : '—'),
       sortable: false,
     },
-    { key: 'model', label: 'Model', value: (f) => f.projection?.modelName ?? '—', sortable: false },
+    {
+      key: 'model',
+      label: 'Projection model',
+      value: (f) => f.projection?.modelName ?? '—',
+      sortable: false,
+    },
   ];
   const groups = [
     { value: 'none', label: 'None' },
@@ -64,14 +80,6 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
   ];
   return (
     <div className={styles.body}>
-      <div className={styles.controls}>
-        <StageSelect
-          stage={chosenStage}
-          available={report.data?.availableStages ?? [chosenStage]}
-          onChange={setStage}
-        />
-        <CategorySelect value={category} onChange={setCategory} />
-      </div>
       {report.data ? (
         <>
           <FunnelCards
@@ -97,6 +105,7 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
         </div>
       )}
       <RankedList
+        levelFallback="campaign"
         report="funnel"
         owner
         data={ranked.data}
@@ -105,6 +114,7 @@ function FunnelBody({ frame, address }: { frame: ReportFrameData; address: Repor
         columns={columns}
         groups={groups}
         defaultSort={DEFAULT_SORT}
+        caption={`Stage: ${stageName(chosenStage)}`}
       />
     </div>
   );
@@ -115,7 +125,7 @@ function rankedParams(
   category: string,
   stage: string,
 ): FunnelRankedParams {
-  const sorts = ['actual', 'projected'] as const;
+  const sorts = ['actual', 'projected', 'goal', 'performance'] as const;
   return {
     sort: sorts.find((s) => s === state.sort) ?? 'projected',
     order: state.order,
@@ -127,8 +137,4 @@ function rankedParams(
     ...(category && { category }),
     ...(isStage(stage) && { stage }),
   };
-}
-
-function isStage(value: string): value is 'inq' | 'mql' {
-  return value === 'inq' || value === 'mql';
 }

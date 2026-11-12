@@ -1,11 +1,10 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useId } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { formatWhole } from '@/format/decimal';
-import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { cx } from '@/ui/cx';
+import { Pager as SharedPager } from '@/ui/Pager/Pager';
 import { downloadReport, ExportMenu, useReportAddress } from '../shared';
 import { PAGE_SIZES } from './gsap-address';
 import type { GsapTable } from './gsap-address';
@@ -52,7 +51,8 @@ export function PagedTable<R>(props: PagedTableProps<R>) {
           {title}
         </h2>
         <ExportMenu
-          label="Export"
+          label={`Export ${title}`}
+          iconOnly
           formats={['xlsx', 'csv']}
           download={(format) => downloadReport('gsapLink', address, format, { widget, own })}
         />
@@ -160,52 +160,16 @@ interface PagerProps {
   onChange: (patch: Partial<GsapTable>) => void;
 }
 
-/** "21–40 of 45" with Previous and Next, and the rows per page. */
 function Pager({ table, total, onChange }: PagerProps) {
-  const id = useId();
-  const { page, pageSize } = table;
-  const pages = Math.max(1, Math.ceil(total / pageSize));
-  const first = Math.min(total, (page - 1) * pageSize + 1);
-  const last = Math.min(total, page * pageSize);
   return (
-    <nav className={styles.pager} aria-label="Pages">
-      <div className={styles.size}>
-        <label htmlFor={id}>Per page</label>
-        <select
-          id={id}
-          className={styles.select}
-          value={pageSize}
-          onChange={(event) => {
-            const size = PAGE_SIZES.find((s) => String(s) === event.target.value);
-            if (size !== undefined) {
-              onChange({ pageSize: size });
-            }
-          }}
-        >
-          {PAGE_SIZES.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-      </div>
-      <p className={styles.range} aria-live="polite">
-        {`${formatWhole(first)}–${formatWhole(last)} of ${formatWhole(total)}`}
-      </p>
-      <div className={styles.buttons}>
-        <Button
-          size="sm"
-          icon={<ChevronLeft />}
-          disabled={page <= 1}
-          onClick={() => onChange({ page: page - 1 })}
-        >
-          Previous
-        </Button>
-        <Button size="sm" disabled={page >= pages} onClick={() => onChange({ page: page + 1 })}>
-          Next
-          <ChevronRight aria-hidden="true" />
-        </Button>
-      </div>
-    </nav>
+    <SharedPager
+      className={styles.pager}
+      page={table.page}
+      pageSize={table.pageSize}
+      total={total}
+      sizes={PAGE_SIZES}
+      onPage={(page) => onChange({ page })}
+      onPageSize={(pageSize) => onChange({ pageSize })}
+    />
   );
 }

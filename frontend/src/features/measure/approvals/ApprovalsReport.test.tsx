@@ -36,7 +36,9 @@ describe('ApprovalsReport (041 US1)', () => {
       await screen.findByRole('heading', { name: 'Current approval status' }),
     ).toBeInTheDocument();
     expect(await screen.findByText('1.3 days')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Approvals' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Approval performance' }),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('group', { name: 'Period' })).toBeNull();
     expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
   });

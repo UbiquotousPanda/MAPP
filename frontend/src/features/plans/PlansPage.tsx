@@ -184,7 +184,7 @@ export function PlansPage() {
       <div className={styles.page}>
         <PlanListSummary summary={summary} />
 
-        <section className={styles.listCard} aria-label="Plan list">
+        <section className={styles.list} aria-label="Plan list">
           <div className={styles.toolbar}>
             <div className={styles.search}>
               <SearchField
@@ -240,20 +240,19 @@ export function PlansPage() {
               {filters.scope === 'myTeams' && <p className={styles.hint}>{MY_TEAMS_HINT}</p>}
             </div>
           )}
-          <div aria-busy={plans.isFetching}>
-            {state ? (
-              <div className={styles.state}>{state}</div>
-            ) : (
-              showsTable &&
-              data && (
+          <div
+            aria-busy={plans.isFetching}
+            className={state || showsTable ? styles.listCard : undefined}
+          >
+            {state ??
+              (showsTable && data && (
                 <PlanTable
                   plans={items}
                   actionsFor={actions.menuItems}
                   isPinned={isPinned}
                   onPinToggle={togglePin}
                 />
-              )
-            )}
+              ))}
           </div>
         </section>
 

@@ -26,7 +26,7 @@ test('043 US1: activities spread over each Shell attribute, and what is not fill
   const status = page.getByRole('region', { name: 'Built-in fields' });
   await status.getByRole('button', { name: 'Table' }).first().click();
   await expect(page).toHaveURL(/table=activityTypeCount/);
-  await expect(page.getByRole('table', { name: 'Activities by activity type' })).toBeVisible();
+  await expect(page.getByRole('table', { name: 'By activity type', exact: true })).toBeVisible();
 
   await statuses.getByRole('link').first().click();
   await expect(page).toHaveURL(/\/all-work\?.*activityStatus=/);
@@ -55,10 +55,9 @@ test('043 US3: a widget exports as CSV and Excel, and the report as one workbook
     );
   }
 
-  // The page header's Export comes before every widget's.
-  await page.getByRole('button', { name: 'Export' }).first().click();
+  // The page header's Export downloads the workbook at once; widgets name their own.
   const downloading = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'Excel (.xlsx)' }).click();
+  await page.getByRole('button', { name: 'Export', exact: true }).first().click();
   expect((await downloading).suggestedFilename()).toMatch(
     /^SP&A One – Plan details – \d{4} – .+\.xlsx$/,
   );

@@ -1,20 +1,5 @@
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: var(--space-4);
-  margin: 0;
-}
-
-.card dt {
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-}
-
-.card dd {
-  margin: var(--space-1) 0 0;
-  color: var(--ink);
-  font-size: var(--text-xl);
-  font-variant-numeric: tabular-nums;
+.cards section > * > :first-child {
+  min-height: calc(2 * var(--leading-xs));
 }
 
 .bars,
@@ -94,38 +79,72 @@
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
 
 /* The search gives way first, down to 200 px, so the controls share one row where they can. */
+.toolbar input[type='search'] {
+  height: var(--control-sm);
+}
+
 .toolbar > :first-child {
   flex: 1 1 200px;
   max-width: 320px;
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--ink);
   font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
 }
 
 .select {
-  min-height: 36px;
-  padding: 0 var(--space-2);
+  height: var(--control-sm);
+  padding-left: var(--space-3);
   border: 1px solid var(--control-border);
-  border-radius: 4px;
-  background: var(--surface);
+  border-radius: var(--radius-control);
+  background-color: var(--surface);
   color: var(--ink);
-  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
 }
 
 .scroll {
   overflow-x: auto;
   contain: inline-size;
+  background:
+    linear-gradient(to left, var(--surface) 40%, transparent) right / 48px 100% no-repeat local,
+    linear-gradient(to left, color-mix(in srgb, var(--ink) 28%, transparent), transparent) right /
+      24px 100% no-repeat scroll;
+}
+
+/* The toggle and the first column stay put while the others scroll; a fade on the right says more sit off-screen. */
+.table tr > :nth-child(-n + 2) {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+
+.table tr > :first-child {
+  width: 40px;
+  min-width: 40px;
+  padding-inline: var(--space-2);
+}
+
+.table tr > :nth-child(2) {
+  left: 40px;
+  box-shadow: inset -1px 0 0 var(--row-divider);
+}
+
+.table .vendorRow > :nth-child(-n + 2) {
+  background: var(--hover);
 }
 
 .table {
@@ -144,6 +163,12 @@
   vertical-align: top;
 }
 
+/* Dates, people, IDs and amounts stay on one line; only the named long-text cells wrap. */
+.table td {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .table thead th {
   white-space: nowrap;
 }
@@ -159,8 +184,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-.name {
+.table .name {
   min-width: 220px;
+  white-space: normal;
 }
 
 .level1 {
@@ -172,7 +198,6 @@
 }
 
 .toggle {
-  margin-right: var(--space-2);
   padding: 0 var(--space-1);
   border: 0;
   background: none;
@@ -194,31 +219,28 @@
   cursor: pointer;
 }
 
+.sort svg {
+  width: 14px;
+  height: 14px;
+}
+
 .idle {
   opacity: 0.5;
 }
 
 .chooser {
-  position: relative;
-}
-
-.chooser summary {
-  min-height: 36px;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--control-border);
-  border-radius: 4px;
-  cursor: pointer;
+  z-index: 2;
+  min-width: 260px;
+  padding: var(--space-3);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
 }
 
 .chooserList {
-  position: absolute;
-  z-index: 2;
-  min-width: 260px;
-  margin: var(--space-1) 0 0;
-  padding: var(--space-3);
-  border: 1px solid var(--card-border);
-  border-radius: 4px;
-  background: var(--surface);
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
@@ -233,7 +255,6 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-3);
   margin-top: var(--space-4);
   font-size: var(--text-sm);
@@ -245,5 +266,6 @@
 
 .buttons {
   display: flex;
+  margin-left: auto;
   gap: var(--space-2);
 }

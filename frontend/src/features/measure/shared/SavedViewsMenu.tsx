@@ -1,4 +1,4 @@
-import { Bookmark, Check } from 'lucide-react';
+import { Bookmark, Check, Link2 } from 'lucide-react';
 import { DropdownMenu } from 'radix-ui';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -70,7 +70,7 @@ export function SavedViewsMenu({ report }: { report: ReportKey }) {
     <>
       <DropdownMenu.Root modal={false}>
         <DropdownMenu.Trigger asChild>
-          <Button icon={<Bookmark />}>
+          <Button size="sm" icon={<Bookmark />}>
             {active ? `View: ${active.name}` : 'Saved views'}
             {modified && ' '}
             {modified && <span className={styles.modified}>Modified</span>}
@@ -166,4 +166,24 @@ function useDefaultView(
       apply(preferred);
     }
   }, [views, opened, query, apply]);
+}
+
+/** The report as it is now, filters included, for someone else to open. */
+export function CopyLinkButton() {
+  const { show } = useToast();
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      show({ message: 'Link copied' });
+    } catch {
+      show({ message: "The link couldn't be copied. Copy it from the address bar instead." });
+    }
+  }
+
+  return (
+    <Button size="sm" icon={<Link2 />} onClick={() => void copy()}>
+      Copy link
+    </Button>
+  );
 }

@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { AccessTable } from './AccessTable';
 import { userAccessReport } from './user-access-fixture';
 
@@ -37,9 +38,9 @@ describe('AccessTable (045 FR-006)', () => {
     const { user, onChange } = renderTable(45);
 
     expect(screen.getByText('1–20 of 45')).toBeInTheDocument();
-    await user.selectOptions(screen.getByLabelText('Per page'), '50');
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '50');
     expect(onChange).toHaveBeenLastCalledWith({ pageSize: 50 });
-    await user.click(screen.getByRole('button', { name: 'Next' }));
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
     expect(onChange).toHaveBeenLastCalledWith({ page: 2 });
   });
 });

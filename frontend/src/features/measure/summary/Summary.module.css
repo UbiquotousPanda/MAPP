@@ -5,30 +5,39 @@
   gap: var(--space-4);
 }
 
+.body {
+  gap: var(--space-8);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
 .heading {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--text-lg);
-}
-
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  align-items: end;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  margin-bottom: var(--space-3);
-  font-size: var(--text-sm);
+  font-size: var(--text-xl);
+  line-height: var(--leading-xl);
 }
 
 .state {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   margin: 0;
   color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.state svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-2);
 }
 
 .link {
@@ -36,116 +45,16 @@
   text-decoration: underline;
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--space-3);
-}
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  margin: 0 0 var(--space-2);
-  padding: 0;
-  font-size: var(--text-sm);
-  list-style: none;
-}
-
-.swatch {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: var(--space-2);
-  border-radius: 2px;
-  vertical-align: -1px;
-}
-
-.chart {
-  width: 100%;
-  height: auto;
-}
-
-.actual {
-  fill: var(--chart-actual);
-  background: var(--chart-actual);
-}
-
-.projected {
-  fill: var(--chart-planned);
-  background: var(--chart-planned);
-}
-
-.goal {
-  fill: var(--chart-budget);
-  background: var(--chart-budget);
-}
-
-.today {
-  fill: var(--hover);
-}
-
-.axis {
-  stroke: var(--ink);
-}
-
-.axisLabel {
-  fill: var(--ink);
-  font-size: 11px;
-}
-
-.rateLine,
-.goalLine {
-  fill: none;
-  stroke-width: 2;
-}
-
-.rateLine {
-  stroke: var(--chart-actual);
-}
-
-.goalLine {
-  stroke: var(--chart-budget);
-  stroke-dasharray: 6 4;
-}
-
-.stages {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.stage {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-card);
-  font-size: var(--text-sm);
-}
-
-.stageName {
-  font-weight: 700;
-}
-
-.stageValue {
-  font-size: var(--text-lg);
-}
-
 .leagues {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
   gap: var(--space-4);
 }
 
 .league {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(60px, 30%) auto;
+  gap: var(--space-2) var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -154,12 +63,13 @@
 
 .league li {
   display: grid;
-  grid-template-columns: 1fr 60px auto;
-  gap: var(--space-3);
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
 }
 
 .leagueValue {
+  grid-column: 3;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -170,13 +80,54 @@
   font-weight: 700;
 }
 
-.sparkline {
-  width: 60px;
-  height: 20px;
+.leagueTrack {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--hairline);
 }
 
-.sparkline polyline {
-  fill: none;
-  stroke: var(--chart-actual);
-  stroke-width: 1.5;
+.leagueBar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--chart-planned);
+}
+
+.coverage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: calc(-1 * var(--space-2)) 0 0;
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.coverageLabel {
+  font-weight: var(--weight-bold);
+}
+
+/* The strip sits inside the widget's card, so it drops its own frame and keeps only the dividers. */
+.stageStrip section {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.stageStrip section > * {
+  padding: var(--space-2) var(--space-5);
+}
+
+.stageDetail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.muted {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
 }

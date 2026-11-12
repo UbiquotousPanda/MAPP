@@ -7,6 +7,7 @@ import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { swbsReport } from './gsap-link-fixture';
 import { GsapLinkReport } from './GsapLinkReport';
 
@@ -36,14 +37,14 @@ const lastSearch = (api: ReturnType<typeof mockApi>) =>
   api.requests.filter((r) => r.path === PATH).at(-1)?.search ?? '';
 
 describe('GsapLinkReport (044 US1, FR-001, FR-015 – FR-018)', () => {
-  it('opens on SWBS not received, longest waiting first, a row opening its line item', async () => {
+  it('opens on Waiting for SWBS code, longest waiting first, a row opening its line item', async () => {
     const { api } = renderReport();
 
     expect(await screen.findByRole('link', { name: 'Stand build' })).toHaveAttribute(
       'href',
       '/line-items/L-1006',
     );
-    expect(screen.getByRole('tab', { name: 'SWBS not received' })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: 'Waiting for SWBS code' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
@@ -82,12 +83,12 @@ describe('GsapLinkReport (044 US1, FR-001, FR-015 – FR-018)', () => {
       reportFrame({ report: 'gsapLink' }),
       '/reports/gsap-link?page=2',
     );
-    const table = await screen.findByRole('table', { name: 'SWBS not received' });
+    const table = await screen.findByRole('table', { name: 'Waiting for SWBS code' });
 
     await user.click(within(table).getByRole('button', { name: 'Line item' }));
     expect(router.state.location.search).toBe('?sort=lineItem');
 
-    await user.selectOptions(screen.getByLabelText('Per page'), '50');
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '50');
     expect(router.state.location.search).toBe('?sort=lineItem&pageSize=50');
     expect(lastSearch(api)).toContain('pageSize=50');
   });
@@ -98,7 +99,7 @@ describe('GsapLinkReport (044 US1, FR-001, FR-015 – FR-018)', () => {
     expect(
       await screen.findByText('No line item is waiting for an SWBS code.'),
     ).toBeInTheDocument();
-    expect(screen.queryByRole('table', { name: 'SWBS not received' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('table', { name: 'Waiting for SWBS code' })).not.toBeInTheDocument();
   });
 
   it("shows the frame's empty state when the filters exclude everything (FR-018)", async () => {
@@ -109,7 +110,7 @@ describe('GsapLinkReport (044 US1, FR-001, FR-015 – FR-018)', () => {
     );
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
-    expect(screen.queryByRole('tab', { name: 'SWBS not received' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Waiting for SWBS code' })).not.toBeInTheDocument();
   });
 
   it('offers Try again when the tab cannot be read', async () => {

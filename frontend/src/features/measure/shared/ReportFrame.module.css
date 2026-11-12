@@ -1,9 +1,56 @@
 .layout {
-  display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
-  gap: var(--space-6);
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   padding-top: var(--space-4);
+}
+
+/* Filters (n), Year and Currency on one row; the filter buttons and the chips below it, as on All work. */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.toolbarRow,
+.menus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.menus {
+  gap: var(--space-2);
+}
+
+.menus[hidden] {
+  display: none;
+}
+
+.chipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+
+.notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  color: var(--ink);
+  font-size: var(--text-sm);
 }
 
 .content {
@@ -15,7 +62,7 @@
 
 .widgets {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: var(--space-4);
 }
 
@@ -37,86 +84,6 @@
   min-width: 0;
 }
 
-.filters {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.filtersToggle {
-  display: none;
-}
-
-.panel,
-.panelOpen {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
-  background-color: var(--surface);
-}
-
-.group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.groupTitle {
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-}
-
-.counter {
-  color: var(--ink-2);
-  font-weight: var(--weight-regular);
-}
-
-.groupActions,
-.chipsRow,
-.controls,
-.applyRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.controls {
-  align-items: flex-end;
-  gap: var(--space-4);
-}
-
-.applyRow {
-  justify-content: flex-end;
-}
-
-.values {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  max-height: 240px;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;
-  list-style: none;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  color: var(--ink);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-}
-
 .select {
   height: var(--control-md);
   padding: 0 var(--space-3);
@@ -127,23 +94,10 @@
   font-size: var(--text-sm);
 }
 
-.inView,
-.note,
-.pending,
 .muted {
   margin: 0;
   color: var(--ink-2);
   font-size: var(--text-sm);
-}
-
-/* The notes sit on the grey page, where text is --ink; .pending and .muted stay in the white filter panel. */
-.inView,
-.note {
-  color: var(--ink);
-}
-
-.inView {
-  font-weight: var(--weight-bold);
 }
 
 .menu {
@@ -166,25 +120,4 @@
 .item[data-highlighted] {
   background-color: var(--hover);
   outline: none;
-}
-
-/* Below 1200 px the 300 px panel would leave the widgets a single cramped column: it becomes the Filters (n) drawer. */
-@media (width < 1200px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .filtersToggle {
-    display: inline-flex;
-  }
-
-  .panel {
-    display: none;
-  }
-}
-
-/* The panel is narrower than the four level tabs: they wrap instead of hiding behind a sideways scroll. */
-.levels [role='tablist'] {
-  flex-wrap: wrap;
-  column-gap: var(--space-4);
 }

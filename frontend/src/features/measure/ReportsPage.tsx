@@ -1,4 +1,4 @@
-import { ChartColumnIncreasing } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router';
 import type { components } from '@/api/generated/schema';
 import { ApiError } from '@/api/errors';
@@ -7,9 +7,11 @@ import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { cx } from '@/ui/cx';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { usePageTitle } from '@/ui/usePageTitle';
-import { REPORT_ABOUT, REPORT_GROUPS } from './reports';
+import { ReportPreview } from './ReportPreview';
+import { REPORT_ABOUT, REPORT_GROUPS, REPORT_ROUTES } from './reports';
 import type { ReportGroup } from './reports';
 import { useReportCatalogue } from './shared/api';
 import styles from './ReportsPage.module.css';
@@ -30,8 +32,13 @@ export function ReportsPage() {
         description="Read-only reports of your plans, approvals, purchase requests and their figures."
       />
       {catalogue.data ? (
-        REPORT_GROUPS.map((group) => (
-          <GroupSection key={group.title} group={group} items={catalogue.data.items} />
+        REPORT_GROUPS.map((group, index) => (
+          <GroupSection
+            key={group.title}
+            group={group}
+            items={catalogue.data.items}
+            index={index}
+          />
         ))
       ) : catalogue.isError ? (
         <ErrorState error={catalogue.error} onRetry={() => void catalogue.refetch()} />
@@ -44,14 +51,17 @@ export function ReportsPage() {
   );
 }
 
-function GroupSection({ group, items }: { group: ReportGroup; items: CatalogueEntry[] }) {
+const GROUP_TONES = ['performance', 'spend', 'governance'] as const;
+
+function GroupSection({ group, items, index }: GroupProps) {
   const reports = items.filter((item) => group.reports.includes(item.key));
   if (reports.length === 0) {
     return null;
   }
   const headingId = `reports-${group.reports[0]}`;
+  const tone = GROUP_TONES[index % GROUP_TONES.length] ?? 'performance';
   return (
-    <section className={styles.group} aria-labelledby={headingId}>
+    <section className={cx(styles.group, styles[tone])} aria-labelledby={headingId}>
       <h2 id={headingId} className={styles.groupTitle}>
         {group.title}
       </h2>
@@ -65,24 +75,52 @@ function GroupSection({ group, items }: { group: ReportGroup; items: CatalogueEn
   );
 }
 
+interface GroupProps {
+  group: ReportGroup;
+  items: CatalogueEntry[];
+  index: number;
+}
+
+/** "Is the year on track?" and "For marketing leaders.": the ⓘ text's question and audience. */
+function aboutParts(about: string): { question: string; audience: string } {
+  const question = about.slice(0, about.indexOf('?') + 1);
+  const audience = /\bFor ([^.]+)\./.exec(about)?.[1] ?? '';
+  return { question, audience };
+}
+
 function ReportItem({ report }: { report: CatalogueEntry }) {
+  const { question, audience } = aboutParts(REPORT_ABOUT[report.key]);
+  const name = REPORT_ROUTES.find((route) => route.key === report.key)?.name ?? report.name;
   return (
-    <li className={styles.report}>
-      <ChartColumnIncreasing aria-hidden="true" className={styles.icon} />
-      <div className={styles.text}>
-        <div className={styles.title}>
-          {report.available ? (
-            <Link to={`/reports/${report.path}`} className={styles.name}>
-              {report.name}
-            </Link>
-          ) : (
-            <span className={styles.name}>{report.name}</span>
-          )}
-          <InfoTip label={report.name} text={REPORT_ABOUT[report.key]} />
-        </div>
-        <p className={styles.purpose}>{report.purpose}</p>
+    <li className={report.available ? styles.tile : styles.tileOff}>
+      <div className={styles.preview}>
+        <ReportPreview report={report.key} />
       </div>
-      {!report.available && <StatusChip tone="neutral">Coming soon</StatusChip>}
+      <div className={styles.body}>
+        <div className={styles.titleRow}>
+          <h3 className={styles.nameHeading}>
+            {report.available ? (
+              <Link to={`/reports/${report.path}`} className={styles.name}>
+                {name}
+              </Link>
+            ) : (
+              <span className={styles.name}>{name}</span>
+            )}
+          </h3>
+          <InfoTip label={name} text={REPORT_ABOUT[report.key]} />
+        </div>
+        {question && <p className={styles.question}>{question}</p>}
+        <div className={styles.foot}>
+          {audience && <span className={styles.audience}>For {audience}</span>}
+          {report.available ? (
+            <span className={styles.go} aria-hidden="true">
+              <ArrowRight />
+            </span>
+          ) : (
+            <StatusChip tone="neutral">Coming soon</StatusChip>
+          )}
+        </div>
+      </div>
     </li>
   );
 }

@@ -1,30 +1,43 @@
-import { toCents } from '@/format/decimal';
+import type { ReactNode } from 'react';
 import { useFormatters } from '@/format/useFormatters';
+import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { ReportWidget } from '../shared';
-import type { ReportTableData } from '../shared';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { moneyPoint, moneyUnit, ReportChart, ReportWidget, shortPeriod } from '../shared';
+import type { ReportChartData, ReportTableData } from '../shared';
 import type { RevenueSectionData, SummaryTrendPeriod } from './api';
 import { varianceText } from '../revenue/variance';
 import { STAGE, percentText } from './words';
 import styles from './Summary.module.css';
+import { PeriodSwitch } from '../shared';
 
-const WIDTH = 720;
-const HEIGHT = 220;
-const BASELINE = 190;
-const PLOT = 170;
+type Money = NonNullable<SummaryTrendPeriod['actual']>;
 
-/** Revenue against goal: the fixed cards, Goal coverage and the trend split at today. */
-export function RevenueSection({ revenue }: { revenue: RevenueSectionData }) {
+const COVERAGE_TIP =
+  "The activities' goals ÷ the plans' goals per stage: how much of each plan's goal is planned in activities. It is not performance.";
+
+/** Revenue against goal: the fixed cards, how much of the goals activities plan, and the trend split at today. */
+interface RevenueSectionProps {
+  revenue: RevenueSectionData;
+  notes?: ReactNode;
+  details?: ReactNode;
+}
+
+export function RevenueSection({ revenue, notes, details }: RevenueSectionProps) {
   const { money } = useFormatters();
   const coverage = revenue.goalCoverage
     .map((c) => `${STAGE[c.stage]} ${percentText(c.percent)}`)
     .join(' · ');
   return (
     <section className={styles.section} aria-labelledby="summary-revenue">
-      <h2 id="summary-revenue" className={styles.heading}>
-        Revenue · {revenue.periodLabel}
-      </h2>
-      <div className={styles.cards} aria-label="Revenue figures">
+      <div className={styles.sectionHead}>
+        <h2 id="summary-revenue" className={styles.heading}>
+          Revenue
+        </h2>
+        {details}
+      </div>
+      {notes}
+      <StatStrip label="Revenue figures">
         <SummaryCard
           label="Actual or projected"
           value={revenue.actualOrProjected ? money(revenue.actualOrProjected) : '—'}
@@ -41,12 +54,12 @@ export function RevenueSection({ revenue }: { revenue: RevenueSectionData }) {
           detail={varianceText(revenue.variance)}
           tip="Actual or projected ÷ goal, as a whole per cent."
         />
-        <SummaryCard
-          label="Goal coverage"
-          value={coverage}
-          tip="The activities' goals ÷ the plans' goals per stage: how much of each plan's goal is planned in activities. It is not performance."
-        />
-      </div>
+      </StatStrip>
+      <p className={styles.coverage}>
+        <span className={styles.coverageLabel}>Goals planned in activities</span>
+        <span>{coverage}</span>
+        <InfoTip label="Goals planned in activities" text={COVERAGE_TIP} />
+      </p>
       <TrendWidget trend={revenue.trend} />
     </section>
   );
@@ -55,6 +68,7 @@ export function RevenueSection({ revenue }: { revenue: RevenueSectionData }) {
 function TrendWidget({ trend }: { trend: SummaryTrendPeriod[] }) {
   const { money } = useFormatters();
   const amount = (value: SummaryTrendPeriod['actual']) => (value ? money(value) : '—');
+  const today = trend.find((p) => p.state === 'inProgress');
   const table: ReportTableData = {
     columns: [
       { label: 'Period' },
@@ -70,83 +84,43 @@ function TrendWidget({ trend }: { trend: SummaryTrendPeriod[] }) {
       wide
       report="summary"
       widget="trend"
+      controls={<PeriodSwitch />}
       title="Revenue trend"
       tip="Actual or projected revenue and goal per period. The period in progress is marked Today."
-      chart={<TrendBars trend={trend} />}
+      chart={
+        <ReportChart
+          chart={chartOf(trend, money)}
+          description={`Revenue actual or projected and goal by period${today ? `; today is in ${today.label}` : ''}. The Table view lists every period.`}
+        />
+      }
       table={table}
     />
   );
 }
 
-function cents(value: SummaryTrendPeriod['actual']): bigint {
-  return value ? toCents(value.amount) : 0n;
-}
-
-function shown(p: SummaryTrendPeriod): bigint {
-  return p.state === 'actual' ? cents(p.actual) : cents(p.projected);
-}
-
-function TrendBars({ trend }: { trend: SummaryTrendPeriod[] }) {
-  const top = trend.flatMap((p) => [shown(p), cents(p.goal)]).reduce((a, b) => (a > b ? a : b), 0n);
-  const scale = (v: bigint) => (top > 0n && v > 0n ? Number((v * BigInt(PLOT)) / top) : 0);
-  const group = WIDTH / Math.max(trend.length, 1);
-  const bar = group * 0.35;
-  const today = trend.find((p) => p.state === 'inProgress');
-  return (
-    <>
-      <ul className={styles.legend}>
-        <li>
-          <span className={`${styles.swatch} ${styles.actual}`} aria-hidden="true" />
-          Actual or projected
-        </li>
-        <li>
-          <span className={`${styles.swatch} ${styles.goal}`} aria-hidden="true" />
-          Goal
-        </li>
-      </ul>
-      <svg
-        className={styles.chart}
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        role="img"
-        aria-label={`Revenue actual or projected and goal by period${today ? `; today is in ${today.label}` : ''}. The Table view lists every period.`}
-      >
-        {trend.map((p, i) => {
-          const x = i * group + group * 0.15;
-          const value = scale(shown(p));
-          const goal = scale(cents(p.goal));
-          return (
-            <g key={p.key}>
-              {p.state === 'inProgress' && (
-                <rect
-                  className={styles.today}
-                  x={i * group}
-                  y={0}
-                  width={group}
-                  height={BASELINE}
-                />
-              )}
-              <rect
-                className={p.state === 'projected' ? styles.projected : styles.actual}
-                x={x}
-                y={BASELINE - value}
-                width={bar}
-                height={value}
-              />
-              <rect
-                className={styles.goal}
-                x={x + bar}
-                y={BASELINE - goal}
-                width={bar}
-                height={goal}
-              />
-              <text className={styles.axisLabel} x={x + bar} y={HEIGHT - 10} textAnchor="middle">
-                {p.state === 'inProgress' ? 'Today' : p.label.slice(0, 3)}
-              </text>
-            </g>
-          );
-        })}
-        <line className={styles.axis} x1={0} x2={WIDTH} y1={BASELINE} y2={BASELINE} />
-      </svg>
-    </>
-  );
+// The period in progress shows its projection, as the Actual or projected card counts it.
+function chartOf(trend: SummaryTrendPeriod[], money: (m: Money) => string): ReportChartData {
+  const points = (pick: (p: SummaryTrendPeriod) => SummaryTrendPeriod['actual']) =>
+    trend.map((p) => moneyPoint(pick(p), money));
+  return {
+    labels: trend.map((p) => shortPeriod(p.key)),
+    unit: moneyUnit(trend.flatMap((p) => [p.goal, p.actual, p.projected])),
+    today: trend.findIndex((p) => p.state === 'inProgress'),
+    overlap: true,
+    series: [
+      {
+        name: 'Actual',
+        tone: 'actual',
+        look: 'bar',
+        points: points((p) => (p.state === 'actual' ? p.actual : null)),
+      },
+      {
+        name: 'Projected',
+        tone: 'planned',
+        look: 'bar',
+        points: points((p) => (p.state === 'actual' ? null : p.projected)),
+      },
+      { name: 'Goal', tone: 'budget', look: 'outline', points: points((p) => p.goal) },
+    ],
+  };
 }

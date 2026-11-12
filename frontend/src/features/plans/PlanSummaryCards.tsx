@@ -5,6 +5,7 @@ import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { formatMoneyText } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { differentCurrency } from './plan-currency';
 import type { Plan } from './api';
 import styles from './PlanSummaryCards.module.css';
@@ -27,7 +28,7 @@ export function PlanSummaryCards({ plan }: PlanSummaryCardsProps) {
 
   return (
     // #budget: where Home's "Open budget" leads (feature 009).
-    <section id="budget" className={styles.summary} aria-label="Summary">
+    <StatStrip id="budget" label="Summary">
       <SummaryCard
         label="Plan budget"
         value={moneyCompact(own.budget)}
@@ -87,7 +88,7 @@ export function PlanSummaryCards({ plan }: PlanSummaryCardsProps) {
         tip={help('plan.activitiesApproved')}
         detail={<span>{APPROVAL_PROGRESS[figures.approvalProgress].word}</span>}
       />
-    </section>
+    </StatStrip>
   );
 }
 

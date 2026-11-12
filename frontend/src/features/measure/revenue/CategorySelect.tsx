@@ -1,5 +1,6 @@
 import { useActivityCategories } from '@/features/settings';
-import styles from './Revenue.module.css';
+import { Select } from '@/ui/Select/Select';
+import { useOwnParam } from '../shared/useOwnParam';
 
 const ALL = '';
 const UNCATEGORISED = 'uncategorised';
@@ -14,17 +15,21 @@ export function CategorySelect({
 }) {
   const categories = useActivityCategories();
   return (
-    <label className={styles.field}>
-      Activity category
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value={ALL}>All categories</option>
-        {categories.data?.items.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-        <option value={UNCATEGORISED}>Uncategorised</option>
-      </select>
-    </label>
+    <Select
+      label="Activity category"
+      value={value}
+      options={[
+        { value: ALL, label: 'All categories' },
+        ...(categories.data?.items ?? []).map((c) => ({ value: c.id, label: c.name })),
+        { value: UNCATEGORISED, label: 'Uncategorised' },
+      ]}
+      onChange={onChange}
+    />
   );
+}
+
+/** The category select bound to the address, for a report's toolbar. */
+export function CategoryControl() {
+  const [category, setCategory] = useOwnParam('category');
+  return <CategorySelect value={category} onChange={setCategory} />;
 }

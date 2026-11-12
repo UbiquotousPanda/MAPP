@@ -100,11 +100,21 @@
   margin-top: 2px;
 }
 
-/* The table scrolls sideways inside the card, never the page (design system §5.4). */
+/* The table scrolls sideways inside the card, never the page; an edge with more months beyond
+   it shows a soft shadow (design system §5.4). */
 .scroll {
   position: relative;
   max-width: 100%;
   overflow-x: auto;
+  background:
+    linear-gradient(to right, var(--surface) 30%, transparent) left center / 32px 100% no-repeat
+      local,
+    linear-gradient(to left, var(--surface) 30%, transparent) right center / 32px 100% no-repeat
+      local,
+    radial-gradient(farthest-side at 0 50%, var(--scroll-shadow), transparent) left center / 12px
+      100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, var(--scroll-shadow), transparent) right center /
+      12px 100% no-repeat scroll;
 }
 
 .scroll:focus-visible {

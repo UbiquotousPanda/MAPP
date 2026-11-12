@@ -21,7 +21,8 @@ test('SP&A view of a plan: figures traced to activities, periods, dimension, cam
   const committed = usd(card.figures.committed.amount);
 
   await page.goto('/plans/P-1001');
-  await page.getByRole('link', { name: 'SP&A view' }).click();
+  await page.getByRole('button', { name: 'More', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'SP&A view' }).click();
   await expect(page.getByRole('heading', { name: 'SP&A view', level: 1 })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Plan facts' })).toContainText('BCPIR');
   const headline = page.getByRole('region', { name: 'Headline figures' });

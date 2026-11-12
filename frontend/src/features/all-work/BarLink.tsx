@@ -22,8 +22,8 @@ interface BarLinkProps {
   onOpen: (row: AllWorkRow) => void;
 }
 
-// A bar linking to its record. Its words sit on the bar when they fit, else beside it, so they are
-// never cut while the row has room.
+// Words sit on the bar when they fit, else after it when the row has room there, else on the bar cut
+// short (the tip has them all); never before it, so they don't jump from side to side.
 export function BarLink({ row, bar, year, yearTo, trackPx, onOpen }: BarLinkProps) {
   const { date, dateRange, money } = useFormatters();
   const tone = row.status?.tone ?? 'neutral';
@@ -32,8 +32,9 @@ export function BarLink({ row, bar, year, yearTo, trackPx, onOpen }: BarLinkProp
   const into = bar.continuesInto ? `Continues into ${yearTo + 1}` : '';
   const ongoing = bar.ongoing ? 'Ongoing' : '';
   const characters = [from, row.name, word, ongoing, into].join('').length;
-  const fits = characters * CHAR_PX + BAR_PADDING_PX <= (bar.width / 100) * trackPx;
-  const beside = fits ? null : bar.left + bar.width > 65 ? 'before' : 'after';
+  const needed = characters * CHAR_PX + BAR_PADDING_PX;
+  const fits = needed <= (bar.width / 100) * trackPx;
+  const after = !fits && needed <= ((100 - bar.left - bar.width) / 100) * trackPx;
 
   const tip = (
     <span className={styles.tip}>
@@ -70,8 +71,7 @@ export function BarLink({ row, bar, year, yearTo, trackPx, onOpen }: BarLinkProp
           styles[tone],
           bar.continuesFrom && styles.cutStart,
           (bar.continuesInto || bar.ongoing) && styles.openEnd,
-          beside === 'after' && styles.wordsAfter,
-          beside === 'before' && styles.wordsBefore,
+          after && styles.wordsAfter,
         )}
         style={{ left: `${bar.left}%`, width: `${bar.width}%` }}
       >

@@ -117,7 +117,7 @@ test('016 US2, US3 (T089): Priya plans in GBP with USD beside it and phases the 
   await expect(editor).toHaveCount(0);
   await expect(
     card.getByRole('row', {
-      name: new RegExp(`^Budget (About Budget )?${'50,000\\.00 '.repeat(12)}600,000\\.00$`),
+      name: new RegExp(`^Budget (About Budget )?${'50,000\\.00 GBP '.repeat(12)}600,000\\.00 GBP$`),
     }),
   ).toBeVisible();
 
@@ -137,7 +137,7 @@ test('016 US2, US3 (T089): Priya plans in GBP with USD beside it and phases the 
   await expect(editor).toHaveCount(0);
   await expect(
     card.getByRole('row', {
-      name: /^Budget (About Budget )?33,333\.33 33,333\.33 33,333\.34 50,000\.00 /,
+      name: /^Budget (About Budget )?33,333\.33 GBP 33,333\.33 GBP 33,333\.34 GBP 50,000\.00 GBP /,
     }),
   ).toBeVisible();
   await expect(

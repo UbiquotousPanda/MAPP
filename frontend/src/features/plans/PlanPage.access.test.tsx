@@ -63,6 +63,7 @@ describe('014 FR-011: the plan page follows the reader’s access', () => {
     expect(screen.queryByRole('button', { name: 'Publish' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Add campaign' })).not.toBeInTheDocument();
     expect((await moreItems(user)).map((item) => item.textContent)).toEqual([
+      'SP&A view',
       'View history',
       'Export to Excel',
       'Export to PowerPoint',

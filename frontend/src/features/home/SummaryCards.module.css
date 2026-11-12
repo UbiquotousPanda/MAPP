@@ -1,31 +1,30 @@
-/*
- * Four cards in a row when Home is wide, 2 × 2 below — also on phones (UI audit H-06). Home's page
- * is the container (HomePage.module.css), so the open or collapsed sidebar counts too. Cards in a
- * row stretch to one height.
- */
+/* One strip of four cells when Home is wide, 2 × 2 below; hairlines split the cells. */
 .cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 @container home (min-width: 880px) {
   .cards {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--grid-gap);
   }
 }
 
-/* A card's place while the summary loads. */
-.placeholder {
-  min-height: 104px;
-  padding: var(--space-5);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
-  background: var(--surface);
+.cards > * {
+  box-shadow:
+    -1px 0 0 var(--row-divider),
+    0 -1px 0 var(--row-divider);
 }
 
-/* The four cards failed together: one message in one card. */
+.placeholder {
+  padding: var(--space-4) var(--space-5);
+}
+
 .failed {
   padding: var(--card-padding);
   border: 1px solid var(--card-border);
@@ -33,7 +32,6 @@
   background: var(--surface);
 }
 
-/* The budget-used bar with its percentage after it. */
 .usage {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

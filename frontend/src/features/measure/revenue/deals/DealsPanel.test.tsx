@@ -11,6 +11,7 @@ import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { RevenueReport } from '../RevenueReport';
 
 const DEALS = 'GET /api/v1/reports/revenue/activities/{activityId}/deals';
@@ -102,15 +103,38 @@ describe('DealsPanel (058 US1)', () => {
     expect(within(panel).getByLabelText('Loading the deals')).toBeInTheDocument();
   });
 
-  it('says "No data has arrived yet" and why when nothing credits the activity (FR-019)', async () => {
+  it('names why nothing credits an activity not approved yet, with no $0.00 credited (FR-019)', async () => {
     const { user } = renderPage({
       body: webinarDeals({ deals: [], total: 0, credited: usd('0.00'), reason: 'notApproved' }),
     });
 
     const { panel } = await openFromTheRow(user);
 
+    expect(await within(panel).findByText("This activity isn't approved yet")).toBeInTheDocument();
+    expect(within(panel).getByText(/facts are held until it is approved/)).toBeInTheDocument();
+    expect(
+      within(panel).getByText('Credited to this activity').nextElementSibling,
+    ).toHaveTextContent(/^—$/);
+  });
+
+  it('says "No data has arrived yet" when no deal of the year touches the activity (FR-019)', async () => {
+    const { user } = renderPage({
+      body: webinarDeals({ deals: [], total: 0, credited: usd('0.00'), reason: '' }),
+    });
+
+    const { panel } = await openFromTheRow(user);
+
     expect(await within(panel).findByText('No data has arrived yet')).toBeInTheDocument();
-    expect(within(panel).getByText(/not approved yet, so its facts are held/)).toBeInTheDocument();
+    expect(within(panel).getByText(/credits or was booked on this activity/)).toBeInTheDocument();
+  });
+
+  it('opens on the activity heading, with the one close button (scenario 8)', async () => {
+    const { user } = renderPage();
+
+    const { panel } = await openFromTheRow(user);
+
+    await waitFor(() => expect(within(panel).getByRole('heading', { level: 2 })).toHaveFocus());
+    expect(within(panel).getAllByRole('button', { name: 'Close' })).toHaveLength(1);
   });
 
   it('fails on its own and tries again (FR-020)', async () => {
@@ -195,10 +219,7 @@ describe('DealsPanel (058 US1)', () => {
     );
 
     const { panel } = await openFromTheRow(user);
-    await user.selectOptions(
-      within(panel).getByRole('combobox', { name: 'Compare with' }),
-      'Last touch',
-    );
+    await choose(user, within(panel).getByRole('combobox', { name: 'Compare with' }), 'Last touch');
 
     await waitFor(() => expect(dealsRequests(api).at(-1)?.get('compare')).toBe('lastTouch'));
     expect(await within(panel).findByText('$44,108.70 under Last touch')).toBeInTheDocument();

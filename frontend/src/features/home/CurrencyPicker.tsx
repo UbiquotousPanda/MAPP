@@ -1,44 +1,24 @@
-import { useId } from 'react';
 import { ApiError } from '@/api/errors';
+import { Select } from '@/ui/Select/Select';
 import { useToast } from '@/ui/Toast/useToast';
-import { currencyLabel, useDisplayCurrencies } from '@/features/people';
+import { useDisplayCurrencies } from '@/features/people';
 import type { DisplayCurrencyOption } from '@/features/people';
 import { useFormatters } from '@/format/useFormatters';
 import { useSaveDisplayCurrency } from './api';
 import { CHOICE_NOT_SAVED } from './home-text';
-import styles from './CurrencyPicker.module.css';
 
-interface CurrencyOption {
-  code: string;
-  /** "EUR — Euro"; only the code while the list is loading or could not be loaded. */
-  label: string;
-}
-
-/**
- * The currencies the person can show amounts in, as My profile offers them (003 FR-023, D-217):
- * the active ones, plus their own display currency when it has been set inactive, because it
- * stays in use (D-063, D-201). The chosen one is always offered, also while the list loads.
- */
-function currencyOptions(
-  currencies: DisplayCurrencyOption[] | undefined,
-  current: string,
-): CurrencyOption[] {
+// "EUR – Euro" as the reports write it; the chosen one is always offered, also while the list loads.
+function currencyOptions(currencies: DisplayCurrencyOption[] | undefined, current: string) {
   const options = (currencies ?? []).map((currency) => ({
-    code: currency.code,
-    label: currencyLabel(currency),
+    value: currency.code,
+    label: `${currency.code} – ${currency.name}`,
   }));
-  return options.some((option) => option.code === current)
+  return options.some((option) => option.value === current)
     ? options
-    : [{ code: current, label: current }, ...options];
+    : [{ value: current, label: current }, ...options];
 }
 
-/**
- * Home's Currency picker (FR-002): starts on the person's display currency; a choice saves it as
- * their display currency, and every amount on Home is shown again in it. A failed save says so,
- * with Try again, and the picker goes back to the saved currency.
- */
 export function CurrencyPicker() {
-  const id = useId();
   const { displayCurrency } = useFormatters();
   const currencies = useDisplayCurrencies();
   const save = useSaveDisplayCurrency();
@@ -65,22 +45,11 @@ export function CurrencyPicker() {
   }
 
   return (
-    <div className={styles.picker}>
-      <label htmlFor={id} className={styles.label}>
-        Currency
-      </label>
-      <select
-        id={id}
-        className={styles.select}
-        value={value}
-        onChange={(event) => choose(event.target.value)}
-      >
-        {currencyOptions(currencies.data?.items, value).map((option) => (
-          <option key={option.code} value={option.code}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
+    <Select
+      label="Currency"
+      value={value}
+      options={currencyOptions(currencies.data?.items, value)}
+      onChange={choose}
+    />
   );
 }

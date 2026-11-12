@@ -1,7 +1,5 @@
-/* A status word on a 12 % tint of its family's colour over Surface, so it reads the same on a
-   hovered row: 24 px high, 4 px corners, 12 px bold. The word uses the darker -text shade,
-   4.5:1 or more on the tint (design system §4). Red is
-   never tinted (constitution X), so a problem is a red fill with white text. */
+/* A word on a 12 % tint of its family's colour, in the darker -text shade (design system §4).
+   Red is never tinted (constitution X): a problem is a neutral chip led by a red dot. */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -42,6 +40,16 @@
 }
 
 .problem {
-  background: var(--danger-bg);
-  color: var(--on-accent);
+  gap: 6px;
+  background: color-mix(in srgb, var(--status-neutral) 12%, var(--surface));
+  color: var(--ink);
+}
+
+.problem::before {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-problem);
+  content: '';
 }

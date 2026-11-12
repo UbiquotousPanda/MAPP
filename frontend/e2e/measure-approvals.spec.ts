@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
-import { expectNoAxeViolations, signInAs } from './fixtures';
+import { expectNoAxeViolations, signInAs, choose } from './fixtures';
 
 // The Approvals report (041): the status mix and average days (US1), then the grid and its export (US2).
 
@@ -16,7 +16,7 @@ test('041 US1: the status mix and the average days, per record type, inside the 
   await signInAs(page, ALEX);
   await page.goto(`/reports/approvals?year=${YEAR}`);
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Approvals' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Approval performance' })).toBeVisible();
   const status = page.getByRole('region', { name: 'Current approval status' });
   await expect(status).toBeVisible();
   await expect(status.getByText(/\d+ waiting/)).toBeVisible();
@@ -38,7 +38,7 @@ test('041 US1: the status mix and the average days, per record type, inside the 
 
   await signInAs(page, PRIYA);
   await page.goto(`/reports/approvals?year=${YEAR}`);
-  await expect(page.getByRole('heading', { level: 1, name: 'Approvals' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Approval performance' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Current approval status' })).toBeVisible();
 });
 
@@ -65,11 +65,11 @@ test('041 US2: the grid sorts, searches, pages and exports every matching row (F
     'ascending',
   );
 
-  await grid.getByRole('combobox', { name: 'Rows per page' }).selectOption('5');
+  await choose(page, grid.getByRole('combobox', { name: 'Rows per page' }), '5');
   await expect.poll(() => search(page).get('pageSize')).toBe('5');
-  await expect(grid.getByText(/^Rows 1–\d+ of \d+$/)).toBeVisible();
+  await expect(grid.getByText(/^1–\d+ of \d+$/)).toBeVisible();
 
-  await grid.getByRole('combobox', { name: 'Status' }).selectOption('waiting');
+  await choose(page, grid.getByRole('combobox', { name: 'Status' }), 'Waiting');
   await expect.poll(() => search(page).get('outcome')).toBe('waiting');
   await page.goBack();
   await expect.poll(() => search(page).get('outcome')).toBeNull();

@@ -19,15 +19,19 @@ test('042 US1: the cards, the status mix and the commitment charts inside the re
 
   await expect(page.getByRole('heading', { level: 1, name: 'Purchase requests' })).toBeVisible();
   const summary = page.getByRole('region', { name: 'Summary' });
-  await expect(summary.getByText('Purchase requests')).toBeVisible();
-  await expect(summary.getByText('Committed')).toBeVisible();
+  await expect(summary.getByText('Purchase requests', { exact: true })).toBeVisible();
+  await expect(summary.getByText('Committed by approved purchase requests')).toBeVisible();
 
   const status = page.getByRole('region', { name: 'Purchase requests by status' });
-  await expect(status.getByText(/\d+ purchase requests · \d+ waiting for GSAP/)).toBeVisible();
+  await expect(status.getByText(/\d+ purchase requests? · \d+ waiting for GSAP/)).toBeVisible();
   await expect(status.getByText('In review')).toBeVisible();
 
-  await expect(page.getByRole('region', { name: /Commitment by vendor/ })).toBeVisible();
-  await expect(page.getByRole('region', { name: /Commitment by owner/ })).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: /Committed by approved purchase requests, by vendor/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: /Committed by approved purchase requests, by owner/ }),
+  ).toBeVisible();
   await expect(page.getByText(/Nothing is committed yet/).first()).toBeVisible();
   await expect(page.getByRole('group', { name: 'Period' })).toHaveCount(0);
   await expectNoAxeViolations(page);
@@ -60,7 +64,7 @@ test('042 US2 and US3: the grid opens from vendor to line, keeps its columns, se
     .click();
   await expect(grid.getByRole('row').nth(3)).toBeVisible();
 
-  await grid.getByText('Columns', { exact: true }).click();
+  await grid.getByRole('button', { name: 'Columns' }).click();
   await grid.getByRole('checkbox', { name: 'Owner' }).click();
   await expect.poll(() => search(page).get('columns')).not.toBeNull();
   await page.reload();

@@ -122,54 +122,7 @@
   line-height: var(--leading-sm);
 }
 
-.row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--space-2);
-}
-
-.sublabel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  color: var(--ink-2);
-  font-size: var(--text-xs);
-  line-height: var(--leading-xs);
-}
-
 /* One select style (design system §5.5): drawn like an input, with its own chevron. */
-.select {
-  width: 100%;
-  height: var(--control-md);
-  padding: 0 var(--space-9) 0 var(--space-3);
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-control);
-  appearance: none;
-  background-color: var(--surface);
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
-    linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 13px) 50%;
-  background-size:
-    5px 5px,
-    5px 5px;
-  background-repeat: no-repeat;
-  color: var(--ink);
-  font-family: var(--font);
-  font-size: var(--text-sm);
-  cursor: pointer;
-}
-
-.select:hover {
-  border-color: var(--control-border-hover);
-}
-
-.select:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
 
 .radio,
 .check {

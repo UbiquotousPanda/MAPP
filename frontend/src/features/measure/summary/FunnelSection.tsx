@@ -1,37 +1,79 @@
+import type { ReactNode } from 'react';
 import { useFormatters } from '@/format/useFormatters';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { ReportWidget } from '../shared';
-import type { ReportTableData } from '../shared';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import { ReportChart, ReportWidget, shortPeriod } from '../shared';
+import type { ReportChartData, ReportTableData } from '../shared';
 import type { FunnelSectionData, SummaryFigure } from './api';
 import { varianceText } from '../revenue/variance';
-import { STAGE, percentText, rateText } from './words';
+import { STAGE, VARIANCE_TONE, percentText, rateText } from './words';
 import styles from './Summary.module.css';
-
-const WIDTH = 720;
-const HEIGHT = 160;
-const PLOT = 130;
+import { PeriodSwitch } from '../shared';
 
 type Rate = FunnelSectionData['trend']['periods'][number];
+type Variance = FunnelSectionData['stages'][number]['variance'];
+
+interface StageCell {
+  key: string;
+  label: string;
+  value: string;
+  goal: string;
+  performance: string;
+  variance: Variance | null;
+  tip?: string;
+  reason?: string;
+}
+
+const CONVERSION_TIP =
+  "This stage's actual ÷ the previous stage's actual, to one decimal. Its goal is the same ratio of the goals.";
+const NO_RATE = 'No rate until the stage before has actuals.';
 
 /** The funnel: each stage against goal, the conversions between counted stages and their trend. */
-export function FunnelSection({ funnel }: { funnel: FunnelSectionData }) {
+export function FunnelSection({
+  funnel,
+  details,
+}: {
+  funnel: FunnelSectionData;
+  details?: ReactNode;
+}) {
   const { money } = useFormatters();
   const figure = (v: SummaryFigure) =>
     v === null ? '—' : typeof v === 'number' ? v.toLocaleString('en-GB') : money(v);
+  const cells: StageCell[] = [
+    ...funnel.stages.map((s) => ({
+      key: s.stage,
+      label: STAGE[s.stage],
+      value: figure(s.actualOrProjected),
+      goal: figure(s.goal),
+      performance: percentText(s.performance),
+      variance: s.variance,
+    })),
+    ...funnel.conversions.map((c) => ({
+      key: `${c.stage}-conversion`,
+      label: `${STAGE[c.stage]} conversion`,
+      value: rateText(c.rate),
+      goal: rateText(c.goal),
+      performance: '',
+      reason: c.rate === null ? NO_RATE : undefined,
+      variance: c.variance,
+      tip: CONVERSION_TIP,
+    })),
+  ];
   const stages: ReportTableData = {
     columns: [
       { label: 'Stage' },
       ...['Actual or projected', 'Goal', 'Performance'].map((label) => ({ label, numeric: true })),
       { label: 'Variance' },
     ],
-    rows: funnel.stages.map((s) => ({
-      key: s.stage,
+    rows: cells.map((c) => ({
+      key: c.key,
       cells: [
-        STAGE[s.stage],
-        figure(s.actualOrProjected),
-        figure(s.goal),
-        percentText(s.performance),
-        varianceText(s.variance),
+        c.label,
+        c.value,
+        c.goal,
+        c.performance || '—',
+        c.variance ? varianceText(c.variance) : '—',
       ],
     })),
   };
@@ -45,51 +87,61 @@ export function FunnelSection({ funnel }: { funnel: FunnelSectionData }) {
       .join(' ') || undefined;
   return (
     <section className={styles.section} aria-labelledby="summary-funnel">
-      <h2 id="summary-funnel" className={styles.heading}>
-        Funnel
-      </h2>
+      <div className={styles.sectionHead}>
+        <h2 id="summary-funnel" className={styles.heading}>
+          Funnel
+        </h2>
+        {details}
+      </div>
       <ReportWidget
         report="summary"
         widget="funnel"
         title="Funnel stages"
         tip="Actual or projected volume at each stage any model in view allows, against the activities' goals."
         note={note}
-        chart={<StageBlocks rows={stages.rows.map((r) => r.cells)} />}
+        chart={<StageStrip cells={cells} />}
         table={stages}
       />
-      <div className={styles.cards} aria-label="Conversions">
-        {funnel.conversions.map((c) => (
-          <SummaryCard
-            key={c.stage}
-            label={`${STAGE[c.stage]} conversion`}
-            value={rateText(c.rate)}
-            detail={`Goal ${rateText(c.goal)} · ${c.variance ? varianceText(c.variance) : '—'}`}
-            tip="This stage's actual ÷ the previous stage's actual, to one decimal. Its goal is the same ratio of the goals."
-          />
-        ))}
-      </div>
       <ConversionTrend periods={funnel.trend.periods} stage={STAGE[funnel.trend.stage]} />
     </section>
   );
 }
 
-function StageBlocks({ rows }: { rows: string[][] }) {
+function StageStrip({ cells }: { cells: StageCell[] }) {
   return (
-    <ol className={styles.stages}>
-      {rows.map(([stage, value, goal, performance, variance]) => (
-        <li key={stage} className={styles.stage}>
-          <span className={styles.stageName}>{stage}</span>
-          <span className={styles.stageValue}>{value}</span>
-          <span>
-            Goal {goal} · {performance} · {variance}
-          </span>
-        </li>
-      ))}
-    </ol>
+    <div className={styles.stageStrip}>
+      <StatStrip label="Stage figures">
+        {cells.map((c) => (
+          <SummaryCard
+            key={c.key}
+            label={c.label}
+            value={c.value}
+            tip={c.tip}
+            detail={
+              <>
+                <span className={styles.stageDetail}>
+                  <span>
+                    Goal {c.goal}
+                    {c.performance && ` · ${c.performance}`}
+                  </span>
+                  {c.variance && (
+                    <StatusChip tone={VARIANCE_TONE[c.variance]}>
+                      {varianceText(c.variance)}
+                    </StatusChip>
+                  )}
+                </span>
+                {c.reason && <span>{c.reason}</span>}
+              </>
+            }
+          />
+        ))}
+      </StatStrip>
+    </div>
   );
 }
 
 function ConversionTrend({ periods, stage }: { periods: Rate[]; stage: string }) {
+  const today = periods.find((p) => p.state === 'inProgress');
   const table: ReportTableData = {
     columns: [
       { label: 'Period' },
@@ -106,34 +158,36 @@ function ConversionTrend({ periods, stage }: { periods: Rate[]; stage: string })
       wide
       report="summary"
       widget="conversion"
+      controls={<PeriodSwitch />}
       title={`${stage} conversion trend`}
       tip="The conversion rate per period against its goal: actual until today, projected after."
       empty={
         periods.length === 0 ? 'No data yet: the models in view count only one stage.' : undefined
       }
-      chart={<RateLines periods={periods} />}
+      chart={
+        <ReportChart
+          chart={chartOf(periods)}
+          description={`Conversion rate and its goal by period${today ? `; today is in ${today.label}` : ''}. The Table view lists every period.`}
+        />
+      }
       table={table}
     />
   );
 }
 
-function RateLines({ periods }: { periods: Rate[] }) {
-  const values = periods.flatMap((p) => [Number(p.rate ?? 0), Number(p.goal ?? 0)]);
-  const top = Math.max(...values, 1);
-  const step = WIDTH / Math.max(periods.length - 1, 1);
-  const line = (pick: (p: Rate) => string | null) =>
-    periods
-      .map((p, i) => `${i * step},${HEIGHT - 10 - (Number(pick(p) ?? 0) / top) * PLOT}`)
-      .join(' ');
-  return (
-    <svg
-      className={styles.chart}
-      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-      role="img"
-      aria-label="Conversion rate and its goal by period. The Table view lists every period."
-    >
-      <polyline className={styles.goalLine} points={line((p) => p.goal)} />
-      <polyline className={styles.rateLine} points={line((p) => p.rate)} />
-    </svg>
-  );
+function chartOf(periods: Rate[]): ReportChartData {
+  const points = (pick: (p: Rate) => string | null) =>
+    periods.map((p) => {
+      const rate = pick(p);
+      return rate === null ? null : { value: Number(rate), text: rateText(rate) };
+    });
+  return {
+    labels: periods.map((p) => shortPeriod(p.key)),
+    unit: { kind: 'percent' },
+    today: periods.findIndex((p) => p.state === 'inProgress'),
+    series: [
+      { name: 'Conversion rate', tone: 'actual', look: 'line', points: points((p) => p.rate) },
+      { name: 'Goal', tone: 'budget', look: 'dashed', points: points((p) => p.goal) },
+    ],
+  };
 }

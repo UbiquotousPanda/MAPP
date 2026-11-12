@@ -51,9 +51,8 @@ test('045 US2: the people export as CSV and Excel, and the report as one workboo
     );
   }
 
-  // The page header's Export comes before the table's.
-  await page.getByRole('button', { name: 'Export' }).first().click();
+  // The page header's Export downloads the workbook at once.
   const downloading = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'Excel (.xlsx)' }).click();
+  await page.getByRole('button', { name: 'Export', exact: true }).first().click();
   expect((await downloading).suggestedFilename()).toMatch(/^SP&A One – User access – .+[.]xlsx$/);
 });

@@ -1,8 +1,4 @@
-/*
- * A wide table scrolls sideways in here, never the page. A soft shadow lies over each edge that
- * hides columns (design system §5.4, UI audit AW-05); on the left it falls from the name column,
- * which stays in place on wider screens.
- */
+/* The right edge fades out while columns hide there, so the cut text reads as "more this way". */
 .frame {
   position: relative;
   min-width: 0;
@@ -24,8 +20,10 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 16px;
-  background: linear-gradient(to left, var(--scroll-shadow), transparent);
+  width: 48px;
+  background:
+    linear-gradient(to left, var(--scroll-shadow), transparent 12px),
+    linear-gradient(to left, var(--surface), transparent);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--dur) var(--ease-out);

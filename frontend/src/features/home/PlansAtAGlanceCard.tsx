@@ -57,6 +57,7 @@ export function PlansAtAGlanceCard({ scope, onShowEverything }: PlansAtAGlanceCa
         <SectionError onRetry={() => void plans.refetch()} />
       ) : plans.data.items.length === 0 ? (
         <EmptyState
+          compact
           icon={<ClipboardList />}
           title={PLANS_AT_A_GLANCE.empty[scope]}
           action={

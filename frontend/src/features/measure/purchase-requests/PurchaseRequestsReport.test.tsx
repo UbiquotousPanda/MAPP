@@ -1,6 +1,9 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { purchaseRequestsReport } from '@/testing/fixtures/purchase-requests-report';
+import {
+  noPurchaseRequestsReport,
+  purchaseRequestsReport,
+} from '@/testing/fixtures/purchase-requests-report';
 import { reportFrame } from '@/testing/fixtures/reports';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
@@ -12,10 +15,9 @@ type Frame = ReturnType<typeof reportFrame>;
 type Report = ReturnType<typeof purchaseRequestsReport>;
 
 const HEADINGS = [
-  'Summary',
   'Purchase requests by status',
-  'Commitment by vendor, by delivery month',
-  'Commitment by owner, by delivery month',
+  'Committed by approved purchase requests, by vendor',
+  'Committed by approved purchase requests, by owner',
 ];
 
 function renderReport(frame: Frame | 'forbidden', report: Report = purchaseRequestsReport()) {
@@ -40,6 +42,7 @@ describe('PurchaseRequestsReport (042)', () => {
   it('shows the cards, the status mix, both charts and the grid inside the frame', async () => {
     renderReport(reportFrame());
 
+    expect(await screen.findByRole('region', { name: 'Summary' })).toBeInTheDocument();
     for (const name of HEADINGS) {
       expect(await screen.findByRole('heading', { level: 2, name })).toBeInTheDocument();
     }
@@ -53,6 +56,22 @@ describe('PurchaseRequestsReport (042)', () => {
     renderReport(reportFrame(), purchaseRequestsReport({ purchaseSupport: false }));
 
     expect(await screen.findByText('Purchase requests aren’t switched on')).toBeInTheDocument();
+  });
+
+  it('shows one empty state, not a page of zeros, when the year has no purchase requests', async () => {
+    renderReport(reportFrame(), noPurchaseRequestsReport());
+
+    expect(await screen.findByText('No purchase requests in 2026')).toBeInTheDocument();
+    expect(
+      screen.getByText('Purchase requests start from an approved activity’s line items.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'See GSAP purchase orders' })).toHaveAttribute(
+      'href',
+      '/reports/gsap-link?tab=orders',
+    );
+    expect(screen.queryByRole('region', { name: 'Summary' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Purchase requests by status' })).toBeNull();
+    expect(screen.queryByRole('searchbox')).toBeNull();
   });
 
   it('says there are no plans to see for the year', async () => {

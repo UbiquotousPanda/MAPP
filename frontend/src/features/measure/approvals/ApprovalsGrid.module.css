@@ -1,9 +1,13 @@
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-3);
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
+}
+
+.toolbar input {
+  height: var(--control-sm);
 }
 
 /* The search gives way first, down to 200 px, so the four controls share one row where they can. */
@@ -13,25 +17,41 @@
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--ink);
   font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
 }
 
 .select {
-  min-height: 36px;
-  padding: 0 var(--space-2);
+  height: var(--control-sm);
+  padding-left: var(--space-3);
   border: 1px solid var(--control-border);
-  border-radius: 4px;
-  background: var(--surface);
+  border-radius: var(--radius-control);
+  background-color: var(--surface);
   color: var(--ink);
-  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
 }
 
+/* A fade on the right edge says more columns sit off-screen; the local layer covers it once scrolled to the end. */
 .scroll {
   overflow-x: auto;
+  background:
+    linear-gradient(to left, var(--surface) 40%, transparent) right / 48px 100% no-repeat local,
+    linear-gradient(to left, color-mix(in srgb, var(--ink) 28%, transparent), transparent) right /
+      24px 100% no-repeat scroll;
+}
+
+.table tr > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: inset -1px 0 0 var(--row-divider);
 }
 
 .table {
@@ -50,12 +70,20 @@
   vertical-align: top;
 }
 
+/* Dates, people, IDs and amounts stay on one line; only the named long-text cells wrap. */
+.table td {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .table thead th {
   white-space: nowrap;
 }
 
-.name {
-  min-width: 160px;
+.table .name {
+  min-width: 180px;
+  vertical-align: middle;
+  white-space: normal;
 }
 
 .numeric {
@@ -76,18 +104,28 @@
   cursor: pointer;
 }
 
+.sort svg {
+  width: 14px;
+  height: 14px;
+}
+
 .idle {
   opacity: 0.5;
 }
 
-.commentCell {
-  min-width: 200px;
+.table .commentCell {
+  min-width: 240px;
+  max-width: 360px;
+  white-space: normal;
 }
 
 .comment {
+  display: -webkit-box;
   margin: 0;
-  white-space: pre-wrap;
+  overflow: hidden;
   overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .empty {
@@ -104,8 +142,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-3) var(--space-4);
   margin-top: var(--space-4);
   font-size: var(--text-sm);
 }
@@ -117,4 +154,5 @@
 .buttons {
   display: flex;
   gap: var(--space-2);
+  margin-left: auto;
 }

@@ -229,17 +229,17 @@ test('Home: Recent changes shows the latest changes in Mei’s plans, newest fir
   const items = card.getByRole('listitem');
 
   await expect(items.first()).toContainText(
-    `Mei Lin changed planned cost of activity '${records.activityName}' (${records.activityId})`,
+    `Mei Lin changed planned cost of activity ${records.activityName} · ${records.activityId}`,
   );
   await expect(
     items.first().getByRole('button', { name: /^(just now|\d+ minutes? ago)/ }),
   ).toBeVisible();
   await expect(items.nth(1)).toContainText(
-    `Mei Lin deleted initiative '${binned.name}' (${binned.id}) (in recycle bin)`,
+    `Mei Lin deleted initiative ${binned.name} · ${binned.id} (in recycle bin)`,
   );
   await expect(items.nth(1).getByRole('link')).toHaveCount(0);
   await expect(items.nth(2)).toContainText(
-    `Mei Lin created initiative '${binned.name}' (${binned.id}) (in recycle bin)`,
+    `Mei Lin created initiative ${binned.name} · ${binned.id} (in recycle bin)`,
   );
   await expectNoAxeViolations(page);
 

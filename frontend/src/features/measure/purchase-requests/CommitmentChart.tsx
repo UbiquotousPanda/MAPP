@@ -12,7 +12,7 @@ const TOKENS = [
 ];
 
 const TIP =
-  'Committed value of the Approved and Closed lines in the calendar month of their delivery date, from the ' +
+  'Committed by approved purchase requests: the Approved and Closed lines in the calendar month of their delivery date, from the ' +
   'first to the last month; a line without a delivery date is under No delivery date. The ten largest are ' +
   'named and the rest are Other; the table view lists all.';
 

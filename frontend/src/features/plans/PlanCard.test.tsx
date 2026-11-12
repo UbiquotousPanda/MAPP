@@ -34,7 +34,9 @@ describe('PlanCard (FR-002)', () => {
       'href',
       '/plans/P-1001',
     );
-    expect(screen.getByText('P-1001 · 2026 · AOP')).toBeInTheDocument();
+    expect(screen.getByText('P-1001').closest('p')).toHaveTextContent(
+      'P-1001·2026·AOP·Operational',
+    );
     // The plan type (016 FR-032): Operational until the API sends another.
     expect(screen.getByText('Operational')).toBeInTheDocument();
     expect(screen.getByText('Draft')).toBeInTheDocument();

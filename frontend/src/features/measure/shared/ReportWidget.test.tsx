@@ -75,7 +75,7 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
   it('offers its export as CSV and Excel', async () => {
     const { user } = renderWidget();
 
-    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(screen.getByRole('button', { name: /^Export / }));
 
     expect(await screen.findByRole('menuitem', { name: 'CSV (.csv)' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Excel (.xlsx)' })).toBeInTheDocument();
@@ -88,7 +88,7 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
     };
     renderWidget({}, '/reports/plan-details', { ...VIEWER, access });
 
-    const exportButton = screen.getByRole('button', { name: 'Export' });
+    const exportButton = screen.getByRole('button', { name: /^Export / });
     expect(exportButton).toBeDisabled();
     expect(exportButton).toHaveAccessibleDescription(/Exporting/);
   });
@@ -173,7 +173,7 @@ async function exported(route: string): Promise<URLSearchParams> {
   const api = mockApi([reply('GET /api/v1/reports/{report}/export', () => new Response('file'))]);
   const { user } = renderWidget({}, route);
 
-  await user.click(screen.getByRole('button', { name: 'Export' }));
+  await user.click(screen.getByRole('button', { name: /^Export / }));
   await user.click(await screen.findByRole('menuitem', { name: 'CSV (.csv)' }));
   await waitFor(() =>
     expect(api.requests.some((r) => r.path === '/api/v1/reports/plan-details/export')).toBe(true),
