@@ -2,10 +2,12 @@ import { SendNowButton } from '@/features/simulated-gsap';
 import { useAccess } from '@/session/access';
 import { Card } from '@/ui/Card/Card';
 import { useFormatters } from '@/format/useFormatters';
+import { HxKey } from '@/ui/HxKey/HxKey';
 import { Detail, DetailsList } from './DetailsList';
-import { HxKey } from './HxKey';
 import type { LineItem } from './api';
 import {
+  HX_COPY,
+  HX_HINT,
   NOT_RECEIVED,
   SIMULATED_GSAP,
   SWBS_CARD_TITLE,
@@ -38,7 +40,7 @@ export function SwbsCard({ lineItem }: { lineItem: LineItem }) {
           <Detail label={SWBS_LABEL.requested}>{timeOf(lineItem.swbsRequestedAt)}</Detail>
           <Detail label={SWBS_LABEL.received}>{timeOf(lineItem.swbsReceivedAt)}</Detail>
           <Detail label={SWBS_LABEL.hxKey}>
-            <HxKey value={lineItem.hxKey} />
+            <HxKey value={lineItem.hxKey} hint={HX_HINT} copyText={HX_COPY} />
           </Detail>
         </DetailsList>
       </div>

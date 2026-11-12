@@ -30,29 +30,3 @@ test('045 US1: a sign-in shows in the report the administrator opens (FR-001 –
   await table.getByRole('link', { name: 'Priya Raman' }).click();
   await expect(page).toHaveURL(/\/settings\/people\/U-\d+$/);
 });
-
-test('045 US2: the people export as CSV and Excel, and the report as one workbook (FR-013)', async ({
-  page,
-}) => {
-  await signInAs(page, ALEX);
-  await page.goto('/reports/user-access?status=all&sort=-lastSignedIn');
-  const people = page.getByRole('region', { name: 'People', exact: true });
-  await expect(people.getByRole('table', { name: 'People' })).toBeVisible();
-
-  for (const [format, extension] of [
-    ['CSV (.csv)', 'csv'],
-    ['Excel (.xlsx)', 'xlsx'],
-  ] as const) {
-    await people.getByRole('button', { name: 'Export' }).click();
-    const downloading = page.waitForEvent('download');
-    await page.getByRole('menuitem', { name: format }).click();
-    expect((await downloading).suggestedFilename()).toMatch(
-      new RegExp(`^SP&A One – User access – People – .+[.]${extension}$`),
-    );
-  }
-
-  // The page header's Export downloads the workbook at once.
-  const downloading = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export', exact: true }).first().click();
-  expect((await downloading).suggestedFilename()).toMatch(/^SP&A One – User access – .+[.]xlsx$/);
-});

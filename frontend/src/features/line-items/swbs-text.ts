@@ -30,15 +30,9 @@ export const SWBS_LABEL = {
 
 export const HX_HINT = 'Generated from the line-item number';
 export const HX_COPY = 'Copy';
-export const HX_COPIED = 'HX key copied';
-export const HX_COPY_FAILED = "Couldn't copy the HX key — select it and copy it yourself.";
 
 export const SWBS_LATER =
   'Filled by the simulated GSAP once the activity is approved and the request is sent';
 export const SWBS_HELP = 'Requested from GSAP once the activity is approved.';
 export const SWBS_KEPT_ON =
   'This line item already has its SWBS code from the simulated GSAP, so the request stays on.';
-
-export function copyHxLabel(hxKey: string): string {
-  return `Copy HX key ${hxKey}`;
-}

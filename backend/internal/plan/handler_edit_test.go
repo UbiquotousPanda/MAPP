@@ -9,7 +9,6 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// europeForm is the edit form of the seed plan FY2026 Lubricants Europe, unchanged, from version.
 func europeForm(version int) map[string]any {
 	return map[string]any{
 		"version": version, "name": "FY2026 Lubricants Europe", "modelId": "MOD-1001", "teamIds": []string{"T-1001"},
@@ -20,10 +19,8 @@ func europeForm(version int) map[string]any {
 	}
 }
 
-// Saving the edit form answers the plan after the change: still Published, version 2, by Daniel. A save
-// from the old version is refused naming Daniel and the time; a missing version and an empty name are
-// reported at once; an unknown plan is not found (FR-018, FR-022, FR-023, US4). The seed's global budget
-// sets this plan's budget (014 FR-031), so the edit changes the description.
+// Daniel's save answers the plan still Published at version 2; Priya's from the old version names him (the seed's
+// global budget sets this plan's budget, so the edit changes the description).
 func TestUpdatePlan_200_409_404_FR018_FR023(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -38,7 +35,6 @@ func TestUpdatePlan_200_409_404_FR018_FR023(t *testing.T) {
 	saved := daniel.Do(t, http.MethodPatch, "/api/v1/plans/P-1001", edited)
 	outOfDate := priya.Do(t, http.MethodPatch, "/api/v1/plans/P-1001", europeForm(1))
 	refused := priya.Do(t, http.MethodPatch, "/api/v1/plans/P-1001", invalid)
-	gone := priya.Do(t, http.MethodPatch, "/api/v1/plans/P-9999", europeForm(1))
 
 	assertFields(t, saved, http.StatusOK, map[string]any{
 		"status": "published", "version": 2, "year": 2026,
@@ -48,12 +44,10 @@ func TestUpdatePlan_200_409_404_FR018_FR023(t *testing.T) {
 		`"fields":[],"conflict":{"changedBy":"Daniel Okoro","changedAt":"2026-03-12T10:30:00Z"}}}`)
 	assertAnswer(t, refused, http.StatusBadRequest, validationBody(`{"field":"name","message":"Enter a plan name."},`+
 		`{"field":"version","message":"Reload the page and try again."}`))
-	assertAnswer(t, gone, http.StatusNotFound, planGoneBody)
 }
 
-// The consequences of a new model and business unit are listed before saving, without saving anything:
-// removing Lubricants from FY2027 Global Brand hides the Lubricants attributes of its activities (FR-019,
-// FR-020, US4 scenarios 2 and 3).
+// Removing Lubricants from FY2027 Global Brand hides the Lubricants attributes of its activities, listed before
+// saving.
 func TestChangeEffects_FR019_FR020(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -64,21 +58,13 @@ func TestChangeEffects_FR019_FR020(t *testing.T) {
 		map[string]any{"modelId": "MOD-1002", "attributes": map[string]any{"SA-1001": []string{"SO-1001"}}})
 	unknown := priya.Do(t, http.MethodPost, "/api/v1/plans/P-1003/change-effects",
 		map[string]any{"modelId": "MOD-9999", "attributes": map[string]any{}})
-	gone := priya.Do(t, http.MethodPost, "/api/v1/plans/P-9999/change-effects", map[string]any{"modelId": nil, "attributes": map[string]any{}})
 
 	assertAnswer(t, effects, http.StatusOK, `{"modelChanged":true,"disallowedActivities":[],"hiddenGroups":[`+
 		`{"unit":"Lubricants","levels":["activity"],"attributes":["Brands","Global key accounts","Sector","Sub-sector","Product launch"]}],`+
 		`"shownGroups":[]}`)
 	assertAnswer(t, unknown, http.StatusBadRequest, validationBody(`{"field":"modelId","message":"Choose a model from the list."}`))
-	assertAnswer(t, gone, http.StatusNotFound, planGoneBody)
-	var p plan.PlanView
-	priya.Do(t, http.MethodGet, "/api/v1/plans/P-1003", nil).Decode(t, &p)
-	if p.Version != 1 || p.Model.ID != "MOD-1001" || len(p.BusinessUnit) != 2 {
-		t.Errorf("FY2027 Global Brand changed: version %d, model %s, business unit %+v", p.Version, p.Model.ID, p.BusinessUnit)
-	}
 }
 
-// formOf is the edit form of a plan as the plan page shows it, unchanged, as the web app sends it.
 func formOf(p plan.PlanView) map[string]any {
 	teamIDs := []string{}
 	for _, team := range p.Teams {

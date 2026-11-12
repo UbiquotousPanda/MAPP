@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { HOME_ANSWERS } from '@/testing/fixtures/home';
 import { PRIYA, renderProbe, SIGN_IN_REQUIRED } from '@/testing/fixtures/session';
@@ -80,7 +80,7 @@ describe('SessionProvider: who is signed in (research R15)', () => {
 });
 
 describe('SessionProvider: signing out (US4)', () => {
-  it('signs out to the sign-in page with "You have been signed out." only, forgetting the person and their data (US4 scenario 1)', async () => {
+  it('signs out to the sign-in page with "You have been signed out." only, forgetting the person and their data, so Back shows nothing of theirs (US4 scenario 1)', async () => {
     mockApi([
       reply('GET /api/v1/me', { body: PRIYA }),
       reply('POST /api/v1/auth/sign-out', { status: 204 }),
@@ -99,6 +99,10 @@ describe('SessionProvider: signing out (US4)', () => {
     expect(screen.queryByText('Please sign in again')).not.toBeInTheDocument();
     expect(queryClient.getQueryData(['session'])).toBeNull();
     expect(queryClient.getQueryData(['sample-folders'])).toBeUndefined();
+
+    await act(() => router.navigate(-1));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/sign-in'));
+    expect(screen.queryByText(/Welcome back/)).not.toBeInTheDocument();
   });
 
   it('keeps the person’s light or dark mode on the sign-in page after signing out (FR-014, research R16)', async () => {

@@ -38,6 +38,16 @@ export async function expectNoAxeViolations(page: Page): Promise<void> {
   expect(summary).toEqual([]);
 }
 
+/** Checks the page in the light theme, then in the dark one, as the system setting switches. */
+export async function axeInBothThemes(page: Page): Promise<void> {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme });
+    await expect(page.locator('html')).toHaveAttribute('data-theme', colorScheme);
+    await expectNoAxeViolations(page);
+  }
+  await page.emulateMedia({ colorScheme: 'light' });
+}
+
 export async function expectToast(page: Page, text: string | RegExp): Promise<void> {
   await expect(page.getByText(text).first()).toBeVisible();
 }

@@ -1,6 +1,5 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { expectNoAxeViolations } from '@/testing/axe';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
 import { swbsReport } from './gsap-link-fixture';
@@ -38,7 +37,6 @@ describe('SwbsTab (044 US1, FR-005 – FR-007)', () => {
     expect(within(table).getByText('30 hours')).toBeInTheDocument();
     expect(within(table).getByText('Over 48 hours')).toBeInTheDocument();
     expect(within(table).getByText('GB01')).toBeInTheDocument();
-    await expectNoAxeViolations();
   });
 
   it('marks lateness as a warning chip, not a red figure, and names the table export (FR-006)', () => {

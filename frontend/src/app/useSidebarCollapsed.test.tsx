@@ -27,6 +27,6 @@ describe('the sidebar below 1280 px', () => {
     await user.click(screen.getByRole('button', { name: 'Expand sidebar' }));
 
     expect(screen.getByRole('button', { name: 'Collapse' })).toBeInTheDocument();
-    expect(api.requests).toHaveLength(0);
+    expect(api.requests.filter((request) => request.method !== 'GET')).toEqual([]);
   });
 });

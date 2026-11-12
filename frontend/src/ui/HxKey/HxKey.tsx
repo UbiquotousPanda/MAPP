@@ -1,8 +1,7 @@
 import { Copy } from 'lucide-react';
 import { useId } from 'react';
-import { Button } from '@/ui/Button/Button';
-import { useToast } from '@/ui/Toast/useToast';
-import { HX_LABEL } from './purchase-request-text';
+import { Button } from '../Button/Button';
+import { useToast } from '../Toast/useToast';
 import styles from './HxKey.module.css';
 
 const COPIED = 'HX key copied';
@@ -10,12 +9,14 @@ const COPY_FAILED = "Couldn't copy the HX key — select it and copy it yourself
 
 export interface HxKeyProps {
   value: string;
-  /** In a table cell: the column header's ⓘ carries "Generated from the line-item ID". */
-  compact?: boolean;
+  /** Where the key comes from, under it; left out in a table cell whose header carries it. */
+  hint?: string;
+  /** The Copy button's visible word; left out, the button is an icon. */
+  copyText?: string;
 }
 
-/** A PR line's HX key, read-only with Copy (032 FR-020): the requisitioner types it into GSAP. */
-export function HxKey({ value, compact = false }: HxKeyProps) {
+/** A line's HX key, read-only with Copy (030 FR-016, 032 FR-020): requisitioners type it into GSAP. */
+export function HxKey({ value, hint, copyText }: HxKeyProps) {
   const toast = useToast();
   const hintId = useId();
 
@@ -31,7 +32,7 @@ export function HxKey({ value, compact = false }: HxKeyProps) {
   return (
     <span className={styles.hx}>
       <span className={styles.row}>
-        <span className={styles.value} aria-describedby={compact ? undefined : hintId}>
+        <span className={styles.value} aria-describedby={hint ? hintId : undefined}>
           {value}
         </span>
         <Button
@@ -40,11 +41,13 @@ export function HxKey({ value, compact = false }: HxKeyProps) {
           icon={<Copy />}
           aria-label={`Copy HX key ${value}`}
           onClick={() => void handleCopy()}
-        />
+        >
+          {copyText}
+        </Button>
       </span>
-      {!compact && (
+      {hint && (
         <span id={hintId} className={styles.note}>
-          {HX_LABEL}
+          {hint}
         </span>
       )}
     </span>

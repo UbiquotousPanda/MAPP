@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { SortHeader } from './SortHeader';
 import type { SortDirection } from './SortHeader';
+import { nextSortOrder } from './sort-order';
 
 function renderHeader(direction?: SortDirection) {
   const onSort = vi.fn();
@@ -40,5 +41,13 @@ describe('SortHeader', () => {
       ariaSort,
     );
     await expectNoAxeViolations();
+  });
+
+  it.each([
+    [true, 'asc', 'desc'],
+    [true, 'desc', 'asc'],
+    [false, 'desc', 'asc'],
+  ] as const)('a click on a column sorted=%s %s sorts it %s', (sorted, order, next) => {
+    expect(nextSortOrder(sorted, order)).toBe(next);
   });
 });

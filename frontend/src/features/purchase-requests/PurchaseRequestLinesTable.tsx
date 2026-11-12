@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { ScrollBox } from '@/features/financials';
 import { Card } from '@/ui/Card/Card';
+import { HxKey } from '@/ui/HxKey/HxKey';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { recordHref } from '@/ui/record-links';
@@ -8,7 +9,6 @@ import { formatMoneyText } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import dataTable from '@/ui/Table/Table.module.css';
 import type { PurchaseRequest, PurchaseRequestLine } from './api';
-import { HxKey } from './HxKey';
 import { CHANGED, LINES_TITLE, poSourceText } from './page-text';
 import {
   FIELD_LABELS,
@@ -94,7 +94,7 @@ function LineRow({ line, changePending }: { line: PurchaseRequestLine; changePen
         </span>
       </th>
       <td>
-        <HxKey value={line.hxKey} compact />
+        <HxKey value={line.hxKey} />
       </td>
       <td className={dataTable.numeric}>{formatMoneyText(line.amount)}</td>
       <td>{date(line.deliveryDate)}</td>

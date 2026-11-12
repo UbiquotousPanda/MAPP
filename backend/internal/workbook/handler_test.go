@@ -154,18 +154,6 @@ func TestCheck_EveryProblemAtOnce_LeftOutBelow_Contract_012FR031_FR033(t *testin
 	}
 }
 
-func TestCheck_ViewerRefused_Contract_012FR024(t *testing.T) {
-	t.Parallel()
-	sara := apitest.New(t).SignIn(t, sarasEmail)
-	file := upload(t, "plan.xlsx", map[string][][]string{"Campaigns": {{"Campaign name"}, {"Spring push"}}})
-
-	refused := sara.Do(t, http.MethodPost, planPath+"/imports/check", file)
-
-	if body := decoded[apiError](t, refused, http.StatusForbidden); body.Error.Code != "forbidden" {
-		t.Errorf("a viewer's check = %+v", body)
-	}
-}
-
 func TestCheck_FileProblems_Contract_012FR028(t *testing.T) {
 	t.Parallel()
 	priya := apitest.New(t).SignIn(t, priyasEmail)

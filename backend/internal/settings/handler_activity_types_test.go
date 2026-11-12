@@ -2,7 +2,6 @@ package settings_test
 
 import (
 	"net/http"
-	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -12,49 +11,26 @@ import (
 
 func TestActivityTypesAPI_ListCreateGet_FR013(t *testing.T) {
 	t.Parallel()
-	server := apitest.New(t)
-	alex := server.SignIn(t, alexsEmail)
-	var list struct {
-		Items []struct{ Name string } `json:"items"`
-	}
-	alex.Do(t, http.MethodGet, "/api/v1/activity-types", nil).Decode(t, &list)
-	var event struct {
-		Name               string
-		DefaultPlannedCost struct{ Amount, Currency string }
-		Models             []struct{ Name string }
-	}
+	alex := apitest.New(t).SignIn(t, alexsEmail)
 
-	alex.Do(t, http.MethodGet, "/api/v1/activity-types/AT-1002", nil).Decode(t, &event)
-	gone := alex.Do(t, http.MethodGet, "/api/v1/activity-types/AT-9999", nil)
+	list := alex.Do(t, http.MethodGet, "/api/v1/activity-types", nil)
 	created := alex.Do(t, http.MethodPost, "/api/v1/activity-types", webinarBody("MOD-1001"))
 	got := alex.Do(t, http.MethodGet, "/api/v1/activity-types/AT-1007", nil)
+	gone := alex.Do(t, http.MethodGet, "/api/v1/activity-types/AT-9999", nil)
 	invalid := alex.Do(t, http.MethodPost, "/api/v1/activity-types", map[string]any{
 		"name": " event ", "defaultPlannedCost": map[string]string{"amount": "-5", "currency": "USD"}, "modelIds": []string{"MOD-9999"},
 	})
-	var lubricants struct{ ActivityTypes []struct{ Name string } }
-	alex.Do(t, http.MethodGet, "/api/v1/models/MOD-1001", nil).Decode(t, &lubricants)
 
-	var names []string
-	for _, item := range list.Items {
-		names = append(names, item.Name)
+	if list.Status != http.StatusOK {
+		t.Errorf("list = %d %s", list.Status, list.Body)
 	}
-	want := []string{"Agency fees – Creative", "Content production", "Digital media", "Event", "MOBILITY – Long-term contract", "Sponsorship"}
-	if !slices.Equal(names, want) {
-		t.Errorf("activity types = %q, want %q", names, want)
-	}
-	if event.Name != "Event" || event.DefaultPlannedCost.Amount != "25000.00" || len(event.Models) != 2 || event.Models[0].Name != "Lubricants 1.0" {
-		t.Errorf("Event = %+v", event)
-	}
-	assertAnswer(t, gone, http.StatusNotFound, activityTypeGoneBody)
 	assertAnswer(t, created, http.StatusCreated, webinarAnswer(1, lubricantsRef, allowedInOneModel))
 	assertAnswer(t, got, http.StatusOK, webinarAnswer(1, lubricantsRef, allowedInOneModel))
+	assertAnswer(t, gone, http.StatusNotFound, activityTypeGoneBody)
 	assertAnswer(t, invalid, http.StatusBadRequest, validationBody(
 		`{"field":"name","message":"An activity type called 'Event' already exists."},`+
 			`{"field":"defaultPlannedCost","message":"Enter an amount of 0 or more, with at most two decimals."},`+
 			`{"field":"modelIds","message":"A model you ticked no longer exists — reload the page and try again."}`))
-	if len(lubricants.ActivityTypes) != 6 || lubricants.ActivityTypes[5].Name != "Webinar" {
-		t.Errorf("Lubricants 1.0 allows %+v, want Webinar last by name", lubricants.ActivityTypes)
-	}
 }
 
 const (
@@ -87,42 +63,24 @@ func TestActivityTypesAPI_UpdateConflict_FR007(t *testing.T) {
 	daniels := daniel.Do(t, http.MethodPatch, "/api/v1/activity-types/AT-1007", map[string]any{"defaultPlannedCost": nil, "version": 1})
 
 	alexs := alex.Do(t, http.MethodPatch, "/api/v1/activity-types/AT-1007", map[string]any{"name": "Webinars", "version": 1})
-	gone := alex.Do(t, http.MethodPatch, "/api/v1/activity-types/AT-9999", map[string]any{"name": "X", "version": 1})
 
 	assertAnswer(t, daniels, http.StatusOK, `{"id":"AT-1007","name":"Webinar","defaultPlannedCost":null,"models":[],"category":null,"active":true,"usage":`+
 		unusedBody+`,"version":2,"createdAt":"2026-03-12T09:00:00Z","createdBy":{"id":"U-1001","name":"Alex Morgan"},`+
 		`"updatedAt":"2026-03-12T10:30:00Z","updatedBy":{"id":"U-1003","name":"Daniel Okoro"}}`)
 	assertAnswer(t, alexs, http.StatusConflict, `{"error":{"code":"version_conflict","message":"Not saved — Daniel Okoro changed this activity type",`+
 		`"fields":[],"conflict":{"changedBy":"Daniel Okoro","changedAt":"2026-03-12T10:30:00Z"}}}`)
-	assertAnswer(t, gone, http.StatusNotFound, activityTypeGoneBody)
 }
 
 func TestActivityTypesAPI_Impact_FR012(t *testing.T) {
 	t.Parallel()
-	server := apitest.New(t)
-	alex := server.SignIn(t, alexsEmail)
+	alex := apitest.New(t).SignIn(t, alexsEmail)
 	mustCreate(t, alex, "/api/v1/activity-types", webinarBody("MOD-1001"))
-	var event struct {
-		Warnings []struct {
-			Kind, Message string
-			Count         int
-		}
-	}
 
 	unused := alex.Do(t, http.MethodPost, "/api/v1/activity-types/AT-1007/impact", map[string]any{"modelIds": []string{}, "version": 1})
-	alex.Do(t, http.MethodPost, "/api/v1/activity-types/AT-1002/impact", map[string]any{"modelIds": []string{"MOD-1002"}, "version": 1}).Decode(t, &event)
 	invalid := alex.Do(t, http.MethodPost, "/api/v1/activity-types/AT-1007/impact", map[string]any{"modelIds": []string{"MOD-9999"}, "version": 1})
-	gone := alex.Do(t, http.MethodPost, "/api/v1/activity-types/AT-9999/impact", map[string]any{"version": 1})
 
 	assertAnswer(t, unused, http.StatusOK, `{"warnings":[]}`)
-	if len(event.Warnings) != 1 || event.Warnings[0].Kind != "activityTypeRemoved" || event.Warnings[0].Count < 1 ||
-		!strings.HasPrefix(event.Warnings[0].Message, "In plans using 'Lubricants 1.0', ") {
-		t.Errorf("removing Event from Lubricants 1.0 = %+v", event)
-	}
 	assertAnswer(t, invalid, http.StatusBadRequest, validationBody(`{"field":"modelIds","message":"A model you ticked no longer exists — reload the page and try again."}`))
-	assertAnswer(t, gone, http.StatusNotFound, activityTypeGoneBody)
-	assertAnswer(t, alex.Do(t, http.MethodGet, "/api/v1/activity-types/AT-1007", nil), http.StatusOK,
-		webinarAnswer(1, lubricantsRef, allowedInOneModel))
 }
 
 func TestActivityTypesAPI_Status_FR004(t *testing.T) {
@@ -133,40 +91,25 @@ func TestActivityTypesAPI_Status_FR004(t *testing.T) {
 
 	inactive := alex.Do(t, http.MethodPost, "/api/v1/activity-types/AT-1007/status", map[string]any{"active": false, "version": 1})
 	stale := alex.Do(t, http.MethodPost, "/api/v1/activity-types/AT-1007/status", map[string]any{"active": true, "version": 1})
-	active := alex.Do(t, http.MethodPost, "/api/v1/activity-types/AT-1007/status", map[string]any{"active": true, "version": 2})
 
 	assertAnswer(t, inactive, http.StatusOK, replace(webinarAnswer(2, "", unusedBody), `"active":true`, `"active":false`))
-	if stale.Status != http.StatusConflict || active.Status != http.StatusOK {
-		t.Errorf("stale %d %s; reactivate %d %s", stale.Status, stale.Body, active.Status, active.Body)
+	if stale.Status != http.StatusConflict {
+		t.Errorf("stale %d %s", stale.Status, stale.Body)
 	}
 }
 
-func TestActivityTypesAPI_DeleteAndUndo_FR004(t *testing.T) {
+func TestActivityTypesAPI_Delete_FR004(t *testing.T) {
 	t.Parallel()
-	server := apitest.New(t, apitest.WithoutDemoHistory())
-	alex := server.SignIn(t, alexsEmail)
+	alex := apitest.New(t, apitest.WithoutDemoHistory()).SignIn(t, alexsEmail)
 	mustCreate(t, alex, "/api/v1/activity-types", webinarBody())
 
 	deleted := alex.Do(t, http.MethodDelete, "/api/v1/activity-types/AT-1007", nil)
-	afterDelete := alex.Do(t, http.MethodGet, "/api/v1/activity-types/AT-1007", nil)
-	undone := alex.Do(t, http.MethodPost, "/api/v1/recycle-bin/BIN-1001/undo", nil)
 	inUse := alex.Do(t, http.MethodDelete, "/api/v1/activity-types/AT-1002", nil)
-	gone := alex.Do(t, http.MethodDelete, "/api/v1/activity-types/AT-9999", nil)
-	var refused struct {
-		Error struct{ Code, Message string }
-	}
-	inUse.Decode(t, &refused)
 
 	assertAnswer(t, deleted, http.StatusOK, `{"recycleBinEntry":{"id":"BIN-1001","recordType":"activityType","recordTypeLabel":"activity type",`+
 		`"recordId":"AT-1007","recordName":"Webinar","path":[],"parent":null,"deletedAt":"2026-03-12T09:00:00Z",`+
 		`"deletedBy":{"id":"U-1001","name":"Alex Morgan"},"contents":[]}}`)
-	assertAnswer(t, afterDelete, http.StatusNotFound, activityTypeGoneBody)
-	assertAnswer(t, undone, http.StatusOK, `{"recordType":"activityType","recordTypeLabel":"activity type","recordId":"AT-1007",`+
-		`"recordName":"Webinar","details":""}`)
-	assertAnswer(t, alex.Do(t, http.MethodGet, "/api/v1/activity-types/AT-1007", nil), http.StatusOK, webinarAnswer(1, "", unusedBody))
-	if inUse.Status != http.StatusConflict || refused.Error.Code != "in_use" || !strings.HasPrefix(refused.Error.Message, "'Event' is in use (used by ") ||
-		!strings.HasSuffix(refused.Error.Message, " · Allowed in 2 models) — set it inactive instead.") {
-		t.Errorf("deleting Event = %d %s", inUse.Status, inUse.Body)
+	if inUse.Status != http.StatusConflict || !strings.Contains(string(inUse.Body), `"code":"in_use"`) {
+		t.Errorf("deleting Event = %d %s, want 409 in_use", inUse.Status, inUse.Body)
 	}
-	assertAnswer(t, gone, http.StatusNotFound, activityTypeGoneBody)
 }

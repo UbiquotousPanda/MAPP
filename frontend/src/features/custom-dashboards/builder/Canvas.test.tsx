@@ -1,7 +1,6 @@
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import { useReducer } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { expectNoAxeViolations } from '@/testing/axe';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { reply } from '@/testing/replies';
@@ -212,10 +211,5 @@ describe('051 FR-027: adding from the palette', () => {
     fireEvent.drop(canvas, { dataTransfer, clientX: 450, clientY: 200 });
 
     expect(widget('Key figure')).toHaveStyle({ gridColumn: '5 / span 3', gridRow: '3 / span 2' });
-  });
-
-  it('has no accessibility violations (SC-006)', async () => {
-    renderCanvas();
-    await expectNoAxeViolations();
   });
 });

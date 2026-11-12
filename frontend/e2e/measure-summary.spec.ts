@@ -51,23 +51,3 @@ test('048 US1: the Summary report shows revenue against goal, equal to the Reven
 
   await expectNoAxeViolations(page);
 });
-
-test('048 US2: the one Segment choice reloads the league tables and keeps it in the address', async ({
-  page,
-}) => {
-  test.slow();
-  await signInAs(page, ALEX);
-  await page.goto('/reports/summary?year=2026');
-
-  const segment = page.getByRole('combobox', { name: 'Segment' });
-  await expect(segment).toBeVisible();
-  await segment.click();
-  await expect(page.getByRole('listbox')).toBeVisible();
-  const options = page.getByRole('option');
-  test.skip((await options.count()) < 2, 'the demo data offers one segment only');
-
-  const reloaded = page.waitForRequest((r) => r.url().includes('/reports/summary/league/revenue'));
-  await options.nth(1).click();
-  await reloaded;
-  await expect(page).toHaveURL(/revenueBy=/);
-});

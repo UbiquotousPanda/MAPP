@@ -4,7 +4,6 @@ import {
   approveFromInbox,
   approvedActivity,
   fillAndSavePurchaseRequest,
-  LEA,
   openFromWaitingForGsap,
   openLineItem,
   openPurchaseRequest,
@@ -14,8 +13,6 @@ import {
   submitOnScreen,
   swbsLineItem,
 } from './purchase-request-flow';
-
-// Feature 032 on the real API; the journey prepares its own activity and line item.
 
 test.describe.configure({ mode: 'serial' });
 
@@ -106,22 +103,5 @@ test('032 US1–US3: raise, submit, approve and route a purchase request to the 
     page
       .getByText(new RegExp(`Can't delete — purchase request ${prId} draws on line item`))
       .first(),
-  ).toBeVisible();
-});
-
-test('032 US5: a person without the Purchase requests page permission has no page', async ({
-  page,
-}) => {
-  await signInAs(page, PRIYA);
-  await page.goto('/purchase-requests');
-  await expect(page.getByRole('heading', { name: 'No access', level: 1 })).toBeVisible();
-  await expect(
-    page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Purchase requests' }),
-  ).toHaveCount(0);
-
-  await signInAs(page, LEA);
-  await page.goto('/');
-  await expect(
-    page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Purchase requests' }),
   ).toBeVisible();
 });

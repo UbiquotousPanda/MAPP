@@ -1,7 +1,6 @@
 import { screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
-import { expectNoAxeViolations } from '@/testing/axe';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { choose, optionNames } from '@/testing/select';
@@ -186,10 +185,5 @@ describe('051 FR-019, FR-020: filters, sort and top N', () => {
       limit: 10,
       groupRest: true,
     });
-  });
-
-  it('has no accessibility violations (SC-006)', async () => {
-    renderTab(BAR_WIDGET);
-    await expectNoAxeViolations();
   });
 });

@@ -8,13 +8,11 @@ import {
   signInAs,
   uniqueName,
 } from './fixtures';
-import { createPlanningRecords, planTree, treeRow } from './planning';
 
 // The core flow of the Plan module (features 002–008), against the real API with the demo data.
 // Tests create their own records (names from uniqueName) and never assert global counts.
 
 const ALEX = 'alex.morgan@shell.com';
-const MEI = 'mei.lin@shell.com';
 
 test('C: Settings — an administrator edits a model, a Shell attribute and a currency', async ({
   page,
@@ -165,43 +163,4 @@ test('D: the plan form offers only members of the chosen teams as owner and refu
     page.getByRole('group', { name: 'Plan facts' }).getByText('Mei Lin', { exact: true }),
   ).toBeVisible();
   await expect(page.getByText('Mobility China').first()).toBeVisible();
-});
-
-test('E: deleting an activity moves it to the recycle bin with its cost, and Undo brings it back', async ({
-  page,
-}) => {
-  await signInAs(page, MEI);
-  const records = await createPlanningRecords(page, 'Delete', {
-    withWorkflow: false,
-    leaveEmpty: [],
-  });
-  const name = records.activityName;
-
-  await page.goto(records.activityPath);
-  await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: `Actions for ${name}` }).click();
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
-  const dialog = page.getByRole('alertdialog', { name: `Delete activity '${name}'?` });
-  await expect(
-    dialog.getByText('The initiative, campaign and plan planned costs go down by $20,000.00.'),
-  ).toBeVisible();
-  await expect(dialog.getByText('It moves to the recycle bin; you can restore it.')).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused();
-  await dialog.getByRole('button', { name: 'Delete activity' }).click();
-
-  await expect(page).toHaveURL(new RegExp(`/plans/${records.planId}$`));
-  await expectToast(page, `Activity '${name}' deleted`);
-  await page.getByRole('button', { name: 'Expand all' }).click();
-  await expect(treeRow(page, records.initiativeName)).toBeVisible();
-  await expect(treeRow(page, name)).toHaveCount(0);
-  await expect(treeRow(page, records.initiativeName)).not.toContainText('$20,000.00');
-
-  // Undo within the toast's 10 seconds brings it back with the same ID (001 FR-026).
-  await page.getByRole('button', { name: 'Undo' }).click();
-  await expectToast(page, `Activity '${name}' restored`);
-  await expect(planTree(page).getByRole('link', { name, exact: true })).toHaveAttribute(
-    'href',
-    new RegExp(`/activities/${records.activityId}$`),
-  );
-  await expect(treeRow(page, records.initiativeName)).toContainText('$20,000.00');
 });

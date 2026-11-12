@@ -7,6 +7,7 @@ import { cx } from '@/ui/cx';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { Pager } from '@/ui/Pager/Pager';
 import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import { nextSortOrder } from '@/ui/SortHeader/sort-order';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import dataTable from '@/ui/Table/Table.module.css';
 import { ReportWidget } from '../shared';
@@ -71,8 +72,7 @@ function SortHeading(props: {
 }) {
   const { column, params, onParams } = props;
   const current = params.sort === column.key;
-  const sortBy = () =>
-    onParams({ sort: column.key, order: current && params.order === 'asc' ? 'desc' : 'asc' });
+  const sortBy = () => onParams({ sort: column.key, order: nextSortOrder(current, params.order) });
   return (
     <SortHeader
       label={column.label}

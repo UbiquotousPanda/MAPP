@@ -7,8 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-
 	"mapp/internal/dataset"
 	"mapp/internal/platform/apitest"
 )
@@ -63,13 +61,6 @@ func created(t *testing.T, server *apitest.Server) (*apitest.Client, dataset.Vie
 	priya := server.SignIn(t, priyasEmail)
 	return priya, decoded[dataset.View](t, priya.Do(t, http.MethodPost, datasetsPath, createBody(createdName, leadsCSV)),
 		http.StatusCreated)
-}
-
-func same(t *testing.T, what string, want, got any) {
-	t.Helper()
-	if diff := cmp.Diff(want, got); diff != "" {
-		t.Errorf("%s (-want +got):\n%s", what, diff)
-	}
 }
 
 func TestPreviewDataset_ProposesColumns_FR041(t *testing.T) {

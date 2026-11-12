@@ -4,6 +4,7 @@ import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { Pager } from '@/ui/Pager/Pager';
 import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import { nextSortOrder } from '@/ui/SortHeader/sort-order';
 import dataTable from '@/ui/Table/Table.module.css';
 import { TotalLabel } from '@/ui/Table/TotalLabel';
 import { cx } from '@/ui/cx';
@@ -60,7 +61,7 @@ function SortHeading(props: {
   const current = params.sort === column;
   const sortBy = () => {
     const sort: SortKey = params.sort === column ? params.sort : toSort(column);
-    onParams({ sort, order: current && params.order === 'asc' ? 'desc' : 'asc' });
+    onParams({ sort, order: nextSortOrder(current, params.order) });
   };
   return (
     <SortHeader

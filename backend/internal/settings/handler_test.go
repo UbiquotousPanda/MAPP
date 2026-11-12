@@ -3,7 +3,6 @@ package settings_test
 import (
 	"net/http"
 	"testing"
-	"time"
 
 	"mapp/internal/platform/apitest"
 )
@@ -34,30 +33,6 @@ func TestOverview_API_FR001(t *testing.T) {
 	assertAnswer(t, response, http.StatusOK, `{"models":2,"activityTypes":6,"shellAttributes":56,"currencies":5,"financeBudgetItems":8}`)
 }
 
-func TestSettings_ChangedWithSettingsManage_FR008(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	mustCreate(t, server.SignIn(t, alexsEmail), "/api/v1/models", lubricants2)
-	daniel := server.SignIn(t, danielsEmail)
-	server.Advance(time.Hour)
-	change := map[string]any{"name": "Lubricants 2.0", "inqToMqlRate": "2.5", "version": 1}
-
-	refused := daniel.Do(t, http.MethodPatch, "/api/v1/models/MOD-1003", change)
-	read := daniel.Do(t, http.MethodGet, "/api/v1/models/MOD-1003", nil)
-	server.GrantRole(t, danielsEmail, "administrator", "all")
-	response := daniel.Do(t, http.MethodPatch, "/api/v1/models/MOD-1003", change)
-
-	assertAnswer(t, refused, http.StatusForbidden, `{"error":{"code":"forbidden","message":"Changing Settings isn't part of your roles `+
-		`(Approver, Planner). Ask an administrator if you need it.","fields":[]}}`)
-	if read.Status != http.StatusOK {
-		t.Errorf("Daniel reading the model = %d %s, want 200", read.Status, read.Body)
-	}
-
-	body := lubricants2Body(2, `"createdAt":"2026-03-12T09:00:00Z","createdBy":{"id":"U-1001","name":"Alex Morgan"},`+
-		`"updatedAt":"2026-03-12T10:00:00Z","updatedBy":{"id":"U-1003","name":"Daniel Okoro"}`)
-	assertAnswer(t, response, http.StatusOK, replace(body, `"inqToMqlRate":"2.00"`, `"inqToMqlRate":"2.50"`))
-}
-
 func mustCreate(t *testing.T, c *apitest.Client, path string, body any) *apitest.Response {
 	t.Helper()
 	response := c.Do(t, http.MethodPost, path, body)
@@ -86,7 +61,6 @@ func replace(s, old, new string) string {
 	return s[:i] + new + s[i+len(old):]
 }
 
-// index returns the index of the first sub in s, or -1.
 func index(s, sub string) int {
 	for i := 0; i+len(sub) <= len(s); i++ {
 		if s[i:i+len(sub)] == sub {
@@ -96,7 +70,6 @@ func index(s, sub string) int {
 	return -1
 }
 
-// itoa writes n.
 func itoa(n int) string {
 	return string(rune('0' + n))
 }

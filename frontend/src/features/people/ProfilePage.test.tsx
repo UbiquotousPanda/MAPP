@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { card, EUR, renderProfile, USD } from '@/testing/fixtures/profile';
 import { testUser } from '@/testing/fixtures/users';
+import { expectNoAxeViolations } from '@/testing/axe';
 import { reply } from '@/testing/replies';
 
 describe('ProfilePage (feature 003, US4)', () => {
@@ -42,6 +43,7 @@ describe('ProfilePage (feature 003, US4)', () => {
     expect(
       within(teams).getByRole('link', { name: 'Manage teams in Settings › Teams' }),
     ).toHaveAttribute('href', '/settings/teams');
+    await expectNoAxeViolations();
   });
 
   it('keeps a display currency that was set inactive, labelled "(inactive)" (edge case, D-063)', async () => {

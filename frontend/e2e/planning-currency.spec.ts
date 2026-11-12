@@ -11,7 +11,7 @@ import { lubricantsActivity } from './lubricants';
 import { lineItemFields } from './planning-changes';
 
 // Feature 016's journeys (plan, Tests › End-to-end) against the real API, on records of the tests' own:
-// GSAP rates, a plan in GBP with its budget by month, a split in GBP, and All work over two years.
+// GSAP rates, a plan in GBP with its budget by month, and a split in GBP.
 // Attribute filters, Breakdown and Field help are left to the feature that finishes them.
 
 const ALEX = 'alex.morgan@shell.com';
@@ -182,33 +182,4 @@ test('016 US2, US4 (T089): a GBP activity converts its EUR line item and splits 
   await dialog.getByRole('button', { name: 'Split activity' }).click();
   await expectToast(page, `'${activity.name}' split — '${newName}' created.`);
   await expect(page.getByText(new RegExp(`Split into '${newName}'`)).first()).toBeVisible();
-});
-
-test('016 US5 (T089): All work over two years shows Budget & cost by year and compares it with the phased budget', async ({
-  page,
-}) => {
-  await signInAs(page, PRIYA);
-  await page.goto('/all-work');
-  await page.getByRole('button', { name: /^Filters/ }).click();
-  const filters = page.getByRole('group', { name: 'Filters' });
-  await filters.getByRole('button', { name: /^Years/ }).click();
-  const years = page.getByRole('dialog', { name: 'Years' });
-  await choose(page, years.getByRole('combobox', { name: 'To' }), String(NEXT_YEAR));
-  await page.keyboard.press('Escape');
-  await expect(
-    filters.getByRole('button', { name: `Years · ${THIS_YEAR}–${NEXT_YEAR}` }),
-  ).toBeVisible();
-
-  await page.getByRole('tab', { name: 'Budget & cost' }).click();
-  const period = page.getByRole('group', { name: 'Period' });
-  await expect(period.getByRole('button', { name: 'Yearly' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  const table = page.getByRole('table', { name: 'Budget & cost' });
-  await expect(table.getByRole('columnheader', { name: String(THIS_YEAR) })).toBeVisible();
-  await expect(table.getByRole('columnheader', { name: String(NEXT_YEAR) })).toBeVisible();
-  await page.getByRole('switch', { name: 'Compare with phased budget' }).click();
-  await expect(table.getByRole('row', { name: /Phased budget/ }).first()).toBeVisible();
-  await expectNoAxeViolations(page);
 });

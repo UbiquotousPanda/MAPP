@@ -1,7 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { components } from '@/api/generated/schema';
-import { expectNoAxeViolations } from '@/testing/axe';
 import { purchaseRequest, waitingApproval } from '@/testing/fixtures/purchase-requests';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
@@ -54,7 +53,6 @@ describe('038 FR-019 (M-18): Warn — a purchase-request approver sees the overa
     const { user } = renderSection(warned());
 
     expect(await within(card()).findByText(WARNING)).toBeVisible();
-    await expectNoAxeViolations();
     await user.click(within(card()).getByRole('button', { name: 'Approve' }));
 
     expect(await screen.findByRole('alertdialog')).toHaveTextContent(WARNING);

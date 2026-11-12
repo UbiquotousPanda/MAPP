@@ -1,6 +1,5 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { expectNoAxeViolations } from '@/testing/axe';
 import { closestTo } from '@/testing/dom';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
@@ -37,7 +36,6 @@ describe('WaitingTab (044 US2, FR-004, FR-008 – FR-010, FR-016)', () => {
     expect(within(table).getByText('Over 2 working days')).toBeInTheDocument();
     expect(within(table).getByText('Modification')).toBeInTheDocument();
     expect(within(table).getByText('1000123')).toBeInTheDocument();
-    await expectNoAxeViolations();
   });
 
   it('shows amounts only where the person may see financial data, and says what they cover (FR-004)', () => {

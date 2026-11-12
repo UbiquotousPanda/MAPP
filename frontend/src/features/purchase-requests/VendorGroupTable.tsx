@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { DisclosureButton } from '@/ui/DisclosureButton/DisclosureButton';
+import { HxKey } from '@/ui/HxKey/HxKey';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import dataTable from '@/ui/Table/Table.module.css';
 import { cx } from '@/ui/cx';
@@ -13,7 +14,6 @@ import type {
   PurchaseRequestRowLine,
   PurchaseRequestVendorGroup,
 } from './api';
-import { HxKey } from './HxKey';
 import { NOT_COMPLETED, TABLE_LABEL, WAITING_MARK } from './list-text';
 import { FIELD_LABELS, FILLED_BY_GSAP, HX_LABEL, linesText } from './purchase-request-text';
 import { PurchaseRequestStatusChip } from './PurchaseRequestStatusChip';
@@ -193,7 +193,7 @@ function LinesTable({ name, lines }: { name: string; lines: PurchaseRequestRowLi
               </Link>
             </th>
             <td>
-              <HxKey value={line.hxKey} compact />
+              <HxKey value={line.hxKey} />
             </td>
             <td className={dataTable.numeric}>{money(line.amount)}</td>
             <td>{date(line.deliveryDate)}</td>

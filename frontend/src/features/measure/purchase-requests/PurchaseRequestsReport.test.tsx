@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { expectNoAxeViolations } from '@/testing/axe';
 import {
   noPurchaseRequestsReport,
   purchaseRequestsReport,
@@ -50,6 +51,7 @@ describe('PurchaseRequestsReport (042)', () => {
       screen.getByRole('heading', { level: 1, name: 'Purchase requests' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('group', { name: 'Period' })).toBeNull();
+    await expectNoAxeViolations();
   });
 
   it('says purchase requests are not switched on', async () => {

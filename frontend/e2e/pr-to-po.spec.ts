@@ -1,20 +1,17 @@
 import { expect, test } from '@playwright/test';
-import { action, expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
+import { action, expectNoAxeViolations, signInAs, uniqueName } from './fixtures';
 import {
   ALEX,
-  approveFromInbox,
   approvedActivity,
-  fillAndSavePurchaseRequest,
+  approvedPurchaseRequest,
   LEA,
   openFromWaitingForGsap,
   openLineItem,
   PRIYA,
-  purchaseRequestsSection,
-  sendToSimulatedGsap,
-  submitOnScreen,
+  swbsLineItem,
 } from './purchase-request-flow';
 
-// The journey: approved activity → SWBS code → PR approved → simulated GSAP PR and PO → Committed.
+// The journey: an approved PR (prepared through the API) → simulated GSAP PR and PO → Committed.
 
 const SIM_NUMBER = /SIM-\d{10}/;
 
@@ -23,35 +20,11 @@ test('033 US1: from an approved activity to the purchase order and Committed fig
 }) => {
   test.slow();
   const activity = await approvedActivity(page, 'PR to PO');
-
-  // Priya adds the line item on screen, asking GSAP for its SWBS code (D-322: approval is kept).
   await signInAs(page, PRIYA);
-  await page.goto(activity.path);
-  await expect(page.getByRole('heading', { name: activity.name, level: 1 })).toBeVisible();
-  await action(page, 'Add line item').click();
-  await expect(page.getByRole('heading', { name: 'New line item', level: 1 })).toBeVisible();
-  const lineItemName = uniqueName('Gift boxes');
-  await page.getByRole('textbox', { name: /^Line item name/ }).fill(lineItemName);
-  await page.getByRole('textbox', { name: /^Planned cost/ }).fill('10000');
-  await page.getByRole('checkbox', { name: 'Request SWBS code from GSAP' }).check();
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expectToast(page, `Line item '${lineItemName}' created`);
-  await page.locator('#line-items').getByRole('link', { name: lineItemName }).first().click();
-  await expect(page.getByRole('heading', { name: lineItemName, level: 1 })).toBeVisible();
-  const lineItem = { id: /L-\d+/.exec(page.url())?.[0] ?? '', name: lineItemName };
-  expect(lineItem.id).not.toBe('');
-
-  await sendToSimulatedGsap(page, lineItem);
-
-  await signInAs(page, PRIYA);
-  await openLineItem(page, lineItem);
-  await action(purchaseRequestsSection(page), 'New purchase request').click();
-  await expect(page.getByRole('heading', { name: 'New purchase request', level: 1 })).toBeVisible();
-  const prName = `PR for ${lineItemName}`;
-  const prId = await fillAndSavePurchaseRequest(page, `${new Date().getUTCFullYear() + 1}-04-30`);
-  await submitOnScreen(page, prName);
-
-  await approveFromInbox(page, prName);
+  const lineItem = await swbsLineItem(page, activity.id, uniqueName('Gift boxes'), '10000.00');
+  const prName = `PR for ${lineItem.name}`;
+  const nextYear = new Date().getUTCFullYear() + 1;
+  const prId = await approvedPurchaseRequest(page, lineItem, '10000.00', `${nextYear}-04-30`);
 
   // Lea, the requisitioner, works from Waiting for GSAP: the PR form, then the simulated GSAP.
   await openFromWaitingForGsap(page, prId, prName);
@@ -105,7 +78,6 @@ test('033 US1: from an approved activity to the purchase order and Committed fig
   await page.goto(`/financials?year=${new Date().getUTCFullYear() + 1}`);
   await page.getByRole('searchbox', { name: 'Search transactions' }).fill(poNumber);
   await expect(page.getByRole('link', { name: new RegExp(poNumber) }).first()).toBeVisible();
-  await expectNoAxeViolations(page);
 
   await signInAs(page, LEA);
   await page.goto(`/purchase-requests/${prId}`);

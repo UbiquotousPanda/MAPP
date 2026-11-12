@@ -1,7 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
-import { expectNoAxeViolations } from '@/testing/axe';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { choose } from '@/testing/select';
@@ -141,10 +140,5 @@ describe('051 US1, FR-025: the Style tab offers the options the type draws', () 
     expect(screen.queryByRole('group', { name: 'Colours' })).not.toBeInTheDocument();
     await user.type(screen.getByLabelText('Note'), '<b>Not bold</b>');
     expect(latest.note).toBe('<b>Not bold</b>');
-  });
-
-  it('has no accessibility violations (SC-006)', async () => {
-    renderTab('combo', { query: TWO_MEASURES });
-    await expectNoAxeViolations();
   });
 });

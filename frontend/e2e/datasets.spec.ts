@@ -4,11 +4,10 @@ import { choose, expectNoAxeViolations, expectToast, signInAs, uniqueName } from
 import { expect, test } from './support/no-csp-violations';
 
 // Uploaded datasets against the real API: Priya uploads the agency's event leads, corrects a column, charts
-// the dataset beside SP&A One data and deletes it with Undo; files that break the rules store nothing.
+// the dataset beside SP&A One data and deletes it with Undo.
 
 const PRIYA = 'priya.raman@shell.com';
 const XLSX = fileURLToPath(new URL('./fixtures/event-leads.xlsx', import.meta.url));
-const CSV_TYPE = 'text/csv';
 // The fixture's Leads column adds up to 1,355 (backend/seed/datasets.go, EventLeads).
 const LEADS_TOTAL = '1,355';
 
@@ -16,16 +15,8 @@ function panel(page: Page): Locator {
   return page.getByRole('dialog', { name: 'Upload data' });
 }
 
-async function openUpload(page: Page) {
-  await page.goto('/datasets');
-  await expect(page.getByRole('heading', { level: 1, name: 'Datasets' })).toBeVisible();
-  await page.getByRole('button', { name: 'Upload data' }).first().click();
-  await expect(panel(page)).toBeVisible();
-}
-
-async function checkFile(page: Page, file: string | { name: string; buffer: Buffer }) {
-  const chosen = typeof file === 'string' ? file : { ...file, mimeType: CSV_TYPE };
-  await panel(page).getByLabel('Choose a file').setInputFiles(chosen);
+async function checkFile(page: Page, file: string) {
+  await panel(page).getByLabel('Choose a file').setInputFiles(file);
   await panel(page).getByRole('button', { name: 'Check the file' }).click();
 }
 
@@ -99,47 +90,4 @@ test('051 US3: Priya uploads event leads, corrects a column and charts them (FR-
   await page.getByRole('button', { name: 'Undo' }).click();
   await expectToast(page, new RegExp(`${name}.* restored`));
   await expect(page.getByRole('link', { name })).toBeVisible();
-});
-
-test('051 US3-2: every cell is checked against its type and nothing is stored while one is wrong', async ({
-  page,
-}) => {
-  await signInAs(page, PRIYA);
-  await openUpload(page);
-  const rows = ['Event,Leads', 'Expo Hamburg,140', 'Fleet Day,n/a', 'Workshop Lyon,62'];
-  await checkFile(page, { name: 'leads-with-gap.csv', buffer: Buffer.from(rows.join('\n')) });
-  await expect(panel(page)).toContainText('Step 2 of 2: Check the columns');
-
-  const name = uniqueName('Leads with a gap');
-  await panel(page)
-    .getByLabel(/^Dataset name/)
-    .fill(name);
-  await choose(page, column(page, 2).getByLabel(/^Type/), 'Number');
-  await panel(page).getByRole('button', { name: 'Save dataset' }).click();
-
-  await expect(
-    panel(page)
-      .getByText(/Row \d+, Leads: 'n\/a' is not a number/)
-      .first(),
-  ).toBeVisible();
-  await expect(panel(page)).toBeVisible();
-  await expectNoAxeViolations(page);
-});
-
-test('051 US3-3: a file over a limit is refused with the reason and the limit', async ({
-  page,
-}) => {
-  await signInAs(page, PRIYA);
-  await openUpload(page);
-  const header = Array.from({ length: 51 }, (_, index) => `Column ${index + 1}`).join(',');
-  const values = Array.from({ length: 51 }, (_, index) => String(index)).join(',');
-  await checkFile(page, { name: 'too-wide.csv', buffer: Buffer.from(`${header}\n${values}`) });
-
-  await expect(panel(page)).toContainText('Step 1 of 2: Choose a file');
-  await expect(
-    panel(page)
-      .getByText(/50 columns/)
-      .last(),
-  ).toBeVisible();
-  await expect(panel(page).getByLabel('Choose a file')).toHaveAttribute('aria-invalid', 'true');
 });

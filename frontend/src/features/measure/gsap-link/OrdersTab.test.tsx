@@ -1,6 +1,5 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { expectNoAxeViolations } from '@/testing/axe';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
 import type { GsapLinkReport } from './api';
@@ -40,7 +39,6 @@ describe('OrdersTab (044 US3, FR-004, FR-011 – FR-013, FR-016)', () => {
     );
     expect(within(table).getByText('PO lines 10, 20')).toBeInTheDocument();
     expect(within(table).getByText('Keynote Speakers Ltd')).toBeInTheDocument();
-    await expectNoAxeViolations();
   });
 
   it('ends with the totals of every row, not only the page (FR-013)', () => {

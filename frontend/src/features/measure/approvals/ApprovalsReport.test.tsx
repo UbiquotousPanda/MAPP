@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { expectNoAxeViolations } from '@/testing/axe';
 import { approvalsReport } from '@/testing/fixtures/approvals-report';
 import { reportFrame } from '@/testing/fixtures/reports';
 import { testUser } from '@/testing/fixtures/users';
@@ -41,6 +42,7 @@ describe('ApprovalsReport (041 US1)', () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('group', { name: 'Period' })).toBeNull();
     expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
+    await expectNoAxeViolations();
   });
 
   it('keeps the chosen record type in the address', async () => {

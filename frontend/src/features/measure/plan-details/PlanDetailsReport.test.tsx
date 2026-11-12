@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { reportFrame } from '@/testing/fixtures/reports';
@@ -138,6 +138,19 @@ describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
     expect(screen.queryByText('By Company code')).not.toBeInTheDocument();
+  });
+
+  it('asks the API for the level chosen (FR-001)', async () => {
+    const api = renderReport();
+    await screen.findByText('By Company code');
+
+    await api.user.click(screen.getByRole('button', { name: 'Campaign' }));
+
+    await waitFor(() =>
+      expect(
+        api.requests.filter((r) => r.path === '/api/v1/reports/plan-details').at(-1)?.search,
+      ).toContain('show=campaign'),
+    );
   });
 
   it('opens on the level in the address (FR-001)', async () => {

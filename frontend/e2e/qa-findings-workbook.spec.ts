@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from './support/no-csp-violations';
-import { expectNoAxeViolations, expectToast, signInAs } from './fixtures';
+import { expectNoAxeViolations, signInAs } from './fixtures';
 
 // The 5,000-row workbook written by platform/apibench TestWorkbookFixture.
 
@@ -8,8 +8,9 @@ const PRIYA = 'priya.raman@shell.com';
 const PLAN = 'P-1001';
 const FILE = 'workbook-5000.xlsx';
 
-test('038 FR-008 (H-2): check, import and undo a 5,000-row workbook', async ({ page }) => {
-  test.setTimeout(300_000);
+// Importing it and Undo are workbook.spec.ts's on a small file; their speed is apibench's.
+test('038 FR-008 (H-2): check a 5,000-row workbook', async ({ page }) => {
+  test.setTimeout(120_000);
   await signInAs(page, PRIYA);
   await page.goto(`/plans/${PLAN}`);
   await page.getByRole('main').getByRole('button', { name: 'More', exact: true }).click();
@@ -26,16 +27,4 @@ test('038 FR-008 (H-2): check, import and undo a 5,000-row workbook', async ({ p
     timeout: 20_000,
   });
   await expectNoAxeViolations(page);
-
-  await page.getByRole('button', { name: 'Import 5000 rows' }).click();
-  await expect(
-    page.getByText('Created 1 campaign, 50 initiatives, 2474 activities, 2475 line items.'),
-  ).toBeVisible({ timeout: 120_000 });
-  await expectNoAxeViolations(page);
-
-  await page.getByRole('button', { name: 'Undo import' }).click();
-  const confirm = page.getByRole('alertdialog', { name: `Undo import of '${FILE}'?` });
-  await confirm.getByRole('button', { name: 'Undo import' }).click();
-  await expect(page.getByText(/Undone by Priya Raman/)).toBeVisible({ timeout: 120_000 });
-  await expectToast(page, 'Import undone — the records are in the recycle bin');
 });

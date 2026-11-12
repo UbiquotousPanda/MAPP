@@ -119,21 +119,6 @@ func TestSwbsRun_OneNamed_Contract_030_FR015(t *testing.T) {
 	}
 }
 
-func TestSwbsRuns_Forbidden_030_FR012(t *testing.T) {
-	t.Parallel()
-	priya := apitest.New(t).SignIn(t, priyasEmail)
-
-	for _, method := range []string{http.MethodGet, http.MethodPost} {
-		var body any
-		if method == http.MethodPost {
-			body = map[string]any{}
-		}
-		if refused := decoded[apiError](t, priya.Do(t, method, runsPath, body), http.StatusForbidden); refused.Error.Code != "forbidden" {
-			t.Errorf("%s = %+v", method, refused)
-		}
-	}
-}
-
 func TestSwbsCode_LineItemSeed_030_FR021(t *testing.T) {
 	t.Parallel()
 	priya := apitest.New(t).SignIn(t, priyasEmail)

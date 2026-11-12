@@ -3,12 +3,10 @@ import { callApi, expectNoAxeViolations, expectToast, signInAs, uniqueName } fro
 import type { Named } from './planning';
 import {
   approvedActivity,
-  fillAndSavePurchaseRequest,
-  openLineItem,
   openPurchaseRequest,
   PRIYA,
-  purchaseRequestsSection,
-  sendToSimulatedGsap,
+  savedPurchaseRequest,
+  swbsCodeThroughApi,
   swbsLineItem,
 } from './purchase-request-flow';
 
@@ -98,15 +96,8 @@ test('037 US5: a purchase request is refused while its activity’s line items e
   const lineItem = await swbsLineItem(page, activity.id, uniqueName('Extra stands'), '20000.00');
   const prName = `PR for ${lineItem.name}`;
 
-  await openLineItem(page, lineItem);
-  await purchaseRequestsSection(page)
-    .getByRole('link', { name: 'New purchase request' })
-    .or(purchaseRequestsSection(page).getByRole('button', { name: 'New purchase request' }))
-    .first()
-    .click();
-  await expect(page.getByRole('heading', { name: 'New purchase request', level: 1 })).toBeVisible();
-  const prId = await fillAndSavePurchaseRequest(page, `${nextYear}-03-31`);
-  await sendToSimulatedGsap(page, lineItem);
+  const { id: prId } = await savedPurchaseRequest(page, lineItem, '20000.00', `${nextYear}-03-31`);
+  await swbsCodeThroughApi(page, lineItem);
 
   await signInAs(page, PRIYA);
   await openPurchaseRequest(page, prId, prName);

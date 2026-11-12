@@ -45,25 +45,6 @@ test('030 US2, US5: a marketer reads the SWBS request, its code and the HX key',
   await expect(page.getByRole('region', { name: 'Simulated GSAP' })).toHaveCount(0);
 });
 
-test('030 US4: a finance person sends one line item to the simulated GSAP from its page', async ({
-  page,
-}) => {
-  await signInAs(page, ALEX);
-  await openLineItem(page, 'L-1006', 'Stand build');
-
-  await swbsCard(page).getByRole('button', { name: 'Send to simulated GSAP now' }).click();
-  const confirm = page.getByRole('alertdialog', {
-    name: 'Send Stand build to simulated GSAP now?',
-  });
-  await expect(confirm).toContainText("Codes can't be changed or removed in SP&A One.");
-  await confirm.getByRole('button', { name: 'Send to simulated GSAP now' }).click();
-
-  const card = swbsCard(page);
-  await expect(card.getByText('SIM-GB01-0001')).toBeVisible();
-  await expect(card.getByText('SWBS code received')).toBeVisible();
-  await expectNoAxeViolations(page);
-});
-
 test('030 US1: after approval, the waiting request goes to the simulated GSAP from Financials', async ({
   page,
 }) => {

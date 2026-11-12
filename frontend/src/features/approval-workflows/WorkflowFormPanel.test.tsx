@@ -7,6 +7,7 @@ import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { detailsOf, PEOPLE, workflowOf } from '@/testing/fixtures/approval-workflows';
 import { reply } from '@/testing/replies';
+import { expectNoAxeViolations } from '@/testing/axe';
 import { WorkflowFormPanel } from './WorkflowFormPanel';
 import type { ApprovalWorkflow } from './api';
 
@@ -110,6 +111,7 @@ describe('WorkflowFormPanel (feature 008, US4)', () => {
     expect(screen.getByRole('combobox', { name: /Approvers/ })).toHaveAccessibleDescription(
       expect.stringContaining('Level 1: choose at least one approver.'),
     );
+    await expectNoAxeViolations();
   });
 
   it('says that open rounds keep their levels, and sends only what changed (FR-006)', async () => {

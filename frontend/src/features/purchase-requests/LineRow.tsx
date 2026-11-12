@@ -5,6 +5,7 @@ import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import type { ChoiceOption } from '@/ui/ChoiceField/ChoiceField';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FormField } from '@/ui/FormField/FormField';
+import { HxKey } from '@/ui/HxKey/HxKey';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFields';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
@@ -14,7 +15,7 @@ import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { problemAt, problemMap } from './form-problems';
 import type { LineValues, PurchaseRequestFormValues } from './form-schema';
 import { LABELS, LINE_ATTRIBUTES_TITLE, lineTitle, NO_SWBS, SWBS_HINT } from './form-text';
-import { HxKey } from './HxKey';
+import { HX_LABEL } from './purchase-request-text';
 import styles from './LineRowsEditor.module.css';
 
 const DESCRIPTION_MAX = 2000;
@@ -60,7 +61,7 @@ export function LineRow({
         <div>
           <dt>{LABELS.hxKey}</dt>
           <dd>
-            <HxKey value={line.hxKey} />
+            <HxKey value={line.hxKey} hint={HX_LABEL} />
           </dd>
         </div>
         <div>

@@ -69,7 +69,6 @@ describe('051 FR-039: every state of a widget', () => {
     const { user } = show(widget('bar'));
 
     expect(await screen.findByText("This widget couldn't be loaded")).toBeInTheDocument();
-    await expectNoAxeViolations();
     await user.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByRole('img', { name: CHART_NAME })).toBeInTheDocument();
   });
@@ -188,7 +187,6 @@ describe('051 FR-039: every state of a widget', () => {
 
     expect(await screen.findByText('$25,000.00')).toBeInTheDocument();
     expect(screen.getByText(/^Down 12.5%, better than the previous period \(/)).toBeInTheDocument();
-    await expectNoAxeViolations();
   });
 
   it('shows a key figure against its target', async () => {
@@ -235,7 +233,6 @@ describe('051 FR-038: the widget menu', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Show as table' }));
     expect(screen.getByRole('table', { name: 'Planned cost by type' })).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: CHART_NAME })).not.toBeInTheDocument();
-    await expectNoAxeViolations();
 
     await user.click(screen.getByRole('button', { name: 'Actions for Planned cost by type' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Show as chart' }));

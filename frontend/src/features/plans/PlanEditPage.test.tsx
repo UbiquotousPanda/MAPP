@@ -53,6 +53,32 @@ describe('PlanEditPage (US4, FR-018 – FR-023)', () => {
     await waitFor(() => expect(document.title).toBe('Edit FY2026 Lubricants Europe · SP&A One'));
   });
 
+  it('shows an allocated plan budget read-only, naming whom to ask (014 US6#3)', async () => {
+    const allocated = plan({
+      allocation: {
+        allocationId: 'BA-1001',
+        globalBudget: { id: 'GB-1001', name: 'FY2026 Global marketing budget' },
+        amount: { amount: '1200000.00', currency: 'USD' },
+        owner: {
+          id: 'U-1005',
+          name: 'Carlos Mendes',
+          initials: 'CM',
+          jobTitle: 'Global brand lead',
+          active: true,
+        },
+        canOpen: false,
+      },
+    });
+    renderPage([reply('GET /api/v1/plans/{planId}', { body: allocated }, { planId: 'P-1001' })]);
+
+    expect(
+      await screen.findByText(
+        "Allocated from 'FY2026 Global marketing budget' — ask Carlos Mendes to change it.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /^Plan budget/ })).not.toBeInTheDocument();
+  });
+
   it('saves the whole form with the version it started from', async () => {
     const { api, user, router } = renderPage();
 

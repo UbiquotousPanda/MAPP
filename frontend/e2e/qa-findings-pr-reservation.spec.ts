@@ -4,15 +4,12 @@ import { callApi, expectNoAxeViolations, expectToast, signInAs, uniqueName } fro
 import { lubricantsActivity } from './lubricants';
 import { decideAs } from './planning-changes';
 import {
-  approveFromInbox,
+  approvedPurchaseRequest,
   DANIEL,
-  fillAndSavePurchaseRequest,
   openLineItem,
   openPurchaseRequest,
   PRIYA,
   purchaseRequestsSection,
-  sendToSimulatedGsap,
-  submitOnScreen,
   swbsLineItem,
 } from './purchase-request-flow';
 
@@ -44,14 +41,7 @@ test('038 FR-001 (C-1): a change in review keeps the approved amount reserved', 
   await signInAs(page, PRIYA);
   const lineItem = await swbsLineItem(page, activity.id, uniqueName('Stand build'), '15800.00');
   const prName = `PR for ${lineItem.name}`;
-  await sendToSimulatedGsap(page, lineItem);
-
-  await signInAs(page, PRIYA);
-  await page.goto(`/purchase-requests/new?lineItemId=${lineItem.id}`);
-  await expect(amountField(page)).toHaveValue('15,800.00');
-  const prId = await fillAndSavePurchaseRequest(page, `${nextYear}-03-31`);
-  await submitOnScreen(page, prName);
-  await approveFromInbox(page, prName);
+  const prId = await approvedPurchaseRequest(page, lineItem, '15800.00', `${nextYear}-03-31`);
 
   await signInAs(page, PRIYA);
   await page.goto(`/purchase-requests/${prId}/edit`);

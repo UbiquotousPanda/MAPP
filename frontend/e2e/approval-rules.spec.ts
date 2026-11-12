@@ -5,8 +5,7 @@ import { createPlanningRecords } from './planning';
 import { cancelCurrentDelegations, decideAs } from './planning-changes';
 
 // Feature 017's journeys 1–4 (plan, Tests › End-to-end) against the real API, on activities of the tests'
-// own. The approved-automatically case is proven in brd-gaps.spec.ts; journeys 5 and 6 are in
-// approval-monitoring.spec.ts.
+// own; journeys 5 and 6 are component and Go tests.
 
 const PRIYA = 'priya.raman@shell.com';
 const DANIEL = 'daniel.okoro@shell.com';
@@ -40,6 +39,21 @@ async function openApprovalSection(page: Page, activity: { path: string; name: s
   await page.getByRole('tab', { name: 'Approval' }).click();
   return page.locator('#approval');
 }
+
+test('017: a small activity is approved automatically on submission', async ({ page }) => {
+  await signInAs(page, PRIYA);
+  const activity = await lubricantsActivity(page, 'Auto', '8000.00');
+
+  await page.goto(activity.path);
+  await expect(page.getByRole('heading', { name: activity.name, level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Submit for approval' }).first().click();
+  const submit = page.getByRole('alertdialog', { name: `Submit '${activity.name}' for approval?` });
+  await expect(submit.getByText(`Approval workflow: ${STANDARD_WORKFLOW}`)).toBeVisible();
+  await expect(submit.getByText('This activity will be approved automatically.')).toBeVisible();
+  await submit.getByRole('button', { name: 'Submit for approval' }).click();
+  await expectToast(page, `Activity '${activity.name}' approved automatically`);
+  await expect(page.getByText('Approved', { exact: true }).first()).toBeVisible();
+});
 
 test('017 US1 (T047 journey 1): the workflow reads in words, and an activity from $10,000 waits for the owner’s line manager', async ({
   page,

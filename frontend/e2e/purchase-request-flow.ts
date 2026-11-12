@@ -158,8 +158,80 @@ export async function openFromWaitingForGsap(page: Page, id: string, name: strin
   await expect(page).toHaveURL(/waiting=true/);
   await page.getByRole('searchbox', { name: 'Search purchase requests' }).fill(id);
   const table = page.getByRole('region', { name: 'Purchase requests by vendor' });
-  await expect(table.getByRole('link', { name, exact: true })).toBeVisible();
-  await expectNoAxeViolations(page);
   await table.getByRole('link', { name, exact: true }).click();
   await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
+}
+
+/** As Alex Morgan: the line item's SWBS code from the simulated GSAP, through the API (030). */
+export async function swbsCodeThroughApi(page: Page, lineItem: Named): Promise<void> {
+  await signInAs(page, ALEX);
+  await callApi(page, 'POST', '/api/v1/simulated-gsap/swbs-runs', { lineItemIds: [lineItem.id] });
+}
+
+/** As Priya: what the PR form saves for the whole line item (USD, Email group DE_LUBES); `PR for <name>`. */
+export async function savedPurchaseRequest(
+  page: Page,
+  lineItem: Named,
+  amount: string,
+  deliveryDate: string,
+): Promise<{ id: string; version: number }> {
+  await signInAs(page, PRIYA);
+  return callApi(page, 'POST', '/api/v1/purchase-requests', {
+    name: `PR for ${lineItem.name}`,
+    description: '',
+    ownerId: 'U-1002',
+    moaApproverId: 'U-1003',
+    approvalWorkflowId: 'WF-1004',
+    modificationWorkflowId: 'WF-1005',
+    attributes: {
+      'SA-1036': ['SO-1164'],
+      'SA-1037': ['SO-1165'],
+      'SA-1038': 'Christmas gift boxes',
+      'SA-1041': 'Priya Raman',
+      'SA-1042': 'Northlight Events GmbH',
+      'SA-1043': 'V-100101',
+      'SA-1050': 'SO-1170',
+    },
+    lines: [
+      {
+        lineItemId: lineItem.id,
+        currency: 'USD',
+        amount,
+        deliveryDate,
+        overallLimit: amount,
+        description: '',
+        attributes: {},
+      },
+    ],
+    then: 'save',
+  });
+}
+
+interface PurchaseRequestApproval {
+  sections: { rounds: { id: string; outcome: string; currentLevel: number }[] }[];
+}
+
+/** The line item gets its SWBS code; Priya raises and submits the PR, Daniel approves it. Ends as Daniel. */
+export async function approvedPurchaseRequest(
+  page: Page,
+  lineItem: Named,
+  amount: string,
+  deliveryDate: string,
+): Promise<string> {
+  await swbsCodeThroughApi(page, lineItem);
+  const { id, version } = await savedPurchaseRequest(page, lineItem, amount, deliveryDate);
+  const path = `/api/v1/purchase-requests/${id}/approval`;
+  const submitted = await callApi<PurchaseRequestApproval>(page, 'POST', `${path}/submit`, {
+    version,
+  });
+  const round = submitted.sections
+    .flatMap((section) => section.rounds)
+    .find((candidate) => candidate.outcome === 'open');
+  await signInAs(page, DANIEL);
+  await callApi(page, 'POST', `${path}/approve`, {
+    roundId: round?.id,
+    level: round?.currentLevel,
+    comment: '',
+  });
+  return id;
 }

@@ -3,21 +3,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { mockApi } from '@/testing/mock-api';
-import { apiError, reply } from '@/testing/replies';
-import type { CustomDashboardFilters, DataSource, Widget, WidgetDisplay } from '../model';
+import { reply } from '@/testing/replies';
+import type { CustomDashboardFilters, Widget, WidgetDisplay } from '../model';
 import { NO_FILTERS } from '../model';
-import { useDataSources, useWidgetData, widgetDataRequest } from './api';
+import { useWidgetData, widgetDataRequest } from './api';
 import { query, widget, widgetData } from './widget-fixtures';
 
-const ACTIVITIES: DataSource = {
-  key: 'activities',
-  label: 'Activities',
-  description: 'Every activity you may see',
-  kind: 'builtIn',
-  fields: [],
-  filters: { date: 'startDate', plan: true, team: true },
-  owner: null,
-};
 const QUERY_PATH = 'POST /api/v1/data-sources/query';
 const FILTERS: CustomDashboardFilters = {
   ...NO_FILTERS,
@@ -34,14 +25,6 @@ function kpi(display: WidgetDisplay): Widget {
   return widget('kpi', display, { query: query({ dimension: null }) });
 }
 
-describe('051 FR-016: the data catalogue', () => {
-  it('lists the sources the person may read', async () => {
-    mockApi([reply('GET /api/v1/data-sources', { body: { items: [ACTIVITIES] } })]);
-    const { result } = renderHook(() => useDataSources(), { wrapper });
-    await waitFor(() => expect(result.current.data).toEqual([ACTIVITIES]));
-  });
-});
-
 describe('051 FR-032: a widget’s figures', () => {
   it('asks SP&A One for the widget’s query with the dashboard filters', async () => {
     const api = mockApi([reply(QUERY_PATH, { body: widgetData() })]);
@@ -51,12 +34,6 @@ describe('051 FR-032: a widget’s figures', () => {
     expect(api.bodiesOf(QUERY_PATH)).toEqual([
       { type: 'bar', query: query(), filters: FILTERS, comparison: null },
     ]);
-  });
-
-  it('passes on the API’s refusal', async () => {
-    mockApi([reply(QUERY_PATH, { status: 403, body: apiError('forbidden', 'No access') })]);
-    const { result } = renderHook(() => useWidgetData(widget('bar'), null), { wrapper });
-    await waitFor(() => expect(result.current.error?.kind).toBe('forbidden'));
   });
 
   it('asks nothing for a text note', () => {

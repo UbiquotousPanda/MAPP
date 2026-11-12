@@ -1,5 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
-import { choose, expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
+import {
+  axeInBothThemes,
+  choose,
+  expectNoAxeViolations,
+  expectToast,
+  signInAs,
+  uniqueName,
+} from './fixtures';
 import { createPlanningRecords } from './planning';
 import { expect, test } from './support/no-csp-violations';
 
@@ -36,29 +43,25 @@ async function chooseData(page: Page, source: string, groupBy: string, measure: 
   await chooseIn(panel.getByLabel('What to measure'), measure);
 }
 
-for (const colorScheme of ['light', 'dark'] as const) {
-  test(`051 SC-006: the builder with a saved dashboard passes axe (${colorScheme})`, async ({
-    page,
-  }) => {
-    await page.emulateMedia({ colorScheme });
-    await signInAs(page, PRIYA);
-    await page.goto('/builder/DB-1001');
-    await expect(
-      page.getByRole('heading', { level: 1, name: "Edit 'Lubricants Europe overview'" }),
-    ).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', colorScheme);
-    await expect(
-      cell(page, 'Planned cost by activity type').getByRole('img', { name: /^Bar chart/ }),
-    ).toBeVisible();
-    await expectNoAxeViolations(page);
+test('051 SC-006: the builder with a saved dashboard passes axe in both themes', async ({
+  page,
+}) => {
+  await signInAs(page, PRIYA);
+  await page.goto('/builder/DB-1001');
+  await expect(
+    page.getByRole('heading', { level: 1, name: "Edit 'Lubricants Europe overview'" }),
+  ).toBeVisible();
+  await expect(
+    cell(page, 'Planned cost by activity type').getByRole('img', { name: /^Bar chart/ }),
+  ).toBeVisible();
+  await axeInBothThemes(page);
 
-    await cell(page, 'Planned cost by activity type')
-      .getByRole('button', { name: 'Planned cost by activity type', exact: true })
-      .click();
-    await expect(inspector(page).getByRole('tab', { name: 'Data' })).toBeVisible();
-    await expectNoAxeViolations(page);
-  });
-}
+  await cell(page, 'Planned cost by activity type')
+    .getByRole('button', { name: 'Planned cost by activity type', exact: true })
+    .click();
+  await expect(inspector(page).getByRole('tab', { name: 'Data' })).toBeVisible();
+  await axeInBothThemes(page);
+});
 
 test('051 US1: Priya builds a dashboard — palette, Data tab, keyboard, undo, problems, save, reload (FR-026 – FR-035)', async ({
   page,
@@ -192,49 +195,37 @@ test('051 US1-12, FR-002: a Viewer has no Dashboard builder and is refused /buil
   await expectNoAxeViolations(page);
 });
 
-test('051 FR-035: the view-only builder shows each chart whole inside its widget', async ({
+test('051 FR-026, FR-035, FR-039: on a 1280 px window previews stay readable and every chart and figure fits its widget', async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
   await signInAs(page, 'daniel.okoro@shell.com');
   await page.goto('/builder/DB-1001');
   await expect(page.getByText('Only Priya Raman can edit this dashboard.')).toBeVisible();
   const widget = page.getByRole('region', { name: 'Planned cost by activity type' });
   const chart = widget.getByRole('img', { name: /^Bar chart/ });
   await expect(chart).toBeVisible();
-
   const [cellBox, chartBox] = [await widget.boundingBox(), await chart.boundingBox()];
   expect(chartBox && cellBox && chartBox.y + chartBox.height).toBeLessThanOrEqual(
     (cellBox?.y ?? 0) + (cellBox?.height ?? 0),
   );
   await expectNoAxeViolations(page);
-});
 
-test('051 FR-026: on a 1280 px window the canvas keeps room for readable previews', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
   await signInAs(page, PRIYA);
   await page.goto('/builder/DB-1001');
   const canvas = page.getByRole('region', { name: 'Canvas' });
   await expect(cell(page, 'Planned cost by activity type')).toBeVisible();
-
   expect((await canvas.boundingBox())?.width).toBeGreaterThanOrEqual(550);
+
+  const budgets = cell(page, 'Plan budgets');
+  const figure = budgets.getByText(/^\$[\d,]+\.\d{2}$/);
+  await expect(figure).toBeVisible();
+  const [budgetsBox, figureBox] = [await budgets.boundingBox(), await figure.boundingBox()];
+  expect((figureBox?.x ?? 0) + (figureBox?.width ?? 0)).toBeLessThanOrEqual(
+    (budgetsBox?.x ?? 0) + (budgetsBox?.width ?? 0),
+  );
+
   await page.getByRole('button', { name: 'Add text note' }).click();
   await expect(cell(page, 'Text note')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1280);
-});
-
-test('051 FR-039: a key figure in a narrow widget shows every digit of its value', async ({
-  page,
-}) => {
-  await signInAs(page, PRIYA);
-  await page.goto('/builder/DB-1001');
-  const widget = cell(page, 'Plan budgets');
-  const figure = widget.getByText(/^\$[\d,]+\.\d{2}$/);
-  await expect(figure).toBeVisible();
-
-  const [cellBox, figureBox] = [await widget.boundingBox(), await figure.boundingBox()];
-  expect((figureBox?.x ?? 0) + (figureBox?.width ?? 0)).toBeLessThanOrEqual(
-    (cellBox?.x ?? 0) + (cellBox?.width ?? 0),
-  );
 });

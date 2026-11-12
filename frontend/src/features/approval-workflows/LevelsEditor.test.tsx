@@ -9,6 +9,7 @@ import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { PEOPLE, RULE_OPTIONS } from '@/testing/fixtures/approval-workflows';
 import { reply } from '@/testing/replies';
+import { expectNoAxeViolations } from '@/testing/axe';
 import { emptyLevel, toInputs } from './level-drafts';
 import type { LevelDraft } from './level-drafts';
 import { LevelsEditor } from './LevelsEditor';
@@ -268,5 +269,6 @@ describe('LevelsEditor rules (feature 017, US1 and US2)', () => {
     ).toHaveAccessibleDescription(
       expect.stringContaining('Level 1: choose a backup approver, or turn escalation off.'),
     );
+    await expectNoAxeViolations();
   });
 });

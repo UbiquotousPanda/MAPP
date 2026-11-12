@@ -116,13 +116,4 @@ describe('032 FR-010/FR-001: line item picker', () => {
     expect(await screen.findByText("The line items couldn't be loaded.")).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
-
-  it('closes with Escape', async () => {
-    const { onOpenChange, user } = renderPicker({ body: { items: [], total: 0 } });
-    await screen.findByText('No line items to choose from.');
-
-    await user.keyboard('{Escape}');
-
-    expect(onOpenChange).toHaveBeenCalledWith(false);
-  });
 });

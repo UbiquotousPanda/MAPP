@@ -1,5 +1,7 @@
 # Measure wave B — QA pass (issue #47)
 
+**2026-11-12 (D-425):** the `wavebqa` package is removed; its checks duplicated the owning packages' tests, and the regression tests of the fixed findings live there (`measure/revenue`, `measure/summary`, `projection`). The record below is history.
+
 Lane D. **Status: Checklist prepared 2026-11-02 before the features merge; nothing run yet.**
 
 **046 part ran 2026-11-02 against `measure-module` 27a1fa84** (PR #62 merged): eight API checks in

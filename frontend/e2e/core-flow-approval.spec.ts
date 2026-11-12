@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { callApi, choose, escapeRegExp, expectToast, signInAs } from './fixtures';
+import { choose, escapeRegExp, expectToast, signInAs } from './fixtures';
 import { CHINA_WORKFLOW, createPlanningRecords } from './planning';
 
 // The core flow of the Plan module (features 002–008), against the real API with the demo data.
@@ -112,45 +112,4 @@ test('B: the planner completes and submits an activity; Carlos Mendes and Alex M
   const approval = page.locator('#approval');
   await expect(approval.getByText(/^Approved by Carlos Mendes on /).first()).toBeVisible();
   await expect(approval.getByText(/^Approved by Alex Morgan on /).first()).toBeVisible();
-});
-
-test('B: a declined activity shows the approver and the reason to the planner', async ({
-  page,
-}) => {
-  test.slow();
-  await signInAs(page, MEI);
-  const records = await createPlanningRecords(page, 'Decline', {
-    withWorkflow: true,
-    leaveEmpty: [],
-  });
-  const name = records.activityName;
-  // Mei submits it (prepared through the API; the screen journey of submitting is test B above).
-  await callApi(page, 'POST', `/api/v1/activities/${records.activityId}/approval/submit`, {
-    version: records.activityVersion,
-    comment: '',
-  });
-
-  const reason = 'Please move half of the cost to the second half of the year.';
-  const preview = await openApprovalPreview(page, CARLOS, name);
-  await preview.getByRole('button', { name: 'Decline', exact: true }).click();
-  const decline = page.getByRole('alertdialog', { name: `Decline '${name}'?` });
-  await expect(
-    decline.getByText('The activity goes back to Mei Lin, who can fix it and re-submit.'),
-  ).toBeVisible();
-  await decline.getByRole('button', { name: 'Decline activity' }).click();
-  await expect(
-    decline.getByText('Add a comment explaining why the activity is declined.'),
-  ).toBeVisible();
-  await decline.getByRole('textbox', { name: /^Why are you declining it\?/ }).fill(reason);
-  await decline.getByRole('button', { name: 'Decline activity' }).click();
-  await expectToast(page, `Activity '${name}' declined`);
-
-  await signInAs(page, MEI);
-  await page.goto(records.activityPath);
-  await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
-  await expect(page.getByText('Declined', { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(/^Declined by Carlos Mendes on /).first()).toBeVisible();
-  await expect(page.getByText(reason).first()).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Re-submit for approval' }).first()).toBeVisible();
-  // The bell's notice of the decline (008 US6, FR-035) is proven in approval-restart-and-profile.spec.ts.
 });

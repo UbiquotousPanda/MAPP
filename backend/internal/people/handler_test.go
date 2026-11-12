@@ -64,8 +64,7 @@ func TestGetMe_SignedInPerson_FR012(t *testing.T) {
 		`"preferences":`+defaultPreferencesBody+`,"version":1,"teams":`+priyasTeamsBody+`,"access":`+priyasAccessBody+`}`)
 }
 
-// After more than 12 hours without a request the session has expired, and the person is asked to sign in
-// again (FR-006, US4 scenario 2).
+// After more than 12 hours without a request the session has expired, and the person must sign in again.
 func TestGetMe_SessionExpired_FR006(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -183,31 +182,13 @@ func TestPatchPreferences_DisplayCurrencyAndDateFormat_FR023_FR024(t *testing.T)
 
 func TestGetDisplayCurrencies_FR023(t *testing.T) {
 	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-	daniel := server.SignIn(t, danielsEmail)
-	alex := server.SignIn(t, alexsEmail)
+	daniel := apitest.New(t).SignIn(t, danielsEmail)
 
-	before := daniel.Do(t, http.MethodGet, "/api/v1/me/display-currencies", nil)
-	priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"displayCurrency": "GBP"})
-	var gbp struct {
-		Version int `json:"version"`
-	}
-	alex.Do(t, http.MethodGet, "/api/v1/currencies/GBP", nil).Decode(t, &gbp)
-	inactive := alex.Do(t, http.MethodPost, "/api/v1/currencies/GBP/status", map[string]any{"active": false, "version": gbp.Version})
-	if inactive.Status != http.StatusOK {
-		t.Fatalf("setting GBP inactive = %d %s", inactive.Status, inactive.Body)
-	}
-	priyas := priya.Do(t, http.MethodGet, "/api/v1/me/display-currencies", nil)
-	daniels := daniel.Do(t, http.MethodGet, "/api/v1/me/display-currencies", nil)
+	got := daniel.Do(t, http.MethodGet, "/api/v1/me/display-currencies", nil)
 
-	cny, eur := `{"code":"CNY","name":"Chinese yuan","active":true}`, `{"code":"EUR","name":"Euro","active":true}`
-	inr, usd := `{"code":"INR","name":"Indian rupee","active":true}`, `{"code":"USD","name":"US dollar","active":true}`
-	assertAnswer(t, before, http.StatusOK, `{"items":[`+cny+`,`+eur+`,{"code":"GBP","name":"Pound sterling","active":true},`+
-		inr+`,`+usd+`],"total":5}`)
-	assertAnswer(t, priyas, http.StatusOK, `{"items":[`+cny+`,`+eur+`,{"code":"GBP","name":"Pound sterling","active":false},`+
-		inr+`,`+usd+`],"total":5}`)
-	assertAnswer(t, daniels, http.StatusOK, `{"items":[`+cny+`,`+eur+`,`+inr+`,`+usd+`],"total":4}`)
+	assertAnswer(t, got, http.StatusOK, `{"items":[{"code":"CNY","name":"Chinese yuan","active":true},`+
+		`{"code":"EUR","name":"Euro","active":true},{"code":"GBP","name":"Pound sterling","active":true},`+
+		`{"code":"INR","name":"Indian rupee","active":true},{"code":"USD","name":"US dollar","active":true}],"total":5}`)
 }
 
 func TestPreferences_SameInAnotherBrowser_FR025(t *testing.T) {

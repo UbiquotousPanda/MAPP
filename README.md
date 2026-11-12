@@ -155,11 +155,12 @@ go test ./...              # also the scope-isolation tests, on the PostgreSQL s
 
 cd ../frontend
 pnpm run check             # API types up to date, type check, lint, format, unit and component tests
-pnpm run test:e2e          # browser tests; they start their own API (port 18080) and web app (port 14173)
+pnpm run test:e2e          # browser tests; two workers, each with its own API (18080, 18081) and web app (14173, 14174)
 ```
 
-The end-to-end tests use their own database, `mapp_e2e` (`E2E_DATABASE_URL` moves it), which the seed
-empties and reloads on every run; your own database is never touched. Set `TEST_DATABASE_URL`, for example
+Each end-to-end worker has its own database, `mapp_e2e_0`, `mapp_e2e_1` … (`E2E_DATABASE_URL` names the base,
+`E2E_WORKERS` the count, `E2E_API_PORT` and `E2E_WEB_PORT` the first ports), which the seed empties and reloads
+on every run; your own database is never touched. Set `TEST_DATABASE_URL`, for example
 to `postgres://mapp@127.0.0.1:5432/postgres?sslmode=disable`, before `go test ./...`.
 
 ## Developer pages

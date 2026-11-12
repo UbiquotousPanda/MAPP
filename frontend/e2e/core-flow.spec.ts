@@ -193,7 +193,7 @@ test('Accessibility: the Plans list, a plan page, an activity page and Approvals
   await expect(page.getByRole('row').filter({ hasText: 'Agency fee' }).first()).toBeVisible();
   await expectNoAxeViolations(page);
 
-  // Daniel Okoro approves Lubricants Europe's activities; the rows depend on earlier test files.
+  // Daniel Okoro approves Lubricants Europe's activities: rows or none, whatever ran before on this worker.
   await signInAs(page, DANIEL);
   await page.goto('/approvals');
   await expect(page.getByRole('heading', { name: 'Approvals', level: 1 })).toBeVisible();
