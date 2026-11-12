@@ -35,7 +35,7 @@ func TestHistory_OwnedRecordsLogToOwnerAndAuditors_FR009_FR045(t *testing.T) {
 	server := apitest.New(t)
 	priya, alex, daniel := server.SignIn(t, priyasEmail), server.SignIn(t, alexsEmail), server.SignIn(t, danielsEmail)
 	shareLeads(t, priya, []string{"T-1001"})
-	if answer := priya.Do(t, http.MethodDelete, "/api/v1/custom-dashboards/"+overviewDashboard, nil); answer.Status != http.StatusOK {
+	if answer := priya.DeleteSeen(t, "/api/v1/custom-dashboards/"+overviewDashboard); answer.Status != http.StatusOK {
 		t.Fatalf("deleting %s = %d %s", overviewDashboard, answer.Status, answer.Body)
 	}
 
@@ -57,7 +57,7 @@ func TestRecycleBin_OwnedRecordsOnlyToTheOwner_FR010(t *testing.T) {
 	server := apitest.New(t)
 	priya, alex := server.SignIn(t, priyasEmail), server.SignIn(t, alexsEmail)
 	var deleted struct{ RecycleBinEntry struct{ ID string } }
-	priya.Do(t, http.MethodDelete, "/api/v1/custom-dashboards/"+overviewDashboard, nil).Decode(t, &deleted)
+	priya.DeleteSeen(t, "/api/v1/custom-dashboards/"+overviewDashboard).Decode(t, &deleted)
 	restore := "/api/v1/recycle-bin/" + deleted.RecycleBinEntry.ID + "/restore"
 
 	if names := binNames(t, priya); !slices.Contains(names, "Lubricants Europe overview") {

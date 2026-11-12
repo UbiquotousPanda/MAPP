@@ -46,7 +46,9 @@ describe('request bodies', () => {
   });
 
   it('038 FR-040 (L-4): maps custom month problems to their inputs, naming the month', () => {
-    let state = changeSpreadMethod(newFormState(formOptions()), 'custom', MAR_MAY, 2026);
+    let state = changeSpreadMethod(newFormState(formOptions()), 'custom', MAR_MAY, 2026, [
+      { month: '2026-03', amount: '6666.67' },
+    ]);
     state = changeCustomMonth(state, '2026-04', '-1');
     const body = toCreateBody(state);
     const error = new ApiError('validation', {

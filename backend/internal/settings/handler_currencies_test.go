@@ -105,8 +105,8 @@ func TestCurrenciesAPI_Delete_FR004(t *testing.T) {
 	alex := server.SignIn(t, alexsEmail)
 	mustCreate(t, alex, "/api/v1/currencies", jpyBody)
 
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/currencies/JPY", nil)
-	gone := alex.Do(t, http.MethodDelete, "/api/v1/currencies/XXX", nil)
+	deleted := alex.DeleteSeen(t, "/api/v1/currencies/JPY")
+	gone := alex.DeleteSeen(t, "/api/v1/currencies/XXX")
 
 	assertAnswer(t, deleted, http.StatusOK, `{"recycleBinEntry":{"id":"BIN-1001","recordType":"currency","recordTypeLabel":"currency",`+
 		`"recordId":"JPY","recordName":"JPY","path":[],"parent":null,"deletedAt":"2026-03-12T09:00:00Z",`+

@@ -76,7 +76,7 @@ export function BuilderEditor({ dashboard }: BuilderEditorProps) {
         title={title}
         dashboardId={dashboardId}
         canShare={dashboard?.access.share.available ?? false}
-        isSaving={saving.isSaving}
+        isSaving={saving.isSaving || share.isPending}
         onUndo={() => dispatch({ type: 'undo' })}
         onRedo={() => dispatch({ type: 'redo' })}
         onSharing={() => setIsSharing(true)}
@@ -124,7 +124,7 @@ export function BuilderEditor({ dashboard }: BuilderEditorProps) {
           recordName={dashboard.name}
           teams={dashboard.shareableTeams}
           selected={dashboard.sharedWith.map((team) => team.id)}
-          saving={share.isPending}
+          saving={share.isPending || saving.isSaving}
           error={share.error ? asApiError(share.error).message : null}
           onSave={saveSharing}
           onClose={() => {

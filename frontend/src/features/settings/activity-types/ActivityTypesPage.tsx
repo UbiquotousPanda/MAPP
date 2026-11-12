@@ -99,7 +99,7 @@ export function ActivityTypesPage() {
           name={deleting.name}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteType.mutateAsync(deleting.id)}
+          remove={() => deleteType.mutateAsync(deleting)}
           setInactive={() => status.applyInactive(deleting)}
           invalidate={ACTIVITY_TYPE_LISTS}
           onDeleted={() => {

@@ -10,18 +10,14 @@ import (
 	"mapp/internal/platform/web"
 )
 
-// Handler answers the HTTP requests of Settings › Roles and access (plan "API operations"). Every route needs
-// "Give roles and change roles and access rules" (routes.go), which the access middleware checks.
 type Handler struct {
 	service *Service
 }
 
-// NewHandler returns the handler of the access routes.
 func NewHandler(s *Service) *Handler {
 	return &Handler{service: s}
 }
 
-// RegisterRoutes registers the access routes on r.
 func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.GET("/access/permissions", h.permissions)
 	r.GET("/access/people", h.people)
@@ -38,12 +34,10 @@ func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.PATCH("/access-rules", h.updateRules)
 }
 
-// permissions answers GET /api/v1/access/permissions: Table A, grouped.
 func (h *Handler) permissions(c *gin.Context) {
 	web.Respond(c, http.StatusOK, h.service.Permissions())
 }
 
-// people answers GET /api/v1/access/people: everyone with their roles (People tab).
 func (h *Handler) people(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context())
 	list, err := h.service.ListPeopleAccess(c.Request.Context(), a)
@@ -54,7 +48,6 @@ func (h *Handler) people(c *gin.Context) {
 	web.Respond(c, http.StatusOK, PeopleAccessPage{Items: list, Total: len(list)})
 }
 
-// changes answers GET /api/v1/access/changes: the latest 20 access changes, newest first.
 func (h *Handler) changes(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context())
 	entries, total, err := h.service.RecentChanges(c.Request.Context(), a)
@@ -65,7 +58,6 @@ func (h *Handler) changes(c *gin.Context) {
 	web.Respond(c, http.StatusOK, history.LogPage{Items: entries, Total: total})
 }
 
-// listRoles answers GET /api/v1/roles: every role, Administrator first.
 func (h *Handler) listRoles(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context())
 	roles, err := h.service.ListRoles(c.Request.Context(), a)
@@ -121,8 +113,13 @@ func (h *Handler) updateRole(c *gin.Context) {
 
 // deleteRole answers DELETE /api/v1/roles/{roleId} with the recycle-bin entry, so the web app can offer Undo.
 func (h *Handler) deleteRole(c *gin.Context) {
+	ctx, err := history.SeenVersion(c, c.Param("roleId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
 	a, _ := actor.From(c.Request.Context())
-	entry, err := h.service.DeleteRole(c.Request.Context(), a, c.Param("roleId"))
+	entry, err := h.service.DeleteRole(ctx, a, c.Param("roleId"))
 	if err != nil {
 		web.RespondError(c, err)
 		return

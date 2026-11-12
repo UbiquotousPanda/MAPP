@@ -3,21 +3,14 @@ import { Link } from 'react-router';
 import { cx } from '../cx';
 import styles from './Button.module.css';
 
-/**
- * primary: the one main action of a page, panel or dialog (Shell yellow, dark text; at most one
- * per view). secondary: every other action (outlined). tertiary: a quiet action without a frame,
- * such as an icon button in a toolbar. danger: the confirm button of an action that removes
- * something (red, white text), in a confirmation dialog.
- */
+// primary: the one main action of a view; tertiary: no frame; danger: confirms a removal.
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'danger';
-/** One height per size, everywhere: sm 32 px (toolbars, tables), md 40 px, lg 48 px (touch). */
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
-/** How a Button or LinkButton looks. */
 interface ButtonLook {
   variant?: ButtonVariant;
   size?: ButtonSize;
-  /** A lucide icon shown before the label. Alone, it needs an aria-label to name the button. */
+  /** A lucide icon before the label; alone, it needs an aria-label. */
   icon?: ReactNode;
 }
 
@@ -25,10 +18,7 @@ export interface ButtonProps extends ComponentProps<'button'>, ButtonLook {}
 
 export interface LinkButtonProps extends ComponentProps<typeof Link>, ButtonLook {}
 
-/**
- * MAPP's button (design system §5): label it with a verb ("Create campaign"), never "OK".
- * Never disable it without saying why next to it (constitution III).
- */
+// Label it with a verb, never disable it without saying why; while aria-busy it ignores clicks.
 export function Button({
   variant = 'secondary',
   size = 'md',
@@ -36,12 +26,21 @@ export function Button({
   className,
   children,
   type = 'button',
+  onClick,
   ...buttonProps
 }: ButtonProps) {
+  const busy = buttonProps['aria-busy'] === true || buttonProps['aria-busy'] === 'true';
   return (
     <button
       type={type}
       className={buttonClassName(variant, size, children == null, className)}
+      onClick={(event) => {
+        if (busy) {
+          event.preventDefault();
+          return;
+        }
+        onClick?.(event);
+      }}
       {...buttonProps}
     >
       {icon}

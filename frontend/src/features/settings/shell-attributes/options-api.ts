@@ -1,6 +1,7 @@
+import { keepPreviousData, useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 // What the Options card and the option panels ask the API (feature 002, US2, US6). Every change
 // refreshes what api.ts's useRefresh names, also when it failed.
-import { keepPreviousData, useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import { SETTINGS_KEYS } from '../api';
@@ -139,10 +140,10 @@ export function useMoveOption() {
 export function useDeleteOption() {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: (id: string) =>
+    mutationFn: ({ id, version }: Seen) =>
       call(
         api.DELETE('/api/v1/shell-attribute-options/{optionId}', {
-          params: { path: { optionId: id } },
+          params: { path: { optionId: id }, query: { version } },
         }),
       ),
     onSettled: () => refresh(),

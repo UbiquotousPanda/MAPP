@@ -61,7 +61,7 @@ function CorrectForm({ row, fields, loading, onClose }: CorrectFormProps) {
     }
     setFailure(null);
     try {
-      const checked = await correct.mutateAsync(body);
+      const checked = await correct.mutateAsync({ ...body, version: row.version });
       show({
         message:
           checked.status === 'resolved'

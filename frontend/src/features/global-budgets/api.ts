@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { OverspendMode } from '@/features/overspend';
 import type { components } from '@/api/generated/schema';
@@ -77,13 +78,13 @@ export function useUpdateGlobalBudget() {
 export function useDeleteGlobalBudget() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
+    mutationFn: ({ id, version }: Seen) =>
       call(
         api.DELETE('/api/v1/global-budgets/{globalBudgetId}', {
-          params: { path: { globalBudgetId: id } },
+          params: { path: { globalBudgetId: id }, query: { version } },
         }),
       ),
-    onSettled: (_result, error, id) =>
+    onSettled: (_result, error, { id }) =>
       queryClient.invalidateQueries({
         predicate: ({ queryKey }) =>
           queryKey[0] !== 'session' && !(error === null && isGlobalBudgetKey(queryKey, id)),

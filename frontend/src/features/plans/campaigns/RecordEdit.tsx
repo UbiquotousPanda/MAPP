@@ -7,6 +7,7 @@ import { ApiError, conflictMessage } from '@/api/errors';
 import { ClearValuesDialog } from '@/ui/ShellAttributeFields/ClearValuesDialog';
 import { valuesToClear } from '@/ui/ShellAttributeFields/rules';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { recordHref } from '@/ui/record-links';
@@ -57,7 +58,7 @@ export function RecordEdit({
   });
   const { problems, onInvalid, showServerProblems } = useFormProblems(form, RECORD_FIELDS);
   const attributes = useWatch({ control: form.control, name: 'attributes' });
-  const [version, setVersion] = useState(opened.version);
+  const { version, loadLatest } = useEditedRecord({ version: opened.version });
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   const [askingToClear, setAskingToClear] = useState(false);
@@ -101,10 +102,7 @@ export function RecordEdit({
     }
     showServerProblems([]);
     if (apiError.kind === 'conflict') {
-      const latest = await fetchLatestRecord(queryClient, level, record.id).catch(() => undefined);
-      if (latest) {
-        setVersion(latest.version);
-      }
+      await loadLatest(() => fetchLatestRecord(queryClient, level, record.id));
       setFailure({
         message: conflictMessage(apiError, level, dateFormat),
         nextStep: CONFLICT_NEXT_STEP,

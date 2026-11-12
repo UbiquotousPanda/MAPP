@@ -26,7 +26,12 @@ import {
 } from './line-item-form-state';
 import type { LineItemFormState } from './line-item-form-state';
 import { LINE_ITEM_SECTION } from './line-item-form-progress';
-import type { FinanceBudgetItemRef, LineItemCurrency, LineItemFormOptions } from './api';
+import type {
+  FinanceBudgetItemRef,
+  LineItemCurrency,
+  LineItemFormOptions,
+  LineItemPreview,
+} from './api';
 import {
   LABEL,
   SECTION_BASICS,
@@ -56,6 +61,8 @@ export interface LineItemFormCardsProps {
   storedAttributes: AttributeValues;
   /** The stored line item's SWBS code; "" for a new one or before GSAP answered (030 FR-004). */
   storedSwbsCode: string;
+  /** What saving would give, from the API; undefined until it answers. */
+  preview: LineItemPreview | undefined;
 }
 
 /** The line-item form's six sections, in order (FR-007). */
@@ -124,7 +131,8 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
           currencies={currencies}
           problems={problems}
           planCode={planCode}
-          onCurrencyChange={(code) => update((s) => changeCurrency(s, code, currencies, planCode))}
+          converted={props.preview?.plannedCostPlan ?? null}
+          onCurrencyChange={(code) => update((s) => changeCurrency(s, code))}
           onPlannedCostChange={(text) => update((s) => changePlannedCost(s, text))}
         />
       </FormCard>
@@ -136,10 +144,13 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
           currency={state.currency}
           dates={dates}
           customMonths={state.customMonths}
+          spread={props.preview?.spread}
           customTyped={state.customTyped}
           problems={problems}
           onMethodChange={(method) =>
-            update((s) => changeSpreadMethod(s, method, dates, activity.planYear))
+            update((s) =>
+              changeSpreadMethod(s, method, dates, activity.planYear, props.preview?.spread?.seed),
+            )
           }
           onMonthChange={(month, amount) => update((s) => changeCustomMonth(s, month, amount))}
           onAddMonth={(month) => update((s) => addCustomMonth(s, month))}

@@ -19,6 +19,8 @@ export interface SelectedRecord {
   level: BulkLevel;
   name: string;
   planId: string;
+  /** The version the person saw: a record changed since is left unchanged. */
+  version: number;
 }
 
 export interface LevelCounts {

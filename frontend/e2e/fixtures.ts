@@ -78,6 +78,12 @@ export async function callApi<T>(
   return body;
 }
 
+/** Deletes the record at url with the version it has now, as the web app sends the one it shows. */
+export async function deleteSeen<T>(page: Page, url: string): Promise<T> {
+  const { version } = await callApi<{ version: number }>(page, 'GET', url);
+  return callApi<T>(page, 'DELETE', `${url}?version=${version}`);
+}
+
 export function itemAt<T>(items: readonly T[], index: number): T {
   const item = items.at(index);
   if (item === undefined) {

@@ -123,7 +123,7 @@ describe('ActivityPage (feature 006, US2): tabs and deep links', () => {
         .map((tab) => tab.textContent),
     ).toEqual(['Overview', 'Details', 'Approval', 'History']);
     expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
-    const ready = screen.getByRole('region', { name: 'Ready to submit' });
+    const ready = await screen.findByRole('region', { name: 'Ready to submit' });
     const financials = screen.getByRole('region', { name: 'Financials' });
     const lineItems = screen.getByRole('region', { name: 'Line items' });
     expect(

@@ -67,16 +67,8 @@ func (s *Service) closable(ctx context.Context, a actor.Actor, id string) (Purch
 
 func closePreview(pr PurchaseRequest, r *reader) ClosePreview {
 	p := ClosePreview{PurchaseRequestID: pr.ID, Version: pr.Version, Lines: []CloseLine{}}
-	switch {
-	case !r.config.PurchaseSupport:
-		p.Reason = msgSwitchedOff
-	case pr.ChangePending:
-		p.Reason = msgChangeInReview
-	case pr.Status != StatusApproved:
-		p.Reason = msgOnlyApprovedClose
-	default:
-		p.Available = true
-	}
+	p.Reason = closeRefusal(pr, r.config)
+	p.Available = p.Reason == ""
 	var released []Line
 	for _, l := range pr.Lines {
 		invoiced := r.lineInvoiced(l)

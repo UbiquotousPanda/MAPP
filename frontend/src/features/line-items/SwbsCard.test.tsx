@@ -8,18 +8,9 @@ import { lineItem } from '@/testing/fixtures/line-items';
 import type { LineItem } from './api';
 import { SwbsCard } from './SwbsCard';
 
-const PLANNER = testUser({
-  access: {
-    roles: [],
-    permissions: [{ key: 'plans.view', all: true, teams: [] }],
-    administrators: [],
-    noSelfApproval: true,
-  },
-});
-
-function renderCard(item: LineItem, user = testUser()) {
+function renderCard(item: LineItem, canSend = true) {
   mockApi([]);
-  renderWithProviders(<SwbsCard lineItem={item} />, { user });
+  renderWithProviders(<SwbsCard lineItem={item} canSend={canSend} />, { user: testUser() });
   return screen.getByRole('region', { name: 'SWBS request' });
 }
 
@@ -39,7 +30,7 @@ describe('030 FR-014, FR-001: the SWBS request card', () => {
   ] as const)(
     'shows %s as "%s" with its explanation and no code yet',
     (status, word, explanation) => {
-      const card = renderCard(lineItem({ swbsStatus: status }), PLANNER);
+      const card = renderCard(lineItem({ swbsStatus: status }), false);
 
       expect(within(card).getByText(word)).toBeInTheDocument();
       expect(within(card).getByText(explanation)).toBeInTheDocument();
@@ -79,7 +70,7 @@ describe('030 FR-014, FR-001: the SWBS request card', () => {
   });
 
   it('030 FR-015: hides Send now from a person who may not import', () => {
-    const card = renderCard(lineItem({ swbsStatus: 'readyToSend' }), PLANNER);
+    const card = renderCard(lineItem({ swbsStatus: 'readyToSend' }), false);
 
     expect(
       within(card).queryByRole('button', { name: 'Send to simulated GSAP now' }),

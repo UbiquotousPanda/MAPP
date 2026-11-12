@@ -31,11 +31,16 @@ type approvalsActivities struct {
 	rates      func(context.Context) (money.Rates, error)
 	check      submitCheck
 	now        clock.Clock
-	// approved runs inside the same transaction once a status lands on approved; nil before feature 046.
-	approved heldHook
+	// moved follows every status change inside the same transaction; nil before feature 046.
+	moved heldHook
 }
 
-type heldHook func(ctx context.Context, a actor.Actor, activityID string) error
+type heldHook func(ctx context.Context, a actor.Actor, m statusMove) error
+
+type statusMove struct {
+	id       string
+	from, to activity.Status
+}
 
 var _ approval.Activities = (*approvalsActivities)(nil)
 
@@ -91,13 +96,16 @@ func (p *approvalsActivities) SetStatus(ctx context.Context, a actor.Actor, id, 
 	if !found {
 		return approval.ActivityFacts{}, fmt.Errorf("app: activity %s is not stored", id)
 	}
-	act.Status = activity.Status(status)
+	from := act.Status
+	if err := act.MoveTo(activity.Status(status)); err != nil {
+		return approval.ActivityFacts{}, err
+	}
 	act.Touch(a, p.now())
 	if err := p.activities.Put(ctx, act); err != nil {
 		return approval.ActivityFacts{}, err
 	}
-	if act.Status == activity.StatusApproved && p.approved != nil {
-		if err := p.approved(ctx, a, act.ID); err != nil {
+	if p.moved != nil {
+		if err := p.moved(ctx, a, statusMove{id: act.ID, from: from, to: act.Status}); err != nil {
 			return approval.ActivityFacts{}, err
 		}
 	}
@@ -246,8 +254,8 @@ func (p *approvalsActivities) path(ctx context.Context, initiativeID string) ([]
 // at the delete, inside the activities Write that caused it.
 type activityApprovalHooks struct {
 	svc *approval.Service
-	// unapproved holds the facts of an activity leaving Approved again, which only an edit or a split does.
-	unapproved heldHook
+	// moved follows the status change of a re-approval edit or a split.
+	moved heldHook
 }
 
 var _ activity.ApprovalHooks = activityApprovalHooks{}
@@ -256,10 +264,10 @@ func (h activityApprovalHooks) ApprovalRestarted(ctx context.Context, a actor.Ac
 	if err := h.svc.ApprovalRestarted(ctx, a, after.ID, string(before.Status), changes); err != nil {
 		return err
 	}
-	if before.Status != activity.StatusApproved || h.unapproved == nil {
+	if h.moved == nil {
 		return nil
 	}
-	return h.unapproved(ctx, a, after.ID)
+	return h.moved(ctx, a, statusMove{id: after.ID, from: before.Status, to: after.Status})
 }
 
 // ActivityDeleting changes nothing: the open round stays stored so that Undo brings the activity back exactly,

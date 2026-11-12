@@ -24,6 +24,15 @@ afterEach(() => {
 });
 
 describe('AllWorkPage (US1)', () => {
+  it('leaves Export out where the API allows exporting no plan in view', async () => {
+    renderAllWorkPage([reply('GET /api/v1/all-work', { body: gridResult({ canExport: false }) })]);
+
+    expect(
+      await screen.findByRole('link', { name: 'FY2026 Lubricants Europe' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Export' })).not.toBeInTheDocument();
+  });
+
   it('shows the header, the six cards and the Grid of the current year (FR-001, FR-003, FR-009)', async () => {
     const { api } = renderAllWorkPage();
 

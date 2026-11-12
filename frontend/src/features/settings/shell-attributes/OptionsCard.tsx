@@ -230,7 +230,7 @@ export function OptionsCard({ attribute }: { attribute: ShellAttribute }) {
           name={deleting.label}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteOption.mutateAsync(deleting.id)}
+          remove={() => deleteOption.mutateAsync(deleting)}
           setInactive={() => setActive(deleting, false)}
           invalidate={CHANGED_BY_ANY_CHANGE}
           onClose={() => setDeleting(null)}

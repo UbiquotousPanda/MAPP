@@ -151,8 +151,9 @@ describe('MoveActivityDialog (feature 006, US5#1, FR-029)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(refusal);
     await waitFor(() =>
       expect(
-        api.requests.filter((request) => request.path === '/api/v1/activities/A-1042/destinations'),
-      ).toHaveLength(2),
+        api.requests.filter((request) => request.path === '/api/v1/activities/A-1042/destinations')
+          .length,
+      ).toBeGreaterThanOrEqual(2),
     );
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });

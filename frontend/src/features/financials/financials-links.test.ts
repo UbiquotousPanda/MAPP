@@ -35,9 +35,13 @@ describe('financialsLinks (015 FR-021: the address is the state)', () => {
   });
 
   it('falls back to the defaults for anything it cannot use', () => {
-    expect(
-      read('type=bogus&year=99&planId=X-1&recordId=Z-9&sort=colour:up&page=0&pageSize=7'),
-    ).toEqual(DEFAULT_FILTERS);
+    expect(read('type=bogus&year=99&planId=&recordId=&sort=colour:up&page=0&pageSize=7')).toEqual(
+      DEFAULT_FILTERS,
+    );
+  });
+
+  it('passes any record ID on: the API alone says whether it names a record', () => {
+    expect(read('planId=X-1&recordId=Z-9')).toMatchObject({ planId: 'X-1', recordId: 'Z-9' });
   });
 
   it('writes only what differs from the defaults', () => {

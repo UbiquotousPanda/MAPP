@@ -100,7 +100,7 @@ func TestRestore_DeclinedComesBackCreated_Contract_032_FR042(t *testing.T) {
 		map[string]any{"version": pr.Version}), http.StatusOK)
 	decide(t, daniel, "decline", sub)
 
-	deleted := decoded[history.DeleteResult](t, priya.Do(t, http.MethodDelete, prs+"/"+pr.ID, nil), http.StatusOK)
+	deleted := decoded[history.DeleteResult](t, priya.DeleteSeen(t, prs+"/"+pr.ID), http.StatusOK)
 	restored := priya.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+deleted.RecycleBinEntry.ID+"/restore", nil)
 
 	if restored.Status != http.StatusOK {

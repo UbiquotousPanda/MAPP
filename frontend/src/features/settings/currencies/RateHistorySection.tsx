@@ -41,7 +41,7 @@ export function RateHistorySection({ code }: RateHistorySectionProps) {
 
   async function remove(rate: ExchangeRateRecord) {
     try {
-      afterDelete(await deleteRate.mutateAsync(rate.id));
+      afterDelete(await deleteRate.mutateAsync(rate));
     } catch (error) {
       const failure = error instanceof ApiError ? error : new ApiError('other');
       if (failure.kind !== 'signInRequired' && failure.kind !== 'sessionExpired') {

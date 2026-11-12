@@ -2,10 +2,13 @@ package auth
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log/slog"
 	"slices"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -127,7 +130,7 @@ func TestAttempts_038_FR014_TheLockEndsAfterFifteenMinutesAndIsNotExtended(t *te
 	}
 }
 
-func TestAttempts_038_FR014_SuccessClearsTheEmailAndTheClient(t *testing.T) {
+func TestAttempts_038_FR014_SuccessClearsTheEmailAndItsShareOfTheClient(t *testing.T) {
 	t.Parallel()
 	a, _ := newTestAttempts()
 	failTimes(a, 4, priya.Email)
@@ -139,7 +142,31 @@ func TestAttempts_038_FR014_SuccessClearsTheEmailAndTheClient(t *testing.T) {
 
 	failTimes(a, 4, priya.Email)
 	if wait := a.wait(priya.Email, client); wait != 0 {
-		t.Errorf("wait = %v, want none: the success cleared both counts", wait)
+		t.Errorf("wait = %v, want none: 4 of Priya's and 15 other failures since the success", wait)
+	}
+	a.failed("person99@shell.com", client)
+	if wait := a.wait(daniel.Email, client); wait != lockFor {
+		t.Errorf("wait = %v, want %v: the success kept the client's guesses at other e-mails", wait, lockFor)
+	}
+}
+
+func TestSignIn_ParallelGuessesStopAtTheLimit(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	var wg sync.WaitGroup
+	var refused atomic.Int32
+	for range 3 * emailLimit {
+		wg.Go(func() {
+			_, _, err := f.service.SignIn(t.Context(), SignInAttempt{Email: priya.Email, Password: "wrong", Client: client})
+			if e, ok := errors.AsType[*errs.Error](err); ok && e.Code == errs.CodeIncorrectCredentials {
+				refused.Add(1)
+			}
+		})
+	}
+	wg.Wait()
+
+	if got := refused.Load(); got != emailLimit {
+		t.Errorf("guesses checked = %d, want %d: the rest wait for the lock", got, emailLimit)
 	}
 }
 

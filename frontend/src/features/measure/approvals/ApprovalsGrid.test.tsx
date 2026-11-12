@@ -8,11 +8,15 @@ import { ApprovalsGrid } from './ApprovalsGrid';
 import type { ApprovalsGridProps } from './ApprovalsGrid';
 import { DEFAULT_PARAMS } from './schemas';
 
-function renderGrid(props: Partial<ApprovalsGridProps> = {}, route = '/reports/approvals') {
+function renderGrid(
+  props: Partial<ApprovalsGridProps> = {},
+  route = '/reports/approvals',
+  today = '2026-03-12',
+) {
   const onParams = vi.fn();
   const rendered = renderWithProviders(
     <ApprovalsGrid grid={approvalsGrid()} params={DEFAULT_PARAMS} onParams={onParams} {...props} />,
-    { route, user: testUser(), path: '/reports/approvals' },
+    { route, user: testUser({ today }), path: '/reports/approvals' },
   );
   return { ...rendered, onParams };
 }
@@ -43,17 +47,11 @@ describe('ApprovalsGrid (041 US2)', () => {
     expect(within(automatic).getByText('Approved automatically')).toBeInTheDocument();
   });
 
-  it('says how many days a waiting step has waited since its submission', () => {
-    vi.useFakeTimers({ toFake: ['Date'] });
-    vi.setSystemTime(new Date(2026, 2, 20, 12));
-    try {
-      renderGrid();
+  it("says how many days a waiting step has waited by the server's date", () => {
+    renderGrid({}, '/reports/approvals', '2026-03-20');
 
-      const waiting = screen.getByRole('row', { name: /Event stand/ });
-      expect(within(waiting).getByText('Waiting 10 days')).toBeInTheDocument();
-    } finally {
-      vi.useRealTimers();
-    }
+    const waiting = screen.getByRole('row', { name: /Event stand/ });
+    expect(within(waiting).getByText('Waiting 10 days')).toBeInTheDocument();
   });
 
   it('leaves out the Purchase order column when no row on the page has one', () => {

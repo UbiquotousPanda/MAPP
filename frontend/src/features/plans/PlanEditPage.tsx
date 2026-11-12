@@ -10,6 +10,7 @@ import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { FormPage } from '@/ui/FormRail/FormRail';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { useFormatters } from '@/format/useFormatters';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -70,7 +71,7 @@ function EditForm({ plan: loaded }: { plan: Plan }) {
   const { dateFormat } = useFormatters();
   const updatePlan = useUpdatePlan(plan.id);
   const changeEffects = useChangeEffects(plan.id);
-  const [version, setVersion] = useState(plan.version);
+  const { version, loadLatest } = useEditedRecord(plan);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   const [effects, setEffects] = useState<{ data: PlanChangeEffects; modelOnly: boolean } | null>(
     null,
@@ -139,10 +140,7 @@ function EditForm({ plan: loaded }: { plan: Plan }) {
       return;
     }
     if (apiError.kind === 'conflict') {
-      const latest = await fetchLatestPlan(queryClient, plan.id).catch(() => undefined);
-      if (latest) {
-        setVersion(latest.version);
-      }
+      await loadLatest(() => fetchLatestPlan(queryClient, plan.id));
       setFailure({
         message: conflictMessage(apiError, 'plan', dateFormat),
         nextStep: CONFLICT_NEXT_STEP,

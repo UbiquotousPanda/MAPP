@@ -265,7 +265,7 @@ func TestDeleteLineItem_Contract(t *testing.T) {
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/line-items/L-1001", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/line-items/L-1001")
 	gone := priya.Do(t, http.MethodGet, "/api/v1/line-items/L-1001", nil)
 	var result struct {
 		RecycleBinEntry struct {
@@ -274,9 +274,9 @@ func TestDeleteLineItem_Contract(t *testing.T) {
 	}
 	deleted.Decode(t, &result)
 	undone := priya.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+result.RecycleBinEntry.ID+"/undo", nil)
-	onApproved := priya.Do(t, http.MethodDelete, "/api/v1/line-items/L-1003", nil)
-	withOldFlag := priya.Do(t, http.MethodDelete, "/api/v1/line-items/L-1004?restartApproval=true", nil)
-	unknown := priya.Do(t, http.MethodDelete, "/api/v1/line-items/L-9999", nil)
+	onApproved := priya.DeleteSeen(t, "/api/v1/line-items/L-1003")
+	withOldFlag := priya.DeleteSeen(t, "/api/v1/line-items/L-1004?restartApproval=true")
+	unknown := priya.DeleteSeen(t, "/api/v1/line-items/L-9999")
 
 	assertAnswer(t, deleted, http.StatusOK, "")
 	if result.RecycleBinEntry.RecordType != "lineItem" || result.RecycleBinEntry.RecordID != "L-1001" {

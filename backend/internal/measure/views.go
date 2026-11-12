@@ -152,10 +152,10 @@ func (s *Service) ownView(ctx context.Context, a actor.Actor, ref ViewRef) (Stor
 
 // saveView keeps one default view per person and report: starring v unstars the other one first.
 func (s *Service) saveView(ctx context.Context, a actor.Actor, v StoredView, own []StoredView) error {
-	for _, other := range own {
-		if !v.IsDefault || other.ID == v.ID || !other.IsDefault {
-			continue
-		}
+	if !v.IsDefault {
+		return s.deps.Views.PutView(ctx, v)
+	}
+	for _, other := range record.OtherDefaults(own, v.ID, StoredView.id, StoredView.isDefault) {
 		unstarred := other
 		unstarred.IsDefault = false
 		unstarred.Touch(a, s.now())

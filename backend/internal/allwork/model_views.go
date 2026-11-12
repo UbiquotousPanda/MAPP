@@ -102,3 +102,6 @@ type PreferencesRecord struct {
 	Sort      *Sort     `json:"sort"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
+func (v StoredView) id() string      { return v.ID }
+func (v StoredView) isDefault() bool { return v.IsDefault }

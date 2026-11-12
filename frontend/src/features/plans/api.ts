@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import type { PlanListFilters } from './list-preferences';
@@ -166,10 +167,12 @@ export function useCopyPlan() {
 export function useDeletePlan() {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: (planId: string) =>
-      call(api.DELETE('/api/v1/plans/{planId}', { params: { path: { planId } } })),
+    mutationFn: ({ id: planId, version }: Seen) =>
+      call(
+        api.DELETE('/api/v1/plans/{planId}', { params: { path: { planId }, query: { version } } }),
+      ),
     // The deleted plan's own queries are left out: asked again they would answer 404.
-    onSuccess: (_result, planId) => refresh(undefined, planId),
+    onSuccess: (_result, { id }) => refresh(undefined, id),
     onError: () => refresh(),
   });
 }

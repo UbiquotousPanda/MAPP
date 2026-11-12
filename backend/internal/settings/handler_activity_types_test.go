@@ -103,8 +103,8 @@ func TestActivityTypesAPI_Delete_FR004(t *testing.T) {
 	alex := apitest.New(t, apitest.WithoutDemoHistory()).SignIn(t, alexsEmail)
 	mustCreate(t, alex, "/api/v1/activity-types", webinarBody())
 
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/activity-types/AT-1007", nil)
-	inUse := alex.Do(t, http.MethodDelete, "/api/v1/activity-types/AT-1002", nil)
+	deleted := alex.DeleteSeen(t, "/api/v1/activity-types/AT-1007")
+	inUse := alex.DeleteSeen(t, "/api/v1/activity-types/AT-1002")
 
 	assertAnswer(t, deleted, http.StatusOK, `{"recycleBinEntry":{"id":"BIN-1001","recordType":"activityType","recordTypeLabel":"activity type",`+
 		`"recordId":"AT-1007","recordName":"Webinar","path":[],"parent":null,"deletedAt":"2026-03-12T09:00:00Z",`+

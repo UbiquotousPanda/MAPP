@@ -7,6 +7,7 @@ import { FormField } from '@/ui/FormField/FormField';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { formatCents, toCents } from '@/format/decimal';
@@ -23,7 +24,6 @@ import {
   moneyText,
   monthKeys,
   readAmount,
-  splitEvenly,
 } from './phasing-math';
 import { monthProblems, namedProblems, phasingSchema } from './schemas';
 import type { PhasingValues } from './schemas';
@@ -75,6 +75,7 @@ export function PhasingEditor({
 }: PhasingEditorProps) {
   const { show } = useToast();
   const { dateFormat } = useFormatters();
+  const { version } = useEditedRecord(record);
   const save = useSetPhasing(level, record.id);
   const keys = monthKeys(year);
   const budget = record.budget ? toCents(record.budget.amount) : null;
@@ -95,7 +96,7 @@ export function PhasingEditor({
   const [copiedNote, setCopiedNote] = useState<string | null>(null);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   const cents = values.months.map((text) => readAmount(text) ?? 0n);
-  const evenly = budget === null ? [] : splitEvenly(budget, 12);
+  const evenly = phasing.evenly.map((month) => toCents(month.amount));
 
   async function submit({ method, months }: PhasingValues) {
     const amounts = months.map((text) => readAmount(text) ?? 0n);
@@ -107,7 +108,7 @@ export function PhasingEditor({
           })
         : [];
     try {
-      await save.mutateAsync({ method, months: sent, version: record.version });
+      await save.mutateAsync({ method, months: sent, version });
       show({ message: `Budget by month of '${record.name}' saved` });
       onOpenChange(false);
     } catch (error) {
@@ -173,7 +174,7 @@ export function PhasingEditor({
             form={form}
             year={year}
             currency={currency}
-            budget={budget}
+            evenly={evenly}
             plannedByMonth={plannedByMonth}
             leftOut={leftOut}
             entry={entry}

@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	kindSubmit   = "submit"
-	kindResubmit = "resubmit"
+	kindSubmit   = SubmissionSubmit
+	kindResubmit = SubmissionResubmit
 )
 
 // supersede ends the open round a re-submission replaces, at the level it waited at.
@@ -35,40 +35,15 @@ func (s *Service) supersede(ctx context.Context, sb *submitting) error {
 
 // submissionKind says whether sub can be submitted now (kindSubmit), re-submitted (kindResubmit) or neither ("")
 // (data-model §9); open is its open round, nil when it has none.
-func submissionKind(sub subject, open *Round) string {
-	openOfKind := open != nil && open.kind() == sub.Kind
-	switch sub.Kind {
-	case KindPurchaseRequest:
-		return purchaseSubmission(sub.Status, openOfKind)
-	case KindModifiedPurchaseRequest:
-		return modificationSubmission(sub.Status, open != nil, openOfKind)
-	case KindActivity:
+func submissionKind(sub subject) string {
+	if sub.Kind.isPurchaseRequest() {
+		return sub.Submissions[sub.Kind]
 	}
 	switch sub.Status {
 	case StatusCreated:
 		return kindSubmit
 	case StatusDeclined, StatusSubmitted:
 		return kindResubmit
-	}
-	return ""
-}
-
-func purchaseSubmission(status string, openOfKind bool) string {
-	switch {
-	case status == StatusCreated:
-		return kindSubmit
-	case status == StatusDeclined || openOfKind:
-		return kindResubmit
-	}
-	return ""
-}
-
-func modificationSubmission(status string, open, openOfKind bool) string {
-	switch {
-	case openOfKind:
-		return kindResubmit
-	case !open && status == StatusApproved:
-		return kindSubmit
 	}
 	return ""
 }
@@ -112,7 +87,7 @@ func openRoundPointer(rounds []Round) *Round {
 
 // replaced is the round a re-submission of sub would end, for the confirmation; nil when none.
 func replaced(sub subject, open *Round) *ReplacedRound {
-	if open == nil || submissionKind(sub, open) != kindResubmit {
+	if open == nil || submissionKind(sub) != kindResubmit {
 		return nil
 	}
 	level := open.Levels[open.CurrentLevel-1]

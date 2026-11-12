@@ -68,8 +68,20 @@ describe('012 FR-009 – FR-011: Change field', () => {
     ]);
     const onDone = vi.fn();
     const records = [
-      { id: 'A-1001', level: 'activity' as const, name: 'Launch film', planId: 'P-1001' },
-      { id: 'A-1002', level: 'activity' as const, name: 'Fleet card', planId: 'P-1001' },
+      {
+        id: 'A-1001',
+        level: 'activity' as const,
+        name: 'Launch film',
+        planId: 'P-1001',
+        version: 3,
+      },
+      {
+        id: 'A-1002',
+        level: 'activity' as const,
+        name: 'Fleet card',
+        planId: 'P-1001',
+        version: 1,
+      },
     ];
     const { user } = renderWithProviders(
       <ChangeFieldDialog records={records} onClose={vi.fn()} onDone={onDone} />,
@@ -95,6 +107,7 @@ describe('012 FR-009 – FR-011: Change field', () => {
     expect(api.bodiesOf('POST /api/v1/bulk-actions').at(-1)).toEqual({
       action: 'changeField',
       recordIds: ['A-1001', 'A-1002'],
+      versions: { 'A-1001': 3, 'A-1002': 1 },
       field: { key: 'endDate', value: { date: '2026-06-20' } },
       restartApproval: true,
     });

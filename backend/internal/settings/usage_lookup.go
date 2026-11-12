@@ -106,12 +106,20 @@ func (u *usageIndex) option(o Option, a Attribute) Usage {
 	return newUsage(parts, nil)
 }
 
-// currency returns the usage of the currency code: the line items in it, the people showing amounts in it
-// and the plans planned in it (016 FR-010), with those plans as records.
+// currency returns the usage of the currency code: the line items, purchase request lines, performance facts and
+// GSAP transactions in it, the people showing amounts in it and the plans planned in it, those plans as records.
 func (u *usageIndex) currency(code string) Usage {
 	var parts []UsagePart
 	if p, used := usedBy(u.lineItemsByCurr, code, string(LevelLineItem), levelNouns[LevelLineItem]); used {
 		parts = append(parts, p)
+	}
+	prLineNouns := [2]string{"purchase request line", "purchase request lines"}
+	if p, used := usedBy(u.prLinesByCurr, code, string(LevelPurchaseRequestLine), prLineNouns); used {
+		parts = append(parts, p)
+	}
+	for _, use := range u.usesByCurr[code] {
+		nouns := nounsOfUse(use.Kind)
+		parts = append(parts, part(use.Kind, tally{count: use.Count}, "Used by "+plural(use.Count, nouns[0], nouns[1])))
 	}
 	if t := u.peopleByCurr[code]; t != nil {
 		parts = append(parts, part(usedByPerson, *t, "Display currency of "+plural(t.count, "person", "people")))
@@ -149,4 +157,11 @@ func (u *usageIndex) livePlans(match func(Reference) bool) []history.RecordRef {
 	}
 	slices.SortStableFunc(plans, func(a, b history.RecordRef) int { return compareNames(a.Name, b.Name) })
 	return plans[:min(len(plans), maxUsageRecords)]
+}
+
+func nounsOfUse(kind string) [2]string {
+	if kind == UseOfPerformanceFact {
+		return [2]string{"performance fact", "performance facts"}
+	}
+	return [2]string{"GSAP transaction", "GSAP transactions"}
 }

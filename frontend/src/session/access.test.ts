@@ -59,12 +59,12 @@ describe('accessOf (useAccess)', () => {
     expect(access.rulesNoSelfApproval).toBe(true);
   });
 
-  it('allows everything while GET /api/v1/me sends no access (an API from before feature 014, D-298)', () => {
+  it('allows nothing while the session is still loading', () => {
     const access = accessOf(undefined);
 
     expect(access.known).toBe(false);
-    expect(access.has('access.manage')).toBe(true);
-    expect(access.scopeOf('plans.edit')).toEqual({ all: true, teams: [] });
+    expect(access.has('access.manage')).toBe(false);
+    expect(access.scopeOf('plans.edit')).toBeNull();
     expect(access.adminNames()).toBe('');
   });
 

@@ -7,6 +7,7 @@ import (
 	"slices"
 	"time"
 
+	"mapp/internal/activity"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 )
@@ -56,6 +57,9 @@ func (r *runner) process(ctx context.Context, recordIDs []string) error {
 
 // one runs the action on one record; a skip and the operations' *errs.Error say why it was not changed.
 func (r *runner) one(ctx context.Context, rec Record) error {
+	if seen, found := r.req.Versions[rec.ID]; found && seen != rec.Version {
+		return skip{reason: reasonChangedSince}
+	}
 	switch r.req.Action {
 	case ActionChangeOwner:
 		return changedOrSkipped(r.s.planning.SetOwner(ctx, r.a, rec, r.req.OwnerID))
@@ -98,8 +102,8 @@ func changedOrSkipped(changed bool, err error) error {
 }
 
 func (r *runner) changeField(ctx context.Context, rec Record) error {
-	needsApproval := rec.Level == LevelActivity && (r.field.Key == "startDate" || r.field.Key == "endDate") &&
-		(rec.Status == StatusSubmitted || rec.Status == StatusApproved)
+	needsApproval := rec.Level == LevelActivity &&
+		activity.RestartsApproval(activity.Status(rec.Status), []string{r.field.Key})
 	if needsApproval {
 		r.result.Reapproval = append(r.result.Reapproval, refOf(rec))
 		if !r.req.RestartApproval {
@@ -144,7 +148,7 @@ func (r *runner) copyOne(ctx context.Context, rec Record) error {
 // an *errs.Error stops the run, so nothing is saved.
 func (r *runner) record(rec Record, err error) error {
 	o := Outcome{RecordID: rec.ID, Level: rec.Level, Name: rec.Name, PlanID: rec.PlanID, Outcome: OutcomeDone,
-		Reasons: []string{}, NewRecordID: r.newID}
+		Reasons: []string{}, NewRecordID: r.newID, Version: rec.Version}
 	r.newID = ""
 	var refused skip
 	apiErr, isAPI := errors.AsType[*errs.Error](err)

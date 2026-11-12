@@ -50,7 +50,9 @@ export function ImportSummaryPage() {
 function Summary({ load }: { load: PerformanceImport }) {
   const { dateTime } = useFormatters();
   const sources = usePerformanceSources();
-  const mayUndo = useCanChange('settings.manage');
+  const managesSettings = useCanChange('settings.manage');
+  const imports = useCanChange('performance.import');
+  const mayUndo = managesSettings && imports;
   const [asking, setAsking] = useState(false);
   const sourceName = sources.data?.items.find((s) => s.id === load.sourceId)?.name ?? load.sourceId;
   const undoable = load.status === 'completed';

@@ -36,6 +36,12 @@ describe('Pager', () => {
     await expectNoAxeViolations();
   });
 
+  it('goes to the last page when the page is past the end, as after an old link or deletes', () => {
+    const { onPage } = renderPager(9, 60);
+
+    expect(onPage).toHaveBeenCalledWith(3);
+  });
+
   it('disables Next on the last page', () => {
     renderPager(3, 60);
 

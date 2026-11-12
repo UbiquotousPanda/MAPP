@@ -237,6 +237,7 @@ function rowFlags(row: ApprovalRow): { problems: string | null; escalated: strin
     open && row.noApprover && 'No approver',
     open && row.overdue && 'Overdue',
     row.startDatePassed && 'Start date passed',
+    open && row.blockedReason,
   ].filter((word): word is string => Boolean(word));
   return {
     problems: problems.length > 0 ? problems.join(' · ') : null,

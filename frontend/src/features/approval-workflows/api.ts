@@ -6,6 +6,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import { invalidateAllButSession } from '@/features/approvals';
@@ -22,7 +23,6 @@ export type ApprovalRuleOptions = components['schemas']['ApprovalRuleOptions'];
 
 export const WORKFLOWS_KEY = ['approval-workflows'];
 
-/** Every approval workflow, active and inactive, sorted by name. */
 export function useWorkflows() {
   return useQuery({
     queryKey: WORKFLOWS_KEY,
@@ -30,7 +30,6 @@ export function useWorkflows() {
   });
 }
 
-/** One workflow with the activities that use it. */
 export function useWorkflowDetails(workflowId: string) {
   return useQuery({
     queryKey: [...WORKFLOWS_KEY, workflowId],
@@ -38,11 +37,6 @@ export function useWorkflowDetails(workflowId: string) {
   });
 }
 
-/**
- * What a level's rules may name (017 FR-001, FR-005): the activity types, the business units and
- * the roles that approve. They change rarely, so they are kept for five minutes; `enabled` false
- * waits until a level needs them.
- */
 export function useRuleOptions(enabled = true) {
   return useQuery({
     queryKey: ['approval-rule-options'],
@@ -52,7 +46,6 @@ export function useRuleOptions(enabled = true) {
   });
 }
 
-/** The workflow as it is stored now (after a conflict, the form takes its version). */
 export async function fetchLatestWorkflow(
   queryClient: QueryClient,
   workflowId: string,
@@ -73,7 +66,6 @@ export function useCreateWorkflow() {
   });
 }
 
-/** Only the changed fields, with the version the person started editing from (D-203). */
 export function useUpdateWorkflow() {
   const refresh = useRefresh();
   return useMutation({
@@ -88,7 +80,6 @@ export function useUpdateWorkflow() {
   });
 }
 
-/** Set inactive or active again, with the version the person saw (FR-007). */
 export function useSetWorkflowActive() {
   const refresh = useRefresh();
   return useMutation({
@@ -104,14 +95,13 @@ export function useSetWorkflowActive() {
   });
 }
 
-/** Moves an unused workflow to the recycle bin; answers the entry for Undo (FR-008). */
 export function useDeleteWorkflow() {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: (id: string) =>
+    mutationFn: ({ id, version }: Seen) =>
       call(
         api.DELETE('/api/v1/approval-workflows/{workflowId}', {
-          params: { path: { workflowId: id } },
+          params: { path: { workflowId: id }, query: { version } },
         }),
       ),
     onSettled: refresh,

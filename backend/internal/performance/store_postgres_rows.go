@@ -70,7 +70,7 @@ func (s *PostgresStore) ListReviewRows(ctx context.Context, f ReviewFilter) ([]R
 	rows, err := s.db.Queries(ctx).ListPerformanceReviewRows(ctx, sqlcdb.ListPerformanceReviewRowsParams{
 		Status: optional(f.Status), StatusNot: optional(f.StatusNot), SourceID: optional(f.SourceID), ID: optional(f.ID),
 		ImportID: optional(f.ImportID), Reason: optional(f.Reason), KeyText: optional(f.KeyText),
-		Since: f.Since, Until: f.Until, MaxRows: rowLimit(f.Limit),
+		Since: f.Since, Until: f.Until, AfterID: optional(f.AfterID), ByID: f.ByID, MaxRows: rowLimit(f.Limit),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("select rows to review: %w", err)

@@ -79,7 +79,7 @@ func TestHome_DeletedRecordsNeverCount_FR019(t *testing.T) { //nolint:gocyclo //
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/activities/A-1001", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/activities/A-1001")
 	if deleted.Status != http.StatusOK {
 		t.Fatalf("DELETE /api/v1/activities/A-1001 = %d %s", deleted.Status, deleted.Body)
 	}

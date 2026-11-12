@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"mapp/internal/history"
@@ -11,7 +12,6 @@ import (
 	"mapp/internal/platform/authz"
 )
 
-// RecheckSource re-checks a source's open rows and held facts on demand.
 func (s *Service) RecheckSource(ctx context.Context, a actor.Actor, sourceID string) (Counts, error) {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return Counts{}, err
@@ -63,54 +63,37 @@ func (s *Service) releaseApprovedHolds(ctx context.Context, a actor.Actor, sourc
 	return nil
 }
 
-// recheck classifies each batch from its stored load-time interpretation, never today's mappings.
+// recheck classifies each batch from its stored load-time interpretation, never today's mappings. It pages by
+// id, so every open row is re-checked once however many stay open.
 func (s *Service) recheck(ctx context.Context, a actor.Actor, sourceID string) (Counts, error) {
 	counts := Counts{}
-	seen := map[string]bool{}
+	after := ""
 	for {
-		rows, err := s.openBatch(ctx, sourceID, seen)
-		if err != nil || len(rows) == 0 {
+		page, err := s.repo.ListReviewRows(ctx, ReviewFilter{Status: string(ReviewOpen), SourceID: sourceID,
+			ByID: true, AfterID: after, Limit: maxRows})
+		if err != nil || len(page) == 0 {
 			return counts, err
 		}
-		if err := s.recheckBatch(ctx, a, rows, &counts); err != nil {
+		after = page[len(page)-1].ID
+		rows, err := s.notUndone(ctx, page)
+		if err != nil {
+			return counts, err
+		}
+		if len(rows) == 0 {
+			continue
+		}
+		if err = s.recheckBatch(ctx, a, rows, &counts); err != nil {
 			return counts, err
 		}
 	}
 }
 
-// openBatch pages by what the last pass left open, skipping undone imports; a queue over maxRows that will
-// not shrink re-checks its newest page only (noted in the PR).
-func (s *Service) openBatch(ctx context.Context, sourceID string, seen map[string]bool) ([]ReviewRowView, error) {
-	page, err := s.repo.ListReviewRows(ctx, ReviewFilter{Status: string(ReviewOpen), SourceID: sourceID, Limit: maxRows})
+func (s *Service) notUndone(ctx context.Context, page []ReviewRowView) ([]ReviewRowView, error) {
+	undone, err := s.undoneAmong(ctx, page)
 	if err != nil {
 		return nil, err
 	}
-	undone, err := s.undoneImports(ctx, sourceID)
-	if err != nil {
-		return nil, err
-	}
-	fresh := page[:0:0]
-	for _, row := range page {
-		if !seen[row.ID] && !undone[row.ImportID] {
-			seen[row.ID] = true
-			fresh = append(fresh, row)
-		}
-	}
-	return fresh, nil
-}
-
-func (s *Service) undoneImports(ctx context.Context, sourceID string) (map[string]bool, error) {
-	imports, err := s.repo.ListImports(ctx, ImportFilter{SourceID: sourceID, Limit: maxRows})
-	if err != nil {
-		return nil, err
-	}
-	undone := map[string]bool{}
-	for _, run := range imports {
-		if run.Status == ImportUndone {
-			undone[run.ID] = true
-		}
-	}
-	return undone, nil
+	return slices.DeleteFunc(page, func(row ReviewRowView) bool { return undone[row.ImportID] }), nil
 }
 
 func (s *Service) recheckBatch(ctx context.Context, a actor.Actor, views []ReviewRowView, counts *Counts) error {

@@ -212,8 +212,12 @@ export function useSavePurchaseRequest(id: string) {
   );
 }
 
-export function deletePurchaseRequest(id: string) {
-  return call(api.DELETE('/api/v1/purchase-requests/{purchaseRequestId}', path(id)));
+export function deletePurchaseRequest(id: string, version: number) {
+  return call(
+    api.DELETE('/api/v1/purchase-requests/{purchaseRequestId}', {
+      params: { path: { purchaseRequestId: id }, query: { version } },
+    }),
+  );
 }
 
 export function useClosePurchaseRequest(id: string) {

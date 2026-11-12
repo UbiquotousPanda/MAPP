@@ -3,15 +3,16 @@ import { useAddressParams } from '@/ui/useAddressParams';
 import { useAccess } from '@/session/access';
 import type { BreadcrumbItem } from '@/ui/Breadcrumb/Breadcrumb';
 import { purchaseRequestHref } from '@/ui/record-links';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
-import { usePurchaseRequest, usePurchaseRequestConfiguration, useSavePurchaseRequest } from './api';
+import { usePurchaseRequest, useSavePurchaseRequest } from './api';
 import type { PurchaseRequest } from './api';
 import { fromPurchaseRequest } from './form-state';
 import { savedToast } from './form-text';
 import { FormPageFailed, FormPageLoading, FormPageUnavailable } from './FormPageStates';
 import { purchaseRequestBreadcrumb } from './page-links';
-import { CLOSED_NO_CHANGE, EDIT_PURCHASE_REQUEST } from './purchase-request-text';
+import { EDIT_PURCHASE_REQUEST } from './purchase-request-text';
 import { PurchaseRequestForm } from './PurchaseRequestForm';
 import type { PurchaseRequestFormOptions } from './PurchaseRequestForm';
 import { useFormOptions } from './useFormOptions';
@@ -23,7 +24,6 @@ const NOT_YOURS = "Changing this purchase request isn't part of your role.";
 export function PurchaseRequestEditPage() {
   const { purchaseRequestId = '' } = useParams();
   const pr = usePurchaseRequest(purchaseRequestId);
-  const configuration = usePurchaseRequestConfiguration();
   const { options, failed } = useFormOptions(pr.data);
   usePageTitle(EDIT_PURCHASE_REQUEST);
   const loadFailed = pr.isError ? pr : failed;
@@ -40,12 +40,11 @@ export function PurchaseRequestEditPage() {
   if (!pr.data || !options) {
     return <FormPageLoading title={EDIT_PURCHASE_REQUEST} />;
   }
-  const linesOnApproved = configuration.data?.linesOnApprovedPurchaseRequests;
   return (
     <Loaded
       pr={pr.data}
-      options={{ ...options, linesOnApproved }}
-      onReload={() => void pr.refetch()}
+      options={options}
+      reload={() => pr.refetch().then((latest) => latest.data)}
     />
   );
 }
@@ -62,10 +61,11 @@ function breadcrumbOf(pr: PurchaseRequest, seesList: boolean): BreadcrumbItem[] 
 interface LoadedProps {
   pr: PurchaseRequest;
   options: PurchaseRequestFormOptions;
-  onReload: () => void;
+  reload: () => Promise<PurchaseRequest | undefined>;
 }
 
-function Loaded({ pr, options, onReload }: LoadedProps) {
+function Loaded({ pr: opened, options, reload }: LoadedProps) {
+  const { record: pr, version, loadLatest } = useEditedRecord(opened);
   const navigate = useNavigate();
   const [params] = useAddressParams();
   const { show } = useToast();
@@ -74,8 +74,8 @@ function Loaded({ pr, options, onReload }: LoadedProps) {
   const { has } = useAccess();
   const breadcrumb = breadcrumbOf(pr, has('purchaseRequests.list'));
 
-  if (pr.status === 'closed' || !pr.access.edit.available) {
-    const reason = pr.status === 'closed' ? CLOSED_NO_CHANGE : pr.access.edit.reason || NOT_YOURS;
+  if (!pr.access.edit.available) {
+    const reason = pr.access.edit.reason || NOT_YOURS;
     return (
       <FormPageUnavailable
         title={EDIT_PURCHASE_REQUEST}
@@ -95,12 +95,12 @@ function Loaded({ pr, options, onReload }: LoadedProps) {
       options={options}
       optionsQuery={{ purchaseRequestId: pr.id }}
       focusField={params.get('field')}
-      onSave={(input) => save.mutateAsync({ ...input, version: pr.version })}
+      onSave={(input) => save.mutateAsync({ ...input, version })}
       onSaved={(saved) => {
         show({ message: savedToast(saved.name) });
         void navigate(href);
       }}
-      onReload={onReload}
+      onReload={() => void loadLatest(reload)}
       onCancel={() => void navigate(href)}
     />
   );

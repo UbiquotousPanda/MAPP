@@ -114,19 +114,3 @@ export function balanceText(balance: PhasingBalance, currency: string): string {
       return `${phased} of ${moneyText(balance.budget, currency)} phased — ${moneyText(balance.difference, currency)} too much`;
   }
 }
-
-/** By how much a period is over (planned cost or the children's phased budgets above its budget). */
-export function overBy(
-  budget: string | null | undefined,
-  plannedCost: string | null | undefined,
-  allocated: string | null | undefined,
-): bigint {
-  if (!budget) {
-    return 0n;
-  }
-  const limit = toCents(budget);
-  const planned = plannedCost ? toCents(plannedCost) - limit : 0n;
-  const given = allocated ? toCents(allocated) - limit : 0n;
-  const most = planned > given ? planned : given;
-  return most > 0n ? most : 0n;
-}

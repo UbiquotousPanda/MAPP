@@ -57,8 +57,13 @@ export function PlanPage() {
   const focusHistory = useRef(false);
   usePageTitle(panel ? null : (plan.data?.name ?? 'Plan'));
   const actions = usePlanActions({ onDeleted: () => void navigate('/plans') });
-  const exportItems = usePlanExport(planId);
-  const workbookItems = useWorkbookMenu(planId, allows(plan.data?.access?.content.editActivities));
+  const canExport = allows(plan.data?.access?.export);
+  const exportItems = usePlanExport(planId, canExport);
+  const workbookItems = useWorkbookMenu(
+    planId,
+    allows(plan.data?.access?.content.editActivities),
+    canExport,
+  );
   const viewOnly = changesNothingIn(plan.data?.access);
 
   useEffect(() => {

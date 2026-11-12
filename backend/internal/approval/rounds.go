@@ -96,7 +96,7 @@ func (s *Service) submittingOf(ctx context.Context, a actor.Actor, sub subject) 
 		return submitting{}, err
 	}
 	open := openRoundPointer(rounds)
-	kind := submissionKind(sub, open)
+	kind := submissionKind(sub)
 	if kind == "" {
 		return submitting{}, errs.BadRequest(notSubmittableMessage(sub.Kind))
 	}

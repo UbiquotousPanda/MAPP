@@ -207,8 +207,8 @@ func TestShellAttributesAPI_Delete_FR004(t *testing.T) {
 		}
 	}
 
-	alex.Do(t, http.MethodDelete, "/api/v1/shell-attributes/"+created.ID, nil).Decode(t, &deleted)
-	unit := alex.Do(t, http.MethodDelete, "/api/v1/shell-attributes/SA-1001", nil)
+	alex.DeleteSeen(t, "/api/v1/shell-attributes/"+created.ID).Decode(t, &deleted)
+	unit := alex.DeleteSeen(t, "/api/v1/shell-attributes/SA-1001")
 
 	if deleted.RecycleBinEntry.RecordType != "shellAttribute" || len(deleted.RecycleBinEntry.Contents) != 1 || deleted.RecycleBinEntry.Contents[0].Count != 4 {
 		t.Errorf("deleted = %+v", deleted)

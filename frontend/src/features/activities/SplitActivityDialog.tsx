@@ -17,6 +17,7 @@ import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { centsInput, moneyText } from '@/features/line-items';
 import { parseMoneyInput, toCents } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import { useDebounced } from '@/ui/useDebounced';
 import type { Activity } from './api';
 import { activityHref } from './activity-text';
 import { DestinationList } from './DestinationList';
@@ -28,7 +29,6 @@ import styles from './SplitActivityDialog.module.css';
 import { goalsStayText, REAPPROVAL, splitToast, splitTitle } from './split-text';
 import { SplitLineItems } from './SplitLineItems';
 import { SplitPreview } from './SplitPreview';
-import { useDebounced } from './useDebounced';
 
 /** How long the dialog waits after the last change before it asks for the preview. */
 const PREVIEW_DELAY_MS = 300;

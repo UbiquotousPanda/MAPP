@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { QueryKey } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import { SETTINGS_KEYS } from '../api';
@@ -60,10 +61,10 @@ export function useUpdateActivityCategory() {
 export function useDeleteActivityCategory() {
   const refresh = useRefreshActivityCategoryLists();
   return useMutation({
-    mutationFn: (id: string) =>
+    mutationFn: ({ id, version }: Seen) =>
       call(
         api.DELETE('/api/v1/settings/activity-categories/{categoryId}', {
-          params: { path: { categoryId: id } },
+          params: { path: { categoryId: id }, query: { version } },
         }),
       ),
     onSettled: refresh,

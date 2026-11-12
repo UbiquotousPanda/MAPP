@@ -62,3 +62,6 @@ type viewLog struct {
 func (v StoredView) logView() viewLog {
 	return viewLog{Name: v.Name, IsDefault: v.IsDefault, Query: v.Query}
 }
+
+func (v StoredView) id() string      { return v.ID }
+func (v StoredView) isDefault() bool { return v.IsDefault }

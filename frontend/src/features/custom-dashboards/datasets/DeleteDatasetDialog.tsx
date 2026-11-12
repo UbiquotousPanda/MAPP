@@ -24,7 +24,7 @@ export function DeleteDatasetDialog({ dataset, onClose, onDeleted }: DeleteDatas
       return;
     }
     try {
-      afterDelete(await remove.mutateAsync(dataset.id));
+      afterDelete(await remove.mutateAsync(dataset));
       onClose();
       onDeleted();
     } catch (error) {

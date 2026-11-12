@@ -14,7 +14,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { useUnsavedChanges } from '@/ui/useUnsavedChanges';
-import type { LinesOnApproved, PurchaseRequest, PurchaseRequestInput } from './api';
+import type { PurchaseRequest, PurchaseRequestInput } from './api';
 import { clientProblems } from './form-problems';
 import { purchaseRequestFormSchema } from './form-schema';
 import type { PurchaseRequestFormValues } from './form-schema';
@@ -42,7 +42,6 @@ export interface PurchaseRequestFormOptions {
   workflows: ChoiceOption[];
   modificationWorkflows: ChoiceOption[];
   currencies: ChoiceOption[];
-  linesOnApproved?: LinesOnApproved;
 }
 
 export interface PurchaseRequestFormProps {
@@ -78,7 +77,7 @@ export function PurchaseRequestForm(props: PurchaseRequestFormProps) {
   const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [change, setChange] = useState<PurchaseRequestInput | null>(null);
   const values = useWatch({ control: form.control, compute: (all) => all });
-  const mode = saveModeOf(stored, onlyAddsLines(start, values), options.linesOnApproved);
+  const mode = saveModeOf(stored, onlyAddsLines(start, values));
   const save = usePurchaseRequestSave({ onSave: props.onSave, setProblems });
   const isDirty =
     JSON.stringify(toInput(values, 'save')) !== JSON.stringify(toInput(start, 'save'));

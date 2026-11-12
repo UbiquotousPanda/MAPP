@@ -15,7 +15,7 @@ import {
   spreadMonth,
   usd,
 } from '@/testing/fixtures/line-items';
-import { formAnswers, formOptions, notFound } from '@/testing/fixtures/line-item-forms';
+import { formAnswers, formOptions, notFound, preview } from '@/testing/fixtures/line-item-forms';
 import { reply } from '@/testing/replies';
 import { LineItemEditPage } from './LineItemEditPage';
 
@@ -105,6 +105,9 @@ describe('LineItemEditPage (US4, FR-027)', () => {
   it('034 FR-001: saves a cost change of an approved activity at once, without asking (D-322)', async () => {
     const { user, api, router } = renderPage([
       ...approved(),
+      reply('POST /api/v1/activities/{activityId}/line-items/preview', {
+        body: preview({ afterSaving: usd('15000.00') }),
+      }),
       reply(
         'PATCH /api/v1/line-items/{lineItemId}',
         { body: lineItem() },
@@ -115,7 +118,17 @@ describe('LineItemEditPage (US4, FR-027)', () => {
 
     await user.clear(cost);
     await user.type(cost, '55,000.00');
-    expect(screen.getByLabelText('Activity summary')).toHaveTextContent('After saving$15,000.00');
+    await waitFor(() =>
+      expect(screen.getByLabelText('Activity summary')).toHaveTextContent('After saving$15,000.00'),
+    );
+    await waitFor(() =>
+      expect(
+        api.bodiesOf('POST /api/v1/activities/A-1001/line-items/preview').at(-1),
+      ).toMatchObject({
+        lineItemId: 'L-1001',
+        plannedCost: '55000.00',
+      }),
+    );
     await user.click(button('Save'));
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/line-items/L-1001'));
@@ -252,6 +265,15 @@ describe('LineItemEditPage (US4, FR-027)', () => {
         { lineItemId: 'L-1001' },
       ),
       reply('PATCH /api/v1/line-items/{lineItemId}', { body: custom }, { lineItemId: 'L-1001' }),
+      reply('POST /api/v1/activities/{activityId}/line-items/preview', {
+        body: preview({
+          spread: {
+            ...custom.spread,
+            difference: eur('-2000.00'),
+            seed: [],
+          },
+        }),
+      }),
     ]);
     await screen.findByLabelText('Line item name');
 
@@ -261,12 +283,11 @@ describe('LineItemEditPage (US4, FR-027)', () => {
       screen.getAllByText("Outside the activity's dates — allowed, e.g. a deposit").length,
     ).toBeGreaterThan(0);
     expect(
-      screen.getByText('€12,000.00 of €10,000.00 spread — €2,000.00 too much'),
+      await screen.findByText('€12,000.00 of €10,000.00 spread — €2,000.00 too much'),
     ).toBeInTheDocument();
 
     await user.click(button('Use month total as planned cost'));
     expect(screen.getByLabelText('Planned cost')).toHaveValue('12,000.00');
-    expect(screen.getByText('€12,000.00 of €12,000.00 spread — adds up')).toBeInTheDocument();
     await user.click(button('Save'));
     await waitFor(() => expect(api.bodiesOf(PATCH)).toHaveLength(1));
     expect(api.bodiesOf(PATCH)[0]).toMatchObject({

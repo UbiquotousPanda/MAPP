@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { components } from '@/api/generated/schema';
 import { expectNoAxeViolations } from '@/testing/axe';
@@ -6,6 +6,7 @@ import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, pending, reply } from '@/testing/replies';
+import { overspendKeys } from './api';
 import { OverspendSettingsPage } from './OverspendSettingsPage';
 
 const GET = 'GET /api/v1/overspend-configuration';
@@ -73,6 +74,27 @@ describe('037 FR-006 FR-007: Settings › Overspend control', () => {
     expect(await screen.findByText('Overspend control saved.')).toBeVisible();
     expect(api.bodiesOf(PUT)).toEqual([
       { version: 1, defaultMode: 'refuse', approvalOverPlannedCost: 'warn' },
+    ]);
+  });
+
+  it('sends the version it opened with after a background refetch, then the version of its own save', async () => {
+    let reads = 0;
+    const { api, user, queryClient } = renderPage([
+      reply(GET, () => ({ body: configuration({ version: ++reads }) })),
+      reply(PUT, { body: configuration({ version: 7 }) }),
+    ]);
+    await screen.findByRole('group', { name: BUDGETS });
+    await queryClient.refetchQueries({ queryKey: overspendKeys.configuration });
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await screen.findByText('Overspend control saved.');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(api.bodiesOf(PUT)).toHaveLength(2));
+    expect(reads).toBeGreaterThan(1);
+    expect(api.bodiesOf(PUT)).toEqual([
+      expect.objectContaining({ version: 1 }),
+      expect.objectContaining({ version: 7 }),
     ]);
   });
 

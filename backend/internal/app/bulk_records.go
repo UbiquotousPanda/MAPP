@@ -36,11 +36,11 @@ func (p bulkPlanning) Find(ctx context.Context, a actor.Actor, id string) (bulk.
 	case "C":
 		v, err := p.campaigns.GetCampaign(ctx, a, id)
 		return bulk.Record{ID: v.ID, Level: bulk.LevelCampaign, Name: v.Name, PlanID: v.PlanID, PlanName: v.Plan.Name,
-			Year: v.Plan.Year, Ancestors: []string{v.PlanID}}, err
+			Year: v.Plan.Year, Ancestors: []string{v.PlanID}, Version: v.Version}, err
 	case "I":
 		v, err := p.campaigns.GetInitiative(ctx, a, id)
 		return bulk.Record{ID: v.ID, Level: bulk.LevelInitiative, Name: v.Name, PlanID: v.PlanID, PlanName: v.Plan.Name,
-			Year: v.Plan.Year, Ancestors: []string{v.CampaignID}}, err
+			Year: v.Plan.Year, Ancestors: []string{v.CampaignID}, Version: v.Version}, err
 	}
 	v, err := p.activities.Get(ctx, a, id)
 	if err != nil {
@@ -49,7 +49,7 @@ func (p bulkPlanning) Find(ctx context.Context, a actor.Actor, id string) (bulk.
 	plan, _, err := p.plans.Get(ctx, v.Plan.ID)
 	return bulk.Record{ID: v.ID, Level: bulk.LevelActivity, Name: v.Name, PlanID: v.Plan.ID, PlanName: v.Plan.Name,
 		Year: plan.Year, Ancestors: []string{v.Initiative.ID, v.Campaign.ID}, Status: string(v.Status),
-		Shown: shownStatus[v.DisplayStatus]}, err
+		Shown: shownStatus[v.DisplayStatus], Version: v.Version}, err
 }
 
 // Below counts the records under r and the Submitted or Approved activities among r and them.
@@ -88,7 +88,7 @@ func (p bulkPlanning) withLineItems(ctx context.Context, below bulk.Below, activ
 	ids := make([]string, 0, len(activities))
 	for _, a := range activities {
 		ids = append(ids, a.ID)
-		if a.Status == activity.StatusSubmitted || a.Status == activity.StatusApproved {
+		if activity.InApproval(a.Status) {
 			below.InApproval++
 		}
 	}

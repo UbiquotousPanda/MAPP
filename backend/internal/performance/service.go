@@ -45,6 +45,11 @@ type SourceInput struct {
 	Version int `json:"version"`
 }
 
+type StatusChange struct {
+	Status  Status
+	Version int
+}
+
 func (s *Service) Sources(ctx context.Context, _ actor.Actor) ([]SourceView, error) {
 	if err := authz.Require(ctx, authz.PlansView); err != nil {
 		return nil, err
@@ -175,7 +180,8 @@ func (s *Service) UpdateSource(ctx context.Context, a actor.Actor, id string, in
 	return saved, nil
 }
 
-func (s *Service) SetSourceStatus(ctx context.Context, a actor.Actor, id string, status Status) error {
+// SetSourceStatus refuses a change made against an older version, and a change to the status the source already has.
+func (s *Service) SetSourceStatus(ctx context.Context, a actor.Actor, id string, change StatusChange) error {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return err
 	}
@@ -188,39 +194,27 @@ func (s *Service) SetSourceStatus(ctx context.Context, a actor.Actor, id string,
 			return errs.NotFound(msgSourceNotFound)
 		}
 		next := found[0].Source
-		next.Status = status
+		if next.Version != change.Version {
+			return errs.VersionConflict(sourceKindSingular, next.UpdatedBy.Name, next.UpdatedAt)
+		}
+		if next.Status == change.Status {
+			return errs.NotAllowed(fmt.Sprintf(msgStatusUnchanged, next.Name, change.Status))
+		}
+		if err = s.checkReactivation(ctx, next.ID, change.Status); err != nil {
+			return err
+		}
+		next.Status = change.Status
 		next.Version++
 		next.UpdatedAt, next.UpdatedBy = s.now(), a
 		if putErr := s.repo.PutSource(ctx, next); putErr != nil {
 			return putErr
 		}
 		verb := deactivatedVerb
-		if status == StatusActive {
+		if change.Status == StatusActive {
 			verb = reactivatedVerb
 		}
 		return s.log(ctx, a, next, logEntry{action: history.ActionStatusChanged, verb: verb})
 	})
-}
-
-// CheckSupplier refuses a second active source for a model's stage or revenue, naming the one that already
-// supplies it. The rule spans two tables, so it cannot be a constraint (ADR-0021).
-func (s *Service) CheckSupplier(ctx context.Context, modelID string, meaning Meaning, stage string) error {
-	suppliers, err := s.repo.ActiveSuppliers(ctx, modelID)
-	if err != nil {
-		return err
-	}
-	for _, supplier := range suppliers {
-		if supplier.Meaning != meaning {
-			continue
-		}
-		if meaning == MeaningRevenue {
-			return errs.NotAllowed(fmt.Sprintf(msgRevenueSupplied, supplier.SourceName))
-		}
-		if supplier.Stage == stage {
-			return errs.NotAllowed(fmt.Sprintf(msgStageSupplied, supplier.SourceName, stage))
-		}
-	}
-	return nil
 }
 
 // CheckAliasFree refuses a name already held by an activity's external name or by another alias: they

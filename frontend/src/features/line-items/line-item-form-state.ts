@@ -1,15 +1,7 @@
 import type { components } from '@/api/generated/schema';
-import { toCents } from '@/format/decimal';
+import { formatAmount, toCents } from '@/format/decimal';
 import type { LineItem, LineItemFormOptions } from './api';
-import {
-  amountText,
-  centsInput,
-  convert,
-  customGridMonths,
-  parseAmount,
-  splitEvenly,
-  spreadMonths,
-} from './line-item-math';
+import { centsInput, customGridMonths, moneyText } from './line-item-math';
 import type { ActivityDates, SpreadMethod } from './line-item-math';
 import {
   changedToText,
@@ -23,10 +15,11 @@ import {
 type AttributeValues = components['schemas']['AttributeValues'];
 type FinanceBudgetItemRef = components['schemas']['FinanceBudgetItemRef'];
 type LineItemCurrency = components['schemas']['LineItemCurrency'];
+type Money = components['schemas']['Money'];
+type SpreadMonthInput = components['schemas']['SpreadMonthInput'];
 
 export interface CustomMonth {
   month: string;
-  /** What is typed; "" for nothing. */
   amount: string;
 }
 
@@ -36,7 +29,6 @@ export type SourceField = (typeof SOURCE_FIELDS)[number];
 
 export interface LineItemFormState {
   name: string;
-  /** A person id; "" for nobody. */
   ownerId: string;
   description: string;
   currency: string;
@@ -48,15 +40,14 @@ export interface LineItemFormState {
   spreadMethod: SpreadMethod;
   /** The custom grid; kept when another method is chosen, so choosing Custom again restores it. */
   customMonths: CustomMonth[];
-  /** The custom amounts were typed (or saved): leaving Custom replaces them (D-151). */
+  /** The custom amounts were typed (or saved): leaving Custom replaces them. */
   customTyped: boolean;
   attributes: AttributeValues;
   contractedAmount: string;
   requestSwbs: boolean;
   financeBudgetYear: number | null;
-  /** "" for none. */
   financeBudgetItemId: string;
-  /** The item a year change will clear on save, with the note at the field (D-151). */
+  /** The item a year change will clear on save, with the note at the field. */
   clearedItem: FinanceBudgetItemRef | null;
   sources: Partial<Record<SourceField, string>>;
 }
@@ -128,7 +119,6 @@ export function editFormState(lineItem: LineItem): LineItemFormState {
   };
 }
 
-/** The state with one field changed by the person: its source note goes. */
 export function withField<K extends keyof LineItemFormState>(
   state: LineItemFormState,
   field: K,
@@ -146,28 +136,32 @@ export function changePlannedCost(state: LineItemFormState, text: string): LineI
   return { ...withField(state, 'plannedCost', text), prefilled: null, costNotes: [] };
 }
 
-/** A pre-filled balance is converted so its plan-currency value stays the balance, and the form says so. */
-export function changeCurrency(
+/** Choosing a currency keeps a pre-filled balance pre-filled: withBalance converts it once the API answers. */
+export function changeCurrency(state: LineItemFormState, code: string): LineItemFormState {
+  return withField(state, 'currency', code);
+}
+
+/** The API's balance in the chosen currency, with its note; unchanged once typed over or already shown. */
+export function withBalance(
   state: LineItemFormState,
-  code: string,
-  currencies: LineItemCurrency[],
-  planCode = 'USD',
+  balanceIn: Money | null | undefined,
+  balanceInPlan: Money | null | undefined,
 ): LineItemFormState {
-  const next = withField(state, 'currency', code);
-  const currency = currencies.find((candidate) => candidate.code === code);
-  const planRate = rateOf(currencies, planCode);
-  if (state.prefilled === null || !currency || planRate === null) {
-    return next;
+  if (state.prefilled === null || !balanceIn || !balanceInPlan) {
+    return state;
   }
-  const balance = toCents(state.prefilled);
-  const local = convert(balance, planRate, currency.ratePerUsd);
-  const back = convert(local, currency.ratePerUsd, planRate);
+  const cost = formatAmount(balanceIn.amount);
+  if (balanceIn.currency !== state.currency || cost === state.plannedCost) {
+    return state;
+  }
   const notes =
-    code === planCode ? [] : [changedToText(amountText(local, code), amountText(back, planCode))];
-  if (code !== planCode && back !== balance) {
+    balanceIn.currency === balanceInPlan.currency
+      ? []
+      : [changedToText(moneyText(balanceIn), moneyText(balanceInPlan))];
+  if (notes.length > 0 && balanceInPlan.amount !== state.prefilled) {
     notes.push(ROUNDING_HINT);
   }
-  return { ...next, plannedCost: centsInput(local), costNotes: notes };
+  return { ...state, plannedCost: cost, costNotes: notes };
 }
 
 export function rateOf(currencies: LineItemCurrency[], code: string): string | null {
@@ -177,28 +171,23 @@ export function rateOf(currencies: LineItemCurrency[], code: string): string | n
   return currencies.find((candidate) => candidate.code === code)?.ratePerUsd ?? null;
 }
 
-/** Custom starts from the current spread (even when none yet), unless the grid already has amounts (D-152). */
+/** Custom starts from the API's seed of the current spread, unless the grid already has amounts. */
 export function changeSpreadMethod(
   state: LineItemFormState,
   method: SpreadMethod,
   dates: ActivityDates,
   planYear: number,
+  seed: SpreadMonthInput[] = [],
 ): LineItemFormState {
   const next = withField(state, 'spreadMethod', method);
   if (method !== 'custom' || state.customMonths.length > 0) {
     return next;
   }
-  const months = customGridMonths(dates, planYear);
-  const cents = parseAmount(state.plannedCost) ?? 0n;
-  const current =
-    state.spreadMethod === 'custom' ? null : spreadMonths(state.spreadMethod, cents, dates);
-  const amounts =
-    current && current.state === 'spread' ? current.months : splitEvenly(cents, months);
   return {
     ...next,
-    customMonths: months.map((month) => {
-      const amount = amounts.find((candidate) => candidate.month === month);
-      return { month, amount: amount ? centsInput(amount.cents) : '' };
+    customMonths: customGridMonths(dates, planYear).map((month) => {
+      const amount = seed.find((candidate) => candidate.month === month);
+      return { month, amount: amount ? formatAmount(amount.amount) : '' };
     }),
   };
 }
@@ -224,7 +213,7 @@ export function addCustomMonth(state: LineItemFormState, month: string): LineIte
   return { ...state, customTyped: true, customMonths: months };
 }
 
-/** An item of another year is cleared on save and the field says so; its own year brings it back (D-151). */
+/** An item of another year is cleared on save and the field says so; its own year brings it back. */
 export function changeBudgetYear(
   state: LineItemFormState,
   year: number | null,

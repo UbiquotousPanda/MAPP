@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 
@@ -82,8 +83,12 @@ export function useRenameFolder() {
 export function useDeleteFolder() {
   const refreshLists = useRefreshLists();
   return useMutation({
-    mutationFn: (id: string) =>
-      call(api.DELETE('/api/v1/sample-folders/{folderId}', { params: { path: { folderId: id } } })),
+    mutationFn: ({ id, version }: Seen) =>
+      call(
+        api.DELETE('/api/v1/sample-folders/{folderId}', {
+          params: { path: { folderId: id }, query: { version } },
+        }),
+      ),
     onSettled: refreshLists,
   });
 }
@@ -110,8 +115,12 @@ export function useAddNote() {
 export function useDeleteNote() {
   const refreshLists = useRefreshLists();
   return useMutation({
-    mutationFn: (id: string) =>
-      call(api.DELETE('/api/v1/sample-notes/{noteId}', { params: { path: { noteId: id } } })),
+    mutationFn: ({ id, version }: Seen) =>
+      call(
+        api.DELETE('/api/v1/sample-notes/{noteId}', {
+          params: { path: { noteId: id }, query: { version } },
+        }),
+      ),
     onSettled: refreshLists,
   });
 }

@@ -1,6 +1,6 @@
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { useBulkPreview, useRunBulk } from './api';
+import { selectionOf, useBulkPreview, useRunBulk } from './api';
 import { Problem } from './BulkDialog';
 import styles from './bulk.module.css';
 import { countsText, recordsText } from './bulk-text';
@@ -10,7 +10,7 @@ import { PreviewNotes } from './OutcomeList';
 
 /** One question naming what goes with the records and what is in approval; Cancel has the focus. */
 export function DeleteDialog({ records, onClose, onDone }: BulkActionDialogProps) {
-  const preview = useBulkPreview({ action: 'delete', recordIds: records.map((r) => r.id) });
+  const preview = useBulkPreview({ action: 'delete', ...selectionOf(records) });
   const run = useRunBulk();
   const summary = preview.data?.deleteSummary;
   const count = preview.data?.counts.done ?? records.length;
@@ -24,7 +24,7 @@ export function DeleteDialog({ records, onClose, onDone }: BulkActionDialogProps
       tone="danger"
       busy={run.isPending || preview.isPending}
       onConfirm={() =>
-        run.mutate({ action: 'delete', recordIds: records.map((r) => r.id) }, { onSuccess: onDone })
+        run.mutate({ action: 'delete', ...selectionOf(records) }, { onSuccess: onDone })
       }
     >
       {preview.isPending && <Skeleton lines={3} />}

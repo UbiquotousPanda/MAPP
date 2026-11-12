@@ -8,6 +8,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
@@ -58,7 +59,9 @@ export function OverspendSettingsPage() {
   );
 }
 
-function SettingForm({ config }: { config: OverspendConfiguration }) {
+function SettingForm({ config: opened }: { config: OverspendConfiguration }) {
+  const { record: config, version, keep, loadLatest } = useEditedRecord(opened);
+  const latest = useOverspendConfiguration();
   const save = useSaveOverspendConfiguration();
   const { show } = useToast();
   const { date, dateFormat } = useFormatters();
@@ -70,14 +73,15 @@ function SettingForm({ config }: { config: OverspendConfiguration }) {
   async function send() {
     setProblem('');
     try {
-      await save.mutateAsync({
-        version: config.version,
-        defaultMode: mode,
-        approvalOverPlannedCost: approval,
-      });
+      keep(
+        await save.mutateAsync({ version, defaultMode: mode, approvalOverPlannedCost: approval }),
+      );
       show({ message: SETTING_SAVED });
     } catch (error) {
       const failure = asApiError(error);
+      if (failure.kind === 'conflict') {
+        void loadLatest(() => latest.refetch().then((answer) => answer.data));
+      }
       if (!isSessionLost(failure)) {
         setProblem(conflictMessage(failure, 'setting', dateFormat));
       }

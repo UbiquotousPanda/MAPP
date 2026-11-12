@@ -1,5 +1,4 @@
 import { SendNowButton } from '@/features/simulated-gsap';
-import { useAccess } from '@/session/access';
 import { Card } from '@/ui/Card/Card';
 import { useFormatters } from '@/format/useFormatters';
 import { HxKey } from '@/ui/HxKey/HxKey';
@@ -18,9 +17,9 @@ import { SwbsChip } from './SwbsChip';
 import styles from './SwbsCard.module.css';
 
 /** The line item's SWBS request (030 FR-014): status, code, dates, source, HX key and Send now. */
-export function SwbsCard({ lineItem }: { lineItem: LineItem }) {
+export function SwbsCard({ lineItem, canSend: mayRun }: { lineItem: LineItem; canSend: boolean }) {
   const { dateTime } = useFormatters();
-  const canSend = useAccess().has('finance.import') && lineItem.swbsStatus === 'readyToSend';
+  const canSend = mayRun && lineItem.swbsStatus === 'readyToSend';
   const received = lineItem.swbsStatus === 'received';
   const timeOf = (timestamp: string | null) => (timestamp ? dateTime(timestamp) : null);
 

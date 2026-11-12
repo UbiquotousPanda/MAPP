@@ -58,7 +58,7 @@ func TestActivityCategoriesAPI_Delete_FR021(t *testing.T) {
 	alex := server.SignIn(t, alexsEmail)
 	mustCreate(t, alex, "/api/v1/settings/activity-categories", digitalBody(false, "AT-1002"))
 
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/settings/activity-categories/CAT-1001", nil)
+	deleted := alex.DeleteSeen(t, "/api/v1/settings/activity-categories/CAT-1001")
 
 	assertAnswer(t, deleted, http.StatusOK, `{"recycleBinEntry":{"id":"BIN-1001","recordType":"activityCategory",`+
 		`"recordTypeLabel":"activity category","recordId":"CAT-1001","recordName":"Digital","path":[],"parent":null,`+

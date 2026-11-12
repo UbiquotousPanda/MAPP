@@ -2,6 +2,7 @@ package settings_test
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -99,11 +100,15 @@ func TestModelsAPI_Delete_FR004(t *testing.T) {
 	alex := server.SignIn(t, alexsEmail)
 	mustCreate(t, alex, "/api/v1/models", lubricants2)
 
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/models/MOD-1003", nil)
-	gone := alex.Do(t, http.MethodDelete, "/api/v1/models/MOD-9999", nil)
+	stale := alex.Do(t, http.MethodDelete, "/api/v1/models/MOD-1003?version=2", nil)
+	deleted := alex.DeleteSeen(t, "/api/v1/models/MOD-1003")
+	gone := alex.DeleteSeen(t, "/api/v1/models/MOD-9999")
 
 	assertAnswer(t, deleted, http.StatusOK, `{"recycleBinEntry":{"id":"BIN-1001","recordType":"model","recordTypeLabel":"model",`+
 		`"recordId":"MOD-1003","recordName":"Lubricants 2.0","path":[],"parent":null,"deletedAt":"2026-03-12T09:00:00Z",`+
 		`"deletedBy":{"id":"U-1001","name":"Alex Morgan"},"contents":[]}}`)
 	assertAnswer(t, gone, http.StatusNotFound, modelGoneBody)
+	if stale.Status != http.StatusConflict || !strings.Contains(string(stale.Body), `"code":"version_conflict"`) {
+		t.Errorf("delete at a version the model does not have = %d %s, want 409 version_conflict", stale.Status, stale.Body)
+	}
 }

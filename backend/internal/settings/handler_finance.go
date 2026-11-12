@@ -6,12 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"mapp/internal/history"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/web"
 )
 
-// listFinanceBudgets answers GET /api/v1/finance-budgets?year=: the budgets of the year (the current year
-// when not sent).
 func (h *Handler) listFinanceBudgets(c *gin.Context) {
 	var year *int
 	if text := c.Request.URL.Query().Get("year"); text != "" {
@@ -26,8 +25,6 @@ func (h *Handler) listFinanceBudgets(c *gin.Context) {
 	respond(c, http.StatusOK, page, err)
 }
 
-// renameFinanceBudget answers PATCH /api/v1/finance-budgets/{budgetId} with the budget and its items after the
-// rename.
 func (h *Handler) renameFinanceBudget(c *gin.Context) {
 	var input RenameInput
 	if !readBody(c, &input) {
@@ -65,12 +62,15 @@ func (h *Handler) updateFinanceBudgetItem(c *gin.Context) {
 
 // deleteFinanceBudgetItem answers DELETE /api/v1/finance-budget-items/{itemId} with the recycle-bin entry.
 func (h *Handler) deleteFinanceBudgetItem(c *gin.Context) {
-	entry, err := h.service.DeleteFinanceBudgetItem(c.Request.Context(), actorOf(c), c.Param("itemId"))
+	ctx, err := history.SeenVersion(c, c.Param("itemId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	entry, err := h.service.DeleteFinanceBudgetItem(ctx, actorOf(c), c.Param("itemId"))
 	respondDeleted(c, entry, err)
 }
 
-// setFinanceBudgetItemStatus answers POST /api/v1/finance-budget-items/{itemId}/status with the item in its new
-// status.
 func (h *Handler) setFinanceBudgetItemStatus(c *gin.Context) {
 	var update StatusUpdate
 	if !readBody(c, &update) {

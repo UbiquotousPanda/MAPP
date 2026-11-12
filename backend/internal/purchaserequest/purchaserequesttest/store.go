@@ -34,8 +34,11 @@ type Store struct {
 
 func NewStore(db *fake.DB) Store {
 	return Store{
-		requests:      fake.TableOf(db, "purchase_requests", func(pr purchaserequest.PurchaseRequest) string { return pr.ID }),
-		lines:         fake.TableOf(db, "purchase_request_lines", func(l purchaserequest.Line) string { return l.ID }),
+		requests: fake.TableOf(db, "purchase_requests", func(pr purchaserequest.PurchaseRequest) string { return pr.ID }),
+		lines: fake.TableOf(db, "purchase_request_lines", func(l purchaserequest.Line) string { return l.ID }).
+			References("purchase_request_lines_currency_fkey", "currencies", func(l purchaserequest.Line) string {
+				return l.Currency
+			}),
 		routings:      fake.TableOf(db, "purchase_request_routings", func(r purchaserequest.Routing) string { return r.ID }),
 		configuration: fake.TableOf(db, "purchase_request_configuration", func(c configurationRow) string { return c.ID }),
 		plans:         plantest.NewStore(db),

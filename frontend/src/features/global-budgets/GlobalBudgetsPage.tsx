@@ -14,6 +14,7 @@ import { usePageTitle } from '@/ui/usePageTitle';
 import { ResultCount } from '@/ui/ResultCount/ResultCount';
 import { cx } from '@/ui/cx';
 import linkCard from '@/ui/LinkCard/LinkCard.module.css';
+import { useCurrentYear } from '@/session/useToday';
 import { BudgetFigures } from './BudgetFigures';
 import { GlobalBudgetForm } from './GlobalBudgetForm';
 import { useGlobalBudgets } from './api';
@@ -30,7 +31,7 @@ import styles from './GlobalBudgetsPage.module.css';
 export function GlobalBudgetsPage() {
   usePageTitle('Global budgets');
   const [params, setParams] = useAddressParams();
-  const currentYear = new Date().getFullYear();
+  const currentYear = useCurrentYear();
   const year = yearOf(params, currentYear);
   const budgets = useGlobalBudgets(year);
   const [creating, setCreating] = useState(false);

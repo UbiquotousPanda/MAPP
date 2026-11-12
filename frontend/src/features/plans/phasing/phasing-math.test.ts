@@ -4,7 +4,6 @@ import {
   balanceText,
   monthKeys,
   monthLabel,
-  overBy,
   quarterTotals,
   readAmount,
   splitEvenly,
@@ -58,12 +57,5 @@ describe('phasingMath (016 data-model §3.3)', () => {
       '£600,000.00 of £590,000.00 phased — £10,000.00 too much',
     );
     expect(balanceOf(Array<bigint>(12).fill(cents(50000)), cents(600000)).kind).toBe('exact');
-  });
-
-  it('finds by how much a period is over (FR-024)', () => {
-    expect(overBy('50000.00', '60000.00', null)).toBe(cents(10000));
-    expect(overBy('50000.00', '10000.00', '55000.00')).toBe(cents(5000));
-    expect(overBy('50000.00', '10000.00', '20000.00')).toBe(0n);
-    expect(overBy(null, '10000.00', null)).toBe(0n);
   });
 });

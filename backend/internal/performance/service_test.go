@@ -94,7 +94,7 @@ func TestCheckSupplier_AnInactiveSourceDoesNotConflict_FR004(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("PutMapping: %v", err)
 	}
-	if err := f.service.SetSourceStatus(t.Context(), alex, src.ID, performance.StatusInactive); err != nil {
+	if err := f.setSourceStatus(t, src.ID, performance.StatusInactive); err != nil {
 		t.Fatalf("SetSourceStatus: %v", err)
 	}
 

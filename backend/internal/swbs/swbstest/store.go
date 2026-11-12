@@ -16,7 +16,12 @@ type Store struct {
 }
 
 func NewStore(db *fake.DB) Store {
-	return Store{runs: fake.TableOf(db, "swbs_runs", func(r swbs.Run) string { return r.ID })}
+	runs := fake.TableOf(db, "swbs_runs", func(r swbs.Run) string { return r.ID }).
+		Exclude("swbs_run_codes_swbs_code_key", sharesACode).
+		Check("swbs_run_codes_swbs_code_key", func(r swbs.Run) bool {
+			return len(slices.CompactFunc(slices.SortedFunc(slices.Values(r.Codes), byCode), sameCode)) == len(r.Codes)
+		})
+	return Store{runs: runs}
 }
 
 func (s Store) AddRun(ctx context.Context, run swbs.Run) error {
@@ -55,3 +60,16 @@ func (s Store) CountCodes(_ context.Context, prefix string) (int, error) {
 	}
 	return count, err
 }
+
+func sharesACode(a, b swbs.Run) bool {
+	for _, x := range a.Codes {
+		if slices.ContainsFunc(b.Codes, func(y swbs.Code) bool { return y.SwbsCode == x.SwbsCode }) {
+			return true
+		}
+	}
+	return false
+}
+
+func byCode(a, b swbs.Code) int { return strings.Compare(a.SwbsCode, b.SwbsCode) }
+
+func sameCode(a, b swbs.Code) bool { return a.SwbsCode == b.SwbsCode }

@@ -168,6 +168,7 @@ type UnassignedBalance struct {
 type SpreadGridColumn struct {
 	Key                  string  `json:"key"`
 	Month                *string `json:"month"`
+	Quarter              *string `json:"quarter,omitempty"`
 	OutsideActivityDates bool    `json:"outsideActivityDates"`
 }
 
@@ -190,6 +191,7 @@ type Section struct {
 	Items    []View                `json:"items"`
 	Balance  UnassignedBalance     `json:"balance"`
 	Grid     SpreadGrid            `json:"grid"`
+	Quarters SpreadGrid            `json:"gridQuarterly"`
 	Access   *authz.LineItemAccess `json:"access,omitempty"`
 }
 

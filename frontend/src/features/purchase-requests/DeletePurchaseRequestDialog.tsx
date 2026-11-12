@@ -27,7 +27,9 @@ export function DeletePurchaseRequestDialog({
   const queryClient = useQueryClient();
   const { has } = useAccess();
   const afterDelete = useUndoableDelete({ invalidate: [purchaseRequestKeys.all] });
-  const remove = useMutation({ mutationFn: () => deletePurchaseRequest(purchaseRequest.id) });
+  const remove = useMutation({
+    mutationFn: () => deletePurchaseRequest(purchaseRequest.id, purchaseRequest.version),
+  });
   const lineItemIds = purchaseRequest.lines.map((line) => line.lineItem.id);
   const [firstLineItem] = lineItemIds;
 

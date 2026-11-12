@@ -63,7 +63,7 @@ func TestRun_RequestChecks_012FR006_FR007(t *testing.T) {
 			f.planning.fields = []bulk.Field{{Key: "activityType", Label: "Activity type", Kind: "singleChoice", Required: true,
 				Options: []bulk.FieldOption{{ID: "AT-1", Label: "Event"}}}}
 
-			_, err := f.service.Run(t.Context(), priya, tt.req)
+			_, err := f.service.Run(t.Context(), priya, seen(tt.req))
 
 			assertValidation(t, err, tt.want)
 		})
@@ -76,8 +76,8 @@ func TestChangeOwner_ChangedOrAlreadySet_012FR008_FR021(t *testing.T) {
 	owned.OwnerID = "U-1003"
 	f := newFixture(t, container("C-1001", "Helix launch", bulk.LevelCampaign), activity("A-1001", "Launch film", bulk.StatusCreated), owned)
 
-	result, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003",
-		RecordIDs: []string{"C-1001", "A-1001", "A-1002", "A-1001"}})
+	result, err := f.service.Run(t.Context(), priya, seen(bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003",
+		RecordIDs: []string{"C-1001", "A-1001", "A-1002", "A-1001"}}))
 	if err != nil {
 		t.Fatalf("Run: %v", err)
 	}
@@ -108,8 +108,8 @@ func TestRun_EveryLogEntryCarriesTheNote_012FR023(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t, activity("A-1001", "Launch film", bulk.StatusCreated), activity("A-1002", "Trade fair", bulk.StatusCreated))
 
-	if _, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003",
-		RecordIDs: []string{"A-1001", "A-1002"}}); err != nil {
+	if _, err := f.service.Run(t.Context(), priya, seen(bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003",
+		RecordIDs: []string{"A-1001", "A-1002"}})); err != nil {
 		t.Fatalf("Run: %v", err)
 	}
 
@@ -129,7 +129,7 @@ func TestPreview_SavesNothing_012D126(t *testing.T) {
 	f := newFixture(t, activity("A-1001", "Launch film", bulk.StatusCreated))
 	req := bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003", RecordIDs: []string{"A-1001"}}
 
-	preview, err := f.service.Preview(t.Context(), priya, req)
+	preview, err := f.service.Preview(t.Context(), priya, seen(req))
 	if err != nil {
 		t.Fatalf("Preview: %v", err)
 	}
@@ -141,7 +141,7 @@ func TestPreview_SavesNothing_012D126(t *testing.T) {
 	if f.stored(t, "A-1001").OwnerID != "" || len(f.log(t)) != 0 {
 		t.Error("the preview changed the record or wrote the log")
 	}
-	run, err := f.service.Run(t.Context(), priya, req)
+	run, err := f.service.Run(t.Context(), priya, seen(req))
 	if err != nil || *run.ID != "BLK-1001" {
 		t.Errorf("the run after the preview = %v, %v; want BLK-1001", run.ID, err)
 	}
@@ -152,7 +152,7 @@ func TestRun_GoneFailedOthersKept_UnexpectedErrorSavesNothing_012FR022(t *testin
 	f := newFixture(t, activity("A-1001", "Launch film", bulk.StatusCreated))
 	req := bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003", RecordIDs: []string{"A-1999", "A-1001"}}
 
-	result, err := f.service.Run(t.Context(), priya, req)
+	result, err := f.service.Run(t.Context(), priya, seen(req))
 	if err != nil {
 		t.Fatalf("Run: %v", err)
 	}
@@ -161,8 +161,8 @@ func TestRun_GoneFailedOthersKept_UnexpectedErrorSavesNothing_012FR022(t *testin
 	}
 
 	f.planning.brokenNext = true
-	if _, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1004",
-		RecordIDs: []string{"A-1001"}}); err == nil {
+	if _, err := f.service.Run(t.Context(), priya, seen(bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1004",
+		RecordIDs: []string{"A-1001"}})); err == nil {
 		t.Fatal("a storage failure must fail the run")
 	}
 	if _, found, _ := f.store.GetAction(t.Context(), "BLK-1002", priya.ID); found {
@@ -194,8 +194,8 @@ func TestChangeField_ReapprovalAndRefusals_012FR010_FR011(t *testing.T) {
 			f.planning.fields = []bulk.Field{{Key: "endDate", Label: "End date", Kind: "date"}}
 			f.planning.refusals["A-1004"] = errs.Validation(errs.FieldError{Field: "endDate", Message: "Dates must be inside the initiative's dates."})
 
-			result, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeField, Field: change,
-				RecordIDs: []string{"A-1001", "A-1002", "A-1003", "A-1004"}, RestartApproval: tt.restart})
+			result, err := f.service.Run(t.Context(), priya, seen(bulk.Request{Action: bulk.ActionChangeField, Field: change,
+				RecordIDs: []string{"A-1001", "A-1002", "A-1003", "A-1004"}, RestartApproval: tt.restart}))
 			if err != nil {
 				t.Fatalf("Run: %v", err)
 			}
@@ -228,8 +228,8 @@ func TestSubmit_ActivitiesOnlyEveryReasonAtOnce_012FR012_FR013(t *testing.T) {
 		{Record: errs.RecordRef{Type: "line item", ID: "L-1004"}, Fields: []errs.MissingField{{Label: "GL code"}}},
 	})
 
-	result, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionSubmit,
-		RecordIDs: []string{"C-1001", "A-1001", "A-1002", "A-1003", "A-1004"}})
+	result, err := f.service.Run(t.Context(), priya, seen(bulk.Request{Action: bulk.ActionSubmit,
+		RecordIDs: []string{"C-1001", "A-1001", "A-1002", "A-1003", "A-1004"}}))
 	if err != nil {
 		t.Fatalf("Run: %v", err)
 	}
@@ -260,7 +260,7 @@ func TestDelete_NestedCountedOnceAndSummarised_012FR019_FR020(t *testing.T) {
 	f.planning.below["I-1001"] = bulk.Below{Counts: bulk.BelowCounts{Activities: 2, LineItems: 5}, InApproval: 1}
 	f.planning.below["A-1005"] = bulk.Below{Counts: bulk.BelowCounts{LineItems: 1}, InApproval: 1}
 
-	result, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionDelete, RecordIDs: []string{"I-1001", "A-1001", "A-1005"}})
+	result, err := f.service.Run(t.Context(), priya, seen(bulk.Request{Action: bulk.ActionDelete, RecordIDs: []string{"I-1001", "A-1001", "A-1005"}}))
 	if err != nil {
 		t.Fatalf("Run: %v", err)
 	}
@@ -283,8 +283,8 @@ func TestDelete_NestedCountedOnceAndSummarised_012FR019_FR020(t *testing.T) {
 func TestUndo_Refusals_012FR020(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t, activity("A-1001", "Launch film", bulk.StatusCreated))
-	if _, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003",
-		RecordIDs: []string{"A-1001"}}); err != nil {
+	if _, err := f.service.Run(t.Context(), priya, seen(bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003",
+		RecordIDs: []string{"A-1001"}})); err != nil {
 		t.Fatal(err)
 	}
 	tests := []struct {

@@ -20,7 +20,7 @@ func TestSplitLinks_CopyWithoutLinkThenDeletedOriginal_FR031(t *testing.T) {
 	split.Decode(t, &result)
 
 	copied := priya.Do(t, http.MethodPost, "/api/v1/activities/"+result.NewActivity.ID+"/copy", map[string]any{"initiativeId": irelandInit})
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/activities/"+ukLaunchEvent, nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/activities/"+ukLaunchEvent)
 
 	assertStatus(t, copied, http.StatusCreated)
 	var duplicate activity.View

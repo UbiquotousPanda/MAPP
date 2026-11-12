@@ -187,6 +187,9 @@ func (s *Service) UpdateMapping(ctx context.Context, a actor.Actor, id string, i
 		saved = stored
 		saved.ColumnName, saved.Meaning = strings.TrimSpace(in.ColumnName), in.Meaning
 		saved.KeyType, saved.Stage, saved.WebMetric, saved.ModelID = in.KeyType, in.Stage, in.WebMetric, in.ModelID
+		if supplyErr := s.checkMappingSupplies(ctx, saved); supplyErr != nil {
+			return supplyErr
+		}
 		saved.Version++
 		saved.UpdatedAt, saved.UpdatedBy = s.now(), a
 		if putErr := s.repo.PutMapping(ctx, saved); putErr != nil {

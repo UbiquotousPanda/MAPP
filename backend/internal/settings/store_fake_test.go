@@ -2,13 +2,17 @@ package settings
 
 import (
 	"context"
+	"encoding/json"
+	"maps"
 	"slices"
+	"strings"
 
 	"mapp/internal/platform/fake"
 )
 
 // fakeStore is settingstest.Store for this package's own tests, which cannot import settingstest.
 type fakeStore struct {
+	db            *fake.DB
 	models        *fake.Table[Model]
 	activityTypes *fake.Table[ActivityType]
 	categories    *fake.Table[ActivityCategory]
@@ -24,6 +28,7 @@ type fakeStore struct {
 
 func newFakeStore(db *fake.DB) fakeStore {
 	return fakeStore{
+		db:            db,
 		models:        fake.TableOf(db, "models", func(m Model) string { return m.ID }),
 		activityTypes: fake.TableOf(db, "activity_types", func(t ActivityType) string { return t.ID }),
 		categories:    fake.TableOf(db, "activity_categories", func(c ActivityCategory) string { return c.ID }),
@@ -267,4 +272,39 @@ func (s fakeStore) PutFieldHelp(ctx context.Context, h FieldHelpText) error {
 
 func (s fakeStore) DeleteFieldHelp(ctx context.Context, key string) error {
 	return s.help.Delete(ctx, key)
+}
+
+func (s fakeStore) CurrencyUses(context.Context) ([]CurrencyUse, error) {
+	return currencyUses(s.db)
+}
+
+// currencyUses counts amounts per currency in the performance facts and GSAP transactions of the DB, as the query does.
+func currencyUses(db *fake.DB) ([]CurrencyUse, error) {
+	var uses []CurrencyUse
+	for _, table := range []struct{ name, kind string }{
+		{"performance_facts", UseOfPerformanceFact}, {"financial_transactions", UseOfFinancialTransaction},
+	} {
+		counts := map[string]int{}
+		for _, data := range db.Encoded(table.name) {
+			var row struct {
+				Currency string          `json:"currency"`
+				Amount   json.RawMessage `json:"amount"`
+			}
+			if err := json.Unmarshal(data, &row); err != nil {
+				return nil, err
+			}
+			if strings.HasPrefix(string(row.Amount), "{") { // a performance fact's amount is money with its currency
+				if err := json.Unmarshal(row.Amount, &row); err != nil {
+					return nil, err
+				}
+			}
+			if row.Currency != "" {
+				counts[row.Currency]++
+			}
+		}
+		for _, currency := range slices.Sorted(maps.Keys(counts)) {
+			uses = append(uses, CurrencyUse{Kind: table.kind, Currency: currency, Count: counts[currency]})
+		}
+	}
+	return uses, nil
 }

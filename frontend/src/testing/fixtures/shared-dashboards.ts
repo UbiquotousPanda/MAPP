@@ -60,6 +60,7 @@ export function dashboardSummary(
     owner: PRIYA_PERSON,
     sharedWith: [EUROPE_REF],
     widgetCount: 6,
+    version: 1,
     updatedAt: '2026-10-28T09:30:00Z',
     access: OWNER_ACCESS,
     ...overrides,

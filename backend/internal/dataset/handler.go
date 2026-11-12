@@ -79,8 +79,13 @@ func (h *Handler) update(c *gin.Context) {
 }
 
 func (h *Handler) delete(c *gin.Context) {
+	ctx, err := history.SeenVersion(c, c.Param(idParam))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
 	a, _ := actor.From(c.Request.Context())
-	entry, err := h.service.Delete(c.Request.Context(), a, c.Param(idParam))
+	entry, err := h.service.Delete(ctx, a, c.Param(idParam))
 	respond(c, http.StatusOK, history.DeleteResult{RecycleBinEntry: entry.View()}, err)
 }
 

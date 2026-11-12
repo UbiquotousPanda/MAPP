@@ -122,7 +122,9 @@ export function CurrenciesPage() {
           name={deleting.name}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteCurrency.mutateAsync(deleting.code)}
+          remove={() =>
+            deleteCurrency.mutateAsync({ id: deleting.code, version: deleting.version })
+          }
           setInactive={() => status.applyInactive(target(deleting))}
           invalidate={CURRENCY_LISTS}
           onDeleted={() => {

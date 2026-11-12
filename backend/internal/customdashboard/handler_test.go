@@ -151,9 +151,9 @@ func TestDeleteCustomDashboard_200_403_404_FR010(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 
-	notOwner := server.SignIn(t, danielEmail).Do(t, http.MethodDelete, demoPath, nil)
-	notSeen := server.SignIn(t, meiEmail).Do(t, http.MethodDelete, demoPath, nil)
-	deleted := server.SignIn(t, priyaEmail).Do(t, http.MethodDelete, demoPath, nil)
+	notOwner := server.SignIn(t, danielEmail).DeleteSeen(t, demoPath)
+	notSeen := server.SignIn(t, meiEmail).DeleteSeen(t, demoPath)
+	deleted := server.SignIn(t, priyaEmail).DeleteSeen(t, demoPath)
 
 	assertError(t, notOwner, http.StatusForbidden, "forbidden")
 	assertError(t, notSeen, http.StatusNotFound, "not_found")

@@ -3,7 +3,7 @@ import { ApiError } from '@/api/errors';
 import { useToast } from '@/ui/Toast/useToast';
 import { useFinancialRecord } from '@/features/line-items';
 import { useUndoableDelete } from '@/ui/useUndoableDelete';
-import { ACTIVITY_PLANNING_KEYS, useDeleteActivity } from './api';
+import { useDeleteActivity } from './api';
 import type { Activity } from './api';
 import { DeleteActivityDialog } from './DeleteActivityDialog';
 
@@ -26,11 +26,11 @@ export function ActivityDeleteQuestion({
   // open activity page answers from what it has; without figures the dialog says nothing of them.
   const financials = useFinancialRecord(activity.id, open);
   // Undo brings the activity back into every list it left.
-  const afterDelete = useUndoableDelete({ invalidate: ACTIVITY_PLANNING_KEYS });
+  const afterDelete = useUndoableDelete({});
 
   async function confirm() {
     try {
-      const result = await remove.mutateAsync(activity.id);
+      const result = await remove.mutateAsync(activity);
       onOpenChange(false);
       const planPage = `/plans/${encodeURIComponent(activity.plan.id)}`;
       if (pathname !== planPage) {

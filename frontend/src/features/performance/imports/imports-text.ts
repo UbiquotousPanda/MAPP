@@ -72,7 +72,8 @@ export const EMPTY_TEXT =
 export const NO_MATCH = 'Nothing matches these filters';
 export const NOT_EDITABLE =
   "An import can't be edited. To take it back, undo it; to change a figure, upload a corrected file.";
-export const UNDO_NEEDS_ADMIN = 'Only an administrator can undo an import.';
+export const UNDO_NEEDS_ADMIN =
+  'Only an administrator who may also load performance data can undo an import.';
 export const NEED_CSV = 'Choose a UTF-8 CSV file (.csv).';
 export const UNREADABLE = "The file couldn't be read. Choose it again.";
 export const NO_UPLOAD_SOURCE =

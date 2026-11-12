@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"mapp/internal/history"
+	"mapp/internal/platform/web"
 )
 
 func (h *Handler) listActivityCategories(c *gin.Context) {
@@ -35,7 +38,12 @@ func (h *Handler) updateActivityCategory(c *gin.Context) {
 }
 
 func (h *Handler) deleteActivityCategory(c *gin.Context) {
-	entry, err := h.service.DeleteActivityCategory(c.Request.Context(), actorOf(c), c.Param("categoryId"))
+	ctx, err := history.SeenVersion(c, c.Param("categoryId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	entry, err := h.service.DeleteActivityCategory(ctx, actorOf(c), c.Param("categoryId"))
 	respondDeleted(c, entry, err)
 }
 

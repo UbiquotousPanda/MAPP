@@ -205,6 +205,15 @@ func container(id, name string, level bulk.Level, ancestors ...string) stored {
 		Ancestors: ancestors}}
 }
 
+// seen is req with the version the person saw of each selected record: the fake records' own, 0.
+func seen(req bulk.Request) bulk.Request {
+	req.Versions = map[string]int{}
+	for _, id := range req.RecordIDs {
+		req.Versions[id] = 0
+	}
+	return req
+}
+
 func assertValidation(t *testing.T, err error, want errs.FieldError) {
 	t.Helper()
 	got, ok := errors.AsType[*errs.Error](err)

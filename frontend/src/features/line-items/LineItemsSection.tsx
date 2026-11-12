@@ -88,7 +88,7 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
     );
   }
 
-  const { items, balance, grid, activity } = section.data;
+  const { items, balance, grid, gridQuarterly, activity } = section.data;
   // The reader's display currency: the API answers the USD amounts in it (FR-005, D-213).
   const displayCode = balance.assigned.currency;
   // The plan currency (016 FR-015), when the API sends the plan amounts and it is not the reader's.
@@ -168,6 +168,7 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
         {items.length > 0 && (
           <SpreadGrid
             grid={grid}
+            quarterly={gridQuarterly}
             noDates={!activity.startDate || (!activity.endDate && !activity.ongoing)}
           />
         )}

@@ -26,6 +26,7 @@ type apiError struct {
 		Code    string `json:"code"`
 		Message string `json:"message"`
 		Fields  []struct {
+			Field   string `json:"field"`
 			Message string `json:"message"`
 		} `json:"fields"`
 	} `json:"error"`

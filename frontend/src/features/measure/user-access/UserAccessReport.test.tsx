@@ -74,8 +74,7 @@ describe('People (045 US1, FR-001, FR-005 – FR-008, FR-012)', () => {
   });
 
   it('says plainly when sign-ins are recorded only from today (FR-008)', async () => {
-    const today = new Date().toISOString().slice(0, 10);
-    renderReport({ body: userAccessReport({ recordedSince: today }) });
+    renderReport({ body: userAccessReport({ recordedSince: testUser().today }) });
 
     expect(
       await screen.findByText('Sign-ins are recorded from today; no earlier ones are known.'),

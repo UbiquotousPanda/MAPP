@@ -91,7 +91,7 @@ export function ModelsPage() {
           name={deleting.name}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteModel.mutateAsync(deleting.id)}
+          remove={() => deleteModel.mutateAsync(deleting)}
           setInactive={() => status.applyInactive(deleting)}
           invalidate={MODEL_LISTS}
           onDeleted={() => {

@@ -10,9 +10,9 @@ import (
 )
 
 // Undo brings back every record of the person's own bulk delete id in one step, or none: the first entry
-// that cannot come back refuses them all (FR-020, D-130).
+// that cannot come back refuses them all, except one already brought back on its own, which it lists.
 func (s *Service) Undo(ctx context.Context, a actor.Actor, id string) (UndoResult, error) {
-	result := UndoResult{BulkActionID: id, Restored: []history.RestoreResult{}}
+	result := UndoResult{BulkActionID: id, Restored: []history.RestoreResult{}, AlreadyBack: []string{}}
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
 		action, found, err := s.repo.GetAction(ctx, id, a.ID)
 		switch {
@@ -28,6 +28,10 @@ func (s *Service) Undo(ctx context.Context, a actor.Actor, id string) (UndoResul
 		ctx = history.WithNote(ctx, "Undo of bulk delete ("+id+")")
 		for _, entryID := range action.BinEntryIDs {
 			restored, err := s.history.Undo(ctx, a, entryID)
+			if apiErr, back := errors.AsType[*errs.Error](err); back && apiErr.Code == errs.CodeAlreadyResolved {
+				result.AlreadyBack = append(result.AlreadyBack, entryID)
+				continue
+			}
 			if err != nil {
 				return tooLate(err)
 			}

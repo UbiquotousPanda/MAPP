@@ -116,8 +116,8 @@ func TestDeleteTeam_FR015(t *testing.T) {
 	alex := server.SignIn(t, alexsEmail)
 	asia := createTeam(t, alex, map[string]any{"name": "Lubricants Asia", "memberIds": []string{"U-1002", "U-1003"}})
 
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/teams/"+asia.ID, nil)
-	gone := alex.Do(t, http.MethodDelete, "/api/v1/teams/"+asia.ID, nil)
+	deleted := alex.DeleteSeen(t, "/api/v1/teams/"+asia.ID)
+	gone := alex.DeleteSeen(t, "/api/v1/teams/"+asia.ID)
 
 	var result history.DeleteResult
 	deleted.Decode(t, &result)

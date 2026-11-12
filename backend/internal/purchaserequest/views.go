@@ -150,6 +150,8 @@ type View struct {
 	Readiness            Readiness                `json:"readiness"`
 	Missing              []settings.MissingField  `json:"missing"`
 	Notice               string                   `json:"notice"`
+	SaveThen             string                   `json:"saveThen"`
+	AddedLinesThen       string                   `json:"addedLinesThen"`
 	Access               AccessView               `json:"access"`
 	record.Meta
 }

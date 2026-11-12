@@ -2,7 +2,7 @@
 import type { ApiError } from '@/api/errors';
 import type { components } from '@/api/generated/schema';
 import { parseMoneyInput } from '@/format/decimal';
-import type { LineItemCreate } from './api';
+import type { LineItemCreate, LineItemPreviewInput } from './api';
 import { monthFieldId } from './line-item-form-state';
 import type { LineItemFormState } from './line-item-form-state';
 import { formatMonth } from './line-item-math';
@@ -46,6 +46,14 @@ export function toUpdateBody(
   attributes: AttributeValues = state.attributes,
 ) {
   return { ...toCreateBody(state, attributes), version };
+}
+
+export function toPreviewBody(
+  state: LineItemFormState,
+  lineItemId: string | null,
+): LineItemPreviewInput {
+  const { currency, plannedCost, spread } = toCreateBody(state);
+  return { lineItemId, currency, plannedCost: plannedCost ?? state.plannedCost, spread };
 }
 
 /** "spread.months[1].amount" goes to that month's input, its message naming the month. */

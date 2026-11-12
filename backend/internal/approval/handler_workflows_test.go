@@ -93,8 +93,8 @@ func TestDeleteApprovalWorkflow_FR008(t *testing.T) {
 	}), http.StatusCreated)
 	path := "/api/v1/approval-workflows/" + created.ID
 
-	deleted := alex.Do(t, http.MethodDelete, path, nil)
-	inUse := alex.Do(t, http.MethodDelete, "/api/v1/approval-workflows/WF-1002", nil)
+	deleted := alex.DeleteSeen(t, path)
+	inUse := alex.DeleteSeen(t, "/api/v1/approval-workflows/WF-1002")
 
 	if deleted.Status != http.StatusOK {
 		t.Fatalf("delete status = %d %s, want 200", deleted.Status, deleted.Body)

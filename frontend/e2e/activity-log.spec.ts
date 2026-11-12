@@ -1,5 +1,11 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { callApi, chooseFilter, escapeRegExp, expectNoAxeViolations, signInAs } from './fixtures';
+import {
+  deleteSeen,
+  chooseFilter,
+  escapeRegExp,
+  expectNoAxeViolations,
+  signInAs,
+} from './fixtures';
 import {
   changeActivityPlannedCost,
   changeLineItemPlannedCost,
@@ -39,7 +45,7 @@ test('US2: the cards, filters, chips, details and record links of the activity l
     records.year,
     '1000.00',
   );
-  await callApi(page, 'DELETE', `/api/v1/initiatives/${binned.id}`);
+  await deleteSeen(page, `/api/v1/initiatives/${binned.id}`);
 
   await signInAs(page, ALEX);
   await page.goto('/activity-log');

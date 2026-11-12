@@ -45,9 +45,16 @@ type Store struct {
 
 func NewStore(db *fake.DB) *Store {
 	return &Store{
-		sources:      fake.TableOf(db, "performance_sources", func(s performance.Source) string { return s.ID }),
-		mappings:     fake.TableOf(db, "performance_source_mappings", func(m performance.Mapping) string { return m.ID }),
-		facts:        fake.TableOf(db, "performance_facts", func(f performance.Fact) string { return f.ID }),
+		sources:  fake.TableOf(db, "performance_sources", func(s performance.Source) string { return s.ID }),
+		mappings: fake.TableOf(db, "performance_source_mappings", func(m performance.Mapping) string { return m.ID }),
+		facts: fake.TableOf(db, "performance_facts", func(f performance.Fact) string { return f.ID }).
+			Unique("performance_facts_identity_idx", identityOf).
+			References("performance_facts_currency_fkey", "currencies", func(f performance.Fact) string {
+				if f.Amount == nil {
+					return ""
+				}
+				return f.Amount.Currency
+			}),
 		imports:      fake.TableOf(db, "performance_imports", func(i performance.Import) string { return i.ID }),
 		reviews:      fake.TableOf(db, "performance_review_rows", func(r performance.ReviewRow) string { return r.ID }),
 		codes:        fake.TableOf(db, "media_codes", func(c performance.MediaCode) string { return c.ID }),
@@ -275,4 +282,11 @@ func importSearched(i performance.Import, search string) bool {
 
 func (s *Store) PutImport(ctx context.Context, i performance.Import) error {
 	return s.imports.Put(ctx, i)
+}
+
+func identityOf(f performance.Fact) string {
+	if f.ReplacedByID != "" {
+		return ""
+	}
+	return strings.Join([]string{f.SourceID, f.SourceReference, f.Stage, string(f.WebMetric)}, "/")
 }

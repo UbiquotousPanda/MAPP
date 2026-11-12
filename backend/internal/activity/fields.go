@@ -170,7 +170,7 @@ func workflowLock(before *Activity) string {
 		return ""
 	case before.Status == StatusSubmitted: // an open approval round (008 FR-013)
 		return workflowRecallMessage
-	case inApproval(*before):
+	case InApproval(before.Status):
 		return workflowLockedMessage
 	}
 	return ""

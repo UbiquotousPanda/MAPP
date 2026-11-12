@@ -9,7 +9,6 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// amountOf parses an amount or panics.
 func amountOf(text string) money.Amount {
 	a, err := money.ParseAmount(text)
 	if err != nil {
@@ -18,7 +17,6 @@ func amountOf(text string) money.Amount {
 	return a
 }
 
-// budgetOf returns a pointer to the amount text; "" gives nil.
 func budgetOf(text string) *money.Amount {
 	if text == "" {
 		return nil
@@ -27,7 +25,6 @@ func budgetOf(text string) *money.Amount {
 	return &a
 }
 
-// texts writes the amounts as digits.
 func texts(amounts []money.Amount) []string {
 	out := make([]string, 0, len(amounts))
 	for _, a := range amounts {
@@ -36,7 +33,6 @@ func texts(amounts []money.Amount) []string {
 	return out
 }
 
-// fields lists the fields of problems, in order.
 func fields(problems errs.Problems) []string {
 	out := []string{}
 	for _, p := range problems {
@@ -167,6 +163,19 @@ func TestPhasingProblem_Mismatch_FR022(t *testing.T) {
 	}
 }
 
+// Whatever the method, the view answers the budget split evenly, for the editor's Evenly and Spread evenly.
+func TestViewOf_EvenlyForTheEditor_D061(t *testing.T) {
+	t.Parallel()
+	view := ViewOf(NotPhased, budgetOf("1000.01"), 2027, "GBP")
+	if len(view.Evenly) != 12 || view.Evenly[0].Amount.String() != "83.33" || view.Evenly[11].Amount.String() != "83.38" ||
+		view.Evenly[11].Currency != "GBP" {
+		t.Errorf("evenly = %v", view.Evenly)
+	}
+	if none := ViewOf(NotPhased, nil, 2027, "GBP"); none.Evenly == nil || len(none.Evenly) != 0 {
+		t.Errorf("without a budget, evenly = %v; want []", none.Evenly)
+	}
+}
+
 // A next-year copy moves every month one year later (FR-025).
 func TestShiftPhasing_NextYear_FR025(t *testing.T) {
 	t.Parallel()
@@ -213,7 +222,6 @@ func TestPhasingChanges_MonthByMonth_FR023(t *testing.T) {
 	}
 }
 
-// decoded decodes a stored value as history does.
 func decoded(t *testing.T, raw json.RawMessage) any {
 	t.Helper()
 	var v any

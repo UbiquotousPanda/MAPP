@@ -265,7 +265,7 @@ describe('LineItemPage (US4, FR-026)', () => {
       expect(router.state.location.pathname).toBe('/plans/P-1001/activities/A-1001'),
     );
     expect(router.state.location.hash).toBe('#line-items');
-    expect(api.requests.find((r) => r.method === 'DELETE')?.search).toBe('');
+    expect(api.requests.find((r) => r.method === 'DELETE')?.search).toBe('?version=1');
     expect(await screen.findByText("Line item 'Agency fee' deleted")).toBeInTheDocument();
     const messages = await findMessages();
     await user.click(within(messages).getByRole('button', { name: 'Undo' }));
@@ -294,7 +294,9 @@ describe('LineItemPage (US4, FR-026)', () => {
     expect(dialog).not.toHaveTextContent(/approval/i);
     await user.click(within(dialog).getByRole('button', { name: 'Delete line item' }));
 
-    await waitFor(() => expect(api.requests.find((r) => r.method === 'DELETE')?.search).toBe(''));
+    await waitFor(() =>
+      expect(api.requests.find((r) => r.method === 'DELETE')?.search).toBe('?version=1'),
+    );
   });
 
   it.each([

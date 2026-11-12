@@ -51,7 +51,7 @@ func TestSubmit_RefusedWhileLineItemsExceedThePlannedCost_Contract_037_FR019(t *
 		t.Errorf("submit = %+v, want not_ready and the purchase request still Created", refused)
 	}
 
-	if r := priya.Do(t, http.MethodDelete, "/api/v1/line-items/"+extra.ID, nil); r.Status != http.StatusOK {
+	if r := priya.DeleteSeen(t, "/api/v1/line-items/"+extra.ID); r.Status != http.StatusOK {
 		t.Fatalf("delete the extra line item = %d %s", r.Status, r.Body)
 	}
 	same(t, "037 FR-019 back within the planned cost, the gate no longer stops it", []string{},

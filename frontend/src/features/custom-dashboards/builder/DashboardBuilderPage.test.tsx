@@ -273,4 +273,36 @@ describe('051 US4-1, FR-046: sharing from the builder', () => {
       ]),
     );
   });
+
+  it('shares only once a save in progress has answered, with the version it returned', async () => {
+    let answerSave = () => {};
+    const { user, api } = renderBuilder('/builder/DB-1002', [
+      reply('GET /api/v1/custom-dashboards/{dashboardId}', { body: dashboard() }),
+      reply('PATCH /api/v1/custom-dashboards/{dashboardId}', async () => {
+        await new Promise<void>((resolve) => (answerSave = resolve));
+        return { body: dashboard({ version: 4 }) };
+      }),
+      reply('PUT /api/v1/custom-dashboards/{dashboardId}/sharing', {
+        body: dashboard({ sharedWith: [EUROPE_TEAM], version: 5 }),
+      }),
+    ]);
+    await user.click(await screen.findByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Sharing' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByLabelText('Lubricants Europe'));
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(api.bodiesOf('PUT /api/v1/custom-dashboards/DB-1002/sharing')).toEqual([]);
+
+    answerSave();
+    await waitFor(() =>
+      expect(within(dialog).getByRole('button', { name: 'Save' })).not.toHaveAttribute('aria-busy'),
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(api.bodiesOf('PUT /api/v1/custom-dashboards/DB-1002/sharing')).toEqual([
+        { version: 4, teamIds: ['T-1001'] },
+      ]),
+    );
+  });
 });

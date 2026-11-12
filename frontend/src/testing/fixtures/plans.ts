@@ -198,6 +198,7 @@ export function summary(overrides: Partial<PlanSummary> = {}): PlanSummary {
     id: full.id,
     name: full.name,
     year: full.year,
+    version: full.version,
     status: full.status,
     aop: full.aop,
     owner: full.owner,

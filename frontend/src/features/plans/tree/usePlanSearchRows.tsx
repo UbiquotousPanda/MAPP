@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useDebounced } from '@/features/activities';
+import { useDebounced } from '@/ui/useDebounced';
 import type { TreeNode } from '@/ui/TreeTable/TreeTable';
 import { usePlanSearch } from '../api';
 import type { PlanSearchMatch } from '../api';

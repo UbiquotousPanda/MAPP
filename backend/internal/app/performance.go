@@ -41,24 +41,29 @@ type heldRelease struct {
 	service *performance.Service
 }
 
-func (r *heldRelease) activityApproved(ctx context.Context, a actor.Actor, activityID string) error {
-	if r.service == nil {
+// statusMoved keeps the activity's facts held exactly while it is not Approved: every status change of an
+// activity (approval, re-approval edit, split) passes here.
+func (r *heldRelease) statusMoved(ctx context.Context, a actor.Actor, m statusMove) error {
+	release, hold := heldChange(m.from, m.to)
+	switch {
+	case r.service == nil:
 		return nil
+	case release:
+		_, err := r.service.Release(ctx, a, m.id)
+		return err
+	case hold:
+		_, err := r.service.Hold(ctx, a, m.id)
+		return err
 	}
-	_, err := r.service.Release(ctx, a, activityID)
-	return err
+	return nil
 }
 
-// activityUnapproved is activityApproved's reverse, for an activity that a change sends back to Created.
-func (r *heldRelease) activityUnapproved(ctx context.Context, a actor.Actor, activityID string) error {
-	if r.service == nil {
-		return nil
-	}
-	_, err := r.service.Hold(ctx, a, activityID)
-	return err
+func heldChange(from, to activity.Status) (release, hold bool) {
+	wasApproved, isApproved := from == activity.StatusApproved, to == activity.StatusApproved
+	return isApproved && !wasApproved, wasApproved && !isApproved
 }
 
-// performanceArea builds feature 046 after the planning areas, whose activities its facts match to.
+// performanceArea runs after the planning areas, whose activities its facts match to.
 func (w *wiring) performanceArea(release *heldRelease) error {
 	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
 	service := performance.NewService(tools, w.set.Performance)

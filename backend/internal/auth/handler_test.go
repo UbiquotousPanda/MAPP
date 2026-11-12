@@ -39,7 +39,7 @@ var priyaBody = `{"id":"U-1002","name":"Priya Raman","firstName":"Priya","email"
 	"campaigns.delete", "activities.edit", "activities.delete", "activities.submit", "data.export", "reports.view", "finance.view",
 	"purchaseRequests.edit", "purchaseRequests.delete", "purchaseRequests.submit") + "," + everywhere("dashboards.view", "dashboards.build") + `],` +
 	`"administrators":[{"id":"U-1001","name":"Alex Morgan","initials":"AM","jobTitle":"Marketing administrator","active":true}],` +
-	`"noSelfApproval":true}}`
+	`"noSelfApproval":true},"today":"2026-03-12"}`
 
 func inLubricantsEurope(keys ...string) string {
 	parts := make([]string, 0, len(keys))

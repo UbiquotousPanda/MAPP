@@ -23,7 +23,7 @@ func TestPublish_NotReadyThenPublished_FR024(t *testing.T) {
 	form["attributes"] = map[string]any{"SA-1001": []string{"SO-1002"}}
 	saved := priya.Do(t, http.MethodPatch, "/api/v1/plans/P-1002", form)
 	stillRefused := priya.Do(t, http.MethodPost, "/api/v1/plans/P-1002/publish", nil)
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/campaigns/C-1003", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/campaigns/C-1003")
 	published := priya.Do(t, http.MethodPost, "/api/v1/plans/P-1002/publish", nil)
 
 	below := `{"record":{"type":"campaign","id":"C-1003","name":"Retail growth"},` +

@@ -134,6 +134,7 @@ export function BudgetByMonthCard({
               label="Budget"
               helpKey="phasing.budget"
               values={periods.budget}
+              total={periods.totals.budget}
               extraCount={extra.length}
               empty={row.method === 'none' ? 'Not phased' : undefined}
             />
@@ -141,6 +142,7 @@ export function BudgetByMonthCard({
               label="Planned cost"
               helpKey="phasing.plannedCost"
               values={periods.plannedCost}
+              total={periods.totals.plannedCost}
               extra={extra.map((column) => column.planned)}
             />
             <DifferenceRow periods={periods} extraCount={extra.length} />
@@ -149,6 +151,7 @@ export function BudgetByMonthCard({
                 label={`Allocated to ${children}`}
                 helpKey="phasing.allocated"
                 values={periods.allocated}
+                total={periods.totals.allocated}
                 extraCount={extra.length}
               />
             )}

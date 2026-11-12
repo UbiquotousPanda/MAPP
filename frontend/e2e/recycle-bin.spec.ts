@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
   callApi,
+  deleteSeen,
   escapeRegExp,
   expectNoAxeViolations,
   expectToast,
@@ -113,7 +114,7 @@ test('US1: an approved activity restored from the bin comes back as Created (FR-
   });
   await approveThroughApi(page, records);
   await signInAs(page, MEI);
-  await callApi(page, 'DELETE', `/api/v1/activities/${records.activityId}`);
+  await deleteSeen(page, `/api/v1/activities/${records.activityId}`);
 
   await searchBin(page, records.activityName);
   const name = records.activityName;
@@ -142,8 +143,8 @@ test('US4: an activity whose initiative is also in the bin comes back with it โ€
     withWorkflow: false,
     leaveEmpty: [],
   });
-  await callApi(page, 'DELETE', `/api/v1/activities/${records.activityId}`);
-  await callApi(page, 'DELETE', `/api/v1/initiatives/${records.initiativeId}`);
+  await deleteSeen(page, `/api/v1/activities/${records.activityId}`);
+  await deleteSeen(page, `/api/v1/initiatives/${records.initiativeId}`);
 
   await searchBin(page, records.activityName);
   const row = binRow(page, records.activityName);
@@ -185,7 +186,7 @@ test('US5: Delete permanently and Empty recycle bin, both in the activity log (F
     withWorkflow: false,
     leaveEmpty: [],
   });
-  await callApi(page, 'DELETE', `/api/v1/activities/${records.activityId}`);
+  await deleteSeen(page, `/api/v1/activities/${records.activityId}`);
   const name = records.activityName;
 
   // Delete permanently: Cancel has the focus; the red button deletes it for good (FR-028). Alex's
@@ -204,7 +205,7 @@ test('US5: Delete permanently and Empty recycle bin, both in the activity log (F
   await expectToast(page, `Activity '${name}' deleted permanently`);
   await expect(gone(page)).toBeVisible();
 
-  await callApi(page, 'DELETE', `/api/v1/initiatives/${records.initiativeId}`);
+  await deleteSeen(page, `/api/v1/initiatives/${records.initiativeId}`);
   await page.goto('/recycle-bin');
   // Destructive and rare, so it is in the header's More menu (design system ยง5.1).
   await page.getByRole('button', { name: 'More' }).click();

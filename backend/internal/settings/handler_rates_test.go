@@ -2,6 +2,7 @@ package settings_test
 
 import (
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -67,7 +68,7 @@ func TestRatesAPI_AddUpdateDelete_FR003_FR005(t *testing.T) {
 	var deleted struct {
 		RecycleBinEntry struct{ ID, RecordType, RecordName string }
 	}
-	alex.Do(t, http.MethodDelete, "/api/v1/exchange-rates/"+added.ID, nil).Decode(t, &deleted)
+	alex.Do(t, http.MethodDelete, fmt.Sprintf("/api/v1/exchange-rates/%s?version=%d", added.ID, edited.Version), nil).Decode(t, &deleted)
 
 	assertAnswer(t, impact, http.StatusOK, `{"warnings":[]}`)
 	assertAnswer(t, invalid, http.StatusBadRequest, validationBody(`{"field":"date","message":"EUR already has a rate on 12 Mar 2026."},`+

@@ -10,14 +10,13 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
 import { useUnsavedChanges } from '@/ui/useUnsavedChanges';
-import { toCents } from '@/format/decimal';
 import styles from './LineItemForm.module.css';
-import { rateOf } from './line-item-form-state';
 import type { LineItemFormState } from './line-item-form-state';
 import { lineItemRailSections } from './line-item-form-progress';
 import { activityBreadcrumb } from './line-item-links';
-import { convert, parseAmount } from './line-item-math';
-import { toCreateBody } from './line-item-requests';
+import { withBalance } from './line-item-form-state';
+import { toCreateBody, toPreviewBody } from './line-item-requests';
+import { useLineItemPreview } from './api';
 import type { LineItem, LineItemCreate, LineItemFormOptions } from './api';
 import { CANCEL, GO_TO_BIN, GO_TO_PLANS, SAVE, SAVE_AND_ADD, SAVING } from './line-item-text';
 import { LineItemFormCards } from './LineItemFormCards';
@@ -114,7 +113,16 @@ export function LineItemForm(props: LineItemFormProps) {
     stored?.financeBudgetItem ?? undefined,
     (item) => item.id,
   );
-  const change = assignedChange(state, options, currencies, stored);
+  const preview = useLineItemPreview(activity.id, toPreviewBody(state, stored?.id ?? null)).data;
+  const { balanceIn, balanceInPlan } = preview ?? {};
+  useEffect(() => {
+    const current = form.getValues();
+    const next = withBalance(current, balanceIn, balanceInPlan);
+    if (next !== current) {
+      form.setValue('plannedCost', next.plannedCost);
+      form.setValue('costNotes', next.costNotes);
+    }
+  }, [form, balanceIn, balanceInPlan]);
 
   return (
     <FormPage>
@@ -130,7 +138,9 @@ export function LineItemForm(props: LineItemFormProps) {
       >
         <FormLayout
           sections={lineItemRailSections(state, attributeForm, props.businessUnit)}
-          extra={<LineItemSummaryBar balance={options.balance} change={change} />}
+          extra={
+            <LineItemSummaryBar balance={options.balance} after={preview?.afterSaving ?? null} />
+          }
         >
           {(save.failure || problems.length > 0) && (
             <div className={styles.stack}>
@@ -148,6 +158,7 @@ export function LineItemForm(props: LineItemFormProps) {
             </div>
           )}
           <LineItemFormCards
+            preview={preview}
             form={form}
             state={state}
             update={update}
@@ -176,29 +187,6 @@ export function LineItemForm(props: LineItemFormProps) {
   );
 }
 
-function assignedChange(
-  state: LineItemFormState,
-  options: LineItemFormOptions,
-  currencies: LineItemFormOptions['currencies'],
-  stored: LineItem | undefined,
-): bigint {
-  const planCode = options.balance.assigned.currency;
-  const planRate = rateOf(currencies, planCode) ?? '1';
-  const rate = rateOf(currencies, state.currency) ?? '1';
-  const newPlan = convert(parseAmount(state.plannedCost) ?? 0n, rate, planRate);
-  return newPlan - (stored ? storedPlanCents(stored, planCode, planRate) : 0n);
-}
-
 function withStored<T>(list: T[], stored: T | undefined, key: (value: T) => string): T[] {
   return stored && !list.some((value) => key(value) === key(stored)) ? [...list, stored] : list;
-}
-
-function storedPlanCents(stored: LineItem, planCode: string, planRate: string): bigint {
-  if (stored.plannedCostPlan?.currency === planCode) {
-    return toCents(stored.plannedCostPlan.amount);
-  }
-  if (planCode === 'USD') {
-    return toCents(stored.plannedCostUsd.amount);
-  }
-  return convert(toCents(stored.plannedCost.amount), stored.currency.ratePerUsd, planRate);
 }

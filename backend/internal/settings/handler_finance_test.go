@@ -119,8 +119,8 @@ func TestFinanceAPI_Delete_FR004(t *testing.T) {
 	alex := server.SignIn(t, alexsEmail)
 	mustCreate(t, alex, "/api/v1/finance-budget-items", retailBody)
 
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/finance-budget-items/FBI-1009", nil)
-	inUse := alex.Do(t, http.MethodDelete, "/api/v1/finance-budget-items/FBI-1001", nil)
+	deleted := alex.DeleteSeen(t, "/api/v1/finance-budget-items/FBI-1009")
+	inUse := alex.DeleteSeen(t, "/api/v1/finance-budget-items/FBI-1001")
 	var refused struct {
 		Error struct{ Code, Message string }
 	}

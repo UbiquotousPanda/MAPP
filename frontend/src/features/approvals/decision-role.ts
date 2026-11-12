@@ -18,7 +18,7 @@ export function decisionRole(approval: ActivityApproval): DecisionRole {
 export function useDecidesNow(activity: Pick<ApprovalActivity, 'id' | 'status'>): boolean {
   const submitted = activity.status === 'submitted';
   const approval = useActivityApproval(activity.id, submitted);
-  return submitted && approval.data !== undefined && decisionRole(approval.data) === 'decide';
+  return approval.data?.status === 'submitted' && decisionRole(approval.data) === 'decide';
 }
 
 /** Why a person who may decide cannot approve now; "" otherwise. */

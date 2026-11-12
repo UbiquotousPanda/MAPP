@@ -1,6 +1,7 @@
 package performance_test
 
 import (
+	"fmt"
 	"testing"
 
 	"mapp/internal/performance"
@@ -106,5 +107,30 @@ func TestRecheck_LeavesRowsOfAnUndoneImportAlone_FR016(t *testing.T) {
 
 	if facts := f.currentFacts(t, src.ID, "r1"); len(facts) != 0 {
 		t.Errorf("facts = %+v, want none: a fact must never hang on an undone upload", facts)
+	}
+}
+
+func TestRecheckSource_ReachesRowsBeyondTheFirstPage_SMH10(t *testing.T) {
+	t.Parallel()
+	f, src := reviewFixture(t)
+	stuck := map[string]string{}
+	for i := range 500 {
+		stuck[fmt.Sprintf("bad-%d", i)] = "oops"
+	}
+	f.runImport(t, src.ID, stuck)
+	late := importRows(map[string]string{"r-late": "5"})
+	late[0].Keys.ActivityID = "A-new"
+	if _, err := f.service.RunImport(t.Context(), alex, performance.ImportInput{
+		SourceID: src.ID, FileName: "late.csv", Origin: performance.OriginUpload,
+		Headings: []string{"ref", "date", "inqs"}, Rows: late,
+	}); err != nil {
+		t.Fatalf("RunImport: %v", err)
+	}
+
+	f.store.Keys[performance.MatchedActivityID]["a-new"] = []string{"A-1"}
+	resolved, err := f.service.RecheckSource(t.Context(), alex, src.ID)
+
+	if err != nil || resolved.Matched != 1 {
+		t.Errorf("RecheckSource = %+v (%v), want the row after 500 that stay open matched too", resolved, err)
 	}
 }

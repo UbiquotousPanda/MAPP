@@ -98,9 +98,9 @@ func TestDeleteFolder_MovesItToTheRecycleBin_FR024(t *testing.T) {
 	addNote(t, priya, "SF-1002", "Budget")
 	addNote(t, priya, "SF-1002", "Dates")
 
-	empty := priya.Do(t, http.MethodDelete, "/api/v1/sample-folders/SF-1001", nil)
-	withNotes := priya.Do(t, http.MethodDelete, "/api/v1/sample-folders/SF-1002", nil)
-	gone := priya.Do(t, http.MethodDelete, "/api/v1/sample-folders/SF-1001", nil)
+	empty := priya.DeleteSeen(t, "/api/v1/sample-folders/SF-1001")
+	withNotes := priya.DeleteSeen(t, "/api/v1/sample-folders/SF-1002")
+	gone := priya.DeleteSeen(t, "/api/v1/sample-folders/SF-1001")
 
 	ideasEntry := `{"id":"BIN-1001","recordType":"sampleFolder","recordTypeLabel":"sample folder",` +
 		`"recordId":"SF-1001","recordName":"Ideas","path":[],"parent":null,` +
@@ -152,8 +152,8 @@ func TestDeleteNote_MovesItToTheRecycleBin_FR024(t *testing.T) {
 	createFolder(t, priya, "Ideas")
 	addNote(t, priya, "SF-1001", "First idea")
 
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/sample-notes/SN-1001", nil)
-	gone := priya.Do(t, http.MethodDelete, "/api/v1/sample-notes/SN-1001", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/sample-notes/SN-1001")
+	gone := priya.DeleteSeen(t, "/api/v1/sample-notes/SN-1001")
 
 	assertAnswer(t, deleted, http.StatusOK, `{"recycleBinEntry":{"id":"BIN-1001","recordType":"sampleNote",`+
 		`"recordTypeLabel":"sample note","recordId":"SN-1001","recordName":"First idea",`+
@@ -246,14 +246,14 @@ func addNote(t *testing.T, c *apitest.Client, folderID, title string) {
 
 func deleteFolder(t *testing.T, c *apitest.Client, id string) {
 	t.Helper()
-	if response := c.Do(t, http.MethodDelete, "/api/v1/sample-folders/"+id, nil); response.Status != http.StatusOK {
+	if response := c.DeleteSeen(t, "/api/v1/sample-folders/"+id); response.Status != http.StatusOK {
 		t.Fatalf("deleting the sample folder %s: %d %s", id, response.Status, response.Body)
 	}
 }
 
 func deleteNote(t *testing.T, c *apitest.Client, id string) {
 	t.Helper()
-	if response := c.Do(t, http.MethodDelete, "/api/v1/sample-notes/"+id, nil); response.Status != http.StatusOK {
+	if response := c.DeleteSeen(t, "/api/v1/sample-notes/"+id); response.Status != http.StatusOK {
 		t.Fatalf("deleting the sample note %s: %d %s", id, response.Status, response.Body)
 	}
 }

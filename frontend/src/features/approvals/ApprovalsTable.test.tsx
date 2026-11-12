@@ -86,6 +86,14 @@ describe('ApprovalsTable (feature 008, US3)', () => {
     expect(row).toHaveTextContent('Lubricants EU approval (inactive)');
   });
 
+  it('says why an open row cannot be approved now, such as an activity no longer approved', () => {
+    const reason = 'The activity must be approved again.';
+    renderTable([rowOf({ blockedReason: reason })]);
+
+    const row = screen.getByRole('row', { name: /Launch film/ });
+    expect(within(row).getByText(reason)).toBeInTheDocument();
+  });
+
   it('adds my decision and the status in Decided by me, with the level only while open', () => {
     renderTable(
       [

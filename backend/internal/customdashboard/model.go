@@ -169,6 +169,7 @@ type Summary struct {
 	SharedWith  []people.TeamRef `json:"sharedWith"`
 	WidgetCount int              `json:"widgetCount"`
 	UpdatedAt   time.Time        `json:"updatedAt"`
+	Version     int              `json:"version"`
 	Access      Access           `json:"access"`
 }
 

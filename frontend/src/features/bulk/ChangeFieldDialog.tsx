@@ -3,7 +3,7 @@ import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { useBulkFields } from './api';
+import { selectionOf, useBulkFields } from './api';
 import { BulkDialog, Problem } from './BulkDialog';
 import styles from './bulk.module.css';
 import { NOT_OFFERED_FIELDS, recordsText } from './bulk-text';
@@ -28,7 +28,7 @@ export function ChangeFieldDialog({ records, onClose, onDone }: BulkActionDialog
     field && (clear || value)
       ? {
           action: 'changeField',
-          recordIds: records.map((r) => r.id),
+          ...selectionOf(records),
           field: { key, value: clear ? null : value },
           restartApproval: restart,
         }

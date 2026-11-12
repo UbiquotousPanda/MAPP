@@ -11,6 +11,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { useAttributionSettings, useSaveAttributionSettings } from './api';
 import type { AttributionModel, AttributionSettings } from './api';
@@ -44,7 +45,9 @@ export function AttributionSettingsPage() {
   );
 }
 
-function ModelForm({ settings }: { settings: AttributionSettings }) {
+function ModelForm({ settings: opened }: { settings: AttributionSettings }) {
+  const { record: settings, version, keep, loadLatest } = useEditedRecord(opened);
+  const latest = useAttributionSettings();
   const save = useSaveAttributionSettings();
   const { show } = useToast();
   const { date, dateFormat } = useFormatters();
@@ -57,10 +60,13 @@ function ModelForm({ settings }: { settings: AttributionSettings }) {
   async function send() {
     setProblem('');
     try {
-      await save.mutateAsync({ version: settings.version, model });
+      keep(await save.mutateAsync({ version, model }));
       show({ message: `Revenue is now credited with ${chosen}` });
     } catch (error) {
       const failure = asApiError(error);
+      if (failure.kind === 'conflict') {
+        void loadLatest(() => latest.refetch().then((answer) => answer.data));
+      }
       if (!isSessionLost(failure)) {
         setProblem(conflictMessage(failure, 'setting', dateFormat));
       }

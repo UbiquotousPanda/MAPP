@@ -24,7 +24,7 @@ func TestUsedBy_SeesEveryFeature_FR003(t *testing.T) {
 		"/api/v1/shell-attributes/SA-1011":      "Used by 11 initiatives (1 in the recycle bin)",
 		"/api/v1/shell-attributes/SA-1012":      "Used by 12 activities (1 in the recycle bin)",
 		"/api/v1/shell-attributes/SA-1033":      "Used by 9 line items (1 in the recycle bin)",
-		"/api/v1/currencies/USD":                "Used by 5 line items (1 in the recycle bin) · Display currency of 7 people · Plan currency of 3 plans",
+		"/api/v1/currencies/USD":                "Used by 5 line items (1 in the recycle bin) · Used by 5 GSAP transactions · Display currency of 7 people · Plan currency of 3 plans",
 		"/api/v1/currencies/CNY":                "Used by 1 line item",
 		"/api/v1/finance-budget-items/FBI-1001": "Linked to 2 line items",
 	}
@@ -47,7 +47,7 @@ func TestUsedBy_CountsTheRecycleBin_FR003(t *testing.T) {
 	before := summaries(t, priya, settingsPaths)
 
 	planEntry := deletePlan(t, priya, "P-1002")
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/campaigns/C-1002", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/campaigns/C-1002")
 	if deleted.Status != http.StatusOK {
 		t.Fatalf("DELETE campaign C-1002 = %d %s, want 200", deleted.Status, deleted.Body)
 	}
@@ -63,7 +63,7 @@ func TestUsedBy_CountsTheRecycleBin_FR003(t *testing.T) {
 		"/api/v1/shell-attributes/SA-1011":      "Used by 11 initiatives (5 in the recycle bin)",
 		"/api/v1/shell-attributes/SA-1012":      "Used by 12 activities (6 in the recycle bin)",
 		"/api/v1/shell-attributes/SA-1033":      "Used by 9 line items (2 in the recycle bin)",
-		"/api/v1/currencies/USD":                "Used by 5 line items (2 in the recycle bin) · Display currency of 7 people · Plan currency of 3 plans (1 in the recycle bin)",
+		"/api/v1/currencies/USD":                "Used by 5 line items (2 in the recycle bin) · Used by 5 GSAP transactions · Display currency of 7 people · Plan currency of 3 plans (1 in the recycle bin)",
 		"/api/v1/currencies/CNY":                "Used by 1 line item (1 in the recycle bin)",
 		"/api/v1/finance-budget-items/FBI-1001": "Linked to 2 line items",
 	}
@@ -73,7 +73,7 @@ func TestUsedBy_CountsTheRecycleBin_FR003(t *testing.T) {
 	if model := usageAt(t, priya, "/api/v1/models/MOD-1002"); len(model.Records) != 0 || !model.InUse {
 		t.Errorf("MOD-1002 = %+v, want in use with no live plan listed", model)
 	}
-	refused := priya.Do(t, http.MethodDelete, "/api/v1/models/MOD-1002", nil)
+	refused := priya.DeleteSeen(t, "/api/v1/models/MOD-1002")
 	if refused.Status != http.StatusConflict {
 		t.Errorf("DELETE MOD-1002 while its plan is in the recycle bin = %d %s, want 409 in_use", refused.Status, refused.Body)
 	}
@@ -95,12 +95,12 @@ func TestInUseDelete_RefusedForEveryFeature_FR004(t *testing.T) {
 	priya := server.SignIn(t, "priya.raman@shell.com")
 	server.GrantRole(t, "priya.raman@shell.com", "administrator", "all")
 	want := map[string]string{
-		"/api/v1/currencies/GBP":  `{"error":{"code":"in_use","message":"'GBP' is in use (used by 2 line items · Plan currency of 1 plan) — set it inactive instead.","fields":[]}}`,
+		"/api/v1/currencies/GBP":  `{"error":{"code":"in_use","message":"'GBP' is in use (used by 2 line items · Used by 3 GSAP transactions · Plan currency of 1 plan) — set it inactive instead.","fields":[]}}`,
 		"/api/v1/models/MOD-1002": `{"error":{"code":"in_use","message":"'Mobility 1.0' is in use (used by 1 plan) — set it inactive instead.","fields":[]}}`,
 	}
 
 	for path, body := range want {
-		response := priya.Do(t, http.MethodDelete, path, nil)
+		response := priya.DeleteSeen(t, path)
 
 		if response.Status != http.StatusConflict || string(response.Body) != body {
 			t.Errorf("DELETE %s = %d %s\nwant 409 %s", path, response.Status, response.Body, body)

@@ -25,23 +25,14 @@ import { RecentlyDeletedCard } from './RecentlyDeletedCard';
 import { whatGoesWith } from './sample-text';
 import styles from './SampleRecordsPage.module.css';
 
-/** The side panel that is open. */
 type OpenPanel =
   | { kind: 'newFolder' }
   | { kind: 'editFolder'; folder: SampleFolder }
   | { kind: 'addNote'; folder: SampleFolder };
 
-/** The delete that waits for its confirmation. */
 type PendingDelete = { kind: 'folder'; folder: SampleFolder } | { kind: 'note'; note: SampleNote };
 
-/**
- * The developer page of User Story 5 (research R23, D-036): the test bench for the shared create,
- * edit, delete, Undo, restore and activity-log behaviour, with sample folders and the notes in
- * them. Only in local and development environments (DevOnly in router.tsx).
- *
- * On purpose not the full standard CRUD pattern — no search, no details view — because sample
- * records are not records people manage (plan, Complexity Tracking).
- */
+// Not the full CRUD pattern (no search, no details view): sample records are not records people manage.
 export function SampleRecordsPage() {
   usePageTitle('Sample records');
   const [panel, setPanel] = useState<OpenPanel | null>(null);
@@ -82,7 +73,7 @@ export function SampleRecordsPage() {
           title={`Delete sample folder '${pendingDelete.folder.name}'?`}
           text={whatGoesWith(pendingDelete.folder)}
           confirmLabel="Delete sample folder"
-          remove={() => deleteFolder.mutateAsync(pendingDelete.folder.id)}
+          remove={() => deleteFolder.mutateAsync(pendingDelete.folder)}
           onClose={closeDeleteDialog}
         />
       )}
@@ -91,7 +82,7 @@ export function SampleRecordsPage() {
           title={`Delete sample note '${pendingDelete.note.title}'?`}
           text="It goes to the recycle bin. You can restore it."
           confirmLabel="Delete sample note"
-          remove={() => deleteNote.mutateAsync(pendingDelete.note.id)}
+          remove={() => deleteNote.mutateAsync(pendingDelete.note)}
           onClose={closeDeleteDialog}
         />
       )}
@@ -99,7 +90,6 @@ export function SampleRecordsPage() {
   );
 }
 
-/** The summary cards and the page's cards, once its three lists have arrived. */
 function SampleLists({ actions }: { actions: FolderActions }) {
   const folders = useSampleFolders();
   const bin = useRecycleBin();
@@ -135,11 +125,9 @@ function SampleLists({ actions }: { actions: FolderActions }) {
 
 interface SummaryCardsProps {
   folders: SampleFolder[];
-  /** How many entries the recycle bin holds. */
   inRecycleBin: number;
 }
 
-/** Sample folders, sample notes and what is in the recycle bin, counted. */
 function SummaryCards({ folders, inRecycleBin }: SummaryCardsProps) {
   const notes = folders.reduce((count, folder) => count + folder.notes.length, 0);
 

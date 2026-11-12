@@ -10,6 +10,7 @@ const (
 	msgAlreadyOnPR         = "Already on this purchase request"
 	msgNothingLeft         = "Nothing left to request"
 	msgActivityNotApproved = "Activity '%s' must be approved before this purchase request can be submitted."
+	msgApproveAgain        = "Activity '%s' is no longer approved. The activity must be approved again."
 	msgNoSwbs              = "Line item %s '%s' has no SWBS code yet (%s)."
 	msgLineItemsOverCost   = "Activity '%s': line items exceed its planned cost by %s — lower them, or raise the " +
 		"activity's planned cost and get it approved again."

@@ -181,7 +181,7 @@ func (b rowBuilder) recordRow(t *tnode) Row {
 		roleOf = t.parent
 	}
 	row := Row{
-		Key: n.ID, Level: n.Level, RecordID: n.ID, PlanID: n.PlanID, Depth: t.depth, Name: n.Name,
+		Key: n.ID, Level: n.Level, RecordID: n.ID, PlanID: n.PlanID, Depth: t.depth, Name: n.Name, Version: n.Version,
 		Role: roleOf.role(), SearchHit: t.hit, Status: statusOf(n), Owner: n.Owner, PlanType: n.PlanType,
 		Cells: b.cells(cellRow{level: n.Level, t: t, year: yearOf(planOf(t).n, b.in.year)}),
 	}

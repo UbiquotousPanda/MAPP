@@ -11,28 +11,26 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// splitPlan is a split worked out: what it changes, and the problems that stop it.
 type splitPlan struct {
 	original  Activity
 	pc        planContext
-	target    planContext // the initiative of the new activity
+	target    planContext
 	name      string
-	moved     []LineItemBrief // the ticked line items, in the activity's order
+	moved     []LineItemBrief
 	kept      []LineItemBrief
 	amount    *money.Money // the planned cost that moves; nil when the original has none
-	restart   bool         // the original is Submitted or Approved
+	restart   bool
 	problems  errs.Problems
 	sidesKnow bool // the target and the amount are known: the sides can be worked out
 }
 
-// planSplit checks a split of the activity id (data-model §3.6) and works out what it changes, inside the
-// caller's transaction. Every problem is collected; a missing activity is not found.
+// planSplit collects every problem and runs inside the caller's transaction; a missing activity is not found.
 func (s *Service) planSplit(ctx context.Context, id string, in SplitRequest) (splitPlan, error) {
 	original, pc, err := s.load(ctx, id)
 	if err != nil {
 		return splitPlan{}, err
 	}
-	p := splitPlan{original: original, pc: pc, restart: inApproval(original)}
+	p := splitPlan{original: original, pc: pc, restart: InApproval(original.Status)}
 	targetKnown, err := s.checkSplitTarget(ctx, &p, in.InitiativeID)
 	if err != nil {
 		return splitPlan{}, err
@@ -51,7 +49,6 @@ func (s *Service) planSplit(ctx context.Context, id string, in SplitRequest) (sp
 	return p, nil
 }
 
-// checkSplitTarget sets p's target and reports true when the initiative can take the new activity.
 func (s *Service) checkSplitTarget(ctx context.Context, p *splitPlan, initiativeID string) (bool, error) {
 	target, found, err := s.contextOf(ctx, strings.TrimSpace(initiativeID))
 	switch {
@@ -114,7 +111,6 @@ func (s *Service) chooseLineItems(ctx context.Context, p *splitPlan, id string, 
 	return nil
 }
 
-// checkAmount sets the planned cost that moves and reports whether it is known; a split must move something.
 func (p *splitPlan) checkAmount(text *string) bool {
 	amount, problem := splitAmount(text, p.original.PlannedCost, p.pc.plan.Currency)
 	p.amount = amount
@@ -128,9 +124,8 @@ func (p *splitPlan) checkAmount(text *string) bool {
 	return true
 }
 
-// splitAmount reads the planned cost to move (data-model §3.6): 0.00 up to the original's planned cost, in the
-// plan currency; none (nil, "" or 0) when the original has no planned cost. It returns the amount — nil when
-// the original has none — or the problem.
+// splitAmount accepts 0.00 up to the original's planned cost, in the plan currency, and none (nil, "" or 0)
+// when the original has no planned cost.
 func splitAmount(text *string, original *money.Money, currency string) (*money.Money, string) {
 	typed := ""
 	if text != nil {

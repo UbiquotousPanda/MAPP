@@ -51,6 +51,7 @@ func (b *board) row(sub subject, round Round) Row {
 		Workflow: workflow, Round: rowRound(round, level, b.people), SubmittedAt: round.SubmittedAt, StartDate: sub.StartDate,
 		AsDelegateOf:    []PersonView{},
 		StartDatePassed: sub.Status == StatusSubmitted && sub.StartDate != nil && sub.StartDate.Before(b.today),
+		BlockedReason:   sub.Blocked,
 	}
 	if sub.Kind == KindActivity {
 		row.Activity = &RowActivity{ID: sub.ID, Name: sub.Name, Status: sub.Status, DisplayStatus: sub.DisplayStatus}

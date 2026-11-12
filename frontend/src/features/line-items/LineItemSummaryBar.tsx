@@ -7,15 +7,16 @@ import { amountText, moneyText } from './line-item-math';
 import { SUMMARY_NO_COST } from './line-item-text';
 
 type UnassignedBalance = components['schemas']['UnassignedBalance'];
+type Money = components['schemas']['Money'];
 
 export interface LineItemSummaryBarProps {
   balance: UnassignedBalance;
-  /** What saving changes in the assigned amount, in cents of the balance's currency. */
-  change: bigint;
+  /** The unassigned planned cost after saving, worked out by the API; null while it can't be. */
+  after: Money | null;
 }
 
 /** "Activity planned cost · Unassigned now · After saving" above the line-item form, red below zero. */
-export function LineItemSummaryBar({ balance, change }: LineItemSummaryBarProps) {
+export function LineItemSummaryBar({ balance, after }: LineItemSummaryBarProps) {
   if (!balance.plannedCost || !balance.balance) {
     return (
       <StatStrip label="Activity summary">
@@ -24,7 +25,6 @@ export function LineItemSummaryBar({ balance, change }: LineItemSummaryBarProps)
     );
   }
   const now = toCents(balance.balance.amount);
-  const after = now - change;
   const code = balance.balance.currency;
   return (
     <StatStrip label="Activity summary">
@@ -41,8 +41,8 @@ export function LineItemSummaryBar({ balance, change }: LineItemSummaryBarProps)
       />
       <SummaryCard
         label="After saving"
-        value={amountText(after, code)}
-        tone={after < 0n ? 'problem' : undefined}
+        value={after ? moneyText(after) : '—'}
+        tone={after && toCents(after.amount) < 0n ? 'problem' : undefined}
       />
     </StatStrip>
   );

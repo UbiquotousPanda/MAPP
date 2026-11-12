@@ -12,7 +12,8 @@ func TestCorrect_AFixedRowResolvesAndItsFactCounts_FR024(t *testing.T) {
 	row := openRow(t, f, src)
 
 	saved, err := f.service.Correct(t.Context(), alex, row.ID, performance.CorrectInput{
-		Values: []performance.CorrectCell{{Column: "inqs", Value: "5"}},
+		Version: row.Version,
+		Values:  []performance.CorrectCell{{Column: "inqs", Value: "5"}},
 	})
 	if err != nil {
 		t.Fatalf("Correct: %v", err)
@@ -35,7 +36,8 @@ func TestCorrect_RefusesAColumnTheRowNeverCarried_FR024(t *testing.T) {
 	row := openRow(t, f, src)
 
 	_, err := f.service.Correct(t.Context(), alex, row.ID, performance.CorrectInput{
-		Values: []performance.CorrectCell{{Column: "mqls", Value: "5"}},
+		Version: row.Version,
+		Values:  []performance.CorrectCell{{Column: "mqls", Value: "5"}},
 	})
 	if err == nil {
 		t.Fatal("Correct accepted a column the row never carried, want a refusal naming it")
@@ -60,7 +62,8 @@ func TestPersist_ALaterLoadSupersedesACorrectionInProgress_FR026(t *testing.T) {
 	// A correction is in progress: the key is fixed by hand, but the activity is still unknown, so the
 	// row stays open and corrected.
 	if _, correctErr := f.service.Correct(t.Context(), alex, open[0].ID, performance.CorrectInput{
-		Keys: &performance.RowKeys{ActivityID: "A-still-unknown"},
+		Version: open[0].Version,
+		Keys:    &performance.RowKeys{ActivityID: "A-still-unknown"},
 	}); correctErr != nil {
 		t.Fatalf("Correct: %v", correctErr)
 	}

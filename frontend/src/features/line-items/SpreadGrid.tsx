@@ -32,13 +32,15 @@ const GRID_PERIOD_KEY = 'mapp.lineItemGrid';
 
 export interface SpreadGridProps {
   grid: Grid;
+  /** The same grid by quarter, added up by the API. */
+  quarterly: Grid;
   noDates: boolean;
 }
 
 /** The line items by month or quarter (remembered per browser), with a totals row. */
-export function SpreadGrid({ grid, noDates }: SpreadGridProps) {
+export function SpreadGrid({ grid, quarterly, noDates }: SpreadGridProps) {
   const [period, setPeriod] = useState<GridPeriod>(readPeriod);
-  const shown = period === 'quarterly' ? quarterColumns(grid) : monthColumns(grid);
+  const shown = period === 'quarterly' ? quarterColumns(quarterly) : monthColumns(grid);
   const code = grid.total.currency;
 
   function choose(next: GridPeriod) {

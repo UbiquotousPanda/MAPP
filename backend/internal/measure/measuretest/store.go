@@ -15,7 +15,17 @@ type Store struct {
 }
 
 func NewStore(db *fake.DB) Store {
-	return Store{views: fake.TableOf(db, "report_views", func(v measure.StoredView) string { return v.ID })}
+	views := fake.TableOf(db, "report_views", func(v measure.StoredView) string { return v.ID }).
+		Unique("report_views_name_key", func(v measure.StoredView) string {
+			return v.PersonID + "/" + v.Report + "/" + fake.LowerC(v.Name)
+		}).
+		Unique("report_views_default_key", func(v measure.StoredView) string {
+			if !v.IsDefault {
+				return ""
+			}
+			return v.PersonID + "/" + v.Report
+		})
+	return Store{views: views}
 }
 
 func (s Store) ListViews(_ context.Context, personID, report string) ([]measure.StoredView, error) {

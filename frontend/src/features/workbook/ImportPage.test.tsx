@@ -53,10 +53,29 @@ describe('012 FR-025 – FR-034: Import from Excel', () => {
     await user.click(screen.getByRole('button', { name: 'Import 2 rows' }));
 
     expect(api.bodiesOf('POST /api/v1/plans/P-1001/imports')).toEqual([
-      { fileName: 'plan.xlsx', content: 'UEs=' },
+      { fileName: 'plan.xlsx', content: 'UEs=', checkId: 'CHK-1.digest' },
     ]);
     await screen.findByText('Another page');
     expect(router.state.location.pathname).toBe('/imports/IMP-1001');
+  });
+
+  it('drops a check that ends after another file was chosen, so only a checked file imports', async () => {
+    let answerCheck = () => {};
+    const { user } = renderPage([
+      reply('GET /api/v1/plans/{planId}/imports', { body: { items: [], total: 0 } }),
+      reply('POST /api/v1/plans/{planId}/imports/check', async () => {
+        await new Promise<void>((resolve) => (answerCheck = resolve));
+        return { body: importCheck() };
+      }),
+    ]);
+    await screen.findByRole('heading', { name: 'Import from Excel' });
+    await user.upload(screen.getByLabelText('Choose a file'), XLSX);
+    await user.click(screen.getByRole('button', { name: 'Check file' }));
+    await user.upload(screen.getByLabelText('Choose a file'), new File(['PK2'], 'other.xlsx'));
+    answerCheck();
+
+    await screen.findByRole('button', { name: 'Check file' });
+    expect(screen.queryByRole('button', { name: /^Import \d+ rows$/ })).not.toBeInTheDocument();
   });
 
   it('038 FR-037 (M-16): the problems and levels tables scroll sideways by keyboard', async () => {

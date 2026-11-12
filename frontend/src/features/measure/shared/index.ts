@@ -6,8 +6,6 @@ export { LevelSwitch, PeriodSwitch } from './ReportControls';
 export type { ReportWidgetProps } from './ReportWidget';
 export { ReportTable } from './ReportTable';
 export type { ReportTableData, ReportTableColumn, ReportTableRow } from './ReportTable';
-export { periodStates } from './periods';
-export type { PeriodState } from './periods';
 export { toQuery, writeAddress } from './report-address';
 export type { ReportAddress, ReportQuery, Show, Period } from './report-address';
 export { useReportAddress } from './useReportAddress';

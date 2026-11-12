@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { useBulkTargets } from './api';
+import { selectionOf, useBulkTargets } from './api';
 import { BulkDialog, Problem } from './BulkDialog';
 import styles from './bulk.module.css';
 import { recordsText } from './bulk-text';
@@ -24,7 +24,7 @@ export function CopyMoveDialog({ action, records, onClose, onDone }: CopyMoveDia
   return (
     <BulkDialog
       title={`${word} to…`}
-      request={target ? { action, recordIds, targetId: target.id } : null}
+      request={target ? { action, ...selectionOf(records), targetId: target.id } : null}
       submitLabel={(preview) => `${word} ${recordsText(preview?.counts.done ?? records.length)}`}
       describe={(preview) => (
         <p>

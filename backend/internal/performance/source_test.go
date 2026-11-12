@@ -62,7 +62,7 @@ func TestDeactivate_KeepsFactsAndRefusesFurtherLoads_FR004(t *testing.T) {
 	f, src := newImportFixture(t)
 	f.runImport(t, src.ID, map[string]string{"r1": "5"})
 
-	if err := f.service.SetSourceStatus(t.Context(), alex, src.ID, performance.StatusInactive); err != nil {
+	if err := f.setSourceStatus(t, src.ID, performance.StatusInactive); err != nil {
 		t.Fatalf("SetSourceStatus: %v", err)
 	}
 	if facts := f.currentFacts(t, src.ID, "r1"); len(facts) != 1 {
@@ -76,7 +76,7 @@ func TestDeactivate_KeepsFactsAndRefusesFurtherLoads_FR004(t *testing.T) {
 		t.Fatal("a deactivated source accepted a load, want it refused")
 	}
 
-	if err := f.service.SetSourceStatus(t.Context(), alex, src.ID, performance.StatusActive); err != nil {
+	if err := f.setSourceStatus(t, src.ID, performance.StatusActive); err != nil {
 		t.Fatalf("reactivate: %v", err)
 	}
 	if _, err := f.service.RunImport(t.Context(), alex, performance.ImportInput{

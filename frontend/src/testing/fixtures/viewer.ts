@@ -86,6 +86,7 @@ export const VIEWER_PLAN_ACCESS: components['schemas']['PlanAccess'] = {
   delete: refused('Deleting plans'),
   publish: refused('Publishing plans'),
   copy: refused('Creating plans'),
+  export: { available: true, reason: '' },
   content: VIEWER_CONTENT_ACCESS,
 };
 
@@ -103,4 +104,5 @@ export const VIEWER_LINE_ITEM_ACCESS: components['schemas']['LineItemAccess'] = 
   delete: refused('Deleting activities and line items'),
   duplicate: EDIT_ACTIVITIES,
   seeFinance: ALLOWED,
+  sendSwbs: refused('Importing GSAP extracts'),
 };

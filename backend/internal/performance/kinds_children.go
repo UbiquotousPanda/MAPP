@@ -17,8 +17,11 @@ type childSpec[T any] struct {
 	remove                 func(ctx context.Context, ids []string) error
 	put                    func(ctx context.Context, record T) error
 	parts                  func(record T) (id, parentID, label string)
-	restore                func(record T) T
+	prepare                func(ctx context.Context, rc history.RestoreContext, record T) (kept T, note string, drop bool, err error)
 }
+
+// dropped marks a snapshot that prepare left out: Put skips it.
+const dropped = "null"
 
 func (c childSpec[T]) kind() history.Kind {
 	return history.Kind{
@@ -42,6 +45,9 @@ func (c childSpec[T]) kind() history.Kind {
 			return c.remove(ctx, []string{id})
 		},
 		Put: func(ctx context.Context, s history.Snapshot) error {
+			if string(s.Data) == dropped {
+				return nil
+			}
 			var record T
 			if err := json.Unmarshal(s.Data, &record); err != nil {
 				return err
@@ -54,21 +60,26 @@ func (c childSpec[T]) kind() history.Kind {
 	}
 }
 
-// Skipped on an Undo: an Undo keeps the activity's status, a restore returns it to Created (R14).
-func (c childSpec[T]) prepareRestore(_ context.Context, rc history.RestoreContext, s *history.Snapshot) ([]string, error) {
-	if c.restore == nil || rc.Undo {
+func (c childSpec[T]) prepareRestore(ctx context.Context, rc history.RestoreContext, s *history.Snapshot) ([]string, error) {
+	if c.prepare == nil {
 		return nil, nil
 	}
 	var record T
 	if err := json.Unmarshal(s.Data, &record); err != nil {
 		return nil, err
 	}
-	data, err := json.Marshal(c.restore(record))
+	kept, note, drop, err := c.prepare(ctx, rc, record)
 	if err != nil {
 		return nil, err
 	}
-	s.Data = data
-	return nil, nil
+	s.Data = json.RawMessage(dropped)
+	if !drop {
+		s.Data, err = json.Marshal(kept)
+	}
+	if err != nil || note == "" {
+		return nil, err
+	}
+	return []string{note}, nil
 }
 
 func (s *Service) childKinds() []history.Kind {
@@ -76,9 +87,8 @@ func (s *Service) childKinds() []history.Kind {
 		childSpec[Fact]{
 			name: factKind, singular: "performance fact", plural: "performance facts",
 			ids: s.repo.FactIDsOf, get: s.repo.GetFact, remove: s.repo.DeleteFacts, put: s.repo.PutFact,
-			parts: func(f Fact) (string, string, string) { return f.ID, f.ActivityID, f.SourceReference },
-			// A restore returns the activity to Created, so facts must come back held.
-			restore: func(f Fact) Fact { f.Held = true; return f },
+			parts:   func(f Fact) (string, string, string) { return f.ID, f.ActivityID, f.SourceReference },
+			prepare: s.prepareFact,
 		}.kind(),
 		childSpec[MediaCode]{
 			name: mediaCodeKind, singular: "media code", plural: "media codes",
@@ -89,13 +99,15 @@ func (s *Service) childKinds() []history.Kind {
 		childSpec[Alias]{
 			name: aliasKind, singular: "external name alias", plural: "external name aliases",
 			ids: s.repo.AliasIDsOf, get: s.repo.GetAlias, remove: s.repo.DeleteAliases, put: s.repo.PutAlias,
-			parts: func(a Alias) (string, string, string) { return a.ID, a.ActivityID, a.Name },
+			parts:   func(a Alias) (string, string, string) { return a.ID, a.ActivityID, a.Name },
+			prepare: s.prepareAlias,
 		}.kind(),
 		childSpec[IntegrationID]{
 			name: integrationKind, singular: "integration ID", plural: "integration IDs",
 			ids: s.repo.IntegrationIDsOf, get: s.repo.GetIntegrationID, remove: s.repo.DeleteIntegrationIDs,
-			put:   s.repo.PutIntegrationID,
-			parts: func(k IntegrationID) (string, string, string) { return k.ID, k.ActivityID, k.Value },
+			put:     s.repo.PutIntegrationID,
+			parts:   func(k IntegrationID) (string, string, string) { return k.ID, k.ActivityID, k.Value },
+			prepare: s.prepareIntegrationID,
 		}.kind(),
 	}
 }

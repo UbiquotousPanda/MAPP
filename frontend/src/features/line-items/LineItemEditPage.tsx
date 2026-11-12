@@ -4,6 +4,7 @@ import { useAddressParams } from '@/ui/useAddressParams';
 import { useAttributeForm } from '@/features/settings';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import { recordHref } from '@/ui/record-links';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { LineItemForm } from './LineItemForm';
@@ -70,7 +71,7 @@ function EditForm({ details, options, attributeForm, focusField }: EditFormProps
   const update = useUpdateLineItem(lineItem.id);
   const [initial] = useState(() => editFormState(lineItem));
   // The edit-form rule: only a conflict replaces the version the person started from.
-  const [version, setVersion] = useState(lineItem.version);
+  const { version, loadLatest } = useEditedRecord({ version: lineItem.version });
   const href = recordHref('lineItem', lineItem.id);
 
   return (
@@ -91,8 +92,7 @@ function EditForm({ details, options, attributeForm, focusField }: EditFormProps
         return () => navigate(href);
       }}
       onConflict={async () => {
-        const latest = await fetchLatest(lineItem.id);
-        setVersion(latest.lineItem.version);
+        await loadLatest(() => fetchLatest(lineItem.id).then((latest) => latest.lineItem));
       }}
       onCancel={() => navigate(href)}
     />

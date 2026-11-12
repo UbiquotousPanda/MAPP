@@ -4,21 +4,21 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"mapp/internal/history"
+	"mapp/internal/platform/web"
 )
 
-// listCurrencies answers GET /api/v1/currencies: USD first, then by code.
 func (h *Handler) listCurrencies(c *gin.Context) {
 	currencies, err := h.service.ListCurrencies(c.Request.Context(), actorOf(c))
 	respond(c, http.StatusOK, CurrencyPage{Items: currencies, Total: len(currencies)}, err)
 }
 
-// getCurrency answers GET /api/v1/currencies/{code}.
 func (h *Handler) getCurrency(c *gin.Context) {
 	currency, err := h.service.GetCurrency(c.Request.Context(), actorOf(c), c.Param("code"))
 	respond(c, http.StatusOK, currency, err)
 }
 
-// createCurrency answers POST /api/v1/currencies with 201 and the new currency.
 func (h *Handler) createCurrency(c *gin.Context) {
 	var input CurrencyInput
 	if !readBody(c, &input) {
@@ -28,7 +28,6 @@ func (h *Handler) createCurrency(c *gin.Context) {
 	respond(c, http.StatusCreated, currency, err)
 }
 
-// updateCurrency answers PATCH /api/v1/currencies/{code} with the currency after the change.
 func (h *Handler) updateCurrency(c *gin.Context) {
 	var update CurrencyUpdate
 	if !readBody(c, &update) {
@@ -40,7 +39,12 @@ func (h *Handler) updateCurrency(c *gin.Context) {
 
 // deleteCurrency answers DELETE /api/v1/currencies/{code} with the recycle-bin entry.
 func (h *Handler) deleteCurrency(c *gin.Context) {
-	entry, err := h.service.DeleteCurrency(c.Request.Context(), actorOf(c), c.Param("code"))
+	ctx, err := history.SeenVersion(c, c.Param("code"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	entry, err := h.service.DeleteCurrency(ctx, actorOf(c), c.Param("code"))
 	respondDeleted(c, entry, err)
 }
 

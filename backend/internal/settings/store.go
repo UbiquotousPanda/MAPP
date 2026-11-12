@@ -42,6 +42,7 @@ type Store interface {
 	ListCurrencies(ctx context.Context) ([]Currency, error)
 	PutCurrency(ctx context.Context, c Currency) error
 	DeleteCurrency(ctx context.Context, code string) error
+	CurrencyUses(ctx context.Context) ([]CurrencyUse, error)
 
 	GetFinanceBudget(ctx context.Context, id string) (FinanceBudget, bool, error)
 	ListFinanceBudgets(ctx context.Context) ([]FinanceBudget, error)

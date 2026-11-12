@@ -206,3 +206,6 @@ type FinanceBudgetItem struct {
 	Active   bool   `json:"active"`
 	record.Meta
 }
+
+func (c ActivityCategory) id() string      { return c.ID }
+func (c ActivityCategory) isDefault() bool { return c.IsDefault }

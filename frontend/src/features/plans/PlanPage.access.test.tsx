@@ -30,6 +30,7 @@ const PLANNER_ACCESS: NonNullable<Plan['access']> = {
   delete: refused('Deleting plans', 'Planner'),
   publish: refused('Publishing plans', 'Editor'),
   copy: ALLOWED,
+  export: ALLOWED,
   content: { ...VIEWER_CONTENT_ACCESS, addCampaign: ALLOWED, editCampaigns: ALLOWED },
 };
 

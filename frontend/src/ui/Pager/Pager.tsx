@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect } from 'react';
 import { formatWhole } from '@/format/decimal';
 import { Button } from '../Button/Button';
 import { Select } from '../Select/Select';
@@ -21,6 +22,10 @@ export interface PagerProps<Size extends number> {
 export function Pager<Size extends number>(props: PagerProps<Size>) {
   const { page, pageSize, total, sizes, onPage, onPageSize, placement } = props;
   const pages = Math.max(1, Math.ceil(total / pageSize));
+  // An old link, Back, or deletes can leave the page past the end: go to the last page instead.
+  useEffect(() => {
+    if (total > 0 && page > pages) onPage(pages);
+  }, [total, page, pages, onPage]);
   const first = (page - 1) * pageSize + 1;
   const last = Math.min(total, page * pageSize);
   return (

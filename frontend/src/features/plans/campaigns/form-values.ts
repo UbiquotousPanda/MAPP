@@ -1,6 +1,6 @@
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import type { AttributeForm, AttributeValues } from '@/ui/ShellAttributeFields/rules';
-import { BUDGET_CURRENCY, budgetInput, budgetText } from './budget';
+import { budgetInput, budgetText } from './budget';
 import type { Campaign, CampaignCreate, Initiative } from './api';
 import type { RecordFormValues } from './schemas';
 import type { RecordLevel } from './texts';
@@ -29,7 +29,7 @@ export function valuesOf(record: Campaign | Initiative): RecordFormValues {
   };
 }
 
-export function bodyOf(values: RecordFormValues, currency = BUDGET_CURRENCY): RecordBody {
+export function bodyOf(values: RecordFormValues, currency: string): RecordBody {
   return {
     name: values.name,
     description: values.description,

@@ -43,7 +43,7 @@ function ChangePage() {
     try {
       await call(
         api.DELETE('/api/v1/activities/{activityId}', {
-          params: { path: { activityId: 'A-1001' } },
+          params: { path: { activityId: 'A-1001' }, query: { version: 1 } },
         }),
       );
     } catch (error) {

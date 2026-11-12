@@ -145,7 +145,7 @@ func (s *Store) LatestImportStatuses(_ context.Context, sourceIDs []string) (map
 	}
 	newest := map[string]latest{}
 	for _, run := range all {
-		if !slices.Contains(sourceIDs, run.SourceID) {
+		if !slices.Contains(sourceIDs, run.SourceID) || run.Status == performance.ImportUndone {
 			continue
 		}
 		key := run.CreatedAt.Format("2006-01-02T15:04:05") + run.ID

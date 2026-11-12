@@ -1,6 +1,7 @@
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import { BarList } from '@/ui/BarList/BarList';
+import { useToday } from '@/session/useToday';
 import { ReportWidget } from '../shared';
 import type { UserAccessBand } from './api';
 
@@ -13,7 +14,7 @@ interface SignInBandsProps {
 /** The Last sign-in widget: the bands as bars with their counts in words, and its table view. */
 export function SignInBands({ bands, people, recordedSince }: SignInBandsProps) {
   const { date } = useFormatters();
-  const fromToday = recordedSince.slice(0, 10) === new Date().toISOString().slice(0, 10);
+  const fromToday = recordedSince.slice(0, 10) === useToday();
   return (
     <ReportWidget
       report="planData"

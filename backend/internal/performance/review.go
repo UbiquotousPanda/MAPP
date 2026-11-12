@@ -143,6 +143,7 @@ func (s *Service) setReviewStatus(ctx context.Context, a actor.Actor, change rev
 // CorrectInput edits the row's load-time interpretation: cells may be fixed, the reference may
 // not - a new reference is a new identity, which only a fresh upload may create.
 type CorrectInput struct {
+	Version  int           `json:"version"`
 	Date     *string       `json:"date"`
 	Currency *string       `json:"currency"`
 	Keys     *RowKeys      `json:"keys"`
@@ -254,8 +255,19 @@ func (s *Service) correctableRow(ctx context.Context, rowID string, in CorrectIn
 		return ReviewRow{}, errs.NotFound(msgReviewRowNotFound)
 	}
 	row := rows[0].ReviewRow
-	if row.Status != ReviewOpen {
-		return ReviewRow{}, errs.NotAllowed(fmt.Sprintf(msgReviewNotChangeable, row.Status))
+	if row.Version != in.Version {
+		return ReviewRow{}, errs.VersionConflict(reviewRowNoun, row.UpdatedBy.Name, row.UpdatedAt)
+	}
+	undone, err := s.undoneAmong(ctx, rows)
+	if err != nil {
+		return ReviewRow{}, err
+	}
+	status := row.Status
+	if undone[row.ImportID] {
+		status = ReviewResolved
+	}
+	if status != ReviewOpen {
+		return ReviewRow{}, errs.NotAllowed(fmt.Sprintf(msgReviewNotChangeable, status))
 	}
 	if unknown := unknownColumns(row.Parsed, in.Values); len(unknown) > 0 {
 		return ReviewRow{}, errs.Validation(errs.FieldError{

@@ -37,6 +37,9 @@ func TestGetAllWork_Contract(t *testing.T) {
 	levels := map[allwork.Level]int{}
 	for _, row := range r.Rows {
 		levels[row.Level]++
+		if row.Level != allwork.LevelUnassigned && row.Version < 1 {
+			t.Errorf("row %s has no version, so a bulk action cannot say which one the person saw", row.RecordID)
+		}
 		if row.Level == allwork.LevelPlan {
 			plans = append(plans, row.Name)
 		}
@@ -88,7 +91,7 @@ func TestLocate_Contract(t *testing.T) {
 	priya := server.SignIn(t, priyasEmail)
 
 	found := priya.Do(t, http.MethodGet, "/api/v1/all-work/records/L-1002", nil)
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/campaigns/C-1002", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/campaigns/C-1002")
 	inBin := priya.Do(t, http.MethodGet, "/api/v1/all-work/records/A-1005", nil) // Fleet roadshow, under Rimula fleet
 	unknown := priya.Do(t, http.MethodGet, "/api/v1/all-work/records/I-9999", nil)
 

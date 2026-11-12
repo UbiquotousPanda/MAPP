@@ -1,4 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import { dataSourceKeys, datasetKeys } from '../keys';
@@ -70,9 +71,13 @@ export function useUpdateDataset() {
 
 export function useDeleteDataset() {
   const refresh = useRefreshDatasets();
-  return useMutation<S['DeleteResult'], Error, string>({
-    mutationFn: (datasetId) =>
-      call(api.DELETE('/api/v1/datasets/{datasetId}', { params: { path: { datasetId } } })),
+  return useMutation<S['DeleteResult'], Error, Seen>({
+    mutationFn: ({ id: datasetId, version }: Seen) =>
+      call(
+        api.DELETE('/api/v1/datasets/{datasetId}', {
+          params: { path: { datasetId }, query: { version } },
+        }),
+      ),
     onSettled: refresh,
   });
 }

@@ -54,6 +54,7 @@ type Row struct {
 	Overdue         bool             `json:"overdue"`
 	WaitingDays     *int             `json:"waitingDays"`
 	NoApprover      bool             `json:"noApprover"`
+	BlockedReason   string           `json:"blockedReason,omitempty"`
 }
 
 type RowPage struct {

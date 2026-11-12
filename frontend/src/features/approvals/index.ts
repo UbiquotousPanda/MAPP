@@ -12,6 +12,7 @@ export { approveRefusal } from './decision-role';
 export { PurchaseRequestDecisionDialog } from './PurchaseRequestDecisionDialog';
 export { SubmissionOutcomes } from './SubmissionOutcomes';
 export { SubmitButton } from './SubmitButton';
+export { submitOffer } from './submit-offer';
 export type { ApprovalActivity, ShowSubmitProblems } from './approval-types';
 export { invalidateAllButSession, useActivityApproval } from './api';
 export type {

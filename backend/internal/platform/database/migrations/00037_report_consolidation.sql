@@ -31,16 +31,23 @@ WHERE m.old_key = v.report AND EXISTS (
     SELECT 1 FROM report_views o JOIN report_moves om ON om.old_key = o.report
     WHERE o.person_id = v.person_id AND om.new_key = m.new_key AND om.rank < m.rank
         AND lower(o.name COLLATE "C") = lower(v.name COLLATE "C"));
+UPDATE report_views v SET name = rtrim(left(v.name, 59 - char_length(v.id))) || ' ' || v.id
+FROM report_moves m
+WHERE m.old_key = v.report AND EXISTS (
+    SELECT 1 FROM report_views o JOIN report_moves om ON om.old_key = o.report
+    WHERE o.person_id = v.person_id AND om.new_key = m.new_key AND (om.rank, o.id) < (m.rank, v.id)
+        AND lower(o.name COLLATE "C") = lower(v.name COLLATE "C"));
 
 UPDATE report_views
 SET query = trim(BOTH '&' FROM regexp_replace('&' || query || '&', '&(stage|revenueBy|performanceBy|costBy|roiBy)=[^&]*',
     '', 'g'))
 WHERE report = 'summary';
 UPDATE report_views SET query = concat_ws('&', nullif(query, ''), 'stage=inq')
-WHERE report = 'funnel' AND query !~ '(^|&)stage=';
+WHERE report = 'funnel' AND query !~ '(^|&)stage=' AND char_length(query) <= 3990;
 UPDATE report_views SET query = concat_ws('&', nullif(query, ''), 'tab=swbs')
-WHERE report = 'gsapLink' AND query !~ '(^|&)tab=';
-UPDATE report_views SET query = concat_ws('&', nullif(query, ''), 'tab=people') WHERE report = 'userAccess';
+WHERE report = 'gsapLink' AND query !~ '(^|&)tab=' AND char_length(query) <= 3990;
+UPDATE report_views SET query = concat_ws('&', nullif(query, ''), 'tab=people')
+WHERE report = 'userAccess' AND char_length(query) <= 3990;
 
 UPDATE report_views v SET report = m.new_key FROM report_moves m WHERE m.old_key = v.report;
 DROP TABLE report_moves;

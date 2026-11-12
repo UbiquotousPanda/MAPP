@@ -60,7 +60,7 @@ func TestGetMe_SignedInPerson_FR012(t *testing.T) {
 
 	assertAnswer(t, response, http.StatusOK, `{"id":"U-1002","name":"Priya Raman","firstName":"Priya",`+
 		`"email":"priya.raman@shell.com","jobTitle":"Marketer","initials":"PR",`+
-		`"preferences":`+defaultPreferencesBody+`,"version":1,"teams":`+priyasTeamsBody+`,"access":`+priyasAccessBody+`}`)
+		`"preferences":`+defaultPreferencesBody+`,"version":1,"teams":`+priyasTeamsBody+`,"access":`+priyasAccessBody+`,"today":"2026-03-12"}`)
 }
 
 // After more than 12 hours without a request the session has expired, and the person must sign in again.
@@ -120,7 +120,7 @@ func TestPatchMe_UpdatesProfile_FR021_FR022(t *testing.T) {
 
 	assertAnswer(t, response, http.StatusOK, `{"id":"U-1002","name":"Priya Sharma","firstName":"Priya",`+
 		`"email":"priya.raman@shell.com","jobTitle":"Senior marketer","initials":"PS",`+
-		`"preferences":`+defaultPreferencesBody+`,"version":2,"teams":`+priyasTeamsBody+`,"access":`+priyasAccessBody+`}`)
+		`"preferences":`+defaultPreferencesBody+`,"version":2,"teams":`+priyasTeamsBody+`,"access":`+priyasAccessBody+`,"today":"2026-03-12"}`)
 	var me people.CurrentUser
 	priya.Do(t, http.MethodGet, "/api/v1/me", nil).Decode(t, &me)
 	var details people.PersonDetails

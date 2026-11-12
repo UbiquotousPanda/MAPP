@@ -27,11 +27,11 @@ func TestTeamUsedByPlans_InUseDelete_FR014(t *testing.T) {
 
 	var before team
 	priya.Do(t, http.MethodGet, "/api/v1/teams/T-1002", nil).Decode(t, &before)
-	refused := priya.Do(t, http.MethodDelete, "/api/v1/teams/T-1002", nil)
+	refused := priya.DeleteSeen(t, "/api/v1/teams/T-1002")
 	deletePlan(t, priya, "P-1002")
 	var after team
 	priya.Do(t, http.MethodGet, "/api/v1/teams/T-1002", nil).Decode(t, &after)
-	stillRefused := priya.Do(t, http.MethodDelete, "/api/v1/teams/T-1002", nil)
+	stillRefused := priya.DeleteSeen(t, "/api/v1/teams/T-1002")
 
 	if len(before.Plans) != 1 || before.Plans[0].ID != "P-1002" || before.Plans[0].Name != "FY2026 Mobility China" || before.Plans[0].InRecycleBin {
 		t.Errorf("plans of T-1002 = %+v, want FY2026 Mobility China", before.Plans)
@@ -47,7 +47,7 @@ func TestTeamUsedByPlans_InUseDelete_FR014(t *testing.T) {
 
 	var created struct{ ID string }
 	priya.Do(t, http.MethodPost, "/api/v1/teams", map[string]any{"name": "Pop-up events", "description": "", "colour": "", "memberIds": []string{}}).Decode(t, &created)
-	if deleted := priya.Do(t, http.MethodDelete, "/api/v1/teams/"+created.ID, nil); deleted.Status != http.StatusOK {
+	if deleted := priya.DeleteSeen(t, "/api/v1/teams/"+created.ID); deleted.Status != http.StatusOK {
 		t.Errorf("DELETE an unused team = %d %s, want 200", deleted.Status, deleted.Body)
 	}
 }
@@ -150,8 +150,8 @@ func TestDisplayCurrencies_SettingsAndPeople_FR003_D061(t *testing.T) {
 	}
 
 	want := map[string]string{
-		"/api/v1/currencies/USD": "Used by 5 line items (1 in the recycle bin) · Display currency of 6 people · Plan currency of 3 plans",
-		"/api/v1/currencies/EUR": "Used by 3 line items · Display currency of 1 person",
+		"/api/v1/currencies/USD": "Used by 5 line items (1 in the recycle bin) · Used by 5 GSAP transactions · Display currency of 6 people · Plan currency of 3 plans",
+		"/api/v1/currencies/EUR": "Used by 3 line items · Used by 1 purchase request line · Used by 3 GSAP transactions · Display currency of 1 person",
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Used by =\n%v\nwant\n%v", got, want)

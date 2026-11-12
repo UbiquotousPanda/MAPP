@@ -1,14 +1,9 @@
-/**
- * What feature 008's approval parts ask the API (plan, "Server state"): the activity's approval,
- * the submission check, the approvals page's rows and preview, and the approval actions.
- *
- * An approval action changes an activity's status, which shows in plans, campaigns, initiatives,
- * activity pages, lists and counts of several features, whose query keys this feature does not
- * own: so after every action (also a refused one) every query but the session is asked again.
- */
+// An approval action changes a status that queries of other features show, so after every action
+// (also a refused one) every query but the session is asked again.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
+import { invalidateAllButSession } from '@/api/invalidate';
 import type { components } from '@/api/generated/schema';
 import { useMonthRange } from './useMonthRange';
 
@@ -21,20 +16,15 @@ export type ApprovalPerson = components['schemas']['ApprovalPerson'];
 export type ApprovalMonitoring = components['schemas']['ApprovalMonitoring'];
 export type EscalationRunResult = components['schemas']['EscalationRunResult'];
 
-/** The three tabs of the approvals page. */
 export type ApprovalTab = 'waiting' | 'open' | 'decided';
 
-/** The query key of an activity's approval (its Approval section and status button share it). */
+/** Shared by an activity's Approval section and its status button. */
 export function approvalKey(activityId: string) {
   return ['approval', activityId];
 }
 
-/** Asks every query again except the session's (plan, "Server state"). */
-export function invalidateAllButSession(queryClient: QueryClient): Promise<void> {
-  return queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] !== 'session' });
-}
+export { invalidateAllButSession };
 
-/** The activity's approval: chain, history, latest decline, viewer and available actions. */
 export function useActivityApproval(activityId: string, enabled = true) {
   return useQuery({
     queryKey: approvalKey(activityId),
@@ -46,7 +36,7 @@ export function useActivityApproval(activityId: string, enabled = true) {
   });
 }
 
-/** What Submit would do now: every problem, or the levels to confirm. Always asked afresh. */
+/** What Submit would do now; always asked afresh. */
 export function fetchSubmission(
   queryClient: QueryClient,
   activityId: string,
@@ -63,7 +53,7 @@ export function fetchSubmission(
   });
 }
 
-/** One page of rows of the approvals page; `enabled` false waits (the page still picks its tab). */
+/** `enabled` false waits while the page still picks its tab. */
 export function useApprovalRows(tab: ApprovalTab, enabled = true) {
   return useQuery({
     queryKey: ['approvals', tab],
@@ -72,7 +62,6 @@ export function useApprovalRows(tab: ApprovalTab, enabled = true) {
   });
 }
 
-/** The preview side panel of the approvals page. */
 export function useApprovalPreview(activityId: string) {
   return useQuery({
     queryKey: ['approval-preview', activityId],
@@ -83,7 +72,6 @@ export function useApprovalPreview(activityId: string) {
   });
 }
 
-/** Submit (or re-submit) with the activity version the person saw and an optional comment. */
 export interface SubmitInput {
   activityId: string;
   version: number;
@@ -104,7 +92,6 @@ export function useSubmitActivity() {
   });
 }
 
-/** A decision on the level the person saw, in the round they saw. */
 export interface DecisionInput {
   mode: 'approve' | 'decline';
   activityId: string;
@@ -129,7 +116,6 @@ export function useDecide() {
   });
 }
 
-/** A recall of the round the person saw, with an optional reason (FR-021). */
 export interface RecallInput {
   activityId: string;
   roundId: string;
@@ -150,12 +136,6 @@ export function useRecall() {
   });
 }
 
-/**
- * The monitoring figures of the approvals page (017 US6, FR-029, FR-030): overdue, escalated,
- * the average time to decision and the automatic approvals of this calendar month, the ageing
- * buckets, the waiting by level and the overdue rows. Asked again every 30 seconds, like the
- * counts; `enabled` false while the Monitoring tab is not shown.
- */
 export function useApprovalMonitoring(enabled = true) {
   const { monthStart, monthEnd } = useMonthRange();
   return useQuery({
@@ -169,7 +149,6 @@ export function useApprovalMonitoring(enabled = true) {
   });
 }
 
-/** "Run reminders and escalations now" (017 US5, FR-028); every query but the session after it. */
 export function useRunEscalations() {
   const queryClient = useQueryClient();
   return useMutation({

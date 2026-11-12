@@ -13,14 +13,12 @@ import (
 	"mapp/internal/rollup"
 )
 
-// The history kind of plans (data model §4). Features 005–007 register their kinds below it.
 const (
 	kindName     = "plan"
 	kindSingular = "plan" // mid-sentence, as in "Not saved — Daniel Okoro changed this plan"
 	kindPlural   = "plans"
 )
 
-// The field labels of the plan form, as the activity log and the completeness chip show them.
 const (
 	labelName          = "Plan name"
 	labelYear          = "Year"
@@ -36,11 +34,10 @@ const (
 	labelGoalStage     = "Goal stage"
 	labelGoalAmount    = "Goal amount"
 	labelStatus        = "Status"
-	labelCurrency      = "Plan currency" // 016
-	labelPlanType      = "Plan type"     // 016
+	labelCurrency      = "Plan currency"
+	labelPlanType      = "Plan type"
 )
 
-// The words of the plan's choices (plan "User-visible messages").
 var (
 	spreadWords = map[string]string{
 		string(SpreadEvenly): "Evenly", string(SpreadFirstMonth): "All in first month",
@@ -48,20 +45,17 @@ var (
 	}
 	stageWords  = map[string]string{string(StageINQ): "INQ", string(StageMQL): "MQL", string(StageRevenue): "Revenue"}
 	statusWords = map[string]string{string(StatusDraft): "Draft", string(StatusPublished): "Published"}
-	// planTypeWords are the plan types as people read them (016 FR-032).
+
 	planTypeWords = map[PlanType]string{TypeOperational: "Operational", TypeStrategic: "Strategic", TypeCrossMarket: "Cross-market"}
 )
 
-// Messages about bringing a plan back from the recycle bin (plan "Restore notes").
 const (
 	undoNameTakenMessage = "Can't undo — there is now another plan called '%s'. Restore it from the recycle bin instead."
 	renamedNote          = "Renamed to '%s' because the name was taken."
 	returnedAsDraftNote  = "Returned as Draft — publish it again when it's ready."
 )
 
-// Kinds returns the history kind of plans, for internal/app to register before the kinds of the levels
-// below (research R8). With it, history logs a plan's changes in words, moves a plan with everything in it
-// to the recycle bin, and brings it back.
+// Kinds must be registered before the kinds of the levels below a plan.
 func (s *Service) Kinds() []history.Kind {
 	return []history.Kind{{
 		Name:           kindName,
@@ -76,7 +70,6 @@ func (s *Service) Kinds() []history.Kind {
 	}}
 }
 
-// snapshot reads the plan id as history keeps it: the stored plan and its name; a plan has no parent.
 func (s *Service) snapshot(ctx context.Context, id string) (history.Snapshot, bool, error) {
 	p, found, err := s.repo.Get(ctx, id)
 	if err != nil || !found {
@@ -89,7 +82,6 @@ func (s *Service) snapshot(ctx context.Context, id string) (history.Snapshot, bo
 	return history.Snapshot{ID: p.ID, Name: p.Name, Data: data}, true, nil
 }
 
-// put stores the plan of a snapshot again, exactly as the snapshot holds it.
 func (s *Service) put(ctx context.Context, snapshot history.Snapshot) error {
 	var p Plan
 	if err := json.Unmarshal(snapshot.Data, &p); err != nil {
@@ -98,15 +90,12 @@ func (s *Service) put(ctx context.Context, snapshot history.Snapshot) error {
 	return s.repo.Put(ctx, p)
 }
 
-// describe gives the activity log the label of a plan field and the text of its value (plan "Activity
-// log"): names of models, teams, people and finance budgets, money as "1,200,000.00 USD", the words of
-// the choices, and Settings' labels and texts for Shell attributes. Anything else gets history's default
-// ("" asks for it); an id that no longer resolves is shown as it is.
+// describe answers "" for history's default text; an id that no longer resolves is shown as it is.
 func (s *Service) describe(ctx context.Context, field string, value any) (label, text string, err error) {
 	if strings.HasPrefix(field, "attributes.") {
 		return s.settings.DescribeAttribute(ctx, field, value)
 	}
-	if label, text, ok := rollup.DescribePhasing(field, value); ok { // 016 FR-023
+	if label, text, ok := rollup.DescribePhasing(field, value); ok {
 		return label, text, nil
 	}
 	stored, _ := value.(string) // most fields are stored as text
@@ -132,10 +121,10 @@ func (s *Service) describe(ctx context.Context, field string, value any) (label,
 	case "description":
 		return labelDescription, "", nil
 	case "budget":
-		if amount, err := money.ParseAmount(stored); err == nil { // logged before 016: USD
+		if amount, err := money.ParseAmount(stored); err == nil { // logged before plan currencies: USD
 			return labelBudget, money.USD(amount).Format(), nil
 		}
-		return labelBudget, rollup.MoneyText(value), nil // 016: money in the plan currency
+		return labelBudget, rollup.MoneyText(value), nil
 	case "currency":
 		return labelCurrency, stored, nil
 	case "planType":
@@ -160,8 +149,6 @@ func (s *Service) describe(ctx context.Context, field string, value any) (label,
 	return "", "", nil
 }
 
-// describeTeams writes the team names of a stored list of team ids, for the log: "Lubricants Europe,
-// Mobility China".
 func (s *Service) describeTeams(ctx context.Context, value any) (string, error) {
 	list, _ := value.([]any)
 	ids := make([]string, 0, len(list))
@@ -181,8 +168,7 @@ func (s *Service) describeTeams(ctx context.Context, value any) (string, error) 
 	return strings.Join(names, ", "), nil
 }
 
-// goalText writes a stored goal as people read it: "250,000" for INQ and MQL, "2,500,000.00 USD" for
-// revenue, which is stored with two decimals.
+// goalText: INQ and MQL are counts; revenue is stored with two decimals.
 func goalText(stored string) string {
 	if stored == "" {
 		return ""
@@ -194,15 +180,13 @@ func goalText(stored string) string {
 		return stored
 	}
 	if n, ok := wholeNumber(stored); ok {
-		return strings.TrimSuffix(money.FromCents(n*100).Format(), ".00") // grouped like an amount, without cents
+		return strings.TrimSuffix(money.FromCents(n*100).Format(), ".00")
 	}
 	return stored
 }
 
-// prepareRestore applies the plan's rules just before it comes back from the recycle bin (D-087): plan
-// names are unique, so an Undo of a plan whose name another plan has meanwhile taken is refused, and a
-// Restore renames it "<name> (restored)", "<name> (restored 2)", …; a Restore (not an Undo) of a Published
-// plan returns it as Draft (R14). Each change is recorded in the plan's bookkeeping and in a note.
+// prepareRestore: plan names are unique, so an Undo of a plan whose name was taken meanwhile is refused and a
+// Restore renames it; a Restore (not an Undo) of a Published plan returns it as Draft.
 func (s *Service) prepareRestore(ctx context.Context, rc history.RestoreContext, snapshot *history.Snapshot) ([]string, error) {
 	var p Plan
 	if err := json.Unmarshal(snapshot.Data, &p); err != nil {
@@ -220,14 +204,14 @@ func (s *Service) prepareRestore(ctx context.Context, rc history.RestoreContext,
 		p.Name = restoredName(all, p.Name, p.ID)
 		notes = append(notes, fmt.Sprintf(renamedNote, p.Name))
 	}
-	if !rc.Undo && p.Status == StatusPublished {
-		p.Status = StatusDraft
+	if status, reset := history.StatusAfterRestore(rc, p.Status, StatusDraft); reset {
+		p.Status = status
 		notes = append(notes, returnedAsDraftNote)
 	}
 	if len(notes) == 0 {
 		return nil, nil
 	}
-	p.Touch(rc.Actor, rc.Now) // a changed plan gets a new version
+	p.Touch(rc.Actor, rc.Now)
 	data, err := json.Marshal(p)
 	if err != nil {
 		return nil, err
@@ -236,9 +220,7 @@ func (s *Service) prepareRestore(ctx context.Context, rc history.RestoreContext,
 	return notes, nil
 }
 
-// restoredName returns the first of "<name> (restored)", "<name> (restored 2)", … that no plan among all
-// other than id has. The suffix may make the name longer than 120 characters: nothing but a missing parent
-// may block a restore (feature 011 FR-025).
+// restoredName may exceed 120 characters: nothing but a missing parent may block a restore.
 func restoredName(all []Plan, name, id string) string {
 	candidate := name + " (restored)"
 	for n := 2; ; n++ {

@@ -32,8 +32,10 @@ func TestSetStatus_ApprovedReleasesHeldFacts_046FR020(t *testing.T) {
 		plans: set.Plans, settings: set.Settings,
 		rates: func(context.Context) (money.Rates, error) { return money.Rates{}, nil },
 		now:   func() time.Time { return noon },
-		approved: func(_ context.Context, _ actor.Actor, activityID string) error {
-			released = append(released, activityID)
+		moved: func(_ context.Context, _ actor.Actor, m statusMove) error {
+			if release, _ := heldChange(m.from, m.to); release {
+				released = append(released, m.id)
+			}
 			return nil
 		},
 	}
@@ -41,8 +43,8 @@ func TestSetStatus_ApprovedReleasesHeldFacts_046FR020(t *testing.T) {
 	if _, err := adapter.SetStatus(t.Context(), alex, submitted, string(activity.StatusApproved)); err != nil {
 		t.Fatalf("SetStatus(approved): %v", err)
 	}
-	if _, err := adapter.SetStatus(t.Context(), alex, submitted, string(activity.StatusDeclined)); err != nil {
-		t.Fatalf("SetStatus(declined): %v", err)
+	if _, err := adapter.SetStatus(t.Context(), alex, submitted, string(activity.StatusCreated)); err != nil {
+		t.Fatalf("SetStatus(created): %v", err)
 	}
 
 	if len(released) != 1 || released[0] != submitted {
@@ -63,4 +65,23 @@ func seededActivity(t *testing.T, set stores.Set, status activity.Status) string
 	}
 	t.Fatal("the demo data holds no activity in the wanted status")
 	return ""
+}
+
+func TestHeldChange_FactsFollowTheApprovedStatus_046FR020(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		from, to      activity.Status
+		release, hold bool
+	}{
+		{activity.StatusSubmitted, activity.StatusApproved, true, false},
+		{activity.StatusCreated, activity.StatusApproved, true, false},
+		{activity.StatusApproved, activity.StatusCreated, false, true},
+		{activity.StatusSubmitted, activity.StatusCreated, false, false},
+		{activity.StatusSubmitted, activity.StatusDeclined, false, false},
+	}
+	for _, tt := range tests {
+		if release, hold := heldChange(tt.from, tt.to); release != tt.release || hold != tt.hold {
+			t.Errorf("heldChange(%s, %s) = %v, %v; want %v, %v", tt.from, tt.to, release, hold, tt.release, tt.hold)
+		}
+	}
 }

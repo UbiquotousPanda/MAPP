@@ -5,6 +5,7 @@ import type { components } from '@/api/generated/schema';
 
 type Schemas = components['schemas'];
 export type ImportUpload = Schemas['ImportUpload'];
+export type ImportRun = Schemas['ImportRun'];
 export type ImportCheck = Schemas['ImportCheck'];
 export type ImportDetail = Schemas['ImportDetail'];
 export type ImportSummary = Schemas['ImportSummary'];
@@ -45,7 +46,7 @@ export function useCheckImport(planId: string) {
 export function useRunImport(planId: string) {
   const refresh = useRefreshAll();
   return useMutation({
-    mutationFn: (body: ImportUpload) =>
+    mutationFn: (body: ImportRun) =>
       call(api.POST('/api/v1/plans/{planId}/imports', { params: { path: { planId } }, body })),
     onSuccess: refresh,
   });

@@ -5,6 +5,7 @@ package approvaltest
 import (
 	"cmp"
 	"context"
+	"fmt"
 	"slices"
 	"time"
 
@@ -22,11 +23,15 @@ type Store struct {
 
 func NewStore(db *fake.DB) Store {
 	return Store{
-		workflows:     fake.TableOf(db, "approval_workflows", func(w approval.Workflow) string { return w.ID }),
-		rounds:        fake.TableOf(db, "approval_rounds", func(r approval.Round) string { return r.ID }),
+		workflows: fake.TableOf(db, "approval_workflows", func(w approval.Workflow) string { return w.ID }),
+		rounds: fake.TableOf(db, "approval_rounds", func(r approval.Round) string { return r.ID }).
+			Unique("approval_rounds_number_key", func(r approval.Round) string { return fmt.Sprint(r.SubjectID, "/", r.Number) }).
+			Unique("approval_rounds_open_excl", openSubject).
+			References("approval_rounds_workflow_fk", "approval_workflows", func(r approval.Round) string { return r.WorkflowID }),
 		actions:       fake.TableOf(db, "approval_actions", func(a approval.Action) string { return a.ID }),
 		notifications: fake.TableOf(db, "notifications", func(n approval.Notification) string { return n.ID }),
-		delegations:   fake.TableOf(db, "approval_delegations", func(dl approval.Delegation) string { return dl.ID }),
+		delegations: fake.TableOf(db, "approval_delegations", func(dl approval.Delegation) string { return dl.ID }).
+			Exclude("approval_delegations_excl", overlap),
 	}
 }
 
@@ -133,4 +138,16 @@ func (s Store) ListDelegations(context.Context) ([]approval.Delegation, error) {
 
 func (s Store) PutDelegation(ctx context.Context, dl approval.Delegation) error {
 	return s.delegations.Put(ctx, dl)
+}
+
+func openSubject(r approval.Round) string {
+	if r.Outcome != approval.OutcomeOpen {
+		return ""
+	}
+	return r.SubjectID
+}
+
+func overlap(a, b approval.Delegation) bool {
+	live := a.CancelledAt == nil && b.CancelledAt == nil
+	return live && a.PersonID == b.PersonID && !a.EndDate.Before(b.StartDate) && !b.EndDate.Before(a.StartDate)
 }

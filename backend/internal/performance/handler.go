@@ -99,9 +99,16 @@ func (h *Handler) reactivate(c *gin.Context) {
 }
 
 func (h *Handler) setStatus(c *gin.Context, status Status) {
+	var in struct {
+		Version int `json:"version"`
+	}
+	if err := web.BindJSON(c, &in); err != nil {
+		web.RespondError(c, err)
+		return
+	}
 	a, _ := actor.From(c.Request.Context())
 	id := c.Param("sourceId")
-	err := h.service.SetSourceStatus(c.Request.Context(), a, id, status)
+	err := h.service.SetSourceStatus(c.Request.Context(), a, id, StatusChange{Status: status, Version: in.Version})
 	h.answerSource(c, http.StatusOK, id, err)
 }
 

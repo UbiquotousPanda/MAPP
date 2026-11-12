@@ -112,7 +112,7 @@ func TestCreateMapping_OnADeactivatedSourceRefused_FR004(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	src := f.createSource(t, "Eloqua")
-	if err := f.service.SetSourceStatus(t.Context(), alex, src.ID, performance.StatusInactive); err != nil {
+	if err := f.setSourceStatus(t, src.ID, performance.StatusInactive); err != nil {
 		t.Fatalf("SetSourceStatus: %v", err)
 	}
 

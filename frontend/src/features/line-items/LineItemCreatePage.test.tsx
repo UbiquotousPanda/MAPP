@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { nth } from '@/testing/dom';
 import { attribute, option } from '@/testing/fixtures/attribute-forms';
 import { activity, lineItem, usd } from '@/testing/fixtures/line-items';
-import { formOptions, lineItemForm, notFound } from '@/testing/fixtures/line-item-forms';
+import { formOptions, lineItemForm, notFound, preview } from '@/testing/fixtures/line-item-forms';
 import {
   CREATE,
   findNameField,
@@ -15,7 +15,11 @@ import { choose } from '@/testing/select';
 
 describe('LineItemCreatePage (US2)', () => {
   it('opens filled in with the defaults, each labelled with its source (scenario 1, FR-008)', async () => {
-    renderCreatePage();
+    const { api } = renderCreatePage([
+      reply('POST /api/v1/activities/{activityId}/line-items/preview', {
+        body: preview({ afterSaving: usd('0.00') }),
+      }),
+    ]);
 
     expect(await findNameField()).toHaveValue('Launch film – line item');
     expect(document.title).toBe('New line item · SP&A One');
@@ -45,7 +49,13 @@ describe('LineItemCreatePage (US2)', () => {
     const summary = screen.getByLabelText('Activity summary');
     expect(summary).toHaveTextContent('Activity planned cost$120,000.00');
     expect(summary).toHaveTextContent('Unassigned now$20,000.00');
-    expect(summary).toHaveTextContent('After saving$0.00');
+    await waitFor(() => expect(summary).toHaveTextContent('After saving$0.00'));
+    expect(nth(api.bodiesOf('POST /api/v1/activities/A-1001/line-items/preview'), -1)).toEqual({
+      lineItemId: null,
+      currency: 'USD',
+      plannedCost: '20000.00',
+      spread: { method: 'evenly', months: [] },
+    });
 
     const breadcrumb = screen.getByLabelText('Breadcrumb');
     expect(within(breadcrumb).getByRole('link', { name: 'Launch film' })).toHaveAttribute(

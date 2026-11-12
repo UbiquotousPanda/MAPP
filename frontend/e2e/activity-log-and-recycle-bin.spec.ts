@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
-  callApi,
+  deleteSeen,
   escapeRegExp,
   expectNoAxeViolations,
   expectToast,
@@ -69,7 +69,7 @@ test('An activity deleted from its page is found in the recycle bin and restored
     records.year,
     '1000.00',
   );
-  await callApi(page, 'DELETE', `/api/v1/initiatives/${binned.id}`);
+  await deleteSeen(page, `/api/v1/initiatives/${binned.id}`);
 
   await page.goto(records.activityPath);
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
@@ -171,7 +171,7 @@ test('Home: Recent changes shows the latest changes in Mei’s plans, newest fir
     records.year,
     '1000.00',
   );
-  await callApi(page, 'DELETE', `/api/v1/initiatives/${binned.id}`);
+  await deleteSeen(page, `/api/v1/initiatives/${binned.id}`);
   await changeActivityPlannedCost(page, records.activityId, '26000.00');
 
   await page.goto('/');

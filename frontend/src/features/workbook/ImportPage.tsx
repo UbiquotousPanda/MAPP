@@ -37,14 +37,15 @@ export function ImportPage() {
   const check = useCheckImport(planId);
   const run = useRunImport(planId);
   const inputId = useId();
-  const [upload, setUpload] = useState<ImportUpload | null>(null);
-  const [result, setResult] = useState<ImportCheck | null>(null);
+  // A check belongs to the file it read: choosing another file drops it, so only a checked file imports.
+  const [chosen, setChosen] = useState<Chosen | null>(null);
+  const upload = chosen?.upload ?? null;
+  const result = chosen?.check ?? null;
   const [fileProblem, setFileProblem] = useState<string | null>(null);
 
   async function choose(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-    setUpload(null);
-    setResult(null);
+    setChosen(null);
     setFileProblem(null);
     if (!file) return;
     if (!/\.(xlsx|csv)$/i.test(file.name)) {
@@ -52,7 +53,7 @@ export function ImportPage() {
     } else if (file.size > MAX_FILE_BYTES) {
       setFileProblem(FILE_TOO_LARGE);
     } else {
-      setUpload({ fileName: file.name, content: await base64Of(file) });
+      setChosen({ upload: { fileName: file.name, content: await base64Of(file) }, check: null });
     }
   }
 
@@ -62,17 +63,21 @@ export function ImportPage() {
       return;
     }
     check.mutate(upload, {
-      onSuccess: setResult,
+      onSuccess: (checked) =>
+        setChosen((now) => (now?.upload === upload ? { upload, check: checked } : now)),
       onError: (error) => setFileProblem(messageOf(error)),
     });
   }
 
   function runImport() {
-    if (!upload) return;
-    run.mutate(upload, {
-      onSuccess: (detail) => void navigate(`/imports/${encodeURIComponent(detail.import.id)}`),
-      onError: (error) => show({ message: messageOf(error) }),
-    });
+    if (!upload || !result) return;
+    run.mutate(
+      { ...upload, checkId: result.checkId },
+      {
+        onSuccess: (detail) => void navigate(`/imports/${encodeURIComponent(detail.import.id)}`),
+        onError: (error) => show({ message: messageOf(error) }),
+      },
+    );
   }
 
   async function download(get: (planId: string) => Promise<string>) {
@@ -173,6 +178,11 @@ export function ImportPage() {
       </div>
     </>
   );
+}
+
+interface Chosen {
+  upload: ImportUpload;
+  check: ImportCheck | null;
 }
 
 function messageOf(error: unknown): string {

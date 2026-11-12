@@ -99,7 +99,12 @@ func (h *Handler) save(c *gin.Context) {
 }
 
 func (h *Handler) delete(c *gin.Context) {
-	entry, err := h.service.Delete(c.Request.Context(), actorOf(c), c.Param("purchaseRequestId"))
+	ctx, err := history.SeenVersion(c, c.Param("purchaseRequestId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	entry, err := h.service.Delete(ctx, actorOf(c), c.Param("purchaseRequestId"))
 	answer(c, http.StatusOK, history.DeleteResult{RecycleBinEntry: entry.View()}, err)
 }
 

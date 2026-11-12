@@ -61,6 +61,8 @@ type Request struct {
 	TargetID        string       `json:"targetId"`
 	RestartApproval bool         `json:"restartApproval"`
 	Comment         string       `json:"comment"`
+	// Versions holds the version the person saw of each selected record; a record that changed since is skipped.
+	Versions map[string]int `json:"versions"`
 }
 
 // Record is a selected record as the owning area shows it to the person acting.
@@ -74,6 +76,7 @@ type Record struct {
 	Ancestors []string
 	Status    string
 	Shown     string
+	Version   int
 }
 
 // Below counts what goes with a record that is deleted, and how many activities among it and below it are
@@ -99,6 +102,7 @@ type Outcome struct {
 	Outcome     string   `json:"outcome"`
 	Reasons     []string `json:"reasons"`
 	NewRecordID string   `json:"newRecordId,omitempty"`
+	Version     int      `json:"version,omitempty"`
 }
 
 type Effect struct {
@@ -151,6 +155,7 @@ type Result struct {
 type UndoResult struct {
 	BulkActionID string                  `json:"bulkActionId"`
 	Restored     []history.RestoreResult `json:"restored"`
+	AlreadyBack  []string                `json:"alreadyBack"` // bin entries undone or restored on their own since
 }
 
 // Action is a stored bulk action: what Undo of a bulk delete needs.

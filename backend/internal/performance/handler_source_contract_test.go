@@ -62,13 +62,23 @@ func TestReactivatePerformanceSource_Contract_FR004(t *testing.T) {
 	sourceID := preparedSource(t, alex)
 	path := "/api/v1/performance/sources/" + sourceID
 
-	off := decoded[sourceAnswer](t, alex.Do(t, http.MethodPost, path+"/deactivate", nil), http.StatusOK)
-	on := decoded[sourceAnswer](t, alex.Do(t, http.MethodPost, path+"/reactivate", nil), http.StatusOK)
+	read := decoded[sourceAnswer](t, alex.Do(t, http.MethodGet, path, nil), http.StatusOK)
+	off := decoded[sourceAnswer](t, alex.Do(t, http.MethodPost, path+"/deactivate", map[string]any{"version": read.Version}), http.StatusOK)
+	stale := alex.Do(t, http.MethodPost, path+"/reactivate", map[string]any{"version": read.Version})
+	on := decoded[sourceAnswer](t, alex.Do(t, http.MethodPost, path+"/reactivate", map[string]any{"version": off.Version}), http.StatusOK)
+	again := alex.Do(t, http.MethodPost, path+"/reactivate", map[string]any{"version": on.Version})
 
 	if off.Status != "inactive" || on.Status != "active" {
 		t.Errorf("deactivate then reactivate = %s then %s, want inactive then active", off.Status, on.Status)
 	}
-	if missing := alex.Do(t, http.MethodPost, "/api/v1/performance/sources/PS-9999/reactivate", nil); missing.Status != http.StatusNotFound {
+	if stale.Status != http.StatusConflict || !strings.Contains(string(stale.Body), "version_conflict") {
+		t.Errorf("reactivate from an old version = %d %s, want version_conflict", stale.Status, stale.Body)
+	}
+	if again.Status != http.StatusConflict || !strings.Contains(string(again.Body), "not_allowed") {
+		t.Errorf("reactivate an active source = %d %s, want not_allowed", again.Status, again.Body)
+	}
+	missing := alex.Do(t, http.MethodPost, "/api/v1/performance/sources/PS-9999/reactivate", map[string]any{"version": 1})
+	if missing.Status != http.StatusNotFound {
 		t.Errorf("reactivate a missing source = %d %s, want 404", missing.Status, missing.Body)
 	}
 }

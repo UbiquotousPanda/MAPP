@@ -100,3 +100,10 @@ INSERT INTO rate_imports (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
 );
+
+-- name: CurrencyUses :many
+SELECT 'performanceFact'::text AS kind, currency::text AS currency, count(*)::integer AS records
+FROM performance_facts WHERE currency IS NOT NULL GROUP BY currency
+UNION ALL
+SELECT 'financialTransaction'::text, currency, count(*)::integer FROM financial_transactions GROUP BY currency
+ORDER BY 1, 2;

@@ -22,6 +22,7 @@ export interface ActionPlan {
   id: string;
   name: string;
   status: PlanStatus;
+  version: number;
   /** What the signed-in person may do with the plan (feature 014); missing means everything. */
   access?: PlanAccess;
 }
@@ -134,7 +135,7 @@ export function usePlanActions({ onDeleted }: PlanActionsOptions = {}) {
 
   async function confirmDelete(plan: ActionPlan) {
     try {
-      const result = await deletePlan.mutateAsync(plan.id);
+      const result = await deletePlan.mutateAsync(plan);
       setDeleting({ plan, open: false });
       afterDelete(result);
       onDeleted?.();

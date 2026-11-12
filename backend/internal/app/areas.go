@@ -137,7 +137,7 @@ func (w *wiring) planningKinds() error {
 
 func (w *wiring) planLevels() []plan.Level {
 	return append(campaignLevels(w.campaigns), activityLevel(w.activities, w.set.Activities, w.set.Campaigns),
-		lineItemLevel(w.lineItems, w.set.Activities, w.set.Campaigns))
+		lineItemLevel(w.lineItems, w.set.Activities, w.set.Campaigns), binnedAmounts(w.history))
 }
 
 // budgetsArea comes after the planning kinds: an allocation is a child of its plan, which takes it along.
@@ -174,7 +174,7 @@ func (w *wiring) approvalsArea(release *heldRelease) error {
 	tools := history.Tools{Tx: s.Tx, IDs: w.generator, Log: w.history, Now: w.now}
 	w.approvals = approval.NewService(tools, s.Approvals, s.People, &approvalsActivities{
 		activities: s.Activities, lineItems: s.LineItems, campaigns: s.Campaigns, plans: s.Plans, settings: s.Settings,
-		rates: w.settings.Rates, check: w.activities.SubmitCheck, now: w.now, approved: release.activityApproved,
+		rates: w.settings.Rates, check: w.activities.SubmitCheck, now: w.now, moved: release.statusMoved,
 	})
 	if err := w.register(w.approvals.Kinds()); err != nil {
 		return err
@@ -186,7 +186,7 @@ func (w *wiring) approvalsArea(release *heldRelease) error {
 }
 
 func (w *wiring) connectApprovals(release *heldRelease) {
-	w.activities.UseApprovalHooks(activityApprovalHooks{svc: w.approvals, unapproved: release.activityUnapproved})
+	w.activities.UseApprovalHooks(activityApprovalHooks{svc: w.approvals, moved: release.statusMoved})
 	w.approvals.UseDisplayRates(w.people)
 	w.approvals.UseAccess(approvalsAccess{access: w.access})
 	w.approvals.UseRuleChoices(approvalRuleChoices{settings: w.settings})
@@ -211,6 +211,7 @@ func (w *wiring) financialsArea() error {
 		Planning: w.finance, Rates: w.settings, Displays: financialDisplays{people: w.people},
 		Access: financialAccess{tx: s.Tx, plans: s.Plans},
 	})
+	w.history.OnPurge(w.financials.UnlinkPurged)
 	if err := w.register(w.financials.Kinds()); err != nil {
 		return err
 	}

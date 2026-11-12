@@ -10,6 +10,7 @@ import { SortHeader } from '@/ui/SortHeader/SortHeader';
 import { nextSortOrder } from '@/ui/SortHeader/sort-order';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import dataTable from '@/ui/Table/Table.module.css';
+import { useToday } from '@/session/useToday';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { ApprovalsGridData, ApprovalsRowData } from './api';
@@ -181,7 +182,7 @@ export function ApprovalsGrid({
   const empty: ReportTableData = { columns: [{ label: 'Record ID' }], rows: [] };
   const showOrder = Boolean(grid?.items.some((row) => row.purchaseOrderNumber));
   const columns = COLUMNS.filter((c) => showOrder || c.key !== 'purchaseOrder');
-  const today = new Date().toLocaleDateString('en-CA');
+  const today = useToday();
   return (
     <>
       <ReportWidget

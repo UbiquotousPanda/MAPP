@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { callApi, expectToast, signInAs } from './fixtures';
+import { callApi, deleteSeen, expectToast, signInAs } from './fixtures';
 import { lubricantsActivity, STANDARD_WORKFLOW, type LubricantsActivity } from './lubricants';
 import { createPlanningRecords } from './planning';
 import { cancelCurrentDelegations, decideAs } from './planning-changes';
@@ -170,7 +170,7 @@ test('017 US3 (T047 journey 3): an approver is left out of his own activity, and
     );
   } finally {
     await signInAs(page, DANIEL);
-    await callApi(page, 'DELETE', `/api/v1/activities/${activity.id}`);
+    await deleteSeen(page, `/api/v1/activities/${activity.id}`);
   }
 });
 

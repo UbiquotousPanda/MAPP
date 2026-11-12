@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import { dashboardKeys, widgetDataKeys } from '../keys';
@@ -34,11 +35,11 @@ export function useCustomDashboard(dashboardId: string) {
 
 export function useDeleteCustomDashboard() {
   const queryClient = useQueryClient();
-  return useMutation<DeleteResult, Error, string>({
-    mutationFn: (dashboardId) =>
+  return useMutation<DeleteResult, Error, Seen>({
+    mutationFn: ({ id: dashboardId, version }: Seen) =>
       call(
         api.DELETE('/api/v1/custom-dashboards/{dashboardId}', {
-          params: { path: { dashboardId } },
+          params: { path: { dashboardId }, query: { version } },
         }),
       ),
     onSettled: () => queryClient.invalidateQueries({ queryKey: dashboardKeys.all }),

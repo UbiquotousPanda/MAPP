@@ -15,7 +15,9 @@ function levelOf(row: AllWorkRow): BulkLevel | null {
 
 function recordOf(row: AllWorkRow): SelectedRecord | null {
   const level = levelOf(row);
-  return level ? { id: row.recordId, level, name: row.name, planId: row.planId } : null;
+  return level && row.version
+    ? { id: row.recordId, level, name: row.name, planId: row.planId, version: row.version }
+    : null;
 }
 
 export function recordsOf(rows: AllWorkRow[]): SelectedRecord[] {

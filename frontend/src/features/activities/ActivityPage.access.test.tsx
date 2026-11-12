@@ -33,6 +33,8 @@ const FORM_REFUSED = apiError(
   "Changing activities and line items isn't part of your role (Viewer). Ask an administrator if you need it.",
 );
 
+const NONE = { available: false, reason: '' };
+
 function openPage(access: Activity['access'], person: CurrentUser, formAllowed: boolean) {
   const section = launchFilmSection({ activity: activity({ id: 'A-1042' }) });
   mockApi([
@@ -74,7 +76,20 @@ function openPage(access: Activity['access'], person: CurrentUser, formAllowed: 
       },
     }),
     reply('GET /api/v1/activities/{activityId}', { body: launchFilm({ access }) }),
-    reply('GET /api/v1/activities/{activityId}/approval', { body: approvalOf() }),
+    reply('GET /api/v1/activities/{activityId}/approval', {
+      body: approvalOf({
+        status: 'created',
+        displayStatus: 'created',
+        rounds: [],
+        actions: {
+          submit: access?.submit ?? NONE,
+          resubmit: NONE,
+          approve: NONE,
+          decline: NONE,
+          recall: NONE,
+        },
+      }),
+    }),
     reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
     reply('GET /api/v1/activities/{activityId}/line-items', {
       body: formAllowed ? section : { ...section, access: VIEWER_LINE_ITEM_ACCESS },

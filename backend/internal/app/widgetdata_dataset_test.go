@@ -59,7 +59,7 @@ func TestQuery_DatasetSharedOrNot_FR044(t *testing.T) {
 		t.Errorf("shared with her team, Sara's widget has %d events, want 12", got)
 	}
 
-	if answer := priya.Do(t, http.MethodDelete, "/api/v1/datasets/"+eventLeads, nil); answer.Status != http.StatusOK {
+	if answer := priya.DeleteSeen(t, "/api/v1/datasets/"+eventLeads); answer.Status != http.StatusOK {
 		t.Fatalf("deleting %s = %d %s", eventLeads, answer.Status, answer.Body)
 	}
 	ask(t, priya, leadsByEvent(), http.StatusNotFound)

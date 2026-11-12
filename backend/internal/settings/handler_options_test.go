@@ -120,7 +120,7 @@ func TestOptionsAPI_Get_D211(t *testing.T) {
 
 	alex.Do(t, http.MethodGet, "/api/v1/shell-attribute-options/"+options[0].ID, nil).Decode(t, &first)
 	for _, o := range options[1:] {
-		alex.Do(t, http.MethodDelete, "/api/v1/shell-attribute-options/"+o.ID, nil)
+		alex.DeleteSeen(t, "/api/v1/shell-attribute-options/"+o.ID)
 	}
 	var last struct{ Locks []lock }
 	alex.Do(t, http.MethodGet, "/api/v1/shell-attribute-options/"+options[0].ID, nil).Decode(t, &last)
@@ -150,11 +150,11 @@ func TestOptionsAPI_Delete_FR004(t *testing.T) {
 		}
 	}
 
-	alex.Do(t, http.MethodDelete, "/api/v1/shell-attribute-options/"+options[3].ID, nil).Decode(t, &deleted)
+	alex.DeleteSeen(t, "/api/v1/shell-attribute-options/"+options[3].ID).Decode(t, &deleted)
 	for _, o := range options[1:] {
-		alex.Do(t, http.MethodDelete, "/api/v1/shell-attribute-options/"+o.ID, nil)
+		alex.DeleteSeen(t, "/api/v1/shell-attribute-options/"+o.ID)
 	}
-	last := alex.Do(t, http.MethodDelete, "/api/v1/shell-attribute-options/"+options[0].ID, nil)
+	last := alex.DeleteSeen(t, "/api/v1/shell-attribute-options/"+options[0].ID)
 
 	if deleted.RecycleBinEntry.RecordType != "shellAttributeOption" || deleted.RecycleBinEntry.Parent == nil ||
 		deleted.RecycleBinEntry.Parent.ID != created.ID {

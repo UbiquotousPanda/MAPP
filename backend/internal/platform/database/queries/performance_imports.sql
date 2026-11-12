@@ -37,7 +37,9 @@ WHERE (sqlc.narg(status)::text IS NULL OR performance_review_rows.status = sqlc.
                     WHERE kv.value ILIKE '%' || sqlc.narg(key_text) || '%'))
     AND (sqlc.narg(since)::timestamptz IS NULL OR performance_review_rows.created_at >= sqlc.narg(since))
     AND (sqlc.narg(until)::timestamptz IS NULL OR performance_review_rows.created_at <= sqlc.narg(until))
-ORDER BY performance_review_rows.created_at DESC, performance_review_rows.id COLLATE "C"
+    AND (sqlc.narg(after_id)::text IS NULL OR performance_review_rows.id COLLATE "C" > sqlc.narg(after_id))
+ORDER BY CASE WHEN sqlc.arg(by_id)::boolean THEN NULL ELSE performance_review_rows.created_at END DESC,
+    performance_review_rows.id COLLATE "C"
 LIMIT sqlc.arg(max_rows);
 
 -- name: PutPerformanceReviewRow :exec
@@ -76,5 +78,5 @@ SELECT code FROM currencies ORDER BY code;
 -- name: LatestImportStatuses :many
 SELECT DISTINCT ON (source_id) source_id, status
 FROM performance_imports
-WHERE source_id = ANY(sqlc.arg(source_ids)::text[])
+WHERE source_id = ANY(sqlc.arg(source_ids)::text[]) AND status <> 'undone'
 ORDER BY source_id, created_at DESC, id COLLATE "C" DESC;

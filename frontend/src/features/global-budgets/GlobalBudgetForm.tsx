@@ -14,6 +14,7 @@ import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { budgetCheck, OverspendField, useOverspendConfiguration } from '@/features/overspend';
 import { PersonField } from '@/features/people';
 import { useFormatters } from '@/format/useFormatters';
+import { useCurrentYear } from '@/session/useToday';
 import { fetchGlobalBudget, useCreateGlobalBudget, useUpdateGlobalBudget } from './api';
 import type { GlobalBudget } from './api';
 import { toasts, yearChoices } from './global-budgets-text';
@@ -48,7 +49,7 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
   const { dateFormat } = useFormatters();
   const create = useCreateGlobalBudget();
   const update = useUpdateGlobalBudget();
-  const currentYear = new Date().getFullYear();
+  const currentYear = useCurrentYear();
   const form = useForm<GlobalBudgetValues>({
     resolver: zodResolver(globalBudgetSchema),
     defaultValues: globalBudgetValuesOf(budget, currentYear),

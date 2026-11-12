@@ -14,6 +14,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { localDate } from '@/format/intl';
@@ -106,7 +107,9 @@ function ReadOnly({ config }: { config: PurchaseRequestConfiguration }) {
   );
 }
 
-function SettingsForm({ config }: { config: PurchaseRequestConfiguration }) {
+function SettingsForm({ config: opened }: { config: PurchaseRequestConfiguration }) {
+  const { record: config, version, keep, loadLatest } = useEditedRecord(opened);
+  const latest = usePurchaseRequestConfiguration();
   const save = useSavePurchaseRequestConfiguration();
   const { show } = useToast();
   const { dateFormat } = useFormatters();
@@ -123,10 +126,13 @@ function SettingsForm({ config }: { config: PurchaseRequestConfiguration }) {
   async function send(values: SettingsValues) {
     setProblem('');
     try {
-      await save.mutateAsync({ version: config.version, ...values });
+      keep(await save.mutateAsync({ version, ...values }));
       show({ message: CONFIG_SAVED });
     } catch (error) {
       const failure = asApiError(error);
+      if (failure.kind === 'conflict') {
+        void loadLatest(() => latest.refetch().then((answer) => answer.data));
+      }
       if (!isSessionLost(failure)) {
         setProblem(conflictMessage(failure, CONFIG_NOUN, dateFormat));
       }

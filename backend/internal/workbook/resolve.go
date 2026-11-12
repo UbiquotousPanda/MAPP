@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"mapp/internal/activity"
 	"mapp/internal/platform/sheet"
 )
 
@@ -122,9 +123,13 @@ func (ap *applier) findTwice(s sheetRows) {
 }
 
 func needsApproval(stored Stored, changed map[string]bool) bool {
-	inApproval := stored.Status == statusSubmitted || stored.Status == statusApproved
-	return stored.Level == LevelActivity && inApproval &&
-		(changed[fieldPlanned] || changed[fieldStart] || changed[fieldEnd] || changed[fieldOngoing])
+	fields := make([]string, 0, len(changed))
+	for field, yes := range changed {
+		if yes {
+			fields = append(fields, field)
+		}
+	}
+	return stored.Level == LevelActivity && activity.RestartsApproval(activity.Status(stored.Status), fields)
 }
 
 func statusWord(status string) string {

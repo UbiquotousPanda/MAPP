@@ -6,7 +6,14 @@ import { fieldHelpReply, helpOf } from '@/testing/fixtures/field-help-texts';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { nth } from '@/testing/dom';
-import { budgetByMonth, gbp, periods, phasing, twelveAmounts } from '@/testing/fixtures/phasing';
+import {
+  budgetByMonth,
+  gbp,
+  periods,
+  phasing,
+  twelve,
+  twelveAmounts,
+} from '@/testing/fixtures/phasing';
 import { plan } from '@/testing/fixtures/plans';
 import { reply } from '@/testing/replies';
 import { BudgetByMonthCard } from './BudgetByMonthCard';
@@ -102,6 +109,8 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     expect(rows[0]).toHaveTextContent('50,000.00');
     expect(rows[0]).toHaveTextContent('600,000.00');
     expect(rows[1]).toHaveTextContent('480,000.00');
+    expect(rows[2]).toHaveTextContent('120,000.00');
+    expect(rows[3]).toHaveTextContent('360,000.00');
     expect(within(card).getByText('1 campaign is not phased')).toBeInTheDocument();
   });
 
@@ -116,11 +125,13 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     expect(screen.getAllByRole('row')[1]).toHaveTextContent('150,000.00');
   });
 
-  it('marks a period over its budget in red with words, and shows Other years (FR-024)', async () => {
+  it('marks a period over its budget in red with the amount the API answers, and shows Other years (FR-024, D-061)', async () => {
     const over = Array<boolean>(12).fill(false);
     over[2] = true;
     const plannedCost = twelveAmounts('40000.00');
     plannedCost[2] = gbp('65000.00');
+    const overBy = twelve(null);
+    overBy[2] = gbp('15000.00');
     renderCard(undefined, [
       reply(
         'GET /api/v1/plans/{planId}/budget-by-month',
@@ -129,7 +140,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
             rows: [
               {
                 ...nth(budgetByMonth().rows, 0),
-                months: periods({ plannedCost, over }),
+                months: periods({ plannedCost, over, overBy }),
                 otherYears: gbp('5000.00'),
               },
             ],
@@ -213,6 +224,23 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
       }),
     ]);
     expect(await screen.findByText(/Budget by month of .* saved/)).toBeInTheDocument();
+  });
+
+  it('shows and splits by the months the API split the budget into, never its own (D-061)', async () => {
+    const evenly = [...Array.from({ length: 11 }, () => gbp('49999.99')), gbp('50000.11')];
+    const { user } = renderCard({ ...PLAN, budgetPhasing: phasing({ evenly }) });
+
+    await screen.findByRole('table');
+    await user.click(screen.getByRole('button', { name: 'Edit budget by month' }));
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Budget by month — FY2027 Lubricants UK & Ireland',
+    });
+    expect(
+      within(dialog).getByText(/Each month gets £49,999\.99; December gets £50,000\.11\./),
+    ).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('radio', { name: /Custom/ }));
+    await user.click(within(dialog).getByRole('button', { name: 'Split evenly' }));
+    expect(within(dialog).getByRole('textbox', { name: /Dec 2027/ })).toHaveValue('50,000.11');
   });
 
   it('copies the planned cost by month and names what it leaves out (FR-021)', async () => {

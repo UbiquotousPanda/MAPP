@@ -1,14 +1,16 @@
 import { useNavigate } from 'react-router';
 import { asApiError } from '@/api/errors';
-import { useAccess } from '@/session/access';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { useToast } from '@/ui/Toast/useToast';
 import { downloadExport } from './api';
 
 /** The plan page's ⋯ items of the plan workbook: Import from Excel and Export to Excel. */
-export function useWorkbookMenu(planId: string, canEditActivities: boolean): ActionsMenuItem[] {
+export function useWorkbookMenu(
+  planId: string,
+  canEditActivities: boolean,
+  canExport: boolean,
+): ActionsMenuItem[] {
   const navigate = useNavigate();
-  const { has } = useAccess();
   const { show } = useToast();
   const items: ActionsMenuItem[] = [];
   if (canEditActivities) {
@@ -17,7 +19,7 @@ export function useWorkbookMenu(planId: string, canEditActivities: boolean): Act
       onSelect: () => void navigate(`/plans/${encodeURIComponent(planId)}/import`),
     });
   }
-  if (has('data.export')) {
+  if (canExport) {
     items.push({
       label: 'Export to Excel',
       onSelect: () =>

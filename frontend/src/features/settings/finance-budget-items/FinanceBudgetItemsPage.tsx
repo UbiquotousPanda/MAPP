@@ -137,7 +137,7 @@ export function FinanceBudgetItemsPage() {
           name={deleting.name}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteItem.mutateAsync(deleting.id)}
+          remove={() => deleteItem.mutateAsync(deleting)}
           setInactive={() => status.applyInactive(deleting)}
           invalidate={FINANCE_LISTS}
           onDeleted={() => {

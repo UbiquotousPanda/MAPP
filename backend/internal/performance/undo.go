@@ -107,16 +107,33 @@ func factIDs(facts []Fact) []string {
 }
 
 // closeRowsOfUndoneImport resolves the import's waiting rows with it: they describe a load that no longer
-// stands, and a re-check of one would hang new facts on an undone upload.
+// stands. Each pass resolves what it read, so the next pass reads the rest.
 func (s *Service) closeRowsOfUndoneImport(ctx context.Context, a actor.Actor, importID string) error {
-	rows, err := s.repo.ListReviewRows(ctx, ReviewFilter{StatusNot: string(ReviewResolved), ImportID: importID, Limit: maxRows})
-	if err != nil {
-		return err
-	}
-	for _, row := range rows {
-		if resolveErr := s.resolveRow(ctx, a, row.ReviewRow, undoneVerb); resolveErr != nil {
-			return resolveErr
+	for {
+		rows, err := s.repo.ListReviewRows(ctx, ReviewFilter{StatusNot: string(ReviewResolved), ImportID: importID, Limit: maxRows})
+		if err != nil || len(rows) == 0 {
+			return err
+		}
+		for _, row := range rows {
+			if resolveErr := s.resolveRow(ctx, a, row.ReviewRow, undoneVerb); resolveErr != nil {
+				return resolveErr
+			}
 		}
 	}
-	return nil
+}
+
+// undoneAmong says which of the rows' imports were undone, one lookup per import.
+func (s *Service) undoneAmong(ctx context.Context, rows []ReviewRowView) (map[string]bool, error) {
+	undone := map[string]bool{}
+	for _, row := range rows {
+		if _, known := undone[row.ImportID]; known {
+			continue
+		}
+		run, err := s.importByID(ctx, row.ImportID)
+		if err != nil {
+			return nil, err
+		}
+		undone[row.ImportID] = run.Status == ImportUndone
+	}
+	return undone, nil
 }
