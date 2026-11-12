@@ -1,8 +1,10 @@
 import { TriangleAlert } from 'lucide-react';
 import type { MouseEvent } from 'react';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
+import { TotalLabel } from '@/ui/Table/TotalLabel';
 import { cx } from '@/ui/cx';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import gridStyles from './AllWorkGrid.module.css';
 import { monthsAboveText, NOT_PHASED, PHASED_BUDGET_ROW, totalText } from './all-work-text';
 import type { AllWorkResult, AllWorkRow, Money } from './all-work-types';
@@ -42,22 +44,22 @@ export function BudgetView({ result, rows, continued, search, onToggle, onOpen }
       </p>
       {continued && <p className={gridStyles.continued}>Continued: {continued}</p>}
       <ScrollBox label="Budget & cost">
-        <table className={gridStyles.table}>
+        <table className={cx(dataTable.table, gridStyles.table)}>
           <caption className="visually-hidden">Budget & cost</caption>
           <thead>
             <tr>
               <th scope="col" className={gridStyles.nameHead}>
                 Name
               </th>
-              <th scope="col" className={gridStyles.end}>
+              <th scope="col" className={dataTable.numeric}>
                 Plan budget
               </th>
               {periods.map((period) => (
-                <th key={period.key} scope="col" className={gridStyles.end}>
+                <th key={period.key} scope="col" className={dataTable.numeric}>
                   {period.label}
                 </th>
               ))}
-              <th scope="col" className={gridStyles.end}>
+              <th scope="col" className={dataTable.numeric}>
                 Total
               </th>
             </tr>
@@ -75,19 +77,19 @@ export function BudgetView({ result, rows, continued, search, onToggle, onOpen }
             ))}
           </tbody>
           <tfoot>
-            <tr className={gridStyles.totals}>
+            <tr className={dataTable.total}>
               <th scope="row" className={gridStyles.nameCell}>
-                {totalText(totals.activities)}
+                <TotalLabel count={totalText(totals.activities)} />
               </th>
-              <td className={gridStyles.end}>
+              <td className={dataTable.numeric}>
                 <Amount value={totals.planBudget} />
               </td>
               {periods.map((period, index) => (
-                <td key={period.key} className={gridStyles.end}>
+                <td key={period.key} className={dataTable.numeric}>
                   <Amount value={totals.periods?.[index]} />
                 </td>
               ))}
-              <td className={gridStyles.end}>
+              <td className={dataTable.numeric}>
                 <Amount value={totals.total} />
               </td>
             </tr>
@@ -118,9 +120,9 @@ function BudgetRows(props: BudgetRowProps) {
               {PHASED_BUDGET_ROW} <span className="visually-hidden">of {row.name}</span>
             </span>
           </th>
-          <td className={gridStyles.end} />
+          <td className={dataTable.numeric} />
           {Array.from({ length: props.periodCount }, (_, index) => (
-            <td key={index} className={gridStyles.end}>
+            <td key={index} className={dataTable.numeric}>
               {row.phasedBudget?.[index] ? (
                 <Amount value={row.phasedBudget[index]} />
               ) : (
@@ -128,7 +130,7 @@ function BudgetRows(props: BudgetRowProps) {
               )}
             </td>
           ))}
-          <td className={gridStyles.end} />
+          <td className={dataTable.numeric} />
         </tr>
       )}
     </>
@@ -171,13 +173,13 @@ function BudgetRow({ visible, periodCount, search, onToggle, onOpen }: BudgetRow
           )}
         </RowName>
       </th>
-      <td className={gridStyles.end}>{isContainer && <Amount value={row.budget ?? null} />}</td>
+      <td className={dataTable.numeric}>{isContainer && <Amount value={row.budget ?? null} />}</td>
       {Array.from({ length: periodCount }, (_, index) => (
-        <td key={index} className={gridStyles.end}>
+        <td key={index} className={dataTable.numeric}>
           <Amount value={row.periods?.[index]} abovePhased={over.has(index)} />
         </td>
       ))}
-      <td className={gridStyles.end}>
+      <td className={dataTable.numeric}>
         <Amount value={row.total} />
       </td>
     </tr>

@@ -1,6 +1,6 @@
 import { ChevronDown, SlidersHorizontal } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useId } from 'react';
+import { Popover } from '@/ui/Popover/Popover';
 import { Select } from '@/ui/Select/Select';
 import type { PlanListFilters } from './list-preferences';
 import { PLAN_TYPE_LABELS, PLAN_TYPES } from './plan-currency';
@@ -82,89 +82,87 @@ export function PlansFilters({ filters, years, served016 = true, onChange }: Pla
         )}
         <ChevronDown aria-hidden="true" className={styles.chevron} />
       </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content className={styles.menu} align="start" sideOffset={6} aria-label="Filters">
-          {!served016 ? (
-            <div className={styles.field}>
-              <Select
-                label="Year"
-                value={allYears ? '' : String(filters.yearFrom)}
-                options={[ALL_YEARS, ...yearOptions]}
-                onChange={chooseFrom}
-              />
-            </div>
-          ) : (
-            <fieldset className={styles.field}>
-              <legend className={styles.label}>Years</legend>
-              <Select
-                label="From"
-                value={allYears ? '' : String(filters.yearFrom)}
-                options={[ALL_YEARS, ...yearOptions]}
-                onChange={chooseFrom}
-              />
-              {!allYears && (
-                <Select
-                  label="To"
-                  value={String(filters.yearTo)}
-                  options={yearOptions}
-                  onChange={chooseTo}
-                />
-              )}
-            </fieldset>
-          )}
-          {served016 && (
-            <fieldset className={styles.field}>
-              <legend className={styles.label}>Plan type</legend>
-              {PLAN_TYPES.map((type) => (
-                <label key={type} className={styles.check}>
-                  <input
-                    type="checkbox"
-                    checked={filters.types.includes(type)}
-                    onChange={(event) => toggleType(type, event.target.checked)}
-                  />
-                  {PLAN_TYPE_LABELS[type]}
-                </label>
-              ))}
-            </fieldset>
-          )}
+      <Popover.Content width="md" padding="lg" className={styles.menu} aria-label="Filters">
+        {!served016 ? (
+          <div className={styles.field}>
+            <Select
+              label="Year"
+              value={allYears ? '' : String(filters.yearFrom)}
+              options={[ALL_YEARS, ...yearOptions]}
+              onChange={chooseFrom}
+            />
+          </div>
+        ) : (
           <fieldset className={styles.field}>
-            <legend className={styles.label}>Show</legend>
-            {(
-              [
-                ['all', 'All plans'],
-                ['myTeams', 'My teams’ plans'],
-              ] as const
-            ).map(([value, label]) => (
-              <label key={value} className={styles.radio}>
+            <legend className={styles.label}>Years</legend>
+            <Select
+              label="From"
+              value={allYears ? '' : String(filters.yearFrom)}
+              options={[ALL_YEARS, ...yearOptions]}
+              onChange={chooseFrom}
+            />
+            {!allYears && (
+              <Select
+                label="To"
+                value={String(filters.yearTo)}
+                options={yearOptions}
+                onChange={chooseTo}
+              />
+            )}
+          </fieldset>
+        )}
+        {served016 && (
+          <fieldset className={styles.field}>
+            <legend className={styles.label}>Plan type</legend>
+            {PLAN_TYPES.map((type) => (
+              <label key={type} className={styles.check}>
                 <input
-                  type="radio"
-                  name={`${id}-scope`}
-                  value={value}
-                  checked={filters.scope === value}
-                  onChange={() => onChange({ scope: value })}
+                  type="checkbox"
+                  checked={filters.types.includes(type)}
+                  onChange={(event) => toggleType(type, event.target.checked)}
                 />
-                {label}
+                {PLAN_TYPE_LABELS[type]}
               </label>
             ))}
           </fieldset>
-          <BcpirChoice name={`${id}-bcpir`} value={filters.bcpir} onChange={onChange} />
-          <fieldset className={`${styles.field} ${styles.phoneOnly}`}>
-            <legend className={styles.label}>Layout</legend>
-            {LAYOUTS.map(([value, label]) => (
-              <label key={value} className={styles.radio}>
-                <input
-                  type="radio"
-                  name={`${id}-layout`}
-                  value={value}
-                  checked={filters.layout === value}
-                  onChange={() => onChange({ layout: value })}
-                />
-                {label}
-              </label>
-            ))}
-          </fieldset>
-        </Popover.Content>
-      </Popover.Portal>
+        )}
+        <fieldset className={styles.field}>
+          <legend className={styles.label}>Show</legend>
+          {(
+            [
+              ['all', 'All plans'],
+              ['myTeams', 'My teams’ plans'],
+            ] as const
+          ).map(([value, label]) => (
+            <label key={value} className={styles.radio}>
+              <input
+                type="radio"
+                name={`${id}-scope`}
+                value={value}
+                checked={filters.scope === value}
+                onChange={() => onChange({ scope: value })}
+              />
+              {label}
+            </label>
+          ))}
+        </fieldset>
+        <BcpirChoice name={`${id}-bcpir`} value={filters.bcpir} onChange={onChange} />
+        <fieldset className={`${styles.field} ${styles.phoneOnly}`}>
+          <legend className={styles.label}>Layout</legend>
+          {LAYOUTS.map(([value, label]) => (
+            <label key={value} className={styles.radio}>
+              <input
+                type="radio"
+                name={`${id}-layout`}
+                value={value}
+                checked={filters.layout === value}
+                onChange={() => onChange({ layout: value })}
+              />
+              {label}
+            </label>
+          ))}
+        </fieldset>
+      </Popover.Content>
     </Popover.Root>
   );
 }

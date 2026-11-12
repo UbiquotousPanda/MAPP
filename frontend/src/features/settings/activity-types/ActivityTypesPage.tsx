@@ -12,6 +12,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { filterRecords, useListFilters } from '@/ui/useListFilters';
 import type { ListFilters } from '@/ui/useListFilters';
 import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
@@ -175,12 +176,12 @@ function ActivityTypesCard({ types, filters, actions, onNew }: ActivityTypesCard
           <Button onClick={filters.clear}>Clear filters</Button>
         </div>
       ) : (
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Name</th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Default planned cost
                 </th>
                 <th scope="col">Allowed in</th>
@@ -209,12 +210,12 @@ function ActivityTypeRow({ type, actions }: { type: ActivityType; actions: Activ
   const { money } = useFormatters();
   return (
     <tr>
-      <th scope="row" className={styles.nameCell}>
+      <th scope="row" className={dataTable.nameCell}>
         <button type="button" className={styles.nameButton} onClick={() => actions.view(type)}>
           {type.name}
         </button>
       </th>
-      <td className={styles.number}>
+      <td className={dataTable.numeric}>
         {type.defaultPlannedCost ? money(type.defaultPlannedCost) : '—'}
       </td>
       <td>{modelNames(type)}</td>
@@ -225,7 +226,7 @@ function ActivityTypeRow({ type, actions }: { type: ActivityType; actions: Activ
           {type.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={type.name}
           items={[

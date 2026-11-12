@@ -1,8 +1,8 @@
 import { SlidersHorizontal } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useId } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
+import { Popover } from '@/ui/Popover/Popover';
 import { NO_FILTERS, filtersInUse } from './approval-filters';
 import type { ApprovalFilterOptions, ApprovalFilterValues } from './approval-filters';
 import styles from './ApprovalsFilters.module.css';
@@ -25,68 +25,61 @@ export function ApprovalsFilters({ filters, options, onChange }: ApprovalsFilter
       <Popover.Trigger asChild>
         <Button icon={<SlidersHorizontal />}>{inUse > 0 ? `Filters (${inUse})` : 'Filters'}</Button>
       </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          className={styles.popover}
-          align="start"
-          sideOffset={8}
-          aria-label="Filters"
-        >
-          <div className={styles.fields}>
-            <ChoiceField
-              label="Record type"
-              name={`${id}-kind`}
-              options={options.kinds}
-              value={filters.kind}
-              onChange={(kind) => set({ kind })}
+      <Popover.Content width="lg" padding="lg" sideOffset={8} aria-label="Filters">
+        <div className={styles.fields}>
+          <ChoiceField
+            label="Record type"
+            name={`${id}-kind`}
+            options={options.kinds}
+            value={filters.kind}
+            onChange={(kind) => set({ kind })}
+          />
+          <ChoiceField
+            label="Plan"
+            name={`${id}-plan`}
+            options={options.plans}
+            value={filters.planId}
+            onChange={(planId) => set({ planId })}
+          />
+          <ChoiceField
+            label="Approval workflow"
+            name={`${id}-workflow`}
+            options={options.workflows}
+            value={filters.workflowId}
+            onChange={(workflowId) => set({ workflowId })}
+          />
+          <ChoiceField
+            label="Owner"
+            name={`${id}-owner`}
+            options={options.owners}
+            value={filters.ownerId}
+            onChange={(ownerId) => set({ ownerId })}
+          />
+          <div className={styles.dates}>
+            <DateInput
+              id={`${id}-from`}
+              label="Submitted from"
+              value={filters.from}
+              max={filters.to || undefined}
+              onChange={(from) => set({ from })}
             />
-            <ChoiceField
-              label="Plan"
-              name={`${id}-plan`}
-              options={options.plans}
-              value={filters.planId}
-              onChange={(planId) => set({ planId })}
+            <DateInput
+              id={`${id}-to`}
+              label="Submitted to"
+              value={filters.to}
+              min={filters.from || undefined}
+              onChange={(to) => set({ to })}
             />
-            <ChoiceField
-              label="Approval workflow"
-              name={`${id}-workflow`}
-              options={options.workflows}
-              value={filters.workflowId}
-              onChange={(workflowId) => set({ workflowId })}
-            />
-            <ChoiceField
-              label="Owner"
-              name={`${id}-owner`}
-              options={options.owners}
-              value={filters.ownerId}
-              onChange={(ownerId) => set({ ownerId })}
-            />
-            <div className={styles.dates}>
-              <DateInput
-                id={`${id}-from`}
-                label="Submitted from"
-                value={filters.from}
-                max={filters.to || undefined}
-                onChange={(from) => set({ from })}
-              />
-              <DateInput
-                id={`${id}-to`}
-                label="Submitted to"
-                value={filters.to}
-                min={filters.from || undefined}
-                onChange={(to) => set({ to })}
-              />
-            </div>
           </div>
-          {inUse > 0 && (
-            <div className={styles.footer}>
-              <Button variant="tertiary" size="sm" onClick={() => onChange(NO_FILTERS)}>
-                Clear filters
-              </Button>
-            </div>
-          )}
-        </Popover.Content>
-      </Popover.Portal>
+        </div>
+        {inUse > 0 && (
+          <div className={styles.footer}>
+            <Button variant="tertiary" size="sm" onClick={() => onChange(NO_FILTERS)}>
+              Clear filters
+            </Button>
+          </div>
+        )}
+      </Popover.Content>
     </Popover.Root>
   );
 }

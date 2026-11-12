@@ -84,24 +84,11 @@
   }
 }
 
-/* The menu: a popover (radius 8, the level-1 shadow), the filters one under the other. */
+/* The filters one under the other. */
 .menu {
-  z-index: 300;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  width: 288px;
-  max-width: calc(100vw - 32px);
-  padding: var(--space-4);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-control);
-  background: var(--raised);
-  box-shadow: var(--shadow-md);
-}
-
-/* Dark Raised is 3.9:1 for Text Subtle, so secondary text there is Text Strong (constitution X). */
-:global(:root[data-theme='dark']) .menu {
-  --ink-2: var(--ink);
 }
 
 .field {
@@ -121,8 +108,6 @@
   font-weight: var(--weight-bold);
   line-height: var(--leading-sm);
 }
-
-/* One select style (design system §5.5): drawn like an input, with its own chevron. */
 
 .radio,
 .check {

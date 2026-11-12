@@ -12,6 +12,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { filterRecords, useListFilters } from '@/ui/useListFilters';
 import type { ListFilters } from '@/ui/useListFilters';
 import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
@@ -184,14 +185,14 @@ function CurrenciesCard({ currencies, filters, actions }: CurrenciesCardProps) {
           <Button onClick={filters.clear}>Clear filters</Button>
         </div>
       ) : (
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Code</th>
                 <th scope="col">Name</th>
                 <th scope="col">Symbol</th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Rate
                 </th>
                 <th scope="col">Used by</th>
@@ -226,7 +227,7 @@ function CurrencyRow({ currency, actions }: { currency: Currency; actions: Curre
       </th>
       <td className={styles.nowrap}>{currency.name}</td>
       <td>{currency.symbol || '—'}</td>
-      <td className={styles.number}>
+      <td className={dataTable.numeric}>
         {rateLine(currency.code, currency.rate)}
         <span className={styles.secondLine}>
           {inverseLine(currency.code, currency.inverseRate)}
@@ -244,7 +245,7 @@ function CurrencyRow({ currency, actions }: { currency: Currency; actions: Curre
           {currency.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={currency.code}
           items={[

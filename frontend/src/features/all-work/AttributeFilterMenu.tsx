@@ -1,13 +1,13 @@
-import { ChevronDown } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { Fragment, useId, useState } from 'react';
 import { formatWhole } from '@/format/decimal';
 import { cx } from '@/ui/cx';
+import { FilterMenuButton } from '@/ui/FilterMenuButton/FilterMenuButton';
+import menu from '@/ui/FilterMenu/FilterMenu.module.css';
+import { Popover } from '@/ui/Popover/Popover';
 import type { AttributeFilter, FilterableAttribute } from './all-work-types';
 import { NOT_FILLED_IN, NOT_FILLED_IN_LABEL, withAttributeValues } from './attribute-filters';
 import styles from './AttributeFilterMenu.module.css';
 import { LEVEL_LABELS, MORE_FILTERS, NOTHING_TO_CHOOSE, SEARCH_ATTRIBUTES } from './breakdown-text';
-import menu from './FilterMenu.module.css';
 
 export interface AttributeFilterMenuProps {
   /** The filterable Shell attributes, level by level in Settings' order. */
@@ -34,48 +34,39 @@ export function AttributeFilterMenu({ attributes, selected, onChange }: Attribut
   return (
     <Popover.Root onOpenChange={() => setSearch('')}>
       <Popover.Trigger asChild>
-        <button type="button" className={cx(menu.button, inUse > 0 && menu.inUse)}>
-          {MORE_FILTERS}
-          {inUse > 0 && ' '}
-          {inUse > 0 && <span className={menu.summary}>· {formatWhole(inUse)}</span>}
-          <ChevronDown aria-hidden="true" />
-        </button>
+        <FilterMenuButton
+          label={MORE_FILTERS}
+          summary={inUse > 0 ? formatWhole(inUse) : undefined}
+        />
       </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          className={cx(menu.menu, styles.menu)}
-          align="start"
-          sideOffset={6}
-          aria-label={MORE_FILTERS}
-        >
-          <div className={menu.search}>
-            <label htmlFor={`${id}-search`} className="visually-hidden">
-              {SEARCH_ATTRIBUTES}
-            </label>
-            <input
-              id={`${id}-search`}
-              type="search"
-              placeholder={SEARCH_ATTRIBUTES}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
+      <Popover.Content width="lg" aria-label={MORE_FILTERS}>
+        <div className={menu.search}>
+          <label htmlFor={`${id}-search`} className="visually-hidden">
+            {SEARCH_ATTRIBUTES}
+          </label>
+          <input
+            id={`${id}-search`}
+            type="search"
+            placeholder={SEARCH_ATTRIBUTES}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </div>
+        {shown.length === 0 && <p className={menu.nothing}>{NOTHING_TO_CHOOSE}</p>}
+        {shown.map(({ attribute, choices }, index) => (
+          <Fragment key={attribute.id}>
+            {shown[index - 1]?.attribute.level !== attribute.level && (
+              <p className={menu.group}>{LEVEL_LABELS[attribute.level] ?? attribute.level}</p>
+            )}
+            <AttributeChoices
+              label={attribute.label}
+              choices={choices}
+              values={selected.find((f) => f.attributeId === attribute.id)?.values ?? []}
+              onChange={(values) => onChange(withAttributeValues(selected, attribute.id, values))}
             />
-          </div>
-          {shown.length === 0 && <p className={menu.nothing}>{NOTHING_TO_CHOOSE}</p>}
-          {shown.map(({ attribute, choices }, index) => (
-            <Fragment key={attribute.id}>
-              {shown[index - 1]?.attribute.level !== attribute.level && (
-                <p className={menu.group}>{LEVEL_LABELS[attribute.level] ?? attribute.level}</p>
-              )}
-              <AttributeChoices
-                label={attribute.label}
-                choices={choices}
-                values={selected.find((f) => f.attributeId === attribute.id)?.values ?? []}
-                onChange={(values) => onChange(withAttributeValues(selected, attribute.id, values))}
-              />
-            </Fragment>
-          ))}
-        </Popover.Content>
-      </Popover.Portal>
+          </Fragment>
+        ))}
+      </Popover.Content>
     </Popover.Root>
   );
 }

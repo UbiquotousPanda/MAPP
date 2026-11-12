@@ -4,6 +4,7 @@ import { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
+import { Pager } from '@/ui/Pager/Pager';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { ExportMenu, downloadReport } from '../../shared';
@@ -236,29 +237,7 @@ function DealsLoaded({
           ))}
         </ul>
       )}
-      {pages > 1 && (
-        <nav className={styles.paging} aria-label="Deal pages">
-          <Button
-            size="sm"
-            variant="tertiary"
-            disabled={page <= 1}
-            onClick={() => onPage(page - 1)}
-          >
-            Previous
-          </Button>
-          <span>
-            Page {page} of {pages}
-          </span>
-          <Button
-            size="sm"
-            variant="tertiary"
-            disabled={page >= pages}
-            onClick={() => onPage(page + 1)}
-          >
-            Next
-          </Button>
-        </nav>
-      )}
+      {pages > 1 && <Pager page={page} pageSize={data.size} total={data.total} onPage={onPage} />}
     </div>
   );
 }

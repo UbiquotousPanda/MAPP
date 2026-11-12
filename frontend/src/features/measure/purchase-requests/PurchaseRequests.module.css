@@ -70,12 +70,6 @@
   font-size: var(--text-sm);
 }
 
-.empty {
-  margin: 0;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-}
-
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -129,69 +123,36 @@
   position: sticky;
   left: 0;
   z-index: 1;
+}
+
+.table tbody tr > :nth-child(-n + 2) {
   background: var(--surface);
 }
 
 .table tr > :first-child {
-  width: 40px;
-  min-width: 40px;
+  width: 56px;
+  min-width: 56px;
   padding-inline: var(--space-2);
 }
 
 .table tr > :nth-child(2) {
-  left: 40px;
+  left: 56px;
   box-shadow: inset -1px 0 0 var(--row-divider);
 }
 
+.table tbody tr:hover > :nth-child(-n + 2),
 .table .vendorRow > :nth-child(-n + 2) {
   background: var(--hover);
 }
 
-/* The sticky columns keep the shared Total row's grey. */
-.table tfoot tr > :nth-child(-n + 2) {
-  background: var(--gray-bg);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--ink);
-  font-size: var(--text-sm);
-}
-
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  font-weight: var(--weight-regular);
-  text-align: left;
-  vertical-align: top;
-}
-
 /* Dates, people, IDs and amounts stay on one line; only the named long-text cells wrap. */
 .table td {
-  vertical-align: middle;
   white-space: nowrap;
 }
 
-.table thead th {
-  white-space: nowrap;
-}
-
-.vendorRow th,
 .vendorRow td {
   background: var(--hover);
   font-weight: var(--weight-bold);
-}
-
-.numeric {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.table .name {
-  min-width: 220px;
-  white-space: normal;
 }
 
 .level1 {
@@ -200,37 +161,6 @@
 
 .level2 {
   padding-left: var(--space-10);
-}
-
-.toggle {
-  padding: 0 var(--space-1);
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.sort {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-weight: var(--weight-bold);
-  cursor: pointer;
-}
-
-.sort svg {
-  width: 14px;
-  height: 14px;
-}
-
-.idle {
-  opacity: 0.5;
 }
 
 .chooser {
@@ -256,23 +186,4 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-1) 0;
-}
-
-.pager {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-  font-size: var(--text-sm);
-}
-
-.range {
-  margin: 0;
-}
-
-.buttons {
-  display: flex;
-  margin-left: auto;
-  gap: var(--space-2);
 }

@@ -93,43 +93,13 @@
   outline-offset: 2px;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--ink);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-}
-
 .table th,
 .table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  text-align: left;
   white-space: nowrap;
-}
-
-.table th {
-  font-weight: var(--weight-bold);
-}
-
-.table th.number,
-.table td.number {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
 }
 
 .table a {
   color: var(--link);
-}
-
-.pager {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
 }
 
 .usedBy {

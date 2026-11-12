@@ -8,6 +8,7 @@ import { mockApi } from '@/testing/mock-api';
 import { testUser } from '@/testing/fixtures/users';
 import { budgetSummary, globalBudget } from '@/testing/fixtures/global-budgets';
 import { reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { GlobalBudgetsPage } from './GlobalBudgetsPage';
 
 const AVAILABLE = { available: true, reason: '' };
@@ -85,11 +86,11 @@ describe('GlobalBudgetsPage (014 US6, FR-036)', () => {
     ]);
     await screen.findByRole('link', { name: 'FY2026 Global marketing budget' });
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Year' }), '2027');
+    await choose(user, screen.getByRole('combobox', { name: 'Year' }), '2027');
     await waitFor(() => expect(router.state.location.search).toBe('?year=2027'));
     expect(await screen.findByText('No global budgets for 2027 yet.')).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Year' }), 'All years');
+    await choose(user, screen.getByRole('combobox', { name: 'Year' }), 'All years');
     await waitFor(() => expect(router.state.location.search).toBe('?year=all'));
     await waitFor(() => expect(api.requests.at(-1)?.search).toBe(''));
   });

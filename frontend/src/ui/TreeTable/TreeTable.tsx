@@ -1,30 +1,24 @@
-import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { cx } from '../cx';
+import { DisclosureButton, DisclosureSpace } from '../DisclosureButton/DisclosureButton';
+import dataTable from '../Table/Table.module.css';
 import { ActionsMenu } from '../ActionsMenu/ActionsMenu';
 import type { ActionsMenuItem } from '../ActionsMenu/ActionsMenu';
 import { LevelTag } from '../LevelTag/LevelTag';
 import type { PlanningLevel } from '../LevelTag/LevelTag';
 import styles from './TreeTable.module.css';
 
-/** One row of the tree and the rows under it. */
 export interface TreeNode {
   id: string;
   level: PlanningLevel;
   name: string;
   /** Where the name leads (the record's page or panel); Enter on the row goes there too. */
   href?: string;
-  /** Opens the record when it has no address (Enter on the row, a click on the name). */
   onOpen?: () => void;
-  /**
-   * The cells by column key. The first column's cell is shown after the name (an ID, a count of
-   * children).
-   */
   cells: Record<string, ReactNode>;
   children: TreeNode[];
-  /** The row's ⋯ menu; its button is named "Actions for <name>". */
   actions?: ActionsMenuItem[];
   /** The hover grey, for the record just created, moved or copied; it is scrolled into view. */
   highlighted?: boolean;
@@ -39,19 +33,15 @@ export interface TreeTableColumn {
   minWidth?: string;
 }
 
-/** The totals row under the tree, by column key. */
 export type TreeTableFooter = Record<string, ReactNode>;
 
 export interface TreeTableProps {
-  /** Names the tree for screen readers: "Plan tree". */
   label: string;
-  /** The columns; the first holds the names. */
+  /** The first column holds the names; its cell is shown after the name (an ID, a count). */
   columns: TreeTableColumn[];
   nodes: TreeNode[];
-  /** The rows whose children are shown. */
   expandedIds: Set<string>;
   onToggle: (id: string) => void;
-  /** Shown when there are no rows. */
   emptyText?: string;
   footer?: TreeTableFooter;
 }
@@ -64,13 +54,6 @@ interface Row {
   parentId?: string;
 }
 
-/**
- * The tree table of plans (feature 004, design system §5): a level bar and tag on every row,
- * names as links, money right-aligned, a ⋯ menu per row and an optional totals row. It is an ARIA
- * treegrid with one row in the tab order: ↑ ↓ move, → opens a row or goes to its first child,
- * ← closes it or goes to its parent, Home and End go to the first and last row, Enter opens the
- * record. Each row with children has an "Expand <name>" / "Collapse <name>" button.
- */
 export function TreeTable({
   label,
   columns,
@@ -81,7 +64,7 @@ export function TreeTable({
   footer,
 }: TreeTableProps) {
   const navigate = useNavigate();
-  const table = useRef<HTMLTableElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const rows = visibleRows(nodes, expandedIds);
   const hasActions = rows.some((row) => row.node.actions && row.node.actions.length > 0);
@@ -90,16 +73,15 @@ export function TreeTable({
   const [nameColumn, ...otherColumns] = columns;
 
   useEffect(() => {
-    // The record just created, moved or copied comes into view (feature 005, FR-004).
     if (highlightedId) {
-      rowOf(table.current, highlightedId)?.scrollIntoView({ block: 'center' });
+      rowOf(tableRef.current, highlightedId)?.scrollIntoView({ block: 'center' });
     }
   }, [highlightedId]);
 
   function focusRow(id: string | undefined) {
     if (id) {
       setFocusedId(id);
-      rowOf(table.current, id)?.focus();
+      rowOf(tableRef.current, id)?.focus();
     }
   }
 
@@ -150,14 +132,14 @@ export function TreeTable({
   return (
     <div className={styles.scroll}>
       {/* eslint-disable-next-line jsx-a11y-x/no-noninteractive-element-to-interactive-role -- the ARIA treegrid pattern on a table */}
-      <table ref={table} role="treegrid" aria-label={label} className={styles.table}>
+      <table ref={tableRef} role="treegrid" aria-label={label} className={dataTable.table}>
         <thead>
           <tr>
             {columns.map((column) => (
               <th
                 key={column.key}
                 scope="col"
-                className={cx(column.align === 'end' && styles.end)}
+                className={cx(column.align === 'end' && dataTable.numeric)}
                 style={column.minWidth ? { minWidth: column.minWidth } : undefined}
               >
                 {column.header}
@@ -173,7 +155,7 @@ export function TreeTable({
         <tbody>
           {rows.length === 0 && emptyText && (
             <tr>
-              <td colSpan={columns.length + (hasActions ? 1 : 0)} className={styles.empty}>
+              <td colSpan={columns.length + (hasActions ? 1 : 0)} className={dataTable.empty}>
                 {emptyText}
               </td>
             </tr>
@@ -202,17 +184,14 @@ export function TreeTable({
                 <td className={cx(styles.nameCell, styles[node.level])}>
                   <div className={styles.name} style={{ paddingLeft: `${(row.depth - 1) * 20}px` }}>
                     {hasChildren ? (
-                      <button
-                        type="button"
+                      <DisclosureButton
+                        expanded={expanded}
+                        label={`${expanded ? 'Collapse' : 'Expand'} ${node.name}`}
                         tabIndex={-1}
-                        className={styles.chevron}
-                        aria-label={`${expanded ? 'Collapse' : 'Expand'} ${node.name}`}
                         onClick={() => onToggle(node.id)}
-                      >
-                        {expanded ? <ChevronDown /> : <ChevronRight />}
-                      </button>
+                      />
                     ) : (
-                      <span className={styles.chevronSpace} />
+                      <DisclosureSpace />
                     )}
                     <LevelTag level={node.level} />
                     <span className={styles.title}>
@@ -239,7 +218,7 @@ export function TreeTable({
                   </div>
                 </td>
                 {otherColumns.map((column) => (
-                  <td key={column.key} className={cx(column.align === 'end' && styles.end)}>
+                  <td key={column.key} className={cx(column.align === 'end' && dataTable.numeric)}>
                     {node.cells[column.key]}
                   </td>
                 ))}
@@ -256,9 +235,10 @@ export function TreeTable({
         </tbody>
         {footer && (
           <tfoot>
-            <tr className={styles.footer}>
-              {columns.map((column) => (
-                <td key={column.key} className={cx(column.align === 'end' && styles.end)}>
+            <tr className={dataTable.total}>
+              {nameColumn && <th scope="row">{footer[nameColumn.key]}</th>}
+              {otherColumns.map((column) => (
+                <td key={column.key} className={cx(column.align === 'end' && dataTable.numeric)}>
                   {footer[column.key]}
                 </td>
               ))}
@@ -271,7 +251,6 @@ export function TreeTable({
   );
 }
 
-/** The rows on screen: every node whose parents are all expanded, in tree order. */
 function visibleRows(nodes: TreeNode[], expandedIds: Set<string>): Row[] {
   const rows: Row[] = [];
   function walk(level: TreeNode[], depth: number, parentId?: string) {
@@ -286,7 +265,6 @@ function visibleRows(nodes: TreeNode[], expandedIds: Set<string>): Row[] {
   return rows;
 }
 
-/** The row of a record in the table. */
 function rowOf(table: HTMLTableElement | null, id: string): HTMLTableRowElement | undefined {
   const all = table?.querySelectorAll<HTMLTableRowElement>('tr[data-row-id]') ?? [];
   return [...all].find((element) => element.dataset.rowId === id);

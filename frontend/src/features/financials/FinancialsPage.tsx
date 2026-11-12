@@ -6,6 +6,8 @@ import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { Pager } from '@/ui/Pager/Pager';
+import { LIST_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { Tabs } from '@/ui/Tabs/Tabs';
 import type { TabItem } from '@/ui/Tabs/Tabs';
@@ -30,7 +32,6 @@ import { FinancialsToolbar } from './FinancialsToolbar';
 import { FinancialTotals } from './FinancialTotals';
 import { ImportDialog } from './ImportDialog';
 import { ImportHistoryPanel } from './ImportHistoryPanel';
-import { Pager } from './Pager';
 import { readFilters } from './schemas';
 import { TransactionsTable } from './TransactionsTable';
 import { useNarrow } from './useNarrow';
@@ -127,6 +128,7 @@ export function FinancialsPage() {
                       page={data.page}
                       pageSize={filters.pageSize}
                       total={data.total}
+                      sizes={LIST_PAGE_SIZES}
                       onPage={(page) => change({ page })}
                       onPageSize={(pageSize) => change({ pageSize })}
                     />

@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router';
 import type { components } from '@/api/generated/schema';
+import { WIDE_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 
 export type AccessSort = components['parameters']['UserAccessSort'];
 export type AccessStatus = 'active' | 'inactive' | 'all';
@@ -22,8 +23,7 @@ const SORTS: AccessSort[] = [
 ];
 const STATUSES: AccessStatus[] = ['active', 'inactive', 'all'];
 
-/** Rows per page, 5 to 500. */
-export const PAGE_SIZES = [5, 10, 20, 50, 100, 200, 500] as const;
+export const PAGE_SIZES = WIDE_PAGE_SIZES;
 const DEFAULT_PAGE_SIZE = 20;
 
 export interface AccessTable {

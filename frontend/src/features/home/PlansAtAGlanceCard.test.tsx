@@ -147,7 +147,7 @@ describe('PlansAtAGlanceCard', () => {
       'Planned cost',
     ]);
     for (const name of ['Campaigns', 'Activities', 'Planned cost']) {
-      expect(within(table).getByRole('columnheader', { name }).className).toMatch(/number/);
+      expect(within(table).getByRole('columnheader', { name }).className).toMatch(/numeric/);
     }
   });
 

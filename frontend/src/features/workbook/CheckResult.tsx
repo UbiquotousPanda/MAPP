@@ -1,5 +1,7 @@
 import { Download } from 'lucide-react';
 import { Button } from '@/ui/Button/Button';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { ImportCheck, ImportProblem } from './api';
 import { downloadProblems } from './files';
 import styles from './workbook.module.css';
@@ -18,21 +20,21 @@ export function CheckResult({ check }: { check: ImportCheck }) {
         aria-label="What the import does, scrolls sideways"
         tabIndex={0}
       >
-        <table className={styles.table}>
+        <table className={cx(dataTable.table, styles.table)}>
           <caption className="visually-hidden">What the import does per level</caption>
           <thead>
             <tr>
               <th scope="col">Level</th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 To create
               </th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 To update
               </th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 Unchanged
               </th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 Left out
               </th>
             </tr>
@@ -41,10 +43,10 @@ export function CheckResult({ check }: { check: ImportCheck }) {
             {check.levels.map((l) => (
               <tr key={l.level}>
                 <th scope="row">{LEVEL_PLURALS[l.level]}</th>
-                <td className={styles.number}>{l.create}</td>
-                <td className={styles.number}>{l.update}</td>
-                <td className={styles.number}>{l.unchanged}</td>
-                <td className={styles.number}>{l.leftOut}</td>
+                <td className={dataTable.numeric}>{l.create}</td>
+                <td className={dataTable.numeric}>{l.update}</td>
+                <td className={dataTable.numeric}>{l.unchanged}</td>
+                <td className={dataTable.numeric}>{l.leftOut}</td>
               </tr>
             ))}
           </tbody>
@@ -93,12 +95,12 @@ export function ProblemsTable({
         aria-label="Problems, scrolls sideways"
         tabIndex={0}
       >
-        <table className={styles.table}>
+        <table className={cx(dataTable.table, styles.table)}>
           <caption className="visually-hidden">Problems</caption>
           <thead>
             <tr>
               <th scope="col">Sheet</th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 Row
               </th>
               <th scope="col">Column</th>
@@ -110,7 +112,7 @@ export function ProblemsTable({
             {problems.map((p, i) => (
               <tr key={`${p.sheet}-${p.row}-${i}`}>
                 <td>{p.sheet}</td>
-                <td className={styles.number}>{p.row}</td>
+                <td className={dataTable.numeric}>{p.row}</td>
                 <td>{p.column}</td>
                 <td>{p.value}</td>
                 <td>{p.reason}</td>

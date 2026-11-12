@@ -143,7 +143,7 @@ describe('RequestsGrid (042 US2)', () => {
     expect(rows.at(-1)?.textContent).toMatch(/^Total · 1 requests, 2 lines/);
   });
 
-  it("ends with the API's Total row over every page, named in the first column (042 FR-029, 039 FR-035)", () => {
+  it("ends with the API's Total row over every page, headed Total before the columns (042 FR-029, 039 FR-035)", () => {
     const totals = {
       purchaseRequests: 41,
       lines: 77,
@@ -158,8 +158,8 @@ describe('RequestsGrid (042 US2)', () => {
     const total = closestTo(screen.getByRole('rowheader', { name: 'Total' }), 'tr');
     expect(total.closest('tfoot')).not.toBeNull();
     expect([...total.querySelectorAll('td, th')].map((c) => c.textContent)).toEqual([
-      '',
       'Total',
+      '',
       '41 requests, 77 lines',
       '$98,765.00',
       '—',

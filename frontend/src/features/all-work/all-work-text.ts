@@ -1,5 +1,5 @@
-import { formatWhole } from '@/format/decimal';
 import { plural } from '@/format/text';
+import type { ListNoun } from '@/ui/ResultCount/count-text';
 import type { FinanceFilter, Filters, PlanType } from './all-work-types';
 
 export function isLabelled<T extends string>(labels: Record<T, string>) {
@@ -112,13 +112,13 @@ export const CONTEXT_LABEL = 'Shown for context';
 export const CONTEXT_TIP =
   "This row doesn't match the filters; it's shown so you can see where the matching rows are.";
 
-export function countText(shown: number, total: number, noun: string): string {
-  const singular = noun === 'activities' ? 'activity' : noun.replace(/s$/, '');
-  return `${formatWhole(shown)} of ${plural(total, singular, noun)}`;
+/** The API names what it counts in the plural ("activities"); the count needs both forms. */
+export function countNoun(noun: string): ListNoun {
+  return { one: noun === 'activities' ? 'activity' : noun.replace(/s$/, ''), many: noun };
 }
 
 export function totalText(activities: number): string {
-  return `Total · ${plural(activities, 'activity', 'activities')}`;
+  return plural(activities, 'activity', 'activities');
 }
 
 export function negativeBalanceText(count: number): string {

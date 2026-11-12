@@ -1,16 +1,16 @@
 import { useSearchParams } from 'react-router';
+import { WIDGET_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 
 export interface RankedState {
   sort: string;
   order: 'desc' | 'asc';
   group: string;
-  size: 10 | 25 | 50;
+  size: (typeof WIDGET_PAGE_SIZES)[number];
   page: number;
   q: string;
   drill: string;
 }
 
-const SIZES = [10, 25, 50] as const;
 const DEFAULTS = new Map<string, unknown>([
   ['group', 'none'],
   ['size', 10],
@@ -20,7 +20,7 @@ const DEFAULTS = new Map<string, unknown>([
 ]);
 
 function sizeOf(text: string | null): RankedState['size'] {
-  return SIZES.find((size) => String(size) === text) ?? 10;
+  return WIDGET_PAGE_SIZES.find((size) => String(size) === text) ?? 10;
 }
 
 /** The ranked list's part of the address; any change but the page goes back to page 1. */

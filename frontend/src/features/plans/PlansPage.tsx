@@ -13,6 +13,8 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
 import { useAccess } from '@/session/access';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import { DEFAULT_FILTERS, readFilters, remember, toSearchParams } from './list-preferences';
 import type { PlanListFilters } from './list-preferences';
 import { NewPlanButton } from './NewPlanButton';
@@ -217,9 +219,9 @@ export function PlansPage() {
             />
             <div className={styles.end}>
               {data && (
-                <p className={styles.count} aria-live="polite">
-                  {data.items.length} of {data.total} {data.total === 1 ? 'plan' : 'plans'}
-                </p>
+                <ResultCount>
+                  {countText(data.items.length, data.total, { one: 'plan', many: 'plans' })}
+                </ResultCount>
               )}
               <div className={styles.layout}>
                 <SegmentedFilter

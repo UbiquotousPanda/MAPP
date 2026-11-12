@@ -30,6 +30,15 @@
   gap: var(--space-1);
 }
 
+.below {
+  margin-top: var(--space-4);
+}
+
+.cardFooter {
+  padding: var(--space-3) var(--card-padding);
+  border-top: 1px solid var(--hairline);
+}
+
 .pager .step:disabled {
   background: transparent;
 }

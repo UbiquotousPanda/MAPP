@@ -50,67 +50,25 @@
   position: sticky;
   left: 0;
   z-index: 1;
-  background: var(--surface);
   box-shadow: inset -1px 0 0 var(--row-divider);
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--ink);
-  font-size: var(--text-sm);
+.table tbody tr > :first-child {
+  background: var(--surface);
 }
 
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  font-weight: var(--weight-regular);
-  text-align: left;
-  vertical-align: top;
+.table tbody tr:hover > :first-child {
+  background: var(--hover);
 }
 
 /* Dates, people, IDs and amounts stay on one line; only the named long-text cells wrap. */
 .table td {
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.table thead th {
   white-space: nowrap;
 }
 
 .table .name {
   min-width: 180px;
-  vertical-align: middle;
   white-space: normal;
-}
-
-.numeric {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.sort {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-weight: var(--weight-bold);
-  cursor: pointer;
-}
-
-.sort svg {
-  width: 14px;
-  height: 14px;
-}
-
-.idle {
-  opacity: 0.5;
 }
 
 .table .commentCell {
@@ -126,33 +84,4 @@
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-}
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-2);
-  margin: 0;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-}
-
-.pager {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3) var(--space-4);
-  margin-top: var(--space-4);
-  font-size: var(--text-sm);
-}
-
-.range {
-  margin: 0;
-}
-
-.buttons {
-  display: flex;
-  gap: var(--space-2);
-  margin-left: auto;
 }

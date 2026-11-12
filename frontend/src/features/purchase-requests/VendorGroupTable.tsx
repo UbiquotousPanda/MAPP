@@ -1,7 +1,9 @@
-import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { DisclosureButton } from '@/ui/DisclosureButton/DisclosureButton';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
 import { purchaseRequestHref, recordHref } from '@/ui/record-links';
 import { localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
@@ -16,6 +18,8 @@ import { countText, NOT_COMPLETED, TABLE_LABEL, WAITING_MARK } from './list-text
 import { FIELD_LABELS, FILLED_BY_GSAP, HX_LABEL, linesText } from './purchase-request-text';
 import { PurchaseRequestStatusChip } from './PurchaseRequestStatusChip';
 import styles from './VendorGroupTable.module.css';
+
+const NUMERIC = new Set<string>(['Amount', 'Invoiced']);
 
 const COLUMNS = [
   'Purchase request',
@@ -43,12 +47,12 @@ export function VendorGroupTable({ page }: { page: PurchaseRequestListPage }) {
 
   return (
     <div className={styles.scroll} role="region" aria-label={TABLE_LABEL} tabIndex={0}>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">{TABLE_LABEL}</caption>
         <thead>
           <tr>
             {COLUMNS.map((column) => (
-              <th key={column} scope="col">
+              <th key={column} scope="col" className={cx(NUMERIC.has(column) && dataTable.numeric)}>
                 {column}
               </th>
             ))}
@@ -88,8 +92,8 @@ function VendorGroup({ group, rows, open, onToggle }: VendorGroupProps) {
           <span className={styles.vendorName}>{group.label || NOT_COMPLETED}</span>
           <span className={styles.muted}> · {countText(group.purchaseRequests)}</span>
         </th>
-        <td className={styles.numeric}>{money(group.amountDisplay)}</td>
-        <td className={styles.numeric}>{money(group.invoicedDisplay)}</td>
+        <td className={dataTable.numeric}>{money(group.amountDisplay)}</td>
+        <td className={dataTable.numeric}>{money(group.invoicedDisplay)}</td>
         <td colSpan={COLUMNS.length - 5} />
       </tr>
       {rows.map((row) => (
@@ -112,21 +116,16 @@ interface RowProps {
 
 function PurchaseRequestRows({ row, open, onToggle }: RowProps) {
   const { money, date } = useFormatters();
-  const Icon = open ? ChevronDown : ChevronRight;
   return (
     <>
       <tr>
         <th scope="row" className={styles.name}>
           {row.lines.length > 0 && (
-            <button
-              type="button"
-              className={styles.toggle}
-              aria-expanded={open}
-              aria-label={`${open ? 'Hide' : 'Show'} the lines of ${row.name}`}
+            <DisclosureButton
+              expanded={open}
+              label={`${open ? 'Hide' : 'Show'} the lines of ${row.name}`}
               onClick={onToggle}
-            >
-              <Icon aria-hidden="true" />
-            </button>
+            />
           )}
           <Link to={purchaseRequestHref(row.id)}>{row.name}</Link>
         </th>
@@ -135,8 +134,8 @@ function PurchaseRequestRows({ row, open, onToggle }: RowProps) {
           <PurchaseRequestStatusChip status={row.status} changePending={row.changePending} />
           {row.waitingForGsap && <span className={styles.waiting}>{WAITING_MARK}</span>}
         </td>
-        <td className={styles.numeric}>{money(row.amountDisplay)}</td>
-        <td className={styles.numeric}>{money(row.invoicedDisplay)}</td>
+        <td className={dataTable.numeric}>{money(row.amountDisplay)}</td>
+        <td className={dataTable.numeric}>{money(row.invoicedDisplay)}</td>
         <td>{row.owner ? row.owner.name : '—'}</td>
         <td>{date(localDate(row.createdAt))}</td>
         <td>{row.approvalWorkflow?.name ?? '—'}</td>
@@ -165,15 +164,21 @@ const LINE_COLUMNS: { label: string; tip?: string }[] = [
   { label: FIELD_LABELS.lineInvoiced, tip: FILLED_BY_GSAP },
 ];
 
+const NUMERIC_LINES = new Set<string>([FIELD_LABELS.lineAmount, FIELD_LABELS.lineInvoiced]);
+
 function LinesTable({ name, lines }: { name: string; lines: PurchaseRequestRowLine[] }) {
   const { money, date } = useFormatters();
   return (
-    <table className={styles.lines}>
+    <table className={dataTable.table}>
       <caption className={styles.linesCaption}>{`${linesText(lines.length)} of ${name}`}</caption>
       <thead>
         <tr>
           {LINE_COLUMNS.map((column) => (
-            <th key={column.label} scope="col">
+            <th
+              key={column.label}
+              scope="col"
+              className={cx(NUMERIC_LINES.has(column.label) && dataTable.numeric)}
+            >
               {column.label}
               {column.tip && <InfoTip label={column.label} text={column.tip} />}
             </th>
@@ -191,13 +196,13 @@ function LinesTable({ name, lines }: { name: string; lines: PurchaseRequestRowLi
             <td>
               <HxKey value={line.hxKey} compact />
             </td>
-            <td className={styles.numeric}>{money(line.amount)}</td>
+            <td className={dataTable.numeric}>{money(line.amount)}</td>
             <td>{date(line.deliveryDate)}</td>
             <td>{line.sentOn ? date(line.sentOn) : '—'}</td>
             <td>{line.poNumber || '—'}</td>
             <td>{line.poLine || '—'}</td>
             <td>{line.poLineStatus || '—'}</td>
-            <td className={styles.numeric}>{money(line.invoiced)}</td>
+            <td className={dataTable.numeric}>{money(line.invoiced)}</td>
           </tr>
         ))}
       </tbody>

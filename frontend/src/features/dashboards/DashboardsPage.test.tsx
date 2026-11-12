@@ -10,6 +10,7 @@ import type { MockedApi } from '@/testing/mock-api';
 import { renderRoutes } from '@/testing/render';
 import { apiError, pending, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import type { PlanningDashboard } from './api';
 import { DashboardsPage } from './DashboardsPage';
 
@@ -115,7 +116,7 @@ describe('DashboardsPage (036 US1)', () => {
   it('keeps the filters in the address and asks for them (FR-006, FR-007)', async () => {
     const { user, api, router } = renderPage(echoing(dashboard()));
 
-    await user.selectOptions(await screen.findByLabelText('Plan type'), 'strategic');
+    await choose(user, await screen.findByLabelText('Plan type'), 'Strategic');
 
     expect(router.state.location.search).toBe('?planType=strategic');
     const last = queries(api, '/api/v1/dashboards/executive').at(-1);
@@ -213,7 +214,7 @@ describe('DashboardsPage, Regional (036 US3)', () => {
       name: /Campaigns of FY2026 Lubricants Europe/,
     });
     expect(within(table).getByRole('link', { name: 'Fleet push' })).toBeInTheDocument();
-    await user.selectOptions(screen.getByLabelText('Plan type'), 'operational');
+    await choose(user, screen.getByLabelText('Plan type'), 'Operational');
     expect(router.state.location.search).toBe('?planType=operational&team=T-1001');
   });
 
@@ -223,7 +224,7 @@ describe('DashboardsPage, Regional (036 US3)', () => {
     expect(
       await screen.findByRole('link', { name: 'Show campaigns of FY2026 Lubricants Europe' }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('Market')).toHaveValue('T-1001');
+    expect(screen.getByLabelText('Market')).toHaveTextContent('Lubricants Europe');
     await waitFor(() => expect(router.state.location.search).toBe('?team=T-1001'));
   });
 

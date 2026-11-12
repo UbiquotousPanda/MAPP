@@ -183,19 +183,6 @@
   outline-offset: 2px;
 }
 
-.dayList {
-  position: relative;
-  z-index: 50;
-  width: min(260px, calc(100vw - 32px));
-  max-height: min(360px, calc(100vh - 120px));
-  overflow-y: auto;
-  padding: var(--space-2);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-control);
-  background: var(--raised);
-  box-shadow: var(--shadow-md);
-}
-
 .dayTitle {
   margin: 0 0 var(--space-2);
   font-weight: var(--weight-bold);

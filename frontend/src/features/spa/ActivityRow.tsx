@@ -1,9 +1,10 @@
-import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { useFormatters } from '@/format/useFormatters';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { ActivityStatusChip } from '@/ui/ActivityStatusChip/ActivityStatusChip';
+import { DisclosureButton } from '@/ui/DisclosureButton/DisclosureButton';
+import dataTable from '@/ui/Table/Table.module.css';
 import { recordHref } from '@/ui/record-links';
 import type { SpaActivityRow } from './api';
 import { ACTIVITIES, percentText } from './spa-text';
@@ -19,22 +20,17 @@ interface ActivityRowProps {
 /** One activity of the table, then its line items while it is open. */
 export function ActivityRow({ row, planId, expanded, onToggle }: ActivityRowProps) {
   const { money } = useFormatters();
-  const Chevron = expanded ? ChevronDown : ChevronRight;
   return (
     <>
       <tr>
         <td>
-          <button
-            type="button"
-            className={styles.toggle}
-            aria-expanded={expanded}
-            aria-label={`${expanded ? 'Hide' : 'Show'} the line items of ${row.name}`}
+          <DisclosureButton
+            expanded={expanded}
+            label={`${expanded ? 'Hide' : 'Show'} the line items of ${row.name}`}
             onClick={onToggle}
-          >
-            <Chevron aria-hidden="true" />
-          </button>
+          />
         </td>
-        <th scope="row" className={styles.nameCell}>
+        <th scope="row" className={dataTable.nameCell}>
           <Link to={recordHref('activity', row.id, planId)}>{row.name}</Link>
         </th>
         <td>{row.campaign.name}</td>
@@ -45,10 +41,12 @@ export function ActivityRow({ row, planId, expanded, onToggle }: ActivityRowProp
         <td>
           <ActivityStatusChip status={row.status} />
         </td>
-        <td className={styles.numeric}>{money(row.plannedCost)}</td>
-        <td className={styles.numeric}>{money(row.committed)}</td>
-        <td className={styles.numeric}>{money(row.actualSpend)}</td>
-        <td className={row.overspend ? `${styles.numeric} ${styles.problem}` : styles.numeric}>
+        <td className={dataTable.numeric}>{money(row.plannedCost)}</td>
+        <td className={dataTable.numeric}>{money(row.committed)}</td>
+        <td className={dataTable.numeric}>{money(row.actualSpend)}</td>
+        <td
+          className={row.overspend ? `${dataTable.numeric} ${styles.problem}` : dataTable.numeric}
+        >
           {percentText(row.variancePercent, true)}
         </td>
         <td>
@@ -76,9 +74,9 @@ function LineItemRows({ row }: { row: SpaActivityRow }) {
       <th scope="row" colSpan={7}>
         <Link to={recordHref('lineItem', item.id)}>{item.name}</Link>
       </th>
-      <td className={styles.numeric}>{money(item.plannedCost)}</td>
-      <td className={styles.numeric}>{money(item.committed)}</td>
-      <td className={styles.numeric}>{money(item.actualSpend)}</td>
+      <td className={dataTable.numeric}>{money(item.plannedCost)}</td>
+      <td className={dataTable.numeric}>{money(item.committed)}</td>
+      <td className={dataTable.numeric}>{money(item.actualSpend)}</td>
       <td colSpan={2} />
     </tr>
   ));

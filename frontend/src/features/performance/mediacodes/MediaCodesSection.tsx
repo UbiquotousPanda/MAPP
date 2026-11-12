@@ -8,6 +8,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useToast } from '@/ui/Toast/useToast';
 import { useCanChange } from '@/ui/useCanChange';
+import dataTable from '@/ui/Table/Table.module.css';
 import styles from '../activity/DataSourcesArea.module.css';
 import { GenerateCodeDialog } from './GenerateCodeDialog';
 import { useDeactivateMediaCode, useDeleteMediaCode, useMediaCodes } from './api';
@@ -77,7 +78,7 @@ function CodeRows({
   }
 
   return (
-    <table className={styles.table}>
+    <table className={dataTable.table}>
       <thead>
         <tr>
           <th scope="col">Code</th>
@@ -91,7 +92,7 @@ function CodeRows({
       <tbody>
         {items.map((code) => (
           <tr key={code.id}>
-            <td className={styles.numeric}>{code.code}</td>
+            <td className={dataTable.numeric}>{code.code}</td>
             <td>{code.landingPage || '—'}</td>
             <td>
               <StatusChip tone={code.status === 'active' ? 'positive' : 'neutral'}>

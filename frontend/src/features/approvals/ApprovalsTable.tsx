@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { SubjectStatusChip } from '@/ui/SubjectStatusChip/SubjectStatusChip';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { formatWaitingTime, localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
 import type { Formatters } from '@/format/useFormatters';
@@ -39,7 +41,7 @@ export function ApprovalsTable({ rows, tab, onOpen }: ApprovalsTableProps) {
 
   return (
     <div className={styles.scroll}>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <thead>
           <tr>
             <th scope="col" className={styles.nameCol}>
@@ -50,7 +52,7 @@ export function ApprovalsTable({ rows, tab, onOpen }: ApprovalsTableProps) {
               Plan › campaign
             </th>
             <th scope="col">Owner</th>
-            <th scope="col" className={styles.amount}>
+            <th scope="col" className={dataTable.numeric}>
               Planned cost
             </th>
             <th scope="col" className={styles.workflowCol}>
@@ -98,7 +100,7 @@ function Row({ row, decided, onOpen }: RowProps) {
       <td className={styles.nowrap}>{row.subject.label}</td>
       <td>{pathText(row)}</td>
       <td className={styles.nowrap}>{row.owner ? <PersonLabel person={row.owner} /> : '—'}</td>
-      <td className={styles.amount}>{format.money(row.plannedCost)}</td>
+      <td className={dataTable.numeric}>{format.money(row.plannedCost)}</td>
       <td>{workflowText(row)}</td>
       <td className={styles.nowrap}>
         <LevelCell row={row} />

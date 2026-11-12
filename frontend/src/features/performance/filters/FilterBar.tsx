@@ -1,4 +1,6 @@
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
 import { SearchField } from '@/ui/SearchField/SearchField';
+import { Select } from '@/ui/Select/Select';
 import styles from './filter-bar.module.css';
 import type { UrlFilters } from './useUrlFilters';
 
@@ -34,21 +36,13 @@ export function FilterBar({ search, selects, filters, count }: FilterBarProps) {
         />
       </div>
       {selects.map((select) => (
-        <label key={select.name} className={styles.field}>
-          {select.label}
-          <select
-            name={select.name}
-            className={`${styles.control} ${styles.select}`}
-            value={values[select.name] ?? ''}
-            onChange={(event) => set(select.name, event.target.value)}
-          >
-            {select.options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          key={select.name}
+          label={select.label}
+          value={values[select.name] ?? ''}
+          options={select.options}
+          onChange={(value) => set(select.name, value)}
+        />
       ))}
       <label className={styles.field}>
         From
@@ -70,9 +64,7 @@ export function FilterBar({ search, selects, filters, count }: FilterBarProps) {
           onChange={(event) => set('until', event.target.value)}
         />
       </label>
-      <p className={styles.count} role="status">
-        {count}
-      </p>
+      <ResultCount>{count}</ResultCount>
     </div>
   );
 }

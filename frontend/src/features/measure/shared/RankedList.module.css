@@ -76,8 +76,6 @@
 /* A shadow on the right edge while more columns sit off screen; a surface-coloured cover scrolls in
    with the content and hides it at the end. */
 .tableWrap {
-  position: relative;
-  overflow-x: auto;
   background:
     linear-gradient(to left, var(--surface) 40%, transparent) right center / 32px 100% no-repeat
       local,
@@ -85,83 +83,25 @@
       center / 12px 100% no-repeat scroll;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--hairline);
-  text-align: left;
-}
-
-.table thead th {
-  color: var(--ink-2);
-  font-weight: var(--weight-bold);
-  white-space: nowrap;
-}
-
 .table td {
   white-space: nowrap;
 }
 
-.numeric {
-  text-align: right !important;
-  font-variant-numeric: tabular-nums;
-}
-
-.sort {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.sort svg {
-  width: 14px;
-  height: 14px;
-  opacity: 0.5;
-}
-
-.sort:hover,
-.sortActive {
-  color: var(--ink);
-}
-
-.sortActive svg,
-.sort:hover svg {
-  opacity: 1;
-}
-
-.groupRow th,
-.groupRow td {
+.groupRow > th.nameColumn,
+.groupRow > td {
   background: var(--chip);
   font-weight: var(--weight-bold);
 }
 
-.top th {
+.top > th.nameColumn {
   font-weight: var(--weight-bold);
 }
 
-/* The name stays in view while the figures scroll beside it. */
-.sticky {
-  position: sticky;
-  left: 0;
-  z-index: 1;
+.nameColumn {
   min-width: 220px;
-  background: var(--surface);
 }
 
-.child th {
+.child > th.nameColumn {
   padding-left: var(--space-8);
   font-weight: var(--weight-regular);
 }
@@ -221,10 +161,6 @@
 .open svg {
   width: 14px;
   height: 14px;
-}
-
-.paging {
-  margin-top: var(--space-4);
 }
 
 .headerActions {

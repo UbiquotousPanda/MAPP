@@ -8,6 +8,7 @@ import { useToast } from '@/ui/Toast/useToast';
 import { useCanChange } from '@/ui/useCanChange';
 import { Detail, DetailsList } from '@/features/line-items';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import { useDataSourcesArea, useDeleteAlias, useDeleteIntegrationId } from './api';
 import type { DataSourcesArea as Area, ExternalNameAlias, SourceOfFacts } from './api';
 import { KeyDialog } from './KeyDialog';
@@ -123,7 +124,7 @@ function SourceRows(props: { activityId: string; sources: SourceOfFacts[]; canLi
   const deleteKey = useDeleteIntegrationId(props.activityId);
   const [removing, setRemoving] = useState<SourceOfFacts | null>(null);
   return (
-    <table className={styles.table}>
+    <table className={dataTable.table}>
       <thead>
         <tr>
           <th scope="col">Source</th>
@@ -142,7 +143,7 @@ function SourceRows(props: { activityId: string; sources: SourceOfFacts[]; canLi
           <tr key={source.sourceId}>
             <td>{source.sourceName || source.sourceId}</td>
             <td>{source.integrationId || '—'}</td>
-            <td className={styles.numeric}>{source.factCount}</td>
+            <td className={dataTable.numeric}>{source.factCount}</td>
             <td>{source.lastFactDate ? date(source.lastFactDate) : '—'}</td>
             {props.canLink && (
               <td>

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { Button } from '@/ui/Button/Button';
 import { cx } from '@/ui/cx';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import type { ReportKey } from '../reports';
@@ -102,7 +103,7 @@ export function ReportWidget(props: ReportWidgetProps) {
           ) : loading ? (
             <Skeleton lines={5} height="20px" />
           ) : empty ? (
-            <p className={styles.empty}>{empty}</p>
+            <EmptyState compact title={empty} />
           ) : table && asTable ? (
             <ReportTable title={title} data={table} />
           ) : (

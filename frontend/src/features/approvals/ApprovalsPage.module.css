@@ -31,19 +31,10 @@
   min-width: 0;
 }
 
-.count {
-  margin-left: auto;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
 .chips {
   margin-bottom: var(--space-4);
 }
 
-/* Phones: the search takes the whole first row. */
 @media (max-width: 599px) {
   .search {
     flex-basis: 100%;

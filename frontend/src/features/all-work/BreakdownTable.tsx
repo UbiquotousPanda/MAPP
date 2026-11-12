@@ -1,10 +1,11 @@
-import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { FieldHelpTip } from '@/features/settings';
 import { formatPercent } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import { DisclosureButton } from '@/ui/DisclosureButton/DisclosureButton';
 import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import gridStyles from './AllWorkGrid.module.css';
 import type { AllWorkBreakdown, BreakdownGroup, BreakdownSubgroup } from './all-work-types';
 import type { GroupRef } from './breakdown-state';
@@ -33,7 +34,7 @@ export function BreakdownTable({ breakdown, caption, openGroup }: BreakdownTable
   return (
     <div className={gridStyles.grid}>
       <ScrollBox label={caption}>
-        <table className={gridStyles.table}>
+        <table className={cx(dataTable.table, gridStyles.table)}>
           <caption className="visually-hidden">{caption}</caption>
           <thead>
             <tr>
@@ -41,7 +42,7 @@ export function BreakdownTable({ breakdown, caption, openGroup }: BreakdownTable
                 {heading}
               </th>
               {columnsOf(budget).map((label) => (
-                <th key={label} scope="col" className={gridStyles.end}>
+                <th key={label} scope="col" className={dataTable.numeric}>
                   {label}
                   {label === COLUMN_LABELS.share && (
                     <FieldHelpTip helpKey={BREAKDOWN_SHARE_HELP_KEY} label={label} />
@@ -69,7 +70,7 @@ export function BreakdownTable({ breakdown, caption, openGroup }: BreakdownTable
             ))}
           </tbody>
           <tfoot>
-            <Row group={breakdown.total} budget={budget} className={gridStyles.totals}>
+            <Row group={breakdown.total} budget={budget} className={dataTable.total}>
               {breakdown.total.label}
             </Row>
           </tfoot>
@@ -109,15 +110,11 @@ function GroupRows({ group, budget, expanded, onToggle, openGroup }: GroupRowsPr
       <Row group={group} budget={budget}>
         <span className={styles.name}>
           {hasChildren && (
-            <button
-              type="button"
-              className={styles.toggle}
-              aria-expanded={expanded}
-              aria-label={groupToggleText(group.label, expanded)}
+            <DisclosureButton
+              expanded={expanded}
+              label={groupToggleText(group.label, expanded)}
               onClick={onToggle}
-            >
-              {expanded ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
-            </button>
+            />
           )}
           <GroupName groups={[group]} openGroup={openGroup} />
         </span>
@@ -159,13 +156,13 @@ function Row({ group, budget, className, children }: RowProps) {
       <th scope="row" className={gridStyles.nameCell}>
         {children}
       </th>
-      <td className={gridStyles.end}>{group.activities}</td>
-      <td className={gridStyles.end}>{group.lineItems}</td>
-      <td className={gridStyles.end}>{money(group.plannedCost)}</td>
-      <td className={gridStyles.end}>{formatPercent(group.share)}</td>
-      {budget && <td className={gridStyles.end}>{money(group.budget)}</td>}
+      <td className={dataTable.numeric}>{group.activities}</td>
+      <td className={dataTable.numeric}>{group.lineItems}</td>
+      <td className={dataTable.numeric}>{money(group.plannedCost)}</td>
+      <td className={dataTable.numeric}>{formatPercent(group.share)}</td>
+      {budget && <td className={dataTable.numeric}>{money(group.budget)}</td>}
       {budget && (
-        <td className={cx(gridStyles.end, group.overBudget && styles.over)}>
+        <td className={cx(dataTable.numeric, group.overBudget && styles.over)}>
           {group.budgetUsedPercent === null ? '—' : `${group.budgetUsedPercent} %`}
         </td>
       )}

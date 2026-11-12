@@ -23,7 +23,7 @@
   line-height: var(--leading-xs);
 }
 
-/* One control style for the toolbar: 40 px, 8 px corners, a 3:1 border (design system §5.5). */
+/* The date inputs: 40 px, 8 px corners, a 3:1 border (design system §5.5). */
 .control {
   width: 180px;
   max-width: 100%;
@@ -42,37 +42,9 @@
   border-color: var(--control-border-hover);
 }
 
-.select {
-  padding-right: var(--space-9);
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
-    linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 13px) 50%;
-  background-size:
-    5px 5px,
-    5px 5px;
-  background-repeat: no-repeat;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-
-.count {
-  margin-left: auto;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  white-space: nowrap;
-}
-
 @media (max-width: 599px) {
   .search {
     flex-basis: 100%;
     max-width: none;
-  }
-
-  .count {
-    margin-left: 0;
   }
 }

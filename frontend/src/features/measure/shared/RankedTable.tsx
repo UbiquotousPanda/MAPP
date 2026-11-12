@@ -1,13 +1,16 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
 import { recordHref } from '@/ui/record-links';
 import type { PlanningRecordType } from '@/ui/record-links';
 import { cx } from '@/ui/cx';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import dataTable from '@/ui/Table/Table.module.css';
+import { TotalLabel } from '@/ui/Table/TotalLabel';
 import type { RankedColumn, RankedData, RankedEntryData } from './RankedList';
 import styles from './RankedList.module.css';
-import totalStyles from './TotalRow.module.css';
 
+const NAME = cx(dataTable.sticky, styles.nameColumn);
 const DRILLS_TO = new Set(['plan', 'campaign', 'initiative', 'activity']);
 
 function isRecordType(level: string): level is PlanningRecordType {
@@ -30,51 +33,41 @@ export function RankedTable<F>(props: TableProps<F>) {
     return <p className={styles.note}>Nothing to rank on this page.</p>;
   }
   return (
-    <div className={styles.tableWrap} data-focus-fallback tabIndex={-1}>
-      <table className={styles.table}>
+    <div className={cx(dataTable.scroll, styles.tableWrap)} data-focus-fallback tabIndex={-1}>
+      <table className={cx(dataTable.table, styles.table)}>
         <thead>
           <tr>
-            <th scope="col" className={styles.sticky}>
+            <th scope="col" className={NAME}>
               Name
             </th>
             {owner && <th scope="col">Owner</th>}
-            {columns.map((c) => (
-              <th
-                key={c.key}
-                scope="col"
-                className={styles.numeric}
-                aria-sort={
-                  c.key === sort.sort
-                    ? sort.order === 'asc'
-                      ? 'ascending'
-                      : 'descending'
-                    : undefined
-                }
-              >
-                {c.sortable === false ? (
-                  c.label
-                ) : (
-                  <SortButton
-                    label={c.label}
-                    active={c.key === sort.sort}
-                    order={sort.order}
-                    onClick={() => onSort(c.key)}
-                  />
-                )}
-              </th>
-            ))}
+            {columns.map((c) =>
+              c.sortable === false ? (
+                <th key={c.key} scope="col" className={dataTable.numeric}>
+                  {c.label}
+                </th>
+              ) : (
+                <SortHeader
+                  key={c.key}
+                  label={c.label}
+                  className={dataTable.numeric}
+                  direction={c.key === sort.sort ? sort.order : undefined}
+                  onSort={() => onSort(c.key)}
+                />
+              ),
+            )}
           </tr>
         </thead>
         {data.groups.map((g) => (
           <tbody key={g.key}>
             {g.label && (
               <tr className={styles.groupRow}>
-                <th scope="rowgroup" className={styles.sticky}>
+                <th scope="rowgroup" className={NAME}>
                   {g.label}
                 </th>
                 {owner && <td />}
                 {columns.map((c) => (
-                  <td key={c.key} className={styles.numeric}>
+                  <td key={c.key} className={dataTable.numeric}>
                     {c.value(g.totals)}
                   </td>
                 ))}
@@ -93,13 +86,13 @@ export function RankedTable<F>(props: TableProps<F>) {
           </tbody>
         ))}
         <tfoot>
-          <tr className={totalStyles.total}>
-            <th scope="row" className={styles.sticky}>
-              Total
+          <tr className={dataTable.total}>
+            <th scope="row" className={NAME}>
+              <TotalLabel />
             </th>
             {owner && <td />}
             {columns.map((c) => (
-              <td key={c.key} className={styles.numeric}>
+              <td key={c.key} className={dataTable.numeric}>
                 {c.value(data.totals)}
               </td>
             ))}
@@ -124,7 +117,7 @@ function Rows<F>({ entry, columns, flag, owner, onDrill }: RowsProps<F>) {
     const href = isRecordType(e.level) ? recordHref(e.level, e.id, e.planId) : undefined;
     return (
       <tr key={e.id} className={child ? styles.child : styles.top}>
-        <th scope="row" className={styles.sticky}>
+        <th scope="row" className={NAME}>
           <div className={styles.nameCell}>
             {child && DRILLS_TO.has(e.level) ? (
               <button
@@ -154,7 +147,7 @@ function Rows<F>({ entry, columns, flag, owner, onDrill }: RowsProps<F>) {
         </th>
         {owner && <td>{e.owner?.name ?? '—'}</td>}
         {columns.map((c) => (
-          <td key={c.key} className={styles.numeric}>
+          <td key={c.key} className={dataTable.numeric}>
             <Cell column={c} entry={e} />
           </td>
         ))}
@@ -181,26 +174,4 @@ function Cell<F>({ column, entry }: { column: RankedColumn<F>; entry: RankedEntr
     );
   }
   return column.render ? column.render(entry.figures, entry) : column.value(entry.figures);
-}
-
-interface SortButtonProps {
-  label: string;
-  active: boolean;
-  order: 'desc' | 'asc';
-  onClick: () => void;
-}
-
-/** A column heading that sorts: high to low first, then low to high; the arrow shows which. */
-function SortButton({ label, active, order, onClick }: SortButtonProps) {
-  const Arrow = !active ? ArrowUpDown : order === 'desc' ? ArrowDown : ArrowUp;
-  return (
-    <button
-      type="button"
-      className={cx(styles.sort, active && styles.sortActive)}
-      onClick={onClick}
-    >
-      {label}
-      <Arrow aria-hidden="true" />
-    </button>
-  );
 }

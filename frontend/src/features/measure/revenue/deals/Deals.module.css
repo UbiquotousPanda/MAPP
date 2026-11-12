@@ -171,14 +171,6 @@
   border-top: 1px solid var(--row-divider);
 }
 
-.paging {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-  justify-content: space-between;
-  font-size: var(--text-sm);
-}
-
 .focusedTitle:focus {
   outline: none;
 }

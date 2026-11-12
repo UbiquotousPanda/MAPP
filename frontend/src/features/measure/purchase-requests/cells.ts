@@ -30,7 +30,7 @@ export function vendorText(v: VendorData, column: ColumnKey, f: Format): string 
   }
 }
 
-function totalText(t: RequestsGridData['totals'], column: ColumnKey, f: Format): string {
+export function totalText(t: RequestsGridData['totals'], column: ColumnKey, f: Format): string {
   switch (column) {
     case 'name':
       return `${t.purchaseRequests} requests, ${t.lines} lines`;

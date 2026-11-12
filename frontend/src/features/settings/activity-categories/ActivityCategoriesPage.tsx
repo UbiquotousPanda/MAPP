@@ -11,6 +11,7 @@ import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { filterRecords, useListFilters } from '@/ui/useListFilters';
 import type { ListFilters } from '@/ui/useListFilters';
 import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
@@ -185,8 +186,8 @@ function CategoriesCard({ categories, filters, actions, onNew }: CategoriesCardP
           <Button onClick={filters.clear}>Clear filters</Button>
         </div>
       ) : (
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Name</th>
@@ -219,7 +220,7 @@ function CategoryRow({ category, actions }: CategoryRowProps) {
   const canChange = useCanChange();
   return (
     <tr>
-      <th scope="row" className={styles.nameCell}>
+      <th scope="row" className={dataTable.nameCell}>
         <button type="button" className={styles.nameButton} onClick={() => actions.view(category)}>
           {category.name}
         </button>
@@ -233,7 +234,7 @@ function CategoryRow({ category, actions }: CategoryRowProps) {
           {category.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={category.name}
           items={[

@@ -1,7 +1,8 @@
-import { Ban, ChevronLeft, ChevronRight, FileText, Plus, SearchX } from 'lucide-react';
+import { Ban, FileText, Plus, SearchX } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { ApiError } from '@/api/errors';
 import { Button, LinkButton } from '@/ui/Button/Button';
+import { Pager } from '@/ui/Pager/Pager';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
@@ -19,7 +20,6 @@ import {
   NO_MATCH,
   NO_PURCHASE_REQUESTS,
   NOTHING_WAITING,
-  pageText,
 } from './list-text';
 import { PurchaseRequestFilters } from './PurchaseRequestFilters';
 import { NEW_PURCHASE_REQUEST, PURCHASE_REQUESTS, SWITCHED_OFF } from './purchase-request-text';
@@ -141,7 +141,15 @@ function Results({ page, search, onChange }: ResultsProps) {
     return (
       <>
         <VendorGroupTable page={page} />
-        <Pager page={page.page} total={page.total} onPage={(next) => onChange({ page: next })} />
+        {page.total > LIST_PAGE_SIZE && (
+          <Pager
+            page={page.page}
+            pageSize={LIST_PAGE_SIZE}
+            total={page.total}
+            placement="cardFooter"
+            onPage={(next) => onChange({ page: next })}
+          />
+        )}
       </>
     );
   }
@@ -161,39 +169,5 @@ function Results({ page, search, onChange }: ResultsProps) {
       icon={<FileText />}
       title={search.waiting ? NOTHING_WAITING : NO_PURCHASE_REQUESTS}
     />
-  );
-}
-
-function Pager({
-  page,
-  total,
-  onPage,
-}: {
-  page: number;
-  total: number;
-  onPage: (page: number) => void;
-}) {
-  const pages = Math.max(1, Math.ceil(total / LIST_PAGE_SIZE));
-  if (pages === 1) {
-    return null;
-  }
-  return (
-    <nav className={styles.pager} aria-label="Pages">
-      <p className={styles.range} aria-live="polite">
-        {pageText(page, pages)}
-      </p>
-      <Button
-        size="sm"
-        icon={<ChevronLeft />}
-        disabled={page <= 1}
-        onClick={() => onPage(page - 1)}
-      >
-        Previous
-      </Button>
-      <Button size="sm" disabled={page >= pages} onClick={() => onPage(page + 1)}>
-        Next
-        <ChevronRight aria-hidden="true" className={styles.after} />
-      </Button>
-    </nav>
   );
 }

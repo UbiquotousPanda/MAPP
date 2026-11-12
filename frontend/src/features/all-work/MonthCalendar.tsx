@@ -1,9 +1,9 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useState } from 'react';
 import type { MouseEvent } from 'react';
 import { Link } from 'react-router';
 import { Button } from '@/ui/Button/Button';
+import { Popover } from '@/ui/Popover/Popover';
 import { cx } from '@/ui/cx';
 import { useFormatters } from '@/format/useFormatters';
 import type { AllWorkResult, AllWorkRow } from './all-work-types';
@@ -140,23 +140,16 @@ function Day({ date, isToday, activities, onOpen }: DayProps) {
               + {more} more <span className="visually-hidden">on {formatters.date(date)}</span>
             </button>
           </Popover.Trigger>
-          <Popover.Portal>
-            <Popover.Content
-              className={styles.dayList}
-              align="start"
-              sideOffset={4}
-              aria-label={formatters.date(date)}
-            >
-              <p className={styles.dayTitle}>{formatters.date(date)}</p>
-              <ul className={styles.items}>
-                {activities.map((row) => (
-                  <li key={row.key}>
-                    <ActivityLink row={row} onOpen={onOpen} />
-                  </li>
-                ))}
-              </ul>
-            </Popover.Content>
-          </Popover.Portal>
+          <Popover.Content width="sm" sideOffset={4} aria-label={formatters.date(date)}>
+            <p className={styles.dayTitle}>{formatters.date(date)}</p>
+            <ul className={styles.items}>
+              {activities.map((row) => (
+                <li key={row.key}>
+                  <ActivityLink row={row} onOpen={onOpen} />
+                </li>
+              ))}
+            </ul>
+          </Popover.Content>
         </Popover.Root>
       )}
     </div>

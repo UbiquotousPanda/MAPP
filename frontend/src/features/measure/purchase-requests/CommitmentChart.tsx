@@ -1,4 +1,5 @@
 import { useFormatters } from '@/format/useFormatters';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { ChartData } from './api';
@@ -106,7 +107,7 @@ export function CommitmentChart({
       chart={
         data &&
         (data.months.length === 0 ? (
-          <p className={styles.empty}>{NOTHING_COMMITTED}</p>
+          <EmptyState compact title={NOTHING_COMMITTED} />
         ) : (
           <Bars data={data} label={label} />
         ))

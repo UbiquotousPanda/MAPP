@@ -8,6 +8,8 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { formatWhole } from '@/format/decimal';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import { LOG_PAGE_SIZE, logEntriesKey, useLogEntries, useLogSummary } from './api';
 import { LogEntryList } from './LogEntryList';
 import { LogFilterBar } from './LogFilterBar';
@@ -20,7 +22,7 @@ import {
   weekStart,
 } from './log-filters';
 import type { LogFilterState } from './log-filters';
-import { countLine } from './log-text';
+import { ENTRIES } from './log-text';
 import { filtersFromParams } from './schemas';
 import styles from './ActivityLogPage.module.css';
 
@@ -134,11 +136,7 @@ function LogCount({ log, filtered }: { log: ReturnType<typeof useLogEntries>; fi
   if (!page || log.error || unfiltered === 0 || (!filtered && page.total === 0)) {
     return null;
   }
-  return (
-    <p className={styles.count} aria-live="polite">
-      {countLine(page.total, unfiltered)}
-    </p>
-  );
+  return <ResultCount>{countText(page.total, unfiltered, ENTRIES)}</ResultCount>;
 }
 
 /** The list, or the state the list is in. */

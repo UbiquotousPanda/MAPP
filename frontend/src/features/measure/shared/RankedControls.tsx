@@ -1,4 +1,3 @@
-import { Pager } from '@/ui/Pager/Pager';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { Select } from '@/ui/Select/Select';
 import type { RankedState } from './ranked-params';
@@ -34,27 +33,5 @@ export function RankedControls({ state, groups, onChange }: RankedControlsProps)
         />
       </div>
     </div>
-  );
-}
-
-interface PagingProps {
-  state: RankedState;
-  total: number;
-  onChange: (patch: Partial<RankedState>) => void;
-}
-
-const SIZES = [10, 25, 50] as const;
-
-export function Paging({ state, total, onChange }: PagingProps) {
-  return (
-    <Pager
-      className={styles.paging}
-      page={state.page}
-      pageSize={state.size}
-      total={total}
-      sizes={SIZES}
-      onPage={(page) => onChange({ page })}
-      onPageSize={(size) => onChange({ size })}
-    />
   );
 }

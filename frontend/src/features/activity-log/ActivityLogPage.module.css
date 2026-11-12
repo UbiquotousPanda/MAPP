@@ -1,4 +1,3 @@
-/* The summary cards, then the list card, 20 px apart (design system §2.2). */
 .sections {
   display: flex;
   flex-direction: column;
@@ -46,15 +45,6 @@
 
 .body {
   padding: var(--card-padding);
-}
-
-/* "12 of 1,204 entries" at the end of the toolbar. */
-.count {
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--leading-sm);
-  white-space: nowrap;
 }
 
 .loading {

@@ -9,6 +9,8 @@ import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { ActivityStatusChip } from '@/ui/ActivityStatusChip/ActivityStatusChip';
 import { activityStatusWord } from '@/ui/ActivityStatusChip/activity-status';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { formatDate } from '@/format/intl';
 import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
@@ -232,14 +234,14 @@ function LineItems({ items }: { items: PreviewLineItem[] }) {
       aria-label="Line items, scrolls sideways"
       tabIndex={0}
     >
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <thead>
           <tr>
             <th scope="col">Line item</th>
-            <th scope="col" className={styles.amount}>
+            <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
               Planned cost
             </th>
-            <th scope="col" className={styles.amount}>
+            <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
               {converted}
             </th>
             <th scope="col">Spend type</th>
@@ -254,8 +256,12 @@ function LineItems({ items }: { items: PreviewLineItem[] }) {
                 {item.name}
                 <span className={styles.id}>{item.id}</span>
               </th>
-              <td className={styles.amount}>{format.money(item.plannedCost)}</td>
-              <td className={styles.amount}>{format.money(item.plannedCostDisplay)}</td>
+              <td className={cx(dataTable.numeric, styles.amount)}>
+                {format.money(item.plannedCost)}
+              </td>
+              <td className={cx(dataTable.numeric, styles.amount)}>
+                {format.money(item.plannedCostDisplay)}
+              </td>
               <td>{item.spendType || '—'}</td>
               <td>{item.glCode || '—'}</td>
               <td>{item.financeBudgetItem || '—'}</td>

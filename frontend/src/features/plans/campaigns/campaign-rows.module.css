@@ -85,15 +85,3 @@
   color: var(--ink-2);
   font-size: var(--text-xs);
 }
-
-/* The totals row's first cell: "Total", then the counts on one line. */
-.total {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.total .left {
-  font-weight: var(--weight-regular);
-  white-space: nowrap;
-}

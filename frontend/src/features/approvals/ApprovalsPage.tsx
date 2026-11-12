@@ -16,6 +16,8 @@ import type { TabItem } from '@/ui/Tabs/Tabs';
 import type { components } from '@/api/generated/schema';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { useFormatters } from '@/format/useFormatters';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import {
   NO_FILTERS,
   applyFilters,
@@ -32,7 +34,6 @@ import { ApprovalsFilters } from './ApprovalsFilters';
 import { ApprovalsTable } from './ApprovalsTable';
 import { DelegationBanner } from './DelegationBanner';
 import { DelegationPanel } from './DelegationPanel';
-import { activitiesCount } from './messages';
 import { MonitoringView } from './MonitoringView';
 import { PurchaseRequestPreviewPanel } from './PurchaseRequestPreviewPanel';
 import { approvalsAddressOf, previewParams } from './schemas';
@@ -141,9 +142,12 @@ export function ApprovalsPage() {
                     onChange={setFilters}
                   />
                   {rows.data && (
-                    <p className={styles.count} aria-live="polite">
-                      {`${visible.length} of ${activitiesCount(allRows.length)}`}
-                    </p>
+                    <ResultCount>
+                      {countText(visible.length, allRows.length, {
+                        one: 'activity',
+                        many: 'activities',
+                      })}
+                    </ResultCount>
                   )}
                 </div>
                 <Chips

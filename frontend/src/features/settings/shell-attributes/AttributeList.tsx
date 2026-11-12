@@ -8,6 +8,8 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { bySection, hasHelpState, hasStatus, lacksHelp, matches } from './attribute-filtering';
 import { LEVEL_WORDS, LEVELS, levelMidSentence, lockReason } from './attribute-words';
 import type { AttributeLevel } from './attribute-words';
@@ -189,15 +191,15 @@ export function AttributeList({ filters }: { filters: AttributeFilters }) {
             action={<Button onClick={() => filters.clear(level)}>Clear filters</Button>}
           />
         ) : (
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
+          <div className={dataTable.scroll}>
+            <table className={cx(dataTable.table, styles.table)}>
               <thead>
                 <tr>
                   <th scope="col">Order</th>
                   <th scope="col">Label</th>
                   <th scope="col">Type</th>
                   <th scope="col">Marking</th>
-                  <th scope="col" className={styles.number}>
+                  <th scope="col" className={dataTable.numeric}>
                     Options
                   </th>
                   <th scope="col">Depends on / shown when</th>

@@ -1,16 +1,10 @@
-/**
- * The Financials page's address (015 plan, "Route and navigation"): the address is the state.
- * Tab, search, year, plan, record filter, sort and page are kept in it, so a link reproduces the
- * view (FR-021). financialsHref() builds those links for the Financials cards, Home and the log.
- */
+import { LIST_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 import type { operations } from '@/api/generated/schema';
 
-/** The query of GET /api/v1/financials/transactions, as the contract types it. */
 export type TransactionsQuery = NonNullable<
   operations['listFinancialTransactions']['parameters']['query']
 >;
 
-/** The tabs: the four types, everything, and the transactions without a line item. */
 export type FinancialTab =
   'all' | 'purchaseOrder' | 'invoice' | 'payment' | 'accrual' | 'notLinked';
 
@@ -23,15 +17,13 @@ export const TABS: FinancialTab[] = [
   'notLinked',
 ];
 
-/** The columns a person can sort by (contract FinancialSort). */
 export type SortColumn =
   'postingDate' | 'documentNumber' | 'type' | 'vendor' | 'amount' | 'linkedTo';
 export type SortDirection = 'asc' | 'desc';
 
-export const PAGE_SIZES = [50, 100, 200] as const;
+export const PAGE_SIZES = LIST_PAGE_SIZES;
 export type PageSize = (typeof PAGE_SIZES)[number];
 
-/** Everything the address can hold; undefined or '' means the default. */
 export interface FinancialFilters {
   tab: FinancialTab;
   q: string;
@@ -58,7 +50,6 @@ export const DEFAULT_FILTERS: FinancialFilters = {
   pageSize: 50,
 };
 
-/** The address parameters of the filters, defaults left out ("?type=invoice&q=keynote"). */
 export function writeFilters(filters: Partial<FinancialFilters>): URLSearchParams {
   const full = { ...DEFAULT_FILTERS, ...filters };
   const params = new URLSearchParams();
@@ -112,10 +103,6 @@ export function clearedFilters(filters: FinancialFilters): Partial<FinancialFilt
   };
 }
 
-/**
- * The Financials page showing these filters: financialsHref({ recordId: 'A-1002' }) is
- * "/financials?recordId=A-1002"; financialsHref({ tab: 'notLinked' }) "/financials?link=notLinked".
- */
 export function financialsHref(filters: Partial<FinancialFilters> = {}): string {
   const query = writeFilters(filters).toString();
   return query ? `/financials?${query}` : '/financials';

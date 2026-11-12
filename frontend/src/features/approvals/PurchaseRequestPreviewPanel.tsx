@@ -7,6 +7,8 @@ import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { purchaseRequestHref } from '@/ui/record-links';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { useFormatters } from '@/format/useFormatters';
 import { ApprovalChain } from './ApprovalChain';
 import { ApprovalHistory } from './ApprovalHistory';
@@ -160,12 +162,12 @@ function PreviewBody({ preview }: { preview: PurchaseRequestApprovalPreview }) {
           aria-label="Lines, scrolls sideways"
           tabIndex={0}
         >
-          <table className={styles.table}>
+          <table className={cx(dataTable.table, styles.table)}>
             <thead>
               <tr>
                 <th scope="col">Line item</th>
                 <th scope="col">HX key</th>
-                <th scope="col" className={styles.amount}>
+                <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
                   Amount
                 </th>
               </tr>
@@ -178,7 +180,9 @@ function PreviewBody({ preview }: { preview: PurchaseRequestApprovalPreview }) {
                     <span className={styles.id}>{line.lineItem.id}</span>
                   </th>
                   <td>{line.hxKey}</td>
-                  <td className={styles.amount}>{format.money(line.amount)}</td>
+                  <td className={cx(dataTable.numeric, styles.amount)}>
+                    {format.money(line.amount)}
+                  </td>
                 </tr>
               ))}
             </tbody>

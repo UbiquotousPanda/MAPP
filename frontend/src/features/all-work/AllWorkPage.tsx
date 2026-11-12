@@ -15,6 +15,7 @@ import { useAllWork, useAllWorkOptions, useAllWorkPreferences, usePreferencesSav
 import styles from './AllWorkPage.module.css';
 import { ALL_WORK_DESCRIPTION, VIEW_LABELS } from './all-work-text';
 import type { Sort, ViewState, ViewType } from './all-work-types';
+import { AllWorkExport } from './AllWorkExport';
 import { AllWorkGrid } from './AllWorkGrid';
 import { withBreakdownChoice } from './breakdown-state';
 import { BREAKDOWN } from './breakdown-text';
@@ -22,7 +23,6 @@ import { BreakdownView } from './BreakdownView';
 import { BudgetView } from './BudgetView';
 import { CalendarView } from './CalendarView';
 import { ColumnChooser } from './ColumnChooser';
-import { ExportMenu } from './ExportMenu';
 import { FilterBar } from './FilterBar';
 import { GridSkeleton } from './GridSkeleton';
 import { MonthCalendar } from './MonthCalendar';
@@ -233,7 +233,7 @@ export function AllWorkPage() {
               onStandard={session.applyStandard}
             />
             {shown && (
-              <ExportMenu
+              <AllWorkExport
                 state={shown}
                 result={result}
                 refusal={has('data.export') ? undefined : refusalText('Exporting', access)}

@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import gridStyles from './AllWorkGrid.module.css';
 import type { AllWorkResult, AllWorkRow } from './all-work-types';
 import { hasNoDates, todayOffset } from './calendar';
@@ -67,7 +68,7 @@ export function CalendarView({
       {continued && <p className={gridStyles.continued}>Continued: {continued}</p>}
       <ScrollBox label={caption}>
         <table
-          className={cx(gridStyles.table, styles.calendar)}
+          className={cx(dataTable.table, gridStyles.table, styles.calendar)}
           style={{ '--track-min': `${trackPx}px` }}
         >
           <caption className="visually-hidden">{caption}</caption>

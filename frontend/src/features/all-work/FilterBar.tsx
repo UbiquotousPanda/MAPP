@@ -2,14 +2,18 @@ import { SlidersHorizontal } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { FilterChips } from '@/ui/FilterChips/FilterChips';
+import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
+import type { FilterChoice } from '@/ui/FilterMenu/FilterMenu';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { cx } from '@/ui/cx';
 import { formatWhole } from '@/format/decimal';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import styles from './FilterBar.module.css';
 import {
   ACTIVITY_STATUS_LABELS,
   CONTAINER_STATUS_LABELS,
-  countText,
+  countNoun,
   FILTER_LABELS,
   FINANCE_LABELS,
   isLabelled,
@@ -26,8 +30,6 @@ import type {
   ViewState,
 } from './all-work-types';
 import { AttributeFilterMenu } from './AttributeFilterMenu';
-import { FilterMenu } from './FilterMenu';
-import type { FilterChoice } from './FilterMenu';
 import { chipsOf, clearAll, hasFilters, removeChip } from './view-chips';
 import { choicesOf, withYears, yearRange } from './view-state';
 import type { IdFilter, ValueFilter } from './view-state';
@@ -231,10 +233,10 @@ export function FilterBar({ state, options, count, updating, onChange }: FilterB
         >
           {chips.length > 0 ? `Filters (${formatWhole(chips.length)})` : 'Filters'}
         </Button>
-        <p className={styles.count} aria-live="polite">
-          {count && countText(count.shown, count.total, count.noun)}
+        <ResultCount>
+          {count && countText(count.shown, count.total, countNoun(count.noun))}
           {updating && <span className={styles.updating}> Updating…</span>}
-        </p>
+        </ResultCount>
       </div>
       <div
         id={menusId}

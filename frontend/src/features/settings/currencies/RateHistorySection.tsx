@@ -12,6 +12,7 @@ import { formatRate } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import { useUndoableDelete } from '@/ui/useUndoableDelete';
 import settingsStyles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { inverseLine } from './currency-actions';
 import { RateDialog } from './RateDialog';
 import { RATE_LISTS, useDeleteRate, useRateHistory } from './rates-api';
@@ -70,12 +71,12 @@ export function RateHistorySection({ code }: RateHistorySectionProps) {
           <Skeleton lines={3} height="18px" />
         )
       ) : (
-        <div className={settingsStyles.tableScroll}>
-          <table className={settingsStyles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Date and source</th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Rate per 1 USD
                 </th>
                 <th scope="col">
@@ -102,13 +103,13 @@ export function RateHistorySection({ code }: RateHistorySectionProps) {
                         {`${rate.updatedBy.name}, ${dateTime(rate.updatedAt)}`}
                       </span>
                     </th>
-                    <td className={settingsStyles.number}>
+                    <td className={dataTable.numeric}>
                       {formatRate(rate.rate)}
                       <span className={settingsStyles.secondLine}>
                         {inverseLine(code, rate.inverseRate)}
                       </span>
                     </td>
-                    <td className={settingsStyles.actionsCell}>
+                    <td className={dataTable.actions}>
                       <CanChange permission="exchangeRates.manage">
                         <ActionsMenu
                           label={`the rate of ${date(rate.date)}`}

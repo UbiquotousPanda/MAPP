@@ -1,7 +1,8 @@
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
 import { ScrollBox } from '@/features/financials';
 import { Card } from '@/ui/Card/Card';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { SpaView } from './api';
 import { ActivityRow } from './ActivityRow';
 import type { SortColumn, SpaSort } from './schemas';
@@ -43,7 +44,7 @@ export function SpaActivities({ view, sort, onSort }: SpaActivitiesProps) {
   return (
     <Card title={ACTIVITIES.title}>
       <ScrollBox label={ACTIVITIES.title} className={styles.scroll}>
-        <table className={styles.table}>
+        <table className={dataTable.table}>
           <caption className="visually-hidden">{ACTIVITIES.title}</caption>
           <thead>
             <tr>
@@ -56,7 +57,7 @@ export function SpaActivities({ view, sort, onSort }: SpaActivitiesProps) {
                     {COLUMNS.channel}
                   </th>
                 ) : (
-                  <SortHeader
+                  <SortHeading
                     key={column}
                     column={column}
                     numeric={numeric}
@@ -87,31 +88,22 @@ export function SpaActivities({ view, sort, onSort }: SpaActivitiesProps) {
   );
 }
 
-interface SortHeaderProps {
+interface SortHeadingProps {
   column: SortColumn;
   numeric?: boolean;
   sort: SpaSort | undefined;
   onSort: (sort: SpaSort) => void;
 }
 
-function SortHeader({ column, numeric = false, sort, onSort }: SortHeaderProps) {
+function SortHeading({ column, numeric = false, sort, onSort }: SortHeadingProps) {
   const current = sort?.column === column ? sort.direction : undefined;
-  const Icon = current === 'asc' ? ArrowUp : current === 'desc' ? ArrowDown : ArrowUpDown;
   const next = current ? (current === 'asc' ? 'desc' : 'asc') : firstDirection(column);
   return (
-    <th
-      scope="col"
-      className={numeric ? styles.numeric : undefined}
-      aria-sort={current === 'asc' ? 'ascending' : current === 'desc' ? 'descending' : 'none'}
-    >
-      <button
-        type="button"
-        className={styles.sort}
-        onClick={() => onSort({ column, direction: next })}
-      >
-        {COLUMNS[column]}
-        <Icon aria-hidden="true" className={current ? undefined : styles.idle} />
-      </button>
-    </th>
+    <SortHeader
+      label={COLUMNS[column] ?? column}
+      direction={current}
+      className={numeric ? dataTable.numeric : undefined}
+      onSort={() => onSort({ column, direction: next })}
+    />
   );
 }

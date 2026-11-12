@@ -10,7 +10,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useCanChange } from '@/ui/useCanChange';
 import { usePageTitle } from '@/ui/usePageTitle';
-import tableStyles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { useFormatters } from '@/format/useFormatters';
 import { usePerformanceSources } from './api';
 import type { PerformanceSource } from './api';
@@ -95,7 +95,7 @@ function SourceTable({
     return <EmptyState icon={<Gauge aria-hidden />} title={EMPTY_TITLE} text={EMPTY_TEXT} />;
   }
   return (
-    <table className={tableStyles.table}>
+    <table className={dataTable.table}>
       <thead>
         <tr>
           <th scope="col">Name</th>

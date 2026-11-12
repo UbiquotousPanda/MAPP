@@ -92,7 +92,7 @@ describe('campaignRows: money and totals (feature 005, FR-022; 016 FR-013)', () 
     );
     renderWithProviders(<div data-testid="one">{one.name}</div>);
     expect(screen.getByTestId('one')).toHaveTextContent(
-      'Total1 campaign · 1 initiative · 0 activities',
+      'Total 1 campaign · 1 initiative · 0 activities',
     );
     expect(one.plannedCost).toBe('—');
   });

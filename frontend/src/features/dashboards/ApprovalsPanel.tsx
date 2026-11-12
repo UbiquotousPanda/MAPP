@@ -1,5 +1,7 @@
 import { useFormatters } from '@/format/useFormatters';
 import { Card } from '@/ui/Card/Card';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
 import type { DashboardApprovals } from './api';
 import { NOTHING, word } from './dashboard-text';
 import styles from './Dashboards.module.css';
@@ -37,12 +39,12 @@ export function ApprovalsPanel({ approvals }: ApprovalsPanelProps) {
           </div>
         ))}
       </dl>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption>Activities by approval status</caption>
         <thead>
           <tr>
             <th scope="col">Status</th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Activities
             </th>
           </tr>
@@ -51,7 +53,7 @@ export function ApprovalsPanel({ approvals }: ApprovalsPanelProps) {
           {approvals.activitiesByStatus.map((row) => (
             <tr key={row.status}>
               <th scope="row">{word(row.status)}</th>
-              <td className={styles.number}>{row.count}</td>
+              <td className={dataTable.numeric}>{row.count}</td>
             </tr>
           ))}
         </tbody>

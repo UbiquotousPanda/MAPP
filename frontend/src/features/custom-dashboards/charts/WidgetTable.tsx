@@ -1,4 +1,5 @@
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import { cx } from '@/ui/cx';
 import type { Widget, WidgetData, WidgetDataColumn } from '../model';
 import { formatKey, formatValue } from './format';
@@ -19,12 +20,16 @@ export function WidgetTable({ widget, data }: WidgetTableProps) {
 
   return (
     <div className={styles.scroll} role="region" aria-label={`${caption}, table`} tabIndex={0}>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">{caption}</caption>
         <thead>
           <tr>
             {columns.map((column) => (
-              <th key={column.key} scope="col" className={cx(isMeasure(column) && styles.number)}>
+              <th
+                key={column.key}
+                scope="col"
+                className={cx(isMeasure(column) && dataTable.numeric)}
+              >
                 {column.label}
               </th>
             ))}
@@ -40,7 +45,7 @@ export function WidgetTable({ widget, data }: WidgetTableProps) {
                     {text}
                   </th>
                 ) : (
-                  <td key={column.key} className={cx(isMeasure(column) && styles.number)}>
+                  <td key={column.key} className={cx(isMeasure(column) && dataTable.numeric)}>
                     {text}
                   </td>
                 );
@@ -50,7 +55,7 @@ export function WidgetTable({ widget, data }: WidgetTableProps) {
         </tbody>
         {showsTotals && (
           <tfoot>
-            <tr>
+            <tr className={dataTable.total}>
               {columns.map((column, index) => (
                 <TotalCell
                   key={column.key}
@@ -78,7 +83,7 @@ function TotalCell({ column, isLabel, text }: TotalCellProps) {
     return <th scope="row">Total</th>;
   }
   return (
-    <td className={cx(isMeasure(column) && styles.number)}>{isMeasure(column) ? text : ''}</td>
+    <td className={cx(isMeasure(column) && dataTable.numeric)}>{isMeasure(column) ? text : ''}</td>
   );
 }
 

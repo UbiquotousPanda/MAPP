@@ -1,9 +1,12 @@
 import { useEffect, useEffectEvent, useId, useState } from 'react';
 import { FilterChips } from '@/ui/FilterChips/FilterChips';
+import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
+import { Select } from '@/ui/Select/Select';
+import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
-import { CheckMenu } from './CheckMenu';
 import { listChips, withoutChip } from './list-filters';
 import type { Choice } from './list-filters';
 import {
@@ -43,6 +46,7 @@ const STATUS_ORDER: ListSearch['status'] = [
   'approved',
   'closed',
 ];
+const SORT_OPTIONS = LIST_SORTS.map((sort) => ({ value: sort, label: SORT_WORDS[sort] }));
 const STATUS_CHOICES: Choice[] = STATUS_ORDER.map((value) => ({
   value,
   label: STATUS_WORDS[value],
@@ -84,63 +88,46 @@ export function PurchaseRequestFilters(props: PurchaseRequestFiltersProps) {
           value={search.waiting ? 'waiting' : 'all'}
           onChange={(view) => onChange({ waiting: view === 'waiting' })}
         />
-        <div className={styles.field}>
-          <label htmlFor={`${ids}-sort`}>Sort</label>
-          <select
-            id={`${ids}-sort`}
-            className={`${styles.control} ${styles.select}`}
-            value={search.sort}
-            onChange={(event) => {
-              const sort = LIST_SORTS.find((each) => each === event.target.value);
-              if (sort) {
-                onChange({ sort });
-              }
-            }}
-          >
-            {LIST_SORTS.map((sort) => (
-              <option key={sort} value={sort}>
-                {SORT_WORDS[sort]}
-              </option>
-            ))}
-          </select>
-        </div>
-        {total !== undefined && (
-          <p className={styles.count} aria-live="polite">
-            {countText(total)}
-          </p>
-        )}
+        <Select
+          label="Sort"
+          value={search.sort}
+          options={SORT_OPTIONS}
+          onChange={(value) => {
+            const sort = LIST_SORTS.find((each) => each === value);
+            if (sort) {
+              onChange({ sort });
+            }
+          }}
+        />
+        {total !== undefined && <ResultCount>{countText(total)}</ResultCount>}
       </div>
       <div className={styles.row}>
-        <CheckMenu
+        <CheckFilter
           label={FILTER_LABELS.status}
-          anyText="Any status"
           choices={STATUS_CHOICES}
           chosen={search.status}
           onChange={(chosen) =>
             onChange({ status: STATUS_ORDER.filter((status) => chosen.includes(status)) })
           }
         />
-        <CheckMenu
+        <CheckFilter
           label={FILTER_LABELS.type}
-          anyText="Any PR type"
           choices={types.choices}
           chosen={types.chosen}
           onChange={(chosen) =>
             onChange({ type: without(chosen), typeNotCompleted: chosen.includes(NONE) })
           }
         />
-        <CheckMenu
+        <CheckFilter
           label={FILTER_LABELS.vendor}
-          anyText="Any vendor"
           choices={vendors.choices}
           chosen={vendors.chosen}
           onChange={(chosen) =>
             onChange({ vendor: without(chosen), vendorNotCompleted: chosen.includes(NONE) })
           }
         />
-        <CheckMenu
+        <CheckFilter
           label={FILTER_LABELS.owner}
-          anyText="Anyone"
           choices={props.owners}
           chosen={search.owner}
           onChange={(owner) => onChange({ owner })}
@@ -164,6 +151,30 @@ export function PurchaseRequestFilters(props: PurchaseRequestFiltersProps) {
         onClearAll={() => onChange(clearedListSearch(search))}
       />
     </div>
+  );
+}
+
+interface CheckFilterProps {
+  label: string;
+  choices: Choice[];
+  chosen: string[];
+  onChange: (chosen: string[]) => void;
+}
+
+/** Several values at once, kept in the choices' order so the address does not follow the clicks. */
+function CheckFilter({ label, choices, chosen, onChange }: CheckFilterProps) {
+  return (
+    <FilterMenu
+      label={label}
+      multiple
+      choices={choices}
+      selected={chosen}
+      summary={chosen.length > 0 ? formatWhole(chosen.length) : undefined}
+      onChange={(next) => {
+        const known = choices.map((choice) => choice.value).filter((each) => next.includes(each));
+        onChange([...known, ...next.filter((each) => !known.includes(each))]);
+      }}
+    />
   );
 }
 

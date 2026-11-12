@@ -16,6 +16,7 @@ import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import { useToast } from '@/ui/Toast/useToast';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { filterRecords, useListFilters } from '@/ui/useListFilters';
 import { useStatusFlow } from '@/ui/useStatusFlow';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -178,8 +179,8 @@ function PeopleCard({ currentUserId, onNew, onOpen, actions }: PeopleCardProps) 
         </div>
       ) : (
         // On narrow screens the table scrolls sideways inside its card (design system §2).
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Name</th>
@@ -221,7 +222,7 @@ function PersonRow({ person, isYou, onOpen, actions }: PersonRowProps) {
   const canChange = useCanChange('people.manage');
   return (
     <tr>
-      <th scope="row" className={`${styles.nameCell} ${styles.nowrap}`}>
+      <th scope="row" className={`${dataTable.nameCell} ${styles.nowrap}`}>
         <Link
           className={styles.personLink}
           to={`/settings/people/${encodeURIComponent(person.id)}`}
@@ -243,7 +244,7 @@ function PersonRow({ person, isYou, onOpen, actions }: PersonRowProps) {
           {person.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={person.name}
           items={[

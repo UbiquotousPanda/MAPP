@@ -11,6 +11,7 @@ import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, pending, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { PurchaseRequestsPage } from './PurchaseRequestsPage';
 
 const LIST = 'GET /api/v1/purchase-requests';
@@ -127,8 +128,8 @@ describe('032 FR-044–FR-048: Purchase requests page', () => {
     const { router, user } = renderPage({ body: listPage() });
     await screen.findByRole('table');
 
-    await user.click(screen.getByRole('button', { name: 'Status: Any status' }));
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Declined' }));
+    await user.click(screen.getByRole('button', { name: 'Status' }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Declined' }));
 
     await waitFor(() => expect(router.state.location.search).toBe('?status=declined'));
   });
@@ -155,15 +156,12 @@ describe('032 FR-044–FR-048: Purchase requests page', () => {
     const { api, router, user } = renderPage({ body: listPage({ total: 120 }) });
     await screen.findByRole('table');
 
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Sort' }),
-      'Amount, largest first',
-    );
+    await choose(user, screen.getByRole('combobox', { name: 'Sort' }), 'Amount, largest first');
     await waitFor(() => expect(router.state.location.search).toBe('?sort=-amount'));
     await waitFor(() => expect(lastQuery(api).get('sort')).toBe('-amount'));
 
-    expect(await screen.findByText('Page 1 of 3')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Next' }));
+    expect(await screen.findByText('1–50 of 120')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
     await waitFor(() => expect(router.state.location.search).toBe('?sort=-amount&page=2'));
     expect(lastQuery(api).get('pageSize')).toBe('50');
   });

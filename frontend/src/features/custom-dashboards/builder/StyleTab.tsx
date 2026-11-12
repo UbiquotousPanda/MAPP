@@ -1,8 +1,9 @@
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
+import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import type { Widget, WidgetDisplay } from '../model';
-import { Select } from './Select';
+import { choices } from './choices';
 import { StyleAxes } from './StyleAxes';
 import { defaultDataLabels, defaultPalette, PALETTES, shows } from './style-options';
 import type { StyleSectionProps } from './style-options';
@@ -101,15 +102,16 @@ export function StyleTab({ widget, errorAt, onDisplay, onText }: StyleTabProps) 
             checked={legend.show}
             onChange={(show) => set({ legend: { ...legend, show } })}
           />
-          <Select
+          <ChoiceField
             label="Legend position"
             name={`${prefix}-legend-position`}
             value={legend.position}
-            options={LEGEND_POSITIONS}
+            options={choices(LEGEND_POSITIONS)}
             onChange={(value) => {
               const position = LEGEND_POSITIONS.find((each) => each.value === value)?.value;
               set({ legend: { ...legend, position: position ?? 'bottom' } });
             }}
+            placeholder={null}
           />
         </div>
       )}

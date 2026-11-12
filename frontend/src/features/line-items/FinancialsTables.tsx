@@ -2,9 +2,10 @@ import { CircleAlert } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { Button } from '@/ui/Button/Button';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { Pager } from '@/ui/Pager/Pager';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import dataTable from '@/ui/Table/Table.module.css';
 import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
 import {
@@ -27,7 +28,7 @@ function FigureCells({ figures }: { figures: FinancialFiguresData }) {
   const over = figures.committedAbovePlanned;
   return (
     <>
-      <td className={styles.number}>
+      <td className={dataTable.numeric}>
         <span className={over ? styles.negative : undefined}>{moneyText(figures.committed)}</span>
         {over && (
           <span className={styles.flag}>
@@ -36,9 +37,9 @@ function FigureCells({ figures }: { figures: FinancialFiguresData }) {
           </span>
         )}
       </td>
-      <td className={styles.number}>{moneyText(figures.invoiced)}</td>
-      <td className={styles.number}>{moneyText(figures.paid)}</td>
-      <td className={styles.number}>{moneyText(figures.accrued)}</td>
+      <td className={dataTable.numeric}>{moneyText(figures.invoiced)}</td>
+      <td className={dataTable.numeric}>{moneyText(figures.paid)}</td>
+      <td className={dataTable.numeric}>{moneyText(figures.accrued)}</td>
     </>
   );
 }
@@ -48,10 +49,10 @@ function FigureHeads({ code, first }: { code: string; first: string }) {
     <thead>
       <tr>
         <th scope="col">{first}</th>
-        <th scope="col" className={styles.number}>{`Committed (${code})`}</th>
-        <th scope="col" className={styles.number}>{`Invoiced (${code})`}</th>
-        <th scope="col" className={styles.number}>{`Paid (${code})`}</th>
-        <th scope="col" className={styles.number}>{`Accrued (${code})`}</th>
+        <th scope="col" className={dataTable.numeric}>{`Committed (${code})`}</th>
+        <th scope="col" className={dataTable.numeric}>{`Invoiced (${code})`}</th>
+        <th scope="col" className={dataTable.numeric}>{`Paid (${code})`}</th>
+        <th scope="col" className={dataTable.numeric}>{`Accrued (${code})`}</th>
       </tr>
     </thead>
   );
@@ -62,13 +63,13 @@ export function Breakdown({ view }: { view: FinancialRecordView }) {
   const code = view.figures.committed.currency;
   return (
     <TableBlock title="By line item">
-      <table className={styles.table}>
+      <table className={dataTable.table}>
         <caption className="visually-hidden">Financial figures by line item</caption>
         <FigureHeads code={code} first="Line item" />
         <tbody>
           {view.breakdown.map((row) => (
             <tr key={row.record.id}>
-              <td className={styles.name}>
+              <td className={dataTable.nameCell}>
                 <Link to={recordHref('lineItem', row.record.id)}>{row.record.name}</Link>
               </td>
               <FigureCells figures={row.figures} />
@@ -103,7 +104,7 @@ function TransactionRows({ rows }: { rows: FinancialTransactionRow[] }) {
     <tbody>
       {rows.map((row) => (
         <tr key={row.id}>
-          <td className={styles.name}>
+          <td className={dataTable.nameCell}>
             <span className={styles.rowName}>{row.name}</span>
             <span className={styles.rowMeta}>
               {TYPE_WORD[row.type]}
@@ -112,8 +113,8 @@ function TransactionRows({ rows }: { rows: FinancialTransactionRow[] }) {
             </span>
           </td>
           <td className={styles.date}>{date(row.postingDate)}</td>
-          <td className={styles.number}>{moneyText(row.amount)}</td>
-          <td className={styles.number}>
+          <td className={dataTable.numeric}>{moneyText(row.amount)}</td>
+          <td className={dataTable.numeric}>
             {row.amountDisplay ? moneyText(row.amountDisplay) : '—'}
           </td>
         </tr>
@@ -128,10 +129,10 @@ function TransactionHeads({ code }: { code: string }) {
       <tr>
         <th scope="col">Transaction</th>
         <th scope="col">Posting date</th>
-        <th scope="col" className={styles.number}>
+        <th scope="col" className={dataTable.numeric}>
           Amount
         </th>
-        <th scope="col" className={styles.number}>{`Amount (${code})`}</th>
+        <th scope="col" className={dataTable.numeric}>{`Amount (${code})`}</th>
       </tr>
     </thead>
   );
@@ -150,7 +151,7 @@ export function LatestTransactions({
   const { displayCurrency } = useFormatters();
   return (
     <TableBlock title="Latest transactions">
-      <table className={styles.table}>
+      <table className={dataTable.table}>
         <caption className="visually-hidden">The latest transactions, newest first</caption>
         <TransactionHeads code={displayCurrency} />
         <TransactionRows rows={rows} />
@@ -167,11 +168,11 @@ export function LineItemTransactions({ lineItemId, count }: { lineItemId: string
   const { displayCurrency } = useFormatters();
   const [page, setPage] = useState(1);
   const query = useRecordTransactions(lineItemId, page);
-  const pages = Math.max(1, Math.ceil(count / TRANSACTIONS_PAGE_SIZE));
+  const pages = Math.ceil(count / TRANSACTIONS_PAGE_SIZE);
   return (
     <TableBlock title="Transactions">
       {query.data ? (
-        <table className={styles.table}>
+        <table className={dataTable.table}>
           <caption className="visually-hidden">
             The line item&apos;s transactions, newest first
           </caption>
@@ -184,15 +185,7 @@ export function LineItemTransactions({ lineItemId, count }: { lineItemId: string
         <Skeleton lines={3} />
       )}
       {pages > 1 && (
-        <div className={styles.pager}>
-          <Button size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            Previous
-          </Button>
-          <span>{`Page ${page} of ${pages}`}</span>
-          <Button size="sm" disabled={page >= pages} onClick={() => setPage(page + 1)}>
-            Next
-          </Button>
-        </div>
+        <Pager page={page} pageSize={TRANSACTIONS_PAGE_SIZE} total={count} onPage={setPage} />
       )}
     </TableBlock>
   );

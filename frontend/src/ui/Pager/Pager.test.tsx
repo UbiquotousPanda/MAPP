@@ -59,4 +59,12 @@ describe('Pager', () => {
 
     expect(onPageSize).toHaveBeenCalledWith(50);
   });
+
+  it('leaves out Rows per page when the page size is fixed', () => {
+    render(<Pager page={1} pageSize={25} total={60} onPage={vi.fn()} />);
+
+    expect(screen.getByText('1–25 of 60')).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Rows per page' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeEnabled();
+  });
 });

@@ -299,7 +299,7 @@ is one report, in the **report frame** (039):
   a status chip (Above plan · On plan · Below plan); the shared **Pager** below.
 - **Total row** (D-414): every report table whose figures add up — ranked lists, widget table views, the Purchase
   requests grid, the GSAP link tables — ends with a `<tfoot>` row headed "Total" (a row header) in the §5.4 totals
-  style (`shared/TotalRow.module.css`: 700 weight, `--gray-bg`, no extra border, Text Strong on the grey).
+  style (`ui/Table`'s `total`: 700 weight, `--gray-bg`, no extra border, Text Strong on the grey).
   Its figures come from the API over every page; it never moves with the sort and is absent when there are no rows.
 - Empty states say why — "No plans you may see for 2027", "Your filters exclude everything" with **Reset
   filters**, "No purchase requests in 2026" with where to look instead. Financial figures the person may not see
@@ -725,6 +725,30 @@ in version 2.
   1 px `--hairline` separator and **Delete** last in `--danger-text`; highlighted, it becomes a `--danger-bg` fill with white text.
 - Not modal; arrow keys move, Enter chooses, Escape closes and returns the focus to ⋯; the chosen action
   runs after the menu has closed. No tooltips inside a menu (research R14).
+- Built on `Menu` (below), like every dropdown menu.
+
+**`Menu`** (`ui/Menu`, D-416) — the one dropdown menu: Saved views, Export, the account menu, ⋯.
+
+- Radix DropdownMenu, never modal. `Menu.Content` portals onto the **floating surface** shared with
+  `Popover`: `--raised`, 1 px `--card-border`, radius 8, `--shadow-md`, padding 4, 220–340 wide, at most
+  480 px (or the window less 120 px) high, then it scrolls; in the dark theme Text Subtle inside it is Text
+  Strong (Raised is 3.9:1). Defined once in `ui/Popover/floating.module.css`.
+- `Menu.Item` as in **ActionsMenu** (40 high, radius 4, optional 16 px icon, `hint`, `tone="danger"`,
+  disabled with its reason); `onChoose` runs once the menu has closed and the focus is back on the trigger,
+  so a dialog it opens returns the focus there. `Menu.Choice` ticks the current one of several (a saved
+  view, `menuitemcheckbox`). `Menu.Separator` (1 px `--row-divider`), `Menu.Note` (12 px `--ink-2`: "No
+  saved views yet", a reason) and `Menu.Label` (who is signed in) complete it.
+- Features never style a menu surface or item; a needed variant is added to `Menu`.
+
+**`ExportMenu`** (`ui/ExportMenu`, D-416) — **Export** everywhere (All work, reports, report widgets,
+planning dashboards). Props: `formats` (Excel, CSV, PowerPoint, PDF, in the order given), `download`,
+`label`, `size` (`md`, reports `sm`), `iconOnly` (a widget's download icon, named by `label`).
+
+- One format downloads at once; several open a `Menu` of formats.
+- While the file is made the button reads "Preparing your file…" with a spinning icon and `aria-busy`; a
+  message then names the saved file ("Exported '…'") or gives the API's reason.
+- `refusal`: without the export permission the button stays visible but disabled, its reason as its
+  description and tooltip (014 FR-011). `emptyText`: with nothing to export, choosing a format says so.
 
 ### 5.2 Navigation and filtering
 
@@ -764,9 +788,13 @@ accepts at most one primary action (a second one is a development-time error).
   default Active; for workflow states: **All · Draft · Published**, default All.
 - Below 600 px the group scrolls sideways; it never wraps.
 
-**`Pager`** (one for every paged table) — "1–50 of 120" (or "No rows") on the left; **Rows per page** (`Select`)
+**`Pager`** (one for every paged table, D-415) — "1–50 of 120" (or "No rows") on the left; **Rows per page** (`Select`)
 and icon-only **Previous page** / **Next page** on the right; the buttons are left out when everything fits on
-one page.
+one page, and Rows per page where the page size is fixed. Placement: `below` a table (16 above) or `cardFooter`
+(padding 12 and the card's side padding, a hairline above); with neither it sits in its parent's gap. Page sizes
+come from named sets in `ui/Pager`: lists 50 · 100 · 200 (All work, Financials), widgets 10 · 25 · 50 (ranked
+lists), report grids 5 · 10 · 25 · 50 · 100 (Approvals, Purchase requests) and wide 5 to 500 (GSAP link, User
+access), as their specs set them.
 
 **`SearchField`**
 
@@ -783,6 +811,34 @@ one page.
 - A chip per filter in use: 32 high, padding 0 8 0 12, `--chip` fill, `--ink` 12/18 bold, radius 4,
   16 px ✕ in a 24 × 24 target; the whole chip is the button "Remove filter: Status: Draft".
 - **Clear filters**: ghost `sm` button after the chips. Nothing shows while no filter is in use.
+
+**`FilterMenuButton`** (`ui/FilterMenuButton`, D-416) — the button of one filter in a filter bar: 32 high,
+padding 0 8 0 12, radius 8 (like `Select` and `SegmentedFilter`), 1 px `--control-border`, `--surface`, 14 px
+`--ink`, a 16 px chevron that turns while open. While the filter is in use: a `--control-border-hover`
+edge and its summary after a middle dot in bold — how many values are chosen ("Owner · 2") or the one
+chosen ("Years · 2026"); the summary is part of the button's name. Hover `--hover`.
+
+**`FilterMenu`** (`ui/FilterMenu`, D-416) — one filter of a filter bar: a `FilterMenuButton` opening a
+`Popover` (300 wide) of check boxes, or radio buttons for one value; a change applies at once. Inactive
+values say "(inactive)"; a chosen value no longer offered stays listed so it can be removed; above 10
+choices a search box; group headings; an optional first choice that ticks several (Team's "My teams").
+Used by All work, the report filters, Purchase requests (Status, PR type, Vendor, Owner) and the activity
+log (Action). A filter bar holds **only** `SearchField`, `SegmentedFilter`, `Select` (one value from a
+short list: Year, Plan, Person, Sort), `FilterMenu` or `FilterMenuButton` + `Popover` (several values, or
+a few fields: Years, More filters), date inputs and the result count — never a native `<select>`.
+
+**`Popover`** (`ui/Popover`, D-416) — every panel that floats from a button and is not a menu: filter
+panels (Filters (n) on Plans and Approvals), a busy day's activities, the completeness problems, the
+notifications. Radix Popover; `Popover.Content` on the floating surface (see `Menu`) with `width` `auto`
+(220–340), `sm` 260, `md` 300 or `lg` 360 and `padding` `none`, `sm` 4, `md` 8 or `lg` 16 (fields). The
+focus moves into it, Escape or a click outside closes it and the focus returns to its button. Features
+style only what is inside it.
+
+**`ResultCount`** (`ui/ResultCount`, D-416) — the result count at the end of a list toolbar: 14 px
+`--ink-2` (Text Strong on the grey page), tabular figures, pushed to the end of the row, a row of its own
+below 600 px, read out politely when it changes. Its words come from `countText(shown, total, noun)`:
+"4 of 6 plans", "1 of 1 team", also when nothing is filtered out; a list that counts without "of" (Global
+budgets, Purchase requests) keeps its own words in the same element.
 
 **List toolbar** (layout rule, new)
 
@@ -864,7 +920,9 @@ changes?" before typed values are lost. Save is never disabled.
 
 ### 5.4 Data display
 
-**Data table standard** (new: one shared table style, `components/DataTable/`)
+**Data table standard** (D-415: one shared table style, `ui/Table/Table.module.css`; a feature table takes its
+`table`, `scroll`, `numeric`, `nameCell`, `actions`, `sticky`, `total` and `empty` classes and keeps only rules for
+its own columns — it never restyles the header band, rows, numbers, totals or empty row)
 
 | Part | Spec |
 |---|---|
@@ -877,7 +935,10 @@ changes?" before typed values are lost. Save is never disabled.
 | Number, money, percent | **Right-aligned header and values, tabular figures, no wrapping**, one money format (§4.4) |
 | Dates | Left-aligned, no wrapping, the person's format |
 | Actions | Last column, 48 wide, the row's ⋯ (`sm`); its header is a visually hidden "Actions" |
-| Totals row | 700 weight, `--gray-bg`, no extra border; numbers aligned as above |
+| Totals row | The last row, in `<tfoot>`: a `--gray-bg` band (a sticky cell keeps the grey), 700 weight, no border above or below; on the grey, secondary text and links are Text Strong; numbers aligned as above. Its first cell is a row header (`<th scope="row">`) reading **Total**, optionally with a count on a second line, 12 regular (`TotalLabel`: "Total" / "12 activities") |
+| Sortable header | **`SortHeader`**: the heading is a button with the label and a 12 px arrow (↕ in `--ink-2` while unsorted, ↑ or ↓ in `--ink` when sorted); hover `--hover` with an underline; `aria-sort` ascending, descending or none |
+| Expandable rows | **`DisclosureButton`** before the name: 24 × 24 target, 16 px chevron (right closed, down open) in `--ink-2`, hover `--hover`; `aria-expanded`, and a name saying what it opens ("Expand Spring campaign", "Show the line items of Launch film"); rows without children keep the space (`DisclosureSpace`) |
+| Empty | One row across all columns, padding 24 12, 14 `--ink-2`, centred (`empty`); a whole widget or card with nothing to show uses `EmptyState compact` instead |
 | Never | Repeat the column's label inside the cell ("Owner: Alex Morgan", UI audit P-02); upper-case headers |
 | Below 600 px | Scrolls inside its card; inbox-type lists (Approvals, Home lists) switch to stacked cards: name link, status, key facts as a 2-column `DescriptionList`, ⋯ |
 
@@ -953,7 +1014,7 @@ figures**; the unit ("USD", "%") inside the end in 14 `--ink-2`; written out on 
 
 | Situation | Control |
 |---|---|
-| One of up to 10 options | In forms: a native `<select>` drawn exactly like an input (`ChoiceField`). In toolbars, filters and pagers: **`Select`** (Radix) — the label beside it, 32 px, a chevron, its own menu on `--raised` with the chosen option ticked; arrow keys and type-ahead work. Any bare `<select>` still gets the input look and chevron from `global.css`. |
+| One of up to 10 options | In forms and the dashboard builder's inspector: a native `<select>` drawn exactly like an input (`ChoiceField`), starting "Choose…" (`placeholder` changes the words; `null` leaves the empty choice out for a setting that always has a value); options with a `group` are listed under their headings and stay a select at any length. In toolbars, filter bars and pagers: **`Select`** (Radix) — the label beside it, 32 px, a chevron, its own menu on `--raised` with the chosen option ticked; arrow keys and type-ahead work (D-416). No feature draws its own select or chevron. |
 | One of more than 10 options | `Combobox` (searchable) |
 | Several of up to 6 options | Checkboxes in columns (auto-fill, min 200 wide) — not a long vertical list (UI audit AF-01) |
 | Several of more than 6 options | `Combobox` with `multiple`; chosen values as removable chips under the input |
@@ -1312,8 +1373,8 @@ listed in the implementation plan.
 | 10 | **Names never break inside a word** in tables, trees and tags (`overflow-wrap: anywhere` is not allowed). | stylelint rule; e2e: no table row taller than 64 px on the captured states |
 | 11 | **One money format per screen** (§4.4); empty values "—". | Formatter unit tests; e2e text checks on the activity page and Home |
 | 12 | **Sentence case**, no upper-case text, normal letter spacing, text ≥ 12 px. | stylelint (`text-transform: uppercase`, `letter-spacing`, font sizes); e2e: no rendered text under 12 px |
-| 13 | **One select style** (§5.5) and one date input. | Code review; e2e screenshot review |
-| 14 | **Lists say their count the same way** ("4 of 6 plans") and record-state filters read "Active (n) · Inactive (n) · All (n)". | e2e text checks on each list page |
+| 13 | **One select style** (§5.5) and one date input; filters, dropdowns, popovers, menus and Export only from `src/ui` (`Select`, `FilterMenu`, `FilterMenuButton`, `Popover`, `Menu`, `ExportMenu`; D-416). | Code review: no `radix-ui` Popover or DropdownMenu and no `<select>` outside `src/ui`; e2e screenshot review |
+| 14 | **Lists say their count the same way** ("4 of 6 plans", `ResultCount` and `countText`) and record-state filters read "Active (n) · Inactive (n) · All (n)". | e2e text checks on each list page |
 | 15 | **Nothing covers the focus or the next action:** toasts sit above sticky footers; sticky bars set `scroll-padding`. | e2e: the Save button is not covered after a create; axe |
 | 16 | **A heading never repeats its parent's heading.** | e2e: no two consecutive headings with the same text |
 | 17 | **No page scrolls sideways** at 390, 600, 960, 1280 and 1440 px wide. | e2e: `scrollWidth ≤ innerWidth` on every captured state |
@@ -1350,3 +1411,5 @@ or one component (see the recommendations report for the questions to Shell).
 | 2.6 | 1 Nov 2026 | Feature 051, constitution 4.9.0: custom-dashboard charts with Apache ECharts (ADR-0020); chart palettes Categorical, Planning, Levels and Sequential with tokens `--chart-cat-1`…`-8` and `--chart-seq-1`…`-5`; the Dashboards list, the custom-dashboard viewer and the builder layout (§4.7). |
 | 2.7 | 12 Nov 2026 | UI review of the Measure module and Home (D-411, D-412): report toolbar with All work's filter buttons, Period and Show on their widgets, ECharts time charts, ranked-list behaviour (§2.8); `StatStrip`, `Select`, `Pager`, compact `EmptyState` (§5); a quieter chosen `SegmentedFilter`; `--hover-on-card` for hovers inside cards. |
 | 2.8 | 12 Nov 2026 | Form pages redesigned: one centred column of at most `--form-page` 960 px for header, form and footer; the right rail and the count line under the header replaced by a sticky section bar at the top of the column with a yellow "you are here" marker; deliberate field pairs (`FieldRow`) instead of one field per row everywhere (§2.2, §2.4 C, §3, §7). |
+| 2.9 | 12 Nov 2026 | Filters, dropdowns, popovers and menus only from `src/ui` (D-416): `Menu` and `Popover` on one floating surface, `ExportMenu`, `FilterMenuButton`, `FilterMenu` moved from All work, `ResultCount` with `countText`; toolbar selects become `Select`; `ChoiceField` gains `placeholder` and option groups (§5.1, §5.2, §5.5, §11). |
+| 2.10 | 12 Nov 2026 | D-415: generic elements come only from `ui/`; the data table standard is `ui/Table` (header band, rows, numbers, sticky name, Total row with `TotalLabel`, empty row), with `SortHeader`, `DisclosureButton` and one `Pager` with placements and named page-size sets (§2.8, §5.2, §5.4). |

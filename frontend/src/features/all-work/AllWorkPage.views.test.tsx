@@ -111,7 +111,7 @@ describe('AllWorkPage Budget & cost (US4)', () => {
 
     expect(await screen.findByRole('columnheader', { name: 'Q2' })).toBeInTheDocument();
     expect(viewQueries(api).at(-1)?.get('period')).toBe('quarter');
-    const footer = closestTo(screen.getByRole('rowheader', { name: 'Total · 3 activities' }), 'tr');
+    const footer = closestTo(screen.getByRole('rowheader', { name: 'Total 3 activities' }), 'tr');
     expect(within(footer).getByText('$14,000.00')).toBeInTheDocument();
     expect(within(footer).getByText('$18,000.00')).toBeInTheDocument();
   });

@@ -56,8 +56,8 @@ describe('PlanTable (FR-002, design system §5.4)', () => {
     const headers = screen.getAllByRole('columnheader');
     const budget = htmlElement(headers.find((header) => header.textContent === 'Plan budget'));
     const cells = within(row('FY2026 Lubricants Europe')).getAllByRole('cell');
-    expect(budget.className).toMatch(/number/);
-    expect(nth(cells, 4).className).toMatch(/number/);
+    expect(budget.className).toMatch(/numeric/);
+    expect(nth(cells, 4).className).toMatch(/numeric/);
   });
 
   it('says over budget in words and "—" without a budget', () => {

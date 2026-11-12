@@ -6,6 +6,7 @@ import { formatWeekdayDate } from '@/format/intl';
 import type { DateFormat } from '@/format/intl';
 import { isPlanningType, recordHref } from '@/ui/record-links';
 import type { PlanningRecordType } from '@/ui/record-links';
+import type { ListNoun } from '@/ui/ResultCount/count-text';
 import { plural } from '@/format/text';
 
 export type ActivityLogEntry = components['schemas']['ActivityLogEntry'];
@@ -165,10 +166,7 @@ export function entriesText(count: number): string {
   return plural(count, 'entry', 'entries');
 }
 
-/** "12 of 1,204 entries", also when no filter is in use (design system §11, rule 14). */
-export function countLine(total: number, unfilteredTotal: number): string {
-  return `${formatWhole(total)} of ${entriesText(unfilteredTotal)}`;
-}
+export const ENTRIES: ListNoun = { one: 'entry', many: 'entries' };
 
 export function loadedLine(loaded: number, total: number): string {
   return `Showing the last ${formatWhole(loaded)} of ${formatWhole(total)}`;

@@ -42,8 +42,3 @@ export const SORT_WORDS: Record<ListSort, string> = {
 export function countText(count: number): string {
   return count === 1 ? '1 purchase request' : `${formatWhole(count)} purchase requests`;
 }
-
-/** "Page 2 of 3". */
-export function pageText(page: number, pages: number): string {
-  return `Page ${formatWhole(page)} of ${formatWhole(pages)}`;
-}

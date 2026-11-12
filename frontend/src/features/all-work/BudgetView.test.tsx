@@ -129,7 +129,7 @@ describe('BudgetView (US4)', () => {
   it('closes with the period totals, the grand total and the plans’ budget (FR-024)', () => {
     renderBudget();
 
-    const footer = closestTo(screen.getByRole('rowheader', { name: 'Total · 3 activities' }), 'tr');
+    const footer = closestTo(screen.getByRole('rowheader', { name: 'Total 3 activities' }), 'tr');
     expect(
       within(footer)
         .getAllByRole('cell')

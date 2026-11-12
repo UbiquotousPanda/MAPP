@@ -1,5 +1,7 @@
-import { AttributeFilterMenu, FilterMenu } from '@/features/all-work';
-import type { FilterableAttribute, FilterChoice } from '@/features/all-work';
+import { AttributeFilterMenu } from '@/features/all-work';
+import type { FilterableAttribute } from '@/features/all-work';
+import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
+import type { FilterChoice } from '@/ui/FilterMenu/FilterMenu';
 import type { ReportChoices } from './api';
 import type { ReportAddress } from './report-address';
 import { PLAN_TYPE_WORDS, STATUS_WORDS } from './report-text';

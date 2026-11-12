@@ -51,7 +51,7 @@ describe('AllWorkPage (US1)', () => {
       'Fleet roadshow',
       'FY2026 Mobility China',
       'Retail push',
-      'Total · 3 activities',
+      'Total 3 activities',
     ]);
 
     const query = nth(viewQueries(api), 0);
@@ -152,7 +152,7 @@ describe('AllWorkPage (US1)', () => {
     expect(rowNames()).toEqual([
       'FY2026 Lubricants Europe',
       'FY2026 Mobility China',
-      'Total · 3 activities',
+      'Total 3 activities',
     ]);
   });
 
@@ -262,7 +262,7 @@ describe('AllWorkPage (US1)', () => {
     expect(
       screen.getByText('Continued: FY2026 Lubricants Europe › Helix launch › Helix digital'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('rowheader', { name: 'Total · 60 activities' })).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'Total 60 activities' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
 
     await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '100');

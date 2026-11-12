@@ -1,6 +1,6 @@
-import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
 import { Link } from 'react-router';
+import { DisclosureButton, DisclosureSpace } from '@/ui/DisclosureButton/DisclosureButton';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
@@ -49,17 +49,13 @@ export function RowName({ visible, search, showStatus, onToggle, onOpen, childre
   return (
     <div className={styles.name} style={{ paddingLeft: `${row.depth * 24}px` }}>
       {childCount > 0 ? (
-        <button
-          type="button"
-          className={styles.toggle}
-          aria-expanded={expanded}
-          aria-label={`${expanded ? 'Collapse' : 'Expand'} ${row.name}`}
+        <DisclosureButton
+          expanded={expanded}
+          label={`${expanded ? 'Collapse' : 'Expand'} ${row.name}`}
           onClick={() => onToggle(row.key)}
-        >
-          {expanded ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
-        </button>
+        />
       ) : (
-        <span className={styles.toggleSpace} />
+        <DisclosureSpace />
       )}
       <div className={styles.text}>
         <div className={styles.line}>

@@ -81,15 +81,6 @@
   margin-left: auto;
 }
 
-.count {
-  margin: 0;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
 .chips {
   --link: var(--ink);
 

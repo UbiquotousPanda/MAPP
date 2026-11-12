@@ -3,6 +3,7 @@ import type { components } from '@/api/generated/schema';
 import { plural } from '@/format/text';
 import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import styles from './RecordFinancials.module.css';
 
 type FinancialRecordView = components['schemas']['FinancialRecordView'];
@@ -30,22 +31,22 @@ export function FinancialsBreakdown({
   const { money } = useFormatters();
   const heading = BREAKDOWN_HEADING[view.record.type];
   return (
-    <div className={styles.scroll}>
-      <table className={styles.table}>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
         <caption className={styles.tableTitle}>{heading}</caption>
         <thead>
           <tr>
             <th scope="col">Name</th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Committed
             </th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Invoiced
             </th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Paid
             </th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Accrued
             </th>
           </tr>
@@ -57,10 +58,10 @@ export function FinancialsBreakdown({
                 <Link to={recordHref(record.type, record.id, planId)}>{record.name}</Link>
                 <AboveMarker figures={figures} />
               </th>
-              <td className={styles.number}>{money(figures.committed)}</td>
-              <td className={styles.number}>{money(figures.invoiced)}</td>
-              <td className={styles.number}>{money(figures.paid)}</td>
-              <td className={styles.number}>{money(figures.accrued)}</td>
+              <td className={dataTable.numeric}>{money(figures.committed)}</td>
+              <td className={dataTable.numeric}>{money(figures.invoiced)}</td>
+              <td className={dataTable.numeric}>{money(figures.paid)}</td>
+              <td className={dataTable.numeric}>{money(figures.accrued)}</td>
             </tr>
           ))}
         </tbody>

@@ -7,12 +7,14 @@ import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import list from '@/ui/settings-table.module.css';
-import { formatWhole } from '@/format/decimal';
+import dataTable from '@/ui/Table/Table.module.css';
 import { usePeopleAccess, useRoles } from './api';
 import type { PersonRoles } from './api';
 import { assignmentText, SCOPE_EMPTY } from './access-words';
@@ -98,9 +100,9 @@ export function PeopleAccessTab() {
               />
             </div>
             <SegmentedFilter label="Role" options={roleOptions} value={role} onChange={setRole} />
-            <p className={list.resultCount} aria-live="polite">
-              {`${formatWhole(shown.length)} of ${formatWhole(all.length)} ${all.length === 1 ? 'person' : 'people'}`}
-            </p>
+            <ResultCount>
+              {countText(shown.length, all.length, { one: 'person', many: 'people' })}
+            </ResultCount>
           </div>
           {shown.length === 0 ? (
             <div className={list.noMatch}>
@@ -115,8 +117,8 @@ export function PeopleAccessTab() {
               </Button>
             </div>
           ) : (
-            <div className={list.tableScroll}>
-              <table className={list.table}>
+            <div className={dataTable.scroll}>
+              <table className={dataTable.table}>
                 <thead>
                   <tr>
                     <th scope="col">Person</th>
@@ -173,7 +175,7 @@ interface PersonRowProps {
 function PersonRow({ person, isYou, onEdit }: PersonRowProps) {
   return (
     <tr>
-      <th scope="row" className={`${list.nameCell} ${list.nowrap}`}>
+      <th scope="row" className={`${dataTable.nameCell} ${list.nowrap}`}>
         <PersonLabel person={person.person} you={isYou} />
       </th>
       <td>
@@ -202,7 +204,7 @@ function PersonRow({ person, isYou, onEdit }: PersonRowProps) {
           </ul>
         )}
       </td>
-      <td className={`${list.actionsCell} ${list.nowrap}`}>
+      <td className={`${dataTable.actions} ${list.nowrap}`}>
         <Button
           size="sm"
           variant="tertiary"

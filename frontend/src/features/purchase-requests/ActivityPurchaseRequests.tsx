@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { recordHref } from '@/ui/record-links';
 import { formatMoneyText, formatWhole } from '@/format/decimal';
+import dataTable from '@/ui/Table/Table.module.css';
 import { useActivityPurchaseRequests } from './api';
 import type { ActivityPurchaseRequests as Section } from './api';
 import { FIELD_LABELS, PURCHASE_REQUESTS } from './purchase-request-text';
@@ -38,18 +39,18 @@ function Loaded({ section }: { section: Section }) {
         <p className={styles.note}>{NO_ACTIVITY_PRS}</p>
       ) : (
         <div className={styles.scroll}>
-          <table className={styles.table}>
+          <table className={dataTable.table}>
             <caption className="visually-hidden">Purchase requests by line item</caption>
             <thead>
               <tr>
                 <th scope="col">{FIELD_LABELS.lineItem}</th>
-                <th scope="col" className={styles.numeric}>
+                <th scope="col" className={dataTable.numeric}>
                   {TOTAL_REQUESTED}
                 </th>
-                <th scope="col" className={styles.numeric}>
+                <th scope="col" className={dataTable.numeric}>
                   {AVAILABLE}
                 </th>
-                <th scope="col" className={styles.numeric}>
+                <th scope="col" className={dataTable.numeric}>
                   {PURCHASE_REQUESTS}
                 </th>
               </tr>
@@ -63,9 +64,9 @@ function Loaded({ section }: { section: Section }) {
                     </Link>
                     <span className={styles.secondary}>{row.lineItemId}</span>
                   </th>
-                  <td className={styles.numeric}>{formatMoneyText(row.requested)}</td>
-                  <td className={styles.numeric}>{formatMoneyText(row.availableToRequest)}</td>
-                  <td className={styles.numeric}>{formatWhole(row.purchaseRequests)}</td>
+                  <td className={dataTable.numeric}>{formatMoneyText(row.requested)}</td>
+                  <td className={dataTable.numeric}>{formatMoneyText(row.availableToRequest)}</td>
+                  <td className={dataTable.numeric}>{formatWhole(row.purchaseRequests)}</td>
                 </tr>
               ))}
             </tbody>

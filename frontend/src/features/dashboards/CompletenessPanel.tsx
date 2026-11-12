@@ -1,4 +1,6 @@
 import { Card } from '@/ui/Card/Card';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
 import type { DashboardCompleteness } from './api';
 import { percentText, word } from './dashboard-text';
 import styles from './Dashboards.module.css';
@@ -10,12 +12,12 @@ interface CompletenessPanelProps {
 export function CompletenessPanel({ levels }: CompletenessPanelProps) {
   return (
     <Card title="Plan details" subtitle="Records with every needed field filled in">
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption>Completeness by level</caption>
         <thead>
           <tr>
             {['Level', 'Records', 'All filled in', 'Share'].map((title, i) => (
-              <th key={title} scope="col" className={i > 0 ? styles.number : undefined}>
+              <th key={title} scope="col" className={i > 0 ? dataTable.numeric : undefined}>
                 {title}
               </th>
             ))}
@@ -25,9 +27,9 @@ export function CompletenessPanel({ levels }: CompletenessPanelProps) {
           {levels.map((level) => (
             <tr key={level.level}>
               <th scope="row">{word(level.level)}</th>
-              <td className={styles.number}>{level.total}</td>
-              <td className={styles.number}>{level.complete}</td>
-              <td className={styles.number}>{percentText(level.percent)}</td>
+              <td className={dataTable.numeric}>{level.total}</td>
+              <td className={dataTable.numeric}>{level.complete}</td>
+              <td className={dataTable.numeric}>{percentText(level.percent)}</td>
             </tr>
           ))}
         </tbody>

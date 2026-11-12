@@ -25,8 +25,9 @@ test('036 US1: the Executive dashboard adds up every market a person may see, an
   await expect(page.getByRole('heading', { level: 1, name: 'Dashboards' })).toBeVisible();
   await page.getByRole('link', { name: 'Executive dashboard' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Executive dashboard' })).toBeVisible();
-  await page.getByLabel('Year', { exact: true }).selectOption(String(SEED_YEAR));
-  await expect(page).toHaveURL(/year=2026/);
+  const year = page.getByRole('combobox', { name: 'Year', exact: true });
+  await choose(page, year, String(SEED_YEAR));
+  await expect(year).toHaveText(String(SEED_YEAR));
 
   const markets = page.getByRole('table', { name: /Plans and figures by market/ });
   await expect(markets.getByRole('link', { name: 'Lubricants Europe' })).toBeVisible();

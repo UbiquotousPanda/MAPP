@@ -1,8 +1,4 @@
-/*
- * The search, Filters (n) and the count on one row; Filters opens the filter buttons below it, and
- * the chips say what is in use while they are folded away. On the grey page, secondary text and
- * links are Text Strong (constitution X).
- */
+/* On the grey page, secondary text and links are Text Strong (constitution X). */
 .bar {
   --ink-2: var(--ink);
   --link: var(--ink);
@@ -26,15 +22,6 @@
 
 .drawerButton {
   flex: none;
-}
-
-.count {
-  margin: 0 0 0 auto;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
 }
 
 .updating {
@@ -88,11 +75,5 @@
 
   .search {
     flex: 1 1 0;
-  }
-
-  .count {
-    flex: 1 1 100%;
-    margin: 0;
-    text-align: left;
   }
 }

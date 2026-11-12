@@ -5,7 +5,7 @@ import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
 import type { DataSource, WidgetQuery } from '../model';
 import { OPERATOR_WORDS, operatorsFor, valuesFor } from './query-edits';
-import { Select } from './Select';
+import { choices } from './choices';
 import styles from './Inspector.module.css';
 
 type Filter = WidgetQuery['filters'][number];
@@ -67,11 +67,11 @@ export function FiltersEditor({
               }}
               error={errorAt(`${at}.field`)}
             />
-            <Select
+            <ChoiceField
               label="Comparison"
               name={`${name}-operator`}
               value={filter.operator}
-              options={operators.map((value) => ({ value, label: OPERATOR_WORDS[value] }))}
+              options={choices(operators.map((value) => ({ value, label: OPERATOR_WORDS[value] })))}
               onChange={(value) => {
                 const operator = operators.find((each) => each === value);
                 if (operator) {
@@ -83,6 +83,7 @@ export function FiltersEditor({
                 }
               }}
               error={errorAt(`${at}.operator`)}
+              placeholder={null}
             />
             <FilterValues
               name={name}

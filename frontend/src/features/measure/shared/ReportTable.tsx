@@ -1,5 +1,4 @@
-import styles from './ReportWidget.module.css';
-import totals from './TotalRow.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 
 export interface ReportTableColumn {
   label: string;
@@ -21,16 +20,16 @@ export interface ReportTableData {
 /** A widget's table view: every value the chart draws, with the same labels, then the totals. */
 export function ReportTable({ title, data }: { title: string; data: ReportTableData }) {
   return (
-    <div className={styles.tableWrap}>
-      <table className={styles.table}>
-        <caption className={styles.caption}>{title}</caption>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
+        <caption className="visually-hidden">{title}</caption>
         <thead>
           <tr>
             {data.columns.map((column) => (
               <th
                 key={column.label}
                 scope="col"
-                className={column.numeric ? styles.numeric : undefined}
+                className={column.numeric ? dataTable.numeric : undefined}
               >
                 {column.label}
               </th>
@@ -43,7 +42,7 @@ export function ReportTable({ title, data }: { title: string; data: ReportTableD
               {row.cells.map((cell, i) => (
                 <td
                   key={data.columns[i]?.label ?? i}
-                  className={data.columns[i]?.numeric ? styles.numeric : undefined}
+                  className={data.columns[i]?.numeric ? dataTable.numeric : undefined}
                 >
                   {cell}
                 </td>
@@ -53,14 +52,14 @@ export function ReportTable({ title, data }: { title: string; data: ReportTableD
         </tbody>
         {data.total && (
           <tfoot>
-            <tr className={totals.total}>
+            <tr className={dataTable.total}>
               {data.total.map((cell, i) => {
                 const Cell = i === 0 ? 'th' : 'td';
                 return (
                   <Cell
                     key={data.columns[i]?.label ?? i}
                     scope={i === 0 ? 'row' : undefined}
-                    className={data.columns[i]?.numeric ? styles.numeric : undefined}
+                    className={data.columns[i]?.numeric ? dataTable.numeric : undefined}
                   >
                     {cell}
                   </Cell>

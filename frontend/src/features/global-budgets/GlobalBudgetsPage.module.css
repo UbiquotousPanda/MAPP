@@ -15,48 +15,6 @@
   border-bottom: 1px solid var(--hairline);
 }
 
-.field {
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-sm);
-}
-
-.select {
-  width: 140px;
-  height: var(--control-md);
-  padding: 0 var(--space-9) 0 var(--space-3);
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-control);
-  appearance: none;
-  background-color: var(--surface);
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
-    linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 13px) 50%;
-  background-size:
-    5px 5px,
-    5px 5px;
-  background-repeat: no-repeat;
-  color: var(--ink);
-  font-size: var(--text-sm);
-  cursor: pointer;
-}
-
-.select:hover {
-  border-color: var(--control-border-hover);
-}
-
-.count {
-  margin-left: auto;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--leading-sm);
-}
-
 .body {
   padding: var(--card-padding);
 }

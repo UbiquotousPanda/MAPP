@@ -4,6 +4,8 @@ import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { monthsAboveText } from '@/features/all-work';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
 import type { DashboardMonths, Money } from './api';
 import { FINANCE_HIDDEN, monthLabel } from './dashboard-text';
 import styles from './Dashboards.module.css';
@@ -130,7 +132,7 @@ function MonthTable({ months }: MonthlyChartProps) {
   const { money } = useFormatters();
   return (
     <div className={styles.scroll}>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption>
           Planned cost spread by month and actual paid by posting month, with running totals
         </caption>
@@ -138,7 +140,7 @@ function MonthTable({ months }: MonthlyChartProps) {
           <tr>
             {['Month', 'Planned cost', 'Actual', 'Planned to date', 'Actual to date'].map(
               (title, i) => (
-                <th key={title} scope="col" className={i > 0 ? styles.number : undefined}>
+                <th key={title} scope="col" className={i > 0 ? dataTable.numeric : undefined}>
                   {title}
                 </th>
               ),
@@ -149,10 +151,10 @@ function MonthTable({ months }: MonthlyChartProps) {
           {months.items.map((m) => (
             <tr key={m.month}>
               <th scope="row">{monthLabel(m.month)}</th>
-              <td className={styles.number}>{money(m.planned)}</td>
-              <td className={styles.number}>{money(m.actual)}</td>
-              <td className={styles.number}>{money(m.plannedToDate)}</td>
-              <td className={styles.number}>{money(m.actualToDate)}</td>
+              <td className={dataTable.numeric}>{money(m.planned)}</td>
+              <td className={dataTable.numeric}>{money(m.actual)}</td>
+              <td className={dataTable.numeric}>{money(m.plannedToDate)}</td>
+              <td className={dataTable.numeric}>{money(m.actualToDate)}</td>
             </tr>
           ))}
         </tbody>

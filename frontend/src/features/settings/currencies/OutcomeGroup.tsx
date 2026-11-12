@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import { formatRate, formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import settingsStyles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { RateImportOutcome, RateImportRow } from './rates-api';
 import { OUTCOME_WORDS } from './rate-words';
 import styles from './rates.module.css';
@@ -31,20 +32,20 @@ export function OutcomeGroup({ outcome, rows }: OutcomeGroupProps) {
       <div className={styles.groupBody}>
         {/* Nothing in the table takes the focus: the scrolling area does, for the keyboard. */}
         <div
-          className={settingsStyles.tableScroll}
+          className={dataTable.scroll}
           role="region"
           aria-label={`${OUTCOME_WORDS[outcome]}: rows`}
           tabIndex={0}
         >
-          <table className={settingsStyles.table}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Row
                 </th>
                 <th scope="col">Currency</th>
                 <th scope="col">Date</th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Rate per 1 USD
                 </th>
                 {withNote && <th scope="col">Note</th>}
@@ -53,12 +54,12 @@ export function OutcomeGroup({ outcome, rows }: OutcomeGroupProps) {
             <tbody>
               {shown.map((row) => (
                 <tr key={row.row}>
-                  <th scope="row" className={settingsStyles.number}>
+                  <th scope="row" className={dataTable.numeric}>
                     {formatWhole(row.row)}
                   </th>
                   <td>{row.currency ?? '—'}</td>
                   <td className={settingsStyles.nowrap}>{row.date ? date(row.date) : '—'}</td>
-                  <td className={settingsStyles.number}>{row.rate ? formatRate(row.rate) : '—'}</td>
+                  <td className={dataTable.numeric}>{row.rate ? formatRate(row.rate) : '—'}</td>
                   {withNote && <td>{noteOf(row)}</td>}
                 </tr>
               ))}

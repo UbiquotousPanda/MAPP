@@ -10,13 +10,15 @@ import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { useAccess } from '@/session/access';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import { BinRow } from './BinRow';
 import {
   BIN_DESCRIPTION,
   EMPTY_BIN_TEXT,
   holdsRecord,
+  ITEMS,
   matchSearch,
-  showingLine,
   typePills,
 } from './bin-text';
 import type { BinItem } from './bin-text';
@@ -27,7 +29,6 @@ import { RestoreDialog } from './RestoreDialog';
 import { highlightedRecordOf } from './schemas';
 import styles from './RecycleBinPage.module.css';
 
-/** The dialog the page shows, if any. */
 type OpenDialog =
   | { kind: 'restore'; item: BinItem }
   | { kind: 'purge'; item: BinItem }
@@ -115,13 +116,11 @@ interface BinListProps {
   onSearch: (search: string) => void;
   type: string;
   onType: (type: string) => void;
-  /** The record ID of `?record=`; '' for none. */
   highlight: string;
   onRestore: (item: BinItem) => void;
   onPurge: (item: BinItem) => void;
 }
 
-/** The toolbar and the rows, filtered in the browser (FR-016, D-185). */
 function BinList({
   items,
   search,
@@ -155,9 +154,7 @@ function BinList({
           value={type}
           onChange={onType}
         />
-        <p className={styles.count} aria-live="polite">
-          {showingLine(shown.length, items.length)}
-        </p>
+        <ResultCount>{countText(shown.length, items.length, ITEMS)}</ResultCount>
       </div>
       {highlight && !highlighted && (
         <p className={styles.notice} role="status">

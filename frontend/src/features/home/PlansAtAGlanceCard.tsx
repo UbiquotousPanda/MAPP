@@ -11,6 +11,7 @@ import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import { STATUS } from '@/features/plans';
 import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { formatWhole } from '@/format/decimal';
 import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
@@ -35,13 +36,7 @@ export interface PlansAtAGlanceCardProps {
   onShowEverything: () => void;
 }
 
-/**
- * Plans at a glance (FR-008 – FR-010): each plan in scope with its status, teams, counts, approval
- * progress, budget used and planned cost, newest year first; at most 10, with "View all <n>
- * plans". The table follows the data table standard (design system §5.4; UI audit X-18): a grey
- * header band in sentence case, numbers right-aligned under their headings, and a shadow at the
- * edge with more columns when it scrolls sideways inside the card.
- */
+/** Each plan in scope, newest year first; at most 10, with "View all <n> plans". */
 export function PlansAtAGlanceCard({ scope, onShowEverything }: PlansAtAGlanceCardProps) {
   const plans = useHomePlans(scope);
 
@@ -95,22 +90,22 @@ function PlansTable({ rows }: { rows: HomePlanRow[] }) {
 
   return (
     <div className={styles.scroll}>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">Plans at a glance</caption>
         <thead>
           <tr>
             <th scope="col">Plan</th>
             <th scope="col">Status</th>
             <th scope="col">Teams</th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Campaigns
             </th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Activities
             </th>
             <th scope="col">Approval</th>
             <th scope="col">Budget used</th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Planned cost
             </th>
           </tr>
@@ -140,11 +135,10 @@ function PlansTable({ rows }: { rows: HomePlanRow[] }) {
                   <StatusChip tone={status.tone}>{status.word}</StatusChip>
                 </td>
                 <td>
-                  {/* Each team in its own colour, as TeamRef shows it (D-201, D-217). */}
                   <TeamPills teams={plan.teams} />
                 </td>
-                <td className={styles.number}>{formatWhole(plan.campaignCount)}</td>
-                <td className={styles.number}>{formatWhole(plan.activityCount)}</td>
+                <td className={dataTable.numeric}>{formatWhole(plan.campaignCount)}</td>
+                <td className={dataTable.numeric}>{formatWhole(plan.activityCount)}</td>
                 <td>
                   {plan.activityCount === 0 ? (
                     <span className={styles.muted}>No activities</span>
@@ -182,7 +176,7 @@ function PlansTable({ rows }: { rows: HomePlanRow[] }) {
                     </span>
                   )}
                 </td>
-                <td className={styles.number}>
+                <td className={dataTable.numeric}>
                   {plan.activityCount === 0 || isZero(plan.plannedCost) ? (
                     // Nothing planned is "—", never "$0.00" (design system §4.4).
                     <span className={styles.muted}>

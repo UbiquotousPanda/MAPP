@@ -5,11 +5,14 @@ import { LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import list from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { formatWhole } from '@/format/decimal';
+import { plural } from '@/format/text';
 import { useRoles } from './api';
 import type { Role } from './api';
 import { SCOPE_WORDS } from './access-words';
@@ -57,19 +60,17 @@ export function RolesTab() {
       ) : (
         <>
           <div className={list.toolbar}>
-            <p className={list.resultCount}>
-              {`${formatWhole(items.length)} ${items.length === 1 ? 'role' : 'roles'}`}
-            </p>
+            <ResultCount>{plural(items.length, 'role')}</ResultCount>
             <div className={styles.toolbarEnd}>{newRole}</div>
           </div>
-          <div className={list.tableScroll}>
-            <table className={list.table}>
+          <div className={dataTable.scroll}>
+            <table className={dataTable.table}>
               <thead>
                 <tr>
                   <th scope="col">Role</th>
                   <th scope="col">Description</th>
                   <th scope="col">Default scope</th>
-                  <th scope="col" className={list.number}>
+                  <th scope="col" className={dataTable.numeric}>
                     People
                   </th>
                   <th scope="col">
@@ -80,7 +81,7 @@ export function RolesTab() {
               <tbody>
                 {items.map((role) => (
                   <tr key={role.id}>
-                    <th scope="row" className={`${list.nameCell} ${list.nowrap}`}>
+                    <th scope="row" className={`${dataTable.nameCell} ${list.nowrap}`}>
                       <Link className={list.inlineLink} to={rolePath(role.id)}>
                         {role.name}
                       </Link>{' '}
@@ -88,8 +89,8 @@ export function RolesTab() {
                     </th>
                     <td>{role.description || '—'}</td>
                     <td className={list.nowrap}>{SCOPE_WORDS[role.defaultScope]}</td>
-                    <td className={list.number}>{formatWhole(role.people.length)}</td>
-                    <td className={list.actionsCell}>
+                    <td className={dataTable.numeric}>{formatWhole(role.people.length)}</td>
+                    <td className={dataTable.actions}>
                       <ActionsMenu
                         label={role.name}
                         items={roleMenuItems(role, {

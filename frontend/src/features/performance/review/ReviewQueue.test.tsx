@@ -6,6 +6,7 @@ import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import type { Answer } from '@/testing/replies';
 import { ReviewQueuePage } from './ReviewQueuePage';
 
@@ -78,10 +79,7 @@ describe('ReviewQueuePage', () => {
   it('046 FR-023 choosing a reason asks the API for that reason only', async () => {
     const { api, user } = renderQueue({ body: { items: [reviewRow()] } });
 
-    await user.selectOptions(
-      await screen.findByRole('combobox', { name: 'Reason' }),
-      'Keys disagree',
-    );
+    await choose(user, await screen.findByRole('combobox', { name: 'Reason' }), 'Keys disagree');
 
     expect(askedFilters(api)).toEqual({ status: 'open', reason: 'unmatched:disagree' });
   });

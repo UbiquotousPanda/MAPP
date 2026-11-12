@@ -63,7 +63,7 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
   await expect(billboard).toContainText(`05 Jan ${SEED_YEAR}`);
   await expect(billboard).toContainText('$45,000.00');
   await expect(billboard.locator('mark')).toHaveText('Billboard');
-  await expect(grid.getByRole('row').filter({ hasText: 'Total · 1 activity' })).toContainText(
+  await expect(grid.getByRole('row').filter({ hasText: 'Total 1 activity' })).toContainText(
     '$45,000.00',
   );
   await expect(page.getByRole('region', { name: 'Summary' })).toContainText('$45K');
@@ -95,7 +95,7 @@ test('All work: filter and search the grid, the calendar, budget and cost by mon
   await expect(budget.getByRole('columnheader', { name: 'Jan' })).toBeVisible();
   await expect(budget.getByRole('columnheader', { name: 'Dec' })).toBeVisible();
   await expect(page.getByText('To change how a cost is spread, open its line item')).toBeVisible();
-  const footer = budget.getByRole('row').filter({ hasText: 'Total · 1 activity' });
+  const footer = budget.getByRole('row').filter({ hasText: 'Total 1 activity' });
   await expect(footer).toContainText('$45,000.00');
   await page.getByRole('button', { name: 'Quarterly' }).click();
   await expect(budget.getByRole('columnheader', { name: 'Q1' })).toBeVisible();

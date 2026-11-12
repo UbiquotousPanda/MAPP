@@ -4,6 +4,8 @@ import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { subjectKindLabel } from '@/ui/subject-links';
 import { formatWaitingTime, localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
@@ -151,7 +153,7 @@ function WaitingByLevel({ data }: { data: ApprovalMonitoring }) {
       aria-label="Waiting by level, scrolls sideways"
       tabIndex={0}
     >
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <thead>
           <tr>
             <th scope="col" className={styles.workflowCol}>
@@ -159,10 +161,10 @@ function WaitingByLevel({ data }: { data: ApprovalMonitoring }) {
             </th>
             <th scope="col">Approves</th>
             <th scope="col">Level</th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Waiting
             </th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Overdue
             </th>
             <th scope="col">Oldest waiting</th>
@@ -174,8 +176,8 @@ function WaitingByLevel({ data }: { data: ApprovalMonitoring }) {
               <th scope="row">{row.workflow.name}</th>
               <td className={styles.nowrap}>{subjectKindLabel(row.kind)}</td>
               <td className={styles.nowrap}>{row.levelLabel}</td>
-              <td className={styles.number}>{row.waiting}</td>
-              <td className={styles.number}>{row.overdue}</td>
+              <td className={dataTable.numeric}>{row.waiting}</td>
+              <td className={dataTable.numeric}>{row.overdue}</td>
               <td className={styles.nowrap}>{oldest(row.oldestWaitingSince)}</td>
             </tr>
           ))}

@@ -3,6 +3,7 @@ import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useCanChange } from '@/ui/useCanChange';
 import { formatWhole } from '@/format/decimal';
+import dataTable from '@/ui/Table/Table.module.css';
 import { lacksHelp } from './attribute-filtering';
 import {
   dependsOnText,
@@ -56,7 +57,7 @@ export function AttributeRow({ attribute, actions, moveReason, onMove }: Attribu
       </th>
       <td className={styles.nowrap}>{TYPE_WORDS[attribute.type]}</td>
       <td className={styles.nowrap}>{MARKING_WORDS[attribute.marking]}</td>
-      <td className={styles.number}>
+      <td className={dataTable.numeric}>
         {isChoiceType(attribute.type) ? formatWhole(attribute.optionCount) : '—'}
       </td>
       <td>
@@ -71,7 +72,7 @@ export function AttributeRow({ attribute, actions, moveReason, onMove }: Attribu
           {attribute.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={attribute.label}
           items={[

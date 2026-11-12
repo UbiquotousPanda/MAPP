@@ -4,7 +4,7 @@ import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { TextField } from '@/ui/TextField/TextField';
 import type { DataSource, WidgetQuery } from '../model';
 import { AGGREGATION_WORDS, aggregationsFor } from './query-edits';
-import { Select } from './Select';
+import { choices } from './choices';
 import styles from './Inspector.module.css';
 
 type Measure = WidgetQuery['measures'][number];
@@ -70,20 +70,23 @@ export function MeasuresEditor({
               error={errorAt(`${at}.field`)}
             />
             {field && (
-              <Select
+              <ChoiceField
                 label="Aggregation"
                 name={`${idPrefix}-measure-${index}-aggregation`}
                 value={measure.aggregation}
-                options={aggregationsFor(field).map((value) => ({
-                  value,
-                  label: AGGREGATION_WORDS[value],
-                }))}
+                options={choices(
+                  aggregationsFor(field).map((value) => ({
+                    value,
+                    label: AGGREGATION_WORDS[value],
+                  })),
+                )}
                 onChange={(value) => {
                   const aggregation = aggregationsFor(field).find((each) => each === value);
                   if (aggregation) {
                     update(index, { ...measure, aggregation });
                   }
                 }}
+                placeholder={null}
               />
             )}
             <TextField

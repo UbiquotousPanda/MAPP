@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
 import type { DashboardFigures } from './api';
 import styles from './Dashboards.module.css';
 
@@ -24,7 +26,7 @@ export function FigureTable({ caption, nameTitle, extraTitles = [], rows }: Figu
   const { money } = useFormatters();
   return (
     <div className={styles.scroll}>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption>{caption}</caption>
         <thead>
           <tr>
@@ -35,7 +37,7 @@ export function FigureTable({ caption, nameTitle, extraTitles = [], rows }: Figu
               </th>
             ))}
             {FIGURE_TITLES.map((title) => (
-              <th key={title} scope="col" className={styles.number}>
+              <th key={title} scope="col" className={dataTable.numeric}>
                 {title}
               </th>
             ))}
@@ -48,14 +50,14 @@ export function FigureTable({ caption, nameTitle, extraTitles = [], rows }: Figu
               {(row.extra ?? []).map((cell, index) => (
                 <td key={extraTitles[index] ?? index}>{cell}</td>
               ))}
-              <td className={styles.number}>{money(row.figures.budget)}</td>
-              <td className={styles.number}>
+              <td className={dataTable.numeric}>{money(row.figures.budget)}</td>
+              <td className={dataTable.numeric}>
                 {money(row.figures.plannedCost)}
                 {row.figures.overBudget && <span className={styles.problem}> · Over budget</span>}
               </td>
-              <td className={styles.number}>{money(row.figures.committed)}</td>
-              <td className={styles.number}>{money(row.figures.actual)}</td>
-              <td className={styles.number}>{money(row.figures.leftToPlan)}</td>
+              <td className={dataTable.numeric}>{money(row.figures.committed)}</td>
+              <td className={dataTable.numeric}>{money(row.figures.actual)}</td>
+              <td className={dataTable.numeric}>{money(row.figures.leftToPlan)}</td>
             </tr>
           ))}
         </tbody>

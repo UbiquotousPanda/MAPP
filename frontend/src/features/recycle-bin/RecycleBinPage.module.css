@@ -22,15 +22,6 @@
   max-width: 360px;
 }
 
-.count {
-  margin-left: auto;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--leading-sm);
-  white-space: nowrap;
-}
-
 /* "That item is no longer in the recycle bin." above the list, as an info message. */
 .notice {
   margin: var(--space-4) var(--card-padding) 0;
@@ -61,9 +52,5 @@
   .search {
     flex-basis: 100%;
     max-width: none;
-  }
-
-  .count {
-    margin-left: 0;
   }
 }

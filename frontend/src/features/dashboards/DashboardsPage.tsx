@@ -10,6 +10,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { Tabs } from '@/ui/Tabs/Tabs';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { ExportMenu } from '@/ui/ExportMenu/ExportMenu';
 import { downloadDashboard, useDashboard } from './api';
 import type { PlanningDashboard } from './api';
 import { ApprovalsPanel } from './ApprovalsPanel';
@@ -20,7 +21,6 @@ import type { DashboardFilters as Filters, DashboardKind } from './dashboard-lin
 import { emptyText, financeCoverage } from './dashboard-text';
 import { DashboardFilters } from './DashboardFilters';
 import { MarketsTable, PlanCampaignsTable, PlansTable } from './DashboardTables';
-import { ExportMenu } from './ExportMenu';
 import { FigureCards } from './FigureCards';
 import { GlobalBudgetsPanel } from './GlobalBudgetsPanel';
 import { MonthlyChart } from './MonthlyChart';
@@ -78,7 +78,10 @@ export function DashboardsPage({ kind }: DashboardsPageProps) {
         description={DESCRIPTIONS[kind]}
         actions={
           dashboard.data?.canExport && (
-            <ExportMenu download={(format) => downloadDashboard(kind, filters, format)} />
+            <ExportMenu
+              formats={['pptx', 'pdf']}
+              download={(format) => downloadDashboard(kind, filters, format)}
+            />
           )
         }
       />

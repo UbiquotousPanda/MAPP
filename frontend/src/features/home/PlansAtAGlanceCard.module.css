@@ -1,9 +1,4 @@
-/*
- * The data table standard (design system §5.4) inside the card: the table touches the card's edges
- * and scrolls sideways inside it on narrow screens, never the page. A soft shadow shows at an edge
- * with more columns beyond it (UI audit AW-05): the white covers scroll with the table, the
- * shadows stay with the box.
- */
+/* The table touches the card's edges; a shadow shows at an edge with more columns beyond it. */
 .scroll {
   position: relative;
   margin: calc(-1 * var(--card-padding));
@@ -20,27 +15,12 @@
       12px 100% no-repeat scroll;
 }
 
-/* "View all 12 plans" under the table. */
 .scroll + .more {
   margin-top: calc(var(--card-padding) + var(--space-3));
 }
 
 .table {
-  width: 100%;
   min-width: 960px;
-  border-collapse: collapse;
-  color: var(--ink);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-}
-
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  font-weight: var(--weight-regular);
-  text-align: left;
-  vertical-align: middle;
 }
 
 /* The first and last cells line up with the card's padding. */
@@ -54,38 +34,10 @@
   padding-right: var(--card-padding);
 }
 
-/* The header band: 40 px, grey, 12 px bold in sentence case (UI audit X-18). */
-.table thead th {
-  height: var(--control-md);
-  border-bottom: 1px solid var(--hairline);
-  background: var(--gray-bg);
-  color: var(--ink);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-xs);
-  white-space: nowrap;
-}
-
-.table tbody tr:last-child th,
-.table tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-/* A whole row opens its plan. */
 .row {
   cursor: pointer;
 }
 
-/* On the hover grey, Text Subtle, links and red text turn Text Strong (constitution X). */
-.row:hover {
-  --ink-2: var(--ink);
-  --link: var(--ink);
-  --danger-text: var(--ink);
-  --status-problem-text: var(--ink);
-  background: var(--hover);
-}
-
-/* The plan's name as a link, then its ID and year. */
 .name {
   display: block;
   min-width: 200px;
@@ -114,14 +66,7 @@
   white-space: nowrap;
 }
 
-/* Numbers: right-aligned under their right-aligned headings, figures of one width. */
-.table .number {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  white-space: nowrap;
-}
-
-/* A progress bar with its value as text after it (SC-007: never the bar alone). */
+/* A progress bar with its value as text after it, never the bar alone. */
 .bar {
   display: grid;
   grid-template-columns: 72px auto;

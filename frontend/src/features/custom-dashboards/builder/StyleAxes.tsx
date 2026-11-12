@@ -1,7 +1,8 @@
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { TextField } from '@/ui/TextField/TextField';
+import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import type { WidgetDisplay } from '../model';
-import { Select } from './Select';
+import { choices } from './choices';
 import { shows } from './style-options';
 import type { StyleSectionProps } from './style-options';
 import { defaultMeasureStyle } from './widget-defaults';
@@ -78,23 +79,25 @@ export function StyleAxes({ widget, prefix, errorAt, set }: StyleSectionProps) {
         />
       )}
       {shows(type, 'stack') && query?.series && (
-        <Select
+        <ChoiceField
           label="Stacking"
           name={`${prefix}-stack`}
           value={display.stack ?? (type === 'area' ? 'stacked' : 'none')}
-          options={[...STACKS]}
+          options={choices(STACKS)}
           onChange={(value) => set({ stack: STACKS.find((each) => each.value === value)?.value })}
+          placeholder={null}
         />
       )}
       {shows(type, 'orientation') && (
-        <Select
+        <ChoiceField
           label="Orientation"
           name={`${prefix}-orientation`}
           value={display.orientation ?? 'vertical'}
-          options={[...ORIENTATIONS]}
+          options={choices(ORIENTATIONS)}
           onChange={(value) =>
             set({ orientation: ORIENTATIONS.find((each) => each.value === value)?.value })
           }
+          placeholder={null}
         />
       )}
       {shows(type, 'zoom') && (
@@ -174,25 +177,27 @@ function MeasureStyles({ prefix, labels, value, onChange }: MeasureStylesProps) 
         <fieldset key={`${label}-${index}`} className={styles.row}>
           <legend className={styles.rowLegend}>{label}</legend>
           <div className={styles.pair}>
-            <Select
+            <ChoiceField
               label="Bars or line"
               name={`${prefix}-style-${index}-as`}
               value={current[index]?.as ?? 'bar'}
-              options={[
+              options={choices([
                 { value: 'bar', label: 'Bars' },
                 { value: 'line', label: 'Line' },
-              ]}
+              ])}
               onChange={(as) => update(index, { as: as === 'line' ? 'line' : 'bar' })}
+              placeholder={null}
             />
-            <Select
+            <ChoiceField
               label="Axis"
               name={`${prefix}-style-${index}-axis`}
               value={current[index]?.axis ?? 'left'}
-              options={[
+              options={choices([
                 { value: 'left', label: 'Left' },
                 { value: 'right', label: 'Right' },
-              ]}
+              ])}
               onChange={(axis) => update(index, { axis: axis === 'right' ? 'right' : 'left' })}
+              placeholder={null}
             />
           </div>
         </fieldset>

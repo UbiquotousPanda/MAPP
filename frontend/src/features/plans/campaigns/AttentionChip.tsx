@@ -1,8 +1,8 @@
 import { ChevronDown } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { ItemBelow, MissingField } from '@/ui/CompletenessChip/CompletenessChip';
+import { Popover } from '@/ui/Popover/Popover';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import styles from './AttentionChip.module.css';
 
@@ -60,75 +60,71 @@ export function AttentionChip({
         compact={compact}
         quiet={quiet}
       />
-      <Popover.Portal>
-        <Popover.Content
-          className={styles.list}
-          align="start"
-          sideOffset={6}
-          aria-label={summary}
-          onCloseAutoFocus={(event) => {
-            const action = chosen.current;
-            chosen.current = null;
-            if (action) {
-              event.preventDefault();
-              action();
-            }
-          }}
-        >
-          {missing.length > 0 && (
-            <div className={styles.group}>
-              <p className={styles.groupTitle}>{fieldsNeeded(missing.length)}</p>
+      <Popover.Content
+        className={styles.list}
+        aria-label={summary}
+        onCloseAutoFocus={(event) => {
+          const action = chosen.current;
+          chosen.current = null;
+          if (action) {
+            event.preventDefault();
+            action();
+          }
+        }}
+      >
+        {missing.length > 0 && (
+          <div className={styles.group}>
+            <p className={styles.groupTitle}>{fieldsNeeded(missing.length)}</p>
+            <ul>
+              {missing.map((field) => (
+                <li key={field.id}>
+                  {onSelectField ? (
+                    <button
+                      type="button"
+                      className={styles.item}
+                      onClick={() => choose(() => onSelectField(field.id))}
+                    >
+                      {field.label}
+                    </button>
+                  ) : (
+                    <span className={styles.text}>{field.label}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {below > 0 && (
+          <div className={styles.group}>
+            <p className={styles.groupTitle}>{itemsBelowNeedAttention(below)}</p>
+            {typeof itemsBelow === 'number' ? (
+              onItemsBelowSelect && (
+                <ul>
+                  <li>
+                    <button
+                      type="button"
+                      className={styles.item}
+                      onClick={() => choose(onItemsBelowSelect)}
+                    >
+                      Show them
+                    </button>
+                  </li>
+                </ul>
+              )
+            ) : (
               <ul>
-                {missing.map((field) => (
-                  <li key={field.id}>
-                    {onSelectField ? (
-                      <button
-                        type="button"
-                        className={styles.item}
-                        onClick={() => choose(() => onSelectField(field.id))}
-                      >
-                        {field.label}
-                      </button>
-                    ) : (
-                      <span className={styles.text}>{field.label}</span>
-                    )}
+                {itemsBelow.map((item) => (
+                  <li key={item.id}>
+                    <Link to={item.href} className={styles.item} onClick={() => setOpen(false)}>
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
-          {below > 0 && (
-            <div className={styles.group}>
-              <p className={styles.groupTitle}>{itemsBelowNeedAttention(below)}</p>
-              {typeof itemsBelow === 'number' ? (
-                onItemsBelowSelect && (
-                  <ul>
-                    <li>
-                      <button
-                        type="button"
-                        className={styles.item}
-                        onClick={() => choose(onItemsBelowSelect)}
-                      >
-                        Show them
-                      </button>
-                    </li>
-                  </ul>
-                )
-              ) : (
-                <ul>
-                  {itemsBelow.map((item) => (
-                    <li key={item.id}>
-                      <Link to={item.href} className={styles.item} onClick={() => setOpen(false)}>
-                        {item.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </Popover.Content>
-      </Popover.Portal>
+            )}
+          </div>
+        )}
+      </Popover.Content>
     </Popover.Root>
   );
 }

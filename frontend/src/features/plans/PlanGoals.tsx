@@ -3,6 +3,7 @@ import { Card } from '@/ui/Card/Card';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import { goalRows } from './goal-waterfall';
 import styles from './PlanGoals.module.css';
 import type { Plan } from './api';
@@ -57,14 +58,14 @@ export function PlanGoals({ plan }: { plan: Plan }) {
 
   return (
     <Card title="Goals" subtitle="The plan's goal beside what its activities plan">
-      <table className={styles.goalsTable}>
+      <table className={dataTable.table}>
         <thead>
           <tr>
             <th scope="col">Stage</th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Plan goal <FieldHelpTip helpKey="plan.goals" label="Goals" />
             </th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               In activities
             </th>
           </tr>
@@ -73,10 +74,10 @@ export function PlanGoals({ plan }: { plan: Plan }) {
           {STAGES.map((stage) => (
             <tr key={stage}>
               <th scope="row">{stageName(stage)}</th>
-              <td className={styles.number}>
+              <td className={dataTable.numeric}>
                 <span className={styles.goalCell}>{planGoal(stage)}</span>
               </td>
-              <td className={styles.number}>{planned[stage]}</td>
+              <td className={dataTable.numeric}>{planned[stage]}</td>
             </tr>
           ))}
         </tbody>

@@ -1,3 +1,4 @@
+import { LIST_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 import { FILTER_LABELS, MAX_YEARS } from './all-work-text';
 import { attrParams, canonicalAttributes, knownAttributeFilters } from './attribute-filters';
 import type {
@@ -23,7 +24,7 @@ export const NO_FILTERS: Filters = {
   showLevels: 'everything',
 };
 
-export const PAGE_SIZES = [50, 100, 200] as const;
+export const PAGE_SIZES = LIST_PAGE_SIZES;
 export type PageSize = (typeof PAGE_SIZES)[number];
 
 export const ID_FILTERS = ['plans', 'owners', 'teams', 'businessUnits', 'activityTypes'] as const;

@@ -1,5 +1,6 @@
 import { useFormatters } from '@/format/useFormatters';
 import { LinkButton } from '@/ui/Button/Button';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
@@ -121,10 +122,10 @@ export function StatusWidget({
               </div>
             )}
             {data.recordTypes.length === 0 ? (
-              <p className={styles.empty}>
-                No approvals yet. They start when an activity or a purchase request is submitted for
-                approval.
-              </p>
+              <EmptyState
+                compact
+                title="No approvals yet. They start when an activity or a purchase request is submitted for approval."
+              />
             ) : (
               <Bars mix={data} />
             )}

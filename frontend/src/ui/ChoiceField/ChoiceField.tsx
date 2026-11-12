@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 import { formatWhole } from '@/format/decimal';
 import { plural } from '@/format/text';
@@ -12,16 +13,18 @@ import styles from './ChoiceField.module.css';
 export interface ChoiceOption {
   id: string;
   label: string;
-  active: boolean;
+  active?: boolean;
+  group?: string;
 }
 
 interface ChoiceFieldBase extends FieldFrameProps {
-  /** The field's name and the control's id, so FormErrorSummary can link to it. */
   name: string;
   options: ChoiceOption[];
   /** Locks the field and says why under it ("Choose a cluster first."). */
   disabledReason?: string;
   note?: ReactNode;
+  /** The select's empty first choice ("Choose…"); null for a field that always holds a value. */
+  placeholder?: string | null;
 }
 
 export interface SingleChoiceFieldProps extends ChoiceFieldBase {
@@ -38,25 +41,25 @@ export interface MultipleChoiceFieldProps extends ChoiceFieldBase {
 
 export type ChoiceFieldProps = SingleChoiceFieldProps | MultipleChoiceFieldProps;
 
-/** Up to this many options are a select or check boxes; more are searchable (design system §5). */
 const SEARCHABLE_ABOVE = 10;
-/** The searchable list shows at most this many matches (SC-007: 5,000 options stay fast). */
 const LIST_LIMIT = 50;
 
-// Up to 10 options: a select starting "Choose…" or check boxes; more: a searchable Combobox
-// showing at most 50 matches. Inactive options are offered only while chosen, as "<label> (inactive)".
+// Up to 10 options, or options under group headings: a select starting "Choose…" or check boxes;
+// more: a searchable Combobox showing at most 50 matches. Inactive options are offered only while
+// chosen, as "<label> (inactive)".
 export function ChoiceField(props: ChoiceFieldProps) {
-  const { name, options, disabledReason, note, error, ...frameAndValue } = props;
+  const { name, options, disabledReason, note, error, placeholder, ...frameAndValue } = props;
   const chosen = props.multiple ? props.value : props.value ? [props.value] : [];
   const offered = options
-    .filter((option) => option.active || chosen.includes(option.id))
+    .filter((option) => option.active !== false || chosen.includes(option.id))
     .map((option) => ({
-      id: option.id,
-      label: option.active ? option.label : `${option.label} (inactive)`,
+      ...option,
+      label: option.active === false ? `${option.label} (inactive)` : option.label,
     }));
   const frame = withoutValue(frameAndValue);
 
-  if (offered.length > SEARCHABLE_ABOVE) {
+  const grouped = offered.some((option) => option.group !== undefined);
+  if (offered.length > SEARCHABLE_ABOVE && !grouped) {
     return (
       <Combobox
         {...frame}
@@ -114,35 +117,53 @@ export function ChoiceField(props: ChoiceFieldProps) {
     );
   }
 
-  const { value, onChange } = props;
   return (
     <FieldShell {...frame} id={name} error={error} note={disabledReason ?? note}>
       {(describedBy, required) => (
         <select
           id={name}
           name={name}
-          value={offered.some((option) => option.id === value) ? value : ''}
+          value={offered.some((option) => option.id === props.value) ? props.value : ''}
           disabled={Boolean(disabledReason)}
-          onChange={(event) => onChange(event.target.value)}
+          onChange={(event) => props.onChange(event.target.value)}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           aria-required={required}
           className={cx(inputs.input, inputs.select, error && inputs.invalid)}
         >
-          <option value="">Choose…</option>
-          {offered.map((option) => (
-            <option key={option.id} value={option.id}>
-              {option.label}
-            </option>
-          ))}
+          {placeholder !== null && <option value="">{placeholder ?? 'Choose…'}</option>}
+          <SelectOptions options={offered} />
         </select>
       )}
     </FieldShell>
   );
 }
 
+function SelectOptions({ options }: { options: ChoiceOption[] }) {
+  const groups = [...new Set(options.map((option) => option.group))];
+  return groups.map((group) => {
+    const items = options
+      .filter((option) => option.group === group)
+      .map((option) => (
+        <option key={option.id} value={option.id}>
+          {option.label}
+        </option>
+      ));
+    return group === undefined ? (
+      <Fragment key="">{items}</Fragment>
+    ) : (
+      <optgroup key={group} label={group}>
+        {items}
+      </optgroup>
+    );
+  });
+}
+
 function withoutValue(
-  props: Omit<ChoiceFieldProps, 'name' | 'options' | 'disabledReason' | 'note' | 'error'>,
+  props: Omit<
+    ChoiceFieldProps,
+    'name' | 'options' | 'disabledReason' | 'note' | 'error' | 'placeholder'
+  >,
 ): FieldFrameProps {
   const { label, marking, hint, tip, labelHidden } = props;
   return { label, marking, hint, tip, labelHidden };

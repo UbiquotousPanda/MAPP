@@ -1,5 +1,7 @@
 import { Link } from 'react-router';
 import { useFormatters } from '@/format/useFormatters';
+import { DisclosureButton } from '@/ui/DisclosureButton/DisclosureButton';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { VendorData } from './api';
 import { lineText, NUMERIC, requestText, vendorText } from './cells';
 import type { Format } from './cells';
@@ -16,21 +18,17 @@ export interface GridRowsProps {
 function Toggle(props: { open: boolean; name: string; onClick: () => void }) {
   return (
     <td>
-      <button
-        type="button"
-        className={styles.toggle}
-        aria-expanded={props.open}
-        aria-label={`${props.open ? 'Close' : 'Open'} ${props.name}`}
+      <DisclosureButton
+        expanded={props.open}
+        label={`${props.open ? 'Close' : 'Open'} ${props.name}`}
         onClick={props.onClick}
-      >
-        {props.open ? '▾' : '▸'}
-      </button>
+      />
     </td>
   );
 }
 
 function cellClass(column: ColumnKey, level: string): string | undefined {
-  const parts = [NUMERIC.includes(column) && styles.numeric, column === 'name' && level].filter(
+  const parts = [NUMERIC.includes(column) && dataTable.numeric, column === 'name' && level].filter(
     Boolean,
   );
   return parts.length > 0 ? parts.join(' ') : undefined;

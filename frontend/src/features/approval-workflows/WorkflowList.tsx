@@ -7,6 +7,7 @@ import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import list from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import { useCanChange } from '@/ui/useCanChange';
@@ -117,8 +118,8 @@ function WorkflowTable({ all, filters, actions }: Omit<WorkflowListProps, 'onNew
           <Button onClick={clear}>Clear filters</Button>
         </div>
       ) : (
-        <div className={list.tableScroll}>
-          <table className={list.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col" className={styles.nameCol}>
@@ -132,7 +133,7 @@ function WorkflowTable({ all, filters, actions }: Omit<WorkflowListProps, 'onNew
                   Used by
                 </th>
                 <th scope="col">Status</th>
-                <th scope="col" className={styles.actionsCell}>
+                <th scope="col" className={dataTable.actions}>
                   <span className="visually-hidden">Actions</span>
                 </th>
               </tr>
@@ -162,7 +163,7 @@ function WorkflowRow({
 
   return (
     <tr>
-      <th scope="row" className={list.nameCell}>
+      <th scope="row" className={dataTable.nameCell}>
         <span className={styles.name}>
           <Link to={details}>{workflow.name}</Link>
           {workflow.warnings.length > 0 && (
@@ -188,7 +189,7 @@ function WorkflowRow({
           <StatusChip tone="neutral">Inactive</StatusChip>
         )}
       </td>
-      <td className={list.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={workflow.name}
           items={[

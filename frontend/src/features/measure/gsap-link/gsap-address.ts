@@ -1,11 +1,11 @@
 import { useSearchParams } from 'react-router';
+import { WIDE_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 
 export type GsapTab = 'swbs' | 'waiting' | 'orders';
 
 export const GSAP_TABS: GsapTab[] = ['swbs', 'waiting', 'orders'];
 
-/** Rows per page, 5 to 500. */
-export const PAGE_SIZES = [5, 10, 20, 50, 100, 200, 500] as const;
+export const PAGE_SIZES = WIDE_PAGE_SIZES;
 const DEFAULT_PAGE_SIZE = 20;
 
 /** The columns each tab sorts by: the contract's GsapLinkSort. */

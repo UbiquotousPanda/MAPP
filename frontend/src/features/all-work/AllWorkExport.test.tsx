@@ -8,7 +8,7 @@ import { DEFAULT_COLUMNS } from '@/testing/fixtures/all-work-rows';
 import { emptyResult, gridResult, standard2026 } from '@/testing/fixtures/all-work';
 import { reply } from '@/testing/replies';
 import type { AllWorkResult, ViewState } from './all-work-types';
-import { ExportMenu } from './ExportMenu';
+import { AllWorkExport } from './AllWorkExport';
 
 const XLSX_NAME = 'SP&A One All work – Grid – 2026 – 18 Oct 2026.xlsx';
 
@@ -45,7 +45,7 @@ function renderExport(
     fileAnswer(XLSX_NAME, 'application/octet-stream'),
 ) {
   const api = mockApi([reply('GET /api/v1/all-work/export', answer)]);
-  const rendered = renderWithProviders(<ExportMenu state={state} result={result} />, {
+  const rendered = renderWithProviders(<AllWorkExport state={state} result={result} />, {
     user: testUser(),
   });
   return { ...rendered, api };
@@ -56,7 +56,7 @@ function exportQuery(api: ReturnType<typeof mockApi>): URLSearchParams {
   return new URLSearchParams(request?.search);
 }
 
-describe('ExportMenu (US7)', () => {
+describe('AllWorkExport (US7)', () => {
   it('saves a spreadsheet of the view as filtered, under the API’s file name (US7 scenario 1, FR-032, FR-034)', async () => {
     const state: ViewState = {
       ...standard2026(),
@@ -103,23 +103,6 @@ describe('ExportMenu (US7)', () => {
     expect(query.get('unassigned')).toBe('true');
   });
 
-  it('says "Preparing your file…" while the file is written', async () => {
-    let send: (response: Response) => void = () => {};
-    const { user } = renderExport(
-      standard2026(),
-      gridResult(),
-      () => new Promise<Response>((resolve) => (send = resolve)),
-    );
-
-    await user.click(screen.getByRole('button', { name: 'Export' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Excel (.xlsx)' }));
-
-    const button = await screen.findByRole('button', { name: 'Preparing your file…' });
-    expect(button).toHaveAttribute('aria-busy', 'true');
-    send(fileAnswer(XLSX_NAME, 'application/octet-stream'));
-    expect(await screen.findByRole('button', { name: 'Export' })).toBeInTheDocument();
-  });
-
   it('says there is nothing to export, without asking the API (edge case)', async () => {
     const { api, user } = renderExport(standard2026(), emptyResult());
 
@@ -155,20 +138,18 @@ describe('ExportMenu (US7)', () => {
     expect(saved).toEqual([]);
   });
 
-  it('shows both formats disabled with the reason to someone who may not export (014 FR-016)', async () => {
+  it('shows Export disabled with the reason to someone who may not export (014 FR-016)', async () => {
     const reason =
       "Exporting isn't part of your role (Editor). Ask an administrator if you need it.";
     const api = mockApi([]);
-    const { user } = renderWithProviders(
-      <ExportMenu state={standard2026()} result={gridResult()} refusal={reason} />,
+    renderWithProviders(
+      <AllWorkExport state={standard2026()} result={gridResult()} refusal={reason} />,
       { user: testUser() },
     );
 
-    await user.click(screen.getByRole('button', { name: 'Export' }));
-    const item = await screen.findByRole('menuitem', { name: 'Excel (.xlsx)' });
-    expect(item).toHaveAttribute('aria-disabled', 'true');
-    expect(item).toHaveAccessibleDescription(reason);
-    await user.click(item);
+    const button = screen.getByRole('button', { name: 'Export' });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAccessibleDescription(reason);
     expect(api.requests).toEqual([]);
   });
 });

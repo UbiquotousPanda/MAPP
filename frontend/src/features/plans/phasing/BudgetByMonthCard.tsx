@@ -8,6 +8,7 @@ import { Button } from '@/ui/Button/Button';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import dataTable from '@/ui/Table/Table.module.css';
 import styles from './BudgetByMonth.module.css';
 import { useBudgetByMonth } from './api';
 import type { BudgetPhasing, PhasingLevel } from './api';
@@ -107,7 +108,7 @@ export function BudgetByMonthCard({
         aria-label="Budget by month, scrolls sideways"
         tabIndex={0}
       >
-        <table className={styles.table}>
+        <table className={`${dataTable.table} ${styles.table}`}>
           <caption className="visually-hidden">
             Budget by {view === 'months' ? 'month' : 'quarter'} of {record.name} in {amountsIn},{' '}
             {year}
@@ -118,16 +119,16 @@ export function BudgetByMonthCard({
                 <span className="visually-hidden">Row</span>
               </th>
               {labels.map((label) => (
-                <th key={label} scope="col" className={styles.number}>
+                <th key={label} scope="col" className={dataTable.numeric}>
                   {label}
                 </th>
               ))}
               {extra.map((column) => (
-                <th key={column.label} scope="col" className={styles.number}>
+                <th key={column.label} scope="col" className={dataTable.numeric}>
                   {column.label}
                 </th>
               ))}
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 Total
               </th>
             </tr>

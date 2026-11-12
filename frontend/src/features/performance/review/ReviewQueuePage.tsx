@@ -14,6 +14,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { usePageTitle } from '@/ui/usePageTitle';
 import tableStyles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { usePerformanceSources } from '../api';
 import { FilterBar } from '../filters/FilterBar';
 import { useUrlFilters } from '../filters/useUrlFilters';
@@ -180,8 +181,8 @@ function RowTable({ items, filters, onOpen }: RowTableProps) {
     );
   }
   return (
-    <div className={tableStyles.tableScroll}>
-      <table className={tableStyles.table}>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
         <thead>
           <tr>
             <th scope="col">Reason</th>
@@ -194,7 +195,7 @@ function RowTable({ items, filters, onOpen }: RowTableProps) {
         <tbody>
           {items.map((row) => (
             <tr key={row.id}>
-              <td className={tableStyles.nameCell}>
+              <td className={dataTable.nameCell}>
                 <button
                   type="button"
                   className={tableStyles.nameButton}

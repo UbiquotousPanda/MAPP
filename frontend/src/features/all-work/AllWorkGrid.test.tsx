@@ -225,7 +225,7 @@ describe('AllWorkGrid (US1)', () => {
   it('closes the grid with the totals row (FR-014)', () => {
     renderGrid();
 
-    const totals = screen.getByRole('rowheader', { name: 'Total · 3 activities' });
+    const totals = screen.getByRole('rowheader', { name: 'Total 3 activities' });
     const row = closestTo(totals, 'tr');
     expect(within(row).getByText('$2,000,000.00')).toBeInTheDocument();
     expect(within(row).getByText('$17,000.00')).toBeInTheDocument();
@@ -280,13 +280,13 @@ describe('AllWorkGrid (US1)', () => {
     const { user } = renderGrid();
 
     const heading = screen.getByRole('columnheader', { name: 'Planned cost' });
-    expect(heading).not.toHaveAttribute('aria-sort');
+    expect(heading).toHaveAttribute('aria-sort', 'none');
     await user.click(within(heading).getByRole('button', { name: 'Planned cost' }));
     expect(heading).toHaveAttribute('aria-sort', 'ascending');
     await user.click(within(heading).getByRole('button', { name: 'Planned cost' }));
     expect(heading).toHaveAttribute('aria-sort', 'descending');
     await user.click(within(heading).getByRole('button', { name: 'Planned cost' }));
-    expect(heading).not.toHaveAttribute('aria-sort');
+    expect(heading).toHaveAttribute('aria-sort', 'none');
 
     // The rows come sorted from the API (D-114); Name is not a column and is not sortable.
     expect(
@@ -307,6 +307,6 @@ describe('AllWorkGrid (US1)', () => {
       ),
     ).toBeInTheDocument();
     // The totals row closes every page.
-    expect(screen.getByRole('rowheader', { name: 'Total · 3 activities' })).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'Total 3 activities' })).toBeInTheDocument();
   });
 });

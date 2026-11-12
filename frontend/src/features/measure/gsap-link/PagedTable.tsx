@@ -1,14 +1,14 @@
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useId } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { cx } from '@/ui/cx';
-import { Pager as SharedPager } from '@/ui/Pager/Pager';
+import { Pager } from '@/ui/Pager/Pager';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import dataTable from '@/ui/Table/Table.module.css';
 import { downloadReport, ExportMenu, useReportAddress } from '../shared';
 import { PAGE_SIZES } from './gsap-address';
 import type { GsapTable } from './gsap-address';
-import totalStyles from '../shared/TotalRow.module.css';
 import styles from './GsapLink.module.css';
 
 export interface PagedColumn<R> {
@@ -71,8 +71,8 @@ function Rows<R>(props: PagedTableProps<R>) {
   }
   return (
     <>
-      <div className={styles.scroll}>
-        <table className={styles.table}>
+      <div className={dataTable.scroll}>
+        <table className={cx(dataTable.table, styles.table)}>
           <caption className="visually-hidden">{title}</caption>
           <thead>
             <tr>
@@ -90,7 +90,7 @@ function Rows<R>(props: PagedTableProps<R>) {
             {rows.map((row) => (
               <tr key={rowKey(row)}>
                 {columns.map((column) => (
-                  <td key={column.key} className={cx(column.numeric && styles.numeric)}>
+                  <td key={column.key} className={cx(column.numeric && dataTable.numeric)}>
                     {column.cell(row)}
                   </td>
                 ))}
@@ -99,14 +99,14 @@ function Rows<R>(props: PagedTableProps<R>) {
           </tbody>
           {totals && (
             <tfoot>
-              <tr className={totalStyles.total}>
+              <tr className={dataTable.total}>
                 {totals.map((cell, i) => {
                   const Cell = i === 0 ? 'th' : 'td';
                   return (
                     <Cell
                       key={columns[i]?.key ?? i}
                       scope={i === 0 ? 'row' : undefined}
-                      className={cx(columns[i]?.numeric && styles.numeric)}
+                      className={cx(columns[i]?.numeric && dataTable.numeric)}
                     >
                       {cell}
                     </Cell>
@@ -117,7 +117,15 @@ function Rows<R>(props: PagedTableProps<R>) {
           )}
         </table>
       </div>
-      <Pager table={table} total={total} onChange={onChange} />
+      <Pager
+        placement="cardFooter"
+        page={table.page}
+        pageSize={table.pageSize}
+        total={total}
+        sizes={PAGE_SIZES}
+        onPage={(page) => onChange({ page })}
+        onPageSize={(pageSize) => onChange({ pageSize })}
+      />
     </>
   );
 }
@@ -128,53 +136,23 @@ interface SortHeadingProps<R> {
   onSort: (sort: string) => void;
 }
 
-/** A heading that sorts by its column; a second click turns the order round. */
 function SortHeading<R>({ column, sort, onSort }: SortHeadingProps<R>) {
   if (column.sortable === false) {
     return (
-      <th scope="col" className={cx(column.numeric && styles.numeric)}>
+      <th scope="col" className={cx(column.numeric && dataTable.numeric)}>
         {column.label}
       </th>
     );
   }
   const current = sort.replace(/^-/, '') === column.key;
   const descending = sort.startsWith('-');
-  const Icon = !current ? ArrowUpDown : descending ? ArrowDown : ArrowUp;
   const next = current ? !descending : Boolean(column.largestFirst);
   return (
-    <th
-      scope="col"
-      className={cx(column.numeric && styles.numeric)}
-      aria-sort={current ? (descending ? 'descending' : 'ascending') : 'none'}
-    >
-      <button
-        type="button"
-        className={styles.sort}
-        onClick={() => onSort(`${next ? '-' : ''}${column.key}`)}
-      >
-        {column.label}
-        <Icon aria-hidden="true" className={current ? undefined : styles.idle} />
-      </button>
-    </th>
-  );
-}
-
-interface PagerProps {
-  table: GsapTable;
-  total: number;
-  onChange: (patch: Partial<GsapTable>) => void;
-}
-
-function Pager({ table, total, onChange }: PagerProps) {
-  return (
-    <SharedPager
-      className={styles.pager}
-      page={table.page}
-      pageSize={table.pageSize}
-      total={total}
-      sizes={PAGE_SIZES}
-      onPage={(page) => onChange({ page })}
-      onPageSize={(pageSize) => onChange({ pageSize })}
+    <SortHeader
+      label={column.label}
+      className={cx(column.numeric && dataTable.numeric)}
+      direction={current ? (descending ? 'desc' : 'asc') : undefined}
+      onSort={() => onSort(`${next ? '-' : ''}${column.key}`)}
     />
   );
 }

@@ -5,11 +5,11 @@
   gap: var(--space-4);
 }
 
-/* Controls side by side, bottoms aligned (labels sit above the selects); they wrap when narrow. */
+/* Controls side by side on one centre line; they wrap when narrow. */
 .row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--space-3) var(--space-2);
 }
 
@@ -31,7 +31,7 @@
   line-height: var(--leading-xs);
 }
 
-/* One control style for the toolbar: 40 px, 8 px corners, a 3:1 border (design system §5.5). */
+/* The date inputs: 40 px, 8 px corners, a 3:1 border (design system §5.5). */
 .control {
   width: 180px;
   max-width: 100%;
@@ -52,91 +52,6 @@
 
 .control[aria-invalid='true'] {
   border-color: var(--danger);
-}
-
-/* A native select drawn like an input, with its own chevron (the one select style, §5.5). */
-.select {
-  padding-right: var(--space-9);
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
-    linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 13px) 50%;
-  background-size:
-    5px 5px,
-    5px 5px;
-  background-repeat: no-repeat;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-
-/* The Action menu's button looks like the selects beside it, chevron included. */
-.menuButton {
-  display: inline-flex;
-  align-items: center;
-  text-align: left;
-}
-
-.menuText {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* The Action menu: the look of every MAPP menu (§5.1). */
-.menu {
-  z-index: 300;
-  min-width: 220px;
-  padding: var(--space-1);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-control);
-  background: var(--raised);
-  box-shadow: var(--shadow-md);
-}
-
-.menuItem {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--control-md);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-chip);
-  color: var(--ink);
-  font-size: var(--text-sm);
-  cursor: pointer;
-  outline: none;
-}
-
-/* The item under the pointer or the arrow keys, with an inset ring for the keyboard. */
-.menuItem[data-highlighted] {
-  background: var(--hover);
-  box-shadow: inset 0 0 0 2px var(--focus-ring);
-}
-
-/* The tick box of a menu item; the tick shows only when it is chosen. */
-.box {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: 1.5px solid var(--control-border);
-  border-radius: var(--radius-chip);
-  background: var(--surface);
-}
-
-.menuItem[data-state='checked'] .box {
-  border-color: var(--blue);
-  background: var(--blue);
-  color: var(--surface);
-}
-
-.box svg {
-  width: 14px;
-  height: 14px;
 }
 
 /* "Date" written before the date filter, on its centre line. */
@@ -183,12 +98,6 @@
   margin-top: 2px;
 }
 
-/* The result count, pushed to the end of the row. */
-.count {
-  margin-left: auto;
-  align-self: center;
-}
-
 @media (max-width: 599px) {
   .search {
     flex-basis: 100%;
@@ -201,9 +110,5 @@
 
   .control {
     width: 100%;
-  }
-
-  .count {
-    margin-left: 0;
   }
 }

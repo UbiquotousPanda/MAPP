@@ -1,8 +1,10 @@
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useId } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useFormatters } from '@/format/useFormatters';
-import { Pager as SharedPager } from '@/ui/Pager/Pager';
+import { cx } from '@/ui/cx';
+import { Pager } from '@/ui/Pager/Pager';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import dataTable from '@/ui/Table/Table.module.css';
 import { downloadReport, ExportMenu, useReportAddress } from '../shared';
 import type { UserAccessRow } from './api';
 import { PAGE_SIZES, sortOf } from './access-address';
@@ -47,8 +49,8 @@ export function AccessTable({ rows, total, table, onChange }: AccessTableProps) 
           }
         />
       </div>
-      <div className={styles.scroll}>
-        <table className={styles.table}>
+      <div className={dataTable.scroll}>
+        <table className={cx(dataTable.table, styles.table)}>
           <caption className="visually-hidden">People</caption>
           <thead>
             <tr>
@@ -95,7 +97,15 @@ export function AccessTable({ rows, total, table, onChange }: AccessTableProps) 
           </tbody>
         </table>
       </div>
-      <Pager table={table} total={total} onChange={onChange} />
+      <Pager
+        placement="cardFooter"
+        page={table.page}
+        pageSize={table.pageSize}
+        total={total}
+        sizes={PAGE_SIZES}
+        onPage={(page) => onChange({ page })}
+        onPageSize={(pageSize) => onChange({ pageSize })}
+      />
     </section>
   );
 }
@@ -110,32 +120,12 @@ interface SortHeadingProps {
 function SortHeading({ column, sort, onSort }: SortHeadingProps) {
   const current = sort.replace(/^-/, '') === column.key;
   const descending = sort.startsWith('-');
-  const Icon = !current ? ArrowUpDown : descending ? ArrowDown : ArrowUp;
   const next = current ? !descending : Boolean(column.latestFirst);
   return (
-    <th scope="col" aria-sort={current ? (descending ? 'descending' : 'ascending') : 'none'}>
-      <button
-        type="button"
-        className={styles.sort}
-        onClick={() => onSort(sortOf(`${next ? '-' : ''}${column.key}`))}
-      >
-        {column.label}
-        <Icon aria-hidden="true" className={current ? undefined : styles.idle} />
-      </button>
-    </th>
-  );
-}
-
-function Pager({ table, total, onChange }: Omit<AccessTableProps, 'rows'>) {
-  return (
-    <SharedPager
-      className={styles.pager}
-      page={table.page}
-      pageSize={table.pageSize}
-      total={total}
-      sizes={PAGE_SIZES}
-      onPage={(page) => onChange({ page })}
-      onPageSize={(pageSize) => onChange({ pageSize })}
+    <SortHeader
+      label={column.label}
+      direction={current ? (descending ? 'desc' : 'asc') : undefined}
+      onSort={() => onSort(sortOf(`${next ? '-' : ''}${column.key}`))}
     />
   );
 }

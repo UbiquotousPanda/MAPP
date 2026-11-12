@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { REPORT_GRID_PAGE_SIZES } from '@/ui/Pager/page-sizes';
 
 export const RECORD_TYPES = ['activity', 'purchaseRequest', 'modifiedPurchaseRequest'] as const;
 export type RecordType = (typeof RECORD_TYPES)[number];
@@ -19,7 +20,7 @@ export const SORT_KEYS = [
 ] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
-export const PAGE_SIZES = [5, 10, 25, 50, 100] as const;
+export const PAGE_SIZES = REPORT_GRID_PAGE_SIZES;
 export type PageSize = (typeof PAGE_SIZES)[number];
 
 export interface ApprovalsParams {

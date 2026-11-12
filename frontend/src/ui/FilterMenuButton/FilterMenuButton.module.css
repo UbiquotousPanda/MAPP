@@ -1,0 +1,47 @@
+/* 32 px like the other controls of a filter bar, radius 8 like Select and SegmentedFilter. */
+.button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--control-sm);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.button:hover {
+  border-color: var(--control-border-hover);
+  background: var(--hover);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.button svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ink-2);
+  transition: transform 0.15s ease;
+}
+
+.button[data-state='open'] svg {
+  transform: rotate(180deg);
+}
+
+/* In use: the Border Strong of an emphasised control. */
+.inUse {
+  border-color: var(--control-border-hover);
+}
+
+.summary {
+  font-weight: var(--weight-bold);
+}

@@ -1,13 +1,10 @@
-import { ChevronDown } from 'lucide-react';
-import { Popover } from 'radix-ui';
+import { FilterMenuButton } from '@/ui/FilterMenuButton/FilterMenuButton';
+import { Popover } from '@/ui/Popover/Popover';
 import { Select } from '@/ui/Select/Select';
-import { cx } from '@/ui/cx';
 import { FILTER_LABELS, MAX_YEARS, TOO_MANY_YEARS, yearsText } from './all-work-text';
-import menuStyles from './FilterMenu.module.css';
 import styles from './YearRangeMenu.module.css';
 
 export interface YearRangeMenuProps {
-  /** The years that have plans, and the current year, newest first. */
   years: number[];
   from: number;
   to: number;
@@ -32,36 +29,26 @@ export function YearRangeMenu({ years, from, to, onChange }: YearRangeMenuProps)
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
-        <button type="button" className={cx(menuStyles.button, menuStyles.inUse)}>
-          {label} <span className={menuStyles.summary}>· {yearsText(from, to)}</span>
-          <ChevronDown aria-hidden="true" />
-        </button>
+        <FilterMenuButton label={label} summary={yearsText(from, to)} />
       </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          className={cx(menuStyles.menu, styles.menu)}
-          align="start"
-          sideOffset={6}
-          aria-label={label}
-        >
-          <fieldset className={styles.fields}>
-            <legend className={styles.legend}>Plans of the years</legend>
-            <Select
-              label="From"
-              value={String(from)}
-              options={offered.map(yearOption)}
-              onChange={(year) => chooseFrom(Number(year))}
-            />
-            <Select
-              label="To"
-              value={String(to)}
-              options={toChoices.map(yearOption)}
-              note={TOO_MANY_YEARS}
-              onChange={(year) => onChange(from, Number(year))}
-            />
-          </fieldset>
-        </Popover.Content>
-      </Popover.Portal>
+      <Popover.Content width="md" padding="lg" aria-label={label}>
+        <fieldset className={styles.fields}>
+          <legend className={styles.legend}>Plans of the years</legend>
+          <Select
+            label="From"
+            value={String(from)}
+            options={offered.map(yearOption)}
+            onChange={(year) => chooseFrom(Number(year))}
+          />
+          <Select
+            label="To"
+            value={String(to)}
+            options={toChoices.map(yearOption)}
+            note={TOO_MANY_YEARS}
+            onChange={(year) => onChange(from, Number(year))}
+          />
+        </fieldset>
+      </Popover.Content>
     </Popover.Root>
   );
 }

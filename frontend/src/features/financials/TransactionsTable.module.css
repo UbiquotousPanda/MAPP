@@ -1,9 +1,7 @@
-/* The data table standard (design system §5.4): it scrolls sideways inside its card, never the page. */
 .scroll {
   position: relative;
   overflow-x: auto;
-  /* A soft shadow at an edge with more columns beyond it, so a cut-off table says it scrolls
-     (design system §5.4): the white covers scroll with the table, the shadows stay with the box. */
+  /* A shadow at an edge with more columns beyond it: the white covers scroll, the shadows stay. */
   background:
     linear-gradient(to right, var(--surface) 30%, transparent) left center / 32px 100% no-repeat
       local,
@@ -16,19 +14,11 @@
 }
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--ink);
-  font-size: var(--text-sm);
   line-height: var(--leading-sm);
 }
 
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  font-weight: var(--weight-regular);
-  text-align: left;
+.table tbody th,
+.table tbody td {
   vertical-align: top;
 }
 
@@ -41,78 +31,8 @@
   padding-right: var(--card-padding);
 }
 
-.table thead th {
-  height: var(--control-md);
-  padding-block: 0;
-  border-bottom-color: var(--hairline);
-  background: var(--gray-bg);
-  color: var(--ink);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-xs);
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-/* On the hover grey, Text Subtle, links and red text turn Text Strong (constitution X). */
-.table tbody tr:hover {
-  --ink-2: var(--ink);
-  --link: var(--ink);
-  --danger-text: var(--ink);
-  --status-problem-text: var(--ink);
-  background: var(--hover);
-}
-
-.table tbody tr:last-child th,
-.table tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-/* Numbers: right-aligned under a right-aligned heading, tabular, never wrapped. */
-.table .numeric {
-  text-align: right;
-  white-space: nowrap;
-}
-
-.numeric .sort {
-  flex-direction: row-reverse;
-}
-
 .nowrap {
   white-space: nowrap;
-}
-
-/* A heading that sorts: the whole heading is the button, its arrow after the label. */
-.sort {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 24px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.sort:hover {
-  text-decoration: underline;
-}
-
-.sort:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-.sort svg {
-  flex: none;
-  width: 14px;
-  height: 14px;
-}
-
-.sort .idle {
-  color: var(--muted);
 }
 
 /* The transaction's readable name, the row's link; it never breaks inside a number. The 2 px
@@ -146,10 +66,6 @@
 
 .money {
   display: block;
-  font-variant-numeric: tabular-nums;
-}
-
-.numeric .secondary {
   font-variant-numeric: tabular-nums;
 }
 

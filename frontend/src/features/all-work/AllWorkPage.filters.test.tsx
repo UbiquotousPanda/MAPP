@@ -57,7 +57,7 @@ describe('AllWorkPage filters and search (US2)', () => {
       'Helix launch',
       'Helix digital',
       'Helix social ads',
-      'Total · 3 activities',
+      'Total 3 activities',
     ]);
     expect(screen.getAllByText('Shown for context')).toHaveLength(3);
     const summary = screen.getByRole('region', { name: 'Summary' });
@@ -92,7 +92,7 @@ describe('AllWorkPage filters and search (US2)', () => {
       'Helix launch',
       'Helix digital',
       'Helix social ads',
-      'Total · 3 activities',
+      'Total 3 activities',
     ]);
     const activity = closestTo(screen.getByRole('rowheader', { name: /Helix social ads/ }), 'tr');
     expect([...activity.querySelectorAll('mark')].map((mark) => mark.textContent)).toEqual([

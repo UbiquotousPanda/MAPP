@@ -1,4 +1,6 @@
 import { Card } from '@/ui/Card/Card';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
 import { toCents } from '@/format/decimal';
 import { amountText, formatMonth, moneyText } from './line-item-math';
 import type { LineItem } from './api';
@@ -21,12 +23,12 @@ export function LineItemSpreadCard({ lineItem }: { lineItem: LineItem }) {
         <p className={styles.note}>{NOT_SPREAD_YET}</p>
       ) : (
         <div className={styles.stack}>
-          <table className={styles.months}>
+          <table className={cx(dataTable.table, styles.months)}>
             <caption className="visually-hidden">Month amounts</caption>
             <thead>
               <tr>
                 <th scope="col">Month</th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   {`Planned cost (${code})`}
                 </th>
               </tr>
@@ -40,7 +42,7 @@ export function LineItemSpreadCard({ lineItem }: { lineItem: LineItem }) {
                       <span className={styles.outside}> — {OUTSIDE_TIP}</span>
                     )}
                   </td>
-                  <td className={styles.number}>{moneyText(month.amount)}</td>
+                  <td className={dataTable.numeric}>{moneyText(month.amount)}</td>
                 </tr>
               ))}
             </tbody>

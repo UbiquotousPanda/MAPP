@@ -4,6 +4,7 @@ import { formatWhole } from '@/format/decimal';
 import { plural } from '@/format/text';
 import { formatMonth } from '@/format/intl';
 import type { DateFormat } from '@/format/intl';
+import type { ListNoun } from '@/ui/ResultCount/count-text';
 import type {
   FinancialImportCounts,
   FinancialImportNotLinkedRow,
@@ -69,9 +70,7 @@ export function tabLabel(tab: FinancialTab, counts: FinancialTypeCounts | undefi
   return count === undefined ? TAB_LABELS[tab] : `${TAB_LABELS[tab]} (${formatWhole(count)})`;
 }
 
-export function countLine(shown: number, all: number): string {
-  return `${formatWhole(shown)} of ${formatWhole(all)} ${all === 1 ? 'transaction' : 'transactions'}`;
-}
+export const TRANSACTIONS: ListNoun = { one: 'transaction', many: 'transactions' };
 
 export function sourceLine(
   source: FinancialSource,

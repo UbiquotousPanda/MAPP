@@ -6,6 +6,8 @@ import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { ScrollBox } from '@/features/financials';
 import { PlanStatusChip } from '@/features/plans';
 import { useFormatters } from '@/format/useFormatters';
@@ -46,7 +48,7 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
         </div>
       ) : (
         <ScrollBox label="Allocations" className={styles.scroll}>
-          <table className={styles.table}>
+          <table className={cx(dataTable.table, styles.table)}>
             <caption className="visually-hidden">Allocations</caption>
             <thead>
               <tr>
@@ -54,16 +56,16 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
                 <th scope="col">Teams</th>
                 <th scope="col">Owner</th>
                 <th scope="col">Status</th>
-                <th scope="col" className={styles.numeric}>
+                <th scope="col" className={dataTable.numeric}>
                   Allocated
                 </th>
-                <th scope="col" className={styles.numeric}>
+                <th scope="col" className={dataTable.numeric}>
                   Planned cost
                 </th>
-                <th scope="col" className={styles.numeric}>
+                <th scope="col" className={dataTable.numeric}>
                   Left to plan
                 </th>
-                <th scope="col" className={styles.numeric}>
+                <th scope="col" className={dataTable.numeric}>
                   Budget used
                 </th>
                 <th scope="col">
@@ -88,17 +90,17 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
                   <td>
                     <PlanStatusChip status={row.plan.status} />
                   </td>
-                  <td className={styles.numeric}>{money(row.amount)}</td>
-                  <td className={styles.numeric}>{money(row.plannedCost)}</td>
+                  <td className={dataTable.numeric}>{money(row.amount)}</td>
+                  <td className={dataTable.numeric}>{money(row.plannedCost)}</td>
                   <td
-                    className={`${styles.numeric} ${row.leftToPlan.amount.startsWith('-') ? styles.problem : ''}`}
+                    className={`${dataTable.numeric} ${row.leftToPlan.amount.startsWith('-') ? styles.problem : ''}`}
                   >
                     {money(row.leftToPlan)}
                   </td>
-                  <td className={styles.numeric}>
+                  <td className={dataTable.numeric}>
                     <BudgetUsed percent={row.budgetUsedPercent} />
                   </td>
-                  <td className={styles.actions}>
+                  <td className={dataTable.actions}>
                     <ActionsMenu
                       label={row.plan.name}
                       items={[
@@ -125,8 +127,8 @@ export function Allocations({ budget, onAllocate, onChange, onRemove }: Allocati
                   <td />
                   <td />
                   <td />
-                  <td className={styles.numeric}>{money(other.amount)}</td>
-                  <td className={styles.numeric}>{money(other.plannedCost)}</td>
+                  <td className={dataTable.numeric}>{money(other.amount)}</td>
+                  <td className={dataTable.numeric}>{money(other.plannedCost)}</td>
                   <td />
                   <td />
                   <td />

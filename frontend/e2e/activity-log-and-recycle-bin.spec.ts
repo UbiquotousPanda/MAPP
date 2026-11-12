@@ -135,8 +135,8 @@ test('An activity deleted from its page is found in the recycle bin and restored
   await expectEntries(log.locator('ol[role="list"]'), lifeOf);
   await expectNoAxeViolations(page);
 
-  await page.getByRole('button', { name: 'Action: Any action' }).click();
-  await page.getByRole('menuitemcheckbox', { name: 'Restored', exact: true }).click();
+  await page.getByRole('button', { name: 'Action', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Restored', exact: true }).click();
   await page.keyboard.press('Escape');
   await expect(chip(page, 'Action: Restored')).toBeVisible();
   await expect(page.getByText(/^1 of [\d,]+ entries$/)).toBeVisible();

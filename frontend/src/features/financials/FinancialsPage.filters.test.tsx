@@ -101,10 +101,7 @@ describe('FinancialsPage search, tabs and filters (015 US3, FR-021)', () => {
     expect(screen.getByText('7 of 11 transactions')).toBeInTheDocument();
     expect(nth(listQueries(api), 0).get('recordId')).toBe('A-1002');
 
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Plan' }),
-      'FY2026 Lubricants Europe',
-    );
+    await choose(user, screen.getByRole('combobox', { name: 'Plan' }), 'FY2026 Lubricants Europe');
     await waitFor(() =>
       expect(router.state.location.search).toBe('?planId=P-1001&recordId=A-1002'),
     );
@@ -115,7 +112,7 @@ describe('FinancialsPage search, tabs and filters (015 US3, FR-021)', () => {
     await user.click(chip);
     await waitFor(() => expect(router.state.location.search).toBe('?planId=P-1001'));
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Year' }), '2027');
+    await choose(user, screen.getByRole('combobox', { name: 'Year' }), '2027');
     await waitFor(() => expect(router.state.location.search).toBe('?year=2027'));
     expect(listQueries(api).at(-1)?.get('year')).toBe('2027');
   });

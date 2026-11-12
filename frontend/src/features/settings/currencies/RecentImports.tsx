@@ -4,6 +4,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import settingsStyles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { RECENT_IMPORTS, useRateImports } from './rates-api';
 import type { RateImport } from './rates-api';
 import styles from './rates.module.css';
@@ -28,31 +29,26 @@ export function RecentImports() {
         <p className={styles.cardNote}>No GSAP rate file has been imported yet.</p>
       ) : (
         // Nothing in the table takes the focus: the scrolling area does, for the keyboard.
-        <div
-          className={settingsStyles.tableScroll}
-          role="region"
-          aria-label="Recent imports"
-          tabIndex={0}
-        >
-          <table className={settingsStyles.table}>
+        <div className={dataTable.scroll} role="region" aria-label="Recent imports" tabIndex={0}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">File</th>
                 <th scope="col">Imported</th>
                 <th scope="col">Rates for</th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Added
                 </th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Replaced
                 </th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Already present
                 </th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Not used
                 </th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Problems
                 </th>
               </tr>
@@ -96,11 +92,11 @@ function ImportRow({ item, when, range }: ImportRowProps) {
           ? range(item.firstDate, item.lastDate)
           : 'No rates changed'}
       </td>
-      <td className={settingsStyles.number}>{formatWhole(item.added)}</td>
-      <td className={settingsStyles.number}>{formatWhole(item.replaced)}</td>
-      <td className={settingsStyles.number}>{formatWhole(item.unchanged)}</td>
-      <td className={settingsStyles.number}>{formatWhole(item.notUsed)}</td>
-      <td className={settingsStyles.number}>{formatWhole(item.problems)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.added)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.replaced)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.unchanged)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.notUsed)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.problems)}</td>
     </tr>
   );
 }

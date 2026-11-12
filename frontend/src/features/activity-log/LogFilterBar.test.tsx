@@ -1,10 +1,11 @@
-import { act, screen, within } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { logSummary } from '@/testing/fixtures/activity-log';
+import { choose } from '@/testing/select';
 import { LogFilterBar, SEARCH_DELAY_MS } from './LogFilterBar';
 import { NO_FILTERS } from './log-filters';
 import type { LogFilterState } from './log-filters';
@@ -41,17 +42,19 @@ describe('LogFilterBar', () => {
     vi.useRealTimers();
   });
 
-  it('offers the summary’s people, record types and plans (FR-003)', () => {
-    renderBar();
+  it('offers the summary’s people, record types and plans (FR-003)', async () => {
+    const { user } = renderBar();
 
-    const options = (name: string) =>
-      within(screen.getByRole('combobox', { name }))
-        .getAllByRole('option')
-        .map((option) => option.textContent);
-    expect(options('Person')).toEqual(['Anyone', 'Daniel Okoro', 'Priya Raman']);
-    expect(options('Record type')).toEqual(['Any type', 'Activity', 'Line item']);
-    expect(options('Plan')).toEqual(['Any plan', 'FY2026 Lubricants Europe']);
-    expect(screen.getByRole('button', { name: 'Action: Any action' })).toBeInTheDocument();
+    const options = async (name: string) => {
+      await user.click(screen.getByRole('combobox', { name }));
+      const shown = screen.getAllByRole('option').map((option) => option.textContent);
+      await user.keyboard('{Escape}');
+      return shown;
+    };
+    expect(await options('Person')).toEqual(['Anyone', 'Daniel Okoro', 'Priya Raman']);
+    expect(await options('Record type')).toEqual(['Any type', 'Activity', 'Line item']);
+    expect(await options('Plan')).toEqual(['Any plan', 'FY2026 Lubricants Europe']);
+    expect(screen.getByRole('button', { name: 'Action' })).toBeInTheDocument();
     expect(
       screen.getByRole('searchbox', { name: 'Search name, ID or person' }),
     ).toBeInTheDocument();
@@ -60,7 +63,7 @@ describe('LogFilterBar', () => {
   it('filters by person and shows the filter as a chip (FR-003)', async () => {
     const { user, onChange } = renderBar();
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Person' }), 'Daniel Okoro');
+    await choose(user, screen.getByRole('combobox', { name: 'Person' }), 'Daniel Okoro');
 
     expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, person: 'U-1003' });
     expect(
@@ -71,22 +74,17 @@ describe('LogFilterBar', () => {
   it('ticks several actions in one menu, kept in the menu’s order (FR-003)', async () => {
     const { user, onChange } = renderBar();
 
-    await user.click(screen.getByRole('button', { name: 'Action: Any action' }));
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Permanently deleted' }));
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Deleted' }));
+    await user.click(screen.getByRole('button', { name: 'Action' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Permanently deleted' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Deleted' }));
 
     expect(onChange).toHaveBeenLastCalledWith({
       ...NO_FILTERS,
       actions: ['deleted', 'deletedPermanently'],
     });
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Deleted' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    expect(screen.getByRole('checkbox', { name: 'Deleted' })).toBeChecked();
     await user.keyboard('{Escape}');
-    expect(
-      screen.getByRole('button', { name: 'Action: Deleted, Permanently deleted' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Action · 2' })).toBeInTheDocument();
   });
 
   it('chooses a date range, and Custom dates with their error (FR-003)', async () => {

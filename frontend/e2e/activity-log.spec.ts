@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { callApi, escapeRegExp, expectNoAxeViolations, signInAs } from './fixtures';
+import { callApi, choose, escapeRegExp, expectNoAxeViolations, signInAs } from './fixtures';
 import {
   changeActivityPlannedCost,
   changeLineItemPlannedCost,
@@ -55,10 +55,10 @@ test('US2: the cards, filters, chips, details and record links of the activity l
   await expect(page).toHaveURL(/[?&]range=today\b/);
   await expect(chip(page, 'Date: Today')).toBeVisible();
 
-  await page.getByLabel('Person', { exact: true }).selectOption({ label: 'Mei Lin' });
+  await choose(page, page.getByRole('combobox', { name: 'Person', exact: true }), 'Mei Lin');
   await expect(chip(page, 'Person: Mei Lin')).toBeVisible();
-  await page.getByRole('button', { name: 'Action: Any action' }).click();
-  await page.getByRole('menuitemcheckbox', { name: 'Changed', exact: true }).click();
+  await page.getByRole('button', { name: 'Action', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Changed', exact: true }).click();
   await page.keyboard.press('Escape');
   await expect(chip(page, 'Action: Changed')).toBeVisible();
   await expect(page).toHaveURL(/[?&]person=U-\d+/);
@@ -83,8 +83,8 @@ test('US2: the cards, filters, chips, details and record links of the activity l
 
   // A record in the recycle bin links to its row there, which is highlighted.
   await chip(page, 'Action: Changed').click();
-  await page.getByRole('button', { name: 'Action: Any action' }).click();
-  await page.getByRole('menuitemcheckbox', { name: 'Deleted', exact: true }).click();
+  await page.getByRole('button', { name: 'Action', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Deleted', exact: true }).click();
   await page.keyboard.press('Escape');
   const deleted = entry(page, `Mei Lin deleted initiative '${binned.name}' (in the recycle bin)`);
   await expect(deleted).toBeVisible();

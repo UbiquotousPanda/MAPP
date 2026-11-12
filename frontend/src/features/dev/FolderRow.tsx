@@ -1,5 +1,6 @@
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { SampleFolder } from './api';
 import type { FolderActions } from './FoldersCard';
 import { NoteList } from './NoteList';
@@ -23,7 +24,7 @@ export function FolderRow({ folder, actions }: { folder: SampleFolder; actions: 
         )}
       </td>
       <td>{`${folder.updatedBy.name}, ${dateTime(folder.updatedAt)}`}</td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={folder.name}
           items={[

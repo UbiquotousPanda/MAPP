@@ -3,6 +3,7 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
 import { formatMoneyText } from '@/format/decimal';
+import dataTable from '@/ui/Table/Table.module.css';
 import { useClosePreview, useClosePurchaseRequest } from './api';
 import type { PurchaseRequest, PurchaseRequestClosePreview } from './api';
 import {
@@ -82,20 +83,20 @@ function ClosePreviewLines({ preview }: { preview: PurchaseRequestClosePreview }
     <div className={styles.dialogText}>
       <p>{CLOSE_INTRO}</p>
       <div className={styles.scroll}>
-        <table className={styles.table}>
+        <table className={dataTable.table}>
           <thead>
             <tr>
               <th scope="col">{CLOSE_COLUMNS.line}</th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 {CLOSE_COLUMNS.amount}
               </th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 {CLOSE_COLUMNS.invoiced}
               </th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 {CLOSE_COLUMNS.closed}
               </th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 {CLOSE_COLUMNS.released}
               </th>
             </tr>
@@ -104,10 +105,10 @@ function ClosePreviewLines({ preview }: { preview: PurchaseRequestClosePreview }
             {preview.lines.map((line) => (
               <tr key={line.lineId}>
                 <th scope="row">{`${line.lineItemId} · ${line.hxKey}`}</th>
-                <td className={styles.number}>{formatMoneyText(line.amount)}</td>
-                <td className={styles.number}>{formatMoneyText(line.invoiced)}</td>
-                <td className={styles.number}>{formatMoneyText(line.closedAmount)}</td>
-                <td className={styles.number}>{formatMoneyText(line.released)}</td>
+                <td className={dataTable.numeric}>{formatMoneyText(line.amount)}</td>
+                <td className={dataTable.numeric}>{formatMoneyText(line.invoiced)}</td>
+                <td className={dataTable.numeric}>{formatMoneyText(line.closedAmount)}</td>
+                <td className={dataTable.numeric}>{formatMoneyText(line.released)}</td>
               </tr>
             ))}
           </tbody>

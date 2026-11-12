@@ -1,9 +1,9 @@
-import { Bookmark, Check, Link2 } from 'lucide-react';
-import { DropdownMenu } from 'radix-ui';
+import { Bookmark, Link2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Button } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
+import { Menu } from '@/ui/Menu/Menu';
 import { useToast } from '@/ui/Toast/useToast';
 import type { ReportKey } from '../reports';
 import { useReportViews, useUpdateReportView } from './api';
@@ -25,7 +25,6 @@ export function SavedViewsMenu({ report }: { report: ReportKey }) {
   const views = useReportViews(report).data?.items;
   const [appliedId, setAppliedId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
-  const chosen = useRef<(() => void) | null>(null);
   const update = useUpdateReportView(report);
   const refused = useViewRefusal();
   const { show } = useToast();
@@ -55,68 +54,40 @@ export function SavedViewsMenu({ report }: { report: ReportKey }) {
     );
   }
 
-  const item = (label: string, action: () => void) => (
-    <DropdownMenu.Item
-      className={styles.item}
-      onSelect={() => {
-        chosen.current = action;
-      }}
-    >
-      {label}
-    </DropdownMenu.Item>
-  );
-
   return (
     <>
-      <DropdownMenu.Root modal={false}>
-        <DropdownMenu.Trigger asChild>
+      <Menu.Root>
+        <Menu.Trigger asChild>
           <Button size="sm" icon={<Bookmark />}>
             {active ? `View: ${active.name}` : 'Saved views'}
             {modified && ' '}
             {modified && <span className={styles.modified}>Modified</span>}
           </Button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
-            className={styles.menu}
-            align="end"
-            sideOffset={4}
-            onCloseAutoFocus={() => {
-              const action = chosen.current;
-              chosen.current = null;
-              action?.();
-            }}
-          >
-            {views?.length === 0 && (
-              <p className={styles.empty}>No saved views yet — set the filters, then save them.</p>
-            )}
-            {views?.map((view) => (
-              <DropdownMenu.CheckboxItem
-                key={view.id}
-                className={styles.item}
-                checked={view.id === active?.id}
-                onSelect={() => {
-                  chosen.current = () => apply(view);
-                }}
-              >
-                <span className={styles.tick}>
-                  <DropdownMenu.ItemIndicator>
-                    <Check aria-hidden="true" />
-                  </DropdownMenu.ItemIndicator>
-                </span>
-                <span className={styles.name}>{view.name}</span>
-                {view.isDefault && <span className={styles.default}>Default</span>}
-              </DropdownMenu.CheckboxItem>
-            ))}
-            {views && views.length > 0 && <DropdownMenu.Separator className={styles.separator} />}
-            {item(modified ? 'Save as new view…' : 'Save current filters…', () =>
-              setDialog('save'),
-            )}
-            {modified && item('Update view…', () => setDialog('update'))}
-            {views && views.length > 0 && item('Manage views…', () => setDialog('manage'))}
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
+        </Menu.Trigger>
+        <Menu.Content>
+          {views?.length === 0 && (
+            <Menu.Note>No saved views yet — set the filters, then save them.</Menu.Note>
+          )}
+          {views?.map((view) => (
+            <Menu.Choice
+              key={view.id}
+              checked={view.id === active?.id}
+              onChoose={() => apply(view)}
+            >
+              <span className={styles.name}>{view.name}</span>
+              {view.isDefault && <span className={styles.default}>Default</span>}
+            </Menu.Choice>
+          ))}
+          {views && views.length > 0 && <Menu.Separator />}
+          <Menu.Item onChoose={() => setDialog('save')}>
+            {modified ? 'Save as new view…' : 'Save current filters…'}
+          </Menu.Item>
+          {modified && <Menu.Item onChoose={() => setDialog('update')}>Update view…</Menu.Item>}
+          {views && views.length > 0 && (
+            <Menu.Item onChoose={() => setDialog('manage')}>Manage views…</Menu.Item>
+          )}
+        </Menu.Content>
+      </Menu.Root>
       {dialog === 'save' && (
         <SaveViewDialog
           report={report}

@@ -56,21 +56,6 @@
   height: 14px;
 }
 
-.list {
-  z-index: 50;
-  min-width: 200px;
-  padding: var(--space-1);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-control);
-  background: var(--raised);
-  box-shadow: var(--shadow-md);
-}
-
-/* Dark Raised is 3.9:1 for Text Subtle, so secondary text there is Text Strong (constitution X). */
-:global(:root[data-theme='dark']) .list {
-  --ink-2: var(--ink);
-}
-
 .list ul {
   margin: 0;
   padding: 0;

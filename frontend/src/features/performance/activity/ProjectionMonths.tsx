@@ -1,5 +1,6 @@
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { RevenueFigure, StageFigure } from './api';
 import styles from './DataSourcesArea.module.css';
 import { STAGE_WORDS } from '../performance-text';
@@ -48,13 +49,13 @@ export function ProjectionMonths({
   return (
     <details>
       <summary className={styles.summary}>{TITLE}</summary>
-      <div className={styles.scroll}>
-        <table className={styles.table} aria-label={TITLE}>
+      <div className={dataTable.scroll}>
+        <table className={dataTable.table} aria-label={TITLE}>
           <thead>
             <tr>
               <th scope="col">Month</th>
               {columns.map((column) => (
-                <th key={column.label} scope="col" className={styles.numeric}>
+                <th key={column.label} scope="col" className={dataTable.numeric}>
                   {column.label}
                 </th>
               ))}
@@ -68,7 +69,7 @@ export function ProjectionMonths({
                   {m.inProgress && ' · this month'}
                 </th>
                 {columns.map((column) => (
-                  <td key={column.label} className={styles.numeric}>
+                  <td key={column.label} className={dataTable.numeric}>
                     {column.cell(m.month)}
                   </td>
                 ))}

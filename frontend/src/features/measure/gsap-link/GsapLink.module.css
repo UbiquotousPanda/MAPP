@@ -30,31 +30,8 @@
   line-height: var(--leading-md);
 }
 
-.scroll {
-  position: relative;
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--ink);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-}
-
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  font-weight: var(--weight-regular);
-  text-align: left;
-  vertical-align: top;
-}
-
 /* Dates, people, IDs and amounts stay on one line; only the named long-text cells wrap. */
 .table td {
-  vertical-align: middle;
   white-space: nowrap;
 }
 
@@ -64,66 +41,6 @@
 
 .table tr > :last-child {
   padding-right: var(--card-padding);
-}
-
-.table thead th {
-  height: var(--control-md);
-  padding-block: 0;
-  border-bottom-color: var(--hairline);
-  background: var(--gray-bg);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-xs);
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.table tbody tr:hover {
-  --ink-2: var(--ink);
-  --link: var(--ink);
-  background: var(--hover);
-}
-
-.table .numeric {
-  text-align: right;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-.numeric .sort {
-  flex-direction: row-reverse;
-}
-
-.sort {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 24px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.sort:hover {
-  text-decoration: underline;
-}
-
-.sort:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-.sort svg {
-  flex: none;
-  width: 14px;
-  height: 14px;
-}
-
-.idle {
-  color: var(--muted);
 }
 
 .sub {
@@ -143,18 +60,6 @@
 
 .note {
   margin: 0;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-}
-
-.pager {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--card-padding);
-  border-top: 1px solid var(--hairline);
   color: var(--ink-2);
   font-size: var(--text-sm);
   line-height: var(--leading-sm);

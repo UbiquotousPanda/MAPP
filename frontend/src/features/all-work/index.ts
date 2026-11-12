@@ -7,8 +7,6 @@ export { defaultGrouping } from './breakdown-state';
 export { NO_PLANNED_COST, PLANNED_COST_BY } from './breakdown-text';
 export { BreakdownTable } from './BreakdownTable';
 export { AttributeFilterMenu } from './AttributeFilterMenu';
-export { FilterMenu } from './FilterMenu';
-export type { FilterChoice } from './FilterMenu';
 export { GroupingPickers } from './GroupingPickers';
 export type {
   AllWorkCell,
