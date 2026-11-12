@@ -6,7 +6,6 @@
   animation: fade-in var(--dur) var(--ease-out);
 }
 
-/* 480–560 px wide on large screens; the whole width on phones. */
 .panel {
   position: fixed;
   top: 0;
@@ -27,7 +26,6 @@
   outline: none;
 }
 
-/* The header: the title on the left, Close on the right, at least 64 px high. */
 .header {
   display: flex;
   flex: none;
@@ -72,11 +70,7 @@
   outline-offset: -2px;
 }
 
-/*
- * One footer for every panel: the buttons come in order of importance (the primary first) and
- * line up from the right edge, so the primary sits rightmost, Cancel next to it, and the More menu
- * (destructive actions) further left.
- */
+/* Buttons in order of importance line up from the right: primary rightmost, the More menu furthest left. */
 .footer {
   display: flex;
   flex: none;
