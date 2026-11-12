@@ -2,6 +2,7 @@
 const TOKEN = '/^((var\\(--[\\w-]+\\)|0|inherit|none|50%)\\s*)+$/';
 // A ring, rule or selection bar draws its own geometry; its colour is still a token.
 const SHADOW = '/^(inset|-?\\d+px|0|none|var\\(--[\\w-]+\\)|,|\\s)+$/';
+const SPACING_PX = '/(^|[\\s(,-])([3-9]|\\d{2,}|\\d*\\.\\d+)px/';
 
 export default {
   ignoreFiles: ['src/ui/tokens.css', 'dist/**', 'coverage/**'],
@@ -13,6 +14,9 @@ export default {
       'font-size': [TOKEN],
       'border-radius': [TOKEN],
       'box-shadow': [SHADOW],
+    },
+    'declaration-property-value-disallowed-list': {
+      '/^(margin|padding|gap|row-gap|column-gap)/': [SPACING_PX],
     },
   },
   overrides: [

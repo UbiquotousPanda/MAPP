@@ -6,7 +6,7 @@
   border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
-  scroll-margin-top: 80px;
+  scroll-margin-top: calc(var(--topbar) + var(--space-6));
 }
 
 .header {

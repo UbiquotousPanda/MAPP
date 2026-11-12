@@ -46,7 +46,7 @@ function binRow(page: Page, name: string): Locator {
 function gone(page: Page): Locator {
   return page
     .getByText('Nothing matches these filters')
-    .or(page.getByText(/^Nothing in the recycle bin — /));
+    .or(page.getByText('Nothing in the recycle bin', { exact: true }));
 }
 
 async function searchBin(page: Page, text: string): Promise<void> {

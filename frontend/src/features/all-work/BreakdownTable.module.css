@@ -22,7 +22,7 @@
 }
 
 .child th {
-  padding-left: calc(var(--space-6) + 32px);
+  padding-left: calc(var(--space-6) + var(--space-8));
 }
 
 .over {

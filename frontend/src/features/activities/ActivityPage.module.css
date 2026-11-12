@@ -8,7 +8,7 @@
 
 /* Links to #line-items and #approval land below the sticky top bar. */
 .anchor {
-  scroll-margin-top: 80px;
+  scroll-margin-top: calc(var(--topbar) + var(--space-6));
 }
 
 /* Cards in a row share their row tracks, so labels, values and details line up. */

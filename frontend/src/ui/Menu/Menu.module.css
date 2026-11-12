@@ -45,7 +45,7 @@
 .hint {
   flex-basis: 100%;
   max-width: 260px;
-  margin-top: -6px;
+  margin-top: calc(-1 * var(--space-1));
   color: var(--ink-2);
   font-size: var(--text-xs);
   line-height: var(--leading-xs);
