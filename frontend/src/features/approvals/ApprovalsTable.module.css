@@ -77,8 +77,8 @@
   line-height: var(--leading-xs);
 }
 
-/* The ID and its warning chips share one line, so a flagged row is no taller than the others. */
-.meta {
+/* A flag's dot, the name and the ID share one line, so a flagged row is no taller than the others. */
+.nameLine {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

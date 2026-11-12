@@ -29,7 +29,7 @@ test.describe('with the seeded overdue round', () => {
     await signInAs(page, ALEX);
     const monitoring = await openMonitoring(page);
     const overdue = monitoring.getByRole('region', { name: 'Overdue' });
-    const row = overdue.getByRole('row', { name: new RegExp(`^${TRADE_ADS} A-1004 `) });
+    const row = overdue.getByRole('row', { name: new RegExp(`${TRADE_ADS} A-1004 `) });
     await expect(row).toContainText('Lubricants EU approval');
     await expect(row).toContainText(/waiting \d+ days/);
     await expect(

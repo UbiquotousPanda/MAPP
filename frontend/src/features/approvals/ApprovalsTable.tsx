@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import { StatusDot } from '@/ui/StatusDot/StatusDot';
 import { SubjectStatusChip } from '@/ui/SubjectStatusChip/SubjectStatusChip';
 import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
@@ -87,15 +88,16 @@ interface RowProps {
 
 function Row({ row, decided, onOpen }: RowProps) {
   const format = useFormatters();
-  const chips = rowChips(row);
+  const flags = rowFlags(row);
 
   return (
     <tr>
       <th scope="row">
-        <OpenButton row={row} onOpen={onOpen} />
-        <span className={styles.meta}>
+        <span className={styles.nameLine}>
+          {flags.problems && <StatusDot tone="problem" label={flags.problems} />}
+          {flags.escalated && <StatusDot tone="review" label={flags.escalated} />}
+          <OpenButton row={row} onOpen={onOpen} />
           <span className={styles.id}>{row.subject.id}</span>
-          {chips}
         </span>
         <DelegateNote row={row} />
       </th>
@@ -228,22 +230,30 @@ function SubmittedCell({ row, format }: { row: ApprovalRow; format: Formatters }
   );
 }
 
-function rowChips(row: ApprovalRow): ReactNode {
+function rowFlags(row: ApprovalRow): { problems: string | null; escalated: string | null } {
   const open = row.round.outcome === 'open';
   const problems = [
     open && row.noApprover && 'No approver',
     open && row.overdue && 'Overdue',
     row.startDatePassed && 'Start date passed',
   ].filter((word): word is string => Boolean(word));
+  return {
+    problems: problems.length > 0 ? problems.join(' · ') : null,
+    escalated: open && row.escalatedTo ? `Escalated to ${row.escalatedTo.name}` : null,
+  };
+}
+
+function rowChips(row: ApprovalRow): ReactNode {
+  const { problems, escalated } = rowFlags(row);
   const chips = [
-    problems.length > 0 && (
+    problems && (
       <StatusChip key="problem" tone="problem">
-        {problems.join(' · ')}
+        {problems}
       </StatusChip>
     ),
-    open && row.escalatedTo && (
+    escalated && (
       <StatusChip key="escalated" tone="review">
-        {`Escalated to ${row.escalatedTo.name}`}
+        {escalated}
       </StatusChip>
     ),
   ].filter(Boolean);
