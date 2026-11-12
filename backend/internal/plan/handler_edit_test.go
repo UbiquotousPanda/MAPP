@@ -46,8 +46,7 @@ func TestUpdatePlan_200_409_404_FR018_FR023(t *testing.T) {
 		`{"field":"version","message":"Reload the page and try again."}`))
 }
 
-// Removing Lubricants from FY2027 Global Brand hides the Lubricants attributes of its activities, listed before
-// saving.
+// Removing Lubricants from FY2027 Global Brand hides its activities' Lubricants attributes, listed before saving.
 func TestChangeEffects_FR019_FR020(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)

@@ -46,7 +46,6 @@ func TestPublish_NotReadyThenPublished_FR024(t *testing.T) {
 	})
 }
 
-// Unpublishing returns the plan to Draft; a missing reason is a field error.
 func TestUnpublish_FR025(t *testing.T) {
 	t.Parallel()
 	priya := apitest.New(t).SignIn(t, priyasEmail)

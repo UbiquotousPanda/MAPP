@@ -86,7 +86,6 @@ export function itemAt<T>(items: readonly T[], index: number): T {
   return item;
 }
 
-/** Opens a ui/Select and picks the option with this name. */
 export async function choose(
   page: Page,
   combobox: Locator,
