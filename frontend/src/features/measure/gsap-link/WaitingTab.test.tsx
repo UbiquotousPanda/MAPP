@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
+import { closestTo } from '@/testing/dom';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
 import { waitingReport } from './gsap-link-fixture';
@@ -45,6 +46,22 @@ describe('WaitingTab (044 US2, FR-004, FR-008 – FR-010, FR-016)', () => {
     const topUp = screen.getByRole('row', { name: /Top-up for Booth/ });
     expect(within(topUp).getByText('—', { selector: 'td' })).toBeInTheDocument();
     expect(screen.getByText('Covers 1 of 2 plans')).toBeInTheDocument();
+  });
+
+  it("ends with the tab's Total row: the API's amount over every page (039 FR-035)", () => {
+    const report = waitingReport();
+    if (!report.waiting) {
+      throw new Error('The fixture has no Waiting for GSAP tab.');
+    }
+    renderTab(
+      waitingReport({
+        waiting: { ...report.waiting, amount: { amount: '99000.00', currency: 'EUR' } },
+      }),
+    );
+
+    const total = closestTo(screen.getByRole('rowheader', { name: 'Total' }), 'tr');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect(within(total).getByText('€99,000.00')).toBeInTheDocument();
   });
 
   it('shows the three cards (FR-010)', () => {

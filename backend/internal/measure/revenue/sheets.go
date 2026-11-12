@@ -115,6 +115,9 @@ func revenueRankedSheet(r RevenueRanked) sheet.Sheet {
 			}
 		}
 	}
+	if r.Total > 0 {
+		rows = append(rows, totalRow(revenueEntryRow("", RevenueEntry{Figures: r.Totals}, "")))
+	}
 	return sheet.Sheet{Name: sheetRanked, Rows: rows}
 }
 
@@ -123,6 +126,12 @@ func revenueEntryRow(group string, e RevenueEntry, indent string) []sheet.Cell {
 	return []sheet.Cell{sheet.Text(group), sheet.Text(levelWords()[e.Level]), sheet.Text(indent + e.Name),
 		moneyCell(f.Goal), moneyCell(f.Actual), moneyCell(f.Projected), numberCell(f.Performance),
 		moneyCell(f.AttributedRevenue), moneyCell(f.ActualCost), numberCell(f.ROI), ownerCell(e.Owner), modelCell(f.Projection)}
+}
+
+// totalRow is the list's Total line: the word in the first column, no owner.
+func totalRow(cells []sheet.Cell) []sheet.Cell {
+	cells[0], cells[len(cells)-2] = sheet.Bold("Total"), sheet.Text("")
+	return cells
 }
 
 func boldRow(labels ...string) []sheet.Cell {
@@ -211,6 +220,9 @@ func funnelRankedSheet(r FunnelRanked) sheet.Sheet {
 				rows = append(rows, funnelEntryRow(g.Label, child, "  "))
 			}
 		}
+	}
+	if r.Total > 0 {
+		rows = append(rows, totalRow(funnelEntryRow("", FunnelEntry{Figures: r.Totals}, "")))
 	}
 	return sheet.Sheet{Name: sheetRanked, Rows: rows}
 }

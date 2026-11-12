@@ -30,6 +30,7 @@ export interface RankedEntryData<F> {
 
 export interface RankedData<F> {
   total: number;
+  totals: F;
   trail: { id: string; level: string; name: string }[];
   groups: { key: string; label: string; totals: F; entries: RankedEntryData<F>[] }[];
   drillLost: boolean;

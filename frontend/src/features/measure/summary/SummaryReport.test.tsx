@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
-import { nth } from '@/testing/dom';
+import { closestTo, nth } from '@/testing/dom';
 import { reportFrame } from '@/testing/fixtures/reports';
 import { summaryLeague, summaryReport } from '@/testing/fixtures/summary';
 import { testUser } from '@/testing/fixtures/users';
@@ -193,5 +193,13 @@ describe('SummaryReport (048 US1, US2)', () => {
     expect(
       await screen.findByText(/Attribution: Equally distributed, on actual cost\./),
     ).toBeInTheDocument();
+  });
+
+  it("ends a league table's Table view with the API's total in its Total row (039 FR-035)", async () => {
+    renderPage(undefined, '/reports/summary?year=2026&table=leagueRevenue');
+
+    const total = closestTo(await screen.findByRole('rowheader', { name: 'Total' }), 'tr');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect(total.textContent).toBe('Total$1,200.00');
   });
 });

@@ -307,6 +307,8 @@ the export, the report supplies the rows.
   can't see financial data". *(D-368; client 019 FR-020)*
 - **FR-019**: Each tab's export, and each sheet of the report's export, MUST hold every row in the current sort
   with the screen's columns, hidden amounts and totals. *(client 019 FR-014; 039 FR-022)*
+- **FR-020**: The Waiting for GSAP and Purchase orders tables MUST end with a **Total** row (039 FR-035): the
+  Amount waiting card's amount, and the PO amount, invoiced and paid over every row; their exports end with it.
 
 ### Key Entities
 

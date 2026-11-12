@@ -1,4 +1,5 @@
 import styles from './ReportWidget.module.css';
+import totals from './TotalRow.module.css';
 
 export interface ReportTableColumn {
   label: string;
@@ -52,15 +53,19 @@ export function ReportTable({ title, data }: { title: string; data: ReportTableD
         </tbody>
         {data.total && (
           <tfoot>
-            <tr className={styles.total}>
-              {data.total.map((cell, i) => (
-                <td
-                  key={data.columns[i]?.label ?? i}
-                  className={data.columns[i]?.numeric ? styles.numeric : undefined}
-                >
-                  {cell}
-                </td>
-              ))}
+            <tr className={totals.total}>
+              {data.total.map((cell, i) => {
+                const Cell = i === 0 ? 'th' : 'td';
+                return (
+                  <Cell
+                    key={data.columns[i]?.label ?? i}
+                    scope={i === 0 ? 'row' : undefined}
+                    className={data.columns[i]?.numeric ? styles.numeric : undefined}
+                  >
+                    {cell}
+                  </Cell>
+                );
+              })}
             </tr>
           </tfoot>
         )}

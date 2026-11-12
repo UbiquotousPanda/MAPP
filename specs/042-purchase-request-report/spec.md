@@ -313,6 +313,9 @@ These scenarios cover each state a widget or the grid can render; each has its o
   per-person card choice, accrual filters or the OA vendor, outline agreement and contract holder attribute
   groups that only the China pack uses; SP&A One does not hold the data or has no such attribute (Q-030, 033,
   constitution 4.8.0).
+- **FR-029**: The grid MUST end with a **Total** row (039 FR-035): purchase requests, lines, committed and invoiced
+  over every vendor the filters and search keep, on every page, added up as each vendor row is; "—" where no plan's
+  financial data may be seen. The grid's export lists lines of every status, so it has no Total line.
 
 ### Key Entities *(include if feature involves data)*
 

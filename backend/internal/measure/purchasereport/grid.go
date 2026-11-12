@@ -26,7 +26,33 @@ func (d data) grid(rs, all []Request, q Query) Grid {
 	for _, g := range groups[from:to] {
 		grid.Vendors = append(grid.Vendors, d.vendorNode(g))
 	}
+	var kept []reqView
+	for _, g := range groups {
+		kept = append(kept, g.requests...)
+	}
+	grid.Totals = d.totalsOf(kept)
 	return grid
+}
+
+func (d data) totalsOf(requests []reqView) GridTotals {
+	var committed, invoiced tally
+	totals := GridTotals{PurchaseRequests: len(requests)}
+	for _, rv := range requests {
+		if !d.sees(rv.r.PlanID) {
+			committed.hidden, invoiced.hidden = true, true
+		}
+		totals.Lines += len(rv.r.Lines)
+		for _, l := range rv.r.Lines {
+			if isCommitted(rv.r.Status) {
+				committed.add(l.Amount, d.sees(rv.r.PlanID))
+			}
+			if l.Invoiced != nil {
+				invoiced.add(*l.Invoiced, d.sees(rv.r.PlanID))
+			}
+		}
+	}
+	totals.Committed, totals.Invoiced = committed.money(d.shown), invoiced.money(d.shown)
+	return totals
 }
 
 func (d data) choices(all []Request) GridChoices {
@@ -48,25 +74,12 @@ func (d data) choices(all []Request) GridChoices {
 }
 
 func (d data) vendorNode(g vendorGroup) VendorNode {
-	var committed, invoiced tally
-	node := VendorNode{Vendor: g.vendor, Label: vendorLabel(g.vendor), PurchaseRequests: len(g.requests),
-		Requests: make([]RequestNode, 0, len(g.requests))}
+	t := d.totalsOf(g.requests)
+	node := VendorNode{Vendor: g.vendor, Label: vendorLabel(g.vendor), PurchaseRequests: t.PurchaseRequests, Lines: t.Lines,
+		Committed: t.Committed, Invoiced: t.Invoiced, Requests: make([]RequestNode, 0, len(g.requests))}
 	for _, rv := range g.requests {
-		if !d.sees(rv.r.PlanID) {
-			committed.hidden, invoiced.hidden = true, true
-		}
-		node.Lines += len(rv.r.Lines)
-		for _, l := range rv.r.Lines {
-			if isCommitted(rv.r.Status) {
-				committed.add(l.Amount, d.sees(rv.r.PlanID))
-			}
-			if l.Invoiced != nil {
-				invoiced.add(*l.Invoiced, d.sees(rv.r.PlanID))
-			}
-		}
 		node.Requests = append(node.Requests, d.requestNode(rv))
 	}
-	node.Committed, node.Invoiced = committed.money(d.shown), invoiced.money(d.shown)
 	return node
 }
 

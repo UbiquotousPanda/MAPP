@@ -54,7 +54,8 @@ func cellsEqual() cmp.Option {
 
 func TestSheets_EveryRow_FR019(t *testing.T) {
 	t.Parallel()
-	sheets := sheetsOf(t, fullWorld(t), nil)
+	w := fullWorld(t)
+	sheets := sheetsOf(t, w, nil)
 
 	keys := []string{}
 	for _, s := range sheets {
@@ -65,7 +66,7 @@ func TestSheets_EveryRow_FR019(t *testing.T) {
 	}
 	want := map[string][]sheet.Cell{
 		"swbs":    texts("L-3", "L-1", "L-2"),
-		"waiting": texts("PR-1001", "PR-1002"),
+		"waiting": append(texts("PR-1001", "PR-1002"), sheet.Bold("Total")),
 		"orders":  append(texts("L-1", "L-2"), sheet.Bold("Total")),
 	}
 	for _, s := range sheets {
@@ -77,6 +78,10 @@ func TestSheets_EveryRow_FR019(t *testing.T) {
 	}
 	if amount := sheets[2].Sheet.Rows[2][11]; amount != (sheet.Cell{}) {
 		t.Errorf("the hidden amount of PR-1002 = %+v, want an empty cell", amount)
+	}
+	waiting := w.report(Table{Tab: TabWaiting, PageSize: MaxPageSize}).Waiting
+	if total := sheets[2].Sheet.Rows[3][11]; total != sheet.Money(waiting.Amount.Amount) || total != sheets[2].Sheet.Rows[1][11] {
+		t.Errorf("waiting Total = %+v, want the tab's amount %v: PR-1001's alone, PR-1002's hidden", total, waiting.Amount)
 	}
 }
 

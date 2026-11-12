@@ -159,10 +159,6 @@
   text-align: right;
 }
 
-.total td {
-  font-weight: var(--weight-bold);
-}
-
 .empty {
   margin: 0;
   padding: var(--space-6) 0;

@@ -84,6 +84,7 @@ export function planBudgetRanked(overrides: Partial<Ranked> = {}): Ranked {
     page: 1,
     size: 10,
     total: 2,
+    totals: figures('500', null),
     trail: [],
     groups: [
       {

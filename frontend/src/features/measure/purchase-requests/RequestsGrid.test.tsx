@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
+import { closestTo } from '@/testing/dom';
 import { purchaseRequestsGrid } from '@/testing/fixtures/purchase-requests-report';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
@@ -134,16 +135,42 @@ describe('RequestsGrid (042 US2)', () => {
     expect(onParams).toHaveBeenCalledWith({ pageSize: 10 });
   });
 
-  it('lists the page in the table view', () => {
+  it('lists the page in the table view, then the Total row', () => {
     renderGrid({}, '/reports/purchase-requests?table=grid');
 
-    expect(screen.getAllByRole('row').length).toBe(5);
+    const rows = screen.getAllByRole('row');
+    expect(rows.length).toBe(6);
+    expect(rows.at(-1)?.textContent).toMatch(/^Total · 1 requests, 2 lines/);
+  });
+
+  it("ends with the API's Total row over every page, named in the first column (042 FR-029, 039 FR-035)", () => {
+    const totals = {
+      purchaseRequests: 41,
+      lines: 77,
+      committed: { amount: '98765.00', currency: 'USD' },
+      invoiced: null,
+    };
+    renderGrid({
+      grid: { ...purchaseRequestsGrid(), total: 60, page: 2, totals },
+      params: { ...DEFAULT_PARAMS, columns: ['status', 'name', 'amount', 'invoiced'] },
+    });
+
+    const total = closestTo(screen.getByRole('rowheader', { name: 'Total' }), 'tr');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect([...total.querySelectorAll('td, th')].map((c) => c.textContent)).toEqual([
+      '',
+      'Total',
+      '41 requests, 77 lines',
+      '$98,765.00',
+      '—',
+    ]);
   });
 
   it('says there are no purchase requests yet when nothing is filtered', () => {
     renderGrid({ grid: { ...purchaseRequestsGrid(), vendors: [], total: 0 } });
 
     expect(screen.getByText(/No purchase requests yet/)).toBeInTheDocument();
+    expect(screen.queryByRole('rowheader', { name: /^Total/ })).not.toBeInTheDocument();
   });
 
   it('offers Reset filters when the filters exclude everything', async () => {

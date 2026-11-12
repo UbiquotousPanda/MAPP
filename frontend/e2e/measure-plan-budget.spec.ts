@@ -60,3 +60,20 @@ test('040 US2: the ranked list opens on campaigns and drills to line items with 
   await trail.getByRole('button', { name: 'Back' }).click();
   await expect(trail.getByText(initiative)).toHaveAttribute('aria-current', 'location');
 });
+
+test('039 FR-035: the ranked list ends with a Total row that stays put and keeps its figures when sorted', async ({
+  page,
+}) => {
+  await signInAs(page, PRIYA);
+  await page.goto(REPORT);
+  const list = page.getByRole('table').last();
+  const total = list.locator('tfoot tr');
+  await expect(total.getByRole('rowheader', { name: 'Total' })).toBeVisible();
+  const before = (await total.textContent()) ?? '';
+  expect(before).toMatch(/\d\.\d{2}/);
+
+  await list.getByRole('button', { name: 'Budget', exact: true }).click();
+  await expect(page).toHaveURL(/sort=budget/);
+  await expect(list.locator('tfoot tr')).toHaveText(before);
+  await expect(list.locator('tr').last()).toHaveText(before);
+});

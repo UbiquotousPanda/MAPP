@@ -184,6 +184,9 @@ with 039's In view and About this export sheets.
   as grouped, sorted and drilled) besides 039's sheets; each widget MUST export on its own as CSV and Excel.
 - **FR-017**: The ranked list MUST be built as a part 049 reuses with its own figures (revenue, stages).
 - **FR-018**: The report is read-only; it MUST store nothing but the person's saved views (039).
+- **FR-019**: The ranked list MUST end with a **Total** row (039 FR-035): the figures of every entry in view at the
+  chosen level, on every page and in every group, each entry counted once; left to plan and unspent budget are those
+  of the totals. Its export ends with the same line.
 
 ### Key Entities
 

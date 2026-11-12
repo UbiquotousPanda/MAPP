@@ -6,6 +6,7 @@ import { cx } from '@/ui/cx';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import type { RankedColumn, RankedData, RankedEntryData } from './RankedList';
 import styles from './RankedList.module.css';
+import totalStyles from './TotalRow.module.css';
 
 const DRILLS_TO = new Set(['plan', 'campaign', 'initiative', 'activity']);
 
@@ -91,6 +92,19 @@ export function RankedTable<F>(props: TableProps<F>) {
             ))}
           </tbody>
         ))}
+        <tfoot>
+          <tr className={totalStyles.total}>
+            <th scope="row" className={styles.sticky}>
+              Total
+            </th>
+            {owner && <td />}
+            {columns.map((c) => (
+              <td key={c.key} className={styles.numeric}>
+                {c.value(data.totals)}
+              </td>
+            ))}
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

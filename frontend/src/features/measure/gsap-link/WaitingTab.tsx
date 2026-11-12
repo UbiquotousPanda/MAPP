@@ -74,6 +74,8 @@ export function WaitingTab({ tab, finance, total, table, onChange }: WaitingTabP
       ),
     },
   ];
+  const amountWaiting = tab.amount ? money(tab.amount) : '—';
+  const totals: Record<string, string> = { purchaseRequest: 'Total', amount: amountWaiting };
   return (
     <div className={styles.body}>
       <StatStrip label="Summary">
@@ -84,7 +86,7 @@ export function WaitingTab({ tab, finance, total, table, onChange }: WaitingTabP
         />
         <SummaryCard
           label="Amount waiting"
-          value={tab.amount ? money(tab.amount) : '—'}
+          value={amountWaiting}
           tip="The purchase requests' amounts, in plans where you may see financial data."
           detail={coverageText(finance)}
         />
@@ -110,6 +112,7 @@ export function WaitingTab({ tab, finance, total, table, onChange }: WaitingTabP
         table={table}
         total={total}
         empty="No purchase request is waiting for GSAP."
+        totals={columns.map((c) => totals[c.key] ?? '')}
         onChange={onChange}
       />
     </div>

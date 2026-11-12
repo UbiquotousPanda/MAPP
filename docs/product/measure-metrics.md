@@ -32,6 +32,7 @@ figure that cannot be worked out shows "—" with the reason, never 0.
 | **Waiting for GSAP** | Approved purchase requests routed to GSAP that GSAP has not answered: no purchase order, or a line whose amount or currency differs from its PO line, as the Purchase requests page's view, flagged Over 2 working days (Monday to Friday) after routing (032 FR-032, D-386) | 032, 033 | 044 |
 | **Purchase orders per line item** | The PO ledger: line item, purchase request, GSAP PR number, PO number and date, PO amount, invoiced, paid | 033, 015 | 044 |
 | **Last sign-in** | The time of the person's latest successful demo sign-in, in UTC | 045 (new) | 045 |
+| **Table total** | A report table's figures over every row the filters, search and drill keep, on every page, each record once however many groups it falls in (a % split adds to the whole); ratios (performance, ROI, conversion, left to plan) worked out from the totals; converted once, so it equals the matching card and may differ by a cent from its converted rows (D-061) | 039 FR-035 (new), D-414 | 040, 042, 044, 048, 049 |
 
 ## 2. Goals, performance and projections (wave B)
 

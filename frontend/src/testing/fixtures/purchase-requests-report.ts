@@ -115,6 +115,7 @@ export function purchaseRequestsGrid(): Report['grid'] {
       },
     ],
     total: 1,
+    totals: { purchaseRequests: 1, lines: 2, committed: usd('1500.00'), invoiced: usd('400.00') },
     page: 1,
     pageSize: 25,
     columns: [
@@ -159,7 +160,12 @@ export function noPurchaseRequestsReport(): Report {
     },
     byVendor: empty,
     byOwner: empty,
-    grid: { ...base.grid, vendors: [], total: 0 },
+    grid: {
+      ...base.grid,
+      vendors: [],
+      total: 0,
+      totals: { purchaseRequests: 0, lines: 0, committed: usd('0.00'), invoiced: usd('0.00') },
+    },
     financeCovers: { plans: 0, of: 0 },
   });
 }

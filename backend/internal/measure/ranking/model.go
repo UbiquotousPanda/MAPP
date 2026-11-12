@@ -35,6 +35,7 @@ type List[F any] struct {
 	Page      int         `json:"page"`
 	Size      int         `json:"size"`
 	Total     int         `json:"total"`
+	Totals    F           `json:"totals"`
 	Trail     []TrailStep `json:"trail"`
 	Groups    []Group[F]  `json:"groups"`
 	DrillLost bool        `json:"drillLost"`

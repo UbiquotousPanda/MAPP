@@ -297,6 +297,10 @@ is one report, in the **report frame** (039):
   there is more); a parent's name drills in (chevron), the ↗ icon opens the record; an empty figure is "—" with
   its reason as a tooltip, and a reason true of every row is said once above the table; performance is the % with
   a status chip (Above plan · On plan · Below plan); the shared **Pager** below.
+- **Total row** (D-414): every report table whose figures add up — ranked lists, widget table views, the Purchase
+  requests grid, the GSAP link tables — ends with a `<tfoot>` row headed "Total" (a row header) in the §5.4 totals
+  style (`shared/TotalRow.module.css`: 700 weight, `--gray-bg`, 2 px `--ink` top border, Text Strong on the grey).
+  Its figures come from the API over every page; it never moves with the sort and is absent when there are no rows.
 - Empty states say why — "No plans you may see for 2027", "Your filters exclude everything" with **Reset
   filters**, "No purchase requests in 2026" with where to look instead. Financial figures the person may not see
   show "—" and the count of plans the figure covers. Reports are read-only for everyone.

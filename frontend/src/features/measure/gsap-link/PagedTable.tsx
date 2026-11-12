@@ -8,6 +8,7 @@ import { Pager as SharedPager } from '@/ui/Pager/Pager';
 import { downloadReport, ExportMenu, useReportAddress } from '../shared';
 import { PAGE_SIZES } from './gsap-address';
 import type { GsapTable } from './gsap-address';
+import totalStyles from '../shared/TotalRow.module.css';
 import styles from './GsapLink.module.css';
 
 export interface PagedColumn<R> {
@@ -98,15 +99,19 @@ function Rows<R>(props: PagedTableProps<R>) {
           </tbody>
           {totals && (
             <tfoot>
-              <tr>
-                {totals.map((cell, i) => (
-                  <td
-                    key={columns[i]?.key ?? i}
-                    className={cx(columns[i]?.numeric && styles.numeric)}
-                  >
-                    {cell}
-                  </td>
-                ))}
+              <tr className={totalStyles.total}>
+                {totals.map((cell, i) => {
+                  const Cell = i === 0 ? 'th' : 'td';
+                  return (
+                    <Cell
+                      key={columns[i]?.key ?? i}
+                      scope={i === 0 ? 'row' : undefined}
+                      className={cx(columns[i]?.numeric && styles.numeric)}
+                    >
+                      {cell}
+                    </Cell>
+                  );
+                })}
               </tr>
             </tfoot>
           )}

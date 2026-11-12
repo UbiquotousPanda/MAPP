@@ -5,13 +5,14 @@ import { Button } from '@/ui/Button/Button';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { RequestsGridData } from './api';
-import { lineText, NUMERIC, requestText, vendorText } from './cells';
+import { lineText, NUMERIC, requestText, totalCells, vendorText } from './cells';
 import type { Format } from './cells';
 import { GridPager } from './GridPager';
 import { GridRows } from './GridRows';
 import { GridToolbar } from './GridToolbar';
 import type { ColumnKey, RequestsParams, SortKey } from './schemas';
 import { COLUMN_WORDS, SORTABLE } from './words';
+import totalStyles from '../shared/TotalRow.module.css';
 import styles from './PurchaseRequests.module.css';
 
 const TIP =
@@ -99,7 +100,39 @@ function tableOf(grid: RequestsGridData, columns: ColumnKey[], f: Format): Repor
   return {
     columns: columns.map((c) => ({ label: COLUMN_WORDS[c], numeric: NUMERIC.includes(c) })),
     rows,
+    total: totalCells(grid.totals, columns, f),
   };
+}
+
+function TotalRow({
+  grid,
+  columns,
+  f,
+}: {
+  grid: RequestsGridData;
+  columns: ColumnKey[];
+  f: Format;
+}) {
+  return (
+    <tfoot>
+      <tr className={totalStyles.total}>
+        <td />
+        {totalCells(grid.totals, columns, f).map((cell, i) => {
+          const column = columns[i] ?? 'name';
+          const numeric = NUMERIC.includes(column) ? styles.numeric : undefined;
+          return i === 0 ? (
+            <th key={column} scope="row" className={numeric}>
+              {cell}
+            </th>
+          ) : (
+            <td key={column} className={numeric}>
+              {cell}
+            </td>
+          );
+        })}
+      </tr>
+    </tfoot>
+  );
 }
 
 function Empty({ filtered, onReset }: { filtered: boolean; onReset: () => void }) {
@@ -183,6 +216,7 @@ export function RequestsGrid({
                       />
                     ))}
                   </tbody>
+                  <TotalRow grid={grid} columns={params.columns} f={{ money, date }} />
                 </table>
               </div>
             )}

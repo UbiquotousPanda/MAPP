@@ -87,6 +87,7 @@ export function revenueRanked(overrides: Partial<RevenueRanked> = {}): RevenueRa
     page: 1,
     size: 10,
     total: 1,
+    totals: revenueFigures('2730000.00', '300000.00'),
     trail: [],
     groups: [
       {
@@ -181,6 +182,7 @@ export function funnelRanked(overrides: Partial<FunnelRanked> = {}): FunnelRanke
     page: 1,
     size: 10,
     total: 1,
+    totals: funnelFigures(365000, 180000),
     trail: [],
     groups: [
       {

@@ -12772,6 +12772,8 @@ export interface components {
             page: number;
             size: number;
             total: number;
+            /** @description Every entry in view on every page, each counted once however many groups it falls in, for the list's Total row (039 FR-035). */
+            totals: components["schemas"]["PlanBudgetFigures"];
             trail: {
                 id: string;
                 level: string;
@@ -12890,6 +12892,8 @@ export interface components {
             page: number;
             size: number;
             total: number;
+            /** @description Every entry in view on every page, each counted once, for the list's Total row (039 FR-035). */
+            totals: components["schemas"]["RevenueFigures"];
             trail: {
                 id: string;
                 level: string;
@@ -13077,6 +13081,8 @@ export interface components {
             page: number;
             size: number;
             total: number;
+            /** @description Every entry in view on every page, each counted once, for the list's Total row (039 FR-035). */
+            totals: components["schemas"]["FunnelFigures"];
             trail: {
                 id: string;
                 level: string;
@@ -13158,6 +13164,13 @@ export interface components {
         PrReportGrid: {
             vendors: components["schemas"]["PrReportVendor"][];
             total: number;
+            /** @description Every vendor the grid holds on every page, added up as each vendor row is, for the grid's Total row (042 FR-029). */
+            totals: {
+                purchaseRequests: number;
+                lines: number;
+                committed: components["schemas"]["PrReportMoney"];
+                invoiced: components["schemas"]["PrReportMoney"];
+            };
             page: number;
             pageSize: number;
             columns: string[];

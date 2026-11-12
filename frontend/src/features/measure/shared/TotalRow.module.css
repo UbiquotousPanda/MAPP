@@ -1,0 +1,11 @@
+/* Every report table's Total row (design system §5.4); on the grey fill secondary text and links are Text Strong. */
+tr.total > th,
+tr.total > td {
+  --ink-2: var(--ink);
+  --link: var(--ink);
+  border-top: 2px solid var(--ink);
+  border-bottom: 0;
+  background: var(--gray-bg);
+  color: var(--ink);
+  font-weight: var(--weight-bold);
+}

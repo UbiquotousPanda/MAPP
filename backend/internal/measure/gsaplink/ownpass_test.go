@@ -124,7 +124,10 @@ func waitingRows(r gsaplink.Report) [][]string {
 				"modification": "Modification"}[x.Routing], x.GsapPrNumber, amount, strconv.Itoa(x.WaitingWorkingDays),
 			yes(x.OverTurnaround)})
 	}
-	return rows
+	if r.Waiting.Amount == nil {
+		return append(rows, []string{"Total"})
+	}
+	return append(rows, []string{"Total", "", "", "", "", "", "", "", "", "", "", r.Waiting.Amount.Amount.String()})
 }
 
 func orderRows(r gsaplink.Report) [][]string {

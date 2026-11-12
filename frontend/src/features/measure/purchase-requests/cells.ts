@@ -1,4 +1,4 @@
-import type { LineData, RequestData, VendorData } from './api';
+import type { LineData, RequestData, RequestsGridData, VendorData } from './api';
 import type { ColumnKey } from './schemas';
 import { NOTHING, statusWord } from './words';
 
@@ -28,6 +28,34 @@ export function vendorText(v: VendorData, column: ColumnKey, f: Format): string 
     default:
       return NOTHING;
   }
+}
+
+function totalText(t: RequestsGridData['totals'], column: ColumnKey, f: Format): string {
+  switch (column) {
+    case 'name':
+      return `${t.purchaseRequests} requests, ${t.lines} lines`;
+    case 'amount':
+      return f.money(t.committed);
+    case 'invoiced':
+      return f.money(t.invoiced);
+    default:
+      return '';
+  }
+}
+
+/** The grid's Total row over every vendor on every page, as the API adds it up; the first column names it. */
+export function totalCells(
+  t: RequestsGridData['totals'],
+  columns: ColumnKey[],
+  f: Format,
+): string[] {
+  return columns.map((c, i) => {
+    const text = totalText(t, c, f);
+    if (i > 0 || NUMERIC.includes(c)) {
+      return text;
+    }
+    return text ? `Total · ${text}` : 'Total';
+  });
 }
 
 export function requestText(r: RequestData, column: ColumnKey, f: Format): string {

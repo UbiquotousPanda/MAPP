@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { useSearchParams } from 'react-router';
 import type { components } from '@/api/generated/schema';
 import { expectNoAxeViolations } from '@/testing/axe';
+import { htmlElement } from '@/testing/dom';
 import { planBudgetRanked } from '@/testing/fixtures/plan-budget';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
@@ -202,5 +203,25 @@ describe('RankedList (040 US2, US3)', () => {
     renderList();
 
     expect(screen.getAllByText('Figures in US dollars')).toHaveLength(1);
+  });
+
+  it("ends with the API's Total row over every page, not the page's sum (039 FR-035)", () => {
+    const totals = {
+      ...planBudgetRanked().totals,
+      planned: { amount: '12345.00', currency: 'USD' },
+    };
+    renderList(planBudgetRanked({ total: 30, totals }));
+
+    const rows = screen.getAllByRole('row');
+    const total = htmlElement(rows.at(-1), 'the last row');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect(within(total).getByRole('rowheader', { name: 'Total' })).toBeInTheDocument();
+    expect(total.textContent).toContain('12345.00');
+  });
+
+  it('shows no Total row when nothing ranks on the page (039 FR-035)', () => {
+    renderList(planBudgetRanked({ total: 0, groups: [] }));
+    expect(screen.getByText('Nothing to rank on this page.')).toBeInTheDocument();
+    expect(screen.queryByRole('rowheader', { name: 'Total' })).not.toBeInTheDocument();
   });
 });

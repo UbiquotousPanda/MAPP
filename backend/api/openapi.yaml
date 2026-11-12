@@ -28515,7 +28515,7 @@ components:
     PlanBudgetRanked:
       type: object
       additionalProperties: false
-      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      required: [level, sort, order, group, page, size, total, totals, trail, groups, drillLost]
       properties:
         level:
           type: string
@@ -28534,6 +28534,11 @@ components:
           type: integer
         total:
           type: integer
+        totals:
+          description: >-
+            Every entry in view on every page, each counted once however many groups it falls in, for the list's Total
+            row (039 FR-035).
+          $ref: "#/components/schemas/PlanBudgetFigures"
         trail:
           type: array
           items:
@@ -28699,7 +28704,7 @@ components:
     RevenueRanked:
       type: object
       additionalProperties: false
-      required: [level, sort, order, group, page, size, total, trail, groups, drillLost, attribution]
+      required: [level, sort, order, group, page, size, total, totals, trail, groups, drillLost, attribution]
       properties:
         attribution: { $ref: "#/components/schemas/AttributionStamp" }
         level: { type: string, enum: [plan, campaign, initiative, activity] }
@@ -28709,6 +28714,9 @@ components:
         page: { type: integer }
         size: { type: integer }
         total: { type: integer }
+        totals:
+          description: Every entry in view on every page, each counted once, for the list's Total row (039 FR-035).
+          $ref: "#/components/schemas/RevenueFigures"
         trail:
           type: array
           items:
@@ -28954,7 +28962,7 @@ components:
     FunnelRanked:
       type: object
       additionalProperties: false
-      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      required: [level, sort, order, group, page, size, total, totals, trail, groups, drillLost]
       properties:
         level: { type: string, enum: [plan, campaign, initiative, activity] }
         sort: { type: string, enum: [actual, projected, goal, performance] }
@@ -28963,6 +28971,9 @@ components:
         page: { type: integer }
         size: { type: integer }
         total: { type: integer }
+        totals:
+          description: Every entry in view on every page, each counted once, for the list's Total row (039 FR-035).
+          $ref: "#/components/schemas/FunnelFigures"
         trail:
           type: array
           items:
@@ -29135,7 +29146,7 @@ components:
     PrReportGrid:
       type: object
       additionalProperties: false
-      required: [vendors, total, page, pageSize, columns, choices]
+      required: [vendors, total, totals, page, pageSize, columns, choices]
       properties:
         vendors:
           type: array
@@ -29144,6 +29155,24 @@ components:
         total:
           type: integer
           minimum: 0
+        totals:
+          description: >-
+            Every vendor the grid holds on every page, added up as each vendor row is, for the grid's Total row
+            (042 FR-029).
+          type: object
+          additionalProperties: false
+          required: [purchaseRequests, lines, committed, invoiced]
+          properties:
+            purchaseRequests:
+              type: integer
+              minimum: 0
+            lines:
+              type: integer
+              minimum: 0
+            committed:
+              $ref: "#/components/schemas/PrReportMoney"
+            invoiced:
+              $ref: "#/components/schemas/PrReportMoney"
         page:
           type: integer
           minimum: 1

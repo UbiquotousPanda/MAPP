@@ -365,6 +365,15 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   opened it; below 1024 px wide the panel collapses into **Filters (n)**.
 - **FR-034**: **Reports** MUST be its own sidebar item, directly after **Dashboards**; the 036 Executive and
   Regional dashboards stay where they are, unchanged (039-C3, answers Q-031).
+- **FR-035**: Every report table whose figures add up MUST end with a **Total** row (D-414): ranked lists, widget
+  table views, the Purchase requests grid and the GSAP link tables. The API works the total out over every row the
+  filters, search and drill keep, on every page, counting a record that sits in several groups once; a ratio column
+  (performance, ROI, conversion, share) shows the ratio of the totals, never a sum or an average of rows. The row is a
+  `<tfoot>` row headed "Total", stays last whatever the sort or page, shows "—" where the person may not see the
+  figure, is absent when the table has no row, and is written as the last line of the widget's export. Tables of
+  people, approval steps, average days, stage volumes and conversion rates have no Total row, nor have the goal,
+  actual and projected period tables, whose year figures are the summary cards and whose Projected overlaps Actual
+  in the period in progress.
 
 ### Key Entities *(include if feature involves data)*
 

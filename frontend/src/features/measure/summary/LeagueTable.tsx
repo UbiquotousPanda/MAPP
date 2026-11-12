@@ -83,10 +83,8 @@ function LeagueTable({ table, address, category, segment, covers }: LeagueTableP
       { label: data?.segment?.label ?? 'Segment' },
       { label: LEAGUE_COLUMN[table], numeric: true },
     ],
-    rows: [
-      ...(data?.rows ?? []).map((r) => ({ key: r.key, cells: [r.name, shown(r.value)] })),
-      ...(data ? [{ key: 'total', cells: ['Total', shown(data.total)] }] : []),
-    ],
+    rows: (data?.rows ?? []).map((r) => ({ key: r.key, cells: [r.name, shown(r.value)] })),
+    total: data && ['Total', shown(data.total)],
   };
   const financial = table === 'cost' || table === 'roi';
   const covered =

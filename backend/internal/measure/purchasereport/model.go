@@ -74,10 +74,19 @@ type PersonRef struct {
 type Grid struct {
 	Vendors  []VendorNode `json:"vendors"`
 	Total    int          `json:"total"`
+	Totals   GridTotals   `json:"totals"`
 	Page     int          `json:"page"`
 	PageSize int          `json:"pageSize"`
 	Columns  []string     `json:"columns"`
 	Choices  GridChoices  `json:"choices"`
+}
+
+// GridTotals add up every vendor the grid holds on every page, as each vendor row adds up its own.
+type GridTotals struct {
+	PurchaseRequests int          `json:"purchaseRequests"`
+	Lines            int          `json:"lines"`
+	Committed        *money.Money `json:"committed"`
+	Invoiced         *money.Money `json:"invoiced"`
 }
 
 type GridChoices struct {

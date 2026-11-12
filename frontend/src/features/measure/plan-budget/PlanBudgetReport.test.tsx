@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
-import { nth } from '@/testing/dom';
+import { closestTo, nth } from '@/testing/dom';
 import { planBudgetRanked, planBudgetReport } from '@/testing/fixtures/plan-budget';
 import { reportFrame } from '@/testing/fixtures/reports';
 import { testUser } from '@/testing/fixtures/users';
@@ -21,13 +21,14 @@ vi.mock('echarts/core', async (importOriginal) => ({
 function renderPage(
   report: Answer<'GET /api/v1/reports/plan-budget'> = { body: planBudgetReport() },
   route = '/reports/plan-budget?year=2026',
+  ranked: Answer<'GET /api/v1/reports/plan-budget/ranked'> = { body: planBudgetRanked() },
 ) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
     reply('GET /api/v1/reports/frame', { body: reportFrame() }),
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/reports/plan-budget', report),
-    reply('GET /api/v1/reports/plan-budget/ranked', { body: planBudgetRanked() }),
+    reply('GET /api/v1/reports/plan-budget/ranked', ranked),
     reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
   ]);
   const rendered = renderWithProviders(<PlanBudgetReport />, {
@@ -165,5 +166,15 @@ describe('PlanBudgetReport (040 US1)', () => {
 
     expect(await screen.findByRole('button', { name: 'Try again' })).toBeInTheDocument();
     expect(await screen.findByText('Helix launch')).toBeInTheDocument();
+  });
+
+  it("ends the ranked list with the API's Total row for every entry in view (039 FR-035)", async () => {
+    const ranked = planBudgetRanked();
+    const totals = { ...ranked.totals, budget: { amount: '9999.00', currency: 'USD' } };
+    renderPage(undefined, undefined, { body: { ...ranked, total: 40, totals } });
+
+    const total = closestTo(await screen.findByRole('rowheader', { name: 'Total' }), 'tr');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect(within(total).getByText('$9,999.00')).toBeInTheDocument();
   });
 });

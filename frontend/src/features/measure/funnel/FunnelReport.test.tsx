@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
-import { nth } from '@/testing/dom';
+import { closestTo, nth } from '@/testing/dom';
 import { reportFrame } from '@/testing/fixtures/reports';
 import {
   VARIANCE_CASES,
@@ -214,5 +214,15 @@ describe('FunnelReport (049 US2)', () => {
     expect(
       await within(ranked).findByRole('columnheader', { name: 'Projection model' }),
     ).toBeInTheDocument();
+  });
+
+  it("ends the ranked list with the API's Total row: summed volumes and the overall performance (039 FR-035)", async () => {
+    const ranked = funnelRanked();
+    const totals = { ...ranked.totals, goal: 777777, performance: 91 };
+    renderPage(undefined, undefined, { body: { ...ranked, total: 40, totals } });
+
+    const total = closestTo(await screen.findByRole('rowheader', { name: 'Total' }), 'tr');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect(total.textContent).toMatch(/777,777.*91%/);
   });
 });

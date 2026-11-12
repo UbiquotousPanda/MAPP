@@ -147,6 +147,11 @@
   background: var(--hover);
 }
 
+/* The sticky columns keep the shared Total row's grey. */
+.table tfoot tr > :nth-child(-n + 2) {
+  background: var(--gray-bg);
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -231,6 +236,8 @@
 .chooser {
   z-index: 50;
   min-width: 260px;
+  max-height: var(--radix-popover-content-available-height);
+  overflow-y: auto;
   padding: var(--space-3);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-control);

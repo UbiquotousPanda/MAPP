@@ -188,3 +188,40 @@ func TestParse_EveryProblemAtOnce_040_FR014(t *testing.T) {
 		t.Errorf("Parse with nothing (-want +got):\n%s %v", diff, err)
 	}
 }
+
+func TestBuild_TotalsCoverEveryPageEachEntryOnce_D414(t *testing.T) {
+	t.Parallel()
+	for name, q := range map[string]ranking.Query{"ungrouped": {}, "page 2 of 1 a page": {Size: 1, Page: 2},
+		"split by Brand": {Group: "attr:SA-1"}, "by owner": {Group: ranking.GroupOwner}} {
+		if got := build(t, q).Totals; got != (count{N: 30, Has: true}) {
+			t.Errorf("%s: totals %+v, want every entry in view once: Beta 20 + Alpha 10 + Delta 0", name, got)
+		}
+	}
+	if got := build(t, ranking.Query{Search: "alp"}).Totals.N; got != 10 {
+		t.Errorf("searched totals = %d, want only Alpha's 10", got)
+	}
+	if got := build(t, ranking.Query{Drill: "C-2"}).Totals.N; got != 20 {
+		t.Errorf("drilled totals = %d, want Beta's 20", got)
+	}
+}
+
+func TestBuild_TotalsCountAnEntryInTwoGroupsOnce_D414(t *testing.T) {
+	t.Parallel()
+	both := allwork.AttrValue{OptionIDs: []string{"SO-A", "SO-B"}}
+	campaign := allwork.Node{Level: allwork.LevelCampaign, ID: "C-1", ParentID: "P-1", PlanID: "P-1", Name: "Alpha",
+		Attrs: map[string]allwork.AttrValue{"SA-1": both}}
+	sc := measure.Scope{
+		Nodes: []allwork.Node{{Level: allwork.LevelPlan, ID: "P-1", PlanID: "P-1", Name: "Plan one"}, campaign,
+			{Level: allwork.LevelActivity, ID: "A-1", ParentID: "C-1", PlanID: "P-1", Name: "Ad"}},
+		Matched: allwork.Matched{Plans: []string{"P-1"}, Campaigns: []string{"C-1"}, Activities: []string{"A-1"}},
+		Attributes: []allwork.Attribute{{ID: "SA-1", Label: "Brand",
+			Options: []allwork.Option{{ID: "SO-A", Label: "Helix"}, {ID: "SO-B", Label: "Pennzoil"}}}},
+	}
+	x := ranking.NewIndex(sc)
+	q := ranking.Query{Sort: "n", Order: ranking.OrderDesc, Group: "attr:SA-1", Page: 1, Size: 10}
+	l := ranking.Build(x, "campaign", q, counts{x: x, leaf: map[string]int64{"A-1": 10}})
+	if len(l.Groups) != 2 || l.Groups[0].Totals.N+l.Groups[1].Totals.N != 20 || l.Totals.N != 10 {
+		t.Errorf("Alpha under Helix and Pennzoil: %d groups, totals %d; want two groups of 10 and a total of 10",
+			len(l.Groups), l.Totals.N)
+	}
+}
