@@ -91,20 +91,16 @@ line matches between the PR grid and Purchase orders.
 2. **Given** the tabs, **When** he opens Waiting for GSAP, **Then** it equals today's GSAP link Waiting tab and the
    address carries `tab=waiting`.
 
-### User Story 3 - Old links and saved views keep working (Priority: P1)
+### User Story 3 - Saved views keep working (Priority: P1)
 
-Anyone with a bookmark, a shared link or a saved view of an old report lands on the right new report, section,
-stage or tab, with the same filters.
+Anyone with a saved view of an old report finds it on the right new report, stage or tab, with the same filters.
+Old report addresses are not redirected: SP&A One is not released yet, so no one outside testing holds an old link
+(product owner, 2026-11-13); an old address shows the usual page-not-found.
 
 **Acceptance Scenarios**:
-1. **Given** a link to `/reports/revenue?year=2026&group=owner`, **When** opened, **Then** Performance opens with
-   `stage=revenue`, year 2026 and Group by Owner.
-2. **Given** `/reports/funnel?stage=mql`, `/reports/summary`, `/reports/plan-budget`, `/reports/purchase-requests`,
-   `/reports/gsap-link?tab=orders`, `/reports/plan-details`, `/reports/user-access`, **Then** each opens its new
-   home (Performance MQL, Performance, Budget and spend, Purchasing, Purchasing › Purchase orders, Plan data and
-   access › Data completeness, › People) with its filters.
-3. **Given** Priya's saved views on Revenue and Funnel stages, **When** the migration runs, **Then** both appear on
+1. **Given** Priya's saved views on Revenue and Funnel stages, **When** the migration runs, **Then** both appear on
    Performance with their stage; a name used on both gets " (Funnel stages)" added; at most one stays her default.
+2. **Given** a default view saved on Performance with MQL, **When** Performance opens, **Then** it opens on MQL.
 
 ### User Story 4 - Administration in one place (Priority: P2)
 
@@ -142,8 +138,7 @@ An administrator opens **Plan data and access** and switches between data comple
   a tab the person may not open MUST NOT show.
 - **FR-008**: Every figure MUST keep its definition (measure-metrics.md) and come from today's endpoints; no new
   figure is defined by this feature.
-- **FR-009**: Each of the nine old addresses MUST redirect (replace) to its new home with stage/tab and every
-  filter it understands carried over.
+- **FR-009**: Withdrawn (product owner, 2026-11-13): old report addresses are not redirected.
 - **FR-010**: A migration MUST move every saved view to its new report key, set its stage or tab, add the old
   report's name to a clashing view name, and keep at most one default per person and report (the most recently
   updated); no view is lost.
@@ -161,7 +156,7 @@ An administrator opens **Plan data and access** and switches between data comple
 - **SC-001**: The Reports page shows 5 reports instead of 9.
 - **SC-002**: Every widget of the nine reports has a home in the map above (no figure lost), checked by a test
   listing the old widgets.
-- **SC-003**: 9 of 9 old addresses open the right new view; 100% of saved views survive the migration.
+- **SC-003**: 100% of saved views survive the migration.
 - **SC-004**: Performance's overview equals today's Summary, and its ranked list grouped by an attribute equals
   today's league table, for the demo data.
 

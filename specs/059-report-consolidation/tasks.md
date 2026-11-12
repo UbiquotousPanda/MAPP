@@ -111,12 +111,12 @@ Shared files with one owner: routes (`measure-routes.tsx`), catalogue (`reports.
   CHECK, defaults, names with the old report's name and the 60-character cut, query rewrite, key, CHECK with five
   keys; no `-- +goose Down`. Run once on a demo database with views on all nine keys (a name clash, two defaults,
   a 60-character name) and record the before and after counts in the pull request (SC-003)
-- [x] T026 `features/measure/redirects.ts` `redirectOf` and `redirects.test.ts` (one table-driven test, eight rows,
+- [x] ~~T026~~ Withdrawn 2026-11-13 (FR-009 withdrawn; built, then removed): `features/measure/redirects.ts` `redirectOf` and `redirects.test.ts` (one table-driven test, eight rows,
   FR-009); wire into `measure-routes.tsx` with `<Navigate replace>`
 - [x] T027 Links and caches: `home/RevenueCard.tsx` (+ test) → `/reports/performance`;
   `people/CurrencyPicker.test.tsx` frame key `'performance'`; `shared/*.test.tsx` router paths to the new
   addresses where they name a report
-- [x] T028 End to end `e2e/measure-redirects.spec.ts` (US3 1–2): `/reports/revenue?year=2026&group=owner` lands on
+- [x] ~~T028~~ Withdrawn 2026-11-13 (its saved-view case moved to `measure-performance.spec.ts`): End to end `e2e/measure-redirects.spec.ts` (US3 1–2): `/reports/revenue?year=2026&group=owner` lands on
   Performance with `stage=revenue`, year 2026, Group by Owner and a known revenue figure; `/reports/gsap-link?tab=orders`
   lands on Purchasing › Purchase orders; a view saved on Performance with `stage=mql` reopens on MQL.
   `measure.spec.ts`: addresses to `/reports/budget` and `/reports/performance`

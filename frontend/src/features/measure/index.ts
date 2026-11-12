@@ -9,7 +9,6 @@ import type { ReportKey } from './reports';
 
 export { ReportsPage } from './ReportsPage';
 export { REPORT_ROUTES } from './reports';
-export { OldReportRedirect } from './OldReportRedirect';
 export type { ReportKey } from './reports';
 export { RankedList, ReportTable, ReportWidget } from './shared';
 export type { RankedColumn, RankedData } from './shared';

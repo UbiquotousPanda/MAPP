@@ -3,7 +3,7 @@ import type { ReportKey } from '@/features/measure';
 import type { Permission } from '@/session/access';
 import type { PageHandle } from '@/session/page-handle';
 import { RequirePermission } from '@/session/RequirePermission';
-import { OldReportRedirect, ReportPage, ReportsPage } from './pages';
+import { ReportPage, ReportsPage } from './pages';
 
 interface ReportRoute {
   key: ReportKey;
@@ -19,18 +19,6 @@ const REPORTS: ReportRoute[] = [
   { key: 'purchasing', path: 'purchasing', title: 'Purchasing', permission: 'reports.view' },
   { key: 'approvals', path: 'approvals', title: 'Approvals', permission: 'reports.view' },
   { key: 'planData', path: 'plan-data', title: 'Plan data and access', permission: 'reports.view' },
-];
-
-// The nine reports before feature 059 that now live in the five; their links and bookmarks keep working.
-const OLD_REPORTS = [
-  'summary',
-  'revenue',
-  'funnel',
-  'plan-budget',
-  'purchase-requests',
-  'gsap-link',
-  'plan-details',
-  'user-access',
 ];
 
 export const MEASURE_ROUTES: RouteObject[] = [
@@ -52,5 +40,4 @@ export const MEASURE_ROUTES: RouteObject[] = [
     ),
     handle: { title: report.title, wide: true } satisfies PageHandle,
   })),
-  ...OLD_REPORTS.map((path) => ({ path: `/reports/${path}`, element: <OldReportRedirect /> })),
 ];

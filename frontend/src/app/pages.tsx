@@ -54,9 +54,6 @@ export const DashboardsPage = lazy(() =>
 export const ReportsPage = lazy(() =>
   measure().then((feature) => ({ default: feature.ReportsPage })),
 );
-export const OldReportRedirect = lazy(() =>
-  measure().then((feature) => ({ default: feature.OldReportRedirect })),
-);
 export const ReportPage = lazy(() =>
   measure().then((feature) => ({
     default: ({ reportKey }: { reportKey: ReportKey }) => {

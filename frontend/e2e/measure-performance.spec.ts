@@ -6,6 +6,7 @@ import { choose, signInAs } from './fixtures';
 // move with today's date, so plan-wide totals are not fixed here; the Fleet cards row and the top five are.
 
 const ALEX = 'alex.morgan@shell.com';
+const PRIYA = 'priya.raman@shell.com';
 
 async function cardValue(cards: Locator, label: string): Promise<string> {
   const value = cards.locator(`p:has-text("${label}") + p`).first();
@@ -120,4 +121,23 @@ test('059 US1: an activity’s attributed revenue opens its deals (scenario 4)',
   const panel = page.getByRole('dialog', { name: activity });
   await expect(panel.getByText('Credited to this activity')).toBeVisible();
   await expect(panel.getByText('$18,851.86')).toBeVisible();
+});
+
+test('059 US3: a default view saved on Performance with MQL reopens on MQL', async ({ page }) => {
+  await signInAs(page, PRIYA);
+  const created = await page.request.post('/api/v1/reports/performance/views', {
+    data: { name: 'MQL 2026', query: 'year=2026&stage=mql', isDefault: true },
+  });
+  expect(created.status()).toBe(201);
+  const view: { id: string } = await created.json();
+  try {
+    await page.goto('/reports/performance');
+
+    await expect(page).toHaveURL(/stage=mql/);
+    await expect(
+      page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'MQL' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+  } finally {
+    await page.request.delete(`/api/v1/reports/performance/views/${view.id}`);
+  }
 });
