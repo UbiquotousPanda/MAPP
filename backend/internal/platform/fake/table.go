@@ -18,6 +18,13 @@ type Table[T any] struct {
 	idOf func(T) string
 	mu   sync.Mutex
 	rows map[string][]byte
+	// probes holds each row decoded once, for Where's filter only; callers always get a fresh copy.
+	probes map[string]probe[T]
+}
+
+type probe[T any] struct {
+	data   []byte
+	record T
 }
 
 // TableOf returns db's table name, made on first use: fakes built on one DB share it.
@@ -56,24 +63,45 @@ func (t *Table[T]) List() ([]T, error) {
 }
 
 func (t *Table[T]) Where(keep func(T) bool) ([]T, error) {
-	t.mu.Lock()
-	ids := slices.SortedFunc(maps.Keys(t.rows), byID)
-	rows := make([][]byte, len(ids))
-	for i, id := range ids {
-		rows[i] = t.rows[id]
+	rows, err := t.snapshot()
+	if err != nil {
+		return nil, err
 	}
-	t.mu.Unlock()
 	kept := []T{}
-	for _, data := range rows {
+	for _, p := range rows {
+		if !keep(p.record) {
+			continue
+		}
 		var record T
-		if err := decode(data, &record); err != nil {
+		if err := decode(p.data, &record); err != nil {
 			return nil, err
 		}
-		if keep(record) {
-			kept = append(kept, record)
-		}
+		kept = append(kept, record)
 	}
 	return kept, nil
+}
+
+// snapshot returns every row in id order, each decoded once per stored version for Where's filter.
+func (t *Table[T]) snapshot() ([]probe[T], error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.probes == nil {
+		t.probes = map[string]probe[T]{}
+	}
+	ids := slices.SortedFunc(maps.Keys(t.rows), byID)
+	rows := make([]probe[T], len(ids))
+	for i, id := range ids {
+		p, ok := t.probes[id]
+		if !ok || &p.data[0] != &t.rows[id][0] {
+			p = probe[T]{data: t.rows[id]}
+			if err := decode(p.data, &p.record); err != nil {
+				return nil, err
+			}
+			t.probes[id] = p
+		}
+		rows[i] = p
+	}
+	return rows, nil
 }
 
 func (t *Table[T]) Put(ctx context.Context, records ...T) error {

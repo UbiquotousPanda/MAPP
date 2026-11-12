@@ -166,7 +166,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 2, 3, 4, 5, 6, 7]
     defaults: *in-backend
     # The scope-isolation tests run on PostgreSQL 18 (constitution VI, B9). Trust authentication is safe here:
     # the service is reachable only from this job, on the runner's loopback address, and holds only test data.
@@ -200,6 +200,7 @@ jobs:
             "app budget campaign people financials plan"
             "allwork approval settings access"
             "purchaserequest home activity lineitem"
+            "measure measure/plandetails measure/gsaplink"
           )
           rest=$((TOTAL - ${#groups[@]}))
           [ "$rest" -ge 1 ] || { echo "Give the matrix one shard per group, plus at least one more."; exit 1; }

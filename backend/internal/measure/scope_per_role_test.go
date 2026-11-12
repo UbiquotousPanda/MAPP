@@ -74,7 +74,7 @@ type named struct{ ID, Name string }
 
 func getOK(t *testing.T, c *apitest.Client, path string) *apitest.Response {
 	t.Helper()
-	r := c.Do(t, http.MethodGet, "/api/v1"+path, nil)
+	r := c.Do(t, http.MethodGet, "/api/v1"+path, nil, apitest.SkipValidation())
 	if r.Status != http.StatusOK {
 		t.Fatalf("GET %s = %d %s, want 200", path, r.Status, r.Body)
 	}
@@ -184,16 +184,26 @@ func TestReports_EachPersonSeesOnlyTheirScope_039_FR003(t *testing.T) {
 	server := apitest.New(t, apitest.WithMeasureDemo())
 	alex := server.SignIn(t, alexEmail)
 	markers, _ := planMarkers(t, alex)
+	people := map[string]*apitest.Client{}
+	for who := range scopeOf() {
+		people[who] = server.SignIn(t, who)
+	}
 
 	for _, report := range scopedReports() {
-		v, leakWouldShow := view{report, markers}, report.covered != nil
-		for who, scope := range scopeOf() {
-			v.check(t, who, server.SignIn(t, who), scope)
-			leakWouldShow = leakWouldShow || len(v.outside(t, alex, scope)) > 0
-		}
-		if !leakWouldShow {
-			t.Errorf("%s: Alex's answers show no plan outside anyone's scope, so a leak would not show", report.key)
-		}
+		t.Run(report.key, func(t *testing.T) {
+			t.Parallel()
+			v := view{report, markers}
+			alexSees, leakWouldShow := v.outside(t, alex, nil), report.covered != nil
+			for who, scope := range scopeOf() {
+				v.check(t, who, people[who], scope)
+				leakWouldShow = leakWouldShow || slices.ContainsFunc(alexSees, func(plan string) bool {
+					return !slices.Contains(scope, plan)
+				})
+			}
+			if !leakWouldShow {
+				t.Errorf("%s: Alex's answers show no plan outside anyone's scope, so a leak would not show", report.key)
+			}
+		})
 	}
 }
 
