@@ -89,4 +89,16 @@ describe('DateRangeField', () => {
     expect(screen.getByLabelText('End date')).toBeDisabled();
     expect(screen.getByText('Ongoing (no end date)')).toBeInTheDocument();
   });
+
+  it('keeps the start typed a moment ago when the end follows before the page re-renders', () => {
+    const onChange = vi.fn();
+    renderWithProviders(
+      <DateRangeField label="Dates" idPrefix="filter" start="" end="" onChange={onChange} />,
+    );
+
+    fireEvent.change(screen.getByLabelText('Start date'), { target: { value: '2026-07-01' } });
+    fireEvent.change(screen.getByLabelText('End date'), { target: { value: '2026-12-31' } });
+
+    expect(onChange).toHaveBeenLastCalledWith({ start: '2026-07-01', end: '2026-12-31' });
+  });
 });

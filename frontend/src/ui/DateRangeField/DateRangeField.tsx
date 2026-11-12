@@ -1,4 +1,5 @@
 import { TriangleAlert } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { DateControl } from '../DateField/DateInput';
 import { useTypedDate } from '../DateField/useTypedDate';
 import { FieldShell } from '../FieldShell/FieldShell';
@@ -52,6 +53,15 @@ export function DateRangeField({
   const startId = `${idPrefix}-startDate`;
   const endId = `${idPrefix}-endDate`;
   const notes = [allowedHint, endDisabledReason].filter(Boolean);
+  // A page may not re-render between two quick changes, so each change builds on the last one reported.
+  const latest = useRef({ start, end });
+  useEffect(() => {
+    latest.current = { start, end };
+  }, [start, end]);
+  const report = (range: DateRange) => {
+    latest.current = range;
+    onChange(range);
+  };
 
   return (
     <FieldShell
@@ -87,7 +97,7 @@ export function DateRangeField({
             max={end || allowed?.end}
             error={errors.start}
             required={required}
-            onChange={(value) => onChange({ start: value, end })}
+            onChange={(value) => report({ ...latest.current, start: value })}
           />
           <DateInput
             id={endId}
@@ -98,7 +108,7 @@ export function DateRangeField({
             error={errors.end}
             required={required}
             disabled={Boolean(endDisabledReason)}
-            onChange={(value) => onChange({ start, end: value })}
+            onChange={(value) => report({ ...latest.current, end: value })}
           />
         </div>
       )}
