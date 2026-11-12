@@ -12,6 +12,8 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { plural } from '@/format/text';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { cx } from '@/ui/cx';
+import linkCard from '@/ui/LinkCard/LinkCard.module.css';
 import { BudgetFigures } from './BudgetFigures';
 import { GlobalBudgetForm } from './GlobalBudgetForm';
 import { useGlobalBudgets } from './api';
@@ -108,10 +110,12 @@ function BudgetCard({ budget }: { budget: GlobalBudgetSummary }) {
   ];
 
   return (
-    <li className={styles.card}>
+    <li className={cx(styles.card, linkCard.card)}>
       <div className={styles.cardHeader}>
         <h2 className={styles.name}>
-          <Link to={`/budgets/${encodeURIComponent(budget.id)}`}>{budget.name}</Link>
+          <Link to={`/budgets/${encodeURIComponent(budget.id)}`} className={linkCard.link}>
+            {budget.name}
+          </Link>
         </h2>
         <p className={styles.facts}>{facts.join(' · ')}</p>
         <ChevronRight aria-hidden="true" className={styles.chevron} />

@@ -7,6 +7,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { SettingsCount } from '@/ui/SettingsCount/SettingsCount';
+import linkCard from '@/ui/LinkCard/LinkCard.module.css';
 import type { SettingsSection } from './sections';
 import styles from './SettingsPage.module.css';
 import { useSettingsOverview } from './api';
@@ -65,7 +66,13 @@ function SectionCard({ section, counts }: SectionCardProps) {
           <Icon />
         </span>
         <h2 className={styles.title}>
-          {comingSoon ? section.title : <Link to={section.path}>{section.title}</Link>}
+          {comingSoon ? (
+            section.title
+          ) : (
+            <Link to={section.path} className={linkCard.link}>
+              {section.title}
+            </Link>
+          )}
         </h2>
         {!comingSoon && (
           <span className={styles.chevron} aria-hidden="true">
