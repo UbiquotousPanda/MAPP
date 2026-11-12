@@ -113,9 +113,9 @@ function BudgetCard({ budget }: { budget: GlobalBudgetSummary }) {
         <h2 className={styles.name}>
           <Link to={`/budgets/${encodeURIComponent(budget.id)}`}>{budget.name}</Link>
         </h2>
+        <p className={styles.facts}>{facts.join(' · ')}</p>
         <ChevronRight aria-hidden="true" className={styles.chevron} />
       </div>
-      <p className={styles.facts}>{facts.join(' · ')}</p>
       <BudgetFigures figures={budget.figures} />
     </li>
   );
