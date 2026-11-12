@@ -297,15 +297,3 @@ func TestOwnPass_FinanceInOnePlan_Covers1Of3_US2_6_US3_6(t *testing.T) {
 		t.Errorf("orders export (-screen +file):\n%s", diff)
 	}
 }
-
-// TestOwnPass_ExportRights_039_FR022: without data.export every export of the report answers 403.
-func TestOwnPass_ExportRights_039_FR022(t *testing.T) {
-	t.Parallel()
-	leaSees := apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, lea)
-
-	get(t, leaSees, report, http.StatusOK)
-	for _, query := range []string{"&format=xlsx", "&format=csv&widget=swbs", "&format=csv&widget=swbsBands",
-		"&format=csv&widget=waiting&tab=waiting", "&format=csv&widget=orders&tab=orders&sort=-paid"} {
-		get(t, leaSees, exported+query, http.StatusForbidden)
-	}
-}

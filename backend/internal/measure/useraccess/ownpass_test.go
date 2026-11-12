@@ -218,18 +218,3 @@ func TestOwnPass_NoFinanceView_ShownInFull_US1_13(t *testing.T) {
 		t.Errorf("Mei (access.manage alone) sees\n%s\nAlex\n%s", mine, theirs)
 	}
 }
-
-// TestOwnPass_ExportRights_039_FR022: without data.export every export answers 403, access.manage or not.
-func TestOwnPass_ExportRights_039_FR022(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t, apitest.WithMeasureDemo())
-	giveMeiAccessManage(t, server)
-	meiSees, leaSees := server.SignIn(t, mei), server.SignIn(t, lea)
-
-	get(t, meiSees, report, http.StatusOK)
-	get(t, leaSees, report, http.StatusForbidden)
-	for _, query := range []string{"xlsx", "xlsx&status=all", "csv&widget=people", "csv&widget=signInBands&q=lea"} {
-		get(t, meiSees, exported+query, http.StatusForbidden)
-		get(t, leaSees, exported+query, http.StatusForbidden)
-	}
-}

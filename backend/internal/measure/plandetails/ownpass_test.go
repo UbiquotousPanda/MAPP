@@ -228,20 +228,6 @@ func TestOwnPass_ExportWithoutFinanceView_FR004(t *testing.T) {
 	}
 }
 
-// TestOwnPass_ExportRights_039_FR022: without data.export every export of every level answers 403.
-func TestOwnPass_ExportRights_039_FR022(t *testing.T) {
-	t.Parallel()
-	leaSees := apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, lea)
-
-	for _, level := range levels() {
-		own := "&show=" + string(level)
-		get(t, leaSees, exported+own+"&format=xlsx", http.StatusForbidden)
-		for _, w := range widgetsOf(reportOf(t, leaSees, report+own)) {
-			get(t, leaSees, exported+own+"&format=csv&widget="+w.Key, http.StatusForbidden)
-		}
-	}
-}
-
 // TestOwnPass_AboutStatesControls_039_FR022: About this export names the plans chosen, the period and the currency.
 func TestOwnPass_AboutStatesControls_039_FR022(t *testing.T) {
 	t.Parallel()

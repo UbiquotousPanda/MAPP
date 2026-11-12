@@ -43,7 +43,7 @@ func heldPermissions(t *testing.T, client *apitest.Client) []authz.Permission {
 	return held
 }
 
-// Sara (Viewer) and Priya (Planner) get 403 for what they hold nowhere; Mei, who plans for Mobility China
+// Sara (Viewer), Priya (Planner) and Lea (Requisitioner) get 403 for what they hold nowhere; Mei, who plans for Mobility China
 // only, gets 404 for a Lubricants record, as for a missing one.
 func TestAccessMatrix_EveryOperationRefusesWhomItsRuleExcludes_SC001(t *testing.T) {
 	t.Parallel()
@@ -52,13 +52,14 @@ func TestAccessMatrix_EveryOperationRefusesWhomItsRuleExcludes_SC001(t *testing.
 	people := []struct {
 		name  string
 		email string
-	}{{"Sara", sarasEmail}, {"Priya", priyasEmail}, {"Mei", meisEmail}}
+	}{{"Sara", sarasEmail}, {"Priya", priyasEmail}, {"Mei", meisEmail}, {"Lea", leaEmail}}
 	checked := map[string]int{}
 
 	for _, person := range people {
 		client := server.SignIn(t, person.email)
 		held := heldPermissions(t, client)
-		roles := map[string]string{"Sara": "your role (Viewer)", "Priya": "your role (Planner)", "Mei": "your role (Planner)"}[person.name]
+		roles := map[string]string{"Sara": "your role (Viewer)", "Priya": "your role (Planner)", "Mei": "your role (Planner)",
+			"Lea": "your role (Requisitioner)"}[person.name]
 
 		for _, op := range contractOperations(t) {
 			if !op.needsSession || !slices.Contains(served, op.route) {
@@ -97,7 +98,7 @@ func TestAccessMatrix_EveryOperationRefusesWhomItsRuleExcludes_SC001(t *testing.
 	}
 
 	// The matrix is not empty by mistake.
-	for name, least := range map[string]int{"Sara": 90, "Priya": 60, "Mei": 40} {
+	for name, least := range map[string]int{"Sara": 90, "Priya": 60, "Mei": 40, "Lea": 90} {
 		if checked[name] < least {
 			t.Errorf("%s: %d operations checked, want at least %d", name, checked[name], least)
 		}
