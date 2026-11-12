@@ -47,13 +47,19 @@ export function FilterBar(props: FilterBarProps) {
             onClick={() => setOpen(!open)}
           />
         )}
+        {menus && (
+          <div
+            id={menusId}
+            className={styles.menus}
+            role="group"
+            aria-label="Filters"
+            hidden={!open}
+          >
+            {menus}
+          </div>
+        )}
         {end && <div className={styles.end}>{end}</div>}
       </div>
-      {menus && (
-        <div id={menusId} className={styles.menus} role="group" aria-label="Filters" hidden={!open}>
-          {menus}
-        </div>
-      )}
       {(chips.length > 0 || props.note) && (
         <div className={styles.chips}>
           <FilterChips
