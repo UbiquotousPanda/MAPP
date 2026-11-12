@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  # Feature branches too, so a pull request stacked on another feature's branch is checked before it is retargeted.
+  # Feature and deploy branches too, so a pull request stacked on another branch is checked before it merges.
   pull_request:
-    branches: [main, release, develop, measure-module, 'feature/**']
+    branches: [main, release, develop, measure-module, 'feature/**', 'deploy/**']
   push:
     branches: [main, release, develop, measure-module]
 
