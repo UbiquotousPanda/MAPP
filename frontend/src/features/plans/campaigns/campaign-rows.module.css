@@ -35,8 +35,8 @@
   outline-offset: 2px;
 }
 
-:global(tr):hover .quickAction,
-:global(tr):focus-within .quickAction,
+tr:hover .quickAction,
+tr:focus-within .quickAction,
 .quickAction:focus-visible {
   color: var(--ink);
 }

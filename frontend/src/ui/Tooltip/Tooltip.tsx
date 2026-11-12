@@ -10,6 +10,8 @@ export interface TooltipProps {
   children: ReactElement<{ onClick?: unknown }>;
 }
 
+export const TooltipProvider = RadixTooltip.Provider;
+
 // Never inside a menu, nor on a dialog's or panel's close button: Radix swallows the first Escape (R14).
 export function Tooltip({ content, side = 'top', children }: TooltipProps) {
   const [open, setOpen] = useState(false);

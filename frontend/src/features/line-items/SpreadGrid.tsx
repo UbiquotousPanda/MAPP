@@ -68,7 +68,7 @@ export function SpreadGrid({ grid, noDates }: SpreadGridProps) {
       </div>
       {noDates && <p className={styles.note}>{GRID_NO_DATES}</p>}
       <div className={styles.scroll} role="region" aria-label={gridCaption(code)} tabIndex={0}>
-        <table className={cx(dataTable.table, styles.table)}>
+        <table className={cx(dataTable.table, dataTable.bottomHead, styles.table)}>
           <caption className="visually-hidden">{gridCaption(code)}</caption>
           <thead>
             <tr>

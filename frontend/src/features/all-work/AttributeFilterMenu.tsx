@@ -1,10 +1,11 @@
-import { Fragment, useId, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { formatWhole } from '@/format/decimal';
 import { Checkbox } from '@/ui/CheckboxField/CheckboxField';
 import { cx } from '@/ui/cx';
 import { FilterMenuButton } from '@/ui/FilterMenuButton/FilterMenuButton';
 import menu from '@/ui/FilterMenu/FilterMenu.module.css';
 import { Popover } from '@/ui/Popover/Popover';
+import { SearchField } from '@/ui/SearchField/SearchField';
 import type { AttributeFilter, FilterableAttribute } from './all-work-types';
 import { NOT_FILLED_IN, NOT_FILLED_IN_LABEL, withAttributeValues } from './attribute-filters';
 import styles from './AttributeFilterMenu.module.css';
@@ -27,7 +28,6 @@ interface Shown {
  * boxes, searchable by attribute or value. A change applies at once, like the other filters.
  */
 export function AttributeFilterMenu({ attributes, selected, onChange }: AttributeFilterMenuProps) {
-  const id = useId();
   const [search, setSearch] = useState('');
   const shown = matching(attributes, search.trim().toLowerCase());
   const inUse = selected.filter((filter) => filter.values.length > 0).length;
@@ -41,16 +41,12 @@ export function AttributeFilterMenu({ attributes, selected, onChange }: Attribut
         />
       </Popover.Trigger>
       <Popover.Content width="lg" aria-label={MORE_FILTERS}>
-        <div className={menu.search}>
-          <label htmlFor={`${id}-search`} className="visually-hidden">
-            {SEARCH_ATTRIBUTES}
-          </label>
-          <input
-            id={`${id}-search`}
-            type="search"
+        <div className={styles.search}>
+          <SearchField
+            label={SEARCH_ATTRIBUTES}
             placeholder={SEARCH_ATTRIBUTES}
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={setSearch}
           />
         </div>
         {shown.length === 0 && <p className={menu.nothing}>{NOTHING_TO_CHOOSE}</p>}

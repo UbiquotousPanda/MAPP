@@ -1470,6 +1470,12 @@ listed in the implementation plan.
 | 16 | **A heading never repeats its parent's heading.** | e2e: no two consecutive headings with the same text |
 | 17 | **No page scrolls sideways** at 390, 600, 960, 1280 and 1440 px wide. | e2e: `scrollWidth ≤ innerWidth` on every captured state |
 
+**Enforced by lint (D-420).** `pnpm run lint` refuses, in features and app, a raw `select`, `textarea`,
+`dialog`, `progress`, `hr`, text, number, search, date, radio or checkbox `input`, a `title` attribute and
+any `radix-ui` import outside `src/ui`, naming the `ui/` component to use. `pnpm run lint:css` refuses
+literal colours, font weights, font sizes and radii (tokens only), and `:global(`, `thead th` and `tfoot`
+in feature CSS. A justified exception carries `eslint-disable-next-line … -- reason`.
+
 ---
 
 ## 12. Waiting for official Shell assets

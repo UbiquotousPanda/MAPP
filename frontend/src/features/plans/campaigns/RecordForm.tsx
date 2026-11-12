@@ -12,13 +12,12 @@ import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import type { AttributeForm, AttributeValues } from '@/ui/ShellAttributeFields/rules';
 import { budgetCheck, OverspendField } from '@/features/overspend';
 import { PersonField } from '@/features/people';
-import { FieldHelpTip, useFieldHelp } from '@/features/settings';
+import { useFieldHelp } from '@/features/settings';
 import { useFormatters } from '@/format/useFormatters';
 import { PHASING_REMOVED } from '../plan-text';
 import { RemainingBudgetLine } from './BudgetCost';
 import type { Money } from './api';
 import { attributeErrors, outsideYear } from './form-values';
-import styles from './RecordForm.module.css';
 import type { RecordFormValues } from './schemas';
 import {
   allowedRange,
@@ -125,23 +124,15 @@ export function RecordForm({
           )}
         />
         {campaign && (
-          <div className={styles.readOnly}>
-            <label htmlFor={campaignFieldId} className={styles.readOnlyLabel}>
-              {CAMPAIGN}
-            </label>
-            <FieldHelpTip helpKey="initiative.campaign" label={CAMPAIGN} />
-            <input
-              id={campaignFieldId}
-              type="text"
-              readOnly
-              value={campaign.name}
-              aria-describedby={`${campaignFieldId}-hint`}
-              className={styles.readOnlyInput}
-            />
-            <p id={`${campaignFieldId}-hint`} className={styles.hint}>
-              {CHANGE_IT_WITH_MOVE}
-            </p>
-          </div>
+          <TextField
+            label={CAMPAIGN}
+            name={campaignFieldId}
+            value={campaign.name}
+            onChange={() => {}}
+            readOnly
+            hint={CHANGE_IT_WITH_MOVE}
+            tip={help('initiative.campaign')}
+          />
         )}
         <FormField
           control={control}

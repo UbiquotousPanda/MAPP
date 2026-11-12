@@ -144,6 +144,7 @@ function NotificationItem({ notification, onChoose }: NotificationItemProps) {
             </span>{' '}
           </>
         )}
+        {/* eslint-disable-next-line no-restricted-syntax -- inside the item's button, where a Tooltip's button can't go */}
         <time className={styles.time} dateTime={notification.at} title={dateTime(notification.at)}>
           {relativeTime(notification.at)}
         </time>

@@ -50,6 +50,10 @@ if ($webFiles.Count -gt 0) {
   $code = @($relative | Where-Object { $_ -notlike '*.css' })
   Invoke-Check 'Prettier' "$root/frontend" { pnpm exec prettier --check @relative }
   if ($code.Count -gt 0) { Invoke-Check 'ESLint' "$root/frontend" { pnpm exec eslint @code } }
+  $styles = @($relative | Where-Object { $_ -like '*.css' })
+  if ($styles.Count -gt 0) {
+    Invoke-Check 'Stylelint' "$root/frontend" { pnpm exec stylelint --allow-empty-input @styles }
+  }
   Invoke-Check 'Type check' "$root/frontend" { pnpm run typecheck }
   $tested = @($code | Where-Object { $_ -like 'src/*' })
   if ($tested.Count -gt 0) {

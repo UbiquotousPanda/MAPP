@@ -115,6 +115,7 @@
   overflow-wrap: anywhere;
   color: var(--ink);
   font-family: var(--font-heading);
+  /* stylelint-disable-next-line declaration-property-value-allowed-list -- grows with the widget, between two tokens */
   font-size: clamp(var(--text-sm), 12cqi, var(--text-2xl));
   font-weight: var(--weight-heading);
   font-variant-numeric: tabular-nums;

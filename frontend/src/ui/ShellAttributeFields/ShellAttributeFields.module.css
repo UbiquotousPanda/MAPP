@@ -13,7 +13,7 @@
 .heading {
   color: var(--ink);
   font-size: var(--text-md);
-  font-weight: 600;
+  font-weight: var(--weight-heading);
 }
 
 .attribute {
@@ -52,7 +52,7 @@
 .readOnlyLabel {
   color: var(--ink);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .readOnlyValue {

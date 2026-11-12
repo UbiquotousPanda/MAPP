@@ -55,6 +55,7 @@ function Bars({ data, label }: { data: ChartData; label: (key: string) => string
                 <span
                   key={s.key}
                   className={styles.fill}
+                  // eslint-disable-next-line no-restricted-syntax -- a hidden bar segment; its figure is in the table
                   title={`${s.name}: ${money(s.values[mi])}`}
                   style={{
                     width: `${(amountOf(s.values[mi]) / peak) * 100}%`,

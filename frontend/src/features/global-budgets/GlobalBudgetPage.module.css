@@ -57,10 +57,6 @@
   padding-right: var(--card-padding);
 }
 
-.table thead th {
-  border-top: 1px solid var(--hairline);
-}
-
 .nowrap {
   white-space: nowrap;
 }

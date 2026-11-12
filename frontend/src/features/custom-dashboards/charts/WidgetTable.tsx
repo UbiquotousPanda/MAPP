@@ -20,7 +20,7 @@ export function WidgetTable({ widget, data }: WidgetTableProps) {
 
   return (
     <div className={styles.scroll} role="region" aria-label={`${caption}, table`} tabIndex={0}>
-      <table className={cx(dataTable.table, styles.table)}>
+      <table className={cx(dataTable.table, dataTable.stickyHead, styles.table)}>
         <caption className="visually-hidden">{caption}</caption>
         <thead>
           <tr>

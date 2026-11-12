@@ -1,5 +1,6 @@
 import { Columns3 } from 'lucide-react';
 import { Button } from '@/ui/Button/Button';
+import { Checkbox } from '@/ui/CheckboxField/CheckboxField';
 import { Popover } from '@/ui/Popover/Popover';
 import { COLUMN_KEYS } from './schemas';
 import type { ColumnKey } from './schemas';
@@ -45,8 +46,7 @@ export function ColumnChooser({ columns, onChange }: ColumnChooserProps) {
           {columns.map((key, i) => (
             <li key={key}>
               <label>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked
                   disabled={lastOne}
                   aria-describedby={lastOne ? LAST_COLUMN_HINT : undefined}
@@ -79,11 +79,7 @@ export function ColumnChooser({ columns, onChange }: ColumnChooserProps) {
           {hidden.map((key) => (
             <li key={key}>
               <label>
-                <input
-                  type="checkbox"
-                  checked={false}
-                  onChange={() => onChange([...columns, key])}
-                />{' '}
+                <Checkbox checked={false} onChange={() => onChange([...columns, key])} />{' '}
                 {COLUMN_WORDS[key]}
               </label>
             </li>

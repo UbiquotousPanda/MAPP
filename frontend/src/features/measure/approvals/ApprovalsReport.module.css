@@ -34,7 +34,7 @@
 
 .figure {
   margin: 0 0 var(--space-3);
-  font-size: var(--text-xl, 1.5rem);
+  font-size: var(--text-xl);
   color: var(--ink);
 }
 

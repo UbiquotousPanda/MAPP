@@ -1,6 +1,7 @@
 import type { DragEvent } from 'react';
 import { cx } from '@/ui/cx';
 import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import type { WidgetType } from '../model';
 import { WIDGET_TYPES } from '../widget-types';
 import type { WidgetTypeInfo } from '../widget-types';
@@ -37,18 +38,19 @@ export function WidgetPalette({ onAdd }: WidgetPaletteProps) {
           <ul className={styles.typeList} role="list" aria-labelledby={`palette-${group}`}>
             {WIDGET_TYPES.filter((info) => info.group === group).map((info) => (
               <li key={info.type}>
-                <button
-                  type="button"
-                  draggable
-                  className={styles.typeButton}
-                  aria-label={`Add ${info.label.toLowerCase()}`}
-                  title={info.label}
-                  onClick={() => onAdd(info.type)}
-                  onDragStart={(event) => handleDragStart(event, info.type)}
-                >
-                  <info.icon size={16} aria-hidden="true" />
-                  <span className={styles.typeLabel}>{info.label}</span>
-                </button>
+                <Tooltip content={info.label}>
+                  <button
+                    type="button"
+                    draggable
+                    className={styles.typeButton}
+                    aria-label={`Add ${info.label.toLowerCase()}`}
+                    onClick={() => onAdd(info.type)}
+                    onDragStart={(event) => handleDragStart(event, info.type)}
+                  >
+                    <info.icon size={16} aria-hidden="true" />
+                    <span className={styles.typeLabel}>{info.label}</span>
+                  </button>
+                </Tooltip>
               </li>
             ))}
           </ul>

@@ -92,6 +92,7 @@
   bottom: 0;
   left: var(--space-3);
   height: 3px;
+  /* stylelint-disable-next-line declaration-property-value-allowed-list -- rounds the top of the 3 px bar */
   border-radius: 3px 3px 0 0;
   background: var(--brand-yellow);
 }

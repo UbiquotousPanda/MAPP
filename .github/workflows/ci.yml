@@ -265,6 +265,8 @@ jobs:
         run: pnpm run typecheck
       - name: Lint
         run: pnpm run lint
+      - name: Lint CSS
+        run: pnpm run lint:css
       - name: API types
         run: pnpm run api:check
       - name: Build

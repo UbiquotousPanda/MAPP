@@ -14,6 +14,7 @@ export function NumberInput({ label, name, value, min, max, error, onChange }: N
   return (
     <div className={styles.number}>
       <label htmlFor={name}>{label}</label>
+      {/* eslint-disable-next-line no-restricted-syntax -- a bounded grid size steps by one; ui/ has no stepper and DecimalField is free text */}
       <input
         id={name}
         type="number"

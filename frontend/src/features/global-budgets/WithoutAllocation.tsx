@@ -37,7 +37,7 @@ export function WithoutAllocation({
         >{`Every plan of ${budget.year} you can see has an allocation.`}</p>
       ) : (
         <ScrollBox label={heading} className={styles.scroll}>
-          <table className={cx(dataTable.table, styles.table)}>
+          <table className={cx(dataTable.table, dataTable.ruledHead, styles.table)}>
             <caption className="visually-hidden">{heading}</caption>
             <thead>
               <tr>

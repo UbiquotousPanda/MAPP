@@ -40,10 +40,6 @@ table.table {
   white-space: nowrap;
 }
 
-.table thead th {
-  vertical-align: bottom;
-}
-
 /* Line-item names stay in view while the months scroll. */
 .name {
   max-width: 200px;

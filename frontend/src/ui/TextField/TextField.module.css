@@ -53,6 +53,12 @@
   color: var(--muted);
 }
 
+.readOnly,
+.readOnly:hover {
+  border-color: var(--hairline);
+  background: var(--gray-bg);
+}
+
 /* Room for the eye button inside the field. */
 .withEye {
   padding-right: var(--space-11);
