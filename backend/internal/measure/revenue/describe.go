@@ -10,25 +10,27 @@ import (
 )
 
 const (
-	wordsActual    = "Actual"
-	wordsProjected = "Projected"
+	wordsActual      = "Actual"
+	wordsProjected   = "Projected"
+	wordsGoal        = "Goal"
+	wordsPerformance = "Performance"
 )
 
-// sortWords name each sort as the ranked list's column, with the report's default sort.
+// sortWords name each sort as the ranked list's column, with the sort and order the report opens on.
 type sortWords struct {
-	words       map[string]string
-	sorts       []string
-	defaultSort string
+	words   map[string]string
+	sorts   []string
+	opening ranking.Opening
 }
 
 func (revenueReport) sortWords() sortWords {
-	return sortWords{words: map[string]string{SortActualRevenue: wordsActual, SortProjectedRevenue: wordsProjected},
-		sorts: revenueSorts(), defaultSort: SortProjectedRevenue}
+	return sortWords{words: map[string]string{SortActualRevenue: wordsActual, SortProjectedRevenue: wordsProjected,
+		SortGoal: wordsGoal, SortPerformance: wordsPerformance}, sorts: revenueSorts(), opening: revenueOpening()}
 }
 
 func (funnelReport) sortWords() sortWords {
-	return sortWords{words: map[string]string{SortActual: wordsActual, SortProjected: wordsProjected},
-		sorts: funnelSorts(), defaultSort: SortProjected}
+	return sortWords{words: map[string]string{SortActual: wordsActual, SortProjected: wordsProjected,
+		SortGoal: wordsGoal, SortPerformance: wordsPerformance}, sorts: funnelSorts(), opening: funnelOpening()}
 }
 
 func (r revenueReport) Describe(ctx context.Context, a actor.Actor, own url.Values) ([][2]string, error) {
@@ -61,7 +63,7 @@ func (r funnelReport) Describe(ctx context.Context, _ actor.Actor, own url.Value
 }
 
 func (s *Service) describe(ctx context.Context, own url.Values, sorts sortWords, stage [][2]string) ([][2]string, error) {
-	q, err := ranking.Parse(own, sorts.sorts, sorts.defaultSort)
+	q, err := ranking.Parse(own, sorts.sorts, sorts.opening)
 	if err != nil {
 		return nil, err
 	}

@@ -12883,7 +12883,7 @@ export interface components {
             /** @enum {string} */
             level: "plan" | "campaign" | "initiative" | "activity";
             /** @enum {string} */
-            sort: "actualRevenue" | "projectedRevenue";
+            sort: "actualRevenue" | "projectedRevenue" | "goal" | "performance";
             /** @enum {string} */
             order: "desc" | "asc";
             group: string;
@@ -13070,7 +13070,7 @@ export interface components {
             /** @enum {string} */
             level: "plan" | "campaign" | "initiative" | "activity";
             /** @enum {string} */
-            sort: "actual" | "projected";
+            sort: "actual" | "projected" | "goal" | "performance";
             /** @enum {string} */
             order: "desc" | "asc";
             group: string;
@@ -13941,8 +13941,10 @@ export interface components {
         RevenueCategory: string;
         /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
         FunnelStage: "inq" | "mql";
-        RevenueRankedSort: "actualRevenue" | "projectedRevenue";
-        FunnelRankedSort: "actual" | "projected";
+        /** @description Without sort or order the list opens on performance, lowest first, so the most behind is on top. Entries without the figure come last in either order. */
+        RevenueRankedSort: "actualRevenue" | "projectedRevenue" | "goal" | "performance";
+        /** @description Entries without the figure come last in either order. */
+        FunnelRankedSort: "actual" | "projected" | "goal" | "performance";
         /** @example RV-1001 */
         ReportViewId: string;
         /** @description Time widgets by month (default) or quarter of the plan year. */
@@ -24105,6 +24107,7 @@ export interface operations {
                 table?: components["parameters"]["ReportTable"];
                 /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
                 category?: components["parameters"]["RevenueCategory"];
+                /** @description Without sort or order the list opens on performance, lowest first, so the most behind is on top. Entries without the figure come last in either order. */
                 sort?: components["parameters"]["RevenueRankedSort"];
                 order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */
@@ -24265,6 +24268,7 @@ export interface operations {
                 category?: components["parameters"]["RevenueCategory"];
                 /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
                 stage?: components["parameters"]["FunnelStage"];
+                /** @description Entries without the figure come last in either order. */
                 sort?: components["parameters"]["FunnelRankedSort"];
                 order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */

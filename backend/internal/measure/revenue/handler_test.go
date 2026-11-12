@@ -23,6 +23,10 @@ func TestRevenueAndFunnelReports_Contract_049(t *testing.T) {
 		"/api/v1/reports/funnel?year=2026&stage=mql",
 		"/api/v1/reports/funnel/ranked?year=2026",
 		"/api/v1/reports/funnel/ranked?year=2026&show=activity&group=owner&sort=actual&order=asc&size=25&q=a",
+		"/api/v1/reports/revenue/ranked?year=2026&sort=goal&order=desc",
+		"/api/v1/reports/revenue/ranked?year=2026&sort=performance&order=asc",
+		"/api/v1/reports/funnel/ranked?year=2026&sort=goal&order=asc",
+		"/api/v1/reports/funnel/ranked?year=2026&sort=performance&order=desc",
 	} {
 		if r := planner.Do(t, http.MethodGet, path, nil); r.Status != http.StatusOK {
 			t.Errorf("GET %s = %d %s, want 200", path, r.Status, r.Body)

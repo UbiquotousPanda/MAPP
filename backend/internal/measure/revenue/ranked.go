@@ -13,7 +13,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// RankedRevenue is the ranked list of entries sorted by actual or projected revenue.
+// RankedRevenue is the ranked list of entries sorted by goal, actual or projected revenue, or performance.
 func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Filter, q RankedQuery) (RevenueRanked, error) {
 	var out RevenueRanked
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -35,7 +35,7 @@ func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Fi
 	return out, err
 }
 
-// RankedFunnel is the ranked list sorted by the selected stage's actual or projected volume.
+// RankedFunnel is the ranked list sorted by the selected stage's goal, actual or projected volume, or performance.
 func (s *Service) RankedFunnel(ctx context.Context, a actor.Actor, f measure.Filter, q RankedQuery) (FunnelRanked, error) {
 	var out FunnelRanked
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -125,11 +125,23 @@ func (r *revenueRanking) Shown(s revenueSums) RevenueFigures {
 }
 
 func (*revenueRanking) Key(f RevenueFigures, sort string) (int64, bool) {
-	m := f.Projected
-	if sort == SortActualRevenue {
-		m = f.Actual
+	switch sort {
+	case SortPerformance:
+		return performanceKey(f.Performance)
+	case SortGoal:
+		return centsOf(f.Goal), f.Goal != nil
+	case SortActualRevenue:
+		return centsOf(f.Actual), f.Actual != nil
 	}
-	return centsOf(m), m != nil
+	return centsOf(f.Projected), f.Projected != nil
+}
+
+// performanceKey ranks by the whole percent the entry shows.
+func performanceKey(p *float64) (int64, bool) {
+	if p == nil {
+		return 0, false
+	}
+	return int64(*p), true
 }
 
 // funnelSums is an entry's figures with its previous-stage actual, which its conversion divides by.
@@ -178,9 +190,13 @@ func (*funnelRanking) Shown(s funnelSums) FunnelFigures {
 }
 
 func (*funnelRanking) Key(f FunnelFigures, sort string) (int64, bool) {
-	v := f.Projected
-	if sort == SortActual {
-		v = f.Actual
+	switch sort {
+	case SortPerformance:
+		return performanceKey(f.Performance)
+	case SortGoal:
+		return int64Of(f.Goal), f.Goal != nil
+	case SortActual:
+		return int64Of(f.Actual), f.Actual != nil
 	}
-	return int64Of(v), v != nil
+	return int64Of(f.Projected), f.Projected != nil
 }

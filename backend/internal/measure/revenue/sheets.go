@@ -41,7 +41,7 @@ func (s *Service) revenueSheets(ctx context.Context, a actor.Actor, f measure.Fi
 	if err != nil {
 		return nil, err
 	}
-	q, err := unboundedRanked(f.Own, revenueSorts(), SortProjectedRevenue)
+	q, err := unboundedRanked(f.Own, revenueSorts(), revenueOpening())
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +76,8 @@ func dealsQueryOf(f measure.Filter) (attribution.DealsQuery, bool) {
 		Compare: attribution.Model(f.Own.Get(paramCompare))}, id != ""
 }
 
-func unboundedRanked(own url.Values, sorts []string, defaultSort string) (RankedQuery, error) {
-	q, err := ranking.Parse(own, sorts, defaultSort)
+func unboundedRanked(own url.Values, sorts []string, opening ranking.Opening) (RankedQuery, error) {
+	q, err := ranking.Parse(own, sorts, opening)
 	q.Page, q.Size = 1, math.MaxInt32
 	return rankedQueryOf(q, ""), err
 }
@@ -161,7 +161,7 @@ func (s *Service) funnelSheets(ctx context.Context, a actor.Actor, f measure.Fil
 	if err != nil {
 		return nil, err
 	}
-	q, err := unboundedRanked(f.Own, funnelSorts(), SortProjected)
+	q, err := unboundedRanked(f.Own, funnelSorts(), funnelOpening())
 	if err != nil {
 		return nil, err
 	}

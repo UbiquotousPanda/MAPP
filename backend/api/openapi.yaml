@@ -11092,15 +11092,19 @@ components:
     RevenueRankedSort:
       name: sort
       in: query
+      description: >-
+        Without sort or order the list opens on performance, lowest first, so the most behind is on top. Entries
+        without the figure come last in either order.
       schema:
         type: string
-        enum: [actualRevenue, projectedRevenue]
+        enum: [actualRevenue, projectedRevenue, goal, performance]
     FunnelRankedSort:
       name: sort
       in: query
+      description: Entries without the figure come last in either order.
       schema:
         type: string
-        enum: [actual, projected]
+        enum: [actual, projected, goal, performance]
     ReportViewId:
       name: viewId
       in: path
@@ -28699,7 +28703,7 @@ components:
       properties:
         attribution: { $ref: "#/components/schemas/AttributionStamp" }
         level: { type: string, enum: [plan, campaign, initiative, activity] }
-        sort: { type: string, enum: [actualRevenue, projectedRevenue] }
+        sort: { type: string, enum: [actualRevenue, projectedRevenue, goal, performance] }
         order: { type: string, enum: [desc, asc] }
         group: { type: string }
         page: { type: integer }
@@ -28953,7 +28957,7 @@ components:
       required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
       properties:
         level: { type: string, enum: [plan, campaign, initiative, activity] }
-        sort: { type: string, enum: [actual, projected] }
+        sort: { type: string, enum: [actual, projected, goal, performance] }
         order: { type: string, enum: [desc, asc] }
         group: { type: string }
         page: { type: integer }

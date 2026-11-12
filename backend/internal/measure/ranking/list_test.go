@@ -176,13 +176,13 @@ func TestBuild_PagesAcrossGroupsWithWholeTotals_040_FR014(t *testing.T) {
 func TestParse_EveryProblemAtOnce_040_FR014(t *testing.T) {
 	t.Parallel()
 	values, _ := url.ParseQuery("sort=name&order=up&group=team&size=7&page=0&drill=bad&q=" + strings.Repeat("x", 101))
-	_, err := ranking.Parse(values, []string{"planned"}, "planned")
+	_, err := ranking.Parse(values, []string{"planned"}, ranking.Opening{Sort: "planned", Order: ranking.OrderDesc})
 
 	var e *errs.Error
 	if !errors.As(err, &e) || len(e.Fields) != 7 {
 		t.Fatalf("Parse = %v, want the seven problems at once", err)
 	}
-	q, err := ranking.Parse(url.Values{}, []string{"planned"}, "planned")
+	q, err := ranking.Parse(url.Values{}, []string{"planned"}, ranking.Opening{Sort: "planned", Order: ranking.OrderDesc})
 	want := ranking.Query{Sort: "planned", Order: ranking.OrderDesc, Group: ranking.GroupNone, Size: 10, Page: 1}
 	if diff := cmp.Diff(want, q); err != nil || diff != "" {
 		t.Errorf("Parse with nothing (-want +got):\n%s %v", diff, err)

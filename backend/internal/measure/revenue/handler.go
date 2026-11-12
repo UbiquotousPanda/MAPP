@@ -48,7 +48,7 @@ func (h *Handler) revenueRanked(c *gin.Context) {
 		web.RespondError(c, err)
 		return
 	}
-	q, err := ranking.Parse(values, revenueSorts(), SortProjectedRevenue)
+	q, err := ranking.Parse(values, revenueSorts(), revenueOpening())
 	if err != nil {
 		web.RespondError(c, err)
 		return
@@ -84,7 +84,7 @@ func (h *Handler) funnelRanked(c *gin.Context) {
 		web.RespondError(c, err)
 		return
 	}
-	q, err := ranking.Parse(values, funnelSorts(), SortProjected)
+	q, err := ranking.Parse(values, funnelSorts(), funnelOpening())
 	if err != nil {
 		web.RespondError(c, err)
 		return

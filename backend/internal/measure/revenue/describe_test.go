@@ -35,7 +35,7 @@ func TestExportNotes_SayTheCategoryByNameAndTheSortInWords_FR019_039FR022(t *tes
 		t.Errorf("Revenue's notes (-want +got):\n%s", diff)
 	}
 	got = describedBy(t, revenue.NewRevenueReport(s), nil)
-	want = [][2]string{{"Category", "All categories"}, {"Sort by", "Projected"}, {"Order", "High to low"}}
+	want = [][2]string{{"Category", "All categories"}, {"Sort by", "Performance"}, {"Order", "Low to high"}}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("Revenue's notes by default (-want +got):\n%s", diff)
 	}

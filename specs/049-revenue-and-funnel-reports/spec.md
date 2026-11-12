@@ -251,8 +251,10 @@ of the report and that *Uncategorised* is selectable and loses nothing.
 - **FR-005**: Each report MUST carry 040's ranked list with the same rules — two levels at once, drill with
   a trail and Back, grouping with group totals, paging across groups, name search, and a link that opens
   the record in the Plan workspace (049-C18).
-- **FR-006**: The ranked list MUST be sortable by the report's own figures: actual and projected revenue on
-  Revenue, the selected stage's actual and projected volume on Funnel stages.
+- **FR-006**: The ranked list MUST be sortable by the report's own figures: goal, actual and projected revenue
+  and performance on Revenue, the selected stage's goal, actual and projected volume and performance on Funnel
+  stages; entries without the figure come last in either order. Revenue opens on performance, lowest first,
+  so the most behind is on top (D-410).
 - **FR-007**: Every widget MUST offer a table view and an export, per the module's report pattern.
 - **FR-008**: An empty report MUST state **why** it is empty, from the causes in 049-C20, and MUST NOT show
   a grid of zeros.
