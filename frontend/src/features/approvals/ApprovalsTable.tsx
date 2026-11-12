@@ -93,9 +93,11 @@ function Row({ row, decided, onOpen }: RowProps) {
     <tr>
       <th scope="row">
         <OpenButton row={row} onOpen={onOpen} />
-        <span className={styles.id}>{row.subject.id}</span>
+        <span className={styles.meta}>
+          <span className={styles.id}>{row.subject.id}</span>
+          {chips}
+        </span>
         <DelegateNote row={row} />
-        {chips && <span className={styles.chips}>{chips}</span>}
       </th>
       <td className={styles.nowrap}>{row.subject.label}</td>
       <td>{pathText(row)}</td>
