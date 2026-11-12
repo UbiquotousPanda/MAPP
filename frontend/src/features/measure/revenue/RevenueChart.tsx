@@ -17,6 +17,7 @@ export function RevenueChart({ report }: { report: RevenueReport }) {
   const label = (key: string) => (key.includes('Q') ? key.slice(5) : month(key));
   const amount = (value: RevenuePeriod['actual']) => (value ? money(value) : '—');
   const today = report.periods.find((p) => p.inProgress);
+  const totals = report.totals;
   const table: ReportTableData = {
     columns: [
       { label: 'Period' },
@@ -26,6 +27,9 @@ export function RevenueChart({ report }: { report: RevenueReport }) {
       key: p.key,
       cells: [label(p.key), amount(p.goal), amount(p.actual), amount(p.projected)],
     })),
+    total: report.periods.length
+      ? ['Total', amount(totals.goal), amount(totals.actual), amount(totals.projected)]
+      : undefined,
   };
   return (
     <ReportWidget

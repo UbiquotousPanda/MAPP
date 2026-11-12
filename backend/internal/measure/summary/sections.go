@@ -37,7 +37,18 @@ func (b builder) revenueSection(series []revenue.ActivitySeries, plans map[strin
 	for _, p := range periodsOf(t.months, b.quarterly) {
 		out.Trend = append(out.Trend, b.trendPeriod(p))
 	}
+	out.TrendTotals = b.trendTotals(t.months)
 	return out
+}
+
+// trendTotals adds the months in USD and converts once, so the row is the same in month and quarter view.
+func (b builder) trendTotals(months []monthTotal) TrendTotals {
+	year := period{state: PeriodActual}
+	for _, m := range periodsOf(months, false) {
+		year = year.with(m)
+	}
+	p := b.trendPeriod(year)
+	return TrendTotals{Actual: p.Actual, Projected: p.Projected, Goal: p.Goal}
 }
 
 func (b builder) trendPeriod(p period) TrendPeriod {

@@ -10,6 +10,7 @@ export function FunnelChart({ report }: { report: FunnelReport }) {
   const label = (key: string) => (key.includes('Q') ? key.slice(5) : month(key));
   const whole = (value: number | null) => (value === null ? '—' : value.toLocaleString());
   const today = report.periods.find((p) => p.inProgress);
+  const totals = report.totals;
   const table: ReportTableData = {
     columns: [
       { label: 'Period' },
@@ -19,6 +20,9 @@ export function FunnelChart({ report }: { report: FunnelReport }) {
       key: p.key,
       cells: [label(p.key), whole(p.goal), whole(p.actual), whole(p.projected)],
     })),
+    total: report.periods.length
+      ? ['Total', whole(totals.goal), whole(totals.actual), whole(totals.projected)]
+      : undefined,
   };
   return (
     <ReportWidget

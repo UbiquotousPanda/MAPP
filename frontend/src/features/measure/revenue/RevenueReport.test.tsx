@@ -119,7 +119,7 @@ describe('RevenueReport (049 US1)', () => {
     await user.click(nth(screen.getAllByRole('button', { name: 'Table' }), 0));
 
     const table = screen.getByRole('table', { name: /Revenue by month/ });
-    expect(within(table).getAllByRole('row')).toHaveLength(13);
+    expect(within(table).getAllByRole('row')).toHaveLength(14);
   });
 
   it('names the model and cost basis once, in plain words, above attributed revenue and ROI (050 FR-008, FR-010)', async () => {

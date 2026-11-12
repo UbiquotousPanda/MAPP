@@ -265,7 +265,8 @@ of the report and that *Uncategorised* is selectable and loses nothing.
 
 - **FR-010**: The Revenue report MUST show cards for revenue goal, actual, projected and performance
   (049-C9).
-- **FR-011**: It MUST show revenue by period — actual, projected and goal — with a table view of the same.
+- **FR-011**: It MUST show revenue by period — actual, projected and goal — with a table view of the same, ending
+  with 039 FR-035's Total row: each column over the year, from the API.
 - **FR-012**: Each ranked entry MUST show its name, level, owner, revenue goal, actual, projected,
   performance, actual cost and ROI.
 - **FR-013**: Actual cost and ROI MUST show "—" with the reason "Attribution is not configured yet" until
@@ -277,7 +278,8 @@ of the report and that *Uncategorised* is selectable and loses nothing.
 
 - **FR-015**: The report MUST offer a stage selector listing every stage the models in view allow, in
   funnel order, defaulting to the first (049-C11, 049-C12).
-- **FR-016**: It MUST show the selected stage's goal, actual and projected by period, named from the stage.
+- **FR-016**: It MUST show the selected stage's goal, actual and projected by period, named from the stage; its table
+  view ends with 039 FR-035's Total row, each column over the year, from the API.
 - **FR-017**: Each ranked entry MUST show the stage's goal, actual, projected, performance and its
   **conversion from the previous stage**; conversion MUST show "—" when the previous stage has no actual
   (049-C13).

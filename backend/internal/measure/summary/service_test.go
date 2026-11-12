@@ -39,7 +39,7 @@ func TestRevenueSection_048_FR005_C2(t *testing.T) {
 	want := RevenueSection{PeriodLabel: "FY 2026", ActualOrProjected: usd(140_000), Goal: usd(1_000_000),
 		Performance:  Performance{Percent: ptr(14), Variance: revenue.BelowPlan},
 		GoalCoverage: []Coverage{{StageINQ, ptr(50)}, {StageMQL, ptr(50)}, {StageRevenue, ptr(50)}}}
-	if diff := cmp.Diff(want, got, amounts(), cmp.FilterPath(func(p cmp.Path) bool { return p.Last().String() == ".Trend" }, cmp.Ignore())); diff != "" {
+	if diff := cmp.Diff(want, got, amounts(), cmp.FilterPath(func(p cmp.Path) bool { return p.Last().String() == ".Trend" || p.Last().String() == ".TrendTotals" }, cmp.Ignore())); diff != "" {
 		t.Errorf("revenue section (-want +got)\n%s", diff)
 	}
 }

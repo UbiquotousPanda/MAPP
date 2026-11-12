@@ -40,6 +40,15 @@ test('048 US1: the Summary report shows revenue against goal, equal to the Reven
   await expect(page.getByText('Goals planned in activities')).toBeVisible();
   await expect(page.getByLabel('Stage figures').getByText('MQL conversion')).toBeVisible();
 
+  const goal = await cardValue(figures, 'Revenue goal');
+  await page
+    .getByRole('group', { name: 'Show Revenue trend as' })
+    .getByRole('button', { name: 'Table' })
+    .click();
+  const trend = page.getByRole('table', { name: 'Revenue trend' });
+  await expect(trend.locator('tfoot tr')).toHaveCount(1);
+  await expect(trend.locator('tfoot td').last()).toHaveText(goal);
+
   await expectNoAxeViolations(page);
 });
 

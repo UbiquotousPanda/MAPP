@@ -28612,16 +28612,31 @@ components:
         goal:
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         inProgress: { type: boolean }
+    RevenuePeriodTotals:
+      type: object
+      additionalProperties: false
+      description: >-
+        The period table's Total row (039 FR-035, D-414): each column's periods added up over the year, the same in
+        month and quarter view, converted once from US dollars; null where no period of the column has a figure.
+      required: [goal, actual, projected]
+      properties:
+        goal:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        actual:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
     RevenueReport:
       type: object
       additionalProperties: false
-      required: [cards, period, periods, projection, projections, reason]
+      required: [cards, period, periods, totals, projection, projections, reason]
       properties:
         cards: { $ref: "#/components/schemas/RevenueCards" }
         period: { type: string, enum: [month, quarter] }
         periods:
           type: array
           items: { $ref: "#/components/schemas/RevenuePeriod" }
+        totals: { $ref: "#/components/schemas/RevenuePeriodTotals" }
         projection:
           description: The first model in view, kept for compatibility; projections names every one.
           oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
@@ -28902,7 +28917,7 @@ components:
     FunnelReport:
       type: object
       additionalProperties: false
-      required: [stage, availableStages, uncoveredCount, cards, period, periods, projection, projections, reason]
+      required: [stage, availableStages, uncoveredCount, cards, period, periods, totals, projection, projections, reason]
       properties:
         stage: { type: string, enum: [inq, mql] }
         availableStages:
@@ -28917,6 +28932,15 @@ components:
         periods:
           type: array
           items: { $ref: "#/components/schemas/FunnelPeriod" }
+        totals:
+          type: object
+          additionalProperties: false
+          description: The period table's Total row, as RevenuePeriodTotals but whole counts.
+          required: [goal, actual, projected]
+          properties:
+            goal: { type: [integer, "null"] }
+            actual: { type: [integer, "null"] }
+            projected: { type: [integer, "null"] }
         projection:
           description: The first model in view, kept for compatibility; projections names every one.
           oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
@@ -29299,7 +29323,7 @@ components:
         revenue:
           type: object
           additionalProperties: false
-          required: [periodLabel, actualOrProjected, goal, performance, variance, goalCoverage, trend]
+          required: [periodLabel, actualOrProjected, goal, performance, variance, goalCoverage, trend, trendTotals]
           properties:
             periodLabel:
               type: string
@@ -29326,6 +29350,18 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/SummaryTrendPeriod"
+            trendTotals:
+              type: object
+              additionalProperties: false
+              description: The trend table's Total row, as RevenuePeriodTotals (039 FR-035, D-414).
+              required: [actual, projected, goal]
+              properties:
+                actual:
+                  $ref: "#/components/schemas/PrReportMoney"
+                projected:
+                  $ref: "#/components/schemas/PrReportMoney"
+                goal:
+                  $ref: "#/components/schemas/PrReportMoney"
         funnel:
           type: object
           additionalProperties: false

@@ -370,10 +370,13 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   filters, search and drill keep, on every page, counting a record that sits in several groups once; a ratio column
   (performance, ROI, conversion, share) shows the ratio of the totals, never a sum or an average of rows. The row is a
   `<tfoot>` row headed "Total", stays last whatever the sort or page, shows "—" where the person may not see the
-  figure, is absent when the table has no row, and is written as the last line of the widget's export. Tables of
-  people, approval steps, average days, stage volumes and conversion rates have no Total row, nor have the goal,
-  actual and projected period tables, whose year figures are the summary cards and whose Projected overlaps Actual
-  in the period in progress.
+  figure, is absent when the table has no row, and is written as the last line of the widget's export. The goal,
+  actual and projected period tables (Summary's Revenue trend, Revenue by month or quarter, Volume by month or
+  quarter) end with one too: each column's own periods added up over the year in view, the same in month and
+  quarter view, "—" for a column with no figure in any period. The period in progress sits in both Actual and
+  Projected, so it counts once in each column and the row never adds the two; Actual or projected stays the card's.
+  Tables of people, approval steps, average days, stage volumes and conversion rates have no Total row, nor has
+  Plan budget's Spend by month or quarter, whose running to-date columns already end on the year (040 FR-007).
 
 ### Key Entities *(include if feature involves data)*
 

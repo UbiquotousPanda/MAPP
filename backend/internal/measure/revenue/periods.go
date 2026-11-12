@@ -34,27 +34,34 @@ func periodsOf(w window, period string) []periodBounds {
 }
 
 func revenuePeriods(sums monthlySums, period string, w window, display money.Display) []RevenuePeriod {
-	shown := func(c int64) *money.Money {
-		m := display.Money(money.USD(money.FromCents(c)))
-		return &m
-	}
 	bounds := periodsOf(w, period)
 	out := make([]RevenuePeriod, 0, len(bounds))
 	for _, b := range bounds {
 		v := sums.periodOf(b)
-		p := RevenuePeriod{Key: v.key, State: v.state, InProgress: v.inProgress}
-		if v.goal != nil {
-			p.Goal = shown(*v.goal)
-		}
-		if v.actual != nil {
-			p.Actual = shown(*v.actual)
-		}
-		if v.projected != nil {
-			p.Projected = shown(*v.projected)
-		}
-		out = append(out, p)
+		out = append(out, RevenuePeriod{Key: v.key, State: v.state, InProgress: v.inProgress,
+			Goal: shownOf(display, v.goal), Actual: shownOf(display, v.actual), Projected: shownOf(display, v.projected)})
 	}
 	return out
+}
+
+// revenueTotals is each period column over the year, converted once from US dollars as the cards are.
+func revenueTotals(sums monthlySums, display money.Display) RevenueTotals {
+	v := sums.yearOf()
+	return RevenueTotals{Goal: shownOf(display, v.goal), Actual: shownOf(display, v.actual),
+		Projected: shownOf(display, v.projected)}
+}
+
+func funnelTotals(sums monthlySums) FunnelTotals {
+	v := sums.yearOf()
+	return FunnelTotals{Goal: v.goal, Actual: v.actual, Projected: v.projected}
+}
+
+func shownOf(display money.Display, c *int64) *money.Money {
+	if c == nil {
+		return nil
+	}
+	m := display.Money(money.USD(money.FromCents(*c)))
+	return &m
 }
 
 func funnelPeriods(sums monthlySums, period string, w window) []FunnelPeriod {
@@ -95,6 +102,11 @@ func (s monthlySums) periodOf(b periodBounds) periodValues {
 		out.projected = &p
 	}
 	return out
+}
+
+// yearOf is the whole year as one period, so a column's total is "—" exactly when every period of it is.
+func (s monthlySums) yearOf() periodValues {
+	return s.periodOf(periodBounds{size: projection.Months, todayIndex: -1})
 }
 
 func periodSize(period string) int {

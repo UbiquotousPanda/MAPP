@@ -123,7 +123,7 @@ describe('FunnelReport (049 US2)', () => {
     await user.click(nth(screen.getAllByRole('button', { name: 'Table' }), 0));
 
     const table = screen.getByRole('table', { name: /Volume by month/ });
-    expect(within(table).getAllByRole('row')).toHaveLength(13);
+    expect(within(table).getAllByRole('row')).toHaveLength(14);
   });
 
   it('fails on its own: the ranked list stays when the figures fail', async () => {
@@ -224,5 +224,15 @@ describe('FunnelReport (049 US2)', () => {
     const total = closestTo(await screen.findByRole('rowheader', { name: 'Total' }), 'tr');
     expect(total.closest('tfoot')).not.toBeNull();
     expect(total.textContent).toMatch(/777,777.*91%/);
+  });
+
+  it("ends Volume by month's Table view with the API's column totals, — where a column has none (039 FR-035)", async () => {
+    const totals = { goal: 444444, actual: null, projected: 222222 };
+    renderPage({ body: funnelReport({ totals }) }, '/reports/funnel?year=2026&table=periods');
+
+    const table = await screen.findByRole('table', { name: 'Volume by month' });
+    const total = closestTo(within(table).getByRole('rowheader', { name: 'Total' }), 'tr');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect(total.textContent).toBe('Total444,444—222,222');
   });
 });

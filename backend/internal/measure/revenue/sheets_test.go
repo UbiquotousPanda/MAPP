@@ -5,6 +5,7 @@ import (
 
 	"mapp/internal/measure"
 	"mapp/internal/measure/revenue"
+	"mapp/internal/platform/sheet"
 )
 
 func TestRevenueReport_SheetsExportEveryWidget_FR007(t *testing.T) {
@@ -34,9 +35,9 @@ func TestRevenueReport_SheetsExportEveryWidget_FR007(t *testing.T) {
 	if len(sheets[0].Sheet.Rows) != 5 {
 		t.Errorf("cards rows = %d, want 5 (header + 4 figures)", len(sheets[0].Sheet.Rows))
 	}
-	// Periods: header + 12 months.
-	if len(sheets[1].Sheet.Rows) != 13 {
-		t.Errorf("periods rows = %d, want 13 (header + 12 months)", len(sheets[1].Sheet.Rows))
+	periods := sheets[1].Sheet.Rows
+	if len(periods) != 14 || periods[13][0] != sheet.Bold("Total") {
+		t.Errorf("periods rows = %d ending %v, want 14: header, 12 months, then the Total line", len(periods), periods[len(periods)-1])
 	}
 }
 

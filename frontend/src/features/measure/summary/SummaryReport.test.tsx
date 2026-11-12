@@ -202,4 +202,22 @@ describe('SummaryReport (048 US1, US2)', () => {
     expect(total.closest('tfoot')).not.toBeNull();
     expect(total.textContent).toBe('Total$1,200.00');
   });
+
+  it("ends the Revenue trend's Table view with the API's column totals, — where a column has none (039 FR-035)", async () => {
+    const report = summaryReport();
+    const trendTotals = {
+      actual: null,
+      projected: { amount: '700.00', currency: 'USD' },
+      goal: null,
+    };
+    renderPage(
+      { body: { ...report, revenue: { ...report.revenue, trendTotals } } },
+      '/reports/summary?year=2026&table=trend',
+    );
+
+    const table = await screen.findByRole('table', { name: 'Revenue trend' });
+    const total = closestTo(within(table).getByRole('rowheader', { name: 'Total' }), 'tr');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect(total.textContent).toBe('Total—$700.00—');
+  });
 });

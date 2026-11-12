@@ -60,12 +60,17 @@ export function RevenueSection({ revenue, notes, details }: RevenueSectionProps)
         <span>{coverage}</span>
         <InfoTip label="Goals planned in activities" text={COVERAGE_TIP} />
       </p>
-      <TrendWidget trend={revenue.trend} />
+      <TrendWidget trend={revenue.trend} totals={revenue.trendTotals} />
     </section>
   );
 }
 
-function TrendWidget({ trend }: { trend: SummaryTrendPeriod[] }) {
+interface TrendWidgetProps {
+  trend: SummaryTrendPeriod[];
+  totals: RevenueSectionData['trendTotals'];
+}
+
+function TrendWidget({ trend, totals }: TrendWidgetProps) {
   const { money } = useFormatters();
   const amount = (value: SummaryTrendPeriod['actual']) => (value ? money(value) : '—');
   const today = trend.find((p) => p.state === 'inProgress');
@@ -78,6 +83,9 @@ function TrendWidget({ trend }: { trend: SummaryTrendPeriod[] }) {
       key: p.key,
       cells: [p.label, amount(p.actual), amount(p.projected), amount(p.goal)],
     })),
+    total: trend.length
+      ? ['Total', amount(totals.actual), amount(totals.projected), amount(totals.goal)]
+      : undefined,
   };
   return (
     <ReportWidget

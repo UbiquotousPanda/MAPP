@@ -51,7 +51,7 @@ func (s *Service) revenueSheets(ctx context.Context, a actor.Actor, f measure.Fi
 	}
 	sheets := []measure.WidgetSheet{
 		{Key: widgetCards, Sheet: revenueCardsSheet(report.Cards)},
-		{Key: widgetPeriods, Sheet: revenuePeriodsSheet(report.Periods)},
+		{Key: widgetPeriods, Sheet: revenuePeriodsSheet(report.Periods, report.Totals)},
 		{Key: widgetRanked, Sheet: revenueRankedSheet(ranked)},
 	}
 	return s.withDealsSheet(ctx, a, f, sheets)
@@ -96,10 +96,13 @@ func revenueCardsSheet(c RevenueCards) sheet.Sheet {
 	return sheet.Sheet{Name: sheetCards, Rows: rows}
 }
 
-func revenuePeriodsSheet(periods []RevenuePeriod) sheet.Sheet {
+func revenuePeriodsSheet(periods []RevenuePeriod, t RevenueTotals) sheet.Sheet {
 	rows := [][]sheet.Cell{boldRow("Period", "Goal", "Actual", "Projected")}
 	for _, p := range periods {
 		rows = append(rows, []sheet.Cell{sheet.Text(p.Key), moneyCell(p.Goal), moneyCell(p.Actual), moneyCell(p.Projected)})
+	}
+	if len(periods) > 0 {
+		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), moneyCell(t.Goal), moneyCell(t.Actual), moneyCell(t.Projected)})
 	}
 	return sheet.Sheet{Name: sheetPeriods, Rows: rows}
 }
@@ -181,7 +184,7 @@ func (s *Service) funnelSheets(ctx context.Context, a actor.Actor, f measure.Fil
 	}
 	return []measure.WidgetSheet{
 		{Key: widgetCards, Sheet: funnelCardsSheet(report.Stage, report.Cards)},
-		{Key: widgetPeriods, Sheet: funnelPeriodsSheet(report.Periods)},
+		{Key: widgetPeriods, Sheet: funnelPeriodsSheet(report.Periods, report.Totals)},
 		{Key: widgetRanked, Sheet: funnelRankedSheet(ranked)},
 	}, nil
 }
@@ -202,10 +205,13 @@ func funnelCardsSheet(stage string, c FunnelCards) sheet.Sheet {
 	return sheet.Sheet{Name: sheetCards, Rows: rows}
 }
 
-func funnelPeriodsSheet(periods []FunnelPeriod) sheet.Sheet {
+func funnelPeriodsSheet(periods []FunnelPeriod, t FunnelTotals) sheet.Sheet {
 	rows := [][]sheet.Cell{boldRow("Period", "Goal", "Actual", "Projected")}
 	for _, p := range periods {
 		rows = append(rows, []sheet.Cell{sheet.Text(p.Key), int64Cell(p.Goal), int64Cell(p.Actual), int64Cell(p.Projected)})
+	}
+	if len(periods) > 0 {
+		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), int64Cell(t.Goal), int64Cell(t.Actual), int64Cell(t.Projected)})
 	}
 	return sheet.Sheet{Name: sheetPeriods, Rows: rows}
 }

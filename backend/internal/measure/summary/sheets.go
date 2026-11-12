@@ -70,12 +70,16 @@ func revenueSheet(r RevenueSection, currency string) sheet.Sheet {
 	return sheet.Sheet{Name: "Revenue against goal", Rows: rows}
 }
 
-func trendSheet(periods []TrendPeriod, currency string) sheet.Sheet {
+func trendSheet(r RevenueSection, currency string) sheet.Sheet {
 	rows := [][]sheet.Cell{heads("Period", "State", inCurrency("Actual", currency), inCurrency("Projected", currency),
 		inCurrency("Goal", currency))}
-	for _, p := range periods {
+	for _, p := range r.Trend {
 		rows = append(rows, []sheet.Cell{sheet.Text(p.Label), sheet.Text(stateWord(p.State)), moneyCell(p.Actual),
 			moneyCell(p.Projected), moneyCell(p.Goal)})
+	}
+	if t := r.TrendTotals; len(r.Trend) > 0 {
+		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), sheet.Text(""), moneyCell(t.Actual), moneyCell(t.Projected),
+			moneyCell(t.Goal)})
 	}
 	return sheet.Sheet{Name: "Revenue trend", Rows: rows}
 }

@@ -12820,11 +12820,18 @@ export interface components {
             goal: components["schemas"]["Money"] | null;
             inProgress: boolean;
         };
+        /** @description The period table's Total row (039 FR-035, D-414): each column's periods added up over the year, the same in month and quarter view, converted once from US dollars; null where no period of the column has a figure. */
+        RevenuePeriodTotals: {
+            goal: components["schemas"]["Money"] | null;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+        };
         RevenueReport: {
             cards: components["schemas"]["RevenueCards"];
             /** @enum {string} */
             period: "month" | "quarter";
             periods: components["schemas"]["RevenuePeriod"][];
+            totals: components["schemas"]["RevenuePeriodTotals"];
             /** @description The first model in view, kept for compatibility; projections names every one. */
             projection: components["schemas"]["ProjectionStamp"] | null;
             /** @description Every model behind a projected figure in view, by name (049 SC-006). */
@@ -13042,6 +13049,12 @@ export interface components {
             /** @enum {string} */
             period: "month" | "quarter";
             periods: components["schemas"]["FunnelPeriod"][];
+            /** @description The period table's Total row, as RevenuePeriodTotals but whole counts. */
+            totals: {
+                goal: number | null;
+                actual: number | null;
+                projected: number | null;
+            };
             /** @description The first model in view, kept for compatibility; projections names every one. */
             projection: components["schemas"]["ProjectionStamp"] | null;
             /** @description Every model behind a projected figure in view, by name (049 SC-006). */
@@ -13228,6 +13241,12 @@ export interface components {
                     percent: number | null;
                 }[];
                 trend: components["schemas"]["SummaryTrendPeriod"][];
+                /** @description The trend table's Total row, as RevenuePeriodTotals (039 FR-035, D-414). */
+                trendTotals: {
+                    actual: components["schemas"]["PrReportMoney"];
+                    projected: components["schemas"]["PrReportMoney"];
+                    goal: components["schemas"]["PrReportMoney"];
+                };
             };
             funnel: {
                 stages: {

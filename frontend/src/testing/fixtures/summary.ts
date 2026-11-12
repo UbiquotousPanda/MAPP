@@ -33,6 +33,7 @@ export function summaryReport(overrides: Partial<SummaryReport> = {}): SummaryRe
         projected: i >= 5 ? usd('100.00') : null,
         goal: usd('800.00'),
       })),
+      trendTotals: { actual: usd('600.00'), projected: usd('700.00'), goal: usd('9600.00') },
     },
     funnel: {
       stages: [
