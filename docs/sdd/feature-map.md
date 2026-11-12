@@ -73,6 +73,7 @@ Read-only reports, shown as **Reports**. Built on the `measure-module` branch by
 | 049 | `049-revenue-and-funnel-reports` | Summary cards per stage and category, actual, projected and goal split at today, the ranked list by revenue or a stage | B · B · 14 | 040, 046, 047 | Built — #82, #99, #115, #118, #157; owner and model on ranked entries in #158 |
 | 050 | `050-attribution-roi` | A chosen attribution model credits revenue to activities; ROI with its model and cost basis named | B · A · 16 | 046, 048, 049 | Built — #71, #119, #149, #153; *Use planned cost* open as #160 |
 | 058 | `058-attribution-journeys` | How attributed revenue is made up: Revenue's activity figure opens a side panel of the deals it is concerned in, each with its journey's steps and the activity's share; comparison model, export (D-409) | B · A · 22 | 046, 049, 050 | In progress — built on `feature/058-attribution-journeys` (9 Nov 2026), pull request pending |
+| 059 | `059-report-consolidation` | Fewer reports, each a distinct view: Performance (Summary + Revenue + Funnel stages), Budget and spend, Purchasing (Purchase requests + GSAP link), Approvals, Plan data and access (Plan details + User access); old addresses redirect, saved views migrate, no new figure | — | 039–049, 058 | Spec approved 12 Nov 2026 |
 
 **Wave C (out of scope, future integration points):** the Finance budget report (needs the Finance budgets
 module), AR invoice details (accrual requests), the China budget pack (budget release figures), vendor delivery
