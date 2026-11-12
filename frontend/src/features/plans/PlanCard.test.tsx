@@ -35,7 +35,7 @@ describe('PlanCard (FR-002)', () => {
       '/plans/P-1001',
     );
     expect(screen.getByText('P-1001').closest('p')).toHaveTextContent(
-      'P-1001·2026·AOP·Operational',
+      'P-1001 · 2026 · AOP · Operational',
     );
     // The plan type (016 FR-032): Operational until the API sends another.
     expect(screen.getByText('Operational')).toBeInTheDocument();

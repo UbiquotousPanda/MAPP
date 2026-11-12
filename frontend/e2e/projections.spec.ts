@@ -27,7 +27,7 @@ test('047 US1: a model carries its velocity and allowed goal stages, and the wor
   const panel = page.getByRole('dialog').first();
   await expect(panel).toBeVisible();
 
-  await expect(panel.getByText(/250,000 INQ → .* MQL → .* → .* USD revenue/)).toBeVisible();
+  await expect(panel.getByText(/250,000 INQ → .* MQL → .* → \$[\d,.]+ revenue/)).toBeVisible();
 
   await panel.getByRole('button', { name: 'Edit' }).click();
   const form = page.getByRole('dialog', { name: /Edit model/ });
