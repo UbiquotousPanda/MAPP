@@ -123,6 +123,25 @@ describe('Combobox', () => {
     expect(screen.getByText('chosen:')).toBeInTheDocument();
   });
 
+  it('keeps the active option on the one just chosen, and moves it with the pointer (multiple)', async () => {
+    const { user } = renderWithProviders(<Example multiple />);
+
+    await user.click(combobox());
+    await user.click(screen.getByRole('option', { name: 'Cherry' }));
+    expect(combobox()).toHaveAttribute(
+      'aria-activedescendant',
+      screen.getByRole('option', { name: 'Cherry' }).id,
+    );
+
+    await user.hover(screen.getByRole('option', { name: 'Banana' }));
+    expect(combobox()).toHaveAttribute(
+      'aria-activedescendant',
+      screen.getByRole('option', { name: 'Banana' }).id,
+    );
+    await user.keyboard('{Enter}');
+    expect(screen.getByText('chosen: cherry,banana')).toBeInTheDocument();
+  });
+
   it('removes the last chip with Backspace in an empty input (multiple)', async () => {
     const { user } = renderWithProviders(<Example multiple start={['apple', 'banana']} />);
 

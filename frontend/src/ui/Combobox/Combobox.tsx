@@ -101,7 +101,15 @@ export function Combobox({
       setOpen(false);
     }
     setQuery('');
-    setActiveIndex(0);
+    // The list stays open on a multiple choice, so its active option stays on the one just chosen.
+    setActiveIndex(
+      multiple
+        ? Math.max(
+            0,
+            options.findIndex((option) => option.id === id),
+          )
+        : 0,
+    );
   }
 
   function remove(id: string) {
@@ -254,6 +262,7 @@ export function Combobox({
                           aria-selected={chosen}
                           className={cx(styles.option, index === active && styles.active)}
                           onClick={() => choose(option.id)}
+                          onMouseMove={() => setActiveIndex(index)}
                         >
                           <span className={styles.optionContent}>
                             {option.content ?? option.label}
