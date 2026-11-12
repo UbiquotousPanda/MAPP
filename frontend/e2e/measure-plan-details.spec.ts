@@ -11,7 +11,7 @@ test('043 US1: activities spread over each Shell attribute, and what is not fill
 }) => {
   await signInAs(page, PRIYA);
   await page.goto('/reports');
-  await page.getByRole('link', { name: 'Plan details' }).click();
+  await page.getByRole('link', { name: 'Plan data and access' }).click();
 
   await expect(page.getByRole('heading', { level: 1, name: 'Plan details' })).toBeVisible();
   await expect(page.getByText(/^In view: /)).toBeVisible();

@@ -12,10 +12,15 @@ interface ReportRoute {
   permission: Permission;
 }
 
-// Every report's address from the start (D-369), listed here so the feature loads only when opened.
+// Every report's address, listed here so the feature loads only when opened. The old reports keep their addresses
+// until the redirects to the five replace them.
 const REPORTS: ReportRoute[] = [
-  { key: 'planBudget', path: 'plan-budget', title: 'Plan budget', permission: 'reports.view' },
+  { key: 'performance', path: 'performance', title: 'Performance', permission: 'reports.view' },
+  { key: 'budget', path: 'budget', title: 'Budget and spend', permission: 'reports.view' },
+  { key: 'purchasing', path: 'purchasing', title: 'Purchasing', permission: 'reports.view' },
   { key: 'approvals', path: 'approvals', title: 'Approvals', permission: 'reports.view' },
+  { key: 'planData', path: 'plan-data', title: 'Plan data and access', permission: 'reports.view' },
+  { key: 'planBudget', path: 'plan-budget', title: 'Plan budget', permission: 'reports.view' },
   {
     key: 'purchaseRequests',
     path: 'purchase-requests',

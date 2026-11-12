@@ -6,7 +6,7 @@ import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { usePageTitle } from '@/ui/usePageTitle';
-import { REPORT_ROUTES } from '../reports';
+import { reportName } from '../reports';
 import { downloadReport, useReportFrame } from './api';
 import { ExportMenu } from './ExportMenu';
 import type { ReportFrameProps } from './ReportFrame';
@@ -19,7 +19,7 @@ import styles from './ReportFrame.module.css';
  * filter panel, In view, chips, Period, Show or Currency.
  */
 export function PlainReportFrame({ report, children }: ReportFrameProps) {
-  const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
+  const name = reportName(report);
   usePageTitle(name);
   const [address] = useReportAddress();
   const [params] = useAddressParams();

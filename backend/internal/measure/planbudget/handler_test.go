@@ -31,7 +31,7 @@ func TestPlanBudgetContract(t *testing.T) {
 	}
 	var catalogue measure.ReportCatalogue
 	planner.Do(t, http.MethodGet, "/api/v1/reports", nil).Decode(t, &catalogue)
-	if !slices.ContainsFunc(catalogue.Items, func(e measure.ReportEntry) bool { return e.Key == measure.KeyPlanBudget && e.Available }) {
+	if !slices.ContainsFunc(catalogue.Items, func(e measure.ReportEntry) bool { return e.Key == measure.KeyBudget && e.Available }) {
 		t.Errorf("catalogue %+v: Plan budget is built", catalogue.Items)
 	}
 }

@@ -18,21 +18,21 @@ Shared files with one owner: routes (`measure-routes.tsx`), catalogue (`reports.
 
 ## Phase 1: Foundation (lane 3, blocks lanes 1 and 2)
 
-- [ ] T001 Contract in `backend/api/openapi.yaml`: `ReportKey` (`performance, budget, purchasing, approvals,
+- [x] T001 Contract in `backend/api/openapi.yaml`: `ReportKey` (`performance, budget, purchasing, approvals,
   planData`), `ReportPath` (`performance, budget, purchasing, approvals, plan-data`), `ReportOwnStage` + `revenue`,
   `RevenueRankedSort` + `actualCost, roi`, `listReports` and `exportReport` descriptions; `pnpm run api:types`
-- [ ] T002 `frontend/src/features/measure/reports.ts`: five `REPORT_ROUTES` (`performance`, `budget`, `purchasing`,
+- [x] T002 `frontend/src/features/measure/reports.ts`: five `REPORT_ROUTES` (`performance`, `budget`, `purchasing`,
   `approvals`, `plan-data`), `REPORT_GROUPS` without `description` (FR-001, FR-012), `REPORT_ABOUT` for five, each
   cut to its question and audience; `shared/api.ts` `REPORT_PATHS`; `src/testing/fixtures/reports.ts` five entries
-- [ ] T003 `features/measure/index.ts` `REPORT_PAGES` with five keys: `budget` → `PlanBudgetReport`, `approvals` →
+- [x] T003 `features/measure/index.ts` `REPORT_PAGES` with five keys: `budget` → `PlanBudgetReport`, `approvals` →
   `ApprovalsReport`, and stubs `performance/PerformanceReport.tsx`, `purchasing/PurchasingReport.tsx`,
   `plan-data/PlanDataReport.tsx`, each rendering `ComingSoonReport` until its lane replaces the file
-- [ ] T004 `ui/EmptyState/EmptyState.tsx`: `onReset` prop adds the secondary "Reset filters" button; one test in
+- [x] T004 `ui/EmptyState/EmptyState.tsx`: `onReset` prop adds the secondary "Reset filters" button; one test in
   `EmptyState` tests (button calls `onReset`); `shared/ReportFrame.tsx` uses it
-- [ ] T005 `shared/ReportToolbar.tsx` and `shared/ReportFrame.tsx`: optional `filters` prop of the report's own
+- [x] T005 `shared/ReportToolbar.tsx` and `shared/ReportFrame.tsx`: optional `filters` prop of the report's own
   filter menus, chips and their removal, joined to `FilterBar`'s `menus`, `inUse`, `chips` and Clear filters
   (059-P1); a test in `ReportFrame.test.tsx` that an own filter counts in "Filters (n)" and Clear filters clears it
-- [ ] T006 `src/app/measure-routes.tsx`: the five report routes (`plan-data` and the rest with `reports.view`); the
+- [x] T006 `src/app/measure-routes.tsx`: the five report routes (`plan-data` and the rest with `reports.view`); the
   eight old paths routed to redirects (T012 fills `redirectOf`; until then each points to its new path without
   parameters)
 

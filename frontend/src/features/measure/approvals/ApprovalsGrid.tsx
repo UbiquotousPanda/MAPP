@@ -155,15 +155,7 @@ function tableOf(grid: ApprovalsGridData): ReportTableData {
 
 function Empty({ filtered, onReset }: { filtered: boolean; onReset: () => void }) {
   return filtered ? (
-    <EmptyState
-      compact
-      title="Your filters exclude everything."
-      action={
-        <Button type="button" variant="secondary" size="sm" onClick={onReset}>
-          Reset filters
-        </Button>
-      }
-    />
+    <EmptyState compact title="Your filters exclude everything." onReset={onReset} />
   ) : (
     <EmptyState
       compact

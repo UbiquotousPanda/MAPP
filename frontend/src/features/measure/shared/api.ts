@@ -20,8 +20,12 @@ type ReportViewUpdate = components['schemas']['ReportViewUpdate'];
 type ReportPath = operations['exportReport']['parameters']['path']['report'];
 
 const REPORT_PATHS: Record<ReportKey, ReportPath> = {
-  planBudget: 'plan-budget',
+  performance: 'performance',
+  budget: 'budget',
+  purchasing: 'purchasing',
   approvals: 'approvals',
+  planData: 'plan-data',
+  planBudget: 'plan-budget',
   purchaseRequests: 'purchase-requests',
   planDetails: 'plan-details',
   gsapLink: 'gsap-link',

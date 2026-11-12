@@ -63,7 +63,6 @@ function GroupSection({ group, items, index }: GroupProps) {
       <SectionHeading level={2} rank="section" id={headingId}>
         {group.title}
       </SectionHeading>
-      <p className={styles.groupDescription}>{group.description}</p>
       <ul className={styles.list}>
         {reports.map((report) => (
           <ReportItem key={report.key} report={report} />
@@ -87,7 +86,8 @@ function aboutParts(about: string): { question: string; audience: string } {
 }
 
 function ReportItem({ report }: { report: CatalogueEntry }) {
-  const { question, audience } = aboutParts(REPORT_ABOUT[report.key]);
+  const about = REPORT_ABOUT[report.key] ?? report.purpose;
+  const { question, audience } = aboutParts(about);
   const name = REPORT_ROUTES.find((route) => route.key === report.key)?.name ?? report.name;
   return (
     <li className={report.available ? styles.tile : styles.tileOff}>
@@ -105,7 +105,7 @@ function ReportItem({ report }: { report: CatalogueEntry }) {
               <span className={styles.name}>{name}</span>
             )}
           </h3>
-          <InfoTip label={name} text={REPORT_ABOUT[report.key]} />
+          <InfoTip label={name} text={about} />
         </div>
         {question && <p className={styles.question}>{question}</p>}
         <div className={styles.foot}>

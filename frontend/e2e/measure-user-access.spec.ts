@@ -12,8 +12,7 @@ test('045 US1: a sign-in shows in the report the administrator opens (FR-001 –
 }) => {
   await signInAs(page, PRIYA);
   await signInAs(page, ALEX);
-  await page.goto('/reports');
-  await page.getByRole('link', { name: 'User access' }).click();
+  await page.goto('/reports/user-access');
 
   await expect(page.getByRole('heading', { level: 1, name: 'User access' })).toBeVisible();
   const table = page.getByRole('table', { name: 'People' });

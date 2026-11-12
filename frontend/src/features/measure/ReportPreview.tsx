@@ -3,8 +3,8 @@ import type { ReportKey } from './reports';
 import styles from './ReportsPage.module.css';
 
 /** Abstract drawings, not data: each hints at the chart its report opens with. */
-const DRAWINGS: Record<ReportKey, ReactNode> = {
-  summary: (
+const DRAWINGS: Partial<Record<ReportKey, ReactNode>> = {
+  performance: (
     <>
       <path d="M40 78a40 40 0 0 1 80 0" className={styles.track} />
       <path d="M40 78a40 40 0 0 1 64-32" className={styles.stroke} />
@@ -14,22 +14,7 @@ const DRAWINGS: Record<ReportKey, ReactNode> = {
       <rect x="150" y="66" width="48" height="8" rx="4" className={styles.fillFaint} />
     </>
   ),
-  revenue: (
-    <>
-      <path d="M16 84 L60 66 L100 72 L144 40 L196 22 L196 92 L16 92 Z" className={styles.area} />
-      <path d="M16 84 L60 66 L100 72 L144 40 L196 22" className={styles.stroke} />
-      <path d="M16 70 L196 40" className={styles.dashed} />
-      <circle cx="144" cy="40" r="4" className={styles.fill} />
-    </>
-  ),
-  funnel: (
-    <>
-      <rect x="28" y="16" width="168" height="16" rx="4" className={styles.fill} />
-      <rect x="52" y="40" width="120" height="16" rx="4" className={styles.fillMid} />
-      <rect x="80" y="64" width="64" height="16" rx="4" className={styles.fillFaint} />
-    </>
-  ),
-  planBudget: (
+  budget: (
     <>
       {[20, 52, 84, 116, 148, 180].map((x, i) => (
         <rect
@@ -45,7 +30,7 @@ const DRAWINGS: Record<ReportKey, ReactNode> = {
       <path d="M12 26 L208 26" className={styles.dashed} />
     </>
   ),
-  purchaseRequests: (
+  purchasing: (
     <>
       {[18, 40, 62].map((y, i) => (
         <g key={y}>
@@ -62,16 +47,6 @@ const DRAWINGS: Record<ReportKey, ReactNode> = {
       ))}
     </>
   ),
-  gsapLink: (
-    <>
-      <rect x="20" y="30" width="56" height="40" rx="8" className={styles.soft} />
-      <rect x="144" y="30" width="56" height="40" rx="8" className={styles.fillFaint} />
-      <path d="M84 42 L136 42" className={styles.stroke} />
-      <path d="M128 36 L136 42 L128 48" className={styles.stroke} />
-      <path d="M136 58 L84 58" className={styles.dashed} />
-      <path d="M92 52 L84 58 L92 64" className={styles.strokeFaint} />
-    </>
-  ),
   approvals: (
     <>
       <path d="M34 50 L186 50" className={styles.track} />
@@ -83,7 +58,7 @@ const DRAWINGS: Record<ReportKey, ReactNode> = {
       ))}
     </>
   ),
-  planDetails: (
+  planData: (
     <>
       {[16, 36, 56, 76].map((y, i) => (
         <g key={y}>
@@ -96,21 +71,6 @@ const DRAWINGS: Record<ReportKey, ReactNode> = {
             rx="4"
             className={styles.fill}
           />
-        </g>
-      ))}
-    </>
-  ),
-  userAccess: (
-    <>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <g key={i}>
-          <circle
-            cx={34 + i * 38}
-            cy="38"
-            r="12"
-            className={i < 3 ? styles.fill : styles.fillFaint}
-          />
-          <rect x={22 + i * 38} y="58" width="24" height="8" rx="4" className={styles.soft} />
         </g>
       ))}
     </>

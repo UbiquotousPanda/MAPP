@@ -3,14 +3,13 @@ import type { ReactNode } from 'react';
 import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
-import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { usePageTitle } from '@/ui/usePageTitle';
-import { REPORT_ROUTES } from '../reports';
+import { reportName } from '../reports';
 import type { ReportKey } from '../reports';
 import { useReportFrame } from './api';
 import type { ReportFrame as Frame } from './api';
@@ -21,6 +20,7 @@ import { isRestricted, resetFilters } from './report-address';
 import type { ReportAddress } from './report-address';
 import { coverageText, inViewText, leftOutText } from './report-text';
 import { ReportToolbar } from './ReportToolbar';
+import type { OwnFilters } from './ReportToolbar';
 import { CopyLinkButton, SavedViewsMenu } from './SavedViewsMenu';
 import { useReportAddress } from './useReportAddress';
 import styles from './ReportFrame.module.css';
@@ -32,8 +32,8 @@ export interface ReportFrameProps {
   /** The report's widgets for the frame; absent for a report not built yet. */
   children?: (frame: Frame, address: ReportAddress) => ReactNode;
   comingSoon?: string;
-  /** False for a report the plan filters do not apply to (User access, 045-C1): header, saved views and export only. */
-  filters?: boolean;
+  /** The report's own filters beside the frame's; false where the plan filters do not apply. */
+  filters?: false | OwnFilters;
 }
 
 export function ReportFrame(props: ReportFrameProps) {
@@ -45,8 +45,14 @@ export function ReportFrame(props: ReportFrameProps) {
 }
 
 /** What every report page shares (contracts/ui.md). */
-function FilteredReportFrame({ report, controls, children, comingSoon }: ReportFrameProps) {
-  const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
+function FilteredReportFrame({
+  report,
+  controls,
+  children,
+  comingSoon,
+  filters,
+}: ReportFrameProps) {
+  const name = reportName(report);
   usePageTitle(name);
   const [address, setAddress] = useReportAddress();
   const [params] = useAddressParams();
@@ -92,6 +98,7 @@ function FilteredReportFrame({ report, controls, children, comingSoon }: ReportF
             address={address}
             onChange={setAddress}
             controls={controls?.(address)}
+            own={filters || undefined}
           />
           <div className={styles.notes}>
             {data.leftOut > 0 && <p role="status">{leftOutText(data.leftOut)}</p>}
@@ -137,11 +144,7 @@ function FrameBody({ data, address, onReset, comingSoon, children }: FrameBodyPr
         icon={<ChartColumnIncreasing />}
         title="Your filters exclude everything"
         text="No record matches every filter."
-        action={
-          <Button type="button" variant="secondary" onClick={onReset}>
-            Clear filters
-          </Button>
-        }
+        onReset={onReset}
       />
     );
   }

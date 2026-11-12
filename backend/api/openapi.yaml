@@ -9082,8 +9082,8 @@ paths:
       operationId: listReports
       summary: The reports the person may open, in the catalogue's order (feature 039, FR-001)
       description: >-
-        A report not built yet is listed with available false ("Coming soon"); a report needing more than
-        reports.view (User access needs access.manage) is listed only to people who hold it.
+        The five reports, each made of sections; a report none of whose sections is built yet is listed with
+        available false ("Coming soon").
       responses:
         "200":
           description: The catalogue.
@@ -9147,7 +9147,8 @@ paths:
       description: >-
         Excel holds one sheet per widget, then In view and About this export (report, year, filters in words,
         period, currency, exporter, date and time, rates used). CSV needs a widget and puts the notes before the
-        rows. A report not built yet exports In view and About this export only. Nothing is stored or logged.
+        rows. A report not built yet exports In view and About this export only. The export of a merged report
+        holds the section shown, named in About this export. Nothing is stored or logged.
       parameters:
         - $ref: "#/components/parameters/ReportPath"
         - $ref: "#/components/parameters/ReportFormat"
@@ -10914,12 +10915,18 @@ components:
       name: report
       in: path
       required: true
-      description: The report's path in the web app's address.
+      description: >-
+        The report's path in the web app's address. The paths after plan-data name the old reports, kept as
+        sections until the merged catalogue replaces them.
       schema:
         type: string
         enum:
-          - plan-budget
+          - performance
+          - budget
+          - purchasing
           - approvals
+          - plan-data
+          - plan-budget
           - purchase-requests
           - plan-details
           - gsap-link
@@ -10994,10 +11001,10 @@ components:
     ReportOwnStage:
       name: stage
       in: query
-      description: The funnel stage Funnel stages or Summary shows, which the report validates (049, 048).
+      description: The stage Performance shows, revenue or a funnel stage, which the report validates (059, 049).
       schema:
         type: string
-        enum: [inq, mql]
+        enum: [revenue, inq, mql]
     ReportOwnRevenueBy:
       name: revenueBy
       in: query
@@ -11097,7 +11104,7 @@ components:
         without the figure come last in either order.
       schema:
         type: string
-        enum: [actualRevenue, projectedRevenue, goal, performance]
+        enum: [actualRevenue, projectedRevenue, goal, performance, actualCost, roi]
     FunnelRankedSort:
       name: sort
       in: query
@@ -27973,9 +27980,16 @@ components:
     # Feature 039 Measure foundation
     ReportKey:
       type: string
+      description: >-
+        The five reports first; the keys after planData name the old reports, kept as sections until the merged
+        catalogue replaces them.
       enum:
-        - planBudget
+        - performance
+        - budget
+        - purchasing
         - approvals
+        - planData
+        - planBudget
         - purchaseRequests
         - planDetails
         - gsapLink

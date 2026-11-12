@@ -19,17 +19,11 @@
   padding-top: var(--space-2);
 }
 
-.groupDescription {
-  margin: var(--space-1) 0 var(--space-6);
-  color: var(--ink);
-  font-size: var(--text-sm);
-}
-
 .list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 272px), 1fr));
   gap: var(--space-5);
-  margin: 0;
+  margin: var(--space-4) 0 0;
   padding: 0;
   list-style: none;
 }

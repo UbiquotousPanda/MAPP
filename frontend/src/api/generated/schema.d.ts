@@ -5134,7 +5134,7 @@ export interface paths {
         };
         /**
          * The reports the person may open, in the catalogue's order (feature 039, FR-001)
-         * @description A report not built yet is listed with available false ("Coming soon"); a report needing more than reports.view (User access needs access.manage) is listed only to people who hold it.
+         * @description The five reports, each made of sections; a report none of whose sections is built yet is listed with available false ("Coming soon").
          */
         get: operations["listReports"];
         put?: never;
@@ -5176,7 +5176,7 @@ export interface paths {
         };
         /**
          * A report as an Excel workbook, or one of its widgets as Excel or CSV (feature 039, FR-022)
-         * @description Excel holds one sheet per widget, then In view and About this export (report, year, filters in words, period, currency, exporter, date and time, rates used). CSV needs a widget and puts the notes before the rows. A report not built yet exports In view and About this export only. Nothing is stored or logged.
+         * @description Excel holds one sheet per widget, then In view and About this export (report, year, filters in words, period, currency, exporter, date and time, rates used). CSV needs a widget and puts the notes before the rows. A report not built yet exports In view and About this export only. The export of a merged report holds the section shown, named in About this export. Nothing is stored or logged.
          */
         get: operations["exportReport"];
         put?: never;
@@ -12548,8 +12548,11 @@ export interface components {
         ColumnMappingList: {
             items: components["schemas"]["ColumnMapping"][];
         };
-        /** @enum {string} */
-        ReportKey: "planBudget" | "approvals" | "purchaseRequests" | "planDetails" | "gsapLink" | "userAccess" | "summary" | "revenue" | "funnel";
+        /**
+         * @description The five reports first; the keys after planData name the old reports, kept as sections until the merged catalogue replaces them.
+         * @enum {string}
+         */
+        ReportKey: "performance" | "budget" | "purchasing" | "approvals" | "planData" | "planBudget" | "purchaseRequests" | "planDetails" | "gsapLink" | "userAccess" | "summary" | "revenue" | "funnel";
         ReportEntry: {
             key: components["schemas"]["ReportKey"];
             /** @example plan-budget */
@@ -13936,8 +13939,8 @@ export interface components {
         MappingId: string;
         /** @description The report the frame is for. */
         ReportKey: components["schemas"]["ReportKey"];
-        /** @description The report's path in the web app's address. */
-        ReportPath: "plan-budget" | "approvals" | "purchase-requests" | "plan-details" | "gsap-link" | "user-access" | "summary" | "revenue" | "funnel";
+        /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
+        ReportPath: "performance" | "budget" | "purchasing" | "approvals" | "plan-data" | "plan-budget" | "purchase-requests" | "plan-details" | "gsap-link" | "user-access" | "summary" | "revenue" | "funnel";
         /** @description The report's own sort, which the report validates (039 FR-022); a leading minus sorts descending. */
         ReportOwnSort: string;
         /** @description The report's own tab, which the report validates (044). */
@@ -13952,8 +13955,8 @@ export interface components {
         ReportOwnColumns: string;
         /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
         ReportOwnCategory: string;
-        /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
-        ReportOwnStage: "inq" | "mql";
+        /** @description The stage Performance shows, revenue or a funnel stage, which the report validates (059, 049). */
+        ReportOwnStage: "revenue" | "inq" | "mql";
         /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
         ReportOwnRevenueBy: string;
         /** @description The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048). */
@@ -13978,7 +13981,7 @@ export interface components {
         /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
         FunnelStage: "inq" | "mql";
         /** @description Without sort or order the list opens on performance, lowest first, so the most behind is on top. Entries without the figure come last in either order. */
-        RevenueRankedSort: "actualRevenue" | "projectedRevenue" | "goal" | "performance";
+        RevenueRankedSort: "actualRevenue" | "projectedRevenue" | "goal" | "performance" | "actualCost" | "roi";
         /** @description Entries without the figure come last in either order. */
         FunnelRankedSort: "actual" | "projected" | "goal" | "performance";
         /** @example RV-1001 */
@@ -23774,7 +23777,7 @@ export interface operations {
                 columns?: components["parameters"]["ReportOwnColumns"];
                 /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
                 category?: components["parameters"]["ReportOwnCategory"];
-                /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
+                /** @description The stage Performance shows, revenue or a funnel stage, which the report validates (059, 049). */
                 stage?: components["parameters"]["ReportOwnStage"];
                 /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
                 revenueBy?: components["parameters"]["ReportOwnRevenueBy"];
@@ -23791,7 +23794,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
                 report: components["parameters"]["ReportPath"];
             };
             cookie?: never;
@@ -23822,7 +23825,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
                 report: components["parameters"]["ReportPath"];
             };
             cookie?: never;
@@ -23849,7 +23852,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
                 report: components["parameters"]["ReportPath"];
             };
             cookie?: never;
@@ -23881,7 +23884,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
                 report: components["parameters"]["ReportPath"];
                 /** @example RV-1001 */
                 viewId: components["parameters"]["ReportViewId"];
@@ -23910,7 +23913,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The paths after plan-data name the old reports, kept as sections until the merged catalogue replaces them. */
                 report: components["parameters"]["ReportPath"];
                 /** @example RV-1001 */
                 viewId: components["parameters"]["ReportViewId"];

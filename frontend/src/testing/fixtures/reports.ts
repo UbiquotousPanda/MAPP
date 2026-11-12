@@ -3,7 +3,7 @@ import type { components } from '@/api/generated/schema';
 type ReportFrame = components['schemas']['ReportFrame'];
 type ReportCatalogue = components['schemas']['ReportCatalogue'];
 
-/** The Reports page's catalogue for a planner: every report but User access, Plan details available. */
+/** The Reports page's catalogue: the five reports, Plan data and access available. */
 export function catalogue(): ReportCatalogue {
   const entry = (
     key: ReportCatalogue['items'][number]['key'],
@@ -19,14 +19,11 @@ export function catalogue(): ReportCatalogue {
   });
   return {
     items: [
-      entry('planBudget', 'plan-budget', 'Plan budget'),
+      entry('performance', 'performance', 'Performance'),
+      entry('budget', 'budget', 'Budget and spend'),
+      entry('purchasing', 'purchasing', 'Purchasing'),
       entry('approvals', 'approvals', 'Approvals'),
-      entry('purchaseRequests', 'purchase-requests', 'Purchase requests'),
-      entry('planDetails', 'plan-details', 'Plan details', true),
-      entry('gsapLink', 'gsap-link', 'GSAP link'),
-      entry('summary', 'summary', 'Summary'),
-      entry('revenue', 'revenue', 'Revenue'),
-      entry('funnel', 'funnel', 'Funnel stages'),
+      entry('planData', 'plan-data', 'Plan data and access', true),
     ],
   };
 }

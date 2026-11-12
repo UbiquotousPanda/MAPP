@@ -33,7 +33,7 @@ func TestReportsCatalogue_Contract_FR001(t *testing.T) {
 	var catalogue measure.ReportCatalogue
 	call(t, apitest.New(t).SignIn(t, carlosEmail), "/api/v1/reports", http.StatusOK).Decode(t, &catalogue)
 
-	if len(catalogue.Items) < 8 || catalogue.Items[0].Key != measure.KeyPlanBudget {
+	if len(catalogue.Items) != 5 || catalogue.Items[0].Key != measure.KeyPerformance {
 		t.Errorf("catalogue = %+v, want the reports in the catalogue's order", catalogue.Items)
 	}
 }

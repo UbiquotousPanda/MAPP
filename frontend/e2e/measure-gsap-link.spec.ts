@@ -15,8 +15,7 @@ test('044 US1: line items waiting for an SWBS code, sorted in the address, and o
   page,
 }) => {
   await signInAs(page, PRIYA);
-  await page.goto('/reports');
-  await page.getByRole('link', { name: 'GSAP link' }).click();
+  await page.goto('/reports/gsap-link');
 
   await expect(page.getByRole('heading', { level: 1, name: 'GSAP link' })).toBeVisible();
   await expect(

@@ -32,6 +32,7 @@ type entry struct {
 	key, path, name, purpose string
 	requires                 authz.Permission // beyond reports.view; "" for none
 	controls                 frameControls
+	sections                 []string
 }
 
 type frameControls struct {
@@ -39,33 +40,41 @@ type frameControls struct {
 	showOpensOn           string
 }
 
-func entries() []entry {
+func reports() []entry {
 	return []entry{
-		{KeyPlanBudget, "plan-budget", "Plan budget",
+		{KeyPerformance, "performance", "Performance",
+			"Whether the year is on track: projected against goal, each funnel stage and what earned the revenue.", "",
+			frameControls{period: true, showOpensOn: ShowCampaign}, []string{KeySummary, KeyRevenue, KeyFunnel}},
+		{KeyBudget, "budget", "Budget and spend",
 			"Budget, planned cost, committed and actual by month, and which plans, campaigns or activities lead or lag.", "",
-			frameControls{period: true, showOpensOn: ShowCampaign}},
+			frameControls{period: true, showOpensOn: ShowCampaign}, []string{KeyPlanBudget}},
+		{KeyPurchasing, "purchasing", "Purchasing",
+			"What is committed to each vendor and owner, and each purchase request's way to its purchase order.", "",
+			frameControls{}, []string{KeyPurchaseRequests, KeyGsapLink}},
 		{KeyApprovals, "approvals", "Approvals",
-			"How many approvals wait, how long decisions take, and every approval round.", "", frameControls{}},
-		{KeyPurchaseRequests, "purchase-requests", "Purchase requests",
-			"What is committed to each vendor and owner by delivery month, and what has been invoiced.", "", frameControls{}},
-		{KeyPlanDetails, "plan-details", "Plan details",
-			"How activities and planned cost spread across each Shell attribute, and what is not filled in.", "",
-			frameControls{period: true, showOpensOn: ShowActivity}},
-		{KeyGsapLink, "gsap-link", "GSAP link",
-			"SWBS codes not received, purchase requests waiting for GSAP, and the purchase orders of each line item.", "",
-			frameControls{}},
-		{KeyUserAccess, "user-access", "User access",
-			"Who has which role and teams, and when they last signed in.", authz.AccessManage, frameControls{noPlanFilters: true}},
-		{KeySummary, "summary", "Summary",
-			"Whether the year is on track: projected against goal, the leading segments and the funnel.", "",
-			frameControls{period: true}},
-		{KeyRevenue, "revenue", "Revenue",
-			"Revenue against goal by month, and the plans, campaigns or activities behind it.", "",
-			frameControls{period: true, showOpensOn: ShowCampaign}},
-		{KeyFunnel, "funnel", "Funnel stages",
-			"One funnel stage against goal by month, and where the funnel leaks.", "",
-			frameControls{period: true, showOpensOn: ShowCampaign}},
+			"How many approvals wait, how long decisions take, and every approval round.", "", frameControls{},
+			[]string{KeyApprovals}},
+		{KeyPlanData, "plan-data", "Plan data and access",
+			"How plan data spreads across each Shell attribute and, for administrators, who has which role.", "",
+			frameControls{period: true, showOpensOn: ShowActivity}, []string{KeyPlanDetails, KeyUserAccess}},
 	}
+}
+
+func sections() []entry {
+	return []entry{
+		{KeyPlanBudget, "plan-budget", "Plan budget", "", "", frameControls{period: true, showOpensOn: ShowCampaign}, nil},
+		{KeyPurchaseRequests, "purchase-requests", "Purchase requests", "", "", frameControls{}, nil},
+		{KeyPlanDetails, "plan-details", "Plan details", "", "", frameControls{period: true, showOpensOn: ShowActivity}, nil},
+		{KeyGsapLink, "gsap-link", "GSAP link", "", "", frameControls{}, nil},
+		{KeyUserAccess, "user-access", "User access", "", authz.AccessManage, frameControls{noPlanFilters: true}, nil},
+		{KeySummary, "summary", "Summary", "", "", frameControls{period: true}, nil},
+		{KeyRevenue, "revenue", "Revenue", "", "", frameControls{period: true, showOpensOn: ShowCampaign}, nil},
+		{KeyFunnel, "funnel", "Funnel stages", "", "", frameControls{period: true, showOpensOn: ShowCampaign}, nil},
+	}
+}
+
+func entries() []entry {
+	return append(reports(), sections()...)
 }
 
 func Keys() []string {
@@ -110,16 +119,15 @@ func (r *Registry) Get(key string) (Report, bool) {
 	return report, found
 }
 
-// Catalogue lists the reports the person may open, in order; a report not registered or a stub is not available.
-func (r *Registry) Catalogue(ctx context.Context) ReportCatalogue {
+// Catalogue lists the five reports in order; one is available once any of its sections is registered and built.
+func (r *Registry) Catalogue(context.Context) ReportCatalogue {
 	items := []ReportEntry{}
-	for _, e := range entries() {
-		if e.requires != "" && !authz.AvailableAnywhere(ctx, e.requires).Available {
-			continue
-		}
-		report, found := r.reports[e.key]
-		items = append(items, ReportEntry{Key: e.key, Path: e.path, Name: e.name, Purpose: e.purpose,
-			Available: found && report.Available()})
+	for _, e := range reports() {
+		available := slices.ContainsFunc(e.sections, func(key string) bool {
+			report, found := r.reports[key]
+			return found && report.Available()
+		})
+		items = append(items, ReportEntry{Key: e.key, Path: e.path, Name: e.name, Purpose: e.purpose, Available: available})
 	}
 	return ReportCatalogue{Items: items}
 }

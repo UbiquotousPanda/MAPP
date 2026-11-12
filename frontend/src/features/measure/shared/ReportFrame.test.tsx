@@ -9,10 +9,15 @@ import { apiError, reply } from '@/testing/replies';
 import { choose } from '@/testing/select';
 import { PeriodSwitch } from './ReportControls';
 import { ReportFrame } from './ReportFrame';
+import type { ReportFrameProps } from './ReportFrame';
 
 type Frame = ReturnType<typeof reportFrame>;
 
-function renderFrame(frame: Frame | 'forbidden', route = '/reports/plan-budget') {
+function renderFrame(
+  frame: Frame | 'forbidden',
+  route = '/reports/plan-budget',
+  filters?: ReportFrameProps['filters'],
+) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
@@ -24,7 +29,7 @@ function renderFrame(frame: Frame | 'forbidden', route = '/reports/plan-budget')
     ),
   ]);
   const rendered = renderWithProviders(
-    <ReportFrame report="planBudget">
+    <ReportFrame report="planBudget" filters={filters}>
       {() => (
         <>
           <PeriodSwitch />
@@ -114,11 +119,25 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
     expect(screen.getByText('There are plans for 2025.')).toBeInTheDocument();
   });
 
-  it('says the filters exclude everything, with Clear filters (FR-031)', async () => {
+  it('says the filters exclude everything, with Reset filters (FR-031)', async () => {
     renderFrame(reportFrame({ inView: empty }), '/reports/plan-budget?planType=crossMarket');
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Clear filters' }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Reset filters' })).toBeInTheDocument();
+  });
+
+  it('counts a report filter of its own in Filters (n), and Clear filters clears it too (059-P1)', async () => {
+    const own = { menus: <p>Category menu</p>, chips: [{ key: 'category', label: 'Events' }] };
+    const { user, router } = renderFrame(
+      reportFrame(),
+      '/reports/plan-budget?planType=operational&category=AC-1',
+      own,
+    );
+
+    expect(await screen.findByRole('button', { name: /Filters \(2\)/ })).toBeInTheDocument();
+    expect(screen.getByText('Category menu')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    await waitFor(() => expect(search(router).toString()).toBe(''));
   });
 
   it('says there are no plans for the year before blaming the filters (FR-031)', async () => {

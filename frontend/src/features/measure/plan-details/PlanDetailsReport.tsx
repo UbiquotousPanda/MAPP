@@ -1,5 +1,5 @@
 import { useFormatters } from '@/format/useFormatters';
-import { Button, LinkButton } from '@/ui/Button/Button';
+import { LinkButton } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -50,11 +50,7 @@ function NoRecords({ show, address }: { show: Report['show']; address: ReportAdd
       <EmptyState
         title="Your filters exclude everything"
         text="No record matches every filter."
-        action={
-          <Button type="button" variant="secondary" onClick={() => setAddress(resetFilters)}>
-            Reset filters
-          </Button>
-        }
+        onReset={() => setAddress(resetFilters)}
       />
     );
   }

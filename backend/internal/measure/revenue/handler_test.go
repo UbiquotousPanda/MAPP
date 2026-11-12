@@ -53,10 +53,8 @@ func TestRevenueAndFunnelReports_InTheCatalogue_049(t *testing.T) {
 	planner := apitest.New(t).SignIn(t, "priya.raman@shell.com")
 	var catalogue measure.ReportCatalogue
 	planner.Do(t, http.MethodGet, "/api/v1/reports", nil).Decode(t, &catalogue)
-	for _, key := range []string{measure.KeyRevenue, measure.KeyFunnel} {
-		if !slices.ContainsFunc(catalogue.Items, func(e measure.ReportEntry) bool { return e.Key == key && e.Available }) {
-			t.Errorf("catalogue %+v: %s is built", catalogue.Items, key)
-		}
+	if !slices.ContainsFunc(catalogue.Items, func(e measure.ReportEntry) bool { return e.Key == measure.KeyPerformance && e.Available }) {
+		t.Errorf("catalogue %+v: Performance, made of Revenue and Funnel stages, is built", catalogue.Items)
 	}
 }
 

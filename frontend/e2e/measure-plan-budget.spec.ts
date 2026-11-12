@@ -11,7 +11,7 @@ test('040 US1: Plan budget shows the cards and spend by month with today marked 
 }) => {
   await signInAs(page, PRIYA);
   await page.goto('/reports');
-  await page.getByRole('link', { name: 'Plan budget' }).click();
+  await page.getByRole('link', { name: 'Budget and spend' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Plan budget' })).toBeVisible();
 
   const cards = page.getByLabel('Summary');

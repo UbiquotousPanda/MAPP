@@ -4,10 +4,13 @@ import type { ReportAddress } from './report-address';
 
 export type AddressUpdate = ReportAddress | ((latest: ReportAddress) => ReportAddress);
 
-/** A report's own parameters are kept after the frame's; written in place, so Back leaves the report. */
-export function useReportAddress(): [ReportAddress, (next: AddressUpdate) => void] {
+/** The report's own parameters follow the frame's, but those in drop; written in place, so Back leaves the report. */
+export function useReportAddress(): [
+  ReportAddress,
+  (next: AddressUpdate, drop?: string[]) => void,
+] {
   const [params, setParams] = useAddressParams();
-  const write = (update: AddressUpdate) =>
+  const write = (update: AddressUpdate, drop: string[] = []) =>
     setParams(
       (latest) => {
         const before = readAddress(latest);
@@ -15,7 +18,8 @@ export function useReportAddress(): [ReportAddress, (next: AddressUpdate) => voi
         const written = writeAddress(next);
         const keepsPage = onlyTablesChanged(before, next);
         for (const [name, value] of latest) {
-          if (!FRAME_PARAMS.includes(name) && (keepsPage || name !== 'page')) {
+          const kept = !FRAME_PARAMS.includes(name) && !drop.includes(name);
+          if (kept && (keepsPage || name !== 'page')) {
             written.append(name, value);
           }
         }

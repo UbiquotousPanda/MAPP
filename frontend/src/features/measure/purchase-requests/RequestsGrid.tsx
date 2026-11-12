@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useFormatters } from '@/format/useFormatters';
-import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { Pager } from '@/ui/Pager/Pager';
 import { SortHeader } from '@/ui/SortHeader/SortHeader';
@@ -132,15 +131,7 @@ function TotalRow({
 
 function Empty({ filtered, onReset }: { filtered: boolean; onReset: () => void }) {
   return filtered ? (
-    <EmptyState
-      compact
-      title="Your filters exclude everything."
-      action={
-        <Button type="button" variant="secondary" size="sm" onClick={onReset}>
-          Reset filters
-        </Button>
-      }
-    />
+    <EmptyState compact title="Your filters exclude everything." onReset={onReset} />
   ) : (
     <EmptyState
       compact

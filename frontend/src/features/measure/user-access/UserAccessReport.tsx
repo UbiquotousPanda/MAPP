@@ -71,15 +71,7 @@ function Results({ report, table, onChange }: ResultsProps) {
       <EmptyState
         icon={<UsersRound />}
         title="No people match these filters"
-        action={
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => onChange({ teams: [], status: 'active' })}
-          >
-            Reset filters
-          </Button>
-        }
+        onReset={() => onChange({ teams: [], status: 'active' })}
       />
     );
   }
