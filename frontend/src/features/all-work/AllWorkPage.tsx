@@ -213,6 +213,7 @@ export function AllWorkPage() {
           sizes={PAGE_SIZES}
           onPage={session.setPage}
           onPageSize={session.setPageSize}
+          placement="below"
         />
       )}
     </>

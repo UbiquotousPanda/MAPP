@@ -14,7 +14,7 @@ export interface PagerProps<Size extends number> {
   onPage: (page: number) => void;
   onPageSize?: (pageSize: Size) => void;
   /** Under a table (with a gap above) or as its card's footer (a hairline above); none inside a gap. */
-  placement?: 'below' | 'cardFooter';
+  placement: 'below' | 'cardFooter';
 }
 
 /** "1–50 of 120" on the left; Rows per page and, with more than one page, Previous and Next on the right. */
@@ -24,7 +24,7 @@ export function Pager<Size extends number>(props: PagerProps<Size>) {
   const first = (page - 1) * pageSize + 1;
   const last = Math.min(total, page * pageSize);
   return (
-    <nav className={cx(styles.pager, placement && styles[placement])} aria-label="Pages">
+    <nav className={cx(styles.pager, styles[placement])} aria-label="Pages">
       <p className={styles.range} aria-live="polite">
         {total === 0
           ? 'No rows'

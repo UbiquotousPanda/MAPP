@@ -188,7 +188,13 @@ export function LineItemTransactions({ lineItemId, count }: { lineItemId: string
         <Skeleton lines={3} />
       )}
       {pages > 1 && (
-        <Pager page={page} pageSize={TRANSACTIONS_PAGE_SIZE} total={count} onPage={setPage} />
+        <Pager
+          page={page}
+          pageSize={TRANSACTIONS_PAGE_SIZE}
+          total={count}
+          onPage={setPage}
+          placement="below"
+        />
       )}
     </TableBlock>
   );

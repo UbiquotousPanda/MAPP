@@ -237,7 +237,15 @@ function DealsLoaded({
           ))}
         </ul>
       )}
-      {pages > 1 && <Pager page={page} pageSize={data.size} total={data.total} onPage={onPage} />}
+      {pages > 1 && (
+        <Pager
+          page={page}
+          pageSize={data.size}
+          total={data.total}
+          onPage={onPage}
+          placement="below"
+        />
+      )}
     </div>
   );
 }

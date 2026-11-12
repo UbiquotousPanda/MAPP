@@ -125,6 +125,7 @@ export function FinancialsPage() {
                       sizes={LIST_PAGE_SIZES}
                       onPage={(page) => change({ page })}
                       onPageSize={(pageSize) => change({ pageSize })}
+                      placement="cardFooter"
                     />
                   </>
                 )

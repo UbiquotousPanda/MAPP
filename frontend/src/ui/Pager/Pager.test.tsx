@@ -12,6 +12,7 @@ function renderPager(page: number, total: number) {
   const onPageSize = vi.fn();
   render(
     <Pager
+      placement="below"
       page={page}
       pageSize={25}
       total={total}
@@ -61,7 +62,7 @@ describe('Pager', () => {
   });
 
   it('leaves out Rows per page when the page size is fixed', () => {
-    render(<Pager page={1} pageSize={25} total={60} onPage={vi.fn()} />);
+    render(<Pager placement="below" page={1} pageSize={25} total={60} onPage={vi.fn()} />);
 
     expect(screen.getByText('1–25 of 60')).toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: 'Rows per page' })).not.toBeInTheDocument();
