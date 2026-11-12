@@ -29,7 +29,7 @@ export function ReportsPage() {
     <>
       <PageHeader
         title="Reports"
-        description="Read-only reports of your plans, approvals, purchase requests and their figures."
+        description="Your plans, approvals, purchase requests and their figures."
       />
       {catalogue.data ? (
         REPORT_GROUPS.map((group, index) => (
