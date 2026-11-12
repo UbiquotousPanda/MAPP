@@ -75,7 +75,7 @@ confirm (D-346 – D-349, Q-024, Q-025).
 ### User Story 1 - A budget owner refuses overspending on a budget (Priority: P1)
 
 Priya owns the plan "FY2026 Lubricants Europe". She opens the plan's form and, under the budget, chooses
-**When planned cost goes over this budget: Refuse**. Later a colleague raises an activity's planned cost so
+**If planned cost exceeds the budget: Refuse**. Later a colleague raises an activity's planned cost so
 that the plan's planned cost would pass 1,200,000.00 USD: the activity form says before saving that the save
 will be refused, and the save is refused with a message naming the plan budget, its amount and the overage.
 Nothing is saved.
@@ -91,7 +91,7 @@ and the overage; raise it by less: it saves. Set Warn again: the larger raise sa
 
 1. **Given** Priya owns the plan, **When** she opens its edit form, **Then** below Plan budget she sees "When
    planned cost goes over this budget" with **Warn** ("Save and show the overage") chosen and **Refuse**
-   ("Refuse any save that takes the planned cost over the budget"); **When** she chooses Refuse and saves,
+   ("Block saves over budget"; amended 2026-11-12 so both choices fit one line); **When** she chooses Refuse and saves,
    **Then** the plan shows "Refuses overspending" next to its budget and the activity log has one change
    "Overspend: Warn → Refuse" by Priya.
 2. **Given** the plan refuses overspending with 1,200,000.00 USD budget and planned cost P, **When** anyone

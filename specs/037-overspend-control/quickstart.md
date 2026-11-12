@@ -5,7 +5,7 @@ Run the API and the web app on fresh demo data (`go run ./cmd/seed`, `go run ./c
 ## US1 — Refuse on a plan budget (P1)
 
 1. Sign in as **Priya Raman**, open **FY2026 Lubricants Europe**, choose **Edit**. Below Plan budget, under
-   "When planned cost goes over this budget", choose **Refuse** and save. The plan shows "Refuses
+   "If planned cost exceeds the budget", choose **Refuse** and save. The plan shows "Refuses
    overspending"; the activity log shows "Overspend: Warn → Refuse".
 2. Open any activity of the plan and choose **Edit**. The Planned cost field says how much the plan has left
    to plan. Type a planned cost that raises the activity by more than that: the field says "This is <X> over

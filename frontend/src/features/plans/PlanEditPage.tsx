@@ -6,6 +6,7 @@ import { budgetCheck } from '@/features/overspend';
 import { allows } from '@/session/gate-action';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
+import { FormPage } from '@/ui/FormRail/FormRail';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { useToast } from '@/ui/Toast/useToast';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
@@ -39,7 +40,7 @@ export function PlanEditPage() {
   }
 
   return (
-    <>
+    <FormPage>
       <PageHeader
         breadcrumb={[
           { label: 'Plans', to: '/plans' },
@@ -55,7 +56,7 @@ export function PlanEditPage() {
       ) : (
         <EditForm plan={plan.data} />
       )}
-    </>
+    </FormPage>
   );
 }
 

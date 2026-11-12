@@ -40,7 +40,7 @@ function sectionTitles() {
 }
 
 describe('PlanForm (US1, FR-005 – FR-010)', () => {
-  it('shows the sections in order with markings as words and the defaults labelled', async () => {
+  it('shows the sections in order with their markings and the defaults pre-filled', async () => {
     renderForm();
 
     expect(await screen.findByRole('textbox', { name: /Plan name/ })).toBeInTheDocument();
@@ -51,35 +51,21 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
       'true',
     );
     expect(screen.getByRole('button', { name: 'Remove 2026' })).toBeInTheDocument();
-    expect(screen.getByText('Default: the current year')).toBeInTheDocument();
-    expect(await screen.findByText('Default: your teams')).toBeInTheDocument();
-    expect(await screen.findByText('Default: you')).toBeInTheDocument();
-    expect(screen.getByText('Default: Evenly')).toBeInTheDocument();
-    expect(screen.getByText('Default: INQ')).toBeInTheDocument();
-    expect(screen.getAllByText('Default: No')).toHaveLength(2);
+    // A pre-filled default says so by showing it; no "Default: …" line repeats it.
+    expect(screen.queryByText(/^Default:/)).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /Strategic \/ AOP plan/ })).not.toBeChecked();
     expect(screen.getAllByText('Needed to publish').length).toBeGreaterThanOrEqual(3);
-    // A model is not defaulted when several are active.
-    expect(screen.queryByText('Default: the only active model')).not.toBeInTheDocument();
   });
 
-  it('drops a default hint once the person changes the field', async () => {
-    const { user } = renderForm();
-
-    await screen.findByRole('combobox', { name: /Year/ });
-    await chooseYear(user, '2027');
-
-    expect(screen.queryByText('Default: the current year')).not.toBeInTheDocument();
-  });
-
-  it('labels the only active model as the default and shows its rates', async () => {
+  it('pre-selects the only active model and shows its rates', async () => {
     renderForm({
       initial: valuesFromDefaults(planDefaults({ modelId: 'MOD-1001' })),
       defaults: planDefaults({ modelId: 'MOD-1001' }),
     });
 
-    expect(await screen.findByText('Default: the only active model')).toBeInTheDocument();
+    expect(await screen.findByRole('combobox', { name: /Model/ })).toHaveValue('MOD-1001');
     expect(
-      screen.getByText('INQ→MQL 2.00 % · MQL→deal 5.00 % · average deal size 10,000.00 USD'),
+      screen.getByText('INQ→MQL 2.00 % · MQL→deal 5.00 % · average deal size $10,000.00'),
     ).toBeInTheDocument();
   });
 
@@ -108,7 +94,7 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
     await user.type(screen.getByRole('textbox', { name: 'Goal amount (INQ)' }), '250000');
 
     expect(screen.getByText('5,000')).toBeInTheDocument();
-    expect(screen.getByText('2,500,000.00 USD')).toBeInTheDocument();
+    expect(screen.getByText('$2,500,000.00')).toBeInTheDocument();
     expect(screen.getAllByText('Calculated')).toHaveLength(3);
     expect(screen.getByText('MQL = INQ × 2.00 %')).toBeInTheDocument();
   });

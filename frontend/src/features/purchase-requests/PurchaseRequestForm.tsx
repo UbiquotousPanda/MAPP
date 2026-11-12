@@ -9,7 +9,7 @@ import type { ChoiceOption } from '@/ui/ChoiceField/ChoiceField';
 import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FormFooter } from '@/ui/FormFooter/FormFooter';
-import { FormCard, FormLayout } from '@/ui/FormRail/FormRail';
+import { FormCard, FormLayout, FormPage } from '@/ui/FormRail/FormRail';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
@@ -114,7 +114,7 @@ export function PurchaseRequestForm(props: PurchaseRequestFormProps) {
   );
 
   return (
-    <div className={styles.page}>
+    <FormPage>
       <PageHeader breadcrumb={props.breadcrumb} title={props.title} />
       <form noValidate aria-busy={save.saving} onSubmit={(event) => void submit(event)}>
         <FormLayout
@@ -169,7 +169,7 @@ export function PurchaseRequestForm(props: PurchaseRequestFormProps) {
         />
       )}
       {dialog}
-    </div>
+    </FormPage>
   );
 }
 

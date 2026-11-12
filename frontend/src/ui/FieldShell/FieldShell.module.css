@@ -49,8 +49,12 @@
 }
 
 .marking {
-  color: var(--ink-2);
-  font-size: var(--text-xs);
+  align-self: flex-start;
+  margin-inline-start: calc(2px - var(--space-2));
+  color: var(--warning-text);
+  font-size: 14px;
+  line-height: 14px;
+  cursor: help;
 }
 
 /* A field required to save: 2 px after the label; 19 px bold is large text, so red meets 3:1 (D-364). */

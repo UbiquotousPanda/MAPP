@@ -5,7 +5,7 @@ import { Button, LinkButton } from '@/ui/Button/Button';
 import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FormFooter } from '@/ui/FormFooter/FormFooter';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
-import { FormLayout } from '@/ui/FormRail/FormRail';
+import { FormLayout, FormPage } from '@/ui/FormRail/FormRail';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
@@ -117,7 +117,7 @@ export function LineItemForm(props: LineItemFormProps) {
   const change = assignedChange(state, options, currencies, stored);
 
   return (
-    <div className={styles.page}>
+    <FormPage>
       <PageHeader
         breadcrumb={[...activityBreadcrumb(activity), { label: props.breadcrumbEnd }]}
         title={props.title}
@@ -130,8 +130,7 @@ export function LineItemForm(props: LineItemFormProps) {
       >
         <FormLayout
           sections={lineItemRailSections(state, attributeForm, props.businessUnit)}
-          railExtra={<LineItemSummaryBar balance={options.balance} change={change} layout="rail" />}
-          narrowExtra={<LineItemSummaryBar balance={options.balance} change={change} />}
+          extra={<LineItemSummaryBar balance={options.balance} change={change} />}
         >
           {(save.failure || problems.length > 0) && (
             <div className={styles.stack}>
@@ -173,7 +172,7 @@ export function LineItemForm(props: LineItemFormProps) {
       </form>
 
       {dialog}
-    </div>
+    </FormPage>
   );
 }
 

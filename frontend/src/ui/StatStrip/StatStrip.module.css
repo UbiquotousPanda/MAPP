@@ -4,7 +4,8 @@
 
 .strip {
   display: grid;
-  grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   overflow: hidden;
   border: 1px solid var(--card-border);
   border-radius: var(--radius-card);
@@ -29,9 +30,24 @@
   min-height: 0;
 }
 
+.strip:has(> :nth-child(6)) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: row;
+}
+
+.strip:has(> :nth-child(7)) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.strip:has(> :nth-child(9)) {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 @container (width < 760px) {
-  .strip {
+  .strip,
+  .strip:has(> :nth-child(6)) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row;
   }
 
   .strip > :last-child:nth-child(odd) {

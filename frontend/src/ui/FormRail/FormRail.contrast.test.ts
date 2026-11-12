@@ -5,16 +5,17 @@ import { describe, expect, it } from 'vitest';
 const railCss = readFileSync(join(import.meta.dirname, 'FormRail.module.css'), 'utf8');
 const tokensCss = readFileSync(join(import.meta.dirname, '..', 'tokens.css'), 'utf8');
 
-/** A token's value in the block of `selector` of tokens.css, following var() references. */
+/** A token's value as `selector` sees it: its own block, else :root, following var() references. */
 function token(name: string, selector: string): string {
-  const start = tokensCss.indexOf(`${selector} {`);
-  const block = tokensCss.slice(start, tokensCss.indexOf('}', start));
-  const value = new RegExp(`${name}:\\s*([^;]+);`).exec(block)?.[1]?.trim();
-  if (value === undefined) {
-    return selector === ':root' ? '' : token(name, ':root');
-  }
+  const value = declared(name, selector) ?? declared(name, ':root') ?? '';
   const reference = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
   return reference ? token(reference, selector) : value;
+}
+
+function declared(name: string, selector: string): string | undefined {
+  const start = tokensCss.indexOf(`${selector} {`);
+  const block = tokensCss.slice(start, tokensCss.indexOf('}', start));
+  return new RegExp(`${name}:\\s*([^;]+);`).exec(block)?.[1]?.trim();
 }
 
 function luminance(hex: string): number {
@@ -30,13 +31,15 @@ function contrast(a: string, b: string): number {
   return (light + 0.05) / (dark + 0.05);
 }
 
-describe('FormRail on the grey page', () => {
-  it.each([':root', ":root[data-theme='dark']"])(
-    '038 FR-038 (M-17): the count above the form reaches 4.5:1 on the page grey (%s)',
-    (theme) => {
-      const rule = /\.progress\s*\{([^}]*)\}/.exec(railCss)?.[1] ?? '';
-      const colour = /color:\s*var\((--[\w-]+)\)/.exec(rule)?.[1] ?? '';
-      expect(contrast(token(colour, theme), token('--page-bg', theme))).toBeGreaterThanOrEqual(4.5);
-    },
-  );
+describe('SectionBar on its card', () => {
+  it.each([
+    ['.total', ':root'],
+    ['.total', ":root[data-theme='dark']"],
+    ['.count', ':root'],
+    ['.count', ":root[data-theme='dark']"],
+  ])('038 FR-038 (M-17): the bar text %s reaches 4.5:1 on the bar (%s)', (selector, theme) => {
+    const rule = new RegExp(`\\${selector}\\s*\\{([^}]*)\\}`).exec(railCss)?.[1] ?? '';
+    const colour = /\scolor:\s*var\((--[\w-]+)\)/.exec(rule)?.[1] ?? '';
+    expect(contrast(token(colour, theme), token('--surface', theme))).toBeGreaterThanOrEqual(4.5);
+  });
 });

@@ -47,13 +47,18 @@ describe('RequiredLegend (038 FR-064, D-364)', () => {
     expect(legend?.compareDocumentPosition(name)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
 
-  it.each<FieldMarking | undefined>(['Needed to publish', undefined])(
-    '038 FR-064: no legend when no field is required to save (%s)',
-    (marking) => {
-      renderWithProviders(<Panel marking={marking} />);
-      expect(legends()).toHaveLength(0);
-    },
-  );
+  it('038 FR-064: no legend when no field carries a marking', () => {
+    renderWithProviders(<Panel marking={undefined} />);
+    expect(legends()).toHaveLength(0);
+  });
+
+  it('038 FR-064: explains the ◆ of a field needed to publish, without "* Required" when nothing is', async () => {
+    renderWithProviders(<Panel marking="Needed to publish" />);
+
+    await waitFor(() => expect(legends()).toHaveLength(1));
+    expect(legends()[0]).toHaveTextContent('◆ Needed to publish');
+    expect(legends()[0]).not.toHaveTextContent('Required');
+  });
 
   it('038 FR-064: a dialog whose form also has an error summary still shows the legend once', async () => {
     renderWithProviders(

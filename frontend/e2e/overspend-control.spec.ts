@@ -17,7 +17,7 @@ import {
 test.describe.configure({ mode: 'serial' });
 
 const UK_PLAN = 'P-1004';
-const OVERSPEND = 'When planned cost goes over this budget';
+const OVERSPEND = 'If planned cost exceeds the budget';
 const nextYear = new Date().getUTCFullYear() + 1;
 
 test('037 US1: the owner sets Refuse, and an over-budget activity is refused before and on saving', async ({
@@ -53,14 +53,14 @@ test('037 US1: the owner sets Refuse, and an over-budget activity is refused bef
   await expect(page.getByRole('heading', { name: 'New activity', level: 1 })).toBeVisible();
   await expect(
     page.getByText(
-      `1,000.00 GBP left to plan in campaign '${campaign.name}', which refuses overspending.`,
+      `£1,000.00 left to plan in campaign '${campaign.name}', which refuses overspending.`,
     ),
   ).toBeVisible();
   await page.getByLabel('Activity name', { exact: true }).fill('Too expensive');
   const cost = page.getByLabel('Planned cost', { exact: true });
   await cost.fill('1500');
   await cost.blur();
-  const over = `This is 500.00 GBP over the budget of campaign '${campaign.name}', which refuses overspending.`;
+  const over = `This is £500.00 over the budget of campaign '${campaign.name}', which refuses overspending.`;
   await expect(page.getByText(over).first()).toBeVisible();
   await expectNoAxeViolations(page);
 

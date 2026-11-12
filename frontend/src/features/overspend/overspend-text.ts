@@ -1,7 +1,7 @@
 import { formatMoneyText } from '@/format/decimal';
 import type { Money, OverspendApprovalMode, OverspendMode } from './api';
 
-export const OVERSPEND_LABEL = 'When planned cost goes over this budget';
+export const OVERSPEND_LABEL = 'If planned cost exceeds the budget';
 export const REFUSES_OVERSPENDING = 'Refuses overspending';
 export const OVERSPEND_CONTROL = 'Overspend control';
 export const DEFAULT_LABEL = 'New budgets start with';
@@ -17,7 +17,7 @@ export const MODE_WORDS: Record<OverspendMode, string> = { warn: 'Warn', refuse:
 
 export const MODE_HINTS: Record<OverspendMode, string> = {
   warn: 'Save and show the overage',
-  refuse: 'Refuse any save that takes the planned cost over the budget',
+  refuse: 'Block saves over budget',
 };
 
 const LEVEL_WORDS: Record<string, string> = {
