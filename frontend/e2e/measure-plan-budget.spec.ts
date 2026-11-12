@@ -19,8 +19,10 @@ test('040 US1: Plan budget shows the cards and spend by month with today marked 
     await expect(cards.getByText(label, { exact: true })).toBeVisible();
   }
   await page.goto(REPORT);
+  // The seed's budgets are not phased by month, so the chart leaves Budget out and names it in a note.
+  await expect(page.getByText(/^Budget not phased by month: /)).toBeVisible();
   await expect(
-    page.getByRole('img', { name: /Budget, planned cost and actual by period/ }),
+    page.getByRole('img', { name: /^Planned cost and actual by period; today is in / }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Quarters' }).click();
   await expect(page).toHaveURL(/period=quarter/);

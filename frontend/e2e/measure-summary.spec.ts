@@ -29,7 +29,9 @@ test('048 US1: the Summary report shows revenue against goal, equal to the Reven
   await signInAs(page, ALEX);
 
   await page.goto('/reports/revenue?year=2026');
-  const revenue = await cardValue(page.getByLabel('Summary'), 'Actual or projected');
+  // Revenue's card shows the amount rounded, "$216.55K ($216,549.97)"; Summary shows it in full.
+  const card = await cardValue(page.getByLabel('Summary'), 'Actual or projected');
+  const revenue = /\(([^)]+)\)/.exec(card)?.[1] ?? card;
 
   await page.goto('/reports/summary?year=2026');
   await expect(page.getByRole('heading', { name: 'Summary', level: 1 })).toBeVisible();
@@ -50,12 +52,13 @@ test('048 US2: the one Segment choice reloads the league tables and keeps it in 
 
   const segment = page.getByRole('combobox', { name: 'Segment' });
   await expect(segment).toBeVisible();
-  const options = await segment.locator('option').allInnerTexts();
-  test.skip(options.length < 2, 'the demo data offers one segment only');
+  await segment.click();
+  await expect(page.getByRole('listbox')).toBeVisible();
+  const options = page.getByRole('option');
+  test.skip((await options.count()) < 2, 'the demo data offers one segment only');
 
   const reloaded = page.waitForRequest((r) => r.url().includes('/reports/summary/league/revenue'));
-  await segment.click();
-  await page.getByRole('option').nth(1).click();
+  await options.nth(1).click();
   await reloaded;
   await expect(page).toHaveURL(/revenueBy=/);
 });

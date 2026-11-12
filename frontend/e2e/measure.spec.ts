@@ -33,7 +33,7 @@ async function mobilityPlanId(page: Page): Promise<string> {
   return mobility.id;
 }
 
-test('039 US1: a report opens on the defaults, filters on Apply and keeps everything in its address (FR-001 – FR-019)', async ({
+test('039 US1: a report opens on the defaults, applies each filter at once and keeps everything in its address (FR-001 – FR-019)', async ({
   page,
 }) => {
   const outOfScope = await mobilityPlanId(page);
@@ -60,10 +60,12 @@ test('039 US1: a report opens on the defaults, filters on Apply and keeps everyt
   await expect(page.getByRole('dialog', { name: 'More filters' })).toContainText('Activity');
   await page.keyboard.press('Escape');
   await filters.getByRole('button', { name: 'Activity status' }).click();
-  await page
+  // The box follows the address, which updates a moment after the click; check() wants it at once.
+  const approved = page
     .getByRole('dialog', { name: 'Activity status' })
-    .getByRole('checkbox', { name: 'Approved' })
-    .check();
+    .getByRole('checkbox', { name: 'Approved' });
+  await approved.click();
+  await expect(approved).toBeChecked();
   await page.keyboard.press('Escape');
   await expect(page).toHaveURL(/activityStatus=/);
   // The line changes once the frame has read the filtered year; read it only then.

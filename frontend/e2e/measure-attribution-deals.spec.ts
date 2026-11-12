@@ -16,8 +16,10 @@ async function openDeals(
   await signInAs(page, ALEX);
   await page.goto(`/reports/revenue?year=2026&show=activity&q=${encodeURIComponent(activity)}`);
   const ranked = page.getByRole('region', { name: 'Ranked list' });
+  // The panel is modal, so the page behind it, the figure's button too, is hidden from assistive technology.
   const button = ranked.getByRole('button', {
     name: new RegExp(`^Attributed revenue of ${escapeRegExp(activity)}`),
+    includeHidden: true,
   });
   await button.click();
   return { button, panel: page.getByRole('dialog', { name: activity }) };
@@ -38,7 +40,7 @@ test.describe('058 the deals behind attributed revenue', () => {
     const dealC = panel.getByRole('article', { name: 'Measure demo feed · MD-013' });
     await expect(dealC.getByText(/= \$20,108\.70 at 0\.92/)).toBeVisible();
     await expect(dealC.getByRole('list', { name: 'Journey' }).getByRole('listitem')).toHaveCount(4);
-    await expect(dealC.getByText('This activity')).toBeVisible();
+    await expect(dealC.getByText('This activity', { exact: true })).toBeVisible();
     await expectNoAxeViolations(page);
 
     await page.keyboard.press('Escape');
@@ -52,12 +54,12 @@ test.describe('058 the deals behind attributed revenue', () => {
   }) => {
     const { panel } = await openDeals(page, HELIX);
 
-    await expect(panel.getByText('Credited to this activity').locator('..')).toContainText(
-      '$54,000.00',
-    );
-    await expect(panel.getByText('Booked on this activity').locator('..')).toContainText(
-      '$62,108.70',
-    );
+    await expect(
+      panel.getByText('Credited to this activity', { exact: true }).locator('..'),
+    ).toContainText('$54,000.00');
+    await expect(
+      panel.getByText('Booked on this activity', { exact: true }).locator('..'),
+    ).toContainText('$62,108.70');
     const noJourney = panel.getByRole('article', { name: 'Measure demo feed · MD-014' });
     await expect(noJourney.getByText(/No journey recorded/)).toBeVisible();
     const euro = panel.getByRole('article', { name: 'Measure demo feed · MD-013' });

@@ -105,7 +105,10 @@ test('050 US1, US4: a model chosen in Settings restates Revenue, its export and 
     expect(row).toContain('44108.70');
 
     await page.goto('/reports/summary?year=2026');
-    await expect(page.getByText(/^Last touch, on actual cost/)).toBeVisible();
+    await page.getByRole('button', { name: 'About Top ROI' }).click();
+    await expect(page.getByRole('dialog', { name: 'About Top ROI' })).toContainText(
+      'Attribution: Last touch, on actual cost.',
+    );
     await expect(page.getByText(/Equally distributed/)).toHaveCount(0);
   } finally {
     await designate(page, 'Equally distributed');

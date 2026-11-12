@@ -65,7 +65,10 @@ test('042 US2 and US3: the grid opens from vendor to line, keeps its columns, se
   await expect(grid.getByRole('row').nth(3)).toBeVisible();
 
   await grid.getByRole('button', { name: 'Columns' }).click();
-  await grid.getByRole('checkbox', { name: 'Owner' }).click();
+  await page
+    .getByRole('dialog', { name: 'Columns' })
+    .getByRole('checkbox', { name: 'Owner' })
+    .click();
   await expect.poll(() => search(page).get('columns')).not.toBeNull();
   await page.reload();
   await expect(grid.getByRole('columnheader', { name: 'Owner' })).toHaveCount(0);

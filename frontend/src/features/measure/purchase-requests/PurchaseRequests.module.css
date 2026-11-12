@@ -229,7 +229,7 @@
 }
 
 .chooser {
-  z-index: 2;
+  z-index: 50;
   min-width: 260px;
   padding: var(--space-3);
   border: 1px solid var(--card-border);

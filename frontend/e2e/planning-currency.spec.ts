@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
   callApi,
+  choose,
   chooseOption,
   expectNoAxeViolations,
   expectToast,
@@ -189,12 +190,14 @@ test('016 US5 (T089): All work over two years shows Budget & cost by year and co
 }) => {
   await signInAs(page, PRIYA);
   await page.goto('/all-work');
-  await page.getByRole('button', { name: /^Years/ }).click();
+  await page.getByRole('button', { name: /^Filters/ }).click();
+  const filters = page.getByRole('group', { name: 'Filters' });
+  await filters.getByRole('button', { name: /^Years/ }).click();
   const years = page.getByRole('dialog', { name: 'Years' });
-  await chooseOption(years.getByRole('combobox', { name: 'To' }), String(NEXT_YEAR));
+  await choose(page, years.getByRole('combobox', { name: 'To' }), String(NEXT_YEAR));
   await page.keyboard.press('Escape');
   await expect(
-    page.getByRole('button', { name: `Years · ${THIS_YEAR}–${NEXT_YEAR}` }),
+    filters.getByRole('button', { name: `Years · ${THIS_YEAR}–${NEXT_YEAR}` }),
   ).toBeVisible();
 
   await page.getByRole('tab', { name: 'Budget & cost' }).click();
