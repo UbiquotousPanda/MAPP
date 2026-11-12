@@ -77,12 +77,6 @@
   gap: var(--space-1) var(--space-2);
 }
 
-.dots {
-  display: inline-flex;
-  flex: none;
-  flex-direction: column;
-}
-
 .chips {
   display: flex;
   flex-wrap: wrap;

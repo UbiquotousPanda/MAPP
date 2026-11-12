@@ -18,6 +18,16 @@
   outline-offset: 0;
 }
 
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.line {
+  display: block;
+}
+
 .dot {
   flex: none;
   width: 8px;

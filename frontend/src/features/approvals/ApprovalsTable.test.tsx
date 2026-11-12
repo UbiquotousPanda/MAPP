@@ -210,7 +210,7 @@ describe('ApprovalsTable rules (feature 017, US4 and US6)', () => {
     expect(second).not.toHaveTextContent('Overdue');
   });
 
-  it('flags a row with at most two dots before its name, each naming its problems (design system §4.1)', () => {
+  it('flags a row with its dots stacked before its name, naming every problem (design system §4.1)', () => {
     renderTable([
       rowOf({ overdue: true, startDatePassed: true, escalatedTo: ALEX, asDelegateOf: [CARLOS] }),
     ]);
@@ -221,11 +221,9 @@ describe('ApprovalsTable rules (feature 017, US4 and US6)', () => {
         .getAllByRole('button')
         .map((dot) => dot.textContent),
     ).toEqual([
-      'Overdue · Start date passed',
-      'Escalated to Alex Morgan',
+      'Overdue · Start date passed; Escalated to Alex Morgan',
       expect.stringContaining('Launch film'),
     ]);
-    // Who decides is a note under the ID, not a chip.
     expect(within(name).getByText('as delegate of Carlos Mendes').className).toMatch(/delegate/);
   });
 });

@@ -8,14 +8,28 @@ export interface StatusDotProps {
   label: string;
 }
 
-/** For rows a chip would crowd; the label ("Overdue · Start date passed") is its tooltip and its name. */
-export function StatusDot({ tone, label }: StatusDotProps) {
+/** For rows a chip would crowd: several statuses stack in one 24 px target; their labels are its tooltip and name. */
+export function StatusDots({ dots }: { dots: StatusDotProps[] }) {
   return (
-    <Tooltip content={label}>
+    <Tooltip
+      content={dots.map((dot) => (
+        <span key={dot.label} className={styles.line}>
+          {dot.label}
+        </span>
+      ))}
+    >
       <button type="button" className={styles.target}>
-        <span className={cx(styles.dot, styles[tone])} aria-hidden="true" />
-        <span className="visually-hidden">{label}</span>
+        <span className={styles.stack} aria-hidden="true">
+          {dots.map((dot) => (
+            <span key={dot.label} className={cx(styles.dot, styles[dot.tone])} />
+          ))}
+        </span>
+        <span className="visually-hidden">{dots.map((dot) => dot.label).join('; ')}</span>
       </button>
     </Tooltip>
   );
+}
+
+export function StatusDot(dot: StatusDotProps) {
+  return <StatusDots dots={[dot]} />;
 }

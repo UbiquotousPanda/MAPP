@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
-import { StatusDot } from '@/ui/StatusDot/StatusDot';
+import { StatusDots } from '@/ui/StatusDot/StatusDot';
+import type { StatusDotProps } from '@/ui/StatusDot/StatusDot';
 import { SubjectStatusChip } from '@/ui/SubjectStatusChip/SubjectStatusChip';
 import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
@@ -94,12 +95,7 @@ function Row({ row, decided, onOpen }: RowProps) {
     <tr>
       <th scope="row">
         <span className={styles.nameLine}>
-          {(flags.problems || flags.escalated) && (
-            <span className={styles.dots}>
-              {flags.problems && <StatusDot tone="problem" label={flags.problems} />}
-              {flags.escalated && <StatusDot tone="review" label={flags.escalated} />}
-            </span>
-          )}
+          {(flags.problems || flags.escalated) && <StatusDots dots={dotsOf(flags)} />}
           <OpenButton row={row} onOpen={onOpen} />
         </span>
         <DelegateNote row={row} />
@@ -243,6 +239,17 @@ function rowFlags(row: ApprovalRow): { problems: string | null; escalated: strin
     problems: problems.length > 0 ? problems.join(' · ') : null,
     escalated: open && row.escalatedTo ? `Escalated to ${row.escalatedTo.name}` : null,
   };
+}
+
+function dotsOf(flags: ReturnType<typeof rowFlags>): StatusDotProps[] {
+  const dots: StatusDotProps[] = [];
+  if (flags.problems) {
+    dots.push({ tone: 'problem', label: flags.problems });
+  }
+  if (flags.escalated) {
+    dots.push({ tone: 'review', label: flags.escalated });
+  }
+  return dots;
 }
 
 function rowChips(row: ApprovalRow): ReactNode {
