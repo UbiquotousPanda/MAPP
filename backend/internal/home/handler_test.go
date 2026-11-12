@@ -31,7 +31,7 @@ func TestHomeSummary_Contract(t *testing.T) {
 		t.Errorf("scope %q, currency %q", got.Scope, got.DisplayCurrency)
 	}
 	// Since 016 her team also has P-1004, FY2027 Lubricants UK & Ireland (Draft, planned in GBP), with two of
-	// her activities: 600,000.00 GBP = 800,000.00 USD budget, 65,000.00 GBP = 86,666.67 USD planned (FR-014).
+	// her activities: 600,000.00 GBP = 800,000.00 USD budget, 65,000.00 GBP = 86,666.67 USD planned.
 	if got.Plans != (home.PlanCounts{Count: 2, Published: 1, Draft: 1}) || everything.Plans != (home.PlanCounts{Count: 4, Published: 1, Draft: 3}) {
 		t.Errorf("plans = %+v (everything %+v); want 1 published, 1 draft (4: 1 published, 3 draft)", got.Plans, everything.Plans)
 	}

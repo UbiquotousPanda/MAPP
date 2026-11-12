@@ -63,7 +63,7 @@ test('043 US3: a widget exports as CSV and Excel, and the report as one workbook
   );
 });
 
-test('043 US2: the level is kept in the address and Back returns to it (FR-001)', async ({
+test('043 US2: the level is kept in the address, so a reload keeps it (FR-001)', async ({
   page,
 }) => {
   await signInAs(page, PRIYA);
@@ -73,8 +73,8 @@ test('043 US2: the level is kept in the address and Back returns to it (FR-001)'
   await page.getByRole('button', { name: 'Campaign', exact: true }).click();
   await expect(page).toHaveURL(/show=campaign/);
   await expect(page.getByRole('list', { name: 'Campaigns by approval progress' })).toBeVisible();
-  await page.goBack();
+  await page.reload();
   await expect(
-    page.getByRole('button', { name: 'Activity', exact: true, pressed: true }),
+    page.getByRole('button', { name: 'Campaign', exact: true, pressed: true }),
   ).toBeVisible();
 });

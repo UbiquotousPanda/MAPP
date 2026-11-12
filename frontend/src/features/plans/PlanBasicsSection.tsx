@@ -19,7 +19,7 @@ import { useOfferedTeams } from './useOfferedTeams';
 type Model = components['schemas']['Model'];
 
 export interface PlanBasicsSectionProps extends SectionProps {
-  /** Create: the defaults the form starts with and the years to choose from (FR-006). */
+  /** Create: the defaults the form starts with and the years to choose from. */
   defaults?: PlanDefaults;
   models: Model[];
   chosenModel: Plan['model'] | undefined;

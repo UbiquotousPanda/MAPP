@@ -54,7 +54,7 @@ export interface PlanFormProps {
   mode: 'create' | 'edit';
   /** The values the form starts with; copied once (edit-form rule). */
   initial: PlanFormValues;
-  /** Create: the defaults the form starts with and the years to choose from (FR-006). */
+  /** Create: the defaults the form starts with and the years to choose from. */
   defaults?: PlanDefaults;
   /** Edit: the plan as it was when the form opened. */
   plan?: Plan;

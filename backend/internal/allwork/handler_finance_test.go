@@ -10,10 +10,8 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// All work's financial columns and filter on the demo GSAP data of feature 015 (015 FR-023, FR-024, US5).
-
 // The default columns end with Committed and Invoiced; FY2026 Lubricants Europe has committed 35,652.17, as
-// its Financials card; the totals row adds up the matching activities (015 US5 scenario 1, SC-002).
+// its Financials card; the totals row adds up the matching activities.
 func TestGetAllWork_FinancialColumns_FR023(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -69,7 +67,7 @@ func TestGetAllWork_FinancialColumns_FR023(t *testing.T) {
 }
 
 // The filter "Committed above planned cost" keeps Billboard winter wave only; the export of that view holds
-// the financial columns and says when the GSAP data was loaded (015 FR-024, US5 scenarios 2 and 3).
+// the financial columns and says when the GSAP data was loaded.
 func TestGetAllWork_FinancialsFilterAndExport_FR024(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)

@@ -11,11 +11,9 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// The handler tests of 016 (plan currency, plan type, Budget by month, Years) on the demo data: P-1004 "FY2027
-// Lubricants UK & Ireland" is a Cross-market plan planned in GBP (0.75 per USD), budget 600,000.00 GBP phased
-// evenly, with 65,000.00 GBP planned on two activities, a campaign budget and two initiative budgets (5 amounts).
+// Demo data: P-1004 is a Cross-market plan in GBP (0.75 per USD), budget 600,000.00 GBP phased evenly, 65,000.00 GBP
+// planned on two activities, a campaign budget and two initiative budgets (5 amounts).
 
-// getPlan reads the plan id as client and stops the test unless it answers 200.
 func getPlan(t *testing.T, client *apitest.Client, id string) plan.PlanView {
 	t.Helper()
 	response := client.Do(t, http.MethodGet, "/api/v1/plans/"+id, nil)
@@ -27,8 +25,7 @@ func getPlan(t *testing.T, client *apitest.Client, id string) plan.PlanView {
 	return p
 }
 
-// The plan page answers its amounts in the plan currency (planFigures) and in the display currency beside them
-// (figures), with the plan type, the phasing and the currency lock (FR-012, FR-013, FR-020, FR-032).
+// Amounts in the plan currency (planFigures) and the display currency (figures), with type, phasing and currency lock.
 func TestGetPlan_PlanCurrency_Contract_FR013(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -55,8 +52,7 @@ func TestGetPlan_PlanCurrency_Contract_FR013(t *testing.T) {
 	}
 }
 
-// A new plan gets the chosen plan currency and type; its budget must be in that currency, and an unknown type
-// is refused (FR-011, FR-032).
+// The budget must be in the chosen plan currency, and an unknown type is refused.
 func TestCreatePlan_CurrencyAndType_Contract_FR011_FR032(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -83,8 +79,6 @@ func TestCreatePlan_CurrencyAndType_Contract_FR011_FR032(t *testing.T) {
 	assertAnswer(t, refused, http.StatusBadRequest, validationBody(`{"field":"budget","message":"Enter the amount in GBP, the plan's currency."}`))
 }
 
-// The Plans list takes a range of years and plan types; its rows carry the plan type, the plan currency and
-// the amounts in it beside the display amounts (FR-014, FR-033).
 func TestListPlans_YearRangeAndType_Contract_FR033(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -111,9 +105,8 @@ func TestListPlans_YearRangeAndType_Contract_FR033(t *testing.T) {
 	}
 }
 
-// Budget by month is saved with PUT …/budget-phasing whatever the plan's status: a Custom phasing that does not
-// add up is saved and becomes its problem; a month outside the plan's year is refused; an old version
-// conflicts (FR-020 – FR-023).
+// Saved whatever the plan's status: a Custom phasing that does not add up is saved and becomes its problem; a month
+// outside the plan's year is refused; an old version conflicts.
 func TestSetPlanPhasing_Contract_FR020(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)

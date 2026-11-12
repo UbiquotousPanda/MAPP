@@ -13,17 +13,10 @@ import { useSettingsOverview } from './api';
 
 type SettingsOverview = components['schemas']['SettingsOverview'];
 
-/** What the counts of feature 002's cards are doing. */
 type Counts =
   { state: 'loading' } | { state: 'failed' } | { state: 'loaded'; overview: SettingsOverview };
 
-/**
- * Settings (feature 002, FR-001): one card per section — its icon, name, one-line explanation and
- * the number of active records — each opening the section's own page. Sections still to come show
- * "Coming soon" and are not links. When the counts can't be loaded the cards stay usable. A card
- * whose section the person's roles do not open is left out (feature 014, FR-012). The sections
- * come from app/settings-sections.ts.
- */
+/** When the counts can't be loaded the cards stay usable; a card the person's roles do not open is left out. */
 export function SettingsPage({ sections }: { sections: SettingsSection[] }) {
   usePageTitle('Settings');
   const { has } = useAccess();
@@ -92,10 +85,7 @@ function SectionCard({ section, counts }: SectionCardProps) {
   );
 }
 
-/**
- * "<n> active": from the overview for 002's sections, from the section's own component otherwise
- * (which shows it with the same SettingsCount).
- */
+/** Other features' sections show it from their own component, with the same SettingsCount. */
 function ActiveCount({ section, counts }: SectionCardProps) {
   if (!section.overviewKey) {
     return section.ActiveCount ? <section.ActiveCount /> : null;

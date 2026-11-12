@@ -5,11 +5,10 @@ import styles from './StatusDot.module.css';
 
 export interface StatusDotProps {
   tone: StatusTone;
-  /** What the dot means here ("Overdue · Start date passed"): its tooltip and its name. */
   label: string;
 }
 
-/** A status as a coloured dot where a chip would crowd the row; its tooltip and name say what it means. */
+/** For rows a chip would crowd; the label ("Overdue · Start date passed") is its tooltip and its name. */
 export function StatusDot({ tone, label }: StatusDotProps) {
   return (
     <Tooltip content={label}>

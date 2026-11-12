@@ -13,7 +13,6 @@ import { alreadyDecidedMessage } from './decision-messages';
 import { recallSchema } from './schemas';
 import styles from './approval-dialogs.module.css';
 
-/** The longest reason the API takes. */
 const REASON_MAX = 2000;
 
 export interface RecallDialogProps {
@@ -22,12 +21,7 @@ export interface RecallDialogProps {
   onClose: () => void;
 }
 
-/**
- * "Recall the submission of 'Launch film'?" (US5, FR-021): what a recall does and an optional
- * reason; Cancel has the focus. The recall names the round the person saw, so a round that ended
- * meanwhile (decided, restarted, recalled by someone else) changes nothing and is explained with
- * its time.
- */
+/** Cancel has the focus; the recall names the round the person saw, so one that ended meanwhile changes nothing. */
 export function RecallDialog({ approval, onClose }: RecallDialogProps) {
   const { show } = useToast();
   const { dateFormat } = useFormatters();

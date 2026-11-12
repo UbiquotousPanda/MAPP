@@ -19,11 +19,17 @@ type SettingsSeed struct {
 
 // Option lists are fictitious samples (Q-003), except Shell's own lists in shell_lists.go (D-325).
 
+const (
+	currencyEUR = "EUR"
+	currencyGBP = "GBP"
+	currencyCNY = "CNY"
+)
+
 var demoCurrencies = []struct{ code, name, symbol, rate string }{
 	{"USD", "US dollar", "$", "1"},
-	{"EUR", "Euro", "€", "0.90"},
-	{"GBP", "Pound sterling", "£", "0.75"},
-	{"CNY", "Chinese yuan", "¥", "6.67"},
+	{currencyEUR, "Euro", "€", "0.90"},
+	{currencyGBP, "Pound sterling", "£", "0.75"},
+	{currencyCNY, "Chinese yuan", "¥", "6.67"},
 	{"INR", "Indian rupee", "₹", "93.70"},
 }
 

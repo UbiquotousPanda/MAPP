@@ -7,21 +7,17 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Activities of a plan planned in another currency than USD (016 US2) on the demo data: P-1004 "FY2027
-// Lubricants UK & Ireland" is planned in GBP (0.75 per USD); its initiative I-1009 "UK" holds A-1011 "UK launch
-// event", 40,000.00 GBP.
+// Demo data: P-1004 is planned in GBP (0.75 per USD); its initiative I-1009 holds A-1011, 40,000.00 GBP.
 
 const (
 	ukInitiativeID = "I-1009"
 	ukLaunchID     = "A-1011"
 )
 
-// gbpInput is an amount in pounds as a request sends it.
 func gbpInput(amount string) *money.Input {
 	return &money.Input{Amount: amount, Currency: "GBP"}
 }
 
-// The planned cost is typed and kept in the plan currency; another currency is refused with the plan's (FR-011).
 func TestPlannedCost_MustBePlanCurrency_FR011(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -40,7 +36,6 @@ func TestPlannedCost_MustBePlanCurrency_FR011(t *testing.T) {
 	assertError(t, refusedEdit, problems("plannedCost", "Enter the amount in GBP, the plan's currency."))
 }
 
-// The activity's amounts are in the plan currency, and the display amounts are converted from it (FR-013):
 // 40,000.00 GBP → 53,333.33 USD; with 34,750.00 GBP on line items the unassigned 5,250.00 GBP → 7,000.00 USD.
 func TestActivityDisplay_FromPlanCurrency_FR013(t *testing.T) {
 	t.Parallel()
@@ -71,8 +66,7 @@ func TestActivityDisplay_FromPlanCurrency_FR013(t *testing.T) {
 	}
 }
 
-// An activity type's default planned cost, kept in USD, is offered converted into the plan currency at the
-// current rate, with the USD value beside it for the note (FR-016): Event 25,000.00 USD = 18,750.00 GBP.
+// The type's USD default is offered at the current rate, with the USD value kept for the note: 25,000.00 USD = 18,750.00 GBP.
 func TestActivityForm_TypeDefaultConverted_FR016(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -99,7 +93,7 @@ func TestActivityForm_TypeDefaultConverted_FR016(t *testing.T) {
 	}
 }
 
-// typeOption returns the form's activity type id; nil when the form does not offer it.
+// nil when the form does not offer the type.
 func typeOption(form activity.FormView, id string) *activity.TypeOption {
 	for i := range form.ActivityTypes {
 		if form.ActivityTypes[i].ID == id {
@@ -109,8 +103,7 @@ func typeOption(form activity.FormView, id string) *activity.TypeOption {
 	return nil
 }
 
-// Goals stay in USD in a GBP plan (FR-019): the calculated revenue comes from the model's USD average deal
-// size, and a typed revenue must be USD.
+// The calculated revenue comes from the model's USD average deal size, and a typed revenue must be USD.
 func TestGoals_RevenueStaysUSD_FR019(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -127,7 +120,6 @@ func TestGoals_RevenueStaysUSD_FR019(t *testing.T) {
 	assertError(t, refused, problems("goals.revenue", "Enter the revenue in USD."))
 }
 
-// amount parses a decimal amount.
 func amount(t *testing.T, text string) money.Amount {
 	t.Helper()
 	a, err := money.ParseAmount(text)

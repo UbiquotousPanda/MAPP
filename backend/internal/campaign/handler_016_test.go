@@ -7,13 +7,9 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// The handler tests of 016 on the demo data: P-1004 "FY2027 Lubricants UK & Ireland" is planned in GBP (0.75
-// per USD); its campaign C-1005 "Helix UK & Ireland" has 400,000.00 GBP phased 100,000.00 in March, June,
-// September and November 2027, and the initiatives I-1009 "UK" (250,000.00 GBP) and I-1010 "Ireland"
-// (150,000.00 GBP), not phased.
+// Demo data: GBP plan P-1004 (0.75 per USD); C-1005 has 400,000.00 GBP phased 100,000.00 in March, June, September
+// and November 2027; I-1009 (250,000.00 GBP) and I-1010 (150,000.00 GBP) are not phased.
 
-// phased is a campaign or initiative with its amounts in the plan currency, the display amounts and the
-// phasing, as the API answers them.
 type phased struct {
 	ID      string  `json:"id"`
 	Budget  *amount `json:"budget"`
@@ -29,7 +25,6 @@ type phased struct {
 	Version int `json:"version"`
 }
 
-// getPhased reads the record at path and stops the test unless it answers 200.
 func getPhased(t *testing.T, client *apitest.Client, path string) phased {
 	t.Helper()
 	response := client.Do(t, http.MethodGet, path, nil)
@@ -39,7 +34,6 @@ func getPhased(t *testing.T, client *apitest.Client, path string) phased {
 	return record
 }
 
-// A campaign's budget is in the plan currency, its display amount converted from it (FR-011, FR-013).
 func TestCampaignBudget_PlanCurrency_Contract_FR011_FR013(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -58,9 +52,7 @@ func TestCampaignBudget_PlanCurrency_Contract_FR011_FR013(t *testing.T) {
 	assertBody(t, refused, http.StatusBadRequest, validationBody(`{"field":"budget","message":"Enter the amount in GBP, the plan's currency."}`))
 }
 
-// Budget by month of a campaign and an initiative is saved with PUT …/budget-phasing (FR-020 – FR-023): Evenly
-// splits the budget over the 12 months; Custom months that add up to the budget leave no problem; an old
-// version conflicts; an unknown record is not found.
+// Evenly splits over the 12 months; Custom months that add up to the budget leave no problem; an old version conflicts.
 func TestSetBudgetPhasing_CampaignAndInitiative_Contract_FR020(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)

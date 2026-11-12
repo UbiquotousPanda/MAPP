@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { DEFAULT_FILTERS, PAGE_SIZES } from './financials-links';
 import type { FinancialFilters } from './financials-links';
 
-/** The largest file the API takes (FR-004): 700 KB. */
 const MAX_FILE_BYTES = 700 * 1024;
 
 const typeTabSchema = z.enum(['purchaseOrder', 'invoice', 'payment', 'accrual']);

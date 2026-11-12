@@ -155,8 +155,7 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await expect(page.getByRole('heading', { name: 'Approvals', level: 1 })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Trade magazine ads', exact: true })).toBeVisible();
 
-  // A Global planner: Carlos Mendes sees every market, so Everything counts more plans than his teams'
-  // (FR-003, 014 FR-007). Each card's value is the link's text.
+  // Carlos Mendes sees every market, so Everything counts more plans than his teams'.
   await signInAs(page, CARLOS);
   await page.goto('/');
   await expect(

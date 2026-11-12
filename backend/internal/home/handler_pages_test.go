@@ -10,9 +10,7 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// For every seeded person, Waiting for my approval counts the Waiting for me tab of the Approvals page, and
-// each activity that needs attention shows what its page shows: its fields still needed, its line items
-// needing attention and how far its line items exceed its planned cost (SC-002, FR-017).
+// Each attention row shows its page's fields still needed, line items needing attention and overspend.
 func TestHome_PersonalCardsEqualTheirPages_SC002_FR017(t *testing.T) { //nolint:gocyclo // 14: every person, each card compared with its own page
 	t.Parallel()
 	server := apitest.New(t)
@@ -52,8 +50,6 @@ func TestHome_PersonalCardsEqualTheirPages_SC002_FR017(t *testing.T) { //nolint:
 	}
 }
 
-// For every seeded person, each of their activities shows on Home the status, planned cost and completeness
-// of its own page (SC-002, FR-017).
 func TestHome_MyActivitiesEqualTheirPages_SC002_FR017(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -67,7 +63,7 @@ func TestHome_MyActivitiesEqualTheirPages_SC002_FR017(t *testing.T) {
 		for _, g := range view.Groups {
 			for _, row := range g.Items {
 				page := get[activity.View](t, client, "/api/v1/activities/"+row.ID, apitest.SkipValidation())
-				// Home adds up plans in the display currency, so it shows the page's display amount (016 FR-014).
+				// Home adds up plans in the display currency, so it shows the page's display amount.
 				if row.Status != string(page.DisplayStatus) || !same(row.PlannedCost, page.Display.PlannedCost) ||
 					len(row.Missing) != page.Completeness.MissingFields || row.ItemsBelow != page.Completeness.LineItemsNeedingAttention {
 					t.Errorf("%s: %+v\nits page: %s, %v, %+v", email, row, page.DisplayStatus, page.PlannedCost, page.Completeness)
@@ -77,8 +73,7 @@ func TestHome_MyActivitiesEqualTheirPages_SC002_FR017(t *testing.T) {
 	}
 }
 
-// A deleted record never counts: once Priya deletes Launch film, it leaves her cards, My activities, Needs
-// your attention and her plan's row at once (FR-019).
+// Once Priya deletes Launch film, it leaves her cards, My activities, Needs your attention and her plan's row.
 func TestHome_DeletedRecordsNeverCount_FR019(t *testing.T) { //nolint:gocyclo // 14: one delete, then every card that must lose the record
 	t.Parallel()
 	server := apitest.New(t)

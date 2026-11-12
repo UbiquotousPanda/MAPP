@@ -13,9 +13,8 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// Split activity (016 US4) on the demo data: A-1011 "UK launch event" of the GBP plan P-1004 in the
-// initiative I-1009 "UK" (40,000.00 GBP, 01 Mar – 31 May 2027) with L-1009 "Venue" 15,000.00 GBP and L-1010
-// "Agency fee (Ireland)" 23,000.00 EUR = 19,166.67 GBP; I-1010 "Ireland" holds A-1012 "Dealer conference".
+// Demo data: A-1011 of the GBP plan P-1004 in I-1009 (40,000.00 GBP, 01 Mar – 31 May 2027) holds L-1009 15,000.00 GBP
+// and L-1010 23,000.00 EUR = 19,166.67 GBP; I-1010 "Ireland" holds A-1012 "Dealer conference".
 
 const (
 	ukLaunchEvent = "A-1011"
@@ -25,7 +24,6 @@ const (
 	agencyItem    = "L-1010"
 )
 
-// splitBody is the body of a split preview or split.
 func splitBody(name, initiativeID string, lineItemIDs []string, plannedCost any, restart bool, version int) map[string]any {
 	if lineItemIDs == nil {
 		lineItemIDs = []string{}
@@ -36,8 +34,7 @@ func splitBody(name, initiativeID string, lineItemIDs []string, plannedCost any,
 	}
 }
 
-// The Split dialog of UK launch event lists its line items with their amounts in GBP, suggests "UK launch
-// event (split)" and offers the plan's initiatives, its own first (FR-026).
+// Amounts in GBP, "UK launch event (split)" suggested, the plan's initiatives offered with its own first.
 func TestSplitOptions_Contract_FR026(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -59,9 +56,8 @@ func TestSplitOptions_Contract_FR026(t *testing.T) {
 	}
 }
 
-// The preview shows both activities as the split leaves them (spec US4-1): the original at 20,833.33 GBP
-// with 5,833.33 GBP unassigned, the new one at 19,166.67 GBP with 0.00 unassigned; the split then gives the
-// same figures, keeps L-1010's ID and links both activities (FR-027, FR-028, FR-031).
+// Original 20,833.33 GBP with 5,833.33 unassigned, new one 19,166.67 GBP with 0.00 unassigned; the split then
+// gives the same figures, keeps L-1010's ID and links both activities.
 func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -111,8 +107,7 @@ func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	}
 }
 
-// A split moves amounts, never creates or loses them: the plan's planned cost and line items stay the same
-// (SC-005).
+// A split moves amounts, never creates or loses them.
 func TestSplit_SumsUnchanged_SC005(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -137,8 +132,7 @@ func TestSplit_SumsUnchanged_SC005(t *testing.T) {
 	}
 }
 
-// Nothing ticked and 0.00 to move: the preview lists the problem and the split refuses it, changing nothing
-// (FR-027, US4-4).
+// Nothing ticked and 0.00 to move: the preview lists the problem and the split refuses it, changing nothing.
 func TestSplit_NothingChosen_FR027(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -158,7 +152,7 @@ func TestSplit_NothingChosen_FR027(t *testing.T) {
 		`"fields":[{"field":"lineItemIds","message":"Choose line items or an amount to move."}]}}`)
 }
 
-// At most the activity's planned cost moves (FR-026); a line item of another activity is refused too.
+// A line item of another activity is refused too.
 func TestSplit_AmountTooHigh_FR026(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -172,7 +166,7 @@ func TestSplit_AmountTooHigh_FR026(t *testing.T) {
 		`{"field":"plannedCost","message":"Move at most 40,000.00 GBP, the activity's planned cost."}]}}`)
 }
 
-// The new activity's name is unique in the chosen initiative, ignoring letter case (FR-026).
+// Ignoring letter case.
 func TestSplit_NameUnique_FR026(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -185,8 +179,7 @@ func TestSplit_NameUnique_FR026(t *testing.T) {
 		`"fields":[{"field":"name","message":"'Ireland' already has an activity called 'Dealer conference'."}]}}`)
 }
 
-// The new activity's initiative follows Move's rules: another plan's initiative is refused, and so is one
-// whose dates do not contain the activity's (FR-026, US4-5).
+// Move's rules: another plan's initiative is refused, and so is one whose dates do not contain the activity's.
 func TestSplit_DestinationRules_FR026(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -212,8 +205,7 @@ func TestSplit_DestinationRules_FR026(t *testing.T) {
 	}
 }
 
-// The new activity copies the original's type, owner, dates, workflow, description, external name and Shell
-// attributes, with no goals ("Goals stay on …") and status Created (FR-028).
+// Type, owner, dates, workflow, description, external name and Shell attributes are copied; status Created.
 func TestSplit_CreatesCopyOfFieldsWithoutGoals_FR028(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -243,8 +235,7 @@ func TestSplit_CreatesCopyOfFieldsWithoutGoals_FR028(t *testing.T) {
 	}
 }
 
-// Splitting the Approved Social always-on needs the person's confirmation and returns it to Created (FR-029,
-// US4-3); the moved line item is ready to send no more, because its new activity is Created.
+// The moved line item is ready to send no more, because its new activity is Created.
 func TestSplit_ApprovedNeedsRestart_FR029(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -278,8 +269,7 @@ func TestSplit_ApprovedNeedsRestart_FR029(t *testing.T) {
 	}
 }
 
-// A split is logged on the original ("split", what moved, planned cost old → new), on the new activity
-// (created, "Split from …") and on each moved line item (moved) (FR-030).
+// Logged on the original (what moved, planned cost old → new), the new activity ("Split from …") and each moved line item.
 func TestSplit_Logs_FR030(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)

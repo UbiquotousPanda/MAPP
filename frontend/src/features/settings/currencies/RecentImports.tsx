@@ -9,10 +9,7 @@ import { useRateImports } from './rates-api';
 import type { RateImport } from './rates-api';
 import styles from './rates.module.css';
 
-/**
- * **Recent imports** on the Currencies page (016 FR-007): the last 10 GSAP rate files with who
- * imported them and when, the dates of their rates and the row counts of their review.
- */
+/** The last 10 GSAP rate files: who imported them and when, their rate dates and review row counts. */
 export function RecentImports() {
   const imports = useRateImports();
   const { date, dateTime, dateRange } = useFormatters();

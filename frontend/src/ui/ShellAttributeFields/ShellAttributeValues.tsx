@@ -15,11 +15,7 @@ export interface ShellAttributeValuesProps {
   sectionHeading?: 'h2' | 'h3' | 'none';
 }
 
-/**
- * A record's Shell attribute values, read-only (feature 002, FR-024 – FR-027): the shown
- * attributes by section, "—" for empty ones, Yes or No for yes/no, "(inactive)" for inactive
- * attributes and options; hidden attributes are left out, with the same notes as the form.
- */
+/** Read-only, with the form's notes: "—" for empty, "(inactive)" for inactive ones; hidden attributes left out. */
 export function ShellAttributeValues({
   form,
   values,

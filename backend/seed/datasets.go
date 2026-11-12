@@ -12,7 +12,7 @@ import (
 const (
 	seedDatasetName     = "Event leads 2026"
 	seedDatasetOwner    = "Priya Raman"
-	seedDatasetCurrency = "EUR"
+	seedDatasetCurrency = currencyEUR
 	seedDatasetColumns  = "Event,Date,Leads,Agency cost"
 )
 

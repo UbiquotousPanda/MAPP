@@ -7,7 +7,6 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// amountOf is an amount as the API answers it.
 type amountOf struct {
 	Amount   string `json:"amount"`
 	Currency string `json:"currency"`

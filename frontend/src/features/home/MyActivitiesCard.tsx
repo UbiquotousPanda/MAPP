@@ -23,14 +23,9 @@ import {
 import styles from './MyActivitiesCard.module.css';
 import { SectionError } from './SectionError';
 
-/** How many activities a group shows before "View all (n)" (FR-014). */
 const SHOWN = 5;
 
-/**
- * My activities (FR-014): the activities the person owns, in every plan, grouped by the status
- * people see — Declined, Created, Submitted, Approved, In progress, Complete — with Complete
- * folded. "Activities I own" leads here while All work is not built (D-174).
- */
+/** Grouped by the status people see, Complete folded; "Activities I own" leads here while All work is not built (D-174). */
 export function MyActivitiesCard() {
   const activities = useHomeMyActivities();
 

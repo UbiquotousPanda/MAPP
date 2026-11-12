@@ -7,8 +7,7 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// displayed is the part of a Campaign or Initiative answer that D-220 adds: its amounts in the reader's
-// display currency, beside the USD ones.
+// The part of a Campaign or Initiative answer that D-220 adds.
 type displayed struct {
 	Name          string  `json:"name"`
 	Budget        *amount `json:"budget"`
@@ -29,19 +28,17 @@ type displayed struct {
 	Initiatives []displayed `json:"initiatives"`
 }
 
-// eur is a EUR amount as the API answers it.
 func eur(text string) amount { return amount{Amount: text, Currency: "EUR"} }
 
-// useEuros makes EUR (0.90 per USD in the demo data) the display currency of the signed-in person.
+// 0.90 per USD in the demo data.
 func useEuros(t *testing.T, c *apitest.Client) {
 	t.Helper()
 	response := c.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"displayCurrency": "EUR"})
 	assertStatus(t, response, http.StatusOK)
 }
 
-// A reader whose display currency is EUR gets the tree's amounts a second time in euros — every campaign's
-// and initiative's budget, budget and cost and the totals row — converted once from USD at 0.90, while the
-// USD amounts the forms use stay as they are (D-061, D-220).
+// Every budget, budget and cost and the totals row come a second time in euros, converted once from USD; the
+// USD amounts the forms use stay as they are (D-061).
 func TestListPlanCampaigns_DisplayCurrency_D220(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -87,8 +84,7 @@ func TestListPlanCampaigns_DisplayCurrency_D220(t *testing.T) {
 	}
 }
 
-// A campaign and an initiative read on their own carry the same display amounts; a reader in USD sees the
-// USD amounts twice (D-220).
+// A reader in USD sees the USD amounts twice.
 func TestGetCampaignAndInitiative_DisplayCurrency_D220(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)

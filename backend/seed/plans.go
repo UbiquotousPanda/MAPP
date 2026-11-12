@@ -52,7 +52,7 @@ var demoPlans = []demoPlan{
 
 const (
 	ukPlan         = "FY2027 Lubricants UK & Ireland"
-	ukPlanCurrency = "GBP"
+	ukPlanCurrency = currencyGBP
 )
 
 const (
