@@ -94,10 +94,13 @@ function Row({ row, decided, onOpen }: RowProps) {
     <tr>
       <th scope="row">
         <span className={styles.nameLine}>
-          {flags.problems && <StatusDot tone="problem" label={flags.problems} />}
-          {flags.escalated && <StatusDot tone="review" label={flags.escalated} />}
+          {(flags.problems || flags.escalated) && (
+            <span className={styles.dots}>
+              {flags.problems && <StatusDot tone="problem" label={flags.problems} />}
+              {flags.escalated && <StatusDot tone="review" label={flags.escalated} />}
+            </span>
+          )}
           <OpenButton row={row} onOpen={onOpen} />
-          <span className={styles.id}>{row.subject.id}</span>
         </span>
         <DelegateNote row={row} />
       </th>
@@ -135,7 +138,6 @@ function RowCard({ row, decided, onOpen }: RowProps) {
     <li className={styles.card}>
       <div className={styles.cardHead}>
         <OpenButton row={row} onOpen={onOpen} />
-        <span className={styles.id}>{row.subject.id}</span>
         <DelegateNote row={row} />
       </div>
       {(decided || chips) && (

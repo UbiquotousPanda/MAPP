@@ -60,14 +60,6 @@
   outline-offset: 2px;
 }
 
-.id {
-  display: block;
-  color: var(--ink-2);
-  font-size: var(--text-xs);
-  line-height: var(--leading-xs);
-  font-variant-numeric: tabular-nums;
-}
-
 /* "as delegate of …": who decides, written under the ID. */
 .delegate {
   display: block;
@@ -77,12 +69,17 @@
   line-height: var(--leading-xs);
 }
 
-/* A flag's dot, the name and the ID share one line, so a flagged row is no taller than the others. */
+/* A flag's dots and the name share one line, so a flagged row is no taller than the others. */
 .nameLine {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1) var(--space-2);
+}
+
+.dots {
+  display: inline-flex;
+  flex: none;
 }
 
 .chips {

@@ -39,7 +39,7 @@ describe('ApprovalsTable (feature 008, US3)', () => {
       'Submitted',
     ]);
     const row = screen.getByRole('row', { name: /Launch film/ });
-    expect(row).toHaveTextContent('A-1042');
+    expect(row).not.toHaveTextContent('A-1042');
     expect(row).toHaveTextContent('FY2026 Lubricants Europe › Spring launch');
     expect(row).toHaveTextContent('Priya Raman');
     expect(row).toHaveTextContent('$50,000.00');
