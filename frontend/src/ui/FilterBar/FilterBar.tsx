@@ -5,6 +5,7 @@ import { FilterChips } from '../FilterChips/FilterChips';
 import type { FilterChip } from '../FilterChips/FilterChips';
 import { FiltersButton } from '../FilterMenuButton/FilterMenuButton';
 import styles from './FilterBar.module.css';
+import { useBalancedWrap } from './useBalancedWrap';
 
 export interface FilterBarProps {
   search?: ReactNode;
@@ -26,6 +27,7 @@ export function FilterBar(props: FilterBarProps) {
   const { search, quick, menus, inUse = 0, end, chips = [], onRemoveChip, onClearFilters } = props;
   const menusId = useId();
   const [open, setOpen] = useState(inUse > 0);
+  const [menusRef, menusStyle] = useBalancedWrap<HTMLDivElement>(open && Boolean(menus));
   const [wasInUse, setWasInUse] = useState(inUse > 0);
   // Filters set from elsewhere (a link, Back) fold out the menus too, so their buttons show.
   if (inUse > 0 !== wasInUse) {
@@ -49,6 +51,8 @@ export function FilterBar(props: FilterBarProps) {
         )}
         {menus && (
           <div
+            ref={menusRef}
+            style={menusStyle}
             id={menusId}
             className={styles.menus}
             role="group"
