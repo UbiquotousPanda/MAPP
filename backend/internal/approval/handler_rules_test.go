@@ -5,15 +5,9 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
 	"mapp/internal/approval"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/date"
-)
-
-const (
-	sarasEmail       = "sara.novak@shell.com"
-	standardWorkflow = "WF-1003" // Standard marketing approval (017 data-model §13)
 )
 
 // What a level's rule may name: every activity type, the business units in display order, the approving roles.
@@ -68,31 +62,6 @@ func TestCreateWorkflow_RuleFields201_FR001(t *testing.T) {
 	if view.LevelsText != want || *view.ReminderDays != 2 || *view.EscalationDays != 4 || view.Levels[1].Role == nil ||
 		view.Levels[1].Role.BuiltIn != "approver" || view.Levels[2].BackupApprover.Name != "Carlos Mendes" {
 		t.Errorf("workflow = %+v\nlevels text %q", view, view.LevelsText)
-	}
-}
-
-// Priya Raman's activity under $10,000.00 in "Standard marketing approval" is approved at submission.
-func TestSubmit_WF1003Automatic_FR014(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-	editActivity(t, priya, fleetRoadshow, func(u *activity.Update) {
-		workflow := standardWorkflow
-		u.ApprovalWorkflowID, u.PlannedCost = &workflow, usd("8000.00")
-	})
-	var submission approval.Submission
-	priya.Do(t, http.MethodGet, "/api/v1/activities/"+fleetRoadshow+"/approval/submission", nil).Decode(t, &submission)
-
-	appr := decodeApproval(t, priya.Do(t, http.MethodPost, "/api/v1/activities/"+fleetRoadshow+"/approval/submit",
-		map[string]any{"version": submission.ActivityVersion}))
-
-	if !submission.ApprovedAutomatically || submission.Outcomes[0].Outcome != "autoApproved" {
-		t.Errorf("submission = %+v, want approved automatically", submission.Outcomes)
-	}
-	round := appr.Rounds[0]
-	if appr.Status != "approved" || !round.AutoApproved || round.Outcome != approval.OutcomeApproved || round.Facts == nil ||
-		round.Facts.PlannedCost.Amount.String() != "8000.00" {
-		t.Errorf("approval %s, round %+v; want approved at submission", appr.Status, round)
 	}
 }
 

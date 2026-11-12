@@ -2,7 +2,6 @@ package people_test
 
 import (
 	"net/http"
-	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -76,64 +75,29 @@ func TestGetMe_SessionExpired_FR006(t *testing.T) {
 	assertAnswer(t, response, http.StatusUnauthorized, sessionExpiredBody)
 }
 
-func TestPatchPreferences_ThemeKeepsSidebarCollapsed_FR014(t *testing.T) {
+// One contract test of PATCH /api/v1/me/preferences: only the sent preferences change, a repeated pinned plan
+// is pinned once, and every refused value is listed at once and changes nothing; the rules are the service's.
+func TestPatchPreferences_Contract_FR003_FR004_FR014_FR023(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 	collapse := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"sidebarCollapsed": true})
 	assertAnswer(t, collapse, http.StatusOK, `{"theme":"system","sidebarCollapsed":true,"displayCurrency":"USD","dateFormat":"DD MMM YYYY","homeScope":"myTeams","historyIncludeInside":false,"pinnedPlanIds":[]}`)
 
-	response := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"theme": "dark"})
+	response := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"theme": "dark", "homeScope": "everything",
+		"pinnedPlanIds": []string{"P-1002", "P-1001", "P-1002"}, "displayCurrency": "EUR", "dateFormat": "DD/MM/YYYY"})
+	refused := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"homeScope": "all",
+		"pinnedPlanIds": []string{"plan-7"}, "displayCurrency": "XYZ", "dateFormat": "DD.MM.YYYY"}, apitest.SkipRequestValidation())
 
-	assertAnswer(t, response, http.StatusOK, `{"theme":"dark","sidebarCollapsed":true,"displayCurrency":"USD","dateFormat":"DD MMM YYYY","homeScope":"myTeams","historyIncludeInside":false,"pinnedPlanIds":[]}`)
+	saved := `{"theme":"dark","sidebarCollapsed":true,"displayCurrency":"EUR","dateFormat":"DD/MM/YYYY","homeScope":"everything","historyIncludeInside":false,"pinnedPlanIds":["P-1002","P-1001"]}`
+	assertAnswer(t, response, http.StatusOK, saved)
+	assertAnswer(t, refused, http.StatusBadRequest, validationBody(`{"field":"displayCurrency","message":"Choose one of the active currencies."},`+
+		`{"field":"dateFormat","message":"Choose one of the date formats."},{"field":"homeScope","message":"Choose My teams or Everything."},`+
+		`{"field":"pinnedPlanIds","message":"Pin plans by their id, like P-1001."}`))
 	var me people.CurrentUser
 	priya.Do(t, http.MethodGet, "/api/v1/me", nil).Decode(t, &me)
-	want := people.PreferencesView{Theme: "dark", SidebarCollapsed: true, DisplayCurrency: "USD", DateFormat: "DD MMM YYYY", HomeScope: "myTeams",
-		PinnedPlanIDs: []string{}}
-	if !reflect.DeepEqual(me.Preferences, want) {
-		t.Errorf("GET /api/v1/me preferences = %+v, want %+v", me.Preferences, want)
-	}
-}
-
-// Home's My teams / Everything switch is saved per person and comes back with GET /api/v1/me; a value other
-// than myTeams or everything is refused next to the field (009 FR-003).
-func TestPatchPreferences_HomeScope_FR003(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-
-	response := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"homeScope": "everything"})
-	refused := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"homeScope": "all"},
-		apitest.SkipRequestValidation())
-
-	assertAnswer(t, response, http.StatusOK, `{"theme":"system","sidebarCollapsed":false,"displayCurrency":"USD","dateFormat":"DD MMM YYYY","homeScope":"everything","historyIncludeInside":false,"pinnedPlanIds":[]}`)
-	var me people.CurrentUser
-	priya.Do(t, http.MethodGet, "/api/v1/me", nil).Decode(t, &me)
-	if me.Preferences.HomeScope != "everything" {
-		t.Errorf("GET /api/v1/me home scope = %q, want everything", me.Preferences.HomeScope)
-	}
-	assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed",`+
-		`"message":"Some fields need your attention.","fields":[{"field":"homeScope","message":"Choose My teams or Everything."}]}}`)
-}
-
-// Pinned plans are saved per person like the other preferences and come back with GET /api/v1/me, in the
-// order pinned; a repeated id is pinned once; an id that is no plan id is refused next to the field
-// (018 FR-004 – FR-006, D-317).
-func TestPatchPreferences_PinnedPlans_FR004_FR005(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-
-	pinned := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"pinnedPlanIds": []string{"P-1002", "P-1001", "P-1002"}})
-	refused := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"pinnedPlanIds": []string{"plan-7"}},
-		apitest.SkipRequestValidation())
-
-	assertAnswer(t, pinned, http.StatusOK, `{"theme":"system","sidebarCollapsed":false,"displayCurrency":"USD","dateFormat":"DD MMM YYYY","homeScope":"myTeams","historyIncludeInside":false,"pinnedPlanIds":["P-1002","P-1001"]}`)
-	assertAnswer(t, refused, http.StatusBadRequest, validationBody(`{"field":"pinnedPlanIds","message":"Pin plans by their id, like P-1001."}`))
-	var me people.CurrentUser
-	priya.Do(t, http.MethodGet, "/api/v1/me", nil).Decode(t, &me)
-	if want := []string{"P-1002", "P-1001"}; !slices.Equal(me.Preferences.PinnedPlanIDs, want) {
-		t.Errorf("GET /api/v1/me pinned plans = %q, want %q (the refusal changed nothing)", me.Preferences.PinnedPlanIDs, want)
+	if me.Preferences.Theme != "dark" || me.Preferences.HomeScope != "everything" || !slices.Equal(me.Preferences.PinnedPlanIDs, []string{"P-1002", "P-1001"}) {
+		t.Errorf("GET /api/v1/me preferences = %+v, want the saved ones (the refusal changed nothing)", me.Preferences)
 	}
 }
 
@@ -165,19 +129,6 @@ func TestPatchMe_UpdatesProfile_FR021_FR022(t *testing.T) {
 		t.Errorf("after the change: GET /api/v1/me %q, GET /api/v1/people/U-1002 %q changed by %q; want the new name",
 			me.Name, details.Name, details.UpdatedBy.Name)
 	}
-}
-
-func TestPatchPreferences_DisplayCurrencyAndDateFormat_FR023_FR024(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-
-	chosen := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"displayCurrency": "EUR", "dateFormat": "DD/MM/YYYY"})
-	invalid := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"displayCurrency": "XYZ", "dateFormat": "DD.MM.YYYY"})
-
-	assertAnswer(t, chosen, http.StatusOK, `{"theme":"system","sidebarCollapsed":false,"displayCurrency":"EUR","dateFormat":"DD/MM/YYYY","homeScope":"myTeams","historyIncludeInside":false,"pinnedPlanIds":[]}`)
-	assertAnswer(t, invalid, http.StatusBadRequest, validationBody(`{"field":"displayCurrency","message":"Choose one of the active currencies."},`+
-		`{"field":"dateFormat","message":"Choose one of the date formats."}`))
 }
 
 func TestGetDisplayCurrencies_FR023(t *testing.T) {

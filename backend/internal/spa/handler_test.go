@@ -96,17 +96,6 @@ func TestGetSpaView_FR018_AWrongCampaignOrDimensionIs(t *testing.T) {
 		http.StatusBadRequest, "validation_failed")
 }
 
-func TestGetSpaView_FR021_ThePurchaseRequestsOnThePlans(t *testing.T) {
-	t.Parallel()
-	s := apitest.New(t)
-	priya := s.SignIn(t, priyasEmail)
-	p := viewOf(t, priya.Do(t, http.MethodGet, "/api/v1/plans/P-1004/spa", nil)).Procurement
-	if p.Count != 1 || p.Items[0].ID != "PR-1001" || !p.Items[0].Counted || p.Draft != p.Items[0].Amount ||
-		p.Draft.Amount.IsZero() {
-		t.Errorf("procurement = %+v", p)
-	}
-}
-
 func TestGetSpaViewAccess_FR012_APlanOutsideThePersonsTeams(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)

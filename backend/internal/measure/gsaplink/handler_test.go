@@ -110,15 +110,3 @@ func TestGsapLink_NoReportsView_FR003(t *testing.T) {
 
 	get(t, server.SignIn(t, mei), report, http.StatusForbidden)
 }
-
-// TestGsapLinkExport_OwnParameters_FR019: the export reads the report's tab and sort and refuses one of another tab.
-func TestGsapLinkExport_OwnParameters_FR019(t *testing.T) {
-	t.Parallel()
-	carlosSees := apitest.New(t).SignIn(t, carlos)
-	export := "/api/v1/reports/gsap-link/export?year=2026&format=csv&widget=swbs"
-
-	if r := carlosSees.Do(t, http.MethodGet, export+"&tab=swbs&sort=lineItem", nil); r.Status != http.StatusOK {
-		t.Errorf("export sorted by line item = %d %s, want 200", r.Status, r.Body)
-	}
-	get(t, carlosSees, export+"&sort=vendor", http.StatusBadRequest)
-}

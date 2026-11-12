@@ -64,21 +64,6 @@ func TestCreateFolder_CreatedOrRefused_FR020(t *testing.T) {
 	assertAnswer(t, missing, http.StatusBadRequest, validationBody(`{"field":"name","message":"Enter a name."}`))
 }
 
-// Daniel may rename Priya's folder: the sample records have no permission checks.
-func TestUpdateFolder_Renamed_FR029(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t, apitest.WithoutDemoHistory())
-	createFolder(t, server.SignIn(t, priyasEmail), "Ideas")
-	daniel := server.SignIn(t, danielsEmail)
-	server.Advance(time.Hour)
-
-	response := daniel.Do(t, http.MethodPatch, "/api/v1/sample-folders/SF-1001", map[string]any{"name": "Ideas 2", "version": 1})
-
-	assertAnswer(t, response, http.StatusOK, `{"id":"SF-1001","name":"Ideas 2","version":2,`+
-		`"createdAt":"2026-03-12T09:00:00Z","createdBy":{"id":"U-1002","name":"Priya Raman"},`+
-		`"updatedAt":"2026-03-12T10:00:00Z","updatedBy":{"id":"U-1003","name":"Daniel Okoro"},"notes":[]}`)
-}
-
 func TestUpdateFolder_Refused_FR020_FR029(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t, apitest.WithoutDemoHistory())

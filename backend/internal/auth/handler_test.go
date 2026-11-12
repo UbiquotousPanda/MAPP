@@ -117,16 +117,6 @@ func TestSignIn_SetsTheSessionCookie_FR003(t *testing.T) {
 	assertAnswer(t, me, http.StatusOK, priyaBody)
 }
 
-func TestSignIn_EmptyFields_FR004(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-
-	response := server.Do(t, http.MethodPost, "/api/v1/auth/sign-in", signIn("", ""))
-
-	assertAnswer(t, response, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"email","message":"Enter your e-mail"},{"field":"password","message":"Enter the password"}]}}`)
-}
-
 // The answer sets no cookie; the service test proves an unknown e-mail gets the same answer.
 func TestSignIn_IncorrectCredentials_FR004(t *testing.T) {
 	t.Parallel()

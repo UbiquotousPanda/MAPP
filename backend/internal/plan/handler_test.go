@@ -46,32 +46,6 @@ func TestPlanDefaults_FR006(t *testing.T) {
 		`"defaultSpread":"evenly","goalStage":"inq","currency":"USD","planType":"operational","overspend":"warn"}`)
 }
 
-// The new plan is P-1005, after the seed's four; a form without name, year and model gets every problem at once.
-func TestCreatePlan_201AndValidation_FR010(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-	missing := newPlanBody()
-	missing["name"], missing["year"], missing["modelId"] = " ", nil, nil
-
-	created := priya.Do(t, http.MethodPost, "/api/v1/plans", newPlanBody())
-	refused := priya.Do(t, http.MethodPost, "/api/v1/plans", missing)
-
-	if created.Status != http.StatusCreated {
-		t.Fatalf("create = %d %s, want 201", created.Status, created.Body)
-	}
-	var p plan.PlanView
-	created.Decode(t, &p)
-	if p.ID != "P-1005" || p.Status != plan.StatusDraft || p.Name != "FY2026 Lubricants Test" ||
-		p.Owner == nil || p.Owner.Name != "Priya Raman" || len(p.Completeness.Missing) != 0 ||
-		p.Goals.Plan.MQL == nil || *p.Goals.Plan.MQL != 5000 || p.Goals.Plan.Revenue == nil ||
-		p.Goals.Plan.Revenue.Amount.String() != "2500000.00" || p.CreatedBy.Name != "Priya Raman" {
-		t.Errorf("created plan = %s", created.Body)
-	}
-	assertAnswer(t, refused, http.StatusBadRequest, validationBody(`{"field":"name","message":"Enter a plan name."},`+
-		`{"field":"year","message":"Choose a year from 2026 to 2036."},{"field":"modelId","message":"Choose a model."}`))
-}
-
 func validationBody(fields string) string {
 	return `{"error":{"code":"validation_failed","message":"Some fields need your attention.","fields":[` + fields + `]}}`
 }

@@ -132,20 +132,32 @@ func alexAfterPriya(t *testing.T) *apitest.Client {
 	return server.SignIn(t, alex)
 }
 
-// TestOwnPass_ExportEqualsScreen_FR013_SC005: both widgets' files hold the screen's every row in its sort.
+// Both widgets' files hold the screen's every row in its sort, and the workbook holds the same rows: the people
+// and Last sign-in sheets first, About this export last.
 func TestOwnPass_ExportEqualsScreen_FR013_SC005(t *testing.T) {
 	t.Parallel()
 	alexSees := alexAfterPriya(t)
 
 	screen := reportOf(t, alexSees, report+"?pageSize=500"+own)
-	if diff := cmp.Diff(peopleRows(screen), csvOf(t, alexSees, own+"&widget=people").rows); screen.Total < 2 || diff != "" {
+	files := [][][]string{csvOf(t, alexSees, own+"&widget=people").rows, csvOf(t, alexSees, own+"&widget=signInBands").rows}
+	if diff := cmp.Diff(peopleRows(screen), files[0]); screen.Total < 2 || diff != "" {
 		t.Errorf("people, %d on screen (-screen +file):\n%s", screen.Total, diff)
 	}
-	if diff := cmp.Diff(bandRows(screen), csvOf(t, alexSees, own+"&widget=signInBands").rows); diff != "" {
+	if diff := cmp.Diff(bandRows(screen), files[1]); diff != "" {
 		t.Errorf("Last sign-in bands (-screen +file):\n%s", diff)
 	}
 	if total := bandRows(screen)[len(screen.Bands)+1][1]; total != strconv.Itoa(screen.Cards.People) {
 		t.Errorf("bands add up to %s, the People card says %d (FR-007)", total, screen.Cards.People)
+	}
+	tables, err := sheet.ReadXLSX(get(t, alexSees, exported+"xlsx"+own, http.StatusOK).Body, 10000)
+	if err != nil || len(tables) < 3 || tables[0].Name != "People" || tables[1].Name != "Last sign-in" ||
+		tables[len(tables)-1].Name != "About this export" {
+		t.Fatalf("workbook = %d sheets (%v), want People, Last sign-in, …, About this export", len(tables), err)
+	}
+	for i, file := range files {
+		if diff := cmp.Diff(asRead(file), textOf(tables[i].Rows)); diff != "" {
+			t.Errorf("sheet %s against its file (-file +sheet):\n%s", tables[i].Name, diff)
+		}
 	}
 }
 
@@ -172,23 +184,6 @@ func TestOwnPass_ExportKeepsTeam_US2_1(t *testing.T) {
 	}
 	if diff := cmp.Diff(asRead(people.rows), textOf(tables[0].Rows)); diff != "" {
 		t.Errorf("People sheet of T-1001 against the file (-file +sheet):\n%s", diff)
-	}
-}
-
-// TestOwnPass_WorkbookEqualsFiles_US2_2: the people and Last sign-in sheets first, About this export last.
-func TestOwnPass_WorkbookEqualsFiles_US2_2(t *testing.T) {
-	t.Parallel()
-	alexSees := alexAfterPriya(t)
-
-	tables, err := sheet.ReadXLSX(get(t, alexSees, exported+"xlsx"+own, http.StatusOK).Body, 10000)
-	if err != nil || len(tables) < 3 || tables[0].Name != "People" || tables[1].Name != "Last sign-in" ||
-		tables[len(tables)-1].Name != "About this export" {
-		t.Fatalf("workbook = %d sheets (%v), want People, Last sign-in, …, About this export", len(tables), err)
-	}
-	for i, widget := range []string{"people", "signInBands"} {
-		if diff := cmp.Diff(asRead(csvOf(t, alexSees, own+"&widget="+widget).rows), textOf(tables[i].Rows)); diff != "" {
-			t.Errorf("sheet %s against the %s file (-file +sheet):\n%s", tables[i].Name, widget, diff)
-		}
 	}
 }
 

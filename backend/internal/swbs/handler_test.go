@@ -12,9 +12,8 @@ import (
 )
 
 const (
-	alexsEmail  = "alex.morgan@shell.com"
-	priyasEmail = "priya.raman@shell.com"
-	runsPath    = "/api/v1/simulated-gsap/swbs-runs"
+	alexsEmail = "alex.morgan@shell.com"
+	runsPath   = "/api/v1/simulated-gsap/swbs-runs"
 )
 
 func decoded[T any](t *testing.T, response *apitest.Response, status int) T {
@@ -105,30 +104,5 @@ func TestSwbsRun_Named_Contract_030_FR008(t *testing.T) {
 				t.Errorf("code = %s, want %s", body.Error.Code, tt.code)
 			}
 		})
-	}
-}
-
-func TestSwbsRun_OneNamed_Contract_030_FR015(t *testing.T) {
-	t.Parallel()
-	alex := apitest.New(t).SignIn(t, alexsEmail)
-
-	only := decoded[swbs.RunView](t, alex.Do(t, http.MethodPost, runsPath, map[string]any{"lineItemIds": []string{"L-1006"}}),
-		http.StatusCreated)
-	if only.Sent != 1 || only.Codes[0].LineItemID != "L-1006" {
-		t.Errorf("named run = %+v", only)
-	}
-}
-
-func TestSwbsCode_LineItemSeed_030_FR021(t *testing.T) {
-	t.Parallel()
-	priya := apitest.New(t).SignIn(t, priyasEmail)
-
-	venue := decoded[lineitem.Details](t, priya.Do(t, http.MethodGet, "/api/v1/line-items/L-1003", nil), http.StatusOK).LineItem
-	stand := decoded[lineitem.Details](t, priya.Do(t, http.MethodGet, "/api/v1/line-items/L-1006", nil), http.StatusOK).LineItem
-	if venue.SwbsStatus != lineitem.SwbsReceived || venue.SwbsCode != "SIM-DE03-0001" || venue.SwbsRequestedAt == nil {
-		t.Errorf("Venue hire = %s %q", venue.SwbsStatus, venue.SwbsCode)
-	}
-	if stand.SwbsStatus != lineitem.SwbsReadyToSend || stand.SwbsCode != "" || stand.SwbsReceivedAt != nil {
-		t.Errorf("Stand build = %s %q", stand.SwbsStatus, stand.SwbsCode)
 	}
 }

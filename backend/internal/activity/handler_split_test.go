@@ -152,52 +152,36 @@ func TestSplit_NothingChosen_FR027(t *testing.T) {
 		`"fields":[{"field":"lineItemIds","message":"Choose line items or an amount to move."}]}}`)
 }
 
-// A line item of another activity is refused too.
-func TestSplit_AmountTooHigh_FR026(t *testing.T) {
+// Every refusal names its field: line items of another activity, an amount above the planned cost, a name
+// already in the destination (ignoring letter case), another plan's initiative and one whose dates do not fit.
+func TestSplit_Refusals_FR026(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
+	tests := []struct {
+		activityID string
+		body       map[string]any
+		fields     string
+	}{
+		{ukLaunchEvent, splitBody("Ireland roadshow", irelandInit, []string{"L-1001"}, "50000", false, 1),
+			`{"field":"lineItemIds","message":"L-1001 is not a line item of this activity."},` +
+				`{"field":"plannedCost","message":"Move at most 40,000.00 GBP, the activity's planned cost."}`},
+		{ukLaunchEvent, splitBody("dealer CONFERENCE", irelandInit, []string{agencyItem}, nil, false, 1),
+			`{"field":"name","message":"'Ireland' already has an activity called 'Dealer conference'."}`},
+		{"A-1001", splitBody("Launch film part 2", ukInitiative, nil, "1000", false, 1),
+			`{"field":"initiativeId","message":"Choose another initiative of this plan."}`},
+		{"A-1001", splitBody("Launch film part 2", "I-1004", nil, "1000", false, 1),
+			`{"field":"initiativeId","message":"'Launch film' runs 01 Mar – 31 May 2026, but 'Retail events' runs ` +
+				`01 Jun – 31 Dec 2026. Change the activity's dates first, or pick another initiative."}`},
+	}
 
-	refused := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split",
-		splitBody("Ireland roadshow", irelandInit, []string{"L-1001"}, "50000", false, 1))
-
-	assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"lineItemIds","message":"L-1001 is not a line item of this activity."},`+
-		`{"field":"plannedCost","message":"Move at most 40,000.00 GBP, the activity's planned cost."}]}}`)
-}
-
-// Ignoring letter case.
-func TestSplit_NameUnique_FR026(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-
-	refused := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split",
-		splitBody("dealer CONFERENCE", irelandInit, []string{agencyItem}, nil, false, 1))
-
-	assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"name","message":"'Ireland' already has an activity called 'Dealer conference'."}]}}`)
-}
-
-// Move's rules: another plan's initiative is refused, and so is one whose dates do not contain the activity's.
-func TestSplit_DestinationRules_FR026(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-
-	otherPlan := priya.Do(t, http.MethodPost, "/api/v1/activities/A-1001/split",
-		splitBody("Launch film part 2", ukInitiative, nil, "1000", false, 1))
-	outside := priya.Do(t, http.MethodPost, "/api/v1/activities/A-1001/split",
-		splitBody("Launch film part 2", "I-1004", nil, "1000", false, 1))
-	options := priya.Do(t, http.MethodGet, "/api/v1/activities/A-1001/split-options", nil)
-
-	assertAnswer(t, otherPlan, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"initiativeId","message":"Choose another initiative of this plan."}]}}`)
-	assertAnswer(t, outside, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"initiativeId","message":"'Launch film' runs 01 Mar – 31 May 2026, but 'Retail events' runs `+
-		`01 Jun – 31 Dec 2026. Change the activity's dates first, or pick another initiative."}]}}`)
+	for _, tt := range tests {
+		refused := priya.Do(t, http.MethodPost, "/api/v1/activities/"+tt.activityID+"/split", tt.body)
+		assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
+			`"fields":[`+tt.fields+`]}}`)
+	}
 	var page activity.SplitOptions
-	options.Decode(t, &page)
+	priya.Do(t, http.MethodGet, "/api/v1/activities/A-1001/split-options", nil).Decode(t, &page)
 	for _, d := range page.Destinations {
 		if d.Initiative.ID == "I-1004" && d.MoveProblem == nil {
 			t.Errorf("Retail events is offered without its dates reason: %+v", d)
