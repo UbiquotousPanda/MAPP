@@ -3,7 +3,6 @@ tr.total > th,
 tr.total > td {
   --ink-2: var(--ink);
   --link: var(--ink);
-  border-top: 2px solid var(--ink);
   border-bottom: 0;
   background: var(--gray-bg);
   color: var(--ink);

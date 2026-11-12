@@ -192,7 +192,6 @@
 
 .totals th,
 .totals td {
-  border-top: 2px solid var(--ink);
   background: var(--gray-bg);
   font-weight: var(--weight-bold);
 }

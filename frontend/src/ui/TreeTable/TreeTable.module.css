@@ -206,9 +206,7 @@
   text-align: center;
 }
 
-/* The totals row: bold, under a 2 px ink line. */
 .footer td {
-  border-top: 2px solid var(--ink);
   border-bottom: 0;
   font-weight: var(--weight-bold);
 }

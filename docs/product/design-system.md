@@ -299,7 +299,7 @@ is one report, in the **report frame** (039):
   a status chip (Above plan · On plan · Below plan); the shared **Pager** below.
 - **Total row** (D-414): every report table whose figures add up — ranked lists, widget table views, the Purchase
   requests grid, the GSAP link tables — ends with a `<tfoot>` row headed "Total" (a row header) in the §5.4 totals
-  style (`shared/TotalRow.module.css`: 700 weight, `--gray-bg`, 2 px `--ink` top border, Text Strong on the grey).
+  style (`shared/TotalRow.module.css`: 700 weight, `--gray-bg`, no extra border, Text Strong on the grey).
   Its figures come from the API over every page; it never moves with the sort and is absent when there are no rows.
 - Empty states say why — "No plans you may see for 2027", "Your filters exclude everything" with **Reset
   filters**, "No purchase requests in 2026" with where to look instead. Financial figures the person may not see
@@ -877,7 +877,7 @@ changes?" before typed values are lost. Save is never disabled.
 | Number, money, percent | **Right-aligned header and values, tabular figures, no wrapping**, one money format (§4.4) |
 | Dates | Left-aligned, no wrapping, the person's format |
 | Actions | Last column, 48 wide, the row's ⋯ (`sm`); its header is a visually hidden "Actions" |
-| Totals row | 700 weight, `--gray-bg`, 2 px `--ink` top border; numbers aligned as above |
+| Totals row | 700 weight, `--gray-bg`, no extra border; numbers aligned as above |
 | Never | Repeat the column's label inside the cell ("Owner: Alex Morgan", UI audit P-02); upper-case headers |
 | Below 600 px | Scrolls inside its card; inbox-type lists (Approvals, Home lists) switch to stacked cards: name link, status, key facts as a 2-column `DescriptionList`, ⋯ |
 
