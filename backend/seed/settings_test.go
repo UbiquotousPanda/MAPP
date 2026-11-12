@@ -48,7 +48,7 @@ func checkSeededCurrencies(t *testing.T, d demoData) {
 			t.Errorf("currency %s: active %v, created by %v, legacy rate %v", c.Code, c.Active, c.CreatedBy, c.Rate)
 		}
 	}
-	if want := []string{"CNY 7.1 ¥", "EUR 0.92 €", "GBP 0.79 £", "INR 83.5 ₹", "USD 1 $"}; !slices.Equal(currencies, want) {
+	if want := []string{"CNY 6.67 ¥", "EUR 0.9 €", "GBP 0.75 £", "INR 93.7 ₹", "USD 1 $"}; !slices.Equal(currencies, want) {
 		t.Errorf("currencies = %q, want %q", currencies, want)
 	}
 }
@@ -269,12 +269,12 @@ func TestLoad_RateHistory_016_D274(t *testing.T) {
 		t.Fatalf("%d exchange rates, want 124 (31 for each of EUR, GBP, CNY, INR)", len(d.rates))
 	}
 	first, last := d.rates[0], d.rates[30]
-	if first.ID != "XR-1001" || first.Currency != "EUR" || first.Date != today.AddDays(-30) || first.Rate.String() != "0.91448" ||
+	if first.ID != "XR-1001" || first.Currency != "EUR" || first.Date != today.AddDays(-30) || first.Rate.String() != "0.8946" ||
 		first.Source != settings.RateGSAPImport || first.ImportID != "RI-1001" {
-		t.Errorf("first rate = %+v, want EUR 0.91448 (0.92 − 0.6 %%) 30 days before the seed day", first)
+		t.Errorf("first rate = %+v, want EUR 0.8946 (0.90 − 0.6 %%) 30 days before the seed day", first)
 	}
-	if last.Currency != "EUR" || last.Date != today || last.Rate.String() != "0.92" {
-		t.Errorf("EUR's rate on the seed day = %+v, want 0.92", last)
+	if last.Currency != "EUR" || last.Date != today || last.Rate.String() != "0.9" {
+		t.Errorf("EUR's rate on the seed day = %+v, want 0.90", last)
 	}
 	for _, r := range d.rates {
 		if r.Date.After(today) || r.Currency == "USD" {

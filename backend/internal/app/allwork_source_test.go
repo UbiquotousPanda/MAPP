@@ -89,7 +89,7 @@ func TestPlanningSource_ReadsSeedYear_FR001(t *testing.T) {
 		t.Errorf("ongoing activity = %+v", fund)
 	}
 	production := byName["Film production"]
-	if production.ParentID != film.ID || production.PlannedCost == nil || production.PlannedCost.String() != "50000.00" ||
+	if production.ParentID != film.ID || production.PlannedCost == nil || production.PlannedCost.String() != "51111.11" ||
 		production.LocalPlannedCost == nil || production.LocalPlannedCost.Amount.String() != "46000.00" ||
 		production.LocalPlannedCost.Currency != "EUR" || len(production.MonthsUSD) != 3 || production.Missing != 3 ||
 		production.Swbs != "waitingForApproval" || production.PlanID != "P-1001" {
@@ -99,7 +99,7 @@ func TestPlanningSource_ReadsSeedYear_FR001(t *testing.T) {
 	for _, m := range production.MonthsUSD {
 		spread += m.Month + "=" + m.USD.String() + " "
 	}
-	if spread != "2026-03=16666.66 2026-04=16666.66 2026-05=16666.68 " {
+	if spread != "2026-03=17037.03 2026-04=17037.03 2026-05=17037.05 " {
 		t.Errorf("spread = %s", spread)
 	}
 }

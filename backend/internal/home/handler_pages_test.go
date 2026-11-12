@@ -93,9 +93,9 @@ func TestHome_DeletedRecordsNeverCount_FR019(t *testing.T) { //nolint:gocyclo //
 	attention := get[home.HomeAttentionPage](t, priya, "/api/v1/home/attention")
 	rows := get[home.PlanPage](t, priya, "/api/v1/home/plans?scope=myTeams")
 
-	// Priya also owns the two activities of the GBP plan P-1004 (016): 65,000.00 GBP = 82,278.48 USD.
-	if summary.ActivitiesOwned.Count != 8 || view.Total != 8 || summary.PlannedCost.PlannedCost != usd(t, "422278.48") {
-		t.Errorf("after the delete: %d owned, %d in My activities, planned %v; want 8, 8 and 422,278.48 USD",
+	// Priya also owns the two activities of the GBP plan P-1004 (016): 65,000.00 GBP = 86,666.67 USD.
+	if summary.ActivitiesOwned.Count != 8 || view.Total != 8 || summary.PlannedCost.PlannedCost != usd(t, "426666.67") {
+		t.Errorf("after the delete: %d owned, %d in My activities, planned %v; want 8, 8 and 426,666.67 USD",
 			summary.ActivitiesOwned.Count, view.Total, summary.PlannedCost.PlannedCost)
 	}
 	for _, item := range attention.Items {

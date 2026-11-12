@@ -40,7 +40,7 @@ test('015 US3 (T030): from the sidebar, a person finds a PO, opens it and follow
   for (const [term, value] of [
     ['Document number', '4500001003'],
     ['Amount', '€9,800.00'],
-    ['Amount in USD', '$10,652.17'],
+    ['Amount in USD', '$10,888.89'],
     ['Vendor', 'V-100103 · Outdoor Frames Ltd'],
     ['Matched by', 'HX key HX1006'],
   ] as const) {

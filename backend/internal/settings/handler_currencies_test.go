@@ -41,7 +41,7 @@ func TestCurrenciesAPI_ListCreateGet_FR028(t *testing.T) {
 	if !slices.Equal(codes, []string{"USD", "CNY", "EUR", "GBP", "INR", "JPY"}) {
 		t.Errorf("currencies = %q", codes)
 	}
-	if euro.Rate != "0.92" || euro.InverseRate != "1.086957" || len(euro.Locks) != 1 || euro.Locks[0].Field != "code" {
+	if euro.Rate != "0.9" || euro.InverseRate != "1.111111" || len(euro.Locks) != 1 || euro.Locks[0].Field != "code" {
 		t.Errorf("EUR = %+v", euro)
 	}
 	if len(dollar.Locks) != 4 || dollar.Locks[1].Reason != "USD is SP&A One's base currency; its rate is always 1." {

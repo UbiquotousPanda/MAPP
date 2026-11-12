@@ -40,7 +40,7 @@ func TestLoad_LineItems_FR009_038_FR061_L30(t *testing.T) {
 			"2026-06=4,000.00 2026-07=4,000.00 2026-08=4,000.00 2026-09=4,000.00] swbs=true FBI-1001 / ATL - Digital / 7250080 - Advertising - Digital",
 		"L-1006 Billboard winter wave Stand build EUR 9,200.00 evenly[] swbs=true FBI-1003 / BTL - Event / 7250150 - Sponsorship programmes",
 		"L-1007 Grand opening Shanghai Station signage USD 1,000.00 custom[2026-04=450.00 2026-05=450.00] swbs=true FBI-1004 / BTL - Event",
-		"L-1008 Grand opening Shanghai Fleet card promotion CNY 280,450.00 evenly[] swbs=true FBI-1005 / ATL - Digital / 7250080 - Advertising - Digital",
+		"L-1008 Grand opening Shanghai Fleet card promotion CNY 263,465.00 evenly[] swbs=true FBI-1005 / ATL - Digital / 7250080 - Advertising - Digital",
 		// the FY2027 line items carry an item of the 2027 finance budget.
 		"L-1009 UK launch event Venue GBP 15,000.00 evenly[] swbs=true FBI-1007 / BTL - Event / 7250150 - Sponsorship programmes",
 		"L-1010 UK launch event Agency fee (Ireland) EUR 23,000.00 evenly[] swbs=true FBI-1008 / BTL - Agency Fees / 7250060 - Advertising - Corp/Agency/Production",
@@ -81,15 +81,15 @@ func checkOwnerAndBudgetYear(t *testing.T, l lineitem.LineItem, a activity.Activ
 	}
 }
 
-// With the seeded rates, the demo story's unassigned planned cost holds: Launch film keeps 20,000.00 USD, Grand
+// With the seeded rates, the demo story's unassigned planned cost holds: Launch film keeps 18,888.89 USD, Grand
 // opening Shanghai's line items exceed its planned cost by 500.00 USD, and Fleet roadshow has no line items.
 func TestLoad_UnassignedPlannedCost_US1(t *testing.T) {
 	t.Parallel()
 	d := loadDemo(t)
 	rates := d.currentRates()
 	want := map[string]string{
-		"Launch film": "20,000.00", "Grand opening Shanghai": "-500.00", "Social always-on": "55,000.00",
-		"Trade magazine ads": "0.00", "Billboard winter wave": "35,000.00", "Fleet roadshow": "60,000.00",
+		"Launch film": "18,888.89", "Grand opening Shanghai": "-500.00", "Social always-on": "53,933.33",
+		"Trade magazine ads": "0.00", "Billboard winter wave": "34,777.78", "Fleet roadshow": "60,000.00",
 	}
 	for _, a := range d.activities {
 		expected, listed := want[a.Name]

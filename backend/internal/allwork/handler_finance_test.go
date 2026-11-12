@@ -39,10 +39,10 @@ func TestGetAllWork_FinancialColumns_FR023(t *testing.T) {
 		figures[row.Name] = texts
 	}
 	want := map[string][]string{
-		"FY2026 Lubricants Europe": {"35,652.17", "33,152.17", "30,652.17", "2,500.00", "424,347.83"},
-		"Helix launch":             {"35,652.17", "33,152.17", "30,652.17", "2,500.00", "239,347.83"},
-		"Social always-on":         {"25,000.00", "22,500.00", "20,000.00", "2,500.00", "55,000.00"},
-		"Stand build":              {"10,652.17", "10,652.17", "10,652.17", "0.00", "-652.17"},
+		"FY2026 Lubricants Europe": {"36,955.56", "34,455.56", "31,955.56", "2,500.00", "423,044.44"},
+		"Helix launch":             {"36,955.56", "34,455.56", "31,955.56", "2,500.00", "238,044.44"},
+		"Social always-on":         {"26,066.67", "23,566.67", "21,066.67", "2,500.00", "53,933.33"},
+		"Stand build":              {"10,888.89", "10,888.89", "10,888.89", "0.00", "-666.67"},
 	}
 	if _, shown := figures["Station signage"]; shown { // FY2026 Mobility China is not Priya's team's plan (014)
 		t.Errorf("Priya sees Station signage of FY2026 Mobility China")
@@ -52,7 +52,7 @@ func TestGetAllWork_FinancialColumns_FR023(t *testing.T) {
 			t.Errorf("%s = %q, want %q", name, got, cells)
 		}
 	}
-	if total := r.Totals.Cells[0]; total == nil || total.Money.Amount.Format() != "35,652.17" {
+	if total := r.Totals.Cells[0]; total == nil || total.Money.Amount.Format() != "36,955.56" {
 		t.Errorf("totals committed = %+v", total)
 	}
 

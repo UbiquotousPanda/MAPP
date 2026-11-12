@@ -138,7 +138,7 @@ func TestImpact_CountsTheLiveRecords_FR011_FR030(t *testing.T) {
 		t.Errorf("model impact = %+v\nwant %+v", model, wantModel)
 	}
 	wantCurrency := []warning{{Kind: "amountsRecalculated", Count: 3, // with L-1010 of 016's GBP plan: 23,000.00 EUR
-		Message: "3 line items in 3 activities use EUR. Their EUR amounts stay the same; their USD amounts will be recalculated (85,000.00 → 97,750.00 USD). Unassigned planned cost of these activities will change. No activity goes back for approval."}}
+		Message: "3 line items in 3 activities use EUR. Their EUR amounts stay the same; their USD amounts will be recalculated (86,888.89 → 97,750.00 USD). Unassigned planned cost of these activities will change. No activity goes back for approval."}}
 	if !reflect.DeepEqual(currency, wantCurrency) {
 		t.Errorf("currency impact = %+v\nwant %+v", currency, wantCurrency)
 	}

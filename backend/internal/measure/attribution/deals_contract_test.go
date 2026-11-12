@@ -21,8 +21,8 @@ func TestRevenueDealsContract_058_FR024(t *testing.T) {
 	if r.Status != http.StatusOK {
 		t.Fatalf("Alex opens the webinar's deals = %d %s", r.Status, r.Body)
 	}
-	if got := dealsAnswer(t, r.Body); got != "18702.90 equallyDistributed 2 deals" {
-		t.Errorf("webinar = %s; want 18702.90 equallyDistributed 2 deals (D-400)", got)
+	if got := dealsAnswer(t, r.Body); got != "18851.86 equallyDistributed 2 deals" {
+		t.Errorf("webinar = %s; want 18851.86 equallyDistributed 2 deals (D-400)", got)
 	}
 
 	skip := apitest.SkipRequestValidation()

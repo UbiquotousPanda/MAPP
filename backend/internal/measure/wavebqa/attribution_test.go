@@ -158,10 +158,10 @@ func checkDemoReturns(t *testing.T, alexSees person) {
 	t.Helper()
 	want := map[string]string{
 		helixFirstHalf:    "credited 54000.00, cost 0.00, ROI noActualCost",
-		tellusCaseStudies: "credited 13405.80, cost 32608.70, ROI -59",
-		tellusWebinars:    "credited 18702.90, cost 0.00, ROI noActualCost",
-		socialAlwaysOn:    "credited noData, cost 20000.00, ROI noData",
-		"Total":           "credited 86108.70, cost 63260.87, ROI 36",
+		tellusCaseStudies: "credited 13703.70, cost 33333.33, ROI -59",
+		tellusWebinars:    "credited 18851.86, cost 0.00, ROI noActualCost",
+		socialAlwaysOn:    "credited noData, cost 21066.67, ROI noData",
+		"Total":           "credited 86555.56, cost 65288.89, ROI 33",
 	}
 	list := revenueRankedOf(t, alexSees, "show=activity")
 	got := map[string]string{"Total": topOf(t, list).served()}

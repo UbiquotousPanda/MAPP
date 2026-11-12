@@ -148,12 +148,12 @@ test('My profile: the display currency and date format follow on the Plans list 
   await expect(preferences).toContainText('EUR — Euro');
   await expect(preferences).toContainText('12/03/2026 (DD/MM/YYYY)');
 
-  // The Plans list: FY2026 Lubricants Europe's $1,200,000.00 budget is €1,104,000.00 at 0.92.
+  // The Plans list: FY2026 Lubricants Europe's $1,200,000.00 budget is €1,080,000.00 at 0.90.
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Plans' }).click();
   await expect(page.getByRole('heading', { name: 'Plans', level: 1 })).toBeVisible();
   const card = page.getByRole('article', { name: 'FY2026 Lubricants Europe' });
   await expect(card).toContainText('$1,200,000.00');
-  await expect(card).toContainText('about €1,104,000.00');
+  await expect(card).toContainText('about €1,080,000.00');
   await expect(card).toContainText(/Planned cost\$[\d,]+\.\d{2}≈ about €[\d,]+\.\d{2}/);
 
   // The plan page: amounts with their EUR value, and dates as DD/MM/YYYY everywhere.
@@ -165,12 +165,12 @@ test('My profile: the display currency and date format follow on the Plans list 
     `01/01/${SEED_YEAR} – 31/12/${SEED_YEAR}`,
   );
   await expect(page.getByRole('region', { name: 'Summary' })).toContainText(
-    '≈ about €1,104,000.00',
+    '≈ about €1,080,000.00',
   );
   const planRow = treeRow(page, 'P-1001');
   await expect(planRow).toContainText(`01/01/${SEED_YEAR} – 31/12/${SEED_YEAR}`);
-  await expect(planRow).toContainText('€1,104,000.00');
+  await expect(planRow).toContainText('€1,080,000.00');
   const helix = treeRow(page, 'C-1001');
   await expect(helix).toContainText(`01/01/${SEED_YEAR} – 31/12/${SEED_YEAR}`);
-  await expect(helix).toContainText('€644,000.00');
+  await expect(helix).toContainText('€630,000.00');
 });

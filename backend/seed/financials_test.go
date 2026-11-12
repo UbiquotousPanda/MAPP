@@ -36,17 +36,17 @@ func TestSeed_FinancialsStory_015(t *testing.T) {
 	// name → planned, committed, invoiced, paid, accrued, not yet committed, %, line items above planned
 	// ("yes" for the line item itself).
 	table := map[string][8]string{
-		"Venue hire":               {"20000.00", "20000.00", "20000.00", "20000.00", "0.00", "0.00", "100", "0"},
+		"Venue hire":               {"21066.67", "21066.67", "21066.67", "21066.67", "0.00", "0.00", "100", "0"},
 		"Speaker fees":             {"5000.00", "5000.00", "2500.00", "0.00", "2500.00", "0.00", "100", "0"},
-		"Stand build":              {"10000.00", "10652.17", "10652.17", "10652.17", "0.00", "-652.17", "107", "yes"},
-		"Social always-on":         {"80000.00", "25000.00", "22500.00", "20000.00", "2500.00", "55000.00", "31", "0"},
-		"Billboard winter wave":    {"45000.00", "10652.17", "10652.17", "10652.17", "0.00", "34347.83", "24", "1"},
+		"Stand build":              {"10222.22", "10888.89", "10888.89", "10888.89", "0.00", "-666.67", "107", "yes"},
+		"Social always-on":         {"80000.00", "26066.67", "23566.67", "21066.67", "2500.00", "53933.33", "33", "0"},
+		"Billboard winter wave":    {"45000.00", "10888.89", "10888.89", "10888.89", "0.00", "34111.11", "24", "1"},
 		"Launch film":              {"120000.00", "0.00", "0.00", "0.00", "0.00", "120000.00", "0", "0"},
-		"Digital & social":         {"200000.00", "25000.00", "22500.00", "20000.00", "2500.00", "175000.00", "13", "0"},
-		"Print & outdoor":          {"75000.00", "10652.17", "10652.17", "10652.17", "0.00", "64347.83", "14", "1"},
-		"Helix launch":             {"275000.00", "35652.17", "33152.17", "30652.17", "2500.00", "239347.83", "13", "1"},
+		"Digital & social":         {"200000.00", "26066.67", "23566.67", "21066.67", "2500.00", "173933.33", "13", "0"},
+		"Print & outdoor":          {"75000.00", "10888.89", "10888.89", "10888.89", "0.00", "64111.11", "15", "1"},
+		"Helix launch":             {"275000.00", "36955.56", "34455.56", "31955.56", "2500.00", "238044.44", "13", "1"},
 		"Rimula fleet":             {"185000.00", "0.00", "0.00", "0.00", "0.00", "185000.00", "0", "0"},
-		"FY2026 Lubricants Europe": {"460000.00", "35652.17", "33152.17", "30652.17", "2500.00", "424347.83", "8", "1"},
+		"FY2026 Lubricants Europe": {"460000.00", "36955.56", "34455.56", "31955.56", "2500.00", "423044.44", "8", "1"},
 	}
 	usd := func(text string) money.Money {
 		amount, err := money.ParseAmount(text)
@@ -98,8 +98,8 @@ func TestSeed_FinancialsStory_015(t *testing.T) {
 	var all financials.TransactionPage
 	get("/api/v1/financials/transactions?year=2026", &all)
 	if all.Counts != (financials.TypeCounts{All: 10, PurchaseOrder: 3, Invoice: 3, Payment: 2, Accrual: 2}) ||
-		all.Totals.Committed != usd("35652.17") || all.Totals.Invoiced != usd("33152.17") ||
-		all.Totals.Paid != usd("30652.17") || all.Totals.Accrued != usd("2500.00") {
+		all.Totals.Committed != usd("36955.56") || all.Totals.Invoiced != usd("34455.56") ||
+		all.Totals.Paid != usd("31955.56") || all.Totals.Accrued != usd("2500.00") {
 		t.Errorf("Financials page 2026: counts %+v, totals %+v", all.Counts, all.Totals)
 	}
 	if all.Source.FeedName == nil || *all.Source.FeedName != "Demo data (simulated GSAP)" || all.Source.AccrualMonth == nil ||
@@ -110,7 +110,7 @@ func TestSeed_FinancialsStory_015(t *testing.T) {
 	var overview financials.Overview
 	get("/api/v1/financials/overview?scope=myTeams", &overview)
 	o := overview.Figures
-	if o.Committed != usd("35652.17") || o.PlannedCost == nil || *o.PlannedCost != usd("460000.00") || o.CommittedPercent == nil ||
+	if o.Committed != usd("36955.56") || o.PlannedCost == nil || *o.PlannedCost != usd("460000.00") || o.CommittedPercent == nil ||
 		*o.CommittedPercent != 8 || overview.ActivitiesAbovePlanned != 1 || overview.NotLinked != 0 {
 		t.Errorf("Priya's Home card = %+v", overview)
 	}

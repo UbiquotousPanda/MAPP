@@ -34,7 +34,7 @@ data: Priya only Lubricants Europe, Mei only Mobility China, Sara both read-only
 | Teams | Lubricants Europe · Mobility China · Global Marketing Ops |
 | Models | **Lubricants 1.0** — INQ→MQL 2 %, MQL→deal 5 %, deal size 10,000 USD · **Mobility 1.0** — 3 %, 4 %, 5,000 USD |
 | Activity types | Agency fees – Creative · Event · Digital media · Content production · Sponsorship · MOBILITY – Long-term contract (Mobility only) |
-| Currencies (units per 1 USD) | USD 1 · EUR 0.92 · GBP 0.79 · CNY 7.10 · INR 83.50 |
+| Currencies (units per 1 USD) | USD 1 · EUR 0.90 · GBP 0.75 · CNY 6.67 · INR 93.70 — mid-market rates of 12 Nov 2026 (D-419) |
 | Finance budget items | *2026 Lubricants Budget:* Europe – Digital · Europe – Events · Europe – Brand · *2026 Mobility Budget:* China – Retail · China – Fleet · Delhi · *2027 Lubricants Budget:* UK & Ireland – Events (Venue, L-1009) · UK & Ireland – Agency (Agency fee (Ireland), L-1010) |
 | Line managers | Priya Raman and Sara Novak → Daniel Okoro · Mei Lin → Carlos Mendes · Daniel Okoro and Carlos Mendes → Alex Morgan · Alex Morgan has none |
 | Approval workflows | **Lubricants EU approval** (WF-1001) — level 1: Daniel Okoro, backup Alex Morgan; remind after 1 day, escalate after 2 (short, so a demo shows both on the first run) · **China BC approval workflow** (WF-1002) — level 1: Carlos Mendes, backup Alex Morgan; level 2: Alex Morgan, backup Carlos Mendes; remind after 3 days, escalate after 5 · **Standard marketing approval** (WF-1003, used by no seeded activity) — level 1: the owner's line manager, approved automatically below 10,000 USD, backup Alex Morgan; level 2: Alex Morgan, only needed from 100,000 USD, backup Carlos Mendes; level 3 "Mobility second check": Daniel Okoro and Alex Morgan, all must approve, only for the Mobility business unit, backup Carlos Mendes; remind after 3 days, escalate after 5 |
@@ -156,6 +156,6 @@ Tellus webinar series (2 Mar), then 24,000.00 USD on Tellus case studies (6 Mar)
 (12 Feb) on Tellus case studies, MQL on Tellus webinar series (3 Mar), then 18,500.00 EUR on Helix first half (9 Mar).
 Each conversion is on an activity its journey did not touch, so attributed revenue differs from booked revenue under
 every model; the 42,000.00 USD has no journey and stays wholly with its own activity. Equally distributed, the seeded
-model, credits Helix first half 54,000.00, Tellus case studies 13,405.80 and Tellus webinar series 18,702.90 USD.
+model, credits Helix first half 54,000.00, Tellus case studies 13,703.70 and Tellus webinar series 18,851.86 USD.
 Tellus webinar series carries journey MQL only, so its INQ shows no actual and its projection stays the goal's alone
 (`projections.spec.ts`).

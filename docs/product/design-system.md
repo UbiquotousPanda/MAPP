@@ -631,7 +631,7 @@ next to the written name, it has no contrast requirement.
   right-aligned too, with the same padding, so values sit exactly under it (§11, rule 2).
 - **Symbol form for every currency** (en-US symbols: $, €, £, CA$, CN¥…), always two decimals ("$12,500.00",
   "€12,500.00", "£50,000.00"; compact "$1.25M", "€1.25M" in summary cards with the full value on hover and
-  focus); the code form is no longer used for amounts (D-413). Rates keep codes ("1 USD = 0.79 GBP").
+  focus); the code form is no longer used for amounts (D-413). Rates keep codes ("1 USD = 0.75 GBP").
 - Negative values in `--danger-text` with a minus sign ("−$500.00"); never only red.
 - **Nothing is "—"**: an empty amount, a missing value and "no activities yet" show "—", never 0 or
   "$0.00"; a short reason may follow in `--ink-2` ("— · Nothing planned yet").
@@ -639,10 +639,10 @@ next to the written name, it has no contrast requirement.
 - Whole numbers grouped: "1,250".
 - **An amount in another currency than the reader's** (feature 016, D-418) shows as one `ConvertedAmount`
   (`features/line-items`, exported for every feature): the amount in its own currency in full, then a muted
-  12 px "≈ $6,645.57" in the display currency, stacked or `inline`, both red with `problem`. The converted
+  12 px "≈ $7,000.00" in the display currency, stacked or `inline`, both red with `problem`. The converted
   amount is a `Tooltip` reachable by pointer, keyboard and touch that names the rate the API reports and its
-  date ("In USD at today's rate (1 USD = 0.79 GBP · rate of 19 Oct 2026 · GSAP import)"); screen readers hear
-  "about $6,645.57". One amount only, and no tooltip, when both currencies are the same. `Converted` is the
+  date ("In USD at today's rate (1 USD = 0.75 GBP · rate of 12 Nov 2026 · GSAP import)"); screen readers hear
+  "about $7,000.00". One amount only, and no tooltip, when both currencies are the same. `Converted` is the
   "≈" part alone, under a summary-card value or in a row.
 - **Grids add up in every display currency** (feature 038 FR-022): a row total is converted once and its
   months share it, the last month with an amount taking the rounding difference; column and grand totals are

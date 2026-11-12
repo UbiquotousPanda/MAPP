@@ -69,12 +69,12 @@ test('C: Settings — an administrator edits a model, a Shell attribute and a cu
   await expect(page.getByRole('heading', { name: 'Contracted spend', level: 1 })).toBeVisible();
   await expect(page.getByText(helpText).first()).toBeVisible();
 
-  // Currencies (002 US4): INR, which no demo line item uses; put back to 83.50 for the tests that follow.
+  // Currencies (002 US4): INR, which no demo line item uses; put back to 93.70 for the tests that follow.
   await page.goto('/settings');
   await page.getByRole('link', { name: 'Currencies', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Currencies', level: 1 })).toBeVisible();
   const inrRow = page.getByRole('row').filter({ hasText: 'INR' });
-  await expect(inrRow).toContainText('1 USD = 83.50 INR');
+  await expect(inrRow).toContainText('1 USD = 93.70 INR');
   await inrRow.getByRole('button', { name: 'Actions for INR' }).click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
   const editCurrency = page.getByRole('dialog', { name: 'Edit currency' });
@@ -89,7 +89,7 @@ test('C: Settings — an administrator edits a model, a Shell attribute and a cu
   await expect(inrRow).toContainText('1 USD = 84.00 INR');
 
   const inr = await callApi<{ version: number }>(page, 'GET', '/api/v1/currencies/INR');
-  await callApi(page, 'PATCH', '/api/v1/currencies/INR', { rate: '83.5', version: inr.version });
+  await callApi(page, 'PATCH', '/api/v1/currencies/INR', { rate: '93.7', version: inr.version });
 });
 
 test('D: the plan form offers only members of the chosen teams as owner and refuses an owner outside them', async ({

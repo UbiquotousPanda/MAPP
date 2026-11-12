@@ -59,7 +59,7 @@ func TestSimulatedGSAPOrder_EndToEnd_Contract_033_FR005(t *testing.T) {
 		"9,200.00 EUR", false, false}, []any{ordered.GSAPPRNumber, ordered.GSAPSource, ordered.WaitingForGSAP, l.PONumber, l.POLine,
 		l.POLineStatus, l.POValue.Format(), l.GSAPPending, ordered.Access.GSAPOrder.Available})
 	// Committed: the demo PO's 10,652.17 USD and the new 9,200.00 EUR PO line.
-	same(t, "033 FR-005 SC-002 committed, waiting, transactions", []any{"20652.17", 0, []string{"PO SIM-4500001001 / 10 9200.00"}},
+	same(t, "033 FR-005 SC-002 committed, waiting, transactions", []any{"21111.11", 0, []string{"PO SIM-4500001001 / 10 9200.00"}},
 		[]any{record.Figures.Committed.Amount, waiting.Total, poTransactions(t, alex)})
 }
 

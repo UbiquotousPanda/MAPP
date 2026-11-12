@@ -31,12 +31,12 @@ func mixedView(t *testing.T) (alexSees, priyaSees person) {
 func checkMixedFigures(t *testing.T, priyaSees person) {
 	t.Helper()
 	want := map[string]string{
-		"Total":           "credited 126108.70, cost 30652.17, ROI 30",
-		lubricantsPlan:    "credited 40000.00, cost 30652.17, ROI 30",
-		measurePlan:       "credited 86108.70, cost noFinancialAccess, ROI noFinancialAccess",
-		socialAlwaysOn:    "credited 30000.00, cost 20000.00, ROI 50",
+		"Total":           "credited 126555.56, cost 31955.56, ROI 25",
+		lubricantsPlan:    "credited 40000.00, cost 31955.56, ROI 25",
+		measurePlan:       "credited 86555.56, cost noFinancialAccess, ROI noFinancialAccess",
+		socialAlwaysOn:    "credited 30000.00, cost 21066.67, ROI 42",
 		partnerFund:       "credited 10000.00, cost 0.00, ROI noActualCost",
-		tellusCaseStudies: "credited 13405.80, cost noFinancialAccess, ROI noFinancialAccess",
+		tellusCaseStudies: "credited 13703.70, cost noFinancialAccess, ROI noFinancialAccess",
 	}
 	plans, activities := revenueRankedOf(t, priyaSees, "show=plan"), revenueRankedOf(t, priyaSees, "show=activity")
 	got := map[string]string{"Total": topOf(t, plans).served()}

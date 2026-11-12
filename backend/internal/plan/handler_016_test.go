@@ -12,7 +12,7 @@ import (
 )
 
 // The handler tests of 016 (plan currency, plan type, Budget by month, Years) on the demo data: P-1004 "FY2027
-// Lubricants UK & Ireland" is a Cross-market plan planned in GBP (0.79 per USD), budget 600,000.00 GBP phased
+// Lubricants UK & Ireland" is a Cross-market plan planned in GBP (0.75 per USD), budget 600,000.00 GBP phased
 // evenly, with 65,000.00 GBP planned on two activities, a campaign budget and two initiative budgets (5 amounts).
 
 // getPlan reads the plan id as client and stops the test unless it answers 200.
@@ -37,8 +37,8 @@ func TestGetPlan_PlanCurrency_Contract_FR013(t *testing.T) {
 	p := getPlan(t, priya, "P-1004")
 
 	if p.Currency != "GBP" || p.PlanType != "crossMarket" || p.PlanFigures.Budget.Format() != "600,000.00 GBP" ||
-		p.PlanFigures.PlannedCost.Format() != "65,000.00 GBP" || p.Figures.Budget.Format() != "759,493.67 USD" ||
-		p.Figures.PlannedCost.Format() != "82,278.48 USD" {
+		p.PlanFigures.PlannedCost.Format() != "65,000.00 GBP" || p.Figures.Budget.Format() != "800,000.00 USD" ||
+		p.Figures.PlannedCost.Format() != "86,666.67 USD" {
 		t.Errorf("P-1004: %s %s, plan figures %v / %v, figures %v / %v", p.Currency, p.PlanType, p.PlanFigures.Budget,
 			p.PlanFigures.PlannedCost, p.Figures.Budget, p.Figures.PlannedCost)
 	}
@@ -77,7 +77,7 @@ func TestCreatePlan_CurrencyAndType_Contract_FR011_FR032(t *testing.T) {
 	var p plan.PlanView
 	created.Decode(t, &p)
 	if p.Currency != "GBP" || p.PlanType != "strategic" || p.PlanFigures.Budget.Format() != "100,000.00 GBP" ||
-		p.Figures.Budget.Format() != "126,582.28 USD" || p.CurrencyLock != nil {
+		p.Figures.Budget.Format() != "133,333.33 USD" || p.CurrencyLock != nil {
 		t.Errorf("created = %s %s, %v / %v, lock %v", p.Currency, p.PlanType, p.PlanFigures.Budget, p.Figures.Budget, p.CurrencyLock)
 	}
 	assertAnswer(t, refused, http.StatusBadRequest, validationBody(`{"field":"budget","message":"Enter the amount in GBP, the plan's currency."}`))
@@ -99,8 +99,8 @@ func TestListPlans_YearRangeAndType_Contract_FR033(t *testing.T) {
 	}
 	row := crossMarket.Items[0]
 	if row.PlanType != "crossMarket" || row.Currency != "GBP" || row.PlanBudget.Format() != "600,000.00 GBP" ||
-		row.PlanPlannedCost.Format() != "65,000.00 GBP" || row.Figures.Budget.Format() != "759,493.67 USD" ||
-		crossMarket.Summary.Budget.Format() != "759,493.67 USD" {
+		row.PlanPlannedCost.Format() != "65,000.00 GBP" || row.Figures.Budget.Format() != "800,000.00 USD" ||
+		crossMarket.Summary.Budget.Format() != "800,000.00 USD" {
 		t.Errorf("row = %+v, summary %+v", row, crossMarket.Summary)
 	}
 	if ids := listIDs(both); !reflect.DeepEqual(ids, []string{"P-1004"}) { // P-1003 is not Priya's team's plan (014)

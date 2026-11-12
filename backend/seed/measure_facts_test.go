@@ -213,8 +213,8 @@ func TestLoad_MeasureJourneysAreCredited_050_FR003_FR004(t *testing.T) {
 	for id, amount := range credited.ByActivity {
 		got[names[id]] = amount.String()
 	}
-	want := map[string]string{"Helix search and social, first half": "54000.00", "Tellus case studies": "13405.80",
-		"Tellus webinar series": "18702.90", "unattributed": "0.00"}
+	want := map[string]string{"Helix search and social, first half": "54000.00", "Tellus case studies": "13703.70",
+		"Tellus webinar series": "18851.86", "unattributed": "0.00"}
 	if !maps.Equal(got, want) || credited.Model != attribution.Equal || credited.WithoutRate != 0 {
 		t.Errorf("credited %v under %s, %d without a rate; want %v", got, credited.Model, credited.WithoutRate, want)
 	}

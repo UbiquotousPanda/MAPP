@@ -7,7 +7,7 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// The handler tests of 016 on the demo data: P-1004 "FY2027 Lubricants UK & Ireland" is planned in GBP (0.79
+// The handler tests of 016 on the demo data: P-1004 "FY2027 Lubricants UK & Ireland" is planned in GBP (0.75
 // per USD); its campaign C-1005 "Helix UK & Ireland" has 400,000.00 GBP phased 100,000.00 in March, June,
 // September and November 2027, and the initiatives I-1009 "UK" (250,000.00 GBP) and I-1010 "Ireland"
 // (150,000.00 GBP), not phased.
@@ -50,7 +50,7 @@ func TestCampaignBudget_PlanCurrency_Contract_FR011_FR013(t *testing.T) {
 		"name": "Castrol UK", "budget": usd("1000.00"),
 	})
 
-	if *helix.Budget != (amount{"400000.00", "GBP"}) || helix.Display.Budget == nil || *helix.Display.Budget != usd("506329.11") ||
+	if *helix.Budget != (amount{"400000.00", "GBP"}) || helix.Display.Budget == nil || *helix.Display.Budget != usd("533333.33") ||
 		helix.BudgetPhasing.Method != "custom" || len(helix.BudgetPhasing.Monthly) != 12 ||
 		helix.BudgetPhasing.Monthly[2] != (amount{"100000.00", "GBP"}) || helix.BudgetPhasing.Problem != nil {
 		t.Errorf("C-1005 = %+v", helix)

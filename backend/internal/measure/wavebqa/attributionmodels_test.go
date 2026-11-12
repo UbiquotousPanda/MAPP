@@ -96,7 +96,7 @@ func concerned() []string {
 func zeroCredits() map[string]map[string]string {
 	return map[string]map[string]string{
 		"First touch": {tellusWebinars: "credited 0.00, cost 0.00, ROI noActualCost"},
-		"Last touch":  {tellusCaseStudies: "credited 0.00, cost 32608.70, ROI -100"},
+		"Last touch":  {tellusCaseStudies: "credited 0.00, cost 33333.33, ROI -100"},
 	}
 }
 

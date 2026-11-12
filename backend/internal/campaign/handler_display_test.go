@@ -32,7 +32,7 @@ type displayed struct {
 // eur is a EUR amount as the API answers it.
 func eur(text string) amount { return amount{Amount: text, Currency: "EUR"} }
 
-// useEuros makes EUR (0.92 per USD in the demo data) the display currency of the signed-in person.
+// useEuros makes EUR (0.90 per USD in the demo data) the display currency of the signed-in person.
 func useEuros(t *testing.T, c *apitest.Client) {
 	t.Helper()
 	response := c.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"displayCurrency": "EUR"})
@@ -40,7 +40,7 @@ func useEuros(t *testing.T, c *apitest.Client) {
 }
 
 // A reader whose display currency is EUR gets the tree's amounts a second time in euros — every campaign's
-// and initiative's budget, budget and cost and the totals row — converted once from USD at 0.92, while the
+// and initiative's budget, budget and cost and the totals row — converted once from USD at 0.90, while the
 // USD amounts the forms use stay as they are (D-061, D-220).
 func TestListPlanCampaigns_DisplayCurrency_D220(t *testing.T) {
 	t.Parallel()
@@ -70,19 +70,19 @@ func TestListPlanCampaigns_DisplayCurrency_D220(t *testing.T) {
 		t.Fatalf("Helix launch in USD = %+v", helix)
 	}
 	shown := helix.Display
-	if *shown.Budget != eur("644000.00") || *shown.ParentRemainingBudget != eur("46000.00") ||
-		shown.BudgetAndCost.AllocatedToChildren != eur("506000.00") || *shown.BudgetAndCost.RemainingForChildren != eur("138000.00") ||
-		*shown.BudgetAndCost.PlannedCost != eur("253000.00") || *shown.BudgetAndCost.BudgetUsedPercent != 39 {
+	if *shown.Budget != eur("630000.00") || *shown.ParentRemainingBudget != eur("45000.00") ||
+		shown.BudgetAndCost.AllocatedToChildren != eur("495000.00") || *shown.BudgetAndCost.RemainingForChildren != eur("135000.00") ||
+		*shown.BudgetAndCost.PlannedCost != eur("247500.00") || *shown.BudgetAndCost.BudgetUsedPercent != 39 {
 		t.Errorf("Helix launch in EUR = %+v", shown)
 	}
 	digital := helix.Initiatives[0]
-	if digital.Name != "Digital & social" || *digital.Display.Budget != eur("276000.00") ||
-		*digital.Display.ParentRemainingBudget != eur("138000.00") || *digital.Display.BudgetAndCost.PlannedCost != eur("184000.00") {
+	if digital.Name != "Digital & social" || *digital.Display.Budget != eur("270000.00") ||
+		*digital.Display.ParentRemainingBudget != eur("135000.00") || *digital.Display.BudgetAndCost.PlannedCost != eur("180000.00") {
 		t.Errorf("Digital & social in EUR = %+v", digital.Display)
 	}
 	totals := tree.DisplayTotals
-	if totals.Campaigns != 2 || totals.AllocatedToCampaigns != eur("1058000.00") || *totals.PlanBudget != eur("1104000.00") ||
-		*totals.RemainingPlanBudget != eur("46000.00") || *totals.PlannedCost != eur("423200.00") || *tree.Totals.PlannedCost != usd("460000.00") {
+	if totals.Campaigns != 2 || totals.AllocatedToCampaigns != eur("1035000.00") || *totals.PlanBudget != eur("1080000.00") ||
+		*totals.RemainingPlanBudget != eur("45000.00") || *totals.PlannedCost != eur("414000.00") || *tree.Totals.PlannedCost != usd("460000.00") {
 		t.Errorf("display totals = %+v, totals planned cost %+v", totals, tree.Totals.PlannedCost)
 	}
 }
@@ -100,7 +100,7 @@ func TestGetCampaignAndInitiative_DisplayCurrency_D220(t *testing.T) {
 	response := priya.Do(t, http.MethodGet, "/api/v1/campaigns/C-1001", nil)
 	assertStatus(t, response, http.StatusOK)
 	response.Decode(t, &campaign)
-	if *campaign.Display.Budget != eur("644000.00") || *campaign.Budget != usd("700000.00") {
+	if *campaign.Display.Budget != eur("630000.00") || *campaign.Budget != usd("700000.00") {
 		t.Errorf("campaign budget = %+v, display %+v", campaign.Budget, campaign.Display.Budget)
 	}
 
@@ -108,7 +108,7 @@ func TestGetCampaignAndInitiative_DisplayCurrency_D220(t *testing.T) {
 	response = priya.Do(t, http.MethodGet, "/api/v1/initiatives/I-1001", nil)
 	assertStatus(t, response, http.StatusOK)
 	response.Decode(t, &initiative)
-	if *initiative.Display.Budget != eur("276000.00") || *initiative.Budget != usd("300000.00") {
+	if *initiative.Display.Budget != eur("270000.00") || *initiative.Budget != usd("300000.00") {
 		t.Errorf("initiative budget = %+v, display %+v", initiative.Budget, initiative.Display.Budget)
 	}
 

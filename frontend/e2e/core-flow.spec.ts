@@ -104,7 +104,7 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   ).toBeVisible();
 
   // A line item in euros (007 US2): the planned cost starts as the unassigned $20,000.00 and follows
-  // the currency; €9,200.00 is $10,000.00 at the demo rate 0.92.
+  // the currency; €9,200.00 is $10,222.22 at the demo rate 0.90.
   await action(page, 'Add line item').click();
   await expect(page).toHaveURL(new RegExp(`/activities/${activityId}/line-items/new$`));
   await expect(page.getByRole('heading', { name: 'New line item', level: 1 })).toBeVisible();
@@ -113,9 +113,9 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   ).toBeVisible();
   await page.getByRole('textbox', { name: /^Line item name/ }).fill(lineItemName);
   await choose(page, page.getByLabel(/^Currency/), /^EUR/);
-  await expect(page.getByText('Changed to €18,400.00 = $20,000.00')).toBeVisible();
+  await expect(page.getByText('Changed to €18,000.00 = $20,000.00')).toBeVisible();
   await page.getByRole('textbox', { name: /^Planned cost/ }).fill('9200');
-  await expect(page.getByText('= $10,000.00 at 0.92 EUR per USD')).toBeVisible();
+  await expect(page.getByText('= $10,222.22 at 0.90 EUR per USD')).toBeVisible();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, `Line item '${lineItemName}' created`);
   await expect(page).toHaveURL(new RegExp(`/activities/${activityId}#line-items$`));
@@ -128,9 +128,9 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
     .filter({ hasText: lineItemName })
     .first();
   await expect(lineItemRow).toContainText('€9,200.00');
-  await expect(lineItemRow).toContainText('$10,000.00');
-  await expect(page.getByText('$10,000.00 of $20,000.00 assigned')).toBeVisible();
-  await expect(page.getByText('$10,000.00 not yet assigned to a line item').first()).toBeVisible();
+  await expect(lineItemRow).toContainText('$10,222.22');
+  await expect(page.getByText('$10,222.22 of $20,000.00 assigned')).toBeVisible();
+  await expect(page.getByText('$9,777.78 not yet assigned to a line item').first()).toBeVisible();
 
   await expect(page.getByText('Created', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: '10 fields needed' })).toBeVisible();

@@ -29,7 +29,7 @@ type displayedActivity struct {
 }
 
 // A reader whose display currency is EUR gets Launch film's planned cost (120,000.00 USD), its unassigned
-// planned cost (20,000.00 USD) and its revenue goal a second time in euros at 0.92, on the activity and on
+// planned cost (18,888.89 USD) and its revenue goal a second time in euros at 0.90, on the activity and on
 // its plan-tree row; the USD amounts the form uses stay as they are (D-061, D-220).
 func TestActivity_DisplayCurrency_D220(t *testing.T) {
 	t.Parallel()
@@ -41,11 +41,11 @@ func TestActivity_DisplayCurrency_D220(t *testing.T) {
 	response := priya.Do(t, http.MethodGet, "/api/v1/activities/A-1001", nil)
 	assertStatus(t, response, http.StatusOK)
 	response.Decode(t, &activity)
-	if *activity.PlannedCost != (amountOf{"120000.00", "USD"}) || *activity.UnassignedPlannedCost != (amountOf{"20000.00", "USD"}) {
+	if *activity.PlannedCost != (amountOf{"120000.00", "USD"}) || *activity.UnassignedPlannedCost != (amountOf{"18888.89", "USD"}) {
 		t.Fatalf("USD amounts = %+v, %+v", activity.PlannedCost, activity.UnassignedPlannedCost)
 	}
-	if *activity.Display.PlannedCost != (amountOf{"110400.00", "EUR"}) ||
-		*activity.Display.UnassignedPlannedCost != (amountOf{"18400.00", "EUR"}) {
+	if *activity.Display.PlannedCost != (amountOf{"108000.00", "EUR"}) ||
+		*activity.Display.UnassignedPlannedCost != (amountOf{"17000.00", "EUR"}) {
 		t.Errorf("display amounts = %+v, %+v", activity.Display.PlannedCost, activity.Display.UnassignedPlannedCost)
 	}
 	if activity.Goals.Revenue == nil || activity.Display.Revenue == nil || activity.Display.Revenue.Currency != "EUR" ||
@@ -63,8 +63,8 @@ func TestActivity_DisplayCurrency_D220(t *testing.T) {
 		if row.ID != "A-1001" {
 			continue
 		}
-		if *row.PlannedCost != (amountOf{"120000.00", "USD"}) || *row.Display.PlannedCost != (amountOf{"110400.00", "EUR"}) ||
-			*row.Display.UnassignedPlannedCost != (amountOf{"18400.00", "EUR"}) || row.Display.Revenue != nil {
+		if *row.PlannedCost != (amountOf{"120000.00", "USD"}) || *row.Display.PlannedCost != (amountOf{"108000.00", "EUR"}) ||
+			*row.Display.UnassignedPlannedCost != (amountOf{"17000.00", "EUR"}) || row.Display.Revenue != nil {
 			t.Errorf("Launch film's row = %+v", row)
 		}
 		return

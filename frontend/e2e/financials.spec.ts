@@ -38,18 +38,18 @@ test('015 US1 (T021): the activity page shows its GSAP money without a click, li
     'aria-selected',
     'true',
   );
-  await expect(figure(card, 'Committed (POs)')).toContainText('$25,000.00');
-  await expect(figure(card, 'Committed (POs)')).toContainText('31% of planned cost committed');
-  await expect(figure(card, 'Invoiced')).toContainText('$22,500.00');
-  await expect(figure(card, 'Paid')).toContainText('$20,000.00');
+  await expect(figure(card, 'Committed (POs)')).toContainText('$26,066.67');
+  await expect(figure(card, 'Committed (POs)')).toContainText('33% of planned cost committed');
+  await expect(figure(card, 'Invoiced')).toContainText('$23,566.67');
+  await expect(figure(card, 'Paid')).toContainText('$21,066.67');
   await expect(figure(card, 'Accrued (Sep 2026)')).toContainText('$2,500.00');
-  await expect(figure(card, 'Not yet committed')).toContainText('$55,000.00');
+  await expect(figure(card, 'Not yet committed')).toContainText('$53,933.33');
   await expect(card.getByText(SOURCE_LINE)).toBeVisible();
 
   const byLineItem = card.getByRole('table', { name: 'Financial figures by line item' });
   await expect(
     byLineItem.getByRole('row', {
-      name: 'Venue hire $20,000.00 $20,000.00 $20,000.00 $0.00',
+      name: 'Venue hire $21,066.67 $21,066.67 $21,066.67 $0.00',
     }),
   ).toBeVisible();
   await expect(
@@ -72,7 +72,7 @@ test('015 US1 (T021): the activity page shows its GSAP money without a click, li
 
   const billboard = await openActivity(page, 'A-1003', 'Billboard winter wave');
   await expect(
-    billboard.getByRole('row', { name: /^Stand build \$10,652\.17 Above planned cost/ }),
+    billboard.getByRole('row', { name: /^Stand build \$10,888\.89 Above planned cost/ }),
   ).toBeVisible();
   await billboard
     .getByRole('link', { name: 'Committed above planned cost on 1 line item' })
@@ -125,13 +125,13 @@ test('015 US2 (T025): the plan, campaign and initiative add up the same money, i
     page.getByRole('heading', { name: 'FY2026 Lubricants Europe', level: 1 }),
   ).toBeVisible();
   const plan = financials(page);
-  await expect(plan).toContainText('$35,652.17');
+  await expect(plan).toContainText('$36,955.56');
   await expect(plan).toContainText('8% of planned cost committed');
-  await expect(plan).toContainText('$424,347.83');
+  await expect(plan).toContainText('$423,044.44');
   const byCampaign = plan.getByRole('table', { name: 'By campaign' });
   await expect(
     byCampaign.getByRole('row', {
-      name: `Helix launch · ${ABOVE} $35,652.17 $33,152.17 $30,652.17 $2,500.00`,
+      name: `Helix launch · ${ABOVE} $36,955.56 $34,455.56 $31,955.56 $2,500.00`,
     }),
   ).toBeVisible();
   await expect(
@@ -140,15 +140,15 @@ test('015 US2 (T025): the plan, campaign and initiative add up the same money, i
 
   await byCampaign.getByRole('link', { name: 'Helix launch' }).click();
   const campaign = financials(page.getByRole('dialog', { name: 'Helix launch' }));
-  await expect(campaign).toContainText('$35,652.17');
+  await expect(campaign).toContainText('$36,955.56');
   await expect(campaign).toContainText('13% of planned cost committed');
   const byInitiative = campaign.getByRole('table', { name: 'By initiative' });
   await expect(
-    byInitiative.getByRole('row', { name: /^Digital & social \$25,000\.00 / }),
+    byInitiative.getByRole('row', { name: /^Digital & social \$26,066\.67 / }),
   ).toBeVisible();
   await expect(
     byInitiative.getByRole('row', {
-      name: `Print & outdoor · ${ABOVE} $10,652.17 $10,652.17 $10,652.17 $0.00`,
+      name: `Print & outdoor · ${ABOVE} $10,888.89 $10,888.89 $10,888.89 $0.00`,
     }),
   ).toBeVisible();
 
@@ -157,7 +157,7 @@ test('015 US2 (T025): the plan, campaign and initiative add up the same money, i
   const byActivity = initiative.getByRole('table', { name: 'By activity' });
   await expect(
     byActivity.getByRole('row', {
-      name: `Billboard winter wave · ${ABOVE} $10,652.17 $10,652.17 $10,652.17 $0.00`,
+      name: `Billboard winter wave · ${ABOVE} $10,888.89 $10,888.89 $10,888.89 $0.00`,
     }),
   ).toBeVisible();
   await expect(byActivity.getByRole('row', { name: /^Trade magazine ads \$0\.00 / })).toBeVisible();
@@ -169,10 +169,10 @@ test('015 US2 (T025): the plan, campaign and initiative add up the same money, i
   await expect(page.getByRole('tab', { name: 'All (3)' })).toBeVisible();
   await expect(page.getByText('3 of 3 transactions')).toBeVisible();
 
-  // Scenario 4: a reader whose display currency is EUR sees every figure in EUR (USD 1 = EUR 0.92).
+  // Scenario 4: a reader whose display currency is EUR sees every figure in EUR (USD 1 = EUR 0.90).
   await callApi(page, 'PATCH', '/api/v1/me/preferences', { displayCurrency: 'EUR' });
   await page.goto('/plans/P-1001');
-  await expect(plan).toContainText('€32,800.00');
-  await expect(plan).toContainText('€390,400.00');
+  await expect(plan).toContainText('€33,260.00');
+  await expect(plan).toContainText('€380,740.00');
   await expect(plan).not.toContainText('$');
 });

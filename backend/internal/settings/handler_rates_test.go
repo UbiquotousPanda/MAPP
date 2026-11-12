@@ -48,15 +48,15 @@ func TestRatesAPI_HistoryAndCurrent_FR003_FR009(t *testing.T) {
 		t.Fatalf("EUR history = %d rates, want 31", history.Total)
 	}
 	latest, oldest := history.Items[0], history.Items[30]
-	if latest.Date != "2026-03-12" || latest.Rate != "0.92" || !latest.Current || latest.Future || latest.Source != "gsapImport" ||
+	if latest.Date != "2026-03-12" || latest.Rate != "0.9" || !latest.Current || latest.Future || latest.Source != "gsapImport" ||
 		latest.ImportFileName == nil || *latest.ImportFileName != "gsap_rates_seed.csv" || oldest.Date != "2026-02-10" || oldest.Current {
 		t.Errorf("history = %+v … %+v", latest, oldest)
 	}
-	if history.Current.Rate != "0.92" || history.Current.RateDate != "2026-03-12" || history.Current.ImportFileName != "gsap_rates_seed.csv" {
+	if history.Current.Rate != "0.9" || history.Current.RateDate != "2026-03-12" || history.Current.ImportFileName != "gsap_rates_seed.csv" {
 		t.Errorf("current = %+v", history.Current)
 	}
 	if current.Today != "2026-03-12" || current.Total != 5 || current.Items[0].Currency != "USD" || current.Items[0].RateDate != nil ||
-		current.Items[2].Currency != "EUR" || current.Items[2].Rate != "0.92" || *current.Items[2].Source != "gsapImport" {
+		current.Items[2].Currency != "EUR" || current.Items[2].Rate != "0.9" || *current.Items[2].Source != "gsapImport" {
 		t.Errorf("current rates = %+v", current)
 	}
 	assertAnswer(t, gone, http.StatusNotFound, currencyGoneBody)
@@ -141,8 +141,8 @@ func TestRatesAPI_ImportCheckAndImport_FR006_FR007(t *testing.T) {
 	alex.Do(t, http.MethodGet, "/api/v1/exchange-rates/imports?limit=5", nil).Decode(t, &recent)
 	badLimit := alex.Do(t, http.MethodGet, "/api/v1/exchange-rates/imports?limit=0", nil, apitest.SkipRequestValidation())
 
-	wantSample := "rate_type,from_currency,to_currency,valid_from,rate\nM,USD,CNY,2026-03-13,7.1355\nM,USD,EUR,2026-03-13,0.9246\n" +
-		"M,USD,GBP,2026-03-13,0.79395\nM,USD,INR,2026-03-13,83.9175\n"
+	wantSample := "rate_type,from_currency,to_currency,valid_from,rate\nM,USD,CNY,2026-03-13,6.70335\nM,USD,EUR,2026-03-13,0.9045\n" +
+		"M,USD,GBP,2026-03-13,0.75375\nM,USD,INR,2026-03-13,94.1685\n"
 	if sample.Status != http.StatusOK || string(sample.Body) != wantSample || !strings.HasPrefix(sample.Header.Get("Content-Type"), "text/csv") ||
 		sample.Header.Get("Content-Disposition") != `attachment; filename="gsap_rates_2026-03-13.csv"` {
 		t.Errorf("sample = %d %q %v", sample.Status, sample.Body, sample.Header)

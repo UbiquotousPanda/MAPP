@@ -124,15 +124,15 @@ func TestListPlans_SeedOrderSummaryAndFilters_FR001_FR003(t *testing.T) {
 	byID := listOf(t, priya.Do(t, http.MethodGet, "/api/v1/plans?q=p-1002", nil))
 	wrong := priya.Do(t, http.MethodGet, "/api/v1/plans?status=open&year=next", nil, apitest.SkipRequestValidation())
 
-	// P-1004's 600,000.00 GBP budget is 759,493.67 USD and its 65,000.00 GBP planned 82,278.48 USD: each plan converted once.
+	// P-1004's 600,000.00 GBP budget is 800,000.00 USD and its 65,000.00 GBP planned 86,666.67 USD: each plan converted once.
 	if ids := listIDs(all); !reflect.DeepEqual(ids, []string{"P-1003", "P-1004", "P-1001", "P-1002"}) || all.Total != 4 ||
 		!reflect.DeepEqual(all.Years, []int{2027, 2026}) {
 		t.Errorf("all plans: %q, total %d, years %v", ids, all.Total, all.Years)
 	}
 	summary := all.Summary
 	if summary.Plans != 4 || summary.Draft != 3 || summary.Published != 1 || summary.PlannedCost == nil ||
-		summary.PlannedCost.Format() != "732,278.48 USD" || summary.Budget == nil || summary.Budget.Format() != "3,259,493.67 USD" {
-		t.Errorf("summary = %+v; want 4 plans, 3 Draft, 1 Published, 732,278.48 USD planned, 3,259,493.67 USD", summary)
+		summary.PlannedCost.Format() != "736,666.67 USD" || summary.Budget == nil || summary.Budget.Format() != "3,300,000.00 USD" {
+		t.Errorf("summary = %+v; want 4 plans, 3 Draft, 1 Published, 736,666.67 USD planned, 3,300,000.00 USD", summary)
 	}
 	for name, list := range map[string]plan.PlanList{"draft 2026": draft2026, "mobility": byName, "p-1002": byID} {
 		if ids := listIDs(list); !reflect.DeepEqual(ids, []string{"P-1002"}) || list.Total != 4 {

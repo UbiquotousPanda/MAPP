@@ -15,7 +15,7 @@ import (
 
 // Split activity (016 US4) on the demo data: A-1011 "UK launch event" of the GBP plan P-1004 in the
 // initiative I-1009 "UK" (40,000.00 GBP, 01 Mar – 31 May 2027) with L-1009 "Venue" 15,000.00 GBP and L-1010
-// "Agency fee (Ireland)" 23,000.00 EUR = 19,750.00 GBP; I-1010 "Ireland" holds A-1012 "Dealer conference".
+// "Agency fee (Ireland)" 23,000.00 EUR = 19,166.67 GBP; I-1010 "Ireland" holds A-1012 "Dealer conference".
 
 const (
 	ukLaunchEvent = "A-1011"
@@ -50,7 +50,7 @@ func TestSplitOptions_Contract_FR026(t *testing.T) {
 	response.Decode(t, &options)
 	if options.PlanCurrency != "GBP" || options.SuggestedName != "UK launch event (split)" || options.NeedsRestart ||
 		options.PlannedCost.Format() != "40,000.00 GBP" || len(options.LineItems) != 2 ||
-		options.LineItems[1].PlannedCost.Format() != "23,000.00 EUR" || options.LineItems[1].PlannedCostPlan.Format() != "19,750.00 GBP" {
+		options.LineItems[1].PlannedCost.Format() != "23,000.00 EUR" || options.LineItems[1].PlannedCostPlan.Format() != "19,166.67 GBP" {
 		t.Errorf("options = %s", response.Body)
 	}
 	if len(options.Destinations) != 2 || options.Destinations[0].Initiative.ID != ukInitiative || options.Destinations[0].MoveProblem != nil ||
@@ -59,14 +59,14 @@ func TestSplitOptions_Contract_FR026(t *testing.T) {
 	}
 }
 
-// The preview shows both activities as the split leaves them (spec US4-1): the original at 20,250.00 GBP
-// with 5,250.00 GBP unassigned, the new one at 19,750.00 GBP with 0.00 unassigned; the split then gives the
+// The preview shows both activities as the split leaves them (spec US4-1): the original at 20,833.33 GBP
+// with 5,833.33 GBP unassigned, the new one at 19,166.67 GBP with 0.00 unassigned; the split then gives the
 // same figures, keeps L-1010's ID and links both activities (FR-027, FR-028, FR-031).
 func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
-	body := splitBody("Ireland roadshow", irelandInit, []string{agencyItem}, "19750.00", false, 1)
+	body := splitBody("Ireland roadshow", irelandInit, []string{agencyItem}, "19166.67", false, 1)
 
 	previewed := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split-preview", body)
 
@@ -77,11 +77,11 @@ func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 		t.Fatalf("preview = %s", previewed.Body)
 	}
 	o, c := preview.Original, preview.Created
-	if o.PlannedCost.Format() != "20,250.00 GBP" || o.UnassignedPlannedCost.Format() != "5,250.00 GBP" || o.UnassignedState != "left" ||
+	if o.PlannedCost.Format() != "20,833.33 GBP" || o.UnassignedPlannedCost.Format() != "5,833.33 GBP" || o.UnassignedState != "left" ||
 		!slices.Equal(o.LineItemNames, []string{"Venue"}) || o.Status != activity.StatusCreated || o.InitiativeName != "UK" {
 		t.Errorf("original side = %+v", o)
 	}
-	if c.PlannedCost.Format() != "19,750.00 GBP" || c.UnassignedPlannedCost.Format() != "0.00 GBP" || c.UnassignedState != "allAssigned" ||
+	if c.PlannedCost.Format() != "19,166.67 GBP" || c.UnassignedPlannedCost.Format() != "0.00 GBP" || c.UnassignedState != "allAssigned" ||
 		!slices.Equal(c.LineItemNames, []string{"Agency fee (Ireland)"}) || c.Name != "Ireland roadshow" || c.InitiativeName != "Ireland" {
 		t.Errorf("created side = %+v", c)
 	}
@@ -92,12 +92,12 @@ func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	var result activity.SplitResult
 	split.Decode(t, &result)
 	original, created := result.Activity, result.NewActivity
-	if original.PlannedCost.Format() != "20,250.00 GBP" || original.UnassignedPlannedCost.Format() != "5,250.00 GBP" ||
+	if original.PlannedCost.Format() != "20,833.33 GBP" || original.UnassignedPlannedCost.Format() != "5,833.33 GBP" ||
 		original.LineItems.Count != 1 || len(original.SplitInto) != 1 || original.SplitInto[0].ID != created.ID {
 		t.Errorf("original = %+v", original)
 	}
 	if created.ID != "A-1014" || created.Name != "Ireland roadshow" || created.Initiative.ID != irelandInit ||
-		created.PlannedCost.Format() != "19,750.00 GBP" || created.UnassignedPlannedCost.Format() != "0.00 GBP" ||
+		created.PlannedCost.Format() != "19,166.67 GBP" || created.UnassignedPlannedCost.Format() != "0.00 GBP" ||
 		created.LineItems.Count != 1 || created.SplitFrom == nil ||
 		*created.SplitFrom != (activity.SplitLink{ID: ukLaunchEvent, Name: "UK launch event", PlanID: "P-1004"}) {
 		t.Errorf("new activity = %+v (split from %+v)", created, created.SplitFrom)

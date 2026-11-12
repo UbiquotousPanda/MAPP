@@ -21,10 +21,10 @@ type SettingsSeed struct {
 
 var demoCurrencies = []struct{ code, name, symbol, rate string }{
 	{"USD", "US dollar", "$", "1"},
-	{"EUR", "Euro", "€", "0.92"},
-	{"GBP", "Pound sterling", "£", "0.79"},
-	{"CNY", "Chinese yuan", "¥", "7.10"},
-	{"INR", "Indian rupee", "₹", "83.50"},
+	{"EUR", "Euro", "€", "0.90"},
+	{"GBP", "Pound sterling", "£", "0.75"},
+	{"CNY", "Chinese yuan", "¥", "6.67"},
+	{"INR", "Indian rupee", "₹", "93.70"},
 }
 
 var demoActivityTypes = []struct{ name, defaultPlannedCost string }{

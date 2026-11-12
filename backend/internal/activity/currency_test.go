@@ -8,7 +8,7 @@ import (
 )
 
 // Activities of a plan planned in another currency than USD (016 US2) on the demo data: P-1004 "FY2027
-// Lubricants UK & Ireland" is planned in GBP (0.79 per USD); its initiative I-1009 "UK" holds A-1011 "UK launch
+// Lubricants UK & Ireland" is planned in GBP (0.75 per USD); its initiative I-1009 "UK" holds A-1011 "UK launch
 // event", 40,000.00 GBP.
 
 const (
@@ -41,7 +41,7 @@ func TestPlannedCost_MustBePlanCurrency_FR011(t *testing.T) {
 }
 
 // The activity's amounts are in the plan currency, and the display amounts are converted from it (FR-013):
-// 40,000.00 GBP → 50,632.91 USD; with 34,750.00 GBP on line items the unassigned 5,250.00 GBP → 6,645.57 USD.
+// 40,000.00 GBP → 53,333.33 USD; with 34,750.00 GBP on line items the unassigned 5,250.00 GBP → 7,000.00 USD.
 func TestActivityDisplay_FromPlanCurrency_FR013(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -57,8 +57,8 @@ func TestActivityDisplay_FromPlanCurrency_FR013(t *testing.T) {
 		view.LineItems.PlannedCost.Format() != "34,750.00 GBP" {
 		t.Errorf("planned %v, unassigned %v, line items %v; want GBP", view.PlannedCost, view.UnassignedPlannedCost, view.LineItems.PlannedCost)
 	}
-	if view.Display.PlannedCost.Format() != "50,632.91 USD" || view.Display.UnassignedPlannedCost.Format() != "6,645.57 USD" {
-		t.Errorf("display = %v / %v, want 50,632.91 USD / 6,645.57 USD", view.Display.PlannedCost, view.Display.UnassignedPlannedCost)
+	if view.Display.PlannedCost.Format() != "53,333.33 USD" || view.Display.UnassignedPlannedCost.Format() != "7,000.00 USD" {
+		t.Errorf("display = %v / %v, want 53,333.33 USD / 7,000.00 USD", view.Display.PlannedCost, view.Display.UnassignedPlannedCost)
 	}
 	var row *activity.Summary
 	for i := range rows {
@@ -66,13 +66,13 @@ func TestActivityDisplay_FromPlanCurrency_FR013(t *testing.T) {
 			row = &rows[i]
 		}
 	}
-	if row == nil || row.PlannedCost.Format() != "40,000.00 GBP" || row.Display.PlannedCost.Format() != "50,632.91 USD" {
+	if row == nil || row.PlannedCost.Format() != "40,000.00 GBP" || row.Display.PlannedCost.Format() != "53,333.33 USD" {
 		t.Errorf("plan-tree row = %+v", row)
 	}
 }
 
 // An activity type's default planned cost, kept in USD, is offered converted into the plan currency at the
-// current rate, with the USD value beside it for the note (FR-016): Event 25,000.00 USD = 19,750.00 GBP.
+// current rate, with the USD value beside it for the note (FR-016): Event 25,000.00 USD = 18,750.00 GBP.
 func TestActivityForm_TypeDefaultConverted_FR016(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -87,7 +87,7 @@ func TestActivityForm_TypeDefaultConverted_FR016(t *testing.T) {
 	}
 
 	event := typeOption(gbp, eventType)
-	if event == nil || event.DefaultPlannedCost.Format() != "19,750.00 GBP" || event.DefaultPlannedCostUSD.Format() != "25,000.00 USD" {
+	if event == nil || event.DefaultPlannedCost.Format() != "18,750.00 GBP" || event.DefaultPlannedCostUSD.Format() != "25,000.00 USD" {
 		t.Errorf("Event in the GBP plan = %+v", event)
 	}
 	if usdEvent := typeOption(usd, eventType); usdEvent == nil || usdEvent.DefaultPlannedCost.Format() != "25,000.00 USD" ||

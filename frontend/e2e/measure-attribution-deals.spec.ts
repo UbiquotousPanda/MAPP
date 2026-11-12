@@ -1,8 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { escapeRegExp, expectNoAxeViolations, signInAs } from './fixtures';
 
-// 058 on the Measure demo's seeded journeys (D-400): the webinar series booked nothing and is credited $18,702.90
-// from two deals; Helix booked $62,108.70 and is credited $54,000.00, because the euro deal it booked went to the
+// 058 on the Measure demo's seeded journeys (D-400): the webinar series booked nothing and is credited $18,851.86
+// from two deals; Helix booked $62,555.56 and is credited $54,000.00, because the euro deal it booked went to the
 // steps before it.
 
 const ALEX = 'alex.morgan@shell.com';
@@ -31,14 +31,14 @@ test.describe('058 the deals behind attributed revenue', () => {
   }) => {
     const { button, panel } = await openDeals(page, WEBINARS);
 
-    await expect(button).toHaveText('$18,702.90');
+    await expect(button).toHaveText('$18,851.86');
     await expect(panel.getByText('Credited to this activity')).toBeVisible();
-    await expect(panel.getByText('$18,702.90')).toBeVisible();
+    await expect(panel.getByText('$18,851.86')).toBeVisible();
     const dealB = panel.getByRole('article', { name: 'Measure demo feed · MD-009' });
     await expect(dealB.getByText('$24,000.00')).toBeVisible();
     await expect(dealB.getByRole('list', { name: 'Journey' }).getByRole('listitem')).toHaveCount(3);
     const dealC = panel.getByRole('article', { name: 'Measure demo feed · MD-013' });
-    await expect(dealC.getByText(/= \$20,108\.70 at 0\.92/)).toBeVisible();
+    await expect(dealC.getByText(/= \$20,555\.56 at 0\.90/)).toBeVisible();
     await expect(dealC.getByRole('list', { name: 'Journey' }).getByRole('listitem')).toHaveCount(4);
     await expect(dealC.getByText('This activity', { exact: true })).toBeVisible();
     await expectNoAxeViolations(page);
@@ -59,7 +59,7 @@ test.describe('058 the deals behind attributed revenue', () => {
     ).toContainText('$54,000.00');
     await expect(
       panel.getByText('Booked on this activity', { exact: true }).locator('..'),
-    ).toContainText('$62,108.70');
+    ).toContainText('$62,555.56');
     const noJourney = panel.getByRole('article', { name: 'Measure demo feed · MD-014' });
     await expect(noJourney.getByText(/No journey recorded/)).toBeVisible();
     const euro = panel.getByRole('article', { name: 'Measure demo feed · MD-013' });
