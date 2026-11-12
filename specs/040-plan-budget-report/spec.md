@@ -57,7 +57,7 @@ the cards and every period against the plan page and the dashboards of 036.
 5. **Given** a plan whose financial data Priya may not see, **When** the report is shown, **Then** committed, actual
    and the figures made from them cover only the plans she may see, and 039's coverage note says so.
 6. **Given** the chart, **When** she chooses Table, **Then** every period is a row with budget, planned cost and
-   actual, their running totals, and a totals row.
+   actual and their running totals; the running totals' last row is the year, so there is no totals row.
 
 ---
 
@@ -163,7 +163,7 @@ with 039's In view and About this export sheets.
 - **FR-006**: Committed, Actual and every figure made from them MUST cover only plans whose financial data the person
   may see; the rest show "—" when nothing remains, with 039's coverage note.
 - **FR-007**: The chart MUST have a table view (039 FR-020) with each period's budget, planned cost, actual, their
-  running totals and a totals row.
+  running totals. No totals row: the running totals' last row already gives the year (product owner, 2026-11-12).
 - **FR-008**: The ranked list MUST show the Show level's entries (plan, campaign, initiative or activity) ranked by
   the chosen figure and order, each listing its children one level down; an activity's children are its line items
   (040-C1).

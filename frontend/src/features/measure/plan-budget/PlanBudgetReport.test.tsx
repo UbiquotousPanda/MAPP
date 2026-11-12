@@ -97,8 +97,8 @@ describe('PlanBudgetReport (040 US1)', () => {
     await user.click(nth(screen.getAllByRole('button', { name: 'Table' }), 0));
 
     const table = screen.getByRole('table', { name: /Spend by month/ });
-    expect(within(table).getAllByRole('row')).toHaveLength(14);
-    expect(within(table).getByText('Total')).toBeInTheDocument();
+    expect(within(table).getAllByRole('row')).toHaveLength(13);
+    expect(within(table).queryByRole('rowheader', { name: 'Total' })).not.toBeInTheDocument();
     expect(within(table).getAllByText(/\(in progress\)$/)).toHaveLength(1);
   });
 

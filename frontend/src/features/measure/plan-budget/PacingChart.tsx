@@ -18,7 +18,6 @@ export function PacingChart({ report }: { report: PlanBudgetReport }) {
   const { money, month } = useFormatters();
   const label = (key: string) => (key.includes('Q') ? key.slice(5) : month(key));
   const amount = (value: PlanBudgetPeriod['actual']) => (value ? money(value) : '—');
-  const last = report.periods.at(-1);
   const today = report.periods.find((p) => p.state === 'inProgress');
   const table: ReportTableData = {
     columns: [
@@ -44,9 +43,6 @@ export function PacingChart({ report }: { report: PlanBudgetReport }) {
         amount(p.actualToDate),
       ],
     })),
-    total: last
-      ? ['Total', money(last.budgetToDate), money(last.plannedToDate), amount(lastActual(report))]
-      : undefined,
   };
   return (
     <ReportWidget
@@ -66,10 +62,6 @@ export function PacingChart({ report }: { report: PlanBudgetReport }) {
       note={notesOf(report, money).join(' ') || undefined}
     />
   );
-}
-
-function lastActual(report: PlanBudgetReport) {
-  return report.periods.findLast((p) => p.actualToDate !== null)?.actualToDate ?? null;
 }
 
 function notesOf(report: PlanBudgetReport, money: (m: Money) => string): string[] {

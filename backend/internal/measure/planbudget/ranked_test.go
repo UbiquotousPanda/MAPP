@@ -161,8 +161,8 @@ func TestSheets_FR016(t *testing.T) {
 	for _, s := range sheets {
 		got = append(got, fmt.Sprintf("%s %s %d", s.Key, s.Sheet.Name, len(s.Sheet.Rows)))
 	}
-	if diff := cmp.Diff([]string{"cards Cards 11", "periods Periods 14", "ranked Ranked list 6"}, got); diff != "" {
-		t.Errorf("sheets: cards, months with a total, every campaign with its child whatever the page (-want +got):\n%s", diff)
+	if diff := cmp.Diff([]string{"cards Cards 11", "periods Periods 13", "ranked Ranked list 6"}, got); diff != "" {
+		t.Errorf("sheets: cards, every month, every campaign with its child whatever the page (-want +got):\n%s", diff)
 	}
 	if sheets[2].Sheet.Rows[1][2] != sheet.Text("Rimula fleet") {
 		t.Errorf("first ranked row = %+v, want Rimula fleet: lowest actual first, as on screen", sheets[2].Sheet.Rows[1])

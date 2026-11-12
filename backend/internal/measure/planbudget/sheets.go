@@ -72,22 +72,7 @@ func periodsSheet(periods []Period) sheet.Sheet {
 			moneyCell(p.Actual), sheet.Money(p.BudgetToDate.Amount), sheet.Money(p.PlannedToDate.Amount),
 			moneyCell(p.ActualToDate)})
 	}
-	if len(periods) > 0 {
-		last := periods[len(periods)-1]
-		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), sheet.Money(last.BudgetToDate.Amount),
-			sheet.Money(last.PlannedToDate.Amount), moneyCell(lastActual(periods))})
-	}
 	return sheet.Sheet{Name: "Periods", Rows: rows}
-}
-
-func lastActual(periods []Period) *money.Money {
-	var last *money.Money
-	for _, p := range periods {
-		if p.ActualToDate != nil {
-			last = p.ActualToDate
-		}
-	}
-	return last
 }
 
 func rankedSheet(r Ranked) sheet.Sheet {
