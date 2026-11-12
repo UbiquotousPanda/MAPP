@@ -27,6 +27,7 @@ func newEngine(cfg Config) (*gin.Engine, *telemetry.Telemetry, error) {
 		return nil, nil, err
 	}
 	engine, err := web.NewEngine(web.Options{Tracer: tel.Tracer, Meter: tel.Meter, TrustedProxies: cfg.TrustedProxies,
+		PublicHosts: cfg.PublicHosts,
 		BodyLimits: map[string]int64{
 			"POST /api/v1/exchange-rates/import-check":            settings.MaxRateUploadBytes,
 			"POST /api/v1/exchange-rates/import":                  settings.MaxRateUploadBytes,

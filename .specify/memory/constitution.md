@@ -1,26 +1,20 @@
 <!--
 Sync Impact Report
-- Version change: 4.7.0 → 4.9.0 (MINOR: scope materially expanded; no principle removed or redefined). 4.8.0 is
-  the Measure-module amendment on the `measure-module` branch (D-366–D-370 there); this amendment is made on
-  `develop` and skips that number so the two merge without renumbering. When `measure-module` merges, its
-  out-of-scope "a dashboard builder" is dropped in favour of this text (D-371).
+- Version change: 4.9.0 → 4.10.0 (MINOR: a hosted test environment is allowed; no principle removed or redefined)
 - Modified principles: none
-- Modified sections: Current Phase & Scope — in scope: the self-service dashboard builder (051): people build
-  their own dashboards of charts from the Plan-module data they may see and from CSV or Excel files they upload,
-  view them at Dashboards next to 036's built-in dashboards, and share them view-only with their teams; out of
-  scope gains dashboards shared outside SP&A One teams, scheduled or e-mailed dashboards and live data
-  connectors for uploaded data. F1: charts — Apache ECharts (ADR-0020), with 036's hand-drawn SVG charts kept
-  until a later change moves them. Amendment History.
+- Modified sections: Current Phase & Scope (Running locally) — besides `compose.yaml` on reviewers' own
+  computers, one Azure VM may run it as a hosted test environment for business analysts and testers, with the
+  demo seed only (ADR-0023). Amendment History.
 - Added sections: none
 - Removed sections: none
-- Impact on existing code: none until 051 lands — two new permissions in 014 Table A (`dashboards.view`,
-  `dashboards.build`, D-374) granted to the built-in roles by migration; `/dashboards` becomes a list instead of
-  a redirect to the Executive dashboard (D-372); the `echarts` dependency (ADR-0020)
-- Templates: no change needed (plan-template.md reads its gates from this file)
+- Impact on existing code: the API's optional `PUBLIC_HOSTS` variable; `deploy/test-vm/`; the portal's Static
+  Web App workflow removed
+- Templates: no change needed
 - Follow-up TODOs:
   - TODO(DARK_TOKENS): dark-theme values for Disabled Text, Link Hover and an error-text red
   - ADR-0020 is taken by the dashboard builder on `develop`; the Measure module's simulated performance feed ADR,
     written as 0020 on `measure-module`, is ADR-0022 since the merge (D-378)
+  - ADR-0023 is the hosted test VM (deploy/test-vm)
 -->
 
 
@@ -530,7 +524,9 @@ both be non-negotiable without conflict.
   `compose.yaml`. That file can also build and run the whole application from the checkout, for
   reviewers who don't develop it (ADR-0012); every port it publishes is on `127.0.0.1`, nothing is
   pushed to a registry, and developing MAPP never requires Docker or Podman. No cloud services at run time; CI and the
-  scans in the quality gates run on GitHub.
+  scans in the quality gates run on GitHub. The one exception is a **hosted test environment** for business
+  analysts and testers: one Azure VM runs the same `compose.yaml`, over HTTPS, with
+  the demo seed only (ADR-0023).
 - **Demo data:** a clearly labelled, fictitious seed dataset is loaded by an explicit command; it
   never contains real Shell people or figures.
 
@@ -1193,5 +1189,6 @@ amended to match.
 | 4.7.0 | 2026-10-29 | X: a field required to save is marked by a Secondary Red asterisk after its label, bold and at least 19 px (large text), with "required" still given to screen readers; "Needed to publish" and "Needed to submit" stay words | D-364; product owner instruction of 2026-10-29 |
 | 4.8.0 | 2026-10-30 | Current Phase & Scope: the Measure module — SP&A One's read-only reports, shown as Reports — in two waves: 039–045 from data MAPP holds, 046–050 performance reporting from a simulated feed; II and IV: a simulated performance feed stands in for the CRM, marketing-automation and web-analytics connectors behind an adapter; out of scope narrowed to live connectors and the reports that need the Finance budgets module, accruals, goods receipts, a dashboard builder or e-mail | D-366–D-370; Measure kick-off instruction of 2026-10-30 |
 | 4.9.0 | 2026-11-01 | Current Phase & Scope: the self-service dashboard builder (051) — dashboards people build from the Plan-module data they may see and from CSV or Excel datasets they upload, shown under Dashboards next to 036's built-in dashboards and shared view-only with their teams; out of scope gains dashboards shared outside SP&A One teams, scheduled or e-mailed dashboards and live data connectors. F1: Apache ECharts is the chart library (ADR-0020). 4.8.0 is the Measure-module amendment on `measure-module` | D-371–D-378; ADR-0020; product owner instruction of 2026-11-01 |
+| 4.10.0 | 2026-11-03 | Current Phase & Scope: one Azure VM may run `compose.yaml` as a hosted test environment for business analysts and testers, over HTTPS, with the demo seed only | ADR-0023; repository owner instruction of 2026-11-03 |
 
-**Version**: 4.9.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-11-01
+**Version**: 4.10.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-11-03

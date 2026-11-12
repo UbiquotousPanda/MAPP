@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"runtime/debug"
+	"slices"
 	"strings"
 	"time"
 
@@ -71,12 +72,13 @@ func SecurityHeaders() gin.HandlerFunc {
 	}
 }
 
-// SameOrigin refuses other hosts (DNS rebinding) and browser requests from other sites.
-func SameOrigin() gin.HandlerFunc {
+// SameOrigin refuses hosts other than this computer and publicHosts (DNS rebinding) and browser requests from
+// other sites.
+func SameOrigin(publicHosts []string) gin.HandlerFunc {
 	crossOrigin := http.NewCrossOriginProtection()
 	return func(c *gin.Context) {
 		r := c.Request
-		if !isLocalHost(r.Host) || crossOrigin.Check(r) != nil || foreignReferer(r) {
+		if !isAllowedHost(r.Host, publicHosts) || crossOrigin.Check(r) != nil || foreignReferer(r) {
 			RespondError(c, errs.BadRequest(otherSiteMessage))
 			return
 		}
@@ -125,15 +127,15 @@ func LimitBody(defaultMax int64, byOperation map[string]int64) gin.HandlerFunc {
 	}
 }
 
-func isLocalHost(hostAndPort string) bool {
+func isAllowedHost(hostAndPort string, publicHosts []string) bool {
 	host := hostAndPort
 	if name, _, err := net.SplitHostPort(hostAndPort); err == nil {
 		host = name
 	}
-	host = strings.TrimSuffix(strings.TrimPrefix(host, "["), "]")
-	switch strings.ToLower(host) {
+	host = strings.ToLower(strings.TrimSuffix(strings.TrimPrefix(host, "["), "]"))
+	switch host {
 	case loopbackIPv4, "localhost", loopbackIPv6:
 		return true
 	}
-	return false
+	return host != "" && slices.Contains(publicHosts, host)
 }

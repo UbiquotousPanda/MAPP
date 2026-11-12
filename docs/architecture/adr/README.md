@@ -28,3 +28,4 @@ Consequences. Add a new ADR (next number) instead of editing an accepted one; ma
 | [0020](0020-apache-echarts-for-the-dashboard-builder.md) | Apache ECharts for the dashboard builder's charts | Accepted |
 | [0021](0021-one-active-source-rule-in-the-service.md) | One active source per model stage is a service rule, not a database constraint | Proposed |
 | [0022](0022-simulated-performance-feed.md) | Performance data arrives only by upload or a simulated feed behind an adapter | Proposed |
+| [0023](0023-hosted-test-vm.md) | One Azure VM as a hosted test environment | Accepted |
