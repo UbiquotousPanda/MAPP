@@ -144,6 +144,8 @@ amount, delivery date and overall limit.
 | **Status** | Created · Submitted · In review · Approved · Declined · Closed | *Submitted* when sent for approval, *In review* once a level approves, *Approved* after the last level; a declined round makes it *Declined*, a recall *Created*. A change to an Approved purchase request is a **modification**: *In review* with the approved version kept, restored if the change is declined. *Closed* by the person closing it; each line becomes the smaller of its amount and what was invoiced. |
 | **Completeness** | All filled in · *n* fields needed | As every record (§2.6), over the purchase request's Shell attributes and its lines. |
 
+- **SWBS code first.** A purchase request, and every line added to one, draws only on a line item that has
+  received its SWBS code from GSAP; lines saved before decision D-405 (feature 058) keep saving.
 - **Reservation.** A line reserves its amount on its line item as soon as it is saved, in every status;
   it may not exceed the line item's *available to request* (other currencies at today's rate). Closing
   releases what was not invoiced; deleting a Created or Declined purchase request releases it all.

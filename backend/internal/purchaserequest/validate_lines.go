@@ -72,6 +72,8 @@ func (c *checker) lineItem(ctx context.Context, field string, l Line, seen map[s
 		c.problems.Add(field+"lineItemId", fmt.Sprintf(msgOnceOnPR, l.LineItemID))
 	case f.Plan.Access.ID != c.plan.Access.ID:
 		c.problems.Add(field+"lineItemId", fmt.Sprintf(msgOtherPlan, l.LineItemID))
+	case l.ID == "" && f.SwbsCode == "":
+		c.problems.Add(field+"lineItemId", needsSwbs(f))
 	}
 	seen[l.LineItemID] = true
 }

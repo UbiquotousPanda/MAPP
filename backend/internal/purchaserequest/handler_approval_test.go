@@ -11,11 +11,12 @@ import (
 	"mapp/internal/purchaserequest"
 )
 
-func TestSubmit_Gates_Contract_032_FR021(t *testing.T) {
+// PR-1001 was raised on Agency fee (Ireland) before a purchase request needed the SWBS code, so the gate still has work.
+func TestSubmit_Gates_Contract_032_FR021_058_FR006(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
 	priya := s.SignIn(t, priyasEmail)
-	pr := create(t, priya, body(mediaBooking, "USD", "1000.00"))
+	pr := get(t, priya, "PR-1001")
 
 	check := decoded[purchaserequest.SubmissionView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval/submission", nil),
 		http.StatusOK)
@@ -26,12 +27,13 @@ func TestSubmit_Gates_Contract_032_FR021(t *testing.T) {
 	for _, p := range check.Problems {
 		messages = append(messages, p.Message)
 	}
-	want := []string{"Activity 'Trade magazine ads' must be approved before this purchase request can be submitted.",
-		"Line item L-1005 'Media booking' has no SWBS code yet (Waiting for approval)."}
+	want := []string{"Activity 'UK launch event' must be approved before this purchase request can be submitted.",
+		"Line item L-1010 'Agency fee (Ireland)' has no SWBS code yet (Waiting for approval).",
+		"Invoice approver name is needed to submit."}
 	if check.Ready || !slices.Equal(messages, want) || check.Kind != "submit" || check.RoundKind != purchaserequest.KindPurchaseRequest {
 		t.Errorf("submission = %+v", check)
 	}
-	if refused.Error.Code != "not_ready" || len(refused.Error.Missing) != 2 {
+	if refused.Error.Code != "not_ready" || len(refused.Error.Missing) != 3 {
 		t.Errorf("submit = %+v", refused)
 	}
 	if again := get(t, priya, pr.ID); again.Status != purchaserequest.StatusCreated {
@@ -143,7 +145,7 @@ func TestApprovalSection_SubmitFollowsThePurchaseRequest_Contract_032_FR022(t *t
 	s := apitest.New(t)
 	pr := approved(t, s)
 	priya := s.SignIn(t, priyasEmail)
-	created := create(t, priya, body(mediaBooking, "USD", "1000.00"))
+	created := get(t, priya, "PR-1001")
 
 	var got []string
 	for who, c := range map[string]*apitest.Client{"lea": s.SignIn(t, leasEmail), "priya": priya} {

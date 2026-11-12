@@ -7,6 +7,7 @@ import {
   openPurchaseRequest,
   PRIYA,
   purchaseRequestsSection,
+  sendToSimulatedGsap,
   swbsLineItem,
 } from './purchase-request-flow';
 
@@ -20,6 +21,8 @@ test('038 FR-013 (H-3): delete a purchase request from its page, then Undo', asy
   await signInAs(page, PRIYA);
   const lineItem = await swbsLineItem(page, activity.id, uniqueName('Stand build'), '5000.00');
   const prName = `PR for ${lineItem.name}`;
+  await sendToSimulatedGsap(page, lineItem);
+  await signInAs(page, PRIYA);
   await openLineItem(page, lineItem);
   await action(purchaseRequestsSection(page), 'New purchase request').click();
   const prId = await fillAndSavePurchaseRequest(page, `${nextYear}-03-31`);

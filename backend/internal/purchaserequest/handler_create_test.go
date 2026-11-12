@@ -14,6 +14,10 @@ func TestDefaults_Contract(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
 	priya := s.SignIn(t, priyasEmail)
+	refused := decoded[apiError](t, priya.Do(t, http.MethodGet, prs+"/new-defaults?lineItemId="+standBuild, nil), http.StatusBadRequest)
+	same(t, "058 FR-003 no pre-fill before the SWBS code", []string{"Line item L-1006 'Stand build' has no SWBS code yet " +
+		"(Ready to send to GSAP). A purchase request needs its SWBS code first."}, fieldMessages(refused))
+	receiveSwbsCodes(t, s)
 
 	t.Run("032 FR-003 PR for Stand build, the acting owner, everything left, HX1006", func(t *testing.T) {
 		t.Parallel()
@@ -45,6 +49,7 @@ func TestCreate_ReservesAtOnce_Contract_032_FR017(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
 	strictOverspend(t, s, "")
+	mediaBookingWithCode(t, s)
 	priya := s.SignIn(t, priyasEmail)
 
 	pr := create(t, priya, body(mediaBooking, "USD", "26000.00"))
@@ -70,7 +75,9 @@ func TestCreate_ReservesAtOnce_Contract_032_FR017(t *testing.T) {
 
 func TestCreate_ValidationAllAtOnce_Contract_032_FR053(t *testing.T) {
 	t.Parallel()
-	priya := apitest.New(t).SignIn(t, priyasEmail)
+	s := apitest.New(t)
+	receiveSwbsCodes(t, s)
+	priya := s.SignIn(t, priyasEmail)
 	b := body(standBuild, "EUR", "1.234")
 	b["name"], b["approvalWorkflowId"], b["modificationWorkflowId"] = " ", "", "WF-1001"
 	b["attributes"].(map[string]any)["SA-1045"] = "abc"
@@ -91,7 +98,9 @@ func TestCreate_ValidationAllAtOnce_Contract_032_FR053(t *testing.T) {
 
 func TestCreate_LinesRules_Contract_032_FR013(t *testing.T) {
 	t.Parallel()
-	priya := apitest.New(t).SignIn(t, priyasEmail)
+	s := apitest.New(t)
+	mediaBookingWithCode(t, s)
+	priya := s.SignIn(t, priyasEmail)
 	b := body(standBuild, "EUR", "100.00")
 	line := b["lines"].([]map[string]any)[0]
 	other := map[string]any{"lineItemId": mediaBooking, "currency": "USD", "amount": "100.00", "deliveryDate": "2026-11-30",

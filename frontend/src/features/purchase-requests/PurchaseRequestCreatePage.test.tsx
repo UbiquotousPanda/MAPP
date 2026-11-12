@@ -230,6 +230,22 @@ describe('032 FR-003/FR-053/FR-054: new purchase request', () => {
     expect(screen.getByRole('link', { name: 'Go to Plans' })).toBeInTheDocument();
   });
 
+  it('058 FR-003: a line item without its SWBS code gets the reason and the way back, not a form', async () => {
+    const reason =
+      "Line item L-1006 'Stand build' has no SWBS code yet (Ready to send to GSAP). A purchase request needs its SWBS code first.";
+    renderCreate({
+      status: 400,
+      body: apiError('validation_failed', 'Some fields need your attention.', {
+        fields: [{ field: 'lineItemId', message: reason }],
+      }),
+    });
+
+    expect(await screen.findByText(reason)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Go to Plans' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Try again/ })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument();
+  });
+
   it('032 FR-001: without a line item, choosing one comes first', async () => {
     const { router, user } = renderCreate(
       { body: defaults() },

@@ -25598,7 +25598,7 @@ components:
     SpaLineItemRow:
       type: object
       additionalProperties: false
-      required: [id, name, plannedCost, committed, actualSpend]
+      required: [id, name, plannedCost, committed, actualSpend, raisePurchaseRequest]
       properties:
         id:
           type: string
@@ -25614,6 +25614,11 @@ components:
           oneOf:
             - $ref: "#/components/schemas/Money"
             - type: "null"
+        raisePurchaseRequest:
+          description: >-
+            Raise purchase request for this line item: the activity's own availability, then unavailable while the
+            line item has no SWBS code (058 FR-005).
+          $ref: "#/components/schemas/ActionAvailability"
     SpaActivityRow:
       type: object
       additionalProperties: false

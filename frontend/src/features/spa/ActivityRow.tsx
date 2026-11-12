@@ -93,6 +93,8 @@ function RaiseMenu({ row }: { row: SpaActivityRow }) {
         label: `${ACTIVITIES.raise} for ${item.name}`,
         onSelect: () =>
           void navigate(`/purchase-requests/new?${new URLSearchParams({ lineItemId: item.id })}`),
+        disabled: !item.raisePurchaseRequest.available,
+        hint: item.raisePurchaseRequest.available ? undefined : item.raisePurchaseRequest.reason,
       }))
     : [{ label: ACTIVITIES.raise, onSelect: () => undefined, disabled: true, hint: reason }];
   return <ActionsMenu label={row.name} items={items} />;

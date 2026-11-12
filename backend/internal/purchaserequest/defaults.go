@@ -39,6 +39,9 @@ func (s *Service) Defaults(ctx context.Context, a actor.Actor, lineItemID string
 		if left.Sign() <= 0 {
 			return errs.Validation(errs.FieldError{Field: "lineItemId", Message: msgNothingLeft})
 		}
+		if f.SwbsCode == "" {
+			return errs.Validation(errs.FieldError{Field: "lineItemId", Message: needsSwbs(f)})
+		}
 		found, err := s.deps.People.People(ctx, []string{a.ID})
 		if err != nil {
 			return err

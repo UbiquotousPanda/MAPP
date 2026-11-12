@@ -49,6 +49,7 @@ type Record struct {
 	Budget       *money.Amount
 	Spread       []MonthAmount
 	Linked       bool
+	Swbs         string // line items: their SWBS state, "received" once GSAP returned the code
 	Values       map[string][]Value
 }
 

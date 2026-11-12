@@ -83,3 +83,21 @@ func TestRaise_FR022_AnActivityWithoutLineItemsSays(t *testing.T) {
 		t.Errorf("raise = %+v", row.RaisePurchaseRequest)
 	}
 }
+
+func TestRaise_EachLineItemNeedsItsSwbsCode_058_FR005(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	f.record("L-1").Swbs, f.record("L-2").Swbs = swbsReceived, "readyToSend"
+	allowed := f.view(t, Query{}).Activities[0].LineItems
+	f.purchases.raise = authz.Unavailable("Raising purchase requests isn't part of your role.")
+	refused := f.view(t, Query{}).Activities[0].LineItems
+
+	want := []authz.Availability{authz.Allowed,
+		authz.Unavailable("No SWBS code yet (Ready to send to GSAP). A purchase request needs the line item's SWBS code first."),
+		f.purchases.raise, f.purchases.raise}
+	got := []authz.Availability{allowed[0].RaisePurchaseRequest, allowed[1].RaisePurchaseRequest,
+		refused[0].RaisePurchaseRequest, refused[1].RaisePurchaseRequest}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("058 FR-005 the activity's availability first, then the line item's code (-want +got):\n%s", diff)
+	}
+}

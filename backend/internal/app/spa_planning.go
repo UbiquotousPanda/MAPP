@@ -131,6 +131,7 @@ func (l spaLabels) record(n allwork.Node) spa.Record {
 		r.Budget = n.Budget
 	case allwork.LevelLineItem:
 		_, r.Linked = n.Fields["lineItem.financeBudgetItem"]
+		r.Swbs = n.Swbs
 		for _, m := range n.MonthsUSD {
 			r.Spread = append(r.Spread, spa.MonthAmount{Month: m.Month, USD: m.USD})
 		}

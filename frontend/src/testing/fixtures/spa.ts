@@ -130,6 +130,11 @@ export function spaView(overrides: Partial<SpaView> = {}): SpaView {
             plannedCost: usd('200000.00'),
             committed: usd('200000.00'),
             actualSpend: usd('150000.00'),
+            raisePurchaseRequest: {
+              available: false,
+              reason:
+                "No SWBS code yet (Waiting for approval). A purchase request needs the line item's SWBS code first.",
+            },
           },
           {
             id: 'L-1002',
@@ -137,6 +142,7 @@ export function spaView(overrides: Partial<SpaView> = {}): SpaView {
             plannedCost: usd('140000.00'),
             committed: usd('0.00'),
             actualSpend: usd('0.00'),
+            raisePurchaseRequest: { available: true, reason: '' },
           },
         ],
         raisePurchaseRequest: { available: true, reason: '' },

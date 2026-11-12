@@ -21,7 +21,7 @@ test.describe.configure({ mode: 'serial' });
 
 const nextYear = new Date().getUTCFullYear() + 1;
 
-test('032 US1–US3: raise, submit, approve and route a purchase request to the requisitioner', async ({
+test('032 US1–US3, 058 US1: raise once the SWBS code is in, submit, approve and route a purchase request to the requisitioner', async ({
   page,
 }) => {
   test.slow();
@@ -31,9 +31,20 @@ test('032 US1–US3: raise, submit, approve and route a purchase request to the 
   const prName = `PR for ${lineItem.name}`;
   const hxKey = `HX${lineItem.id.replace('L-', '')}`;
 
-  // US1: the line item's Purchase requests section, then New purchase request, pre-filled (FR-001, FR-003).
+  // 058 US1: no purchase request before the line item has its SWBS code (058 FR-004).
   await openLineItem(page, lineItem);
   const section = purchaseRequestsSection(page);
+  await expect(
+    section.getByText(
+      "No SWBS code yet (Ready to send to GSAP). A purchase request needs the line item's SWBS code first.",
+    ),
+  ).toBeVisible();
+  await expect(action(section, 'New purchase request')).toHaveCount(0);
+  await sendToSimulatedGsap(page, lineItem);
+  await signInAs(page, PRIYA);
+
+  // US1: the line item's Purchase requests section, then New purchase request, pre-filled (FR-001, FR-003).
+  await openLineItem(page, lineItem);
   await expect(section.getByText('No purchase requests on this line item yet.')).toBeVisible();
   await expectNoAxeViolations(page);
   await action(section, 'New purchase request').click();
@@ -66,16 +77,7 @@ test('032 US1–US3: raise, submit, approve and route a purchase request to the 
   await expect(section.getByText('0.00 USD').first()).toBeVisible();
   await expect(action(section, 'New purchase request')).toHaveCount(0);
 
-  // US2: submitting is refused while the line item has no SWBS code (FR-021).
-  await openPurchaseRequest(page, prId, prName);
-  await page.getByRole('button', { name: 'Submit for approval', exact: true }).first().click();
-  const refused = page.getByRole('dialog', { name: `'${prName}' can't be submitted yet` });
-  await expect(refused.getByText(/has no SWBS code yet \(Ready to send to GSAP\)/)).toBeVisible();
-  await expectNoAxeViolations(page);
-  await refused.getByRole('button', { name: 'Close', exact: true }).click();
-
-  await sendToSimulatedGsap(page, lineItem);
-  await signInAs(page, PRIYA);
+  // US2: the line item has its SWBS code, so the submission goes through (FR-021).
   await openPurchaseRequest(page, prId, prName);
   await submitOnScreen(page, prName);
   await expect(page.getByText('Submitted', { exact: true }).first()).toBeVisible();

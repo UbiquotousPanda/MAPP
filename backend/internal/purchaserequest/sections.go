@@ -63,6 +63,8 @@ func (s *Service) lineItemTotals(ctx context.Context, f LineItemFacts) (LineItem
 		section.Notice = fmt.Sprintf(msgAboveSection, money.Money{Amount: left.Neg(), Currency: f.Currency}.Format())
 	case left.IsZero():
 		section.Create = authz.Unavailable(msgNothingLeft)
+	case section.Create.Available && f.SwbsCode == "":
+		section.Create = authz.Unavailable(noSwbsYet(f))
 	}
 	return section, nil
 }

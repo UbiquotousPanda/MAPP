@@ -78,6 +78,7 @@ module), AR invoice details (accrual requests), the China budget pack (budget re
 reliability (goods receipts, Q-030), the custom dashboard engine and self-service builder (client 019, 025),
 report sharing and scheduling by e-mail.
 | 053 | [053-line-item-approval](../../specs/053-line-item-approval/spec.md) | Line-item approval: the approver ticks the line items they approve; unticked and later line items stay Not approved (no SWBS request, not on a purchase request) until sent for approval in a round of their own while the activity stays Approved (D-402) | P1 | 008, 030, 031, 032, 034 | Built — assumptions open for Shell's leads (spec) |
+| 058 | [058-pr-needs-swbs-code](../../specs/058-pr-needs-swbs-code/spec.md) | A purchase request needs the SWBS code first: no new purchase request or line on a line item before GSAP returned its SWBS code — the line item's section, New purchase request, Add line and the SP&A planning view say why (D-405) | P1 | 030, 032, 036 | Built |
 
 ## Scope boundaries
 

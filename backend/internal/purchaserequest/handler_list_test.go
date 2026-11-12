@@ -11,6 +11,7 @@ import (
 func TestList_GroupsSearchesAndFilters_Contract_032_FR044(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
+	receiveSwbsCodes(t, s)
 	priya, lea := s.SignIn(t, priyasEmail), s.SignIn(t, leasEmail)
 	create(t, priya, body(standBuild, "EUR", "100.00"))
 	page := func(query string) purchaserequest.ListPage {
@@ -43,6 +44,7 @@ func labels(page purchaserequest.ListPage) []string {
 func TestOptions_PickerReasons_Contract_032_FR010(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
+	receiveSwbsCodes(t, s)
 	priya := s.SignIn(t, priyasEmail)
 	pr := create(t, priya, body(standBuild, "EUR", "100.00"))
 
@@ -56,6 +58,9 @@ func TestOptions_PickerReasons_Contract_032_FR010(t *testing.T) {
 	if reasons[standBuild] != "Already on this purchase request" ||
 		reasons[mediaBooking] != "One purchase request cannot charge two company codes (GB01 and NL02)." {
 		t.Errorf("032 FR-010 reasons = %v", reasons)
+	}
+	if want := "No SWBS code yet (Waiting for approval). A purchase request needs the line item's SWBS code first."; reasons["L-1001"] != want {
+		t.Errorf("058 FR-004 Agency fee's reason = %q, want %q", reasons["L-1001"], want)
 	}
 	if _, otherPlan := reasons["L-1007"]; otherPlan {
 		t.Errorf("032 FR-002 a line item of another plan is offered")

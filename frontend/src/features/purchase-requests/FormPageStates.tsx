@@ -30,7 +30,10 @@ export function FormPageLoading({ title }: { title: string }) {
   );
 }
 
-/** A load that failed: no access (403), gone or out of reach (404), or anything else with Try again. */
+/**
+ * A load that failed: no access (403); gone or out of reach (404), or refused for a reason trying again won't
+ * change (400, such as a line item without its SWBS code), with the way back; anything else with Try again.
+ */
 export function FormPageFailed({
   title,
   error,
@@ -45,10 +48,10 @@ export function FormPageFailed({
   }
   return (
     <Frame title={title}>
-      {error instanceof ApiError && error.kind === 'notFound' ? (
+      {error instanceof ApiError && (error.kind === 'notFound' || error.kind === 'validation') ? (
         <EmptyState
           icon={<CircleAlert />}
-          title={error.message}
+          title={error.fields[0]?.message ?? error.message}
           action={
             <LinkButton to="/plans" variant="primary">
               {GO_TO_PLANS}

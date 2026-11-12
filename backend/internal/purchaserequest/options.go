@@ -108,6 +108,8 @@ func (pc pickerContext) reason(f LineItemFacts, left money.Amount) string {
 		return msgNothingLeft
 	case pc.companyCode != "" && f.CompanyCode != "" && f.CompanyCode != pc.companyCode:
 		return fmt.Sprintf(msgTwoCompanyCodes, pc.companyCode, f.CompanyCode)
+	case f.SwbsCode == "":
+		return noSwbsYet(f)
 	}
 	return ""
 }

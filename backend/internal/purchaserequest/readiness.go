@@ -22,6 +22,15 @@ var swbsStatusWords = map[string]string{ //nolint:gochecknoglobals // a fixed lo
 	"readyToSend": "Ready to send to GSAP", "received": "Received",
 }
 
+// needsSwbs and noSwbsYet are why a line item without its SWBS code cannot go on a new purchase request or line.
+func needsSwbs(f LineItemFacts) string {
+	return fmt.Sprintf(msgNeedsSwbs, f.ID, f.Name, swbsStatusWords[f.SwbsStatus])
+}
+
+func noSwbsYet(f LineItemFacts) string {
+	return fmt.Sprintf(msgNoSwbsYet, swbsStatusWords[f.SwbsStatus])
+}
+
 // submissionKind is the round a submission starts now: a change once the purchase request was approved (R5).
 func submissionKind(pr PurchaseRequest) RoundKind {
 	if pr.Approved != nil && (pr.Status == StatusApproved || pr.ChangePending) {

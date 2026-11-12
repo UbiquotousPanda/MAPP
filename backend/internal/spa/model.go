@@ -93,6 +93,8 @@ type LineItemRow struct {
 	PlannedCost money.Money  `json:"plannedCost"`
 	Committed   *money.Money `json:"committed"`
 	ActualSpend *money.Money `json:"actualSpend"`
+
+	RaisePurchaseRequest authz.Availability `json:"raisePurchaseRequest"`
 }
 
 type ActivityRow struct {

@@ -103,6 +103,7 @@ func TestDelete_ByStatus_AndRestore_Contract_032_FR042(t *testing.T) {
 	s := apitest.New(t)
 	strictOverspend(t, s, "")
 	approvedPR := approved(t, s)
+	mediaBookingWithCode(t, s)
 	priya := s.SignIn(t, priyasEmail)
 
 	refused := decoded[apiError](t, priya.Do(t, http.MethodDelete, prs+"/"+approvedPR.ID, nil), http.StatusConflict)
@@ -127,6 +128,7 @@ func TestDelete_ByStatus_AndRestore_Contract_032_FR042(t *testing.T) {
 func TestGuards_KeepWhatAPurchaseRequestDrawsOn_Contract_032_FR019(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
+	receiveSwbsCodes(t, s)
 	priya := s.SignIn(t, priyasEmail)
 	pr := create(t, priya, body(standBuild, "EUR", "5000.00"))
 
@@ -152,6 +154,7 @@ func TestGuards_CampaignKeepsItsPlan_Contract_032_FR019(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
 	s.GrantRole(t, priyasEmail, "globalPlanner", "all")
+	receiveSwbsCodes(t, s)
 	priya := s.SignIn(t, priyasEmail)
 	pr := create(t, priya, body(standBuild, "EUR", "100.00"))
 

@@ -2,7 +2,7 @@ import { expect, type Page } from '@playwright/test';
 import { callApi, chooseOption, expectNoAxeViolations, expectToast, signInAs } from './fixtures';
 import { lubricantsActivity } from './lubricants';
 import { decideAs } from './planning-changes';
-import type { Named } from './planning';
+import { idOf, type Named } from './planning';
 
 // Steps the purchase-request journeys share; preparation goes through the API, the rest on screen.
 
@@ -27,25 +27,89 @@ export async function approvedActivity(page: Page, label: string): Promise<Appro
   return { id: activity.id, name: activity.name, path: activity.path };
 }
 
+interface FormAttribute {
+  id: string;
+  label: string;
+  options: { id: string; label: string }[];
+}
+
+/** What a line item of next year's Lubricants plan needs to be sent for approval, as the seed's Stand build has. */
+async function lineItemNeeds(page: Page): Promise<Record<string, unknown>> {
+  const year = new Date().getUTCFullYear() + 1;
+  const [ownerId, form, budgets] = await Promise.all([
+    idOf(page, '/api/v1/people', 'Priya Raman'),
+    callApi<{ sections: { attributes: FormAttribute[] }[] }>(
+      page,
+      'GET',
+      '/api/v1/shell-attribute-forms/lineItem',
+    ),
+    callApi<{ items: { name: string; items: Named[] }[] }>(
+      page,
+      'GET',
+      `/api/v1/finance-budgets?year=${year}`,
+    ),
+  ]);
+  const attributes = form.sections.flatMap((section) => section.attributes);
+  const choose = (label: string, optionLabel: string): [string, string] => {
+    const attribute = attributes.find((a) => a.label === label);
+    const option = attribute?.options.find((o) => o.label === optionLabel);
+    if (!attribute || !option) {
+      throw new Error(`There is no line-item attribute '${label}' with '${optionLabel}'`);
+    }
+    return [attribute.id, option.id];
+  };
+  const item = budgets.items.find((b) => b.name === `${year} Lubricants Budget`)?.items[0];
+  if (!item) {
+    throw new Error(`There is no ${year} Lubricants Budget item`);
+  }
+  return {
+    ownerId,
+    attributes: Object.fromEntries([
+      choose('Spend type', 'BTL - Event'),
+      choose('GL code', '7250150 - Sponsorship programmes'),
+    ]),
+    financeBudgetYear: year,
+    financeBudgetItemId: item.id,
+  };
+}
+
+/**
+ * As Priya: a line item of the approved activity with "Request SWBS code" on, sent for approval and approved by
+ * Daniel Okoro (053), so it is Ready to send to GSAP; ends signed in as Priya.
+ */
 export async function swbsLineItem(
   page: Page,
   activityId: string,
   name: string,
   plannedCost: string,
 ): Promise<Named> {
-  return callApi<Named>(page, 'POST', `/api/v1/activities/${activityId}/line-items`, {
-    name,
-    ownerId: null,
-    description: '',
-    currency: 'USD',
-    plannedCost,
-    spread: { method: 'evenly', months: [] },
-    attributes: {},
-    contractedAmount: null,
-    requestSwbs: true,
-    financeBudgetYear: null,
-    financeBudgetItemId: null,
+  const lineItem = await callApi<Named>(
+    page,
+    'POST',
+    `/api/v1/activities/${activityId}/line-items`,
+    {
+      name,
+      description: '',
+      currency: 'USD',
+      plannedCost,
+      spread: { method: 'evenly', months: [] },
+      contractedAmount: null,
+      requestSwbs: true,
+      ...(await lineItemNeeds(page)),
+    },
+  );
+  const approval = await callApi<{ activityVersion: number }>(
+    page,
+    'GET',
+    `/api/v1/activities/${activityId}/approval`,
+  );
+  await callApi(page, 'POST', `/api/v1/activities/${activityId}/approval/submit`, {
+    version: approval.activityVersion,
+    comment: '',
   });
+  await decideAs(page, DANIEL, activityId, 'approve');
+  await signInAs(page, PRIYA);
+  return lineItem;
 }
 
 export async function openLineItem(page: Page, lineItem: Named): Promise<void> {

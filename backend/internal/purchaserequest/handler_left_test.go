@@ -10,6 +10,7 @@ import (
 func TestLines_SayWhatTheLineItemHasLeftWithoutThem_Contract_DemoMVP4(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
+	mediaBookingWithCode(t, s)
 	priya := s.SignIn(t, priyasEmail)
 
 	first := create(t, priya, body(mediaBooking, "USD", "26000.00"))

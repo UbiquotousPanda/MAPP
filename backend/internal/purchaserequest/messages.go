@@ -11,6 +11,8 @@ const (
 	msgNothingLeft         = "Nothing left to request"
 	msgActivityNotApproved = "Activity '%s' must be approved before this purchase request can be submitted."
 	msgNoSwbs              = "Line item %s '%s' has no SWBS code yet (%s)."
+	msgNeedsSwbs           = "Line item %s '%s' has no SWBS code yet (%s). A purchase request needs its SWBS code first."
+	msgNoSwbsYet           = "No SWBS code yet (%s). A purchase request needs the line item's SWBS code first."
 	msgLineItemNotApproved = "Line item %s '%s' is not approved."
 	msgLineItemsOverCost   = "Activity '%s': line items exceed its planned cost by %s — lower them, or raise the " +
 		"activity's planned cost and get it approved again."

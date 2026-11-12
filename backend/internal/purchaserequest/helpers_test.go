@@ -42,6 +42,14 @@ type apiError struct {
 	} `json:"error"`
 }
 
+func fieldMessages(e apiError) []string {
+	var got []string
+	for _, f := range e.Error.Fields {
+		got = append(got, f.Message)
+	}
+	return got
+}
+
 func same[T any](t *testing.T, what string, want, got T) {
 	t.Helper()
 	if diff := cmp.Diff(want, got); diff != "" {
@@ -91,6 +99,30 @@ func receiveSwbsCodes(t *testing.T, s *apitest.Server) {
 	if r := lea.Do(t, http.MethodPost, "/api/v1/simulated-gsap/swbs-runs", map[string]any{}); r.Status != http.StatusCreated {
 		t.Fatalf("SWBS run = %d %s", r.Status, r.Body)
 	}
+}
+
+// mediaBookingWithCode approves Trade magazine ads as Daniel, so the SWBS run also gives Media booking its code.
+func mediaBookingWithCode(t *testing.T, s *apitest.Server) {
+	t.Helper()
+	const approval = "/api/v1/activities/A-1004/approval"
+	daniel := s.SignIn(t, danielsEmail)
+	var section struct {
+		Rounds []struct {
+			ID           string `json:"id"`
+			Outcome      string `json:"outcome"`
+			CurrentLevel int    `json:"currentLevel"`
+		} `json:"rounds"`
+	}
+	daniel.Do(t, http.MethodGet, approval, nil).Decode(t, &section)
+	for _, r := range section.Rounds {
+		if r.Outcome != "open" {
+			continue
+		}
+		if got := daniel.Do(t, http.MethodPost, approval+"/approve", map[string]any{"roundId": r.ID, "level": r.CurrentLevel}); got.Status != http.StatusOK {
+			t.Fatalf("approve Trade magazine ads = %d %s", got.Status, got.Body)
+		}
+	}
+	receiveSwbsCodes(t, s)
 }
 
 // approved creates a purchase request on Stand build, submits it as Priya and approves it as Daniel.

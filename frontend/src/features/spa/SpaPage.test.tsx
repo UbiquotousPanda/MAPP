@@ -184,7 +184,7 @@ describe('SpaPage choices (013 FR-005, FR-017 – FR-019, FR-022)', () => {
     );
   });
 
-  it('raises a purchase request for one of the activity’s line items, and explains when it cannot', async () => {
+  it('raises a purchase request for a line item with its SWBS code, and explains when it cannot (058 FR-005)', async () => {
     const { router } = renderPage();
     await screen.findByRole('region', { name: 'Headline figures' });
     await userEvent.click(screen.getByRole('button', { name: 'Actions for Social always-on' }));
@@ -193,6 +193,13 @@ describe('SpaPage choices (013 FR-005, FR-017 – FR-019, FR-022)', () => {
     );
     await userEvent.keyboard('{Escape}');
     await userEvent.click(screen.getByRole('button', { name: 'Actions for Launch film' }));
+    const agencyFee = screen.getByRole('menuitem', {
+      name: 'Raise purchase request for Agency fee',
+    });
+    expect(agencyFee).toHaveAttribute('aria-disabled', 'true');
+    expect(agencyFee).toHaveAccessibleDescription(
+      "No SWBS code yet (Waiting for approval). A purchase request needs the line item's SWBS code first.",
+    );
     await userEvent.click(
       screen.getByRole('menuitem', { name: 'Raise purchase request for Film production' }),
     );

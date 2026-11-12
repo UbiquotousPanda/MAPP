@@ -462,6 +462,8 @@ amounts (no goods-receipt data exists).
   (013 FR-001).
 - **FR-002**: System MUST treat a line item as eligible for a new PR line only when it is live (not in the
   recycle bin), belongs to the PR's plan and has more than 0.00 available to request (013 FR-003).
+  *Amended by [058 FR-001 – FR-005](../058-pr-needs-swbs-code/spec.md) (D-405): FR-001 and FR-002 also need the
+  line item to have its SWBS code; New purchase request, Add line and the planning view say why until it has.*
 - **FR-003**: System MUST pre-fill a new PR: Name "PR for <line item name>", Owner the acting person, and
   one line in the line item's currency for its whole available amount, with Overall limit equal to that
   amount; every pre-filled value stays editable (013 FR-004, FR-018).

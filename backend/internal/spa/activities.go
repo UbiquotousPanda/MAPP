@@ -7,7 +7,17 @@ import (
 	"mapp/internal/platform/authz"
 )
 
-const msgAddLineItemFirst = "Add a line item to this activity first."
+const (
+	msgAddLineItemFirst = "Add a line item to this activity first."
+	msgNoSwbsYet        = "No SWBS code yet (%s). A purchase request needs the line item's SWBS code first."
+	swbsReceived        = "received"
+)
+
+// swbsWords say a line item's SWBS state as its purchase requests say it.
+var swbsWords = map[string]string{ //nolint:gochecknoglobals // a fixed lookup of the 030 status labels
+	"notRequested": "Request SWBS code is off", "waitingForApproval": "Waiting for approval",
+	"readyToSend": "Ready to send to GSAP",
+}
 
 // rowFacts are what every row of the activity table shares.
 type rowFacts struct {
@@ -42,9 +52,17 @@ func lineItemRows(a *activity, f rowFacts) []LineItemRow {
 	rows := make([]LineItemRow, 0, len(a.lineItems))
 	for _, li := range a.lineItems {
 		rows = append(rows, LineItemRow{ID: li.rec.ID, Name: li.rec.Name, PlannedCost: f.show.money(li.planned),
-			Committed: f.show.financial(f.sees, li.spend.Committed), ActualSpend: f.show.financial(f.sees, li.spend.Actual)})
+			Committed: f.show.financial(f.sees, li.spend.Committed), ActualSpend: f.show.financial(f.sees, li.spend.Actual),
+			RaisePurchaseRequest: raiseForLineItem(li, f.raise)})
 	}
 	return rows
+}
+
+func raiseForLineItem(li *lineItem, raise authz.Availability) authz.Availability {
+	if raise.Available && li.rec.Swbs != swbsReceived {
+		return authz.Unavailable(fmt.Sprintf(msgNoSwbsYet, swbsWords[li.rec.Swbs]))
+	}
+	return raise
 }
 
 // raiseFor is FR-022: a purchase request draws on line items, so an activity without one cannot have one.

@@ -97,6 +97,8 @@ test('037 US5: a purchase request is refused while its activity’s line items e
   await signInAs(page, PRIYA);
   const lineItem = await swbsLineItem(page, activity.id, uniqueName('Extra stands'), '20000.00');
   const prName = `PR for ${lineItem.name}`;
+  await sendToSimulatedGsap(page, lineItem);
+  await signInAs(page, PRIYA);
 
   await openLineItem(page, lineItem);
   await purchaseRequestsSection(page)
@@ -106,9 +108,7 @@ test('037 US5: a purchase request is refused while its activity’s line items e
     .click();
   await expect(page.getByRole('heading', { name: 'New purchase request', level: 1 })).toBeVisible();
   const prId = await fillAndSavePurchaseRequest(page, `${nextYear}-03-31`);
-  await sendToSimulatedGsap(page, lineItem);
 
-  await signInAs(page, PRIYA);
   await openPurchaseRequest(page, prId, prName);
   await page.getByRole('button', { name: 'Submit for approval', exact: true }).first().click();
   const dialog = page.getByRole('dialog', { name: `'${prName}' can't be submitted yet` });

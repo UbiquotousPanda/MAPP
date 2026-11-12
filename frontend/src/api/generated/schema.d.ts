@@ -11400,6 +11400,8 @@ export interface components {
             plannedCost: components["schemas"]["Money"];
             committed: components["schemas"]["Money"] | null;
             actualSpend: components["schemas"]["Money"] | null;
+            /** @description Raise purchase request for this line item: the activity's own availability, then unavailable while the line item has no SWBS code (058 FR-005). */
+            raisePurchaseRequest: components["schemas"]["ActionAvailability"];
         };
         SpaActivityRow: {
             id: string;

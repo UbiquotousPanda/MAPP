@@ -67,7 +67,8 @@ purchase request with modification approval. Two workflows approve them — **Pu
 request's MoA approver, backup Alex Morgan, reminder after 3 days and escalation after 5. **PR-1001** "PR for
 Agency fee (Ireland)" waits as Created on the UK plan's line item L-1010 for 23,000.00 EUR, delivery
 30 Apr 2027, owner Priya Raman, MoA approver Daniel Okoro, vendor Brightside Media BV, Email group
-G_GB_RETAIL. The Email group options include **DE_LUBES**, the recipient the walkthroughs route to.
+G_GB_RETAIL. PR-1001 predates D-405 (feature 058): L-1010 has no SWBS code, so PR-1001 still saves but cannot be
+submitted, and no new purchase request or line can draw on L-1010 until GSAP returns its code. The Email group options include **DE_LUBES**, the recipient the walkthroughs route to.
 
 Custom dashboards (feature 051) in the demo: **Lubricants Europe overview** (DB-1001), owned by Priya Raman and
 shared with Lubricants Europe, holds a bar of planned cost by activity type, a line of planned cost by month and
