@@ -110,7 +110,7 @@ export function ShellAttributeFields({
           <div key={section.name} className={styles.section}>
             {level && (
               <div className={sectionRank === 'panel' ? styles.cardHeader : undefined}>
-                <SectionHeading level={level} rank={sectionRank}>
+                <SectionHeading level={level} rank={sectionRank} divided={sectionRank === 'sub'}>
                   {section.name}
                 </SectionHeading>
               </div>

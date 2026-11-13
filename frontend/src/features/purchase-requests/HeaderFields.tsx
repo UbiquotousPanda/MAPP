@@ -121,7 +121,7 @@ export function HeaderFields({
       />
       {attributeForm.sections.length > 0 && (
         <div className={styles.attributes}>
-          <SectionHeading level={3} rank="sub">
+          <SectionHeading level={3} rank="sub" divided>
             {ATTRIBUTES_TITLE}
           </SectionHeading>
           <FormField

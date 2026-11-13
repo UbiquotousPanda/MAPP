@@ -439,7 +439,8 @@ Rules:
   page-section titles), `card` 16/24 Jost 600 (card, report-widget and builder-panel titles; `Card` uses it),
   `sub` 16/24 Arial 700 (a sub-section inside a card or panel), `label` 14/20 Arial 700 (a small group: a list,
   a legend, a preview). The level (`h2`–`h4`) follows the outline, never the look; a feature never styles a
-  heading of its own. Weights are always the `--weight-*` tokens, never a number.
+  heading of its own. A sub-section inside a form card (`sub` or `label`) takes `divided`: a hairline under it, the
+  content's width; a card's own header has the full-width hairline instead. Weights are always the `--weight-*` tokens, never a number.
 - Numbers in tables, totals, money and summary values use `font-variant-numeric: tabular-nums`.
 - Text is never smaller than 12 px; long reading text (help, descriptions) is 14 px or more.
 

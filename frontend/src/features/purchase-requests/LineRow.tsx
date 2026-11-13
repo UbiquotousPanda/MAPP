@@ -153,7 +153,7 @@ export function LineRow({
       />
       {attributeForm.sections.length > 0 && (
         <div className={styles.attributes}>
-          <SectionHeading level={4} rank="label">
+          <SectionHeading level={4} rank="label" divided>
             {LINE_ATTRIBUTES_TITLE}
           </SectionHeading>
           <FormField
