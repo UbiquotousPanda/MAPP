@@ -16,6 +16,7 @@
 }
 
 .label {
+  min-height: var(--space-6);
   font-weight: var(--weight-bold);
 }
 

@@ -68,9 +68,10 @@ test('Settings: an activity type, a finance budget item, a dependent option in t
   await page.getByRole('button', { name: 'Add option' }).click();
   const addOption = page.getByRole('dialog', { name: 'Add option' });
   await addOption.getByRole('textbox', { name: /^Label/ }).fill(regionLabel);
-  await expect(
-    addOption.getByText('Shown when one of these cluster options is chosen.'),
-  ).toBeVisible();
+  await addOption.getByRole('button', { name: 'About Linked to' }).click();
+  await expect(page.getByRole('dialog', { name: 'About Linked to' })).toContainText(
+    'Shown when one of these cluster options is chosen.',
+  );
   await addOption.getByRole('checkbox', { name: 'Retail – India' }).check();
   await addOption.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, `Option '${regionLabel}' added`);
