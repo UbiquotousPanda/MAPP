@@ -1,6 +1,4 @@
 import type { DragEvent } from 'react';
-import { cx } from '@/ui/cx';
-import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import type { WidgetType } from '../model';
 import { WIDGET_TYPES } from '../widget-types';
@@ -26,13 +24,13 @@ export function WidgetPalette({ onAdd }: WidgetPaletteProps) {
   }
 
   return (
-    <section aria-labelledby="palette-title" className={cx(styles.panel, styles.palette)}>
-      <SectionHeading level={2} rank="card" id="palette-title">
+    <section aria-labelledby="palette-title" className={styles.palette}>
+      <h2 id="palette-title" className="visually-hidden">
         Widgets
-      </SectionHeading>
+      </h2>
       {GROUPS.map(({ group, title }) => (
-        <div key={group}>
-          <h3 id={`palette-${group}`} className={styles.groupTitle}>
+        <div key={group} className={styles.typeGroup}>
+          <h3 id={`palette-${group}`} className="visually-hidden">
             {title}
           </h3>
           <ul className={styles.typeList} role="list" aria-labelledby={`palette-${group}`}>
@@ -47,8 +45,7 @@ export function WidgetPalette({ onAdd }: WidgetPaletteProps) {
                     onClick={() => onAdd(info.type)}
                     onDragStart={(event) => handleDragStart(event, info.type)}
                   >
-                    <info.icon size={16} aria-hidden="true" />
-                    <span className={styles.typeLabel}>{info.label}</span>
+                    <info.icon size={18} aria-hidden="true" />
                   </button>
                 </Tooltip>
               </li>

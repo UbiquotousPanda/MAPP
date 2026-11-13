@@ -191,7 +191,7 @@ describe('051 FR-028: moving and resizing with the pointer', () => {
 describe('051 FR-027: adding from the palette', () => {
   it('adds a clicked type in the first free place, says so and selects it', async () => {
     const { user } = renderCanvas(null);
-    expect(screen.getByText(/Add a widget: click a type in the palette/)).toBeInTheDocument();
+    expect(screen.getByText(/Add a widget: click a type above/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Add bar' }));
 

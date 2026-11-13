@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 import { asApiError } from '@/api/errors';
 import { LinkButton } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
+import { cx } from '@/ui/cx';
 import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import { useToast } from '@/ui/Toast/useToast';
@@ -17,6 +18,7 @@ import { BuilderHeader } from './BuilderHeader';
 import { Canvas } from './Canvas';
 import { DETAIL_FIELD_IDS, NAME_FIELD_ID, widgetHandleId } from './canvas-dom';
 import { Inspector } from './Inspector';
+import { PanelRail } from './PanelToggle';
 import { useBuilderSave } from './useBuilderSave';
 import { useEditorShortcuts } from './useEditorShortcuts';
 import type { Problem } from './validate';
@@ -31,6 +33,7 @@ export interface BuilderEditorProps {
 export function BuilderEditor({ dashboard }: BuilderEditorProps) {
   const [state, dispatch] = useReducer(builderReducer, dashboard, initialState);
   const [isSharing, setIsSharing] = useState(false);
+  const [inspectorHidden, setInspectorHidden] = useState(false);
   const sources = useDataSources();
   const share = useShareDashboard();
   const { show } = useToast();
@@ -42,7 +45,10 @@ export function BuilderEditor({ dashboard }: BuilderEditorProps) {
   useEditorShortcuts(dispatch);
 
   function goTo(problem: Problem) {
-    flushSync(() => dispatch({ type: 'select', id: problem.widgetId ?? null }));
+    flushSync(() => {
+      dispatch({ type: 'select', id: problem.widgetId ?? null });
+      setInspectorHidden(false);
+    });
     const target = problem.widgetId
       ? widgetHandleId(problem.widgetId)
       : (DETAIL_FIELD_IDS[problem.field] ?? NAME_FIELD_ID);
@@ -77,6 +83,8 @@ export function BuilderEditor({ dashboard }: BuilderEditorProps) {
         dashboardId={dashboardId}
         canShare={dashboard?.access.share.available ?? false}
         isSaving={saving.isSaving || share.isPending}
+        canUndo={state.past.length > 0}
+        canRedo={state.future.length > 0}
         onUndo={() => dispatch({ type: 'undo' })}
         onRedo={() => dispatch({ type: 'redo' })}
         onSharing={() => setIsSharing(true)}
@@ -90,21 +98,28 @@ export function BuilderEditor({ dashboard }: BuilderEditorProps) {
           <LinkButton to={`/dashboards/${dashboardId}`}>View the dashboard</LinkButton>
         )}
       </div>
-      <div className={styles.editor}>
-        <WidgetPalette onAdd={(widgetType) => dispatch({ type: 'add', widgetType })} />
-        <Canvas
-          draft={state.draft}
-          selectedId={state.selectedId}
-          problems={saving.problems}
-          announcement={state.announcement}
-          onAction={dispatch}
-        />
-        <Inspector
-          draft={state.draft}
-          selected={selectedWidget(state)}
-          problems={saving.problems}
-          onAction={dispatch}
-        />
+      <div className={cx(styles.editor, inspectorHidden && styles.inspectorHidden)}>
+        <div className={styles.workspace}>
+          <WidgetPalette onAdd={(widgetType) => dispatch({ type: 'add', widgetType })} />
+          <Canvas
+            draft={state.draft}
+            selectedId={state.selectedId}
+            problems={saving.problems}
+            announcement={state.announcement}
+            onAction={dispatch}
+          />
+        </div>
+        {inspectorHidden ? (
+          <PanelRail name="settings" hidden onToggle={() => setInspectorHidden(false)} />
+        ) : (
+          <Inspector
+            draft={state.draft}
+            selected={selectedWidget(state)}
+            problems={saving.problems}
+            onAction={dispatch}
+            onHide={() => setInspectorHidden(true)}
+          />
+        )}
       </div>
       {dialog}
       <ConfirmDialog

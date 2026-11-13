@@ -1,12 +1,15 @@
 import { Eye, Redo2, Share2, Undo2 } from 'lucide-react';
 import { Button, LinkButton } from '@/ui/Button/Button';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
 
 export interface BuilderHeaderProps {
   title: string;
   dashboardId: string | undefined;
   canShare: boolean;
   isSaving: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
   onSharing: () => void;
@@ -18,6 +21,8 @@ export function BuilderHeader({
   dashboardId,
   canShare,
   isSaving,
+  canUndo,
+  canRedo,
   onUndo,
   onRedo,
   onSharing,
@@ -29,16 +34,26 @@ export function BuilderHeader({
       title={title}
       actions={
         <>
-          <Button icon={<Undo2 />} aria-keyshortcuts="Control+Z Meta+Z" onClick={onUndo}>
-            Undo
-          </Button>
-          <Button
-            icon={<Redo2 />}
-            aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
-            onClick={onRedo}
-          >
-            Redo
-          </Button>
+          <Tooltip content={canUndo ? 'Undo the last change' : 'Nothing to undo yet'}>
+            <Button
+              icon={<Undo2 />}
+              aria-keyshortcuts="Control+Z Meta+Z"
+              aria-disabled={!canUndo || undefined}
+              onClick={onUndo}
+            >
+              Undo
+            </Button>
+          </Tooltip>
+          <Tooltip content={canRedo ? 'Redo the change just undone' : 'Nothing to redo'}>
+            <Button
+              icon={<Redo2 />}
+              aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
+              aria-disabled={!canRedo || undefined}
+              onClick={onRedo}
+            >
+              Redo
+            </Button>
+          </Tooltip>
           {dashboardId && canShare && (
             <Button icon={<Share2 />} onClick={onSharing}>
               Sharing
