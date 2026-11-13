@@ -65,20 +65,22 @@ export function Breakdown({ view }: { view: FinancialRecordView }) {
   const code = view.figures.committed.currency;
   return (
     <TableBlock title="By line item">
-      <table className={dataTable.table}>
-        <caption className="visually-hidden">Financial figures by line item</caption>
-        <FigureHeads code={code} first="Line item" />
-        <tbody>
-          {view.breakdown.map((row) => (
-            <tr key={row.record.id}>
-              <td className={dataTable.nameCell}>
-                <Link to={recordHref('lineItem', row.record.id)}>{row.record.name}</Link>
-              </td>
-              <FigureCells figures={row.figures} />
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className={dataTable.scroll}>
+        <table className={dataTable.table}>
+          <caption className="visually-hidden">Financial figures by line item</caption>
+          <FigureHeads code={code} first="Line item" />
+          <tbody>
+            {view.breakdown.map((row) => (
+              <tr key={row.record.id}>
+                <td className={dataTable.nameCell}>
+                  <Link to={recordHref('lineItem', row.record.id)}>{row.record.name}</Link>
+                </td>
+                <FigureCells figures={row.figures} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </TableBlock>
   );
 }
@@ -148,11 +150,13 @@ export function LatestTransactions({
   const { displayCurrency } = useFormatters();
   return (
     <TableBlock title="Latest transactions">
-      <table className={dataTable.table}>
-        <caption className="visually-hidden">The latest transactions, newest first</caption>
-        <TransactionHeads code={displayCurrency} />
-        <TransactionRows rows={rows} />
-      </table>
+      <div className={dataTable.scroll}>
+        <table className={dataTable.table}>
+          <caption className="visually-hidden">The latest transactions, newest first</caption>
+          <TransactionHeads code={displayCurrency} />
+          <TransactionRows rows={rows} />
+        </table>
+      </div>
       <p className={styles.more}>
         <Link to={financialsHref(recordId)}>{viewAllText(count)}</Link>
       </p>
@@ -169,13 +173,15 @@ export function LineItemTransactions({ lineItemId, count }: { lineItemId: string
   return (
     <TableBlock title="Transactions">
       {query.data ? (
-        <table className={dataTable.table}>
-          <caption className="visually-hidden">
-            The line item&apos;s transactions, newest first
-          </caption>
-          <TransactionHeads code={displayCurrency} />
-          <TransactionRows rows={query.data.items} />
-        </table>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
+            <caption className="visually-hidden">
+              The line item&apos;s transactions, newest first
+            </caption>
+            <TransactionHeads code={displayCurrency} />
+            <TransactionRows rows={query.data.items} />
+          </table>
+        </div>
       ) : query.isError ? (
         <ErrorState error={query.error} onRetry={() => void query.refetch()} />
       ) : (

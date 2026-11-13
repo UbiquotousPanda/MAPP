@@ -16,7 +16,7 @@
 
 .search {
   flex: 0 1 360px;
-  min-width: 0;
+  min-width: min(100%, 200px);
 }
 
 .search > :first-child {
@@ -24,9 +24,11 @@
   max-width: none;
 }
 
-/* A status filter wider than the row scrolls sideways; it never wraps (design system §5.2). */
+/* Quick controls take a new line when the row is full; one wider than the row scrolls sideways and never
+   wraps its own buttons (design system §5.2). */
 .quick {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
   min-width: 0;

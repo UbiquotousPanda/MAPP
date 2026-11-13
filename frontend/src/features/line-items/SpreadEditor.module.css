@@ -34,7 +34,7 @@
 /* One cell per month; as many per row as fit, so the page never scrolls sideways. */
 .monthGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr));
   gap: var(--space-3);
   width: 100%;
 }

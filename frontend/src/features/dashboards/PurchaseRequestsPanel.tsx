@@ -31,36 +31,38 @@ export function PurchaseRequestsPanel({ purchaseRequests }: PurchaseRequestsPane
       title="Purchase requests"
       subtitle={`${purchaseRequests.waitingForGsap} approved and waiting for GSAP`}
     >
-      <table className={cx(dataTable.table, styles.table)}>
-        <caption className="visually-hidden">Purchase requests on these plans by status</caption>
-        <thead>
-          <tr>
-            <th scope="col">Status</th>
-            <th scope="col" className={dataTable.numeric}>
-              Purchase requests
-            </th>
-            <th scope="col" className={dataTable.numeric}>
-              Amount
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {purchaseRequests.byStatus.map((row) => (
-            <tr key={row.status}>
-              <th scope="row">{word(row.status)}</th>
-              <td className={dataTable.numeric}>{row.count}</td>
-              <td className={dataTable.numeric}>{money(row.amount)}</td>
+      <div className={dataTable.scroll}>
+        <table className={cx(dataTable.table, styles.table)}>
+          <caption className="visually-hidden">Purchase requests on these plans by status</caption>
+          <thead>
+            <tr>
+              <th scope="col">Status</th>
+              <th scope="col" className={dataTable.numeric}>
+                Purchase requests
+              </th>
+              <th scope="col" className={dataTable.numeric}>
+                Amount
+              </th>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr className={dataTable.total}>
-            <th scope="row">Total</th>
-            <td className={dataTable.numeric}>{purchaseRequests.count}</td>
-            <td className={dataTable.numeric}>{money(purchaseRequests.amount)}</td>
-          </tr>
-        </tfoot>
-      </table>
+          </thead>
+          <tbody>
+            {purchaseRequests.byStatus.map((row) => (
+              <tr key={row.status}>
+                <th scope="row">{word(row.status)}</th>
+                <td className={dataTable.numeric}>{row.count}</td>
+                <td className={dataTable.numeric}>{money(row.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className={dataTable.total}>
+              <th scope="row">Total</th>
+              <td className={dataTable.numeric}>{purchaseRequests.count}</td>
+              <td className={dataTable.numeric}>{money(purchaseRequests.amount)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </Card>
   );
 }

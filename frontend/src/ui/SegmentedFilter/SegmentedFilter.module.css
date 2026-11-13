@@ -1,8 +1,9 @@
-/* Joined buttons, 32 px high like the toolbar buttons. */
+/* Joined buttons, 32 px high; wider than their row they scroll sideways, never wrap (design system §5.2). */
 .group {
   display: inline-flex;
-  flex-wrap: wrap;
   max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .pill {
@@ -37,10 +38,11 @@
   background: var(--hover-on-card);
 }
 
-/* The focus ring sits above the neighbouring buttons. */
+/* The focus ring sits above the neighbouring buttons, inside the scrolling row so it is not cut off. */
 .pill:focus-visible {
   position: relative;
   z-index: 1;
+  outline-offset: -2px;
 }
 
 /* Chosen: tint and bold only; a strong border would overlap its neighbours' as a bright seam in dark mode. */

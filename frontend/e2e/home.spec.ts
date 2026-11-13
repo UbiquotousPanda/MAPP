@@ -173,3 +173,30 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await scope.getByRole('button', { name: 'My teams' }).click();
   await expect(teamPlans).toBeVisible();
 });
+
+test('001 FR-010: the logo opens Home at its top, from Home and from another page, and Back keeps that page where it was', async ({
+  page,
+}) => {
+  await signInAs(page, PRIYA);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Welcome back, Priya.', level: 1 })).toBeVisible();
+  const logo = page.getByRole('link', { name: 'SP&A One home' });
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await logo.click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+  await page.goto('/plans');
+  await expect(page.getByRole('heading', { name: 'Plans', level: 1 })).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  const plansScroll = await page.evaluate(() => window.scrollY);
+  expect(plansScroll).toBeGreaterThan(0);
+  await logo.click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/plans$/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(plansScroll);
+});

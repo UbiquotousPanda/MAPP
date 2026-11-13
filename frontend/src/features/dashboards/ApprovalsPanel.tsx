@@ -39,25 +39,27 @@ export function ApprovalsPanel({ approvals }: ApprovalsPanelProps) {
           </div>
         ))}
       </dl>
-      <table className={cx(dataTable.table, styles.table)}>
-        <caption className="visually-hidden">Activities by approval status</caption>
-        <thead>
-          <tr>
-            <th scope="col">Status</th>
-            <th scope="col" className={dataTable.numeric}>
-              Activities
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {approvals.activitiesByStatus.map((row) => (
-            <tr key={row.status}>
-              <th scope="row">{word(row.status)}</th>
-              <td className={dataTable.numeric}>{row.count}</td>
+      <div className={dataTable.scroll}>
+        <table className={cx(dataTable.table, styles.table)}>
+          <caption className="visually-hidden">Activities by approval status</caption>
+          <thead>
+            <tr>
+              <th scope="col">Status</th>
+              <th scope="col" className={dataTable.numeric}>
+                Activities
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {approvals.activitiesByStatus.map((row) => (
+              <tr key={row.status}>
+                <th scope="row">{word(row.status)}</th>
+                <td className={dataTable.numeric}>{row.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 }

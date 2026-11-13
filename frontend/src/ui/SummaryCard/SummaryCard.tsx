@@ -5,6 +5,7 @@ import { cx } from '../cx';
 import { InfoTip } from '../InfoTip/InfoTip';
 import type { StatusTone } from '../StatusChip/StatusChip';
 import { TooltipText } from '../Tooltip/TooltipText';
+import { useFitText } from './useFitText';
 import styles from './SummaryCard.module.css';
 
 export interface SummaryCardProps {
@@ -24,9 +25,13 @@ export function SummaryCard(props: SummaryCardProps) {
   const { label, value, tip, tone, fullValue, detail, to, linkLabel } = props;
   const isShortened = fullValue !== undefined && fullValue !== String(value);
   const shown = isShortened ? `${value} (${fullValue})` : String(value);
+  const valueRef = useFitText<HTMLParagraphElement>(String(value));
 
   return (
-    <div className={cx(styles.card, to && styles.linked)}>
+    <div
+      className={cx(styles.card, to && styles.linked)}
+      data-long={String(value).length > 10 || undefined}
+    >
       {to && (
         <Link to={to} aria-label={`${label}: ${shown} — ${linkLabel}`} className={styles.link} />
       )}
@@ -34,7 +39,7 @@ export function SummaryCard(props: SummaryCardProps) {
         {label}
         {typeof tip === 'string' ? <InfoTip label={label} text={tip} /> : tip}
       </p>
-      <p className={cx(styles.value, tone && styles[tone])}>
+      <p ref={valueRef} className={cx(styles.value, tone && styles[tone])}>
         {isShortened ? (
           // The name starts with the visible text (WCAG 2.5.3).
           <TooltipText tip={fullValue}>

@@ -54,3 +54,15 @@
     grid-column: 1 / -1;
   }
 }
+
+/* On a narrow strip a full-precision figure takes a whole row; short ones still pair up. */
+@container (width < 480px) {
+  .strip,
+  .strip:has(> :nth-child(6)) {
+    grid-auto-flow: row dense;
+  }
+
+  .strip > [data-long] {
+    grid-column: 1 / -1;
+  }
+}

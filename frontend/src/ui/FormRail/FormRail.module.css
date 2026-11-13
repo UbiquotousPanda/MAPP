@@ -120,6 +120,24 @@
   white-space: nowrap;
 }
 
+/* On a phone the count takes its own line under the sections, which keep the bar's whole width. */
+@media (max-width: 599px) {
+  .bar {
+    flex-wrap: wrap;
+    padding-bottom: var(--space-3);
+  }
+
+  .list {
+    flex-basis: 100%;
+  }
+
+  .total {
+    margin: 0;
+    padding-left: var(--space-3);
+    border-left: 0;
+  }
+}
+
 .formCard {
   padding: var(--card-padding);
   border: 1px solid var(--card-border);
@@ -135,6 +153,6 @@
 /* Several of up to 6 options: check boxes in columns, never a long vertical list. */
 .formCard fieldset div:has(> div > input[type='checkbox']) {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
   gap: var(--space-2) var(--space-4);
 }

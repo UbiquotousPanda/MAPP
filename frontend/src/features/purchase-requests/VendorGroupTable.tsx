@@ -169,43 +169,45 @@ const NUMERIC_LINES = new Set<string>([FIELD_LABELS.lineAmount, FIELD_LABELS.lin
 function LinesTable({ name, lines }: { name: string; lines: PurchaseRequestRowLine[] }) {
   const { money, date } = useFormatters();
   return (
-    <table className={dataTable.table}>
-      <caption className="visually-hidden">{`${linesText(lines.length)} of ${name}`}</caption>
-      <thead>
-        <tr>
-          {LINE_COLUMNS.map((column) => (
-            <th
-              key={column.label}
-              scope="col"
-              className={cx(NUMERIC_LINES.has(column.label) && dataTable.numeric)}
-            >
-              {column.label}
-              {column.tip && <InfoTip label={column.label} text={column.tip} />}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {lines.map((line) => (
-          <tr key={line.id}>
-            <th scope="row">
-              <Link to={recordHref('lineItem', line.lineItem.id)}>
-                {`${line.lineItem.name} (${line.lineItem.id})`}
-              </Link>
-            </th>
-            <td>
-              <HxKey value={line.hxKey} />
-            </td>
-            <td className={dataTable.numeric}>{money(line.amount)}</td>
-            <td>{date(line.deliveryDate)}</td>
-            <td>{line.sentOn ? date(line.sentOn) : '—'}</td>
-            <td>{line.poNumber || '—'}</td>
-            <td>{line.poLine || '—'}</td>
-            <td>{line.poLineStatus || '—'}</td>
-            <td className={dataTable.numeric}>{money(line.invoiced)}</td>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
+        <caption className="visually-hidden">{`${linesText(lines.length)} of ${name}`}</caption>
+        <thead>
+          <tr>
+            {LINE_COLUMNS.map((column) => (
+              <th
+                key={column.label}
+                scope="col"
+                className={cx(NUMERIC_LINES.has(column.label) && dataTable.numeric)}
+              >
+                {column.label}
+                {column.tip && <InfoTip label={column.label} text={column.tip} />}
+              </th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {lines.map((line) => (
+            <tr key={line.id}>
+              <th scope="row">
+                <Link to={recordHref('lineItem', line.lineItem.id)}>
+                  {`${line.lineItem.name} (${line.lineItem.id})`}
+                </Link>
+              </th>
+              <td>
+                <HxKey value={line.hxKey} />
+              </td>
+              <td className={dataTable.numeric}>{money(line.amount)}</td>
+              <td>{date(line.deliveryDate)}</td>
+              <td>{line.sentOn ? date(line.sentOn) : '—'}</td>
+              <td>{line.poNumber || '—'}</td>
+              <td>{line.poLine || '—'}</td>
+              <td>{line.poLineStatus || '—'}</td>
+              <td className={dataTable.numeric}>{money(line.invoiced)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

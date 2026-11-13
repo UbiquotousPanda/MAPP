@@ -77,39 +77,41 @@ function PanelBody({ panel }: { panel: Panel }) {
 
 function StageTable({ stages, revenue }: { stages: StageFigure[]; revenue: RevenueFigure }) {
   return (
-    <table className={dataTable.table}>
-      <thead>
-        <tr>
-          <th scope="col">Stage</th>
-          <th scope="col">Goal</th>
-          <th scope="col">Actual</th>
-          <th scope="col">Projected</th>
-          <th scope="col">Conversion</th>
-        </tr>
-      </thead>
-      <tbody>
-        {stages.map((stage) => (
-          <tr key={stage.stage}>
-            <th scope="row">{STAGE_WORDS[stage.stage] ?? stage.stage}</th>
-            <td className={dataTable.numeric}>
-              {stage.goal === null ? '—' : formatWhole(stage.goal)}
-            </td>
-            <ActualCell reason={stage.reason}>
-              {stage.actual === null ? '—' : formatWhole(stage.actual)}
-            </ActualCell>
-            <td className={dataTable.numeric}>
-              {stage.projected === null
-                ? (REASON_WORDS[stage.projectedReason] ?? '—')
-                : formatWhole(stage.projected)}
-            </td>
-            <td className={dataTable.numeric}>
-              {stage.conversion === null ? '—' : `${stage.conversion.toFixed(1)} %`}
-            </td>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
+        <thead>
+          <tr>
+            <th scope="col">Stage</th>
+            <th scope="col">Goal</th>
+            <th scope="col">Actual</th>
+            <th scope="col">Projected</th>
+            <th scope="col">Conversion</th>
           </tr>
-        ))}
-        <RevenueRow revenue={revenue} />
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {stages.map((stage) => (
+            <tr key={stage.stage}>
+              <th scope="row">{STAGE_WORDS[stage.stage] ?? stage.stage}</th>
+              <td className={dataTable.numeric}>
+                {stage.goal === null ? '—' : formatWhole(stage.goal)}
+              </td>
+              <ActualCell reason={stage.reason}>
+                {stage.actual === null ? '—' : formatWhole(stage.actual)}
+              </ActualCell>
+              <td className={dataTable.numeric}>
+                {stage.projected === null
+                  ? (REASON_WORDS[stage.projectedReason] ?? '—')
+                  : formatWhole(stage.projected)}
+              </td>
+              <td className={dataTable.numeric}>
+                {stage.conversion === null ? '—' : `${stage.conversion.toFixed(1)} %`}
+              </td>
+            </tr>
+          ))}
+          <RevenueRow revenue={revenue} />
+        </tbody>
+      </table>
+    </div>
   );
 }
 

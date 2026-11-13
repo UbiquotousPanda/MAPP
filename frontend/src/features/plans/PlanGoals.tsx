@@ -58,30 +58,32 @@ export function PlanGoals({ plan }: { plan: Plan }) {
 
   return (
     <Card title="Goals">
-      <table className={dataTable.table}>
-        <thead>
-          <tr>
-            <th scope="col">Stage</th>
-            <th scope="col" className={dataTable.numeric}>
-              Plan goal <FieldHelpTip helpKey="plan.goals" label="Goals" />
-            </th>
-            <th scope="col" className={dataTable.numeric}>
-              In activities
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {STAGES.map((stage) => (
-            <tr key={stage}>
-              <th scope="row">{stageName(stage)}</th>
-              <td className={dataTable.numeric}>
-                <span className={styles.goalCell}>{planGoal(stage)}</span>
-              </td>
-              <td className={dataTable.numeric}>{planned[stage]}</td>
+      <div className={dataTable.scroll}>
+        <table className={dataTable.table}>
+          <thead>
+            <tr>
+              <th scope="col">Stage</th>
+              <th scope="col" className={dataTable.numeric}>
+                Plan goal <FieldHelpTip helpKey="plan.goals" label="Goals" />
+              </th>
+              <th scope="col" className={dataTable.numeric}>
+                In activities
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {STAGES.map((stage) => (
+              <tr key={stage}>
+                <th scope="row">{stageName(stage)}</th>
+                <td className={dataTable.numeric}>
+                  <span className={styles.goalCell}>{planGoal(stage)}</span>
+                </td>
+                <td className={dataTable.numeric}>{planned[stage]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <p className={styles.goalShare}>
         {plan.goalAmount === null
           ? 'No goal set yet — set a goal amount in Edit.'

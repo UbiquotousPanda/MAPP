@@ -199,7 +199,7 @@ Undo after the delete brings the record back unchanged.
 - **FR-010**: Every signed-in page MUST use the layout of design system §2: left sidebar (logo; Home,
   Plans, Approvals, All work; MORE: Settings, Recycle bin, Activity log; footer with collapse toggle,
   account button, notification bell, light/dark switch), page header pattern, content area of at most
-  1120 px.
+  1120 px. The logo opens Home at its top, also when Home is already on screen (amended 2026-11-13).
 - **FR-011**: The sidebar MUST highlight the current section, collapse to an icon rail with tooltips,
   remember its collapsed state per user, and become a slide-in drawer on narrow screens.
 - **FR-012**: The account button MUST open a menu with avatar, name, e-mail, job title, **My profile** and

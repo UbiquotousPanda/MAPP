@@ -118,3 +118,16 @@
   color: var(--ink-2);
   text-align: center;
 }
+
+/* Below 960 px a squeezed text column wraps into a tower of words: each column takes its text's width, up to
+   280 px, and the table scrolls sideways instead. */
+@media (max-width: 959px) {
+  .table:not(.fixed) {
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .table:not(.fixed) td {
+    max-width: 280px;
+  }
+}

@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/ui/ThemeToggle/ThemeToggle';
 import { AccountMenu } from './AccountMenu';
 import { NavDrawer } from './NavDrawer';
 import { NotificationBell } from './NotificationBell';
+import { TO_TOP } from './to-top';
 import { CurrencyPicker } from './pages';
 import styles from './TopBar.module.css';
 
@@ -16,7 +17,7 @@ export function TopBar() {
       <div className={styles.menu}>
         <NavDrawer />
       </div>
-      <Link to="/" className={styles.homeLink} aria-label="SP&A One home">
+      <Link to="/" state={TO_TOP} className={styles.homeLink} aria-label="SP&A One home">
         <span className={styles.name}>
           <Logo />
         </span>
