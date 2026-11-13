@@ -128,7 +128,7 @@ describe('SessionProvider: signing out (US4)', () => {
     expect(localStorage.getItem('mapp.theme')).toBe('dark');
   });
 
-  it('lets the person’s saved theme take over from a visitor’s choice at sign-in (FR-014, research R16)', async () => {
+  it('keeps and saves the theme chosen on the sign-in page when signing in (FR-014, research R16)', async () => {
     const priyaInLight: CurrentUser = {
       ...PRIYA,
       preferences: { ...PRIYA.preferences, theme: 'light' },
@@ -143,26 +143,52 @@ describe('SessionProvider: signing out (US4)', () => {
         signedIn = true;
         return { body: priyaInLight };
       }),
-      reply('POST /api/v1/auth/sign-out', { status: 204 }),
+      reply('PATCH /api/v1/me/preferences', {
+        body: { ...priyaInLight.preferences, theme: 'dark' },
+      }),
       ...HOME_ANSWERS,
     ]);
     const { user, router } = renderRoutes(routes, { route: '/sign-in' });
 
-    // A visitor switches the sign-in page to dark, then signs in as Priya, who chose light.
+    // A visitor switches the sign-in page to dark, then signs in as Priya, who had chosen light.
     const priya = await screen.findByRole('button', { name: 'Sign in as Priya Raman, Marketer' });
     await user.click(screen.getByRole('button', { name: 'Switch to dark mode' }));
     await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
     await user.click(priya);
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/'));
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    await waitFor(() =>
+      expect(api.bodiesOf('PATCH /api/v1/me/preferences')).toEqual([{ theme: 'dark' }]),
+    );
+  });
+
+  it('applies the person’s saved theme when the sign-in page’s switch was not used (FR-014, research R16)', async () => {
+    localStorage.setItem('mapp.theme', 'dark');
+    const priyaInLight: CurrentUser = {
+      ...PRIYA,
+      preferences: { ...PRIYA.preferences, theme: 'light' },
+    };
+    let signedIn = false;
+    const api = mockApi([
+      reply('GET /api/v1/me', () =>
+        signedIn ? { body: priyaInLight } : { status: 401, body: SIGN_IN_REQUIRED },
+      ),
+      reply('GET /api/v1/auth/demo-people', { body: DEMO_PEOPLE }),
+      reply('POST /api/v1/auth/sign-in', () => {
+        signedIn = true;
+        return { body: priyaInLight };
+      }),
+      ...HOME_ANSWERS,
+    ]);
+    const { user, router } = renderRoutes(routes, { route: '/sign-in' });
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Sign in as Priya Raman, Marketer' }),
+    );
+
     await waitFor(() => expect(router.state.location.pathname).toBe('/'));
     await waitFor(() => expect(document.documentElement.dataset.theme).toBe('light'));
-
-    // After signing out, the sign-in page keeps Priya's light mode, the last one shown.
-    await user.click(await screen.findByRole('button', { name: 'Priya — account menu' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Sign out' }));
-
-    await waitFor(() => expect(router.state.location.pathname).toBe('/sign-in'));
-    expect(await screen.findByText('You have been signed out.')).toBeInTheDocument();
-    expect(document.documentElement.dataset.theme).toBe('light');
     expect(api.bodiesOf('PATCH /api/v1/me/preferences')).toEqual([]);
   });
 });

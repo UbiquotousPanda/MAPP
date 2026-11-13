@@ -133,6 +133,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const signedIn = await postSignIn(email, password);
     sessionChanges.current += 1;
     queryClient.setQueryData(SESSION_KEY, signedIn);
+    // Picked on the sign-in page just now: the person's own choice, unlike this browser's stored one.
+    if (visitorTheme && visitorTheme !== signedIn.preferences.theme) {
+      updatePreferences({ theme: visitorTheme });
+    }
   }
 
   async function signOut() {
