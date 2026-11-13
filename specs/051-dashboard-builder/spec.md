@@ -292,7 +292,9 @@ the table view.
 - **FR-003**: `/dashboards` MUST list **Built-in** (Executive and Regional, to holders of View plans), **My
   dashboards** and **Shared with me** (to holders of See dashboards), each by name; each card shows name,
   description, owner, last update, widget count and shared teams. **New dashboard** (to holders of Build
-  dashboards) is the page's one primary action, and **Datasets** a secondary link.
+  dashboards) is the page's one primary action, and **Datasets** a secondary link. Every dashboard is shown as the
+  same tile as the Reports page; an empty My dashboards shows a **New dashboard** tile to builders and one line to
+  others, and an empty Shared with me one line (D-430).
 - **FR-004**: `/dashboards/executive` and `/dashboards/regional` MUST keep working as feature 036 specifies.
 - **FR-005**: A custom dashboard MUST be visible only to its owner and to members of the teams it is shared with,
   each holding See dashboards; to anyone else it MUST answer exactly like a missing dashboard (404).

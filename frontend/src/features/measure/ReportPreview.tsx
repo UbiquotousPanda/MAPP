@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
+import styles from '@/ui/Tile/Tile.module.css';
 import type { ReportKey } from './reports';
-import styles from './ReportsPage.module.css';
 
 /** Abstract drawings, not data: each hints at the chart its report opens with. */
 const DRAWINGS: Partial<Record<ReportKey, ReactNode>> = {
@@ -78,9 +78,5 @@ const DRAWINGS: Partial<Record<ReportKey, ReactNode>> = {
 };
 
 export function ReportPreview({ report }: { report: ReportKey }) {
-  return (
-    <svg className={styles.drawing} viewBox="0 0 220 100" aria-hidden="true" focusable="false">
-      {DRAWINGS[report]}
-    </svg>
-  );
+  return DRAWINGS[report] ?? null;
 }

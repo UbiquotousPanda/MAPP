@@ -144,26 +144,18 @@ describe('051 FR-003: the Dashboards list', () => {
     expect(await screen.findByRole('link', { name: 'China leads' })).toBeInTheDocument();
   });
 
-  it('says each section is empty, with New dashboard for builders', async () => {
+  it('says each section is empty, with a New dashboard tile for builders', async () => {
     renderPage(ALL, [
       reply('GET /api/v1/custom-dashboards', { body: { mine: [], sharedWithMe: [] } }),
     ]);
 
-    expect(await screen.findByText("You haven't created any dashboards yet")).toBeInTheDocument();
+    expect(await screen.findByText('Nothing shared with you yet.')).toBeInTheDocument();
     const mine = section('My dashboards');
-    expect(mine).toHaveTextContent('Would you like to create one?');
-    expect(within(mine).getByRole('list', { name: 'Ideas to start with' })).toHaveTextContent(
-      'Planned cost by month',
-    );
-    expect(within(mine).getByRole('link', { name: 'Create your first dashboard' })).toHaveAttribute(
+    expect(within(mine).getByRole('link', { name: 'New dashboard' })).toHaveAttribute(
       'href',
       '/builder',
     );
-    expect(within(mine).getByRole('link', { name: 'Upload your own data' })).toHaveAttribute(
-      'href',
-      '/datasets',
-    );
-    expect(section('Shared with me')).toHaveTextContent('Nothing shared with you yet.');
+    expect(mine).toHaveTextContent('Pick charts, choose your data');
     await expectNoAxeViolations();
   });
 
@@ -172,9 +164,9 @@ describe('051 FR-003: the Dashboards list', () => {
       reply('GET /api/v1/custom-dashboards', { body: { mine: [], sharedWithMe: [] } }),
     ]);
 
-    expect(await screen.findByText('You have no dashboards of your own')).toBeInTheDocument();
+    expect(await screen.findByText(/You have no dashboards of your own/)).toBeInTheDocument();
     expect(
-      within(section('My dashboards')).queryByRole('link', { name: 'Create your first dashboard' }),
+      within(section('My dashboards')).queryByRole('link', { name: 'New dashboard' }),
     ).not.toBeInTheDocument();
   });
 });

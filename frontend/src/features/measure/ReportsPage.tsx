@@ -1,5 +1,3 @@
-import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router';
 import type { components } from '@/api/generated/schema';
 import { ApiError } from '@/api/errors';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -7,10 +5,10 @@ import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { cx } from '@/ui/cx';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import { Tile, TileList } from '@/ui/Tile/Tile';
+import type { TileAccent } from '@/ui/Tile/Tile';
 import { usePageTitle } from '@/ui/usePageTitle';
-import linkCard from '@/ui/LinkCard/LinkCard.module.css';
 import { ReportPreview } from './ReportPreview';
 import { REPORT_ABOUT, REPORT_ROUTES } from './reports';
 import type { ReportKey } from './reports';
@@ -30,11 +28,11 @@ export function ReportsPage() {
     <>
       <PageHeader title="Reports" />
       {catalogue.data ? (
-        <ul className={styles.list}>
+        <TileList>
           {catalogue.data.items.map((report) => (
             <ReportItem key={report.key} report={report} />
           ))}
-        </ul>
+        </TileList>
       ) : catalogue.isError ? (
         <ErrorState error={catalogue.error} onRetry={() => void catalogue.refetch()} />
       ) : (
@@ -47,12 +45,12 @@ export function ReportsPage() {
 }
 
 // Each report keeps its old group's chart colour, carried by its drawing.
-const TONES: Partial<Record<ReportKey, 'performance' | 'spend' | 'governance'>> = {
-  performance: 'performance',
-  budget: 'spend',
-  purchasing: 'spend',
-  approvals: 'governance',
-  planData: 'governance',
+const ACCENTS: Partial<Record<ReportKey, TileAccent>> = {
+  performance: 4,
+  budget: 1,
+  purchasing: 1,
+  approvals: 3,
+  planData: 3,
 };
 
 /** "Is the year on track?" and "For marketing leaders.": the ⓘ text's question and audience. */
@@ -67,41 +65,16 @@ function ReportItem({ report }: { report: CatalogueEntry }) {
   const { question, audience } = aboutParts(about);
   const name = REPORT_ROUTES.find((route) => route.key === report.key)?.name ?? report.name;
   return (
-    <li
-      className={cx(
-        linkCard.card,
-        report.available ? styles.tile : styles.tileOff,
-        styles[TONES[report.key] ?? 'performance'],
-      )}
+    <Tile
+      title={name}
+      to={report.available ? `/reports/${report.path}` : undefined}
+      accent={ACCENTS[report.key] ?? 4}
+      picture={<ReportPreview report={report.key} />}
+      aside={<InfoTip label={name} text={about} />}
+      foot={audience && `For ${audience}`}
+      status={<StatusChip tone="neutral">Coming soon</StatusChip>}
     >
-      <div className={styles.preview}>
-        <ReportPreview report={report.key} />
-      </div>
-      <div className={styles.body}>
-        <div className={styles.titleRow}>
-          <h2 className={styles.nameHeading}>
-            {report.available ? (
-              <Link to={`/reports/${report.path}`} className={cx(styles.name, linkCard.link)}>
-                {name}
-              </Link>
-            ) : (
-              <span className={styles.name}>{name}</span>
-            )}
-          </h2>
-          <InfoTip label={name} text={about} />
-        </div>
-        {question && <p className={styles.question}>{question}</p>}
-        <div className={styles.foot}>
-          {audience && <span className={styles.audience}>For {audience}</span>}
-          {report.available ? (
-            <span className={styles.go} aria-hidden="true">
-              <ArrowRight />
-            </span>
-          ) : (
-            <StatusChip tone="neutral">Coming soon</StatusChip>
-          )}
-        </div>
-      </div>
-    </li>
+      {question && <p className={styles.question}>{question}</p>}
+    </Tile>
   );
 }
