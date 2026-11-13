@@ -37,7 +37,7 @@ test('032 US1–US3: raise, submit, approve and route a purchase request to the 
   await expect(page.getByRole('heading', { name: 'New purchase request', level: 1 })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Name', exact: true })).toHaveValue(prName);
   await expect(page.getByText(hxKey).first()).toBeVisible();
-  await expect(page.getByText('Generated from the line-item ID').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'About HX key' }).first()).toBeVisible();
 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(

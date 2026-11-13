@@ -39,8 +39,7 @@ export const LABELS = {
   swbsCode: 'SWBS code',
 } as const;
 
-export const MOA_HINT =
-  'The person whose approval is named in the PR form (Manual of Authorities).';
+export const MOA_TIP = 'Manual of Authorities';
 export const WORKFLOW_HINT = 'Only active workflows for purchase requests are offered.';
 export const MODIFICATION_HINT = 'Used when an approved purchase request is changed.';
 export const SWBS_HINT = 'Filled by GSAP through the line item';

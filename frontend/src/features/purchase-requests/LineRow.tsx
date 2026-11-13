@@ -6,6 +6,7 @@ import type { ChoiceOption } from '@/ui/ChoiceField/ChoiceField';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FormField } from '@/ui/FormField/FormField';
 import { HxKey } from '@/ui/HxKey/HxKey';
+import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFields';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
@@ -51,24 +52,31 @@ export function LineRow({
   return (
     <section className={styles.line} aria-labelledby={titleId}>
       <div className={styles.lineHeader}>
-        <h3 id={titleId} className={styles.lineTitle}>
-          {lineTitle(index + 1, line.lineItem.name, line.lineItem.id)}
-        </h3>
+        <div className={styles.lineTitle}>
+          <SectionHeading level={3} rank="sub" id={titleId}>
+            {lineTitle(index + 1, line.lineItem.name, line.lineItem.id)}
+          </SectionHeading>
+        </div>
         {mark && <span className={styles.mark}>{mark}</span>}
         <div className={styles.removal}>{removal}</div>
       </div>
       <dl className={styles.facts}>
         <div>
-          <dt>{LABELS.hxKey}</dt>
+          <dt>
+            {LABELS.hxKey}
+            <InfoTip label={LABELS.hxKey} text={HX_LABEL} />
+          </dt>
           <dd>
-            <HxKey value={line.hxKey} hint={HX_LABEL} />
+            <HxKey value={line.hxKey} />
           </dd>
         </div>
         <div>
-          <dt>{LABELS.swbsCode}</dt>
+          <dt>
+            {LABELS.swbsCode}
+            <InfoTip label={LABELS.swbsCode} text={SWBS_HINT} />
+          </dt>
           <dd>
             <span className={styles.code}>{line.lineItem.swbsCode || NO_SWBS}</span>
-            <span className={styles.note}>{SWBS_HINT}</span>
           </dd>
         </div>
       </dl>

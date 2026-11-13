@@ -5,15 +5,28 @@
 }
 
 .section {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
 
-.heading {
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
+/* Short attributes pair up in a wide form; a wide one takes the whole row. */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-4) var(--space-6);
+}
+
+@container (width >= 600px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid > [data-wide] {
+    grid-column: 1 / -1;
+  }
 }
 
 .attribute {

@@ -22,10 +22,6 @@
 
 .lineTitle {
   flex: 1 1 240px;
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-md);
 }
 
 .mark {
@@ -49,8 +45,12 @@
 }
 
 .facts dt {
-  color: var(--ink-2);
-  font-size: var(--text-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
 }
 
 .facts dd {
@@ -76,7 +76,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
   gap: var(--space-4);
 }
 

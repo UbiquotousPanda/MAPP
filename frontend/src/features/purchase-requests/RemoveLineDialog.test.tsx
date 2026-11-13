@@ -62,7 +62,7 @@ describe('032 FR-015/FR-055: remove line', () => {
     renderButton({ availability: no(reason) });
 
     const remove = screen.getByRole('button', { name: 'Remove line' });
-    expect(remove).toBeDisabled();
+    expect(remove).toHaveAttribute('aria-disabled', 'true');
     expect(remove).toHaveAccessibleDescription(reason);
   });
 

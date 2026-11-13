@@ -10,13 +10,6 @@
   gap: var(--space-4);
 }
 
-.subheading {
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-md);
-}
-
 .details {
   margin: 0;
   padding-left: var(--space-5);

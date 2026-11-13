@@ -52,7 +52,7 @@ describe('032 FR-003/FR-053/FR-054: new purchase request', () => {
     expect(field('lines[0].amount')).toHaveValue('9,200.00');
     expect(field('lines[0].overallLimit')).toHaveValue('9,200.00');
     expect(screen.getByText('HX1006')).toBeInTheDocument();
-    expect(screen.getByText('Generated from the line-item ID')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'About HX key' })).toBeInTheDocument();
     expect(screen.getByText('SIM-GB01-0001')).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument();
     await expectNoAxeViolations();
