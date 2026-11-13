@@ -5,6 +5,7 @@ import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormPanel } from '@/ui/FormPanel/FormPanel';
 import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { FieldRow } from '@/ui/FieldRow/FieldRow';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
@@ -133,57 +134,61 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
       onClose={onClose}
     >
       <div className={styles.fields}>
-        <FormField
-          control={form.control}
-          name="name"
-          render={(field) => (
-            <TextField label="Name" marking="Required" maxLength={120} {...field} />
-          )}
-        />
-        {budget ? (
-          <div className={styles.readOnly}>
-            <span className={styles.readOnlyLabel}>Year</span>
-            <span className={styles.readOnlyValue}>{budget.year}</span>
-            <LockedNote>{yearLock}</LockedNote>
-          </div>
-        ) : (
+        <FieldRow>
           <FormField
             control={form.control}
-            name="year"
+            name="name"
             render={(field) => (
-              <ChoiceField
-                label="Year"
+              <TextField label="Name" marking="Required" maxLength={120} {...field} />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="ownerId"
+            render={(field) => (
+              <PersonField
+                label="Owner"
                 marking="Required"
-                hint="The year can't change once the global budget is saved."
-                options={yearChoices(currentYear).map((year) => ({
-                  id: String(year),
-                  label: String(year),
-                  active: true,
-                }))}
+                tip="A person who can manage global budgets for all markets."
                 {...field}
               />
             )}
           />
-        )}
-        <FormField
-          control={form.control}
-          name="amount"
-          render={(field) => (
-            <MoneyField label="Amount" marking="Required" currency="USD" {...field} />
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="ownerId"
-          render={(field) => (
-            <PersonField
-              label="Owner"
-              marking="Required"
-              hint="A person who can manage global budgets for all markets."
-              {...field}
+        </FieldRow>
+        <FieldRow>
+          {budget ? (
+            <div className={styles.readOnly}>
+              <span className={styles.readOnlyLabel}>Year</span>
+              <span className={styles.readOnlyValue}>{budget.year}</span>
+              <LockedNote>{yearLock}</LockedNote>
+            </div>
+          ) : (
+            <FormField
+              control={form.control}
+              name="year"
+              render={(field) => (
+                <ChoiceField
+                  label="Year"
+                  marking="Required"
+                  tip="The year can't change once the global budget is saved."
+                  options={yearChoices(currentYear).map((year) => ({
+                    id: String(year),
+                    label: String(year),
+                    active: true,
+                  }))}
+                  {...field}
+                />
+              )}
             />
           )}
-        />
+          <FormField
+            control={form.control}
+            name="amount"
+            render={(field) => (
+              <MoneyField label="Amount" marking="Required" currency="USD" {...field} />
+            )}
+          />
+        </FieldRow>
         <FormField
           control={form.control}
           name="description"
