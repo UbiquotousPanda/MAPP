@@ -228,4 +228,27 @@ describe('032 FR-003/FR-053/FR-054: new purchase request', () => {
 
     await waitFor(() => expect(router.state.location.search).toBe('?lineItemId=L-1011'));
   });
+
+  it('032 FR-010: shows the first five line items and how many more the search can find', async () => {
+    const items = Array.from({ length: 8 }, (_, i) =>
+      lineItemOption({
+        lineItem: { ...lineItemOption().lineItem, id: `L-20${i}`, name: `Item ${i}` },
+      }),
+    );
+    renderCreate(
+      { body: defaults() },
+      [reply('GET /api/v1/purchase-requests/line-item-options', { body: { items, total: 42 } })],
+      '/purchase-requests/new',
+    );
+
+    expect(
+      await screen.findByRole('button', { name: 'Choose Item 0 (L-200)' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /^Choose Item/ })).toHaveLength(5);
+    expect(
+      screen.getByText(
+        'Showing 5 of 42 line items. Search by name, ID or HX key to find the others.',
+      ),
+    ).toBeInTheDocument();
+  });
 });

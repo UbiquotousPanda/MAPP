@@ -82,6 +82,10 @@ export const PICKER = {
   stepTitle: 'Choose a line item',
 } as const;
 
+export function moreText(shown: number, total: number): string {
+  return `Showing ${shown} of ${total} line items. Search by name, ID or HX key to find the others.`;
+}
+
 export function noMatchText(query: string): string {
   return query ? `No line items match '${query}'.` : 'No line items to choose from.';
 }

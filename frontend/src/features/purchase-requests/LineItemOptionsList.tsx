@@ -5,10 +5,12 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { formatMoneyText } from '@/format/decimal';
 import { useLineItemOptions } from './api';
 import type { LineItemOptionQuery, PurchaseRequestLineItemOption } from './api';
-import { chooseLabel, noMatchText, PICKER } from './form-text';
+import { chooseLabel, moreText, noMatchText, PICKER } from './form-text';
 import styles from './LineItemPicker.module.css';
 
 export const SEARCH_DELAY_MS = 300;
+/** The search finds the rest, so a long list never runs down the page. */
+export const SHOWN_OPTIONS = 5;
 
 export interface LineItemOptionsListProps {
   /** The PR (purchaseRequestId) or the form's plan and company code (planId, companyCode). */
@@ -43,13 +45,18 @@ export function LineItemOptionsList({
       />
       <div aria-live="polite" className={styles.results}>
         {options.data ? (
-          <OptionRows
-            options={options.data.items}
-            inForm={inForm}
-            search={search}
-            action={action}
-            onChoose={onChoose}
-          />
+          <>
+            <OptionRows
+              options={options.data.items.slice(0, SHOWN_OPTIONS)}
+              inForm={inForm}
+              search={search}
+              action={action}
+              onChoose={onChoose}
+            />
+            {options.data.total > SHOWN_OPTIONS && (
+              <p className={styles.meta}>{moreText(SHOWN_OPTIONS, options.data.total)}</p>
+            )}
+          </>
         ) : options.isError ? (
           <div role="alert" className={styles.failed}>
             <p>{PICKER.failed}</p>
