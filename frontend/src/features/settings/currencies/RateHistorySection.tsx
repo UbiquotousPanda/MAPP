@@ -5,6 +5,7 @@ import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { CanChange } from '@/ui/CanChange/CanChange';
 import { Button } from '@/ui/Button/Button';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useToast } from '@/ui/Toast/useToast';
@@ -57,7 +58,9 @@ export function RateHistorySection({ code }: RateHistorySectionProps) {
   return (
     <section aria-labelledby={headingId}>
       <div className={styles.sectionHead}>
-        <h3 id={headingId}>Rate history</h3>
+        <SectionHeading level={3} rank="sub" id={headingId}>
+          Rate history
+        </SectionHeading>
         <CanChange permission="exchangeRates.manage">
           <Button size="sm" icon={<Plus />} onClick={() => setOpen({ kind: 'add' })}>
             Add rate

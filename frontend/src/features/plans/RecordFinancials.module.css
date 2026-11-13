@@ -27,19 +27,6 @@
   gap: var(--space-1);
 }
 
-.title {
-  margin: 0;
-  color: var(--ink);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-lg);
-}
-
-.section .title {
-  font-size: var(--text-md);
-  line-height: var(--leading-md);
-}
-
 /* Five tiles in a row on the page; two per row in a panel and on narrow screens. */
 .tiles,
 .tilesPanel {

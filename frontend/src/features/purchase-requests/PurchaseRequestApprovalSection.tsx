@@ -128,7 +128,7 @@ function SectionView({ approval, section, purchaseRequest, titled }: SectionView
         <ApprovalChain round={round} />
       ) : (
         <div className={styles.upcoming}>
-          <p className={styles.subheading}>{NOT_SUBMITTED}</p>
+          <p className={styles.status}>{NOT_SUBMITTED}</p>
           {section.upcomingLevels.length > 0 && (
             <ApprovalChain upcomingLevels={section.upcomingLevels} />
           )}

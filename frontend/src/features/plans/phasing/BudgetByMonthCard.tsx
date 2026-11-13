@@ -10,6 +10,7 @@ import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import dataTable from '@/ui/Table/Table.module.css';
 import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import styles from './BudgetByMonth.module.css';
 import { useBudgetByMonth } from './api';
 import type { BudgetPhasing, PhasingLevel } from './api';
@@ -83,7 +84,10 @@ export function BudgetByMonthCard({
   if (!phasing) {
     return null;
   }
-  const Heading = variant === 'page' ? 'h2' : 'h3';
+  const heading =
+    variant === 'page'
+      ? ({ level: 2, rank: 'card' } as const)
+      : ({ level: 3, rank: 'sub' } as const);
   const row = byMonth.data?.rows.find((candidate) => candidate.recordId === record.id);
   // The API names the plan currency of every amount; the record's own until it has answered.
   const amountsIn = byMonth.data?.currency ?? currency;
@@ -174,9 +178,9 @@ export function BudgetByMonthCard({
       <div className={styles.header}>
         <div>
           <div className={styles.titleRow}>
-            <Heading id={headingId} className={styles.title}>
+            <SectionHeading {...heading} id={headingId}>
               Budget by month
-            </Heading>
+            </SectionHeading>
             <FieldHelpTip helpKey={`${level}.budgetPhasing`} label="Budget by month" />
           </div>
           <p className={styles.caption}>

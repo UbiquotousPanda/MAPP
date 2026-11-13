@@ -5,6 +5,7 @@ import { Button, LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { CompletenessChip } from '@/ui/CompletenessChip/CompletenessChip';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { ActivityStatusChip } from '@/ui/ActivityStatusChip/ActivityStatusChip';
 import { cx } from '@/ui/cx';
@@ -67,7 +68,7 @@ function ActivityGroup({ group }: { group: MyActivityGroup }) {
 
   return (
     <section className={styles.group}>
-      <h3 className={styles.heading}>
+      <SectionHeading level={3} rank="label">
         <button
           type="button"
           className={styles.toggle}
@@ -79,7 +80,7 @@ function ActivityGroup({ group }: { group: MyActivityGroup }) {
           <ActivityStatusChip status={group.status} />{' '}
           <span className={styles.count}>{formatWhole(group.count)}</span>
         </button>
-      </h3>
+      </SectionHeading>
       <div id={listId} hidden={!open}>
         <ul className={styles.rows}>
           {rows.map((row) => (

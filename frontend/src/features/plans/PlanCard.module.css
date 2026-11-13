@@ -35,20 +35,13 @@
 }
 
 .name {
-  margin: 0;
   overflow-wrap: anywhere;
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-md);
-}
-
-.name a {
   color: var(--ink);
   text-decoration: none;
 }
 
-.name a:hover,
-.name a:focus-visible {
+.name:hover,
+.name:focus-visible {
   text-decoration: underline;
 }
 

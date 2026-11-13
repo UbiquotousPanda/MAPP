@@ -3,6 +3,7 @@ import { Button } from '@/ui/Button/Button';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { DataSource, WidgetQuery } from '../model';
 import { OPERATOR_WORDS, operatorsFor, valuesFor } from './query-edits';
 import { choices } from './choices';
@@ -43,7 +44,11 @@ export function FiltersEditor({
 
   return (
     <fieldset className={styles.group} id={`${idPrefix}-filters`} tabIndex={-1}>
-      <legend className={styles.legend}>Filters</legend>
+      <legend className={styles.legend}>
+        <SectionHeading level={3} rank="sub">
+          Filters
+        </SectionHeading>
+      </legend>
       {filters.length === 0 && <p className={styles.note}>Every record of the source counts.</p>}
       {filters.map((filter, index) => {
         const field = source.fields.find((each) => each.key === filter.field);

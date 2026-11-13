@@ -51,18 +51,11 @@
 }
 
 .name {
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-lg);
-}
-
-.name a {
   color: var(--link);
 }
 
-.name a:hover,
-.name a:focus-visible {
+.name:hover,
+.name:focus-visible {
   text-decoration: underline;
 }
 

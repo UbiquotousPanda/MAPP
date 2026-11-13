@@ -140,16 +140,6 @@
   gap: var(--space-2);
 }
 
-.heading,
-.problemHeading {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-}
-
-.problemHeading {
-  color: var(--danger-text);
-}
-
 /* Long lists scroll inside the dialog, so its buttons stay in reach. */
 .list {
   display: flex;

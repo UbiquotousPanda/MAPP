@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
@@ -30,9 +31,11 @@ export function PlanCard({ plan, actions, pinned, onPinToggle }: PlanCardProps) 
     <article className={styles.card} aria-labelledby={`plan-${plan.id}`}>
       <div className={styles.top}>
         <div className={styles.title}>
-          <h2 className={styles.name} id={`plan-${plan.id}`}>
-            <Link to={`/plans/${encodeURIComponent(plan.id)}`}>{plan.name}</Link>
-          </h2>
+          <SectionHeading level={2} rank="card" id={`plan-${plan.id}`}>
+            <Link to={`/plans/${encodeURIComponent(plan.id)}`} className={styles.name}>
+              {plan.name}
+            </Link>
+          </SectionHeading>
           <p className={styles.id}>
             <Middots>
               {[

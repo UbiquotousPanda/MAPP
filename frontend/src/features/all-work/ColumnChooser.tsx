@@ -5,6 +5,7 @@ import { useFieldHelp } from '@/features/settings';
 import { Button } from '@/ui/Button/Button';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { SearchField } from '@/ui/SearchField/SearchField';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import type { AllWorkColumnGroup } from './all-work-types';
 import styles from './ColumnChooser.module.css';
@@ -69,9 +70,9 @@ export function ColumnChooser({
     >
       <div className={styles.chooser}>
         <section className={styles.order} aria-labelledby={`${id}-order`}>
-          <h3 id={`${id}-order`} className={styles.legend}>
+          <SectionHeading level={3} rank="label" id={`${id}-order`}>
             Shown columns, in order
-          </h3>
+          </SectionHeading>
           <ol className={styles.list}>
             {columns.map((key, index) => {
               const label = labelOf(key);

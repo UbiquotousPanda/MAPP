@@ -8,6 +8,7 @@ import { Popover } from '@/ui/Popover/Popover';
 import { cx } from '@/ui/cx';
 import { useFormatters } from '@/format/useFormatters';
 import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { AllWorkResult, AllWorkRow } from './all-work-types';
 import { runsOn } from './calendar';
 import styles from './MonthCalendar.module.css';
@@ -38,9 +39,9 @@ export function MonthCalendar({ result, onOpen }: MonthCalendarProps) {
   return (
     <div className={styles.month}>
       <div className={styles.header}>
-        <h3 className={styles.title} aria-live="polite">
+        <SectionHeading level={3} rank="sub" aria-live="polite">
           {title}
-        </h3>
+        </SectionHeading>
         <div className={styles.buttons}>
           <Button
             size="sm"

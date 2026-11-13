@@ -1,13 +1,12 @@
 import { LoaderCircle } from 'lucide-react';
 import { Button } from '@/ui/Button/Button';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
 import { LogEntry } from './LogEntry';
 import { dayLabel, entriesText, loadedLine } from './log-text';
 import type { ActivityLogEntry } from './log-text';
 import styles from './LogEntryList.module.css';
-
-const HEADINGS = { 2: 'h2', 3: 'h3', 4: 'h4' } as const;
 
 export interface LogEntryListProps {
   entries: ActivityLogEntry[];
@@ -29,17 +28,18 @@ export function LogEntryList({
 }: LogEntryListProps) {
   const today = localDate(new Date());
   const { dateFormat } = useFormatters();
-  const Heading = HEADINGS[headingLevel];
 
   return (
     <div className={styles.list}>
       {groupByDay(entries).map(([day, dayEntries]) => (
         <section key={day} className={styles.day}>
-          <Heading className={styles.heading}>
-            {dayLabel(day, today, dateFormat)}
-            {/* The space stays outside the span, so screen readers keep it between the words. */}{' '}
-            <span className={styles.count}>· {entriesText(dayEntries.length)}</span>
-          </Heading>
+          <div className={styles.heading}>
+            <SectionHeading level={headingLevel} rank="label">
+              {dayLabel(day, today, dateFormat)}
+              {/* The space stays outside the span, so screen readers keep it between the words. */}{' '}
+              <span className={styles.count}>· {entriesText(dayEntries.length)}</span>
+            </SectionHeading>
+          </div>
           <ol role="list" className={styles.entries}>
             {dayEntries.map((entry) => (
               <LogEntry key={entry.id} entry={entry} />

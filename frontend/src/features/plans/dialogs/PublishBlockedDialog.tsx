@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import type { components } from '@/api/generated/schema';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { fieldHref, isPlanningType } from '@/ui/record-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { groupLabel } from '../plan-text';
 import styles from './dialogs.module.css';
 
@@ -40,7 +41,9 @@ export function PublishBlockedDialog({
       <div className={styles.stack}>
         {groups.map(({ record, fields }) => (
           <section key={`${record.type}:${record.id}`} className={styles.group}>
-            <h3 className={styles.groupTitle}>{groupLabel(record)}</h3>
+            <SectionHeading level={3} rank="label">
+              {groupLabel(record)}
+            </SectionHeading>
             <ul className={styles.list}>
               {fields.map((field) => (
                 <li key={field.field}>

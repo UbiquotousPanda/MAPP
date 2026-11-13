@@ -12,14 +12,6 @@
   gap: var(--space-6);
 }
 
-.attributes h2 {
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-lg);
-}
-
 /* Where the activity sits, on one line: "Campaign Helix launch · Initiative Digital & social",
    and the lock that says how to change it (UI audit AF-01: a shorter form). */
 .readOnly {

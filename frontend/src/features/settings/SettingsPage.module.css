@@ -90,10 +90,6 @@
 
 .title {
   min-width: 0;
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
 }
 
 .title a {

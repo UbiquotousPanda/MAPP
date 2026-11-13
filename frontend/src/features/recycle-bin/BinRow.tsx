@@ -5,6 +5,7 @@ import { Button } from '@/ui/Button/Button';
 import { LevelTag } from '@/ui/LevelTag/LevelTag';
 import type { LevelTagProps } from '@/ui/LevelTag/LevelTag';
 import { RelativeTime } from '@/ui/RelativeTime/RelativeTime';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { isPlanningType } from '@/ui/record-links';
 import { availabilityProps, isShown } from '@/session/access';
@@ -79,9 +80,9 @@ export function BinRow({
       <div className={styles.main}>
         <div className={styles.title}>
           {level ? <LevelTag level={level} /> : <LevelTag other={item.recordTypeLabel} />}
-          <h2 ref={heading} tabIndex={-1} className={styles.name}>
+          <SectionHeading level={2} rank="label" ref={heading} tabIndex={-1}>
             {item.recordName}
-          </h2>
+          </SectionHeading>
           <span className={styles.id}>{item.recordId}</span>
         </div>
         {wasIn && <p className={styles.meta}>{wasIn}</p>}

@@ -5,6 +5,7 @@ import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormCard, FormCardFrame } from '@/ui/FormRail/FormRail';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFields';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
@@ -122,6 +123,7 @@ export function ActivityForm({
             render={(field) => (
               <ShellAttributeFields
                 sectionHeading="h2"
+                sectionRank="panel"
                 form={attributes}
                 values={field.value}
                 onChange={field.onChange}
@@ -136,7 +138,9 @@ export function ActivityForm({
           <ErrorState error={attributeForm.error} onRetry={attributeForm.refetch} />
         ) : (
           <>
-            <h2>Shell attributes</h2>
+            <SectionHeading level={2} rank="panel">
+              Shell attributes
+            </SectionHeading>
             <Skeleton lines={4} height="36px" />
           </>
         )}

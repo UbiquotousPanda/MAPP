@@ -38,9 +38,9 @@
 
 .title {
   color: var(--ink);
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-weight: var(--weight-heading);
-  line-height: var(--leading-xl);
+  line-height: var(--leading-lg);
   overflow-wrap: break-word;
 }
 

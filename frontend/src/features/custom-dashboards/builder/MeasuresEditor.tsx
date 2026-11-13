@@ -2,6 +2,7 @@ import { Plus, X } from 'lucide-react';
 import { Button } from '@/ui/Button/Button';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { TextField } from '@/ui/TextField/TextField';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { DataSource, WidgetQuery } from '../model';
 import { AGGREGATION_WORDS, aggregationsFor } from './query-edits';
 import { choices } from './choices';
@@ -53,7 +54,11 @@ export function MeasuresEditor({
 
   return (
     <fieldset className={styles.group} id={`${idPrefix}-measures`} tabIndex={-1}>
-      <legend className={styles.legend}>Measures</legend>
+      <legend className={styles.legend}>
+        <SectionHeading level={3} rank="sub">
+          Measures
+        </SectionHeading>
+      </legend>
       {errorAt('query.measures') && <p className={styles.error}>{errorAt('query.measures')}</p>}
       {measures.map((measure, index) => {
         const field = source.fields.find((each) => each.key === measure.field);

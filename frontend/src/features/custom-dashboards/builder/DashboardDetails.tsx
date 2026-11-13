@@ -57,7 +57,11 @@ export function DashboardDetails({ draft, errorAt, onAction, hideButton }: Dashb
         error={errorAt('description')}
       />
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Default filters</legend>
+        <legend className={styles.legend}>
+          <SectionHeading level={3} rank="sub">
+            Default filters
+          </SectionHeading>
+        </legend>
         <p className={styles.note}>
           Viewers start with these. They apply to SP&A One data, never to uploaded data.
         </p>

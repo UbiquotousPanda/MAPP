@@ -47,8 +47,10 @@ export function ApprovalHistory({ rounds, compact = false }: ApprovalHistoryProp
       ) : (
         <ol role="list" className={styles.rounds}>
           {rounds.map((round) => (
-            <li key={round.id}>
-              <h4 className={styles.roundHeading}>{roundTitle(round)}</h4>
+            <li key={round.id} className={styles.round}>
+              <SectionHeading level={4} rank="label">
+                {roundTitle(round)}
+              </SectionHeading>
               {round.facts && (
                 <p className={styles.facts}>{rulesAppliedText(round.facts, money)}</p>
               )}

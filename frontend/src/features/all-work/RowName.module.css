@@ -81,7 +81,7 @@
 }
 
 .line > .planLink {
-  font-weight: var(--weight-heading);
+  font-weight: var(--weight-bold);
 }
 
 .level,

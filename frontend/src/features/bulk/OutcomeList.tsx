@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { recordHref } from '@/ui/record-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import styles from './bulk.module.css';
 import type { BulkOutcome, BulkResult } from './bulk-types';
 
@@ -18,9 +19,9 @@ export function OutcomeList({ result, outcome, title }: OutcomeListProps) {
   }
   return (
     <section className={styles.outcomes} aria-label={title}>
-      <h3 className={styles.listTitle}>
+      <SectionHeading level={3} rank="label">
         {title} ({outcomes.length})
-      </h3>
+      </SectionHeading>
       <ul className={styles.list}>
         {outcomes.map((o) => (
           <OutcomeItem key={o.recordId} outcome={o} />

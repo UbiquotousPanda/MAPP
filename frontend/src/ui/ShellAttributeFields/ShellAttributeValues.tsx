@@ -1,6 +1,9 @@
 import { Link } from 'react-router';
 import { businessUnitOf, isEmptyValue, isVisible } from './rules';
 import type { AttributeForm, AttributeValues } from './rules';
+import { SectionHeading } from '../SectionHeading/SectionHeading';
+import type { HeadingRank } from '../SectionHeading/SectionHeading';
+import { HEADING_LEVELS } from './layout';
 import styles from './ShellAttributeFields.module.css';
 import { hasConditions, NO_BUSINESS_UNIT_NOTE, valueText } from './texts';
 
@@ -12,7 +15,8 @@ export interface ShellAttributeValuesProps {
   /** The plan's address, linked from the "appear once the business unit is chosen" note. */
   planLink?: string;
   /** The heading of each attribute section; 'none' when the details have their own heading. */
-  sectionHeading?: 'h2' | 'h3' | 'none';
+  sectionHeading?: 'h2' | 'h3' | 'h4' | 'none';
+  sectionRank?: HeadingRank;
 }
 
 /** Read-only, with the form's notes: "—" for empty, "(inactive)" for inactive ones; hidden attributes left out. */
@@ -22,9 +26,10 @@ export function ShellAttributeValues({
   businessUnit,
   planLink,
   sectionHeading = 'h3',
+  sectionRank = 'sub',
 }: ShellAttributeValuesProps) {
   const units = businessUnitOf(form, values, businessUnit);
-  const Heading = sectionHeading === 'none' ? null : sectionHeading;
+  const level = HEADING_LEVELS[sectionHeading];
 
   return (
     <div className={styles.fields}>
@@ -50,7 +55,11 @@ export function ShellAttributeValues({
         }
         return (
           <div key={section.name} className={styles.section}>
-            {Heading && <Heading className={styles.heading}>{section.name}</Heading>}
+            {level && (
+              <SectionHeading level={level} rank={sectionRank}>
+                {section.name}
+              </SectionHeading>
+            )}
             <dl className={styles.values}>
               {shown.map((attribute) => (
                 <div key={attribute.id} className={styles.pair}>

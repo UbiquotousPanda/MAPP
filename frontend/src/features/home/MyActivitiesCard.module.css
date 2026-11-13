@@ -15,12 +15,6 @@
   border-top: 1px solid var(--hairline);
 }
 
-.heading {
-  margin: 0;
-  font-size: inherit;
-  font-weight: inherit;
-}
-
 /* The group's fold button: chevron, status chip and count. */
 .toggle {
   display: inline-flex;

@@ -26,24 +26,18 @@
   border-radius: var(--radius-control);
 }
 
-.legend,
+.legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+}
+
 .rowLegend {
+  margin-bottom: var(--space-1);
   padding: 0;
   color: var(--ink);
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);
   line-height: var(--leading-sm);
-}
-
-.legend {
-  margin-bottom: var(--space-2);
-  font-family: var(--font-heading);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
-}
-
-.rowLegend {
-  margin-bottom: var(--space-1);
 }
 
 .error {

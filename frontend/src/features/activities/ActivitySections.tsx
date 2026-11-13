@@ -2,6 +2,7 @@ import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { ShellAttributeValues } from '@/ui/ShellAttributeFields/ShellAttributeValues';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
@@ -111,10 +112,13 @@ export function ActivityAttributes({
           businessUnit={businessUnits}
           planLink={recordHref('plan', activity.plan.id)}
           sectionHeading="h2"
+          sectionRank="card"
         />
       ) : (
         <>
-          <h2 className={styles.heading}>Shell attributes</h2>
+          <SectionHeading level={2} rank="card">
+            Shell attributes
+          </SectionHeading>
           {error ? <ErrorState error={error} onRetry={onRetry} /> : <Skeleton lines={4} />}
         </>
       )}

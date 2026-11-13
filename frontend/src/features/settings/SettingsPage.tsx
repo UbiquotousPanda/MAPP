@@ -4,6 +4,7 @@ import { itemsFor, useAccess } from '@/session/access';
 import type { components } from '@/api/generated/schema';
 import { Button } from '@/ui/Button/Button';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { SettingsCount } from '@/ui/SettingsCount/SettingsCount';
@@ -65,15 +66,17 @@ function SectionCard({ section, counts }: SectionCardProps) {
         <span className={styles.icon} aria-hidden="true">
           <Icon />
         </span>
-        <h2 className={styles.title}>
-          {comingSoon ? (
-            section.title
-          ) : (
-            <Link to={section.path} className={linkCard.link}>
-              {section.title}
-            </Link>
-          )}
-        </h2>
+        <div className={styles.title}>
+          <SectionHeading level={2} rank="card">
+            {comingSoon ? (
+              section.title
+            ) : (
+              <Link to={section.path} className={linkCard.link}>
+                {section.title}
+              </Link>
+            )}
+          </SectionHeading>
+        </div>
         {!comingSoon && (
           <span className={styles.chevron} aria-hidden="true">
             <ChevronRight />

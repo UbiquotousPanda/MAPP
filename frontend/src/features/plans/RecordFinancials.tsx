@@ -6,6 +6,7 @@ import type { components } from '@/api/generated/schema';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
@@ -56,7 +57,10 @@ export function RecordFinancials({ recordId, planId, variant }: RecordFinancials
   if (query.error instanceof ApiError && query.error.kind === 'notFound') {
     return null;
   }
-  const Heading = variant === 'page' ? 'h2' : 'h3';
+  const heading =
+    variant === 'page'
+      ? ({ level: 2, rank: 'card' } as const)
+      : ({ level: 3, rank: 'sub' } as const);
   const data = query.data;
   const level = data?.record.type ?? 'plan';
 
@@ -110,9 +114,9 @@ export function RecordFinancials({ recordId, planId, variant }: RecordFinancials
       id={variant === 'page' ? 'financials' : `financials-${recordId}`}
     >
       <div className={styles.header}>
-        <Heading id={headingId} className={styles.title}>
+        <SectionHeading {...heading} id={headingId}>
           Financials
-        </Heading>
+        </SectionHeading>
         <InfoTip
           label="Financials"
           text={`Purchase orders, invoices, payments and accruals from GSAP for this ${LEVEL_WORD[level]}’s line items.`}

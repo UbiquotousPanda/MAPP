@@ -166,6 +166,7 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
       >
         <ShellAttributeFields
           sectionHeading="h2"
+          sectionRank="panel"
           form={props.attributeForm}
           values={state.attributes}
           onChange={(values) => change('attributes', values)}

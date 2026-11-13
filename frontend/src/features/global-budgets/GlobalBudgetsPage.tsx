@@ -7,6 +7,7 @@ import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { Select } from '@/ui/Select/Select';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { plural } from '@/format/text';
@@ -113,11 +114,14 @@ function BudgetCard({ budget }: { budget: GlobalBudgetSummary }) {
   return (
     <li className={cx(styles.card, linkCard.card)}>
       <div className={styles.cardHeader}>
-        <h2 className={styles.name}>
-          <Link to={`/budgets/${encodeURIComponent(budget.id)}`} className={linkCard.link}>
+        <SectionHeading level={2} rank="card">
+          <Link
+            to={`/budgets/${encodeURIComponent(budget.id)}`}
+            className={cx(linkCard.link, styles.name)}
+          >
             {budget.name}
           </Link>
-        </h2>
+        </SectionHeading>
         <p className={styles.facts}>{facts.join(' · ')}</p>
         <ChevronRight aria-hidden="true" className={styles.chevron} />
       </div>

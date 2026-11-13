@@ -4,6 +4,7 @@ import { cx } from '@/ui/cx';
 import dataTable from '@/ui/Table/Table.module.css';
 import { LEVEL_LABELS } from '@/ui/AttributeFilterMenu/attribute-filter';
 import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import gridStyles from './AllWorkGrid.module.css';
 import type { AllWorkResult, AllWorkRow } from './all-work-types';
 import { hasNoDates, todayOffset } from './calendar';
@@ -121,9 +122,9 @@ export function CalendarView({
       </ScrollBox>
       {undated.length > 0 && (
         <section className={styles.undated} aria-labelledby={headingId}>
-          <h3 id={headingId} className={styles.undatedTitle}>
+          <SectionHeading level={3} rank="label" id={headingId}>
             No dates yet ({undated.length})
-          </h3>
+          </SectionHeading>
           <ul className={styles.undatedList}>
             {undated.map((row) => (
               <li key={row.key} className={styles.undatedItem}>
