@@ -12,7 +12,6 @@
 
 .value {
   font-variant-numeric: tabular-nums;
-  font-weight: var(--weight-bold);
 }
 
 .note {
