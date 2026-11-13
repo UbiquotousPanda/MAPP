@@ -16,10 +16,7 @@ export interface PublishBlockedDialogProps {
   onClose: () => void;
 }
 
-/**
- * Why a plan can't be published yet (FR-024): "Publish needs <n> fields", grouped by record — the
- * plan, then each campaign or initiative — each field a link to fill it in. The plan stays Draft.
- */
+/** Grouped by record: the plan, then each campaign or initiative. The plan stays Draft. */
 export function PublishBlockedDialog({
   open,
   planId,

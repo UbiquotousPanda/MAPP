@@ -26,11 +26,6 @@ export interface CurrencyDetailsProps {
   onClose: () => void;
 }
 
-/**
- * A currency's details in a side panel (US4 scenarios 2 and 4): its current rate both ways with
- * its date and source ("Rate of 19 Oct 2026 · GSAP import", 016 FR-003), where it is used, its
- * locks and its rate history; **Edit** and ⋯ (Set inactive or Reactivate, Delete).
- */
 export function CurrencyDetails({ currency, actions, onClose }: CurrencyDetailsProps) {
   const { date } = useFormatters();
 
@@ -110,7 +105,7 @@ export function CurrencyDetails({ currency, actions, onClose }: CurrencyDetailsP
           </div>
         </dl>
         <MetaLine record={currency} />
-        {/* USD is always 1 and has no rate history (016 FR-001). */}
+        {/* USD is always 1 and has no rate history. */}
         {currency.code !== BASE_CURRENCY && <RateHistorySection code={currency.code} />}
       </div>
     </SidePanel>

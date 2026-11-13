@@ -1,9 +1,5 @@
-/*
- * Settings › Field help (feature 016, US7). The list follows the Settings table standard
- * (SettingsTable.module.css); these are the parts only Field help has.
- */
+/* Only Field help's own parts; the list follows SettingsTable.module.css. */
 
-/* The note on Shell attributes without help, above the tabs. */
 .note {
   display: flex;
   align-items: flex-start;
@@ -26,13 +22,11 @@
   text-decoration: underline;
 }
 
-/* The field's label: one line, never broken (UI audit X-01). */
 .fieldCell {
   min-width: 160px;
   white-space: nowrap;
 }
 
-/* The help text wraps at word boundaries and keeps a readable measure. */
 .textCell {
   min-width: 240px;
   max-width: 640px;
@@ -45,7 +39,6 @@
   font-style: italic;
 }
 
-/* The side-panel form: the field, then the default text. */
 .form {
   display: flex;
   flex-direction: column;
@@ -80,7 +73,6 @@
   font-size: var(--text-xs);
 }
 
-/* The number of fields of a level tab, muted after its name. */
 .tabCount {
   color: var(--ink-2);
   font-size: var(--text-xs);

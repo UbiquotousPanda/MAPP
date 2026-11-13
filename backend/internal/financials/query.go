@@ -12,23 +12,20 @@ import (
 	"mapp/internal/platform/paging"
 )
 
-// Query is the filter set, sort and page of the Financials page (FR-021), as GET /api/v1/financials/transactions
-// receives it. The address of the page holds the same parameters, so a link reproduces the view.
+// Query mirrors the page's address, so a link reproduces the view.
 type Query struct {
-	Type     string // "all" or a Type: the tab
-	Search   string // trimmed; "" for none
-	Year     int    // 0: the record's plan year with RecordID, otherwise the current year
+	Type     string
+	Search   string
+	Year     int // 0: the record's plan year with RecordID, otherwise the current year
 	PlanID   string
 	RecordID string
-	Link     string // all, linked or notLinked
-	Sort     string // postingDate, documentNumber, type, vendor, amount or linkedTo
+	Link     string
+	Sort     string
 	Desc     bool
 	Page     int
 	PageSize int
 }
 
-// The values of the list's parameters (contract FinancialType, FinancialLinkFilter, FinancialSort,
-// FinancialPageSize).
 const (
 	filterAll       = "all"
 	filterLinked    = "linked"
@@ -50,16 +47,13 @@ var (
 	recordIDForm = regexp.MustCompile(`^[PCIAL]-[0-9]+$`)
 )
 
-// The limits of a query.
 const (
 	firstYear       = 2000
 	lastYear        = 2100
 	maxSearchLength = 200
 )
 
-// ParseQuery reads the list's parameters, reporting every wrong one at once with the parameter's name as
-// the field (as D-219). Missing parameters take their defaults: tab All, every link state, newest first,
-// page 1 of 50.
+// ParseQuery reports every wrong parameter at once; missing ones take the defaults: tab All, newest first.
 func ParseQuery(values url.Values) (Query, error) {
 	var problems errs.Problems
 	q := Query{Type: filterAll, Link: filterAll, Sort: sortPostingDate, Desc: true, Page: 1, PageSize: paging.Default}
@@ -125,8 +119,6 @@ func ParseQuery(values url.Values) (Query, error) {
 	return q, nil
 }
 
-// ParseScope reads Home's scope: anything but myTeams or everything is validation_failed on scope (as
-// 009's ParseScope).
 func ParseScope(text string) (Scope, error) {
 	switch scope := Scope(text); scope {
 	case ScopeMyTeams, ScopeEverything:

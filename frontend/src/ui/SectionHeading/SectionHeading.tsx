@@ -7,7 +7,6 @@ export interface SectionHeadingProps extends Omit<ComponentProps<'h2'>, 'classNa
   level: 2 | 3 | 4;
   /** The look follows the role, the level the outline (design system §3.2). */
   rank: HeadingRank;
-  /** A hairline under a sub-section's heading, the content's width. */
   divided?: boolean;
 }
 

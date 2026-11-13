@@ -15,7 +15,6 @@
   border-top: 1px solid var(--hairline);
 }
 
-/* The group's fold button: chevron, status chip and count. */
 .toggle {
   display: inline-flex;
   align-items: center;
@@ -68,11 +67,7 @@
   list-style: none;
 }
 
-/*
- * A row is a two-column grid: the activity on the left; its cost and completeness on the right,
- * so every amount ends on the same right edge, with or without chips (UI audit H-01, functional
- * review X-07).
- */
+/* Two columns so every amount ends on the same right edge, with or without chips. */
 .row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -144,10 +139,7 @@
   white-space: nowrap;
 }
 
-/*
- * On phones the amount keeps the top right corner and the chips go under the text, across the
- * row, so a row with chips does not squeeze the plan and dates into a narrow column.
- */
+/* On phones the chips go under the text so they don't squeeze the plan and dates. */
 @media (max-width: 599px) {
   .row {
     padding-left: var(--space-2);

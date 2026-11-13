@@ -10,18 +10,12 @@ import styles from './ReadyToSubmitPanel.module.css';
 
 export interface ReadyToSubmitPanelProps {
   activity: Activity;
-  /** Whether the list is shown; open by default when there are problems. */
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The panel itself, focused when Submit for approval finds problems. */
+  /** Focused when Submit for approval finds problems. */
   ref?: Ref<HTMLElement>;
 }
 
-/**
- * Everything that stops the activity from being submitted, all at once (FR-022 – FR-024): grouped
- * "This activity", "Line items" and "Good to know", each a link to where it is fixed. With nothing
- * missing it says "Ready to submit".
- */
 export function ReadyToSubmitPanel({ activity, open, onOpenChange, ref }: ReadyToSubmitPanelProps) {
   const headingId = useId();
   const { readiness } = activity;

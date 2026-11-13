@@ -9,8 +9,6 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// User story 3 — the Financials page (FR-021).
-
 func count(n int) *int {
 	return &n
 }
@@ -36,7 +34,6 @@ func (f *fixture) list(t *testing.T, a actor.Actor, q Query) TransactionPage {
 	return page
 }
 
-// The tab counts and totals of the seed, and every filter (FR-021, US3 scenario 1).
 func TestTransactions_FiltersCountsAndTotals_FR021(t *testing.T) { //nolint:gocyclo,tparallel // 10: the seed's counts and totals, then every filter; the subtests share one fixture
 	t.Parallel()
 	f := newFixture(t)
@@ -97,7 +94,6 @@ func TestTransactions_FiltersCountsAndTotals_FR021(t *testing.T) { //nolint:gocy
 	f.checkRecordAndYearFilters(t)
 }
 
-// checkSeedChoices checks the year and plan choices of the seed's transactions.
 func checkSeedChoices(t *testing.T, choices Choices) {
 	t.Helper()
 	if len(choices.Years) != 1 || choices.Years[0] != 2026 || len(choices.Plans) != 2 ||

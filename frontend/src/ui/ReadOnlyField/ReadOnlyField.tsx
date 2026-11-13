@@ -11,7 +11,6 @@ export interface ReadOnlyFieldProps {
   lock?: string;
 }
 
-/** A field shown as text in place of its control, the same label and value in every form. */
 export function ReadOnlyField({ label, value, tip, lock }: ReadOnlyFieldProps) {
   return (
     <div className={styles.field}>
