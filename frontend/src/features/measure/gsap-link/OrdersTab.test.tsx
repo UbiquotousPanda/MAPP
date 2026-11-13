@@ -16,7 +16,7 @@ function renderTab(report: GsapLinkReport = ordersReport()) {
       tab={report.orders}
       finance={report.finance}
       total={report.total}
-      table={{ tab: 'orders', sort: 'lineItem', page: 1, pageSize: 20 }}
+      table={{ tab: 'orders', sort: 'lineItem', page: 1, pageSize: 50 }}
       onChange={onChange}
     />,
     { route: '/reports/purchasing?tab=orders', user: testUser(), path: '/reports/purchasing' },

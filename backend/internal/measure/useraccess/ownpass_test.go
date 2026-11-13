@@ -138,7 +138,7 @@ func TestOwnPass_ExportEqualsScreen_FR013_SC005(t *testing.T) {
 	t.Parallel()
 	alexSees := alexAfterPriya(t)
 
-	screen := reportOf(t, alexSees, report+"?pageSize=500"+own)
+	screen := reportOf(t, alexSees, report+"?pageSize=200"+own)
 	files := [][][]string{csvOf(t, alexSees, own+"&widget=people").rows, csvOf(t, alexSees, own+"&widget=signInBands").rows}
 	if diff := cmp.Diff(peopleRows(screen), files[0]); screen.Total < 2 || diff != "" {
 		t.Errorf("people, %d on screen (-screen +file):\n%s", screen.Total, diff)
@@ -167,7 +167,7 @@ func TestOwnPass_ExportKeepsTeam_US2_1(t *testing.T) {
 	alexSees := alexAfterPriya(t)
 	team := "&status=all&team=T-1001"
 
-	screen, everyone := reportOf(t, alexSees, report+"?pageSize=500"+team), reportOf(t, alexSees, report+"?status=all")
+	screen, everyone := reportOf(t, alexSees, report+"?pageSize=200"+team), reportOf(t, alexSees, report+"?status=all")
 	people := csvOf(t, alexSees, team+"&widget=people")
 	if diff := cmp.Diff(peopleRows(screen), people.rows); screen.Total == 0 || screen.Total == everyone.Total || diff != "" {
 		t.Errorf("people of T-1001, %d of %d on screen (-screen +file):\n%s", screen.Total, everyone.Total, diff)
@@ -207,7 +207,7 @@ func TestOwnPass_NoFinanceView_ShownInFull_US1_13(t *testing.T) {
 	server := apitest.New(t, apitest.WithMeasureDemo())
 	giveMeiAccessManage(t, server)
 	meiSees, alexSees := server.SignIn(t, mei), server.SignIn(t, alex)
-	path := report + "?status=all&pageSize=500"
+	path := report + "?status=all&pageSize=200"
 
 	if mine, theirs := get(t, meiSees, path, http.StatusOK).Body, get(t, alexSees, path, http.StatusOK).Body; !bytes.Equal(mine, theirs) {
 		t.Errorf("Mei (access.manage alone) sees\n%s\nAlex\n%s", mine, theirs)

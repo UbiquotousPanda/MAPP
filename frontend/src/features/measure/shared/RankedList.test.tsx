@@ -96,7 +96,7 @@ describe('RankedList (040 US2, US3)', () => {
 
   it('keeps sort, group and page in the address, a change starting again at page 1 (FR-013, FR-014)', async () => {
     const { user, router } = renderList(
-      planBudgetRanked({ total: 30 }),
+      planBudgetRanked({ total: 120 }),
       '/reports/budget?year=2026',
     );
 
@@ -136,12 +136,15 @@ describe('RankedList (040 US2, US3)', () => {
     );
   });
 
-  it('reaches page 10, whose number is also the default page size (FR-014)', async () => {
-    const { user, router } = renderList(planBudgetRanked({ total: 120 }), '/reports/budget?page=9');
+  it('reaches page 50, whose number is also the default page size (FR-014, D-432)', async () => {
+    const { user, router } = renderList(
+      planBudgetRanked({ total: 2550 }),
+      '/reports/budget?page=49',
+    );
 
     await user.click(screen.getByRole('button', { name: 'Next page' }));
 
-    expect(search(router).get('page')).toBe('10');
+    expect(search(router).get('page')).toBe('50');
   });
 
   it('opens a child as the new top with a trail, and Back goes up one level (FR-010)', async () => {
@@ -175,14 +178,14 @@ describe('RankedList (040 US2, US3)', () => {
     await waitFor(() => expect(within(trail).getByText('Launch events')).toHaveFocus());
   });
 
-  it('says which entries are shown and pages through them (FR-014)', async () => {
-    const { user } = renderList(planBudgetRanked({ total: 30 }), '/reports/budget?page=2');
+  it('says which entries are shown and pages through them, 50 at a time when the address names an old size (FR-014, D-432)', async () => {
+    const { user } = renderList(planBudgetRanked({ total: 120 }), '/reports/budget?page=2&size=10');
 
     const pages = screen.getByRole('navigation', { name: 'Pages' });
-    expect(within(pages).getByText('11–20 of 30')).toBeInTheDocument();
+    expect(within(pages).getByText('51–100 of 120')).toBeInTheDocument();
     expect(within(pages).getByRole('combobox', { name: 'Rows per page' })).toBeInTheDocument();
     await user.click(within(pages).getByRole('button', { name: 'Previous page' }));
-    expect(within(pages).getByText('1–10 of 30')).toBeInTheDocument();
+    expect(within(pages).getByText('1–50 of 120')).toBeInTheDocument();
   });
 
   it('offers no page buttons when everything fits on one page (FR-014)', () => {

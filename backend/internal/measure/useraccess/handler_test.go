@@ -45,10 +45,10 @@ func TestUserAccess_Contract(t *testing.T) {
 	alexSees := apitest.New(t).SignIn(t, alex)
 
 	r := reportOf(t, alexSees, report)
-	if r.Total == 0 || r.Cards.People != r.Total || r.Sort != "name" || r.Page != 1 || r.PageSize != 20 {
+	if r.Total == 0 || r.Cards.People != r.Total || r.Sort != "name" || r.Page != 1 || r.PageSize != 50 {
 		t.Errorf("report = %d people, cards %+v, sort %s, page %d of %d", r.Total, r.Cards, r.Sort, r.Page, r.PageSize)
 	}
-	reportOf(t, alexSees, report+"?q=shell&team=T-1001&status=all&sort=-lastSignedIn&page=1&pageSize=5")
+	reportOf(t, alexSees, report+"?q=shell&team=T-1001&status=all&sort=-lastSignedIn&page=1&pageSize=25")
 	get(t, alexSees, report+"?sort=salary", http.StatusBadRequest)
 }
 
@@ -72,7 +72,7 @@ func TestRows_EqualPeopleTab_SC003(t *testing.T) {
 		}
 	}
 	get(t, alexSees, "/api/v1/access/people", http.StatusOK).Decode(t, &tab)
-	r := reportOf(t, alexSees, report+"?status=all&pageSize=500")
+	r := reportOf(t, alexSees, report+"?status=all&pageSize=200")
 
 	if len(r.Rows) != len(tab.Items) {
 		t.Fatalf("%d rows, the People tab %d people", len(r.Rows), len(tab.Items))
@@ -99,7 +99,7 @@ func TestSignIn_ShowsInReport_SC002(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	server.SignIn(t, priya)
-	r := reportOf(t, server.SignIn(t, alex), report+"?pageSize=500")
+	r := reportOf(t, server.SignIn(t, alex), report+"?pageSize=200")
 
 	at := func(email string) bool {
 		i := slices.IndexFunc(r.Rows, func(row useraccess.Row) bool { return row.Email == email })

@@ -19,7 +19,7 @@ func TestList_GroupsSearchesAndFilters_Contract_032_FR044(t *testing.T) {
 
 	all := page("")
 	byHX := page("?q=hx1006")
-	byStatus := page("?status=approved")
+	byStatus := page("?status=approved&pageSize=25")
 	byVendor := page("?vendor=brightside%20media%20bv&sort=-created")
 	bad := lea.Do(t, http.MethodGet, prs+"?sort=colour&pageSize=7", nil, apitest.SkipRequestValidation())
 	planner := priya.Do(t, http.MethodGet, prs, nil)

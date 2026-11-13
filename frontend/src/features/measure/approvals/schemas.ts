@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { REPORT_GRID_PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import type { PageSize } from '@/ui/Pager/page-sizes';
 
 export const RECORD_TYPES = ['activity', 'purchaseRequest', 'modifiedPurchaseRequest'] as const;
 export type RecordType = (typeof RECORD_TYPES)[number];
@@ -20,8 +21,8 @@ export const SORT_KEYS = [
 ] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
-export const PAGE_SIZES = REPORT_GRID_PAGE_SIZES;
-export type PageSize = (typeof PAGE_SIZES)[number];
+export { PAGE_SIZES };
+export type { PageSize };
 
 export interface ApprovalsParams {
   statusType: RecordType;
@@ -44,7 +45,7 @@ export const DEFAULT_PARAMS: ApprovalsParams = {
   sort: 'submittedOn',
   order: 'desc',
   page: 1,
-  pageSize: 50,
+  pageSize: DEFAULT_PAGE_SIZE,
 };
 
 const MAX_SEARCH = 100;

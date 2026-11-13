@@ -40,6 +40,11 @@ describe('financialsLinks (015 FR-021: the address is the state)', () => {
     );
   });
 
+  it('offers 25 rows a page as well, opening at 50 (D-432)', () => {
+    expect(read('pageSize=25').pageSize).toBe(25);
+    expect(read('pageSize=10').pageSize).toBe(50);
+  });
+
   it('passes any record ID on: the API alone says whether it names a record', () => {
     expect(read('planId=X-1&recordId=Z-9')).toMatchObject({ planId: 'X-1', recordId: 'Z-9' });
   });

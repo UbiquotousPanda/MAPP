@@ -7,6 +7,7 @@ import (
 
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/paging"
 )
 
 type Deps struct {
@@ -116,6 +117,6 @@ func withDefaults(t Table) Table {
 	if !ValidSort(t.Tab, t.Sort) {
 		t.Sort = DefaultSort(t.Tab)
 	}
-	t.Page, t.PageSize = max(t.Page, 1), cmp.Or(t.PageSize, DefaultPageSize)
+	t.Page, t.PageSize = max(t.Page, 1), cmp.Or(t.PageSize, paging.Default)
 	return t
 }

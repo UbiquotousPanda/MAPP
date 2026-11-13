@@ -65,6 +65,13 @@ describe('People (045 US1, FR-001, FR-005 – FR-008, FR-012)', () => {
     expect(lastSearch(api)).toContain('sort=-lastSignedIn');
   });
 
+  it('asks for 50 rows when the address names a size no longer offered (D-432)', async () => {
+    const { api } = renderReport(undefined, '/reports/plan-data?tab=people&pageSize=20');
+    await screen.findByRole('table', { name: 'People' });
+
+    expect(new URLSearchParams(lastSearch(api)).get('pageSize')).toBe('50');
+  });
+
   it('filters by one team from a compact Team choice, kept in the address (FR-006)', async () => {
     const { router, user } = renderReport();
     await screen.findByRole('table', { name: 'People' });

@@ -1,11 +1,12 @@
 import { useAddressParams } from '@/ui/useAddressParams';
-import { WIDGET_PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import type { PageSize } from '@/ui/Pager/page-sizes';
 
 export interface RankedState {
   sort: string;
   order: 'desc' | 'asc';
   group: string;
-  size: (typeof WIDGET_PAGE_SIZES)[number];
+  size: PageSize;
   page: number;
   q: string;
   drill: string;
@@ -13,14 +14,14 @@ export interface RankedState {
 
 const DEFAULTS = new Map<string, unknown>([
   ['group', 'none'],
-  ['size', 10],
+  ['size', DEFAULT_PAGE_SIZE],
   ['page', 1],
   ['q', ''],
   ['drill', ''],
 ]);
 
 function sizeOf(text: string | null): RankedState['size'] {
-  return WIDGET_PAGE_SIZES.find((size) => String(size) === text) ?? 10;
+  return PAGE_SIZES.find((size) => String(size) === text) ?? DEFAULT_PAGE_SIZE;
 }
 
 /** The ranked list's part of the address; any change but the page goes back to page 1. */

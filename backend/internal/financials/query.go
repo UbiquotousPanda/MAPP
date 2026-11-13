@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"mapp/internal/platform/errs"
+	"mapp/internal/platform/paging"
 )
 
 // Query is the filter set, sort and page of the Financials page (FR-021), as GET /api/v1/financials/transactions
@@ -42,12 +43,11 @@ const (
 )
 
 var (
-	typeValues     = []string{filterAll, string(TypePurchaseOrder), string(TypeInvoice), string(TypePayment), string(TypeAccrual)}
-	linkValues     = []string{filterAll, filterLinked, filterNotLinked}
-	pageSizeValues = []int{50, 100, 200}
-	sortForm       = regexp.MustCompile(`^(postingDate|documentNumber|type|vendor|amount|linkedTo):(asc|desc)$`)
-	planIDForm     = regexp.MustCompile(`^P-[0-9]+$`)
-	recordIDForm   = regexp.MustCompile(`^[PCIAL]-[0-9]+$`)
+	typeValues   = []string{filterAll, string(TypePurchaseOrder), string(TypeInvoice), string(TypePayment), string(TypeAccrual)} //nolint:gochecknoglobals // allowlist
+	linkValues   = []string{filterAll, filterLinked, filterNotLinked}                                                            //nolint:gochecknoglobals // allowlist
+	sortForm     = regexp.MustCompile(`^(postingDate|documentNumber|type|vendor|amount|linkedTo):(asc|desc)$`)
+	planIDForm   = regexp.MustCompile(`^P-[0-9]+$`)
+	recordIDForm = regexp.MustCompile(`^[PCIAL]-[0-9]+$`)
 )
 
 // The limits of a query.
@@ -62,7 +62,7 @@ const (
 // page 1 of 50.
 func ParseQuery(values url.Values) (Query, error) {
 	var problems errs.Problems
-	q := Query{Type: filterAll, Link: filterAll, Sort: sortPostingDate, Desc: true, Page: 1, PageSize: 50}
+	q := Query{Type: filterAll, Link: filterAll, Sort: sortPostingDate, Desc: true, Page: 1, PageSize: paging.Default}
 	if v := values.Get("type"); v != "" {
 		if !slices.Contains(typeValues, v) {
 			problems.Add("type", msgChooseListed)
@@ -113,8 +113,8 @@ func ParseQuery(values url.Values) (Query, error) {
 	}
 	if v := values.Get("pageSize"); v != "" {
 		size, err := strconv.Atoi(v)
-		if err != nil || !slices.Contains(pageSizeValues, size) {
-			problems.Add("pageSize", msgChoosePageSize)
+		if err != nil || !paging.Valid(size) {
+			problems.Add("pageSize", paging.Message)
 		} else {
 			q.PageSize = size
 		}

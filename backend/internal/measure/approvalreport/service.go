@@ -10,8 +10,6 @@ import (
 	"mapp/internal/platform/actor"
 )
 
-const defaultPageSize = 50
-
 type Service struct {
 	tx   Transactor
 	deps Deps

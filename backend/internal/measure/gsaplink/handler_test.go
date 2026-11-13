@@ -80,7 +80,7 @@ func TestGsapLink_MeasureDemoFillsEveryWaitBand(t *testing.T) {
 
 func TestGsapLink_OrdersInReportCurrency_Contract(t *testing.T) {
 	t.Parallel()
-	r := reportOf(t, apitest.New(t).SignIn(t, carlos), report+"&tab=orders&sort=-poAmount&currency=EUR&page=1&pageSize=5")
+	r := reportOf(t, apitest.New(t).SignIn(t, carlos), report+"&tab=orders&sort=-poAmount&currency=EUR&page=1&pageSize=25")
 
 	if r.Orders == nil || r.Total == 0 {
 		t.Fatalf("orders tab = %+v, want the demo purchase orders", r)

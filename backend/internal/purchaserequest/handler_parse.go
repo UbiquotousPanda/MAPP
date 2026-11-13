@@ -8,6 +8,7 @@ import (
 
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
+	"mapp/internal/platform/paging"
 )
 
 // parseListQuery reads the Purchase requests page's query (contract listPurchaseRequests): every wrong value
@@ -15,7 +16,7 @@ import (
 func parseListQuery(v url.Values) (ListQuery, error) {
 	var problems errs.Problems
 	q := ListQuery{Search: v.Get("q"), TypeOptionIDs: v["type"], Vendors: v["vendor"], OwnerIDs: v["owner"],
-		Sort: v.Get("sort"), Page: 1, PageSize: pageSizes[0]}
+		Sort: v.Get("sort"), Page: 1, PageSize: paging.Default}
 	for _, status := range v["status"] {
 		q.Statuses = append(q.Statuses, Status(status))
 	}

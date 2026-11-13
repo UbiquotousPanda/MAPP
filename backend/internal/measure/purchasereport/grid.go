@@ -6,9 +6,8 @@ import (
 	"strings"
 
 	"mapp/internal/platform/date"
+	"mapp/internal/platform/paging"
 )
-
-const defaultPageSize = 25
 
 func words(search string) []string {
 	return strings.Fields(strings.ToLower(search))
@@ -18,7 +17,7 @@ func words(search string) []string {
 func (d data) grid(rs, all []Request, q Query) Grid {
 	key, order := cmp.Or(q.Sort, colName), cmp.Or(q.Order, orderAsc)
 	groups := d.sorted(d.searched(groupsOf(rs), words(q.Search)), key, order)
-	size, page := cmp.Or(q.PageSize, defaultPageSize), cmp.Or(q.Page, 1)
+	size, page := cmp.Or(q.PageSize, paging.Default), cmp.Or(q.Page, 1)
 	from := min((page-1)*size, len(groups))
 	to := min(from+size, len(groups))
 	grid := Grid{Vendors: make([]VendorNode, 0, to-from), Total: len(groups), Page: page, PageSize: size,

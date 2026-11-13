@@ -153,12 +153,12 @@ func TestParseQuery_DefaultsAndEveryProblem_FR021(t *testing.T) { //nolint:gocyc
 	if err != nil || q != (Query{Type: filterAll, Link: filterAll, Sort: sortPostingDate, Desc: true, Page: 1, PageSize: 50}) {
 		t.Errorf("defaults = %+v, %v", q, err)
 	}
-	q, err = ParseQuery(map[string][]string{"sort": {"vendor:asc"}, "q": {"  helix "}, "year": {"2025"}, "pageSize": {"200"}})
-	if err != nil || q.Sort != sortVendor || q.Desc || q.Search != "helix" || q.Year != 2025 || q.PageSize != 200 {
+	q, err = ParseQuery(map[string][]string{"sort": {"vendor:asc"}, "q": {"  helix "}, "year": {"2025"}, "pageSize": {"25"}})
+	if err != nil || q.Sort != sortVendor || q.Desc || q.Search != "helix" || q.Year != 2025 || q.PageSize != 25 {
 		t.Errorf("query = %+v, %v", q, err)
 	}
-	_, err = ParseQuery(map[string][]string{"type": {"x"}, "year": {"abc"}, "page": {"-1"}})
-	if e := assertCode(t, err, http.StatusBadRequest, errs.CodeValidationFailed); len(e.Fields) != 3 {
-		t.Errorf("fields = %+v, want type, year and page", e.Fields)
+	_, err = ParseQuery(map[string][]string{"type": {"x"}, "year": {"abc"}, "page": {"-1"}, "pageSize": {"10"}})
+	if e := assertCode(t, err, http.StatusBadRequest, errs.CodeValidationFailed); len(e.Fields) != 4 {
+		t.Errorf("fields = %+v, want type, year, page and pageSize", e.Fields)
 	}
 }

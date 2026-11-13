@@ -40,11 +40,11 @@ func TestPurchaseRequestsReport_Contract_042(t *testing.T) {
 	if view.Cards.PurchaseRequests == 0 || len(view.Grid.Vendors) == 0 {
 		t.Errorf("Cards, Grid = %+v, want the demo data's purchase requests, validated against the contract", view.Cards)
 	}
-	for _, query := range []string{"vendor=Nobody", "status=nonsense", "requestOwner=nobody", "sort=amount&order=desc&pageSize=5&page=1",
+	for _, query := range []string{"vendor=Nobody", "status=nonsense", "requestOwner=nobody", "sort=amount&order=desc&pageSize=200&page=1",
 		"q=stand&columns=id,invoiced,status"} {
 		get(t, alex, reportURL+"?year=2027&"+query, http.StatusOK)
 	}
-	for _, malformed := range []string{"year=abc", "sort=nope", "order=up", "page=0", "pageSize=7", "columns=nonsense", "columns=id,id"} {
+	for _, malformed := range []string{"year=abc", "sort=nope", "order=up", "page=0", "pageSize=7", "pageSize=10", "columns=nonsense", "columns=id,id"} {
 		get(t, alex, reportURL+"?"+malformed, http.StatusBadRequest)
 	}
 	if signedOut := server.Do(t, http.MethodGet, reportURL, nil); signedOut.Status != http.StatusUnauthorized {

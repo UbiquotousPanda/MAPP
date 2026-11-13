@@ -176,7 +176,7 @@ with 039's In view and About this export sheets.
 - **FR-013**: Group by MUST offer None, Plan, Owner and each choice Shell attribute of the Show level or above;
   groups MUST carry totals and be ordered by their total of the sorted figure; a % split counts by share (D-270) and
   records without a value group under *Not filled in*.
-- **FR-014**: The list MUST page its top entries (10, 25 or 50, default 10) and search them by name; page, size,
+- **FR-014**: The list MUST page its top entries (25, 50, 100 or 200, default 50; D-432) and search them by name; page, size,
   search, group, sort, order and drill MUST live in the address; saved views keep all of them but the page (039).
 - **FR-015**: With Group by None and no search or drill, the top entries' planned cost, committed and actual over all
   pages MUST equal the cards.

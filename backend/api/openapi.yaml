@@ -9532,7 +9532,8 @@ paths:
           in: query
           schema:
             type: integer
-            enum: [10, 25, 50]
+            enum: [25, 50, 100, 200]
+            default: 50
         - name: page
           in: query
           schema:
@@ -9623,7 +9624,8 @@ paths:
           in: query
           schema:
             type: integer
-            enum: [10, 25, 50]
+            enum: [25, 50, 100, 200]
+            default: 50
         - name: page
           in: query
           schema:
@@ -9759,7 +9761,8 @@ paths:
           in: query
           schema:
             type: integer
-            enum: [10, 25, 50]
+            enum: [25, 50, 100, 200]
+            default: 50
         - name: page
           in: query
           schema:
@@ -10353,7 +10356,7 @@ components:
       in: query
       schema:
         type: integer
-        enum: [50, 100, 200]
+        enum: [25, 50, 100, 200]
         default: 50
     EntryId:
       name: entryId
@@ -10841,7 +10844,7 @@ components:
       in: query
       schema:
         type: integer
-        enum: [50, 100, 200]
+        enum: [25, 50, 100, 200]
         default: 50
     AllWorkFinance:
       name: finance
@@ -11347,9 +11350,8 @@ components:
       description: Rows per page of the report's table.
       schema:
         type: integer
-        minimum: 5
-        maximum: 500
-        default: 20
+        enum: [25, 50, 100, 200]
+        default: 50
     GsapLinkTab:
       name: tab
       in: query
@@ -11476,8 +11478,8 @@ components:
       description: Vendors per page of the grid.
       schema:
         type: integer
-        enum: [5, 10, 25, 50, 100]
-        default: 25
+        enum: [25, 50, 100, 200]
+        default: 50
     PrReportColumns:
       name: columns
       in: query
@@ -11565,12 +11567,7 @@ components:
       description: Rows per page of the grid.
       schema:
         type: integer
-        enum:
-          - 5
-          - 10
-          - 25
-          - 50
-          - 100
+        enum: [25, 50, 100, 200]
         default: 50
     ActivityCategoryId:
       name: categoryId

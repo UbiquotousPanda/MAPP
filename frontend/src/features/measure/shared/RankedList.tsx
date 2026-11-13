@@ -6,7 +6,7 @@ import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Pager } from '@/ui/Pager/Pager';
-import { WIDGET_PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import { PAGE_SIZES } from '@/ui/Pager/page-sizes';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import type { ReportKey } from '../reports';
 import { downloadReport } from './api';
@@ -146,7 +146,7 @@ export function RankedList<F>(props: RankedListProps<F>) {
             page={state.page}
             pageSize={state.size}
             total={data.total}
-            sizes={WIDGET_PAGE_SIZES}
+            sizes={PAGE_SIZES}
             onPage={(page) => change({ page })}
             onPageSize={(size) => change({ size })}
           />

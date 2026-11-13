@@ -16,7 +16,7 @@ function renderTab(report = waitingReport()) {
       tab={report.waiting}
       finance={report.finance}
       total={report.total}
-      table={{ tab: 'waiting', sort: '-waiting', page: 1, pageSize: 20 }}
+      table={{ tab: 'waiting', sort: '-waiting', page: 1, pageSize: 50 }}
       onChange={onChange}
     />,
     { route: '/reports/purchasing?tab=waiting', user: testUser(), path: '/reports/purchasing' },

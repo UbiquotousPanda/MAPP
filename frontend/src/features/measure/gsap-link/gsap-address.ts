@@ -1,10 +1,10 @@
 import { useAddressParams } from '@/ui/useAddressParams';
-import { WIDE_PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import type { PageSize } from '@/ui/Pager/page-sizes';
 
 export type GsapTab = 'swbs' | 'waiting' | 'orders';
 
-export const PAGE_SIZES = WIDE_PAGE_SIZES;
-const DEFAULT_PAGE_SIZE = 20;
+export { PAGE_SIZES };
 
 /** The columns each tab sorts by: the contract's GsapLinkSort. */
 const SORT_KEYS: Record<GsapTab, string[]> = {
@@ -37,7 +37,7 @@ export interface GsapTable {
   tab: GsapTab;
   sort: string;
   page: number;
-  pageSize: number;
+  pageSize: PageSize;
 }
 
 /** Longest waiting first on the first two tabs; line item, then PO number, on Purchase orders. */

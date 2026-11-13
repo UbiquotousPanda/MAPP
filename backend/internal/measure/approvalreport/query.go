@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"mapp/internal/platform/errs"
+	"mapp/internal/platform/paging"
 )
 
 const (
@@ -37,10 +38,6 @@ func Params() []string {
 	return []string{"statusType", paramRecordType, paramApprover, paramOutcome, "q", "sort", "order", paramPage, paramPageSize}
 }
 
-func pageSizes() []int {
-	return []int{5, 10, 25, 50, 100}
-}
-
 // ParseQuery reads the report's own parameters; a malformed sort, order, page or page size is a problem.
 func ParseQuery(own url.Values) (Query, error) {
 	var problems errs.Problems
@@ -59,7 +56,7 @@ func ParseQuery(own url.Values) (Query, error) {
 		problems.Add("order", msgChooseListed)
 	}
 	q.Page = number(own, numberRule{paramPage, msgPage, func(n int) bool { return n >= 1 }}, &problems)
-	q.PageSize = number(own, numberRule{paramPageSize, msgChooseListed, func(n int) bool { return slices.Contains(pageSizes(), n) }}, &problems)
+	q.PageSize = number(own, numberRule{paramPageSize, msgChooseListed, paging.Valid}, &problems)
 	return q, problems.Err()
 }
 

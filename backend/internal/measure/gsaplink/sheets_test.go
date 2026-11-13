@@ -79,7 +79,7 @@ func TestSheets_EveryRow_FR019(t *testing.T) {
 	if amount := sheets[2].Sheet.Rows[2][11]; amount != (sheet.Cell{}) {
 		t.Errorf("the hidden amount of PR-1002 = %+v, want an empty cell", amount)
 	}
-	waiting := w.report(Table{Tab: TabWaiting, PageSize: MaxPageSize}).Waiting
+	waiting := w.report(Table{Tab: TabWaiting, PageSize: 500}).Waiting
 	if total := sheets[2].Sheet.Rows[3][11]; total != sheet.Money(waiting.Amount.Amount) || total != sheets[2].Sheet.Rows[1][11] {
 		t.Errorf("waiting Total = %+v, want the tab's amount %v: PR-1001's alone, PR-1002's hidden", total, waiting.Amount)
 	}
@@ -91,7 +91,7 @@ func TestSheets_EqualTables_SC005(t *testing.T) {
 	w := fullWorld(t)
 	sheets := sheetsOf(t, w, url.Values{"tab": {"swbs"}, "sort": {"lineItem"}})
 
-	r := w.report(Table{Tab: TabSwbs, Sort: "lineItem", PageSize: MaxPageSize})
+	r := w.report(Table{Tab: TabSwbs, Sort: "lineItem", PageSize: 500})
 	want := []sheet.Cell{}
 	for _, row := range r.Swbs.Rows {
 		want = append(want, sheet.Text(row.LineItemID))

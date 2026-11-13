@@ -157,7 +157,7 @@ func TestOwnPass_ExportEqualsScreen_FR019_SC005(t *testing.T) {
 
 	for _, tab := range tabs {
 		own := "&currency=EUR&tab=" + tab.tab + "&sort=" + tab.sort
-		screen := reportOf(t, carlosSees, report+own+"&pageSize=500")
+		screen := reportOf(t, carlosSees, report+own+"&pageSize=200")
 		file := csvOf(t, carlosSees, own+"&widget="+tab.tab)
 		if diff := cmp.Diff(tab.rows(screen), file.rows); screen.Total == 0 || diff != "" {
 			t.Errorf("%s: %d rows on screen; export (-screen +file):\n%s", own, screen.Total, diff)
@@ -221,12 +221,12 @@ func TestOwnPass_NoFinanceView_AmountsDashed_FR004(t *testing.T) {
 	server := apitest.New(t, apitest.WithMeasureDemo())
 	leaSees, carlosSees := server.SignIn(t, lea), server.SignIn(t, carlos)
 
-	dashed(t, reportOf(t, leaSees, report+"&tab=waiting&pageSize=500"))
+	dashed(t, reportOf(t, leaSees, report+"&tab=waiting&pageSize=200"))
 	if orders := reportOf(t, leaSees, report+"&tab=orders"); orders.Total != 0 || len(orders.Orders.Rows) != 0 ||
 		orders.Finance.Plans != 0 {
 		t.Errorf("orders: %d rows covering %+v, want none (US3-6)", orders.Total, orders.Finance)
 	}
-	all := report + "&pageSize=500"
+	all := report + "&pageSize=200"
 	if diff := cmp.Diff(swbsRows(reportOf(t, carlosSees, all)), swbsRows(reportOf(t, leaSees, all))); diff != "" {
 		t.Errorf("SWBS tab without finance.view (-Carlos +Lea), want it in full (US1-11):\n%s", diff)
 	}
@@ -256,7 +256,7 @@ func TestOwnPass_ExportWithoutFinanceView_US4_3(t *testing.T) {
 	grantRoles(t, server, "U-1004", nil)
 	meiSees := server.SignIn(t, mei)
 
-	screen := reportOf(t, meiSees, report+"&tab=waiting&pageSize=500")
+	screen := reportOf(t, meiSees, report+"&tab=waiting&pageSize=200")
 	if diff := cmp.Diff(waitingRows(screen), csvOf(t, meiSees, "&tab=waiting&widget=waiting").rows); screen.Total == 0 || diff != "" {
 		t.Errorf("waiting export, %d rows on screen (-screen +file):\n%s", screen.Total, diff)
 	}
@@ -275,7 +275,7 @@ func TestOwnPass_FinanceInOnePlan_Covers1Of3_US2_6_US3_6(t *testing.T) {
 	grantRoles(t, server, "U-1002", map[string]string{"RL-1003": "myTeams"})
 	priyaSees, carlosSees := server.SignIn(t, priya), server.SignIn(t, carlos)
 
-	waiting := reportOf(t, priyaSees, report+"&tab=waiting&pageSize=500")
+	waiting := reportOf(t, priyaSees, report+"&tab=waiting&pageSize=200")
 	if waiting.Finance.Plans != 1 || waiting.Finance.Of != 3 || waiting.Total == 0 {
 		t.Fatalf("waiting covers %+v with %d rows; want 1 of 3 plans and the Measure demo's request", waiting.Finance,
 			waiting.Total)
@@ -283,8 +283,8 @@ func TestOwnPass_FinanceInOnePlan_Covers1Of3_US2_6_US3_6(t *testing.T) {
 	if amount := waiting.Waiting.Rows[0].Amount; amount != nil {
 		t.Errorf("%s of the Measure demo shows %v, want — (US2-6)", waiting.Waiting.Rows[0].PurchaseRequestID, amount)
 	}
-	orders := reportOf(t, priyaSees, report+"&tab=orders&pageSize=500")
-	theirs := reportOf(t, carlosSees, report+"&tab=orders&pageSize=500&plan="+lubricants)
+	orders := reportOf(t, priyaSees, report+"&tab=orders&pageSize=200")
+	theirs := reportOf(t, carlosSees, report+"&tab=orders&pageSize=200&plan="+lubricants)
 	if diff := cmp.Diff(orderRows(theirs), orderRows(orders)); orders.Finance.Plans != 1 || diff != "" {
 		t.Errorf("orders cover %+v; against Lubricants Europe's (-Carlos +Priya):\n%s", orders.Finance, diff)
 	}

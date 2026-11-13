@@ -46,6 +46,11 @@ describe('the report address of Approvals (041 FR-005, FR-015)', () => {
 
     expect(readApprovalsParams(bad)).toEqual(DEFAULT_PARAMS);
   });
+
+  it('reads a size no longer offered as 50, and 200 as asked (D-432)', () => {
+    expect(readApprovalsParams(new URLSearchParams('pageSize=10')).pageSize).toBe(50);
+    expect(readApprovalsParams(new URLSearchParams('pageSize=200')).pageSize).toBe(200);
+  });
 });
 
 describe('the Approvals search (041 FR-015)', () => {

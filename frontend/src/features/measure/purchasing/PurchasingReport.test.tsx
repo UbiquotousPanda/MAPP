@@ -130,9 +130,16 @@ describe('PurchasingReport (059 US2, FR-005)', () => {
     const table = await screen.findByRole('table', { name: 'Waiting for SWBS code' });
 
     await user.click(within(table).getByRole('button', { name: 'Line item' }));
-    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '50');
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '100');
 
-    expect(router.state.location.search).toBe('?tab=swbs&sort=lineItem&pageSize=50');
+    expect(router.state.location.search).toBe('?tab=swbs&sort=lineItem&pageSize=100');
+    expect(last(api, GSAP).get('pageSize')).toBe('100');
+  });
+
+  it('asks the GSAP tab for 50 rows when the address names a size no longer offered (D-432)', async () => {
+    const { api } = renderPage('/reports/purchasing?tab=swbs&pageSize=20');
+    await screen.findByRole('table', { name: 'Waiting for SWBS code' });
+
     expect(last(api, GSAP).get('pageSize')).toBe('50');
   });
 

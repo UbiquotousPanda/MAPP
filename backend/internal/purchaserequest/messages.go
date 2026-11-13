@@ -63,7 +63,6 @@ const (
 	msgReload             = "Reload the purchase request and try again."
 	msgUnknownLine        = "This line is no longer on the purchase request — reload it."
 	msgSortUnknown        = "Choose one of the sort orders offered."
-	msgPageSize           = "Choose 50, 100 or 200 per page."
 	msgPageNumber         = "Enter a page of 1 or more."
 	msgDate               = "Enter a date as YYYY-MM-DD."
 	msgLinesOnApproved    = "Choose one of the options for lines on approved purchase requests."

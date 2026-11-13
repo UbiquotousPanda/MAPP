@@ -61,7 +61,7 @@ func TestSheets_Grid_042_FR027(t *testing.T) {
 	t.Parallel()
 
 	all := sheetsOf(t, nil)["grid"]
-	acme := sheetsOf(t, url.Values{"vendor": {"Acme"}, "columns": {"id,invoiced"}, "pageSize": {"5"}})["grid"]
+	acme := sheetsOf(t, url.Values{"vendor": {"Acme"}, "columns": {"id,invoiced"}, "pageSize": {"25"}})["grid"]
 
 	if len(all.Rows) != 11 {
 		t.Errorf("grid sheet = %d rows, want the heading and every one of the 10 lines", len(all.Rows))

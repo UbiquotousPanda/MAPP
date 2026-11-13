@@ -842,10 +842,9 @@ in their ⋯ menu.
 **`Pager`** (one for every paged table, D-415) — "1–50 of 120" (or "No rows") on the left; **Rows per page** (`Select`)
 and icon-only **Previous page** / **Next page** on the right; the buttons are left out when everything fits on
 one page, and Rows per page where the page size is fixed. Placement: `below` a table (16 above) or `cardFooter`
-(padding 12 and the card's side padding, a hairline above); with neither it sits in its parent's gap. Page sizes
-come from named sets in `ui/Pager`: lists 50 · 100 · 200 (All work, Financials), widgets 10 · 25 · 50 (ranked
-lists), report grids 5 · 10 · 25 · 50 · 100 (Approvals, Purchase requests) and wide 5 to 500 (GSAP link, User
-access), as their specs set them.
+(padding 12 and the card's side padding, a hairline above); with neither it sits in its parent's gap. Every pager
+where people choose the page size offers one set, `PAGE_SIZES` in `ui/Pager`: 25 · 50 · 100 · 200, opening at
+50 (`DEFAULT_PAGE_SIZE`), lists and reports alike (D-432).
 
 **`SearchField`**
 

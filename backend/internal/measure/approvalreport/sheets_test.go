@@ -89,7 +89,7 @@ func TestSheets_Grid_041_FR023(t *testing.T) {
 	f := approvalreporttest.New(t)
 	report := approvalreport.NewReport(approvalreport.NewService(f.DB, f.Deps))
 
-	sheets, err := report.Sheets(t.Context(), approvalreporttest.Alice(), measure.Filter{Own: url.Values{"pageSize": {"5"}, "outcome": {"waiting"}}})
+	sheets, err := report.Sheets(t.Context(), approvalreporttest.Alice(), measure.Filter{Own: url.Values{"pageSize": {"25"}, "outcome": {"waiting"}}})
 	if err != nil {
 		t.Fatalf("Sheets() error: %v", err)
 	}

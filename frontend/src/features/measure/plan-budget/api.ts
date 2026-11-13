@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
+import type { PageSize } from '@/ui/Pager/page-sizes';
 import { toQuery, writeAddress } from '../shared';
 import type { ReportAddress } from '../shared';
 
@@ -15,7 +16,7 @@ export interface RankedParams {
   sort?: 'budget' | 'planned' | 'committed' | 'actual' | 'leftToPlan' | 'unspent';
   order?: 'desc' | 'asc';
   group?: string;
-  size?: 10 | 25 | 50;
+  size?: PageSize;
   page?: number;
   q?: string;
   drill?: string;

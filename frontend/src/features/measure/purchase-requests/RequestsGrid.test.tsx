@@ -131,10 +131,10 @@ describe('RequestsGrid (042 US2)', () => {
 
     expect(screen.getByText('26–50 of 60')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Next page' }));
-    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '10');
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '200');
 
     expect(onParams).toHaveBeenCalledWith({ page: 3 });
-    expect(onParams).toHaveBeenCalledWith({ pageSize: 10 });
+    expect(onParams).toHaveBeenCalledWith({ pageSize: 200 });
   });
 
   it('lists the page in the table view, then the Total row', () => {

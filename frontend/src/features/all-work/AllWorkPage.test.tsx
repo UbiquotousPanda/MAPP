@@ -15,7 +15,7 @@ import {
   viewQueries,
 } from '@/testing/fixtures/all-work-page';
 import { reply } from '@/testing/replies';
-import { choose } from '@/testing/select';
+import { choose, optionNames } from '@/testing/select';
 import { resetAllWorkStore } from './all-work-store';
 
 afterEach(() => {
@@ -253,7 +253,7 @@ describe('AllWorkPage (US1)', () => {
     Object.defineProperty(window, 'scrollY', { value: 0, configurable: true });
   });
 
-  it('shows the rows 50 to a page, with the totals row on every page (D-115)', async () => {
+  it('shows the rows 50 to a page, 25 to 200 on offer, with the totals row on every page (D-115, D-432)', async () => {
     const result = manyActivities(60);
     const { user } = renderAllWorkPage([reply('GET /api/v1/all-work', { body: result })]);
 
@@ -268,7 +268,9 @@ describe('AllWorkPage (US1)', () => {
     expect(screen.getByRole('rowheader', { name: 'Total' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
 
-    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '100');
+    const rowsPerPage = screen.getByRole('combobox', { name: 'Rows per page' });
+    expect(await optionNames(user, rowsPerPage)).toEqual(['25', '50', '100', '200']);
+    await choose(user, rowsPerPage, '100');
     expect(screen.getByText('1–63 of 63')).toBeInTheDocument();
   });
 

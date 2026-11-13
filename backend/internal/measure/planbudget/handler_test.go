@@ -17,7 +17,7 @@ func TestPlanBudgetContract(t *testing.T) {
 		"/api/v1/reports/plan-budget?year=2026",
 		"/api/v1/reports/plan-budget?year=2026&period=quarter&currency=EUR",
 		"/api/v1/reports/plan-budget/ranked?year=2026",
-		"/api/v1/reports/plan-budget/ranked?year=2026&show=activity&group=owner&sort=actual&order=asc&size=25&q=a",
+		"/api/v1/reports/plan-budget/ranked?year=2026&show=activity&group=owner&sort=actual&order=asc&size=200&q=a",
 		"/api/v1/reports/budget/export?year=2026&format=xlsx",
 		"/api/v1/reports/budget/export?year=2026&format=xlsx&sort=actual&order=asc&group=owner&q=a",
 	} {

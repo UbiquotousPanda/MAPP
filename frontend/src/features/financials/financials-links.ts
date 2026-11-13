@@ -1,4 +1,5 @@
-import { LIST_PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import type { PageSize } from '@/ui/Pager/page-sizes';
 import type { operations } from '@/api/generated/schema';
 
 export type TransactionsQuery = NonNullable<
@@ -21,8 +22,8 @@ export type SortColumn =
   'postingDate' | 'documentNumber' | 'type' | 'vendor' | 'amount' | 'linkedTo';
 export type SortDirection = 'asc' | 'desc';
 
-export const PAGE_SIZES = LIST_PAGE_SIZES;
-export type PageSize = (typeof PAGE_SIZES)[number];
+export { PAGE_SIZES };
+export type { PageSize };
 
 export interface FinancialFilters {
   tab: FinancialTab;
@@ -47,7 +48,7 @@ export const DEFAULT_FILTERS: FinancialFilters = {
   sort: 'postingDate',
   direction: 'desc',
   page: 1,
-  pageSize: 50,
+  pageSize: DEFAULT_PAGE_SIZE,
 };
 
 export function writeFilters(filters: Partial<FinancialFilters>): URLSearchParams {

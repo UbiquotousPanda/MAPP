@@ -14,7 +14,7 @@ function renderTab(report = swbsReport()) {
     <SwbsTab
       tab={report.swbs}
       total={report.total}
-      table={{ tab: 'swbs', sort: '-waiting', page: 1, pageSize: 20 }}
+      table={{ tab: 'swbs', sort: '-waiting', page: 1, pageSize: 50 }}
       onChange={onChange}
     />,
     { route: '/reports/purchasing', user: testUser(), path: '/reports/purchasing' },

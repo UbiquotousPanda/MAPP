@@ -70,7 +70,6 @@ const (
 	msgChooseRecord     = "Choose a plan, campaign, initiative, activity or line item."
 	msgChooseSort       = "Choose a column and a direction, such as postingDate:desc."
 	msgChoosePage       = "Choose a page from 1."
-	msgChoosePageSize   = "Choose 50, 100 or 200 rows per page."
 	transactionNoun     = "GSAP transaction"
 )
 

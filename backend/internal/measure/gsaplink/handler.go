@@ -12,6 +12,7 @@ import (
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
+	"mapp/internal/platform/paging"
 	"mapp/internal/platform/web"
 )
 
@@ -60,9 +61,9 @@ func ParseTable(values url.Values) (Table, error) {
 		problems.Add(paramSort, "Sort by one of: "+strings.Join(SortKeys(tab), ", ")+"; a minus sign first for descending.")
 	}
 	t.Page = whole(values, "page", 1, &problems)
-	t.PageSize = whole(values, "pageSize", MinPageSize, &problems)
-	if t.PageSize > MaxPageSize {
-		problems.Add("pageSize", "Show at most 500 rows on a page.")
+	t.PageSize = whole(values, "pageSize", 1, &problems)
+	if t.PageSize != 0 && !paging.Valid(t.PageSize) {
+		problems.Add("pageSize", paging.Message)
 	}
 	return t, problems.Err()
 }

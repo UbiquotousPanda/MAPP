@@ -123,11 +123,11 @@ describe('ApprovalsGrid (041 US2)', () => {
     expect(screen.getByText('51–100 of 120')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Next page' }));
     await user.click(screen.getByRole('button', { name: 'Previous page' }));
-    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '10');
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '25');
 
     expect(onParams).toHaveBeenCalledWith({ page: 3 });
     expect(onParams).toHaveBeenCalledWith({ page: 1 });
-    expect(onParams).toHaveBeenCalledWith({ pageSize: 10 });
+    expect(onParams).toHaveBeenCalledWith({ pageSize: 25 });
   });
 
   it('opens a long comment in full on the page and closes it again', async () => {

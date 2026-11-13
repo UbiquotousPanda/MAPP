@@ -68,7 +68,7 @@ test('059 US2-2: Waiting for GSAP and Purchase orders, invoiced per line equal t
   page,
 }) => {
   await signInAs(page, SEES_MEASURE_PLAN);
-  await page.goto('/reports/purchasing?tab=waiting&pageSize=500');
+  await page.goto('/reports/purchasing?tab=waiting&pageSize=200');
   await expect(page.getByRole('tab', { name: 'Waiting for GSAP', selected: true })).toBeVisible();
   const waiting = page.getByRole('region', { name: 'Waiting for GSAP' });
   await expect(

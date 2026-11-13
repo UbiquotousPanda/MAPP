@@ -9,14 +9,12 @@ import (
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
+	"mapp/internal/platform/paging"
 	"mapp/internal/settings"
 )
 
-// The sort orders and page sizes of the Purchase requests page (contract listPurchaseRequests).
-var (
-	sorts     = []string{"name", "-name", "id", "-id", "status", "-status", "amount", "-amount", "created", "-created"} //nolint:gochecknoglobals // allowlist
-	pageSizes = []int{50, 100, 200}                                                                                     //nolint:gochecknoglobals // allowlist
-)
+// The sort orders of the Purchase requests page (contract listPurchaseRequests).
+var sorts = []string{"name", "-name", "id", "-id", "status", "-status", "amount", "-amount", "created", "-created"} //nolint:gochecknoglobals // allowlist
 
 // List is the Purchase requests page: the purchase requests of the plans where the person
 // holds purchaseRequests.list, grouped by vendor with each vendor's count and totals over every match.
@@ -108,8 +106,8 @@ func checkListQuery(q ListQuery) error {
 	if !slices.Contains(sorts, q.Sort) {
 		problems.Add("sort", msgSortUnknown)
 	}
-	if !slices.Contains(pageSizes, q.PageSize) {
-		problems.Add("pageSize", msgPageSize)
+	if !paging.Valid(q.PageSize) {
+		problems.Add("pageSize", paging.Message)
 	}
 	if q.Page < 1 {
 		problems.Add("page", msgPageNumber)

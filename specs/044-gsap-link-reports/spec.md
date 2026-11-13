@@ -104,8 +104,8 @@ the Over 48 hours count of one row by hand.
 3. **Given** a line item whose code was received, or whose request is off, or whose activity is not approved,
    **Then** it is not listed (030 FR-001).
 4. **Given** an activity approved, then In progress, **Then** its line items still waiting are listed (030 FR-001).
-5. **Given** more than 20 rows, **Then** the table shows 20 per page with page sizes 5 to 500, sorts by any
-   column (longest waiting first by default) and states "1–20 of 64".
+5. **Given** more than 50 rows, **Then** the table shows 50 per page with page sizes 25, 50, 100 and 200 (D-432),
+   sorts by any column (longest waiting first by default) and states "1–50 of 64".
 6. **Given** the planner selects a row, **Then** the line item page opens, where the SWBS request card offers
    what 030 offers.
 
@@ -296,7 +296,7 @@ the export, the report supplies the rows.
 
 - **FR-014**: Every amount MUST be converted to the currency of 039's **Currency** control at the current rate,
   each with its currency. *(D-303; client 019 FR-018; 039 FR-018)*
-- **FR-015**: Each table MUST page (5 to 500 rows, default 20) and sort by any column; the default sort is longest
+- **FR-015**: Each table MUST page (25, 50, 100 or 200 rows, default 50; D-432) and sort by any column; the default sort is longest
   waiting first on the first two tabs and line item then PO number on the third. *(client 019 FR-013)*
 - **FR-016**: Selecting a row MUST open its line item (SWBS, Purchase orders) or purchase request (Waiting for
   GSAP) page. *(client 019 FR-015)*

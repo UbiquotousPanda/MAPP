@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"mapp/internal/platform/errs"
+	"mapp/internal/platform/paging"
 )
 
 const (
@@ -34,7 +35,6 @@ const (
 	msgChooseListed = "Choose one of the listed values."
 	msgSearchLong   = "Use 100 characters or fewer."
 	maxSearch       = 100
-	defaultSize     = 10
 )
 
 var (
@@ -70,8 +70,8 @@ func Parse(values url.Values, sorts []string, opening Opening) (Query, error) {
 	if utf8.RuneCountInString(q.Search) > maxSearch {
 		problems.Add(paramSearch, msgSearchLong)
 	}
-	q.Size, q.Page = defaultSize, 1
-	if n, ok := number(values, paramSize, &problems, func(n int) bool { return slices.Contains([]int{10, 25, 50}, n) }); ok {
+	q.Size, q.Page = paging.Default, 1
+	if n, ok := number(values, paramSize, &problems, paging.Valid); ok {
 		q.Size = n
 	}
 	if n, ok := number(values, paramPage, &problems, func(n int) bool { return n >= 1 }); ok {

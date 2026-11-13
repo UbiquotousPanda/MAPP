@@ -13885,7 +13885,7 @@ export interface components {
         /** @description Sort inside each vendor group; "-" sorts descending. */
         PurchaseRequestSort: "name" | "-name" | "id" | "-id" | "status" | "-status" | "amount" | "-amount" | "created" | "-created";
         PurchaseRequestPageNumber: number;
-        PurchaseRequestPageSize: 50 | 100 | 200;
+        PurchaseRequestPageSize: 25 | 50 | 100 | 200;
         /** @example BIN-1001 */
         EntryId: string;
         /** @example SF-1001 */
@@ -13998,7 +13998,7 @@ export interface components {
         /** @description A column and a direction. Default postingDate:desc (ties by ID, newest first). amount sorts by the USD value. */
         FinancialSort: string;
         FinancialPageNumber: number;
-        FinancialPageSize: 50 | 100 | 200;
+        FinancialPageSize: 25 | 50 | 100 | 200;
         /** @description Financials filter (FR-024), tested on activities; values combine with OR. committedAbovePlanned holds when the activity or one of its line items is committed above its planned cost. */
         AllWorkFinance: ("hasPurchaseOrder" | "noPurchaseOrder" | "invoiced" | "committedAbovePlanned")[];
         /** @example XR-1001 */
@@ -14129,7 +14129,7 @@ export interface components {
         /** @description The page of the report's table, from 1. */
         ReportPage: number;
         /** @description Rows per page of the report's table. */
-        ReportPageSize: number;
+        ReportPageSize: 25 | 50 | 100 | 200;
         GsapLinkTab: "swbs" | "waiting" | "orders";
         /** @description A column of the tab, "-" for descending; default -waiting (swbs, waiting) and lineItem (orders). swbs: lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, plan, routedAt, gsapPrNumber, amount, waiting; orders: lineItem, plan, purchaseRequest, gsapPrNumber, poNumber, poDate, vendor, poAmount, invoiced, paid. Ties break by ID. */
         GsapLinkSort: string;
@@ -14150,7 +14150,7 @@ export interface components {
         PrReportSort: "name" | "status" | "amount" | "invoiced" | "created" | "delivery";
         PrReportOrder: "asc" | "desc";
         /** @description Vendors per page of the grid. */
-        PrReportPageSize: 5 | 10 | 25 | 50 | 100;
+        PrReportPageSize: 25 | 50 | 100 | 200;
         /** @description The grid's columns, comma-separated, in order. */
         PrReportColumns: string;
         /** @description The record type of the status widget. A value that matches nothing answers with empty figures. */
@@ -14167,7 +14167,7 @@ export interface components {
         ApprovalsSort: "itemId" | "itemName" | "recordType" | "approver" | "decidedOn" | "outcome" | "submittedOn" | "level" | "purchaseOrder" | "amount" | "owner" | "comments";
         ApprovalsOrder: "asc" | "desc";
         /** @description Rows per page of the grid. */
-        ApprovalsPageSize: 5 | 10 | 25 | 50 | 100;
+        ApprovalsPageSize: 25 | 50 | 100 | 200;
         /** @example CAT-1001 */
         ActivityCategoryId: string;
     };
@@ -24292,7 +24292,7 @@ export interface operations {
                 order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */
                 group?: components["parameters"]["RankedGroup"];
-                size?: 10 | 25 | 50;
+                size?: 25 | 50 | 100 | 200;
                 page?: number;
                 q?: components["parameters"]["RankedSearch"];
                 /** @description The record whose children the list shows under it. */
@@ -24412,7 +24412,7 @@ export interface operations {
                 order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */
                 group?: components["parameters"]["RankedGroup"];
-                size?: 10 | 25 | 50;
+                size?: 25 | 50 | 100 | 200;
                 page?: number;
                 q?: components["parameters"]["RankedSearch"];
                 /** @description The record whose children the list shows under it. */
@@ -24573,7 +24573,7 @@ export interface operations {
                 order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */
                 group?: components["parameters"]["RankedGroup"];
-                size?: 10 | 25 | 50;
+                size?: 25 | 50 | 100 | 200;
                 page?: number;
                 q?: components["parameters"]["RankedSearch"];
                 /** @description The record whose children the list shows under it. */
