@@ -23,17 +23,19 @@ describe('filledOrder: short fields fill each row (D-433)', () => {
     expect(ids(short('a'), long('b'))).toEqual(['a', 'b']);
   });
 
-  it('treats three or more check boxes as wide and two as short', () => {
-    const boxes = (id: string, count: number) =>
-      attribute({
-        id,
-        label: id,
-        type: 'multipleChoice',
-        options: Array.from({ length: count }, (_, i) => option(`${id}-${i}`, `${i}`)),
-      });
+  it('keeps check boxes in one column, listed down, whatever their number', () => {
+    const boxes = attribute({
+      id: 'six',
+      label: 'six',
+      type: 'multipleChoice',
+      options: Array.from({ length: 6 }, (_, i) => option(`six-${i}`, `${i}`)),
+    });
 
-    expect(ids(short('a'), boxes('three', 3), short('b'))).toEqual(['a', 'b', 'three']);
-    expect(ids(short('a'), boxes('two', 2), short('b'))).toEqual(['a', 'two', 'b']);
+    expect(filledOrder([short('a'), boxes, short('b')], 3).map((a) => a.id)).toEqual([
+      'a',
+      'six',
+      'b',
+    ]);
   });
 
   it('fills three to a row on a wide form, and keeps the order in one column', () => {

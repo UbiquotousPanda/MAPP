@@ -9,11 +9,7 @@ export type Columns = 1 | 2 | 3;
 export const HEADING_LEVELS = { h2: 2, h3: 3, h4: 4, none: undefined } as const;
 
 export function isWide(attribute: FormAttribute): boolean {
-  return (
-    attribute.type === 'longText' ||
-    attribute.type === 'multipleChoiceSplit' ||
-    (attribute.type === 'multipleChoice' && attribute.options.length > 2)
-  );
+  return attribute.type === 'longText' || attribute.type === 'multipleChoiceSplit';
 }
 
 export function columnsFor(width: number): Columns {
