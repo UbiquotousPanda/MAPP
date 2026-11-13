@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import { useAddressParams } from '@/ui/useAddressParams';
 import { Card } from '@/ui/Card/Card';
+import { FormPage } from '@/ui/FormRail/FormRail';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { purchaseRequestHref, recordHref } from '@/ui/record-links';
 import { useToast } from '@/ui/Toast/useToast';
@@ -28,19 +29,21 @@ export function PurchaseRequestCreatePage() {
 
   if (!lineItemId) {
     return (
-      <div className={styles.step}>
-        <PageHeader
-          breadcrumb={[{ label: 'Plans', to: '/plans' }, { label: NEW_PURCHASE_REQUEST }]}
-          title={NEW_PURCHASE_REQUEST}
-        />
-        <Card title={PICKER.stepTitle}>
-          <LineItemOptionsList
-            query={{}}
-            action={PICKER.choose}
-            onChoose={(option) => setParams({ lineItemId: option.lineItem.id })}
+      <FormPage>
+        <div className={styles.step}>
+          <PageHeader
+            breadcrumb={[{ label: 'Plans', to: '/plans' }, { label: NEW_PURCHASE_REQUEST }]}
+            title={NEW_PURCHASE_REQUEST}
           />
-        </Card>
-      </div>
+          <Card title={PICKER.stepTitle}>
+            <LineItemOptionsList
+              query={{}}
+              action={PICKER.choose}
+              onChoose={(option) => setParams({ lineItemId: option.lineItem.id })}
+            />
+          </Card>
+        </div>
+      </FormPage>
     );
   }
   return <CreateForm key={lineItemId} lineItemId={lineItemId} />;

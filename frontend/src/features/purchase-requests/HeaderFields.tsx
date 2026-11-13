@@ -3,6 +3,7 @@ import { PersonField } from '@/features/people';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import type { ChoiceOption } from '@/ui/ChoiceField/ChoiceField';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
+import { FieldRow } from '@/ui/FieldRow/FieldRow';
 import { FormField } from '@/ui/FormField/FormField';
 import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFields';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
@@ -35,19 +36,76 @@ export function HeaderFields({
   const error = (field: string) => problemAt(problems, field);
   return (
     <div className={styles.fields}>
-      <FormField
-        control={control}
-        name="name"
-        render={(field) => (
-          <TextField
-            {...field}
-            label={LABELS.name}
-            marking="Required"
-            maxLength={NAME_MAX}
-            error={error('name')}
-          />
-        )}
-      />
+      <FieldRow>
+        <FormField
+          control={control}
+          name="name"
+          render={(field) => (
+            <TextField
+              {...field}
+              label={LABELS.name}
+              marking="Required"
+              maxLength={NAME_MAX}
+              error={error('name')}
+            />
+          )}
+        />
+        <FormField
+          control={control}
+          name="ownerId"
+          render={(field) => (
+            <PersonField
+              {...field}
+              label={LABELS.owner}
+              marking="Required"
+              error={error('ownerId')}
+            />
+          )}
+        />
+        <FormField
+          control={control}
+          name="moaApproverId"
+          render={(field) => (
+            <PersonField
+              {...field}
+              label={LABELS.moaApprover}
+              marking="Needed to submit"
+              hint={MOA_HINT}
+              error={error('moaApproverId')}
+            />
+          )}
+        />
+      </FieldRow>
+      <FieldRow>
+        <FormField
+          control={control}
+          name="approvalWorkflowId"
+          render={(field) => (
+            <ChoiceField
+              {...field}
+              label={LABELS.approvalWorkflow}
+              marking="Required"
+              hint={WORKFLOW_HINT}
+              options={workflows}
+              error={error('approvalWorkflowId')}
+            />
+          )}
+        />
+        <FormField
+          control={control}
+          name="modificationWorkflowId"
+          render={(field) => (
+            <ChoiceField
+              {...field}
+              label={LABELS.modificationWorkflow}
+              marking="Required"
+              hint={MODIFICATION_HINT}
+              options={modificationWorkflows}
+              error={error('modificationWorkflowId')}
+            />
+          )}
+        />
+      </FieldRow>
       <FormField
         control={control}
         name="description"
@@ -57,59 +115,6 @@ export function HeaderFields({
             label={LABELS.description}
             maxLength={DESCRIPTION_MAX}
             error={error('description')}
-          />
-        )}
-      />
-      <FormField
-        control={control}
-        name="ownerId"
-        render={(field) => (
-          <PersonField
-            {...field}
-            label={LABELS.owner}
-            marking="Required"
-            error={error('ownerId')}
-          />
-        )}
-      />
-      <FormField
-        control={control}
-        name="moaApproverId"
-        render={(field) => (
-          <PersonField
-            {...field}
-            label={LABELS.moaApprover}
-            marking="Needed to submit"
-            hint={MOA_HINT}
-            error={error('moaApproverId')}
-          />
-        )}
-      />
-      <FormField
-        control={control}
-        name="approvalWorkflowId"
-        render={(field) => (
-          <ChoiceField
-            {...field}
-            label={LABELS.approvalWorkflow}
-            marking="Required"
-            hint={WORKFLOW_HINT}
-            options={workflows}
-            error={error('approvalWorkflowId')}
-          />
-        )}
-      />
-      <FormField
-        control={control}
-        name="modificationWorkflowId"
-        render={(field) => (
-          <ChoiceField
-            {...field}
-            label={LABELS.modificationWorkflow}
-            marking="Required"
-            hint={MODIFICATION_HINT}
-            options={modificationWorkflows}
-            error={error('modificationWorkflowId')}
           />
         )}
       />
