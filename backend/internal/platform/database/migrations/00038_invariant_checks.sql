@@ -24,5 +24,5 @@ ALTER TABLE budget_allocations ADD CONSTRAINT budget_allocations_global_budget_i
     FOREIGN KEY (global_budget_id) REFERENCES global_budgets (id) DEFERRABLE INITIALLY DEFERRED;
 
 -- A purchase request and its modification share one numbering on purpose, so the kind is tied to the id instead.
-ALTER TABLE approval_rounds ADD CONSTRAINT approval_rounds_subject_kind_check
+ALTER TABLE approval_rounds ADD CONSTRAINT approval_rounds_subject_matches_kind_check
     CHECK ((subject_kind = 'activity') = (subject_id ~ '^A-[0-9]+$'));
