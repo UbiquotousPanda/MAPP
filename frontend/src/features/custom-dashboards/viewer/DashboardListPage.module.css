@@ -29,3 +29,7 @@
   font-size: var(--text-sm);
   line-height: var(--leading-sm);
 }
+
+.quiet {
+  color: var(--ink);
+}
