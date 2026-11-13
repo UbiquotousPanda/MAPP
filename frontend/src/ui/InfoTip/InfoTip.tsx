@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { Info, Lock } from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
@@ -9,6 +9,8 @@ export interface InfoTipProps {
   text: string;
   /** The term it explains; the button is named "About <label>". */
   label: string;
+  /** 'locked': a lock instead of the ⓘ, named "Why <label> can't change", its text the reason. */
+  kind?: 'info' | 'locked';
 }
 
 /** How long a mouse that leaves the ⓘ has to reach the bubble before it closes. */
@@ -22,10 +24,10 @@ const CLOSE_DELAY_MS = 150;
  *
  * A Radix Popover rather than a tooltip, because a tooltip cannot be opened by tapping.
  */
-export function InfoTip({ text, label }: InfoTipProps) {
+export function InfoTip({ text, label, kind = 'info' }: InfoTipProps) {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef(0);
-  const name = `About ${label}`;
+  const name = kind === 'locked' ? `Why ${label} can't change` : `About ${label}`;
 
   function show() {
     window.clearTimeout(closeTimer.current);
@@ -62,7 +64,7 @@ export function InfoTip({ text, label }: InfoTipProps) {
             show();
           }}
         >
-          <Info />
+          {kind === 'locked' ? <Lock /> : <Info />}
         </button>
       </Popover.Trigger>
       <Popover.Portal>

@@ -1,0 +1,26 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.label,
+.value {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.label {
+  font-weight: var(--weight-bold);
+}
+
+.value {
+  min-height: var(--space-10);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}

@@ -1,6 +1,7 @@
 import { Pencil } from 'lucide-react';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { Button } from '@/ui/Button/Button';
+import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { LockedNote } from '@/ui/LockedNote/LockedNote';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
@@ -16,7 +17,6 @@ import type { CurrencyActions } from './currency-actions';
 import { RateHistorySection } from './RateHistorySection';
 import { rateSourceLine } from './rate-words';
 
-/** MAPP's base currency: always 1, without a rate history. */
 const BASE_CURRENCY = 'USD';
 
 export interface CurrencyDetailsProps {
@@ -95,11 +95,11 @@ export function CurrencyDetails({ currency, actions, onClose }: CurrencyDetailsP
             <dt>Rate (units per 1 USD)</dt>
             <dd>
               {rateLine(currency.code, currency.rate)}
+              {rateLock && <InfoTip kind="locked" label="Rate (units per 1 USD)" text={rateLock} />}
               <span className={styles.secondLine}>
                 {inverseLine(currency.code, currency.inverseRate)}
               </span>
               <span className={styles.secondLine}>{rateSourceLine(currency, date)}</span>
-              {rateLock && <LockedNote>{rateLock}</LockedNote>}
             </dd>
           </div>
           <div>

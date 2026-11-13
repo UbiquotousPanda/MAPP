@@ -246,7 +246,10 @@ describe('RateDialog: Edit (016 FR-003)', () => {
 
     await chooseAction('the rate of 01 Jan 2027', 'Edit', user);
     const dialog = await screen.findByRole('dialog', { name: 'Edit rate of EUR' });
-    expect(dialog).toHaveTextContent("A rate's date can't change");
+    await user.click(within(dialog).getByRole('button', { name: "Why Date can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Date can't change" })).toHaveTextContent(
+      "A rate's date can't change",
+    );
     expect(dialog).toHaveTextContent('No conversion changes before 01 Jan 2027.');
     const rate = within(dialog).getByRole('textbox', { name: /^Rate/ });
     await user.clear(rate);

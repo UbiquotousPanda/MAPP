@@ -4,6 +4,7 @@ import { FieldRow } from '@/ui/FieldRow/FieldRow';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormCard } from '@/ui/FormRail/FormRail';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { TextField } from '@/ui/TextField/TextField';
 import type { components } from '@/api/generated/schema';
 import { PersonField, TeamField } from '@/features/people';
@@ -13,7 +14,6 @@ import type { Plan, PlanDefaults } from './api';
 import { PLAN_TYPE_LABELS, PLAN_TYPES } from './plan-currency';
 import type { SectionProps } from './plan-form-sections';
 import { YEAR_LOCKED } from './plan-text';
-import { ReadOnlyField } from './ReadOnlyField';
 import { useOfferedTeams } from './useOfferedTeams';
 
 type Model = components['schemas']['Model'];
@@ -93,12 +93,10 @@ export function PlanBasicsSection({
         ) : (
           <ReadOnlyField
             label="Year"
-            marking="Required"
             tip={help('plan.year')}
             value={values.year}
-          >
-            {YEAR_LOCKED}
-          </ReadOnlyField>
+            lock={YEAR_LOCKED}
+          />
         )}
         {with016 && (
           <FormField

@@ -9,7 +9,7 @@ import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { FormField } from '@/ui/FormField/FormField';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import { problemOf } from '@/ui/FormPanel/problem-of';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { localDate } from '@/format/intl';
@@ -27,7 +27,6 @@ import {
   useUpdateRate,
 } from './rates-api';
 import type { ChangeImpact, ExchangeRateRecord } from './rates-api';
-import styles from './rates.module.css';
 import { rateSchema } from './schemas';
 import type { RateValues } from './schemas';
 
@@ -158,13 +157,7 @@ export function RateDialog({ code, rate, onClose }: RateDialogProps) {
       >
         {failure && <FailureMessage failure={failure} />}
         {editing ? (
-          <dl className={styles.fixedValue}>
-            <dt>Date</dt>
-            <dd>{formatDate(rate.date)}</dd>
-            <dd>
-              <LockedNote>{DATE_FIXED}</LockedNote>
-            </dd>
-          </dl>
+          <ReadOnlyField label="Date" value={formatDate(rate.date)} lock={DATE_FIXED} />
         ) : (
           <FormField
             control={form.control}

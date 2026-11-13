@@ -28,7 +28,7 @@ describe('ShellAttributeEditorPage: edit (FR-021)', () => {
         },
       ],
     };
-    renderAttributeEditor('/settings/shell-attributes/SA-1010/edit', [
+    const { user } = renderAttributeEditor('/settings/shell-attributes/SA-1010/edit', [
       reply(
         'GET /api/v1/shell-attributes/{attributeId}',
         { body: locked },
@@ -45,18 +45,17 @@ describe('ShellAttributeEditorPage: edit (FR-021)', () => {
     expect(document.title).toBe('Edit Media channel · SP&A One');
     expect(screen.queryByRole('combobox', { name: /Type/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: /Level/ })).not.toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Type can't change once records use this attribute — create a new attribute instead.",
-      ),
-    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: "Why Type can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Type can't change" })).toHaveTextContent(
+      "Type can't change once records use this attribute — create a new attribute instead.",
+    );
     expect(screen.getByText('Single choice')).toBeInTheDocument();
     // Options are managed on the attribute page.
     expect(screen.queryByRole('button', { name: 'Add option' })).not.toBeInTheDocument();
   });
 
   it('shows the Business unit lock on its section (FR-023)', async () => {
-    renderAttributeEditor('/settings/shell-attributes/SA-1001/edit', [
+    const { user } = renderAttributeEditor('/settings/shell-attributes/SA-1001/edit', [
       reply(
         'GET /api/v1/shell-attributes/{attributeId}',
         { body: BUSINESS_UNIT },
@@ -67,7 +66,13 @@ describe('ShellAttributeEditorPage: edit (FR-021)', () => {
     await screen.findByRole('heading', { level: 1, name: "Edit Shell attribute 'Business unit'" });
     expect(screen.queryByRole('combobox', { name: /Section/ })).not.toBeInTheDocument();
     // Level, Type, Section, Depends on and the condition.
-    await waitFor(() => expect(screen.getAllByText(BUSINESS_UNIT_LOCK)).toHaveLength(5));
+    await waitFor(() =>
+      expect(screen.getAllByRole('button', { name: /^Why .* can't change$/ })).toHaveLength(5),
+    );
+    await user.click(screen.getByRole('button', { name: "Why Section can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Section can't change" })).toHaveTextContent(
+      BUSINESS_UNIT_LOCK,
+    );
     expect(screen.queryByRole('combobox', { name: /Depends on/ })).not.toBeInTheDocument();
     expect(
       screen.queryByRole('group', { name: /Shown when the plan's business unit includes/ }),

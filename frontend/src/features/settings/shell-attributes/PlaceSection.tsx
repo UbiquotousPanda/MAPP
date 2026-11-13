@@ -1,11 +1,10 @@
 import { useFormContext, useWatch } from 'react-hook-form';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormSection } from '@/ui/FormSection/FormSection';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { TextField } from '@/ui/TextField/TextField';
 import { lockReason } from './attribute-words';
 import type { ShellAttribute } from './api';
-import { FixedField } from './FixedField';
 import type { AttributeValues } from './schemas';
 
 export interface PlaceSectionProps {
@@ -26,9 +25,7 @@ export function PlaceSection({ attribute, allAttributes }: PlaceSectionProps) {
   return (
     <FormSection title="Place on the form">
       {sectionLock ? (
-        <FixedField label="Section" value={section}>
-          <LockedNote>{sectionLock}</LockedNote>
-        </FixedField>
+        <ReadOnlyField label="Section" value={section} lock={sectionLock} />
       ) : (
         <FormField
           control={form.control}

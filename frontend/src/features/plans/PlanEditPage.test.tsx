@@ -34,14 +34,13 @@ function renderPage(answers: HttpHandler[] = [], route = '/plans/P-1001/edit') {
 
 describe('PlanEditPage (US4, FR-018 – FR-023)', () => {
   it('opens the form with the year locked (US4#1, FR-018)', async () => {
-    renderPage();
+    const { user } = renderPage();
 
     expect(screen.getByRole('heading', { level: 1, name: 'Edit plan' })).toBeInTheDocument();
-    expect(
-      await screen.findByText(
-        "Year can't change once the plan is saved — copy the plan into the next year or create a new plan.",
-      ),
-    ).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: "Why Year can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Year can't change" })).toHaveTextContent(
+      "Year can't change once the plan is saved — copy the plan into the next year or create a new plan.",
+    );
     expect(screen.queryByRole('combobox', { name: /Year/ })).not.toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /Plan name/ })).toHaveValue(
       'FY2026 Lubricants Europe',
@@ -69,13 +68,14 @@ describe('PlanEditPage (US4, FR-018 – FR-023)', () => {
         canOpen: false,
       },
     });
-    renderPage([reply('GET /api/v1/plans/{planId}', { body: allocated }, { planId: 'P-1001' })]);
+    const { user } = renderPage([
+      reply('GET /api/v1/plans/{planId}', { body: allocated }, { planId: 'P-1001' }),
+    ]);
 
-    expect(
-      await screen.findByText(
-        "Allocated from 'FY2026 Global marketing budget' — ask Carlos Mendes to change it.",
-      ),
-    ).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: "Why Plan budget can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Plan budget can't change" })).toHaveTextContent(
+      "Allocated from 'FY2026 Global marketing budget' — ask Carlos Mendes to change it.",
+    );
     expect(screen.queryByRole('textbox', { name: /^Plan budget/ })).not.toBeInTheDocument();
   });
 

@@ -33,24 +33,6 @@
   font-size: var(--text-xs);
 }
 
-/* A value that can't change in the dialog (the date of an existing rate). */
-.fixedValue {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  font-size: var(--text-sm);
-}
-
-.fixedValue dt {
-  color: var(--ink);
-  font-weight: var(--weight-bold);
-}
-
-.fixedValue dd {
-  margin: 0;
-  color: var(--ink);
-}
-
 .stack {
   display: flex;
   flex-direction: column;

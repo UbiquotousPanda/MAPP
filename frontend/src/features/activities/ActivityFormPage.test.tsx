@@ -67,7 +67,10 @@ describe('ActivityFormPage, new activity (feature 006, US1)', () => {
     const campaign = screen.getByText('Campaign');
     expect(campaign.nextElementSibling).toHaveTextContent('Helix launch');
     expect(screen.getByText('Initiative').nextElementSibling).toHaveTextContent('Digital & social');
-    expect(screen.getByText('Change it later with Move')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: "Why Initiative can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Initiative can't change" })).toHaveTextContent(
+      'Change it later with Move',
+    );
     expect(await screen.findByLabelText('Owner')).toHaveAccessibleDescription('Needed to submit');
     expect(screen.getByLabelText('Start date')).toHaveValue('01 Jan 2026');
     expect(screen.getByLabelText('End date')).toHaveValue('30 Jun 2026');

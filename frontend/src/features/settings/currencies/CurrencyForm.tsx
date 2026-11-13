@@ -4,6 +4,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { DecimalField } from '@/ui/DecimalField/DecimalField';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormPanel } from '@/ui/FormPanel/FormPanel';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { TextField } from '@/ui/TextField/TextField';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
@@ -18,7 +19,6 @@ import { lockOf, rateLine } from './currency-actions';
 import { changedFields, createBody, startValues } from './currency-values';
 import { liveRate } from './rate-input';
 import { rateSourceLine } from './rate-words';
-import { ReadOnlyField } from '../ReadOnlyField';
 import { currencySchema } from './schemas';
 import type { CurrencyValues } from './schemas';
 
@@ -39,7 +39,6 @@ export interface CurrencyFormProps {
   onClose: () => void;
 }
 
-/** A save that waits for "Save changes" in the impact dialog. */
 interface PendingImpact {
   body: CurrencyUpdate;
   warnings: ChangeImpact['warnings'];
@@ -149,9 +148,11 @@ export function CurrencyForm({ currency, onClose }: CurrencyFormProps) {
       >
         <div className={styles.formFields}>
           {currency ? (
-            <ReadOnlyField label="Code" value={currency.code}>
-              {lockOf(currency, 'code') ?? CODE_LOCKED}
-            </ReadOnlyField>
+            <ReadOnlyField
+              label="Code"
+              value={currency.code}
+              lock={lockOf(currency, 'code') ?? CODE_LOCKED}
+            />
           ) : (
             <FormField
               control={form.control}
@@ -180,9 +181,8 @@ export function CurrencyForm({ currency, onClose }: CurrencyFormProps) {
             <ReadOnlyField
               label="Rate (units per 1 USD)"
               value={rateLine(currency.code, currency.rate)}
-            >
-              {rateLock}
-            </ReadOnlyField>
+              lock={rateLock}
+            />
           ) : (
             <FormField
               control={form.control}

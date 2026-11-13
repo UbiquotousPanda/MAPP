@@ -19,7 +19,7 @@ configure({ asyncUtilTimeout: 10_000 });
 const FORM: [string, string][] = [
   ['Activity name', 'activity.name'],
   ['External name', 'activity.externalName'],
-  ['Campaign, Initiative', 'activity.initiative'],
+  ['Campaign', 'activity.initiative'],
   ['Activity type', 'activity.activityType'],
   ['Owner', 'activity.owner'],
   ['Approval workflow', 'activity.approvalWorkflow'],

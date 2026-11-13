@@ -1412,7 +1412,7 @@ Nothing is greyed out without a reason next to it:
 |---|---|
 | Calculated | Small "Calculated" label and ⓘ with the formula |
 | From finance/GSAP later | "Filled by GSAP later" / "From finance (coming later)" |
-| Fixed after save | Lock icon + "Year can't change once the plan is saved — create a new plan for another year." |
+| Fixed after save | `ReadOnlyField`: the value as text and a lock beside it whose tip says why ("Year can't change once the plan is saved — create a new plan for another year."); no marking word, the form's legend covers it (D-434) |
 | Irreversible choice | Warning when ticked: "Ongoing can't be undone after saving." |
 | Waiting for approval | `InlineAlert` (warning): "Submitted for approval — changing planned cost or dates will restart approval." |
 | Action not yet possible | The button stays visible; clicking it explains: "Publish needs 4 fields — view list". |

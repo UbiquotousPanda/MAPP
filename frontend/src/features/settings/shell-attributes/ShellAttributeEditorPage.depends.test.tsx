@@ -110,7 +110,7 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
   });
 
   it('says why no condition can be set while there is no Business unit attribute', async () => {
-    renderAttributeEditor('/settings/shell-attributes/new?level=plan', [
+    const { user } = renderAttributeEditor('/settings/shell-attributes/new?level=plan', [
       reply(
         'GET /api/v1/shell-attribute-forms/{level}',
         {
@@ -120,11 +120,11 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
       ),
     ]);
 
-    expect(
-      await screen.findByText(
-        "There is no Business unit attribute yet, so conditions can't be set.",
-      ),
-    ).toBeInTheDocument();
+    const lock = "Why Shown when the plan's business unit includes can't change";
+    await user.click(await screen.findByRole('button', { name: lock }));
+    expect(screen.getByRole('dialog', { name: lock })).toHaveTextContent(
+      "There is no Business unit attribute yet, so conditions can't be set.",
+    );
     expect(
       screen.queryByRole('group', { name: /Shown when the plan's business unit includes/ }),
     ).not.toBeInTheDocument();

@@ -86,7 +86,10 @@ describe('CurrenciesPage: create and edit (US4 scenarios 1, 3, 4, 5)', () => {
     await user.click(within(details).getByRole('button', { name: 'Edit' }));
     const form = await screen.findByRole('dialog', { name: 'Edit currency' });
     expect(within(form).queryByRole('textbox', { name: /^Code/ })).not.toBeInTheDocument();
-    expect(form).toHaveTextContent("The code can't change once the currency is saved.");
+    await user.click(within(form).getByRole('button', { name: "Why Code can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Code can't change" })).toHaveTextContent(
+      "The code can't change once the currency is saved.",
+    );
     expect(form).toHaveTextContent('Rate last changed by Daniel Okoro on 14 Mar 2026');
 
     const rate = within(form).getByRole('textbox', { name: /^Rate/ });
@@ -123,7 +126,12 @@ describe('CurrenciesPage: create and edit (US4 scenarios 1, 3, 4, 5)', () => {
     const form = await screen.findByRole('dialog', { name: 'Edit currency' });
     expect(within(form).queryByRole('textbox', { name: /^Rate/ })).not.toBeInTheDocument();
     expect(form).toHaveTextContent('1 USD = 1.00 USD');
-    expect(form).toHaveTextContent(USD_LOCK);
+    await user.click(
+      within(form).getByRole('button', { name: "Why Rate (units per 1 USD) can't change" }),
+    );
+    expect(
+      screen.getByRole('dialog', { name: "Why Rate (units per 1 USD) can't change" }),
+    ).toHaveTextContent(USD_LOCK);
 
     const name = within(form).getByRole('textbox', { name: /^Name/ });
     await user.clear(name);

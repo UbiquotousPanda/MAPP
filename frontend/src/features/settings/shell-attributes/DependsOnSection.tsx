@@ -4,15 +4,13 @@ import type { ChoiceOption } from '@/ui/ChoiceField/ChoiceField';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormSection } from '@/ui/FormSection/FormSection';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import type { useAttributeForm } from '../api';
 import { chooseParent, NONE } from './attribute-choices';
 import { conditionText, isChoiceType, lockReason, parentCandidates } from './attribute-words';
 import type { ShellAttribute } from './api';
-import { FixedField } from './FixedField';
 import type { AttributeValues } from './schemas';
-import styles from './ShellAttributes.module.css';
 
 const CONDITION_LABEL = "Shown when the plan's business unit includes";
 const NO_BUSINESS_UNIT = "There is no Business unit attribute yet, so conditions can't be set.";
@@ -62,9 +60,11 @@ export function DependsOnSection({ attribute, allAttributes, levelForm }: Depend
     <FormSection title="Depends on and condition">
       {isChoiceType(type) &&
         (parentLock && attribute ? (
-          <FixedField label="Depends on" value={attribute.parentAttribute?.name ?? 'None'}>
-            <LockedNote>{parentLock}</LockedNote>
-          </FixedField>
+          <ReadOnlyField
+            label="Depends on"
+            value={attribute.parentAttribute?.name ?? 'None'}
+            lock={parentLock}
+          />
         ) : (
           <FormField
             control={form.control}
@@ -82,13 +82,13 @@ export function DependsOnSection({ attribute, allAttributes, levelForm }: Depend
           />
         ))}
       {conditionLock && attribute ? (
-        <FixedField label={CONDITION_LABEL} value={conditionText(attribute) ?? 'Always shown'}>
-          <LockedNote>{conditionLock}</LockedNote>
-        </FixedField>
+        <ReadOnlyField
+          label={CONDITION_LABEL}
+          value={conditionText(attribute) ?? 'Always shown'}
+          lock={conditionLock}
+        />
       ) : formData.businessUnitAttributeId === null ? (
-        <FixedField label={CONDITION_LABEL} value="Always shown">
-          <p className={styles.hint}>{NO_BUSINESS_UNIT}</p>
-        </FixedField>
+        <ReadOnlyField label={CONDITION_LABEL} value="Always shown" lock={NO_BUSINESS_UNIT} />
       ) : (
         <FormField
           control={form.control}

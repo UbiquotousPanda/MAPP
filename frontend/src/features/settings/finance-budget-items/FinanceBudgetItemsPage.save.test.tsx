@@ -97,7 +97,10 @@ describe('FinanceBudgetItemsPage: create and edit (US5 scenarios 3 and 4, FR-014
     await chooseAction('Europe – Digital', 'Edit', user);
     const form = await screen.findByRole('dialog', { name: 'Edit finance budget item' });
     expect(within(form).queryByRole('combobox', { name: /^Budget year/ })).not.toBeInTheDocument();
-    expect(form).toHaveTextContent(YEAR_LOCK);
+    await user.click(within(form).getByRole('button', { name: "Why Budget year can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Budget year can't change" })).toHaveTextContent(
+      YEAR_LOCK,
+    );
     const name = within(form).getByRole('textbox', { name: /^Item name/ });
     await user.clear(name);
     await user.type(name, 'Europe – Online');

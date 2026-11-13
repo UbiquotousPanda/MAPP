@@ -1,10 +1,10 @@
-import { useId } from 'react';
 import { useWatch } from 'react-hook-form';
 import type { Control } from 'react-hook-form';
 import { DateRangeField } from '@/ui/DateRangeField/DateRangeField';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormSection } from '@/ui/FormSection/FormSection';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFields';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
@@ -80,7 +80,6 @@ export function RecordForm({
   const { date } = useFormatters();
   const { help } = useFieldHelp();
   const tip = (field: string) => help(`${level}.${field}`);
-  const campaignFieldId = useId();
   const values = useWatch({ control, compute: (all: RecordFormValues) => all });
   const isCampaign = level === 'campaign';
   const allowed =
@@ -106,14 +105,11 @@ export function RecordForm({
           )}
         />
         {campaign && (
-          <TextField
+          <ReadOnlyField
             label={CAMPAIGN}
-            name={campaignFieldId}
             value={campaign.name}
-            onChange={() => {}}
-            readOnly
-            hint={CHANGE_IT_WITH_MOVE}
             tip={help('initiative.campaign')}
+            lock={CHANGE_IT_WITH_MOVE}
           />
         )}
         <FormField

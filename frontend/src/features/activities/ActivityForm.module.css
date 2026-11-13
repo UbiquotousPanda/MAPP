@@ -12,40 +12,6 @@
   gap: var(--space-6);
 }
 
-/* Where the activity sits, on one line: "Campaign Helix launch · Initiative Digital & social",
-   and the lock that says how to change it (UI audit AF-01: a shorter form). */
-.readOnly {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-1) var(--space-6);
-}
-
-.pairs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-6);
-  margin: 0;
-}
-
-.pair {
-  display: flex;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.pair dt {
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-}
-
-.pair dd {
-  margin: 0;
-  color: var(--ink-2);
-  overflow-wrap: break-word;
-}
-
 /* A warning that does not block saving: amber icon, the text in ink. */
 .warning,
 .notice {

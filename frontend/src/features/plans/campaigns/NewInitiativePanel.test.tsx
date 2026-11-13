@@ -43,13 +43,14 @@ async function findPanel() {
 
 describe('NewInitiativePanel (feature 005, US2)', () => {
   it('fixes the campaign and takes owner and dates from it (US2#1, FR-002, FR-003)', async () => {
-    renderPanel();
+    const { user } = renderPanel();
     const panel = await findPanel();
 
-    const field = within(panel).getByLabelText('Campaign');
-    expect(field).toHaveValue('Helix launch');
-    expect(field).toHaveAttribute('readonly');
-    expect(field).toHaveAccessibleDescription('Change it with Move');
+    expect(within(panel).getByText('Helix launch')).toBeInTheDocument();
+    await user.click(within(panel).getByRole('button', { name: "Why Campaign can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Campaign can't change" })).toHaveTextContent(
+      'Change it with Move',
+    );
     expect(within(panel).getByText(/Alex Morgan/)).toBeInTheDocument();
     expect(within(panel).getByLabelText('Start date')).toHaveValue('01 Mar 2026');
     expect(within(panel).getByLabelText('End date')).toHaveValue('31 Dec 2026');

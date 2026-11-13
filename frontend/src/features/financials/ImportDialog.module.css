@@ -30,22 +30,6 @@
   overflow-wrap: anywhere;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.fieldLabel {
-  font-weight: var(--weight-bold);
-}
-
-.marking {
-  color: var(--ink-2);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-regular);
-}
-
 /* The native file input, framed like every other field (design system §5.5). */
 .file {
   width: 100%;

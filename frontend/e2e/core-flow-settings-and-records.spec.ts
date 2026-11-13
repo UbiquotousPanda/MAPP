@@ -76,9 +76,10 @@ test('C: Settings — an administrator edits a model, a Shell attribute and a cu
   await inrRow.getByRole('button', { name: 'Actions for INR' }).click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
   const editCurrency = page.getByRole('dialog', { name: 'Edit currency' });
-  await expect(
-    editCurrency.getByText("The code can't change once the currency is saved."),
-  ).toBeVisible();
+  await editCurrency.getByRole('button', { name: "Why Code can't change" }).click();
+  await expect(page.getByRole('dialog', { name: "Why Code can't change" })).toContainText(
+    "The code can't change once the currency is saved.",
+  );
   await editCurrency.getByRole('textbox', { name: /^Rate/ }).fill('84');
   await expect(editCurrency.getByText('1 USD = 84.00 INR')).toBeVisible();
   await expect(editCurrency.getByText('1 INR = 0.011905 USD')).toBeVisible();

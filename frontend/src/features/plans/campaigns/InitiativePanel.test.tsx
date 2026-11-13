@@ -173,7 +173,8 @@ describe('InitiativePanel (feature 005, US3)', () => {
     ]);
     const form = await findForm();
 
-    expect(within(form).getByLabelText('Campaign')).toHaveValue('Helix launch');
+    expect(within(form).getByText('Helix launch')).toBeInTheDocument();
+    expect(within(form).getByRole('button', { name: "Why Campaign can't change" })).toBeVisible();
     expect(
       within(form).getByText("Must be inside the campaign's dates (01 Jan 2026 – 31 Dec 2026)"),
     ).toBeInTheDocument();

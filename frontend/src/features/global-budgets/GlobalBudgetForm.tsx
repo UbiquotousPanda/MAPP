@@ -4,7 +4,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormPanel } from '@/ui/FormPanel/FormPanel';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { FieldRow } from '@/ui/FieldRow/FieldRow';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
@@ -157,11 +157,7 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
         </FieldRow>
         <FieldRow>
           {budget ? (
-            <div className={styles.readOnly}>
-              <span className={styles.readOnlyLabel}>Year</span>
-              <span className={styles.readOnlyValue}>{budget.year}</span>
-              <LockedNote>{yearLock}</LockedNote>
-            </div>
+            <ReadOnlyField label="Year" value={budget.year} lock={yearLock} />
           ) : (
             <FormField
               control={form.control}

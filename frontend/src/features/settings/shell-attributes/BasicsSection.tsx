@@ -2,7 +2,7 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormSection } from '@/ui/FormSection/FormSection';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
 import { chooseLevel, chooseType } from './attribute-choices';
@@ -16,9 +16,7 @@ import {
   typesFor,
 } from './attribute-words';
 import type { ShellAttribute } from './api';
-import { FixedField } from './FixedField';
 import type { AttributeValues } from './schemas';
-import styles from './ShellAttributes.module.css';
 
 const YES_NO_HINT = 'Shown as a tick box.';
 const SPLIT_HINT =
@@ -52,9 +50,7 @@ export function BasicsSection({ attribute }: { attribute?: ShellAttribute }) {
         )}
       />
       {levelLock ? (
-        <FixedField label="Level" value={LEVEL_WORDS[level]}>
-          <LockedNote>{levelLock}</LockedNote>
-        </FixedField>
+        <ReadOnlyField label="Level" value={LEVEL_WORDS[level]} lock={levelLock} />
       ) : (
         <FormField
           control={form.control}
@@ -71,9 +67,7 @@ export function BasicsSection({ attribute }: { attribute?: ShellAttribute }) {
         />
       )}
       {typeLock && attribute ? (
-        <FixedField label="Type" value={TYPE_WORDS[attribute.type]}>
-          <LockedNote>{typeLock}</LockedNote>
-        </FixedField>
+        <ReadOnlyField label="Type" value={TYPE_WORDS[attribute.type]} lock={typeLock} />
       ) : (
         <FormField
           control={form.control}
@@ -95,9 +89,7 @@ export function BasicsSection({ attribute }: { attribute?: ShellAttribute }) {
         />
       )}
       {type === 'yesNo' ? (
-        <FixedField label="Marking" value={MARKING_WORDS.optional}>
-          <p className={styles.hint}>{YES_NO_HINT}</p>
-        </FixedField>
+        <ReadOnlyField label="Marking" value={MARKING_WORDS.optional} tip={YES_NO_HINT} />
       ) : (
         <FormField
           control={form.control}

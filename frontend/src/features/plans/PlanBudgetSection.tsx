@@ -8,6 +8,7 @@ import { FormField } from '@/ui/FormField/FormField';
 import { FormCard } from '@/ui/FormRail/FormRail';
 import type { FieldBinding } from '@/ui/FormField/FormField';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { formatMoneyText } from '@/format/decimal';
 import type { Plan } from './api';
 import type { SectionProps } from './plan-form-sections';
@@ -18,7 +19,6 @@ import {
   SPREAD_LABELS,
   SPREAD_METHODS,
 } from './plan-text';
-import { ReadOnlyField } from './ReadOnlyField';
 import type { PlanFormValues } from './schemas';
 
 const NO_DEFAULT = 'none';
@@ -87,9 +87,8 @@ export function PlanBudgetSection({
                 ? formatMoneyText({ amount: values.budget, currency: values.currency })
                 : '—'
             }
-          >
-            {allocationLock}
-          </ReadOnlyField>
+            lock={allocationLock}
+          />
         ) : (
           <FormField
             control={control}
