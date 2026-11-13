@@ -459,8 +459,8 @@ amounts (no goods-receipt data exists).
 - **FR-010**: Users MUST add a line only through Add line and a line-item picker that searches by name, ID
   and HX key, shows each line item's available amount, offers eligible line items (FR-002) whose activity
   has the PR's company code, and lists matching ineligible ones as unavailable with the reason (013 FR-014).
-  The picker shows the first five matches and how many there are in all; the search finds the others
-  (amended 2026-11-13).
+  The picker shows the first five matches and how many there are in all; **Show more** adds ten at a time
+  up to the fifty the API sends, and the search finds the others (amended 2026-11-13).
 - **FR-011**: A line MUST have: Line item (name and ID) and HX key, read-only; Currency (needed to save; an
   active currency; defaults to the line item's); Amount (needed to save; above 0.00); Delivery date (needed
   to save; a calendar date); Overall limit (needed to submit; 0.00 or more; defaults to the amount);

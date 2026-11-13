@@ -5,12 +5,13 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { formatMoneyText } from '@/format/decimal';
 import { useLineItemOptions } from './api';
 import type { LineItemOptionQuery, PurchaseRequestLineItemOption } from './api';
-import { chooseLabel, moreText, noMatchText, PICKER } from './form-text';
+import { chooseLabel, moreText, noMatchText, PICKER, showMoreLabel } from './form-text';
 import styles from './LineItemPicker.module.css';
 
 export const SEARCH_DELAY_MS = 300;
-/** The search finds the rest, so a long list never runs down the page. */
+/** The list opens short and grows on Show more; the search finds what the API did not send. */
 export const SHOWN_OPTIONS = 5;
+export const MORE_OPTIONS = 10;
 
 export interface LineItemOptionsListProps {
   /** The PR (purchaseRequestId) or the form's plan and company code (planId, companyCode). */
@@ -34,6 +35,8 @@ export function LineItemOptionsList({
   const [typed, setTyped] = useState('');
   const search = useSettled(typed.trim(), SEARCH_DELAY_MS);
   const options = useLineItemOptions({ ...query, ...(search ? { search } : {}) });
+  const [more, setMore] = useState({ search, count: SHOWN_OPTIONS });
+  const count = more.search === search ? more.count : SHOWN_OPTIONS;
 
   return (
     <div className={styles.picker}>
@@ -47,15 +50,18 @@ export function LineItemOptionsList({
         {options.data ? (
           <>
             <OptionRows
-              options={options.data.items.slice(0, SHOWN_OPTIONS)}
+              options={options.data.items.slice(0, count)}
               inForm={inForm}
               search={search}
               action={action}
               onChoose={onChoose}
             />
-            {options.data.total > SHOWN_OPTIONS && (
-              <p className={styles.meta}>{moreText(SHOWN_OPTIONS, options.data.total)}</p>
-            )}
+            <MoreOptions
+              shown={Math.min(count, options.data.items.length)}
+              loaded={options.data.items.length}
+              total={options.data.total}
+              onMore={() => setMore({ search, count: count + MORE_OPTIONS })}
+            />
           </>
         ) : options.isError ? (
           <div role="alert" className={styles.failed}>
@@ -131,4 +137,30 @@ function useSettled(value: string, delay: number): string {
     return () => clearTimeout(timer);
   }, [value, delay]);
   return settled;
+}
+
+function MoreOptions({
+  shown,
+  loaded,
+  total,
+  onMore,
+}: {
+  shown: number;
+  loaded: number;
+  total: number;
+  onMore: () => void;
+}) {
+  if (shown >= total) {
+    return null;
+  }
+  return (
+    <div className={styles.more}>
+      <p className={styles.meta}>{moreText(shown, total, shown < loaded)}</p>
+      {shown < loaded && (
+        <Button size="sm" onClick={onMore}>
+          {showMoreLabel(Math.min(MORE_OPTIONS, loaded - shown))}
+        </Button>
+      )}
+    </div>
+  );
 }

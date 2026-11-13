@@ -229,13 +229,13 @@ describe('032 FR-003/FR-053/FR-054: new purchase request', () => {
     await waitFor(() => expect(router.state.location.search).toBe('?lineItemId=L-1011'));
   });
 
-  it('032 FR-010: shows the first five line items and how many more the search can find', async () => {
+  it('032 FR-010: shows the first five line items, more on Show more, and how many the search can find', async () => {
     const items = Array.from({ length: 8 }, (_, i) =>
       lineItemOption({
         lineItem: { ...lineItemOption().lineItem, id: `L-20${i}`, name: `Item ${i}` },
       }),
     );
-    renderCreate(
+    const { user } = renderCreate(
       { body: defaults() },
       [reply('GET /api/v1/purchase-requests/line-item-options', { body: { items, total: 42 } })],
       '/purchase-requests/new',
@@ -247,8 +247,18 @@ describe('032 FR-003/FR-053/FR-054: new purchase request', () => {
     expect(screen.getAllByRole('button', { name: /^Choose Item/ })).toHaveLength(5);
     expect(
       screen.getByText(
-        'Showing 5 of 42 line items. Search by name, ID or HX key to find the others.',
+        'Showing 5 of 42 line items. Show more, or search by name, ID or HX key to find the others.',
       ),
     ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Show 3 more' }));
+
+    expect(screen.getAllByRole('button', { name: /^Choose Item/ })).toHaveLength(8);
+    expect(
+      screen.getByText(
+        'Showing 8 of 42 line items. Search by name, ID or HX key to find the others.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Show \d+ more$/ })).not.toBeInTheDocument();
   });
 });

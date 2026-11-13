@@ -81,8 +81,13 @@ export const PICKER = {
   stepTitle: 'Choose a line item',
 } as const;
 
-export function moreText(shown: number, total: number): string {
-  return `Showing ${shown} of ${total} line items. Search by name, ID or HX key to find the others.`;
+export function moreText(shown: number, total: number, canShowMore: boolean): string {
+  const find = canShowMore ? 'Show more, or search' : 'Search';
+  return `Showing ${shown} of ${total} line items. ${find} by name, ID or HX key to find the others.`;
+}
+
+export function showMoreLabel(count: number): string {
+  return `Show ${count} more`;
 }
 
 export function noMatchText(query: string): string {
