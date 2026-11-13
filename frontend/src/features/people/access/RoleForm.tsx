@@ -129,7 +129,7 @@ export function RoleForm({ role, start, catalogue }: RoleFormProps) {
               render={(field) => (
                 <TextAreaField
                   label="Description"
-                  hint="One sentence on who the role is for."
+                  tip="One sentence on who the role is for."
                   maxLength={300}
                   rows={2}
                   {...field}
@@ -142,7 +142,7 @@ export function RoleForm({ role, start, catalogue }: RoleFormProps) {
               render={(field) => (
                 <RadioGroup
                   label="Default scope"
-                  hint="Where the role applies when it is given to someone; it can be changed for each person."
+                  tip="Where the role applies when it is given to someone; it can be changed for each person."
                   name="defaultScope"
                   options={DEFAULT_SCOPES.map((scope) => ({
                     value: scope,

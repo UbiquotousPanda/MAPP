@@ -90,7 +90,7 @@ export function EditPreferencesPanel({ onClose }: { onClose: () => void }) {
           render={(field) => (
             <ChoiceField
               label="Display currency"
-              hint={DISPLAY_CURRENCY_NOTE}
+              tip={DISPLAY_CURRENCY_NOTE}
               options={currencies.data.items.map(currencyChoice)}
               {...field}
             />

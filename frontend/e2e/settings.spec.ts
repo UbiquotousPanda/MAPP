@@ -45,8 +45,9 @@ test('Settings: an activity type, a finance budget item, a dependent option in t
   await expect(newItem.getByRole('combobox', { name: 'Budget year' })).toHaveText(
     String(THIS_YEAR),
   );
+  await newItem.getByRole('button', { name: 'About Budget name' }).click();
   await expect(
-    newItem.getByText('Items with the same year and budget name form one finance budget.'),
+    page.getByText('Items with the same year and budget name form one finance budget.'),
   ).toBeVisible();
   await newItem.getByRole('combobox', { name: 'Budget name' }).fill(budgetName);
   await newItem.getByRole('textbox', { name: /^Item name/ }).fill(itemName);

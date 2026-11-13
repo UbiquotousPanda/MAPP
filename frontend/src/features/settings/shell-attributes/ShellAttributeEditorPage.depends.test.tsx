@@ -23,7 +23,8 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     // Only single and multiple choice attributes placed before it (not the % split Brands).
     expect(await offered(user, /^Depends on/)).toEqual(['None', 'Media channel', 'PIR']);
     expect(dependsOn).toHaveTextContent('None');
-    expect(dependsOn).toHaveAccessibleDescription(
+    await user.click(screen.getByRole('button', { name: 'About Depends on' }));
+    expect(screen.getByRole('dialog', { name: 'About Depends on' })).toHaveTextContent(
       'Its options are filtered by the value chosen for that attribute.',
     );
     await choose(user, dependsOn, 'Media channel');
@@ -46,7 +47,10 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     expect(api.bodiesOf('POST /api/v1/shell-attributes')).toEqual([]);
 
     const first = screen.getByRole('group', { name: 'Option 1' });
-    expect(first).toHaveTextContent('Shown when one of these media channel options is chosen.');
+    await user.click(within(first).getByRole('button', { name: 'About Linked to' }));
+    expect(screen.getByRole('dialog', { name: 'About Linked to' })).toHaveTextContent(
+      'Shown when one of these media channel options is chosen.',
+    );
     // An inactive parent option can't be newly linked.
     expect(within(first).queryByRole('checkbox', { name: /Print/ })).not.toBeInTheDocument();
     await user.click(within(first).getByRole('checkbox', { name: 'TV' }));
@@ -86,7 +90,11 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     const condition = await screen.findByRole('group', {
       name: /Shown when the plan's business unit includes/,
     });
-    expect(condition).toHaveTextContent('Leave all unticked to show it always.');
+    const about = "About Shown when the plan's business unit includes";
+    await user.click(within(condition).getByRole('button', { name: about }));
+    expect(screen.getByRole('dialog', { name: about })).toHaveTextContent(
+      'Leave all unticked to show it always.',
+    );
     // Only choice attributes depend on others.
     expect(screen.queryByRole('combobox', { name: /Depends on/ })).not.toBeInTheDocument();
     await user.click(within(condition).getByRole('checkbox', { name: 'Lubricants' }));

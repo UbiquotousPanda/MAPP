@@ -44,7 +44,7 @@ export function BasicsSection({ attribute }: { attribute?: ShellAttribute }) {
         render={(field) => (
           <TextAreaField
             label="Help text"
-            hint="Shown as an ⓘ tip next to the field on forms."
+            tip="Shown as an ⓘ tip next to the field on forms."
             maxLength={300}
             rows={3}
             {...field}
@@ -82,7 +82,7 @@ export function BasicsSection({ attribute }: { attribute?: ShellAttribute }) {
             <ChoiceField
               label="Type"
               marking="Required"
-              hint={type === 'multipleChoiceSplit' ? SPLIT_HINT : undefined}
+              tip={type === 'multipleChoiceSplit' ? SPLIT_HINT : undefined}
               options={typesFor(level).map((each) => ({
                 id: each,
                 label: TYPE_WORDS[each],

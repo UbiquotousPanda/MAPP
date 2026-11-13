@@ -85,7 +85,7 @@ function CurrencyField({ control, index, currencies }: CurrencyFieldProps) {
         <ChoiceField
           label="Currency"
           marking="Required"
-          hint="Amounts are shown in US dollars at the current rate."
+          tip="Amounts are shown in US dollars at the current rate."
           options={currencies}
           value={value ?? ''}
           onChange={(code) => onChange(code || null)}

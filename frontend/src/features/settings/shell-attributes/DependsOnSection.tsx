@@ -72,7 +72,7 @@ export function DependsOnSection({ attribute, allAttributes, levelForm }: Depend
             render={(field) => (
               <ChoiceField
                 label="Depends on"
-                hint="Its options are filtered by the value chosen for that attribute."
+                tip="Its options are filtered by the value chosen for that attribute."
                 options={parentOptions}
                 {...field}
                 value={field.value || NONE}
@@ -96,7 +96,7 @@ export function DependsOnSection({ attribute, allAttributes, levelForm }: Depend
           render={(field) => (
             <ChoiceField
               label={CONDITION_LABEL}
-              hint="Leave all unticked to show it always."
+              tip="Leave all unticked to show it always."
               multiple
               options={formData.businessUnitOptions.map((option) => ({
                 id: option.id,

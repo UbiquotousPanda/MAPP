@@ -38,7 +38,7 @@ export function ModelsField({ type, name, value, onChange, error }: ModelsFieldP
     <ChoiceField
       label="Allowed in models"
       name={name}
-      hint="Plans using these models can choose this type."
+      tip="Plans using these models can choose this type."
       multiple
       options={options}
       value={value}

@@ -69,7 +69,7 @@ export function StyleValues({ widget, prefix, errorAt, set }: StyleSectionProps)
           <TextField
             label="Maximum"
             name={`${prefix}-gauge-max`}
-            hint="Empty rounds the value up."
+            tip="Empty rounds the value up."
             value={gauge.max ?? ''}
             onChange={(max) => set({ gauge: { ...gauge, max: max || null } }, 'gauge.max')}
             error={errorAt('display.gauge.max')}

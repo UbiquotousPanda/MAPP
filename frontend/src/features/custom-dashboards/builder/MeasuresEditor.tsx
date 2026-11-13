@@ -97,7 +97,7 @@ export function MeasuresEditor({
             <TextField
               label="Label"
               name={`${idPrefix}-measure-${index}-label`}
-              hint="Empty uses a name such as 'Sum of Planned cost'."
+              tip="Empty uses a name such as 'Sum of Planned cost'."
               maxLength={40}
               value={measure.label}
               onChange={(label) => update(index, { ...measure, label }, `${at}.label`)}

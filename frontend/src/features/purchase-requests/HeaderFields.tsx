@@ -86,7 +86,7 @@ export function HeaderFields({
               {...field}
               label={LABELS.approvalWorkflow}
               marking="Required"
-              hint={WORKFLOW_HINT}
+              tip={WORKFLOW_HINT}
               options={workflows}
               error={error('approvalWorkflowId')}
             />
@@ -100,7 +100,7 @@ export function HeaderFields({
               {...field}
               label={LABELS.modificationWorkflow}
               marking="Required"
-              hint={MODIFICATION_HINT}
+              tip={MODIFICATION_HINT}
               options={modificationWorkflows}
               error={error('modificationWorkflowId')}
             />

@@ -72,11 +72,10 @@ describe('ShellAttributeEditorPage: create (FR-016 – FR-019)', () => {
       screen.getByRole('combobox', { name: /Type/ }),
       'Multiple choice with % split',
     );
-    expect(
-      screen.getByText(
-        "People split the record's cost over the chosen values; the shares must add up to 100 %.",
-      ),
-    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'About Type' }));
+    expect(screen.getByRole('dialog', { name: 'About Type' })).toHaveTextContent(
+      "People split the record's cost over the chosen values; the shares must add up to 100 %.",
+    );
   });
 
   it('fixes yes/no attributes as Optional, with the hint (FR-017)', async () => {

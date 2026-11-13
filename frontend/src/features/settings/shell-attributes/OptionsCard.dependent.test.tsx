@@ -80,7 +80,10 @@ describe('OptionsCard: options of a dependent attribute (FR-022)', () => {
     const panel = await screen.findByRole('dialog', { name: 'Add option' });
     await user.type(within(panel).getByRole('textbox', { name: /Label/ }), 'Retail – Japan');
     const linkedTo = await within(panel).findByRole('group', { name: /^Linked to/ });
-    expect(linkedTo).toHaveTextContent('Shown when one of these cluster options is chosen.');
+    await user.click(within(panel).getByRole('button', { name: 'About Linked to' }));
+    expect(screen.getByRole('dialog', { name: 'About Linked to' })).toHaveTextContent(
+      'Shown when one of these cluster options is chosen.',
+    );
     expect(within(linkedTo).queryByRole('checkbox', { name: /Pacific/ })).not.toBeInTheDocument();
     await user.click(within(panel).getByRole('button', { name: 'Save' }));
 

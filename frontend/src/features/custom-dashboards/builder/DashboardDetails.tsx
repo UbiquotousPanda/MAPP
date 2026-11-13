@@ -114,7 +114,7 @@ function ChoicesField({ label, name, choices, value, error, onChange }: ChoicesF
       label={label}
       name={name}
       multiple
-      hint="Empty: all you may see."
+      tip="Empty: all you may see."
       options={choices ?? []}
       value={value}
       onChange={onChange}

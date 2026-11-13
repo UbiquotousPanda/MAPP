@@ -41,7 +41,7 @@ export function StyleTab({ widget, errorAt, onDisplay, onText }: StyleTabProps) 
       <TextField
         label="Title"
         name={`${prefix}-title`}
-        hint="Empty uses the source and measure."
+        tip="Empty uses the source and measure."
         maxLength={80}
         value={widget.title}
         onChange={(title) => onText({ title })}
@@ -59,7 +59,7 @@ export function StyleTab({ widget, errorAt, onDisplay, onText }: StyleTabProps) 
         <TextAreaField
           label="Note"
           name={`${prefix}-note`}
-          hint="Plain text, shown as written."
+          tip="Plain text, shown as written."
           maxLength={2000}
           rows={6}
           value={widget.note}

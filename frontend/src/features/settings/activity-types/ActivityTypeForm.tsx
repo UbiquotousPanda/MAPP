@@ -163,7 +163,7 @@ export function ActivityTypeForm({ type, onClose }: ActivityTypeFormProps) {
               <MoneyField
                 label="Default planned cost"
                 currency="USD"
-                hint="Offered when someone picks this type for an activity."
+                tip="Offered when someone picks this type for an activity."
                 note={costChanged ? 'Applies when someone picks this type from now on.' : undefined}
                 {...field}
               />

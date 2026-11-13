@@ -45,7 +45,7 @@ export function ActivityTypesField({
       label="Allowed activity types"
       name={name}
       marking="Required"
-      hint="Activities in plans using this model can be of these types."
+      tip="Activities in plans using this model can be of these types."
       multiple
       options={options}
       value={value}

@@ -36,7 +36,7 @@ export function PlaceSection({ attribute, allAttributes }: PlaceSectionProps) {
           render={(field) => (
             <TextField
               label="Section"
-              hint="Attributes of the same section are shown together; sections appear in the order of their first attribute."
+              tip="Attributes of the same section are shown together; sections appear in the order of their first attribute."
               maxLength={60}
               suggestions={sections}
               {...field}

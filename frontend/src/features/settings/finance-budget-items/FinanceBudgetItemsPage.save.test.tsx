@@ -24,8 +24,9 @@ describe('FinanceBudgetItemsPage: create and edit (US5 scenarios 3 and 4, FR-014
     const form = await screen.findByRole('dialog', { name: 'New finance budget item' });
     expect(within(form).getByRole('combobox', { name: /^Budget year/ })).toHaveTextContent('2026');
     const budgetName = within(form).getByRole('combobox', { name: /^Budget name/ });
-    expect(budgetName).toHaveAccessibleDescription(
-      expect.stringContaining('Items with the same year and budget name form one finance budget.'),
+    await user.click(within(form).getByRole('button', { name: 'About Budget name' }));
+    expect(screen.getByRole('dialog', { name: 'About Budget name' })).toHaveTextContent(
+      'Items with the same year and budget name form one finance budget.',
     );
     await waitFor(() =>
       expect(

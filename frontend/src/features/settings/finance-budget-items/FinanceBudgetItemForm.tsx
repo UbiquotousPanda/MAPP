@@ -146,7 +146,7 @@ export function FinanceBudgetItemForm({ item, year, years, onClose }: FinanceBud
             <TextField
               label="Budget name"
               marking="Required"
-              hint="Items with the same year and budget name form one finance budget."
+              tip="Items with the same year and budget name form one finance budget."
               maxLength={120}
               suggestions={budgetNames}
               {...field}

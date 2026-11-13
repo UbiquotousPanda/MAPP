@@ -26,7 +26,7 @@ export function LinkedToField({ name, parent, value, onChange, error }: LinkedTo
       label="Linked to"
       name={name}
       marking="Required"
-      hint={linkedToHint(parent.label)}
+      tip={linkedToHint(parent.label)}
       multiple
       options={parent.options.map((option) => ({
         id: option.id,

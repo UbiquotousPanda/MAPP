@@ -177,7 +177,7 @@ function LevelFields({
       <TextField
         label="Level name"
         name={field('name')}
-        hint={`Shown as 'Level ${number}' when empty`}
+        tip={`Shown as 'Level ${number}' when empty`}
         maxLength={60}
         value={level.name}
         onChange={(name) => onChange({ name })}
@@ -207,7 +207,7 @@ function LevelFields({
         <ChoiceField
           label="Role"
           marking="Required"
-          hint="Only roles that approve activities are offered."
+          tip="Only roles that approve activities are offered."
           name={field('roleId')}
           options={roles}
           value={level.roleId}
@@ -281,7 +281,7 @@ function LevelFields({
       </div>
       <PersonField
         label="Backup approver"
-        hint={BACKUP_HINT}
+        tip={BACKUP_HINT}
         name={field('backupApproverId')}
         value={level.backupApproverId}
         onChange={(backupApproverId) => onChange({ backupApproverId })}

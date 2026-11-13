@@ -165,7 +165,7 @@ export function AllocationDialog({ budget, target, onClose }: AllocationDialogPr
                 <ChoiceField
                   label="Plan"
                   marking="Required"
-                  hint={`Plans of ${budget.year} without an allocation.`}
+                  tip={`Plans of ${budget.year} without an allocation.`}
                   options={planChoices}
                   {...field}
                   onChange={(id) => {

@@ -1111,7 +1111,7 @@ out; the notes of the form.
 | Part | Spec |
 |---|---|
 | Label | Above the control, 14/20 Arial 700 `--ink`. A field required to save: then 2 px and a `*` in `--danger` (Secondary Red), Arial 700 19/20, `aria-hidden`, the control `aria-required` (D-364). A field needed to publish or submit: then 8 px and the **marking** as a small tag ("Needed to publish", "Needed to submit": 20 high, padding 0 6, radius 4, `--chip`, 12/18 bold `--ink`). Then an optional ⓘ |
-| Hint | **Always under the label, above the control** (one rule, UI audit F-02), 14/20 `--ink-2` |
+| Hint | **Always under the label, above the control** (one rule, UI audit F-02), 14/20 `--ink-2`; only for what people need while filling the field in (format, limit, example), a consequence, a lock's reason or text that changes with the data. What the field is for goes in the ⓘ tip beside the label (D-434). |
 | Control | 40 high (48 below 600 px), padding 0 12, radius 8, 1 px `--control-border`, `--surface`, text 14 `--ink` (16 below 600 px), placeholder `--muted` |
 | States | Hover: border `--control-border-hover`. Focus: the focus ring. Invalid: 1 px `--danger` border plus the message. Locked: the Disabled tokens (`--disabled-bg`, `--disabled-text`, `--disabled-border`) and a `LockedNote`. Read-only values are shown as text, not as inputs. |
 | Note and error | Under the control, 4 px gap, 14/20: note `--ink-2`; error `--danger-text` with a 16 px alert icon. Screen readers hear marking, hint, note and error with the control (`aria-describedby`). |

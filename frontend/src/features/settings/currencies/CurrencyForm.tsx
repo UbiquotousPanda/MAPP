@@ -193,7 +193,7 @@ export function CurrencyForm({ currency, onClose }: CurrencyFormProps) {
                   marking="Required"
                   decimals={6}
                   suffix="per USD"
-                  hint={currency ? TODAYS_RATE_HINT : FIRST_RATE_HINT}
+                  tip={currency ? TODAYS_RATE_HINT : FIRST_RATE_HINT}
                   note={liveRate(code, typedRate)}
                   {...field}
                 />

@@ -151,7 +151,7 @@ export function DelegationForm({
           <PersonField
             label="Delegate"
             marking="Required"
-            hint="Someone with a role that approves activities."
+            tip="Someone with a role that approves activities."
             {...field}
           />
         )}

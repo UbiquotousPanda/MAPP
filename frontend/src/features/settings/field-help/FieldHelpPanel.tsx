@@ -121,7 +121,7 @@ export function FieldHelpPanel({ entry, onClose }: FieldHelpPanelProps) {
             render={(field) => (
               <TextAreaField
                 label="Help text"
-                hint="Plain text, shown in the ⓘ beside the field. Leave it empty to hide the ⓘ."
+                tip="Plain text, shown in the ⓘ beside the field. Leave it empty to hide the ⓘ."
                 maxLength={HELP_MAX_LENGTH}
                 rows={5}
                 {...field}
