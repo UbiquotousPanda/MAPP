@@ -150,6 +150,12 @@
   border-top: 0;
 }
 
+.formCard > section > :first-child {
+  margin-inline: calc(-1 * var(--card-padding));
+  padding: 0 var(--card-padding) var(--space-4);
+  border-bottom: 1px solid var(--row-divider);
+}
+
 /* Several of up to 6 options: check boxes in columns, never a long vertical list. */
 .formCard fieldset div:has(> div > input[type='checkbox']) {
   display: grid;

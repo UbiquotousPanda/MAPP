@@ -11,6 +11,13 @@
   gap: var(--space-4);
 }
 
+/* A section name that is its card's title gets the card header's hairline, the card's full width. */
+.cardHeader {
+  margin-inline: calc(-1 * var(--card-padding));
+  padding: 0 var(--card-padding) var(--space-4);
+  border-bottom: 1px solid var(--row-divider);
+}
+
 /* Short attributes pair up in a wide form; a wide one takes the whole row. */
 .grid {
   display: grid;

@@ -109,9 +109,11 @@ export function ShellAttributeFields({
         return (
           <div key={section.name} className={styles.section}>
             {level && (
-              <SectionHeading level={level} rank={sectionRank}>
-                {section.name}
-              </SectionHeading>
+              <div className={sectionRank === 'panel' ? styles.cardHeader : undefined}>
+                <SectionHeading level={level} rank={sectionRank}>
+                  {section.name}
+                </SectionHeading>
+              </div>
             )}
             {section.conditional && (
               <p className={styles.note}>{shownBecauseText(conditionUnits(form, shown, units))}</p>
