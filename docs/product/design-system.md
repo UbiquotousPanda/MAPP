@@ -1226,9 +1226,9 @@ a block.
 **`ShellAttributeFields`** — the attribute sections in the order of the form definition, each field by the
 choice rules above; dependent fields stay visible but locked with a reason until their parent is set; the
 Settings preview highlights one attribute with `--hover`, its secondary text in Text Strong (was a
-blue tint); never a heading equal to its parent's (X-09). From 600 px wide, short fields sit two to a row and a wide
-one (long text, split, three or more check boxes, more than four options) takes the row; a wide one waits until the
-short field before it has a partner, in the page order too (D-433).
+blue tint); never a heading equal to its parent's (X-09). Short fields fill rows of three from 900 px wide and two from
+600 px; a wide one (long text, split, three or more check boxes) takes the row and waits until the row before it is
+full, in the page order too, so Tab follows the screen; a drop-down is short whatever its options (D-433).
 
 **`FormSection`** — one white card per section on form pages: title `<h2>` Jost 600 18/24, optional
 description 14 `--ink-2`, fields 20 apart. Inside a side panel, sections are separated by 32 px and an

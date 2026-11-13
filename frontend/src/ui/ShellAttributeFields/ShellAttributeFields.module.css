@@ -5,7 +5,6 @@
 }
 
 .section {
-  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -18,7 +17,7 @@
   border-bottom: 1px solid var(--row-divider);
 }
 
-/* Short attributes pair up in a wide form; a wide one takes the whole row. */
+/* Short attributes fill rows of the columns that fit; a wide one takes the whole row. */
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -26,14 +25,16 @@
   gap: var(--space-4) var(--space-6);
 }
 
-@container (width >= 600px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.grid[data-columns='2'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 
-  .grid > [data-wide] {
-    grid-column: 1 / -1;
-  }
+.grid[data-columns='3'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid:not([data-columns='1']) > [data-wide] {
+  grid-column: 1 / -1;
 }
 
 .attribute {

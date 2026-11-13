@@ -12,7 +12,7 @@ import {
 } from './rules';
 import type { AttributeForm, AttributeValue, AttributeValues, FormAttribute } from './rules';
 import { AttributeField } from './AttributeField';
-import { HEADING_LEVELS, pairedOrder } from './layout';
+import { filledOrder, HEADING_LEVELS, useColumns } from './layout';
 import { SectionHeading } from '../SectionHeading/SectionHeading';
 import type { HeadingRank } from '../SectionHeading/SectionHeading';
 import styles from './ShellAttributeFields.module.css';
@@ -62,6 +62,7 @@ export function ShellAttributeFields({
   const units = businessUnitOf(form, values, businessUnit);
   const cleared = valuesToClear(form, values, previousValues);
   const level = HEADING_LEVELS[sectionHeading];
+  const { ref, columns } = useColumns<HTMLDivElement>();
 
   function change(attribute: FormAttribute, value: AttributeValue | undefined) {
     const next: AttributeValues = { ...values };
@@ -85,7 +86,7 @@ export function ShellAttributeFields({
   }
 
   return (
-    <div className={styles.fields}>
+    <div ref={ref} className={styles.fields}>
       {units.length === 0 && hasConditions(form) && (
         <p className={styles.note}>
           {NO_BUSINESS_UNIT_NOTE}
@@ -118,8 +119,8 @@ export function ShellAttributeFields({
             {section.conditional && (
               <p className={styles.note}>{shownBecauseText(conditionUnits(form, shown, units))}</p>
             )}
-            <div className={styles.grid}>
-              {pairedOrder(shown).map((attribute) => (
+            <div className={styles.grid} data-columns={columns}>
+              {filledOrder(shown, columns).map((attribute) => (
                 <AttributeField
                   key={attribute.id}
                   form={form}
