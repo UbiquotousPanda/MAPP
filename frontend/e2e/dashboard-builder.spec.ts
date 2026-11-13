@@ -95,7 +95,7 @@ test('051 US1: Priya builds a dashboard — palette, Data tab, keyboard, undo, p
 
   await page
     .getByRole('button', { name: 'Add table' })
-    .dragTo(page.getByRole('region', { name: 'Canvas' }), { targetPosition: { x: 40, y: 440 } });
+    .dragTo(page.getByRole('region', { name: 'Canvas' }), { targetPosition: { x: 40, y: 160 } });
   const table = cell(page, 'Table');
   await expect(table).toBeVisible();
   await expect(table.getByText('Choose what to measure')).toBeVisible();
