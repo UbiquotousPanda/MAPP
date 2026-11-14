@@ -11,6 +11,24 @@
   color: var(--ink);
   font-size: var(--text-sm);
   line-height: var(--leading-sm);
+  transform-origin: var(--radix-popper-transform-origin);
+  animation: pop-in var(--dur-fast) var(--ease-out);
+}
+
+.surface[data-side='top'] {
+  --pop-from: translateY(4px);
+}
+
+.surface[data-side='left'] {
+  --pop-from: translateX(4px);
+}
+
+.surface[data-side='right'] {
+  --pop-from: translateX(-4px);
+}
+
+.surface[data-state='closed'] {
+  animation: pop-out 0.1s var(--ease-in) forwards;
 }
 
 /* Dark Raised is 3.9:1 for Text Subtle, so secondary text there is Text Strong (constitution X). */
@@ -55,4 +73,18 @@
 
 .padLg {
   padding: var(--space-4);
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: var(--pop-from, translateY(-4px)) scale(0.98);
+  }
+}
+
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
 }
