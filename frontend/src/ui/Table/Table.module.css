@@ -1,8 +1,34 @@
 /* The data table standard (design system §5.4): every feature table takes these and keeps only column rules. */
+@property --scroll-fade {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* While columns remain to the right the edge fades; a box that does not scroll has no timeline, so no fade. */
 .scroll {
   position: relative;
   max-width: 100%;
   overflow-x: auto;
+  mask-image: linear-gradient(
+    to left,
+    transparent,
+    var(--ink) var(--scroll-fade),
+    var(--ink) calc(var(--scroll-fade) + 1px)
+  );
+  animation: scroll-fade linear both;
+  animation-timeline: scroll(self inline);
+}
+
+@keyframes scroll-fade {
+  from,
+  90% {
+    --scroll-fade: 48px;
+  }
+
+  to {
+    --scroll-fade: 0px;
+  }
 }
 
 .table {
@@ -129,5 +155,12 @@
 
   .table:not(.fixed) td {
     max-width: 280px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll {
+    animation: scroll-fade linear both !important;
+    animation-timeline: scroll(self inline) !important;
   }
 }
