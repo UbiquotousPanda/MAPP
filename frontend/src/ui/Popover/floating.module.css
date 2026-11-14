@@ -2,7 +2,7 @@
 .surface {
   z-index: 50;
   max-width: calc(100vw - 32px);
-  max-height: min(480px, calc(100vh - 120px));
+  max-height: min(480px, calc(100dvh - 120px));
   overflow-y: auto;
   border: 1px solid var(--card-border);
   border-radius: var(--radius-control);

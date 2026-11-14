@@ -1,5 +1,5 @@
 .layout {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--page-bg);
 }
 
@@ -22,7 +22,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: calc(100vh - var(--topbar));
+  min-height: calc(100dvh - var(--topbar));
   padding-left: var(--sidebar);
   transition: padding-left var(--dur) var(--ease-out);
 }
