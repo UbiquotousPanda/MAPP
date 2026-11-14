@@ -1,8 +1,4 @@
-/*
- * The sticky footer of a full-page form, laid out like every panel and dialog footer: the buttons
- * come in order of importance (Save first) and line up from the right, so Save sits rightmost
- * with Cancel next to it.
- */
+/* Buttons come in order of importance (Save first) and line up from the right, Save rightmost. */
 .footer {
   position: sticky;
   bottom: 0;
@@ -16,4 +12,10 @@
   padding: var(--space-4) 0;
   border-top: 1px solid var(--hairline);
   background: var(--page-bg);
+}
+
+@media (max-width: 599px) {
+  .footer > :is(a, button):not([aria-haspopup]) {
+    flex: 1 1 auto;
+  }
 }

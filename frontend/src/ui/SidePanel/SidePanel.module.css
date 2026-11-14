@@ -96,6 +96,10 @@
     width: 100%;
     border-left: 0;
   }
+
+  .footer > :is(a, button):not([aria-haspopup]) {
+    flex: 1 1 auto;
+  }
 }
 
 @keyframes fade-in {
