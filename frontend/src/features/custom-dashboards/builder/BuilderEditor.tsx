@@ -1,9 +1,11 @@
+import { MonitorSmartphone } from 'lucide-react';
 import { useReducer, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { asApiError } from '@/api/errors';
 import { LinkButton } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { cx } from '@/ui/cx';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import { useToast } from '@/ui/Toast/useToast';
@@ -93,10 +95,16 @@ export function BuilderEditor({ dashboard }: BuilderEditorProps) {
       {saving.failure && <FailureMessage failure={{ message: saving.failure }} />}
       <FormErrorSummary errors={saving.problems} onGo={goTo} describe={describe} />
       <div className={styles.narrow}>
-        <p>The builder needs a wider window.</p>
-        {dashboardId && (
-          <LinkButton to={`/dashboards/${dashboardId}`}>View the dashboard</LinkButton>
-        )}
+        <EmptyState
+          icon={<MonitorSmartphone />}
+          title="The builder needs a wider window."
+          text={'Arrange charts on a laptop or desktop screen, 960\u00a0px wide or more.'}
+          action={
+            dashboardId && (
+              <LinkButton to={`/dashboards/${dashboardId}`}>View the dashboard</LinkButton>
+            )
+          }
+        />
       </div>
       <div className={cx(styles.editor, inspectorHidden && styles.inspectorHidden)}>
         <div className={styles.workspace}>

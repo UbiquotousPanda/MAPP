@@ -217,6 +217,10 @@
   display: none;
 }
 
+.wideOnly {
+  display: contents;
+}
+
 @media (max-width: 1439.98px) {
   .editor {
     --inspector-width: 360px;
@@ -234,5 +238,9 @@
 
   .narrow {
     display: block;
+  }
+
+  .wideOnly {
+    display: none;
   }
 }
