@@ -14,7 +14,16 @@
   background: var(--page-bg);
 }
 
+/* The focused field stops above the sticky bar, never under it (WCAG 2.4.11); on a phone it may wrap to two rows. */
+:global(html):has(.footer) {
+  scroll-padding-bottom: calc(var(--control-md) + 2 * var(--space-6));
+}
+
 @media (max-width: 599px) {
+  :global(html):has(.footer) {
+    scroll-padding-bottom: calc(2 * var(--control-md) + 3 * var(--space-6));
+  }
+
   .footer > :is(a, button):not([aria-haspopup]) {
     flex: 1 1 auto;
   }
