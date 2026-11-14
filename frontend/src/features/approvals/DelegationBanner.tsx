@@ -1,14 +1,9 @@
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { useCurrentUser } from '@/session/useSession';
 import { useFormatters } from '@/format/useFormatters';
-import { ApprovalAlert } from './ApprovalAlert';
 import { useDelegations } from './delegations-api';
 
-/**
- * The delegations in force today that concern the signed-in person (017 US4, FR-024), above the
- * approvals page's cards, one line each: "You are approving for Daniel Okoro until 14 Nov 2026."
- * or "Carlos Mendes approves for you until 14 Nov 2026." Nothing while none is current, while
- * they load, or when they could not be loaded (the panel says so).
- */
+/** Today's delegations for or by the signed-in person; nothing while loading or failed (the panel says so). */
 export function DelegationBanner() {
   const user = useCurrentUser();
   const { date } = useFormatters();
@@ -30,10 +25,10 @@ export function DelegationBanner() {
     return null;
   }
   return (
-    <ApprovalAlert tone="info">
+    <InlineAlert tone="info">
       {lines.map((line) => (
         <p key={line}>{line}</p>
       ))}
-    </ApprovalAlert>
+    </InlineAlert>
   );
 }

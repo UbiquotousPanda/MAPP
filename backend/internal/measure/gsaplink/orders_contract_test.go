@@ -25,7 +25,7 @@ func TestOrders_EqualLineItemFinancials_SC003(t *testing.T) {
 	if r := carlosSees.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"displayCurrency": "USD"}); r.Status != http.StatusOK {
 		t.Fatalf("display currency = %d %s", r.Status, r.Body)
 	}
-	r := reportOf(t, carlosSees, report+"&tab=orders&currency=USD&pageSize=500")
+	r := reportOf(t, carlosSees, report+"&tab=orders&currency=USD&pageSize=200")
 	if r.Orders == nil || len(r.Orders.Rows) == 0 {
 		t.Fatalf("orders = %+v, want the demo purchase orders", r.Orders)
 	}
@@ -63,7 +63,7 @@ func TestOwnPass_OrdersInEuros_EqualFinancials_SC003(t *testing.T) {
 		t.Fatalf("display currency = %d %s", r.Status, r.Body)
 	}
 
-	r := reportOf(t, carlosSees, report+"&tab=orders&currency=EUR&pageSize=500")
+	r := reportOf(t, carlosSees, report+"&tab=orders&currency=EUR&pageSize=200")
 	sums := make([]money.Amount, 3)
 	for _, row := range r.Orders.Rows {
 		got := []money.Amount{row.PoAmount.Amount, row.Invoiced.Amount, row.Paid.Amount}

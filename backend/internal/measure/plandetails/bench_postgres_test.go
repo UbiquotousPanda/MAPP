@@ -28,7 +28,7 @@ func BenchmarkPlanDetailsOnPostgres_SC001(b *testing.B) {
 
 func planDetailsPages() []benchPage {
 	return []benchPage{
-		{"frame", alex, "/api/v1/reports/frame?report=planDetails&year=2026"},
+		{"frame", alex, "/api/v1/reports/frame?report=planData&year=2026"},
 		{"activity", alex, report + "&show=activity"},
 		{"campaign", alex, report + "&show=campaign"},
 		{"plan", alex, report + "&show=plan"},

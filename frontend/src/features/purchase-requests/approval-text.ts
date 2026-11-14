@@ -9,8 +9,8 @@ export const APPROVE = 'Approve';
 export const DECLINE = 'Decline';
 export const CLOSE = 'Close';
 export const NEEDS_FIRST = 'Submitting needs these things first:';
-export const COMMENT_LABEL = 'Comment for the approvers (optional)';
-export const REASON_LABEL = 'Reason (optional)';
+export const COMMENT_LABEL = 'Comment for the approvers';
+export const REASON_LABEL = 'Reason';
 export const NO_WORKFLOW = 'No approval workflow chosen yet.';
 
 export const SECTION_TITLES: Record<RoundKind, string> = {

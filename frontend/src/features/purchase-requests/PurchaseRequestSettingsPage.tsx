@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Lock } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -9,9 +8,13 @@ import { Card } from '@/ui/Card/Card';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { FormField } from '@/ui/FormField/FormField';
+import { InlineError } from '@/ui/InlineError/InlineError';
+import { LockedNote } from '@/ui/LockedNote/LockedNote';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { localDate } from '@/format/intl';
@@ -20,11 +23,9 @@ import { usePurchaseRequestConfiguration, useSavePurchaseRequestConfiguration } 
 import type { LinesOnApproved, PurchaseRequestConfiguration } from './api';
 import { LINES_ON_APPROVED_WORDS, PURCHASE_REQUESTS } from './purchase-request-text';
 import {
-  CONFIG_DESCRIPTION,
   CONFIG_NOUN,
   CONFIG_SAVED,
   LINES_ON_APPROVED,
-  LINES_ON_APPROVED_HINT,
   NEVER_CHANGED,
   OFF,
   ON,
@@ -60,7 +61,6 @@ export function PurchaseRequestSettingsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: PURCHASE_REQUESTS }]}
         title={PURCHASE_REQUESTS}
-        description={CONFIG_DESCRIPTION}
       />
       <Card>
         {config.data ? (
@@ -95,10 +95,7 @@ function LastChanged({ config }: { config: PurchaseRequestConfiguration }) {
 function ReadOnly({ config }: { config: PurchaseRequestConfiguration }) {
   return (
     <div className={styles.stack}>
-      <p className={styles.lock} role="note">
-        <Lock aria-hidden="true" />
-        <span>{config.canChange.reason}</span>
-      </p>
+      <LockedNote>{config.canChange.reason}</LockedNote>
       <dl className={styles.values}>
         <dt>{PURCHASE_SUPPORT}</dt>
         <dd>{config.purchaseSupport ? ON : OFF}</dd>
@@ -110,7 +107,9 @@ function ReadOnly({ config }: { config: PurchaseRequestConfiguration }) {
   );
 }
 
-function SettingsForm({ config }: { config: PurchaseRequestConfiguration }) {
+function SettingsForm({ config: opened }: { config: PurchaseRequestConfiguration }) {
+  const { record: config, version, keep, loadLatest } = useEditedRecord(opened);
+  const latest = usePurchaseRequestConfiguration();
   const save = useSavePurchaseRequestConfiguration();
   const { show } = useToast();
   const { dateFormat } = useFormatters();
@@ -127,10 +126,13 @@ function SettingsForm({ config }: { config: PurchaseRequestConfiguration }) {
   async function send(values: SettingsValues) {
     setProblem('');
     try {
-      await save.mutateAsync({ version: config.version, ...values });
+      keep(await save.mutateAsync({ version, ...values }));
       show({ message: CONFIG_SAVED });
     } catch (error) {
       const failure = asApiError(error);
+      if (failure.kind === 'conflict') {
+        void loadLatest(() => latest.refetch().then((answer) => answer.data));
+      }
       if (!isSessionLost(failure)) {
         setProblem(conflictMessage(failure, CONFIG_NOUN, dateFormat));
       }
@@ -144,11 +146,7 @@ function SettingsForm({ config }: { config: PurchaseRequestConfiguration }) {
       aria-busy={save.isPending}
       onSubmit={(event) => void form.handleSubmit(send)(event)}
     >
-      {problem && (
-        <p role="alert" className={styles.problem}>
-          {problem}
-        </p>
-      )}
+      {problem && <InlineError>{problem}</InlineError>}
       <FormField
         control={form.control}
         name="purchaseSupport"
@@ -166,24 +164,16 @@ function SettingsForm({ config }: { config: PurchaseRequestConfiguration }) {
         control={form.control}
         name="linesOnApprovedPurchaseRequests"
         render={(field) => (
-          <fieldset id={field.name} className={styles.radioGroup} aria-describedby="lines-hint">
-            <legend className={styles.legend}>{LINES_ON_APPROVED}</legend>
-            <p id="lines-hint" className={styles.hint}>
-              {LINES_ON_APPROVED_HINT}
-            </p>
-            {LINE_CHOICES.map((choice) => (
-              <label key={choice} className={styles.radio}>
-                <input
-                  type="radio"
-                  name={field.name}
-                  value={choice}
-                  checked={field.value === choice}
-                  onChange={() => field.onChange(choice)}
-                />
-                {LINES_ON_APPROVED_WORDS[choice]}
-              </label>
-            ))}
-          </fieldset>
+          <RadioGroup
+            label={LINES_ON_APPROVED}
+            name={field.name}
+            options={LINE_CHOICES.map((choice) => ({
+              value: choice,
+              label: LINES_ON_APPROVED_WORDS[choice],
+            }))}
+            value={field.value}
+            onChange={field.onChange}
+          />
         )}
       />
       <LastChanged config={config} />

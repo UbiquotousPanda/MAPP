@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { addressIdSchema } from '@/api/ids';
 
 export const SORT_COLUMNS = [
   'name',
@@ -34,11 +35,7 @@ const sortSchema = z
   .transform(([column, direction]) => ({ column, direction }));
 
 const stateSchema = z.object({
-  campaign: z
-    .string()
-    .regex(/^C-[0-9]+$/)
-    .optional()
-    .catch(undefined),
+  campaign: addressIdSchema.optional().catch(undefined),
   dimension: z.string().min(1).max(80).optional().catch(undefined),
   period: z.enum(['quarter', 'month']).catch('quarter'),
   sort: sortSchema.optional().catch(undefined),

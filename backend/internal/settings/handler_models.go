@@ -4,15 +4,16 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"mapp/internal/history"
+	"mapp/internal/platform/web"
 )
 
-// listModels answers GET /api/v1/models.
 func (h *Handler) listModels(c *gin.Context) {
 	models, err := h.service.ListModels(c.Request.Context(), actorOf(c))
 	respond(c, http.StatusOK, ModelPage{Items: models, Total: len(models)}, err)
 }
 
-// createModel answers POST /api/v1/models with 201 and the new model.
 func (h *Handler) createModel(c *gin.Context) {
 	var input ModelInput
 	if !readBody(c, &input) {
@@ -22,7 +23,6 @@ func (h *Handler) createModel(c *gin.Context) {
 	respond(c, http.StatusCreated, model, err)
 }
 
-// getModel answers GET /api/v1/models/{modelId}.
 func (h *Handler) getModel(c *gin.Context) {
 	model, err := h.service.GetModel(c.Request.Context(), actorOf(c), c.Param("modelId"))
 	respond(c, http.StatusOK, model, err)
@@ -38,10 +38,13 @@ func (h *Handler) updateModel(c *gin.Context) {
 	respond(c, http.StatusOK, model, err)
 }
 
-// deleteModel answers DELETE /api/v1/models/{modelId} with the recycle-bin entry, so the web app can offer
-// Undo.
 func (h *Handler) deleteModel(c *gin.Context) {
-	entry, err := h.service.DeleteModel(c.Request.Context(), actorOf(c), c.Param("modelId"))
+	ctx, err := history.SeenVersion(c, c.Param("modelId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	entry, err := h.service.DeleteModel(ctx, actorOf(c), c.Param("modelId"))
 	respondDeleted(c, entry, err)
 }
 

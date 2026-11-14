@@ -31,6 +31,6 @@ func summaryPages() []page {
 		{"league revenue", alex, league + "revenue?year=2026"},
 		{"league cost", alex, league + "cost?year=2026"},
 		{"league roi", alex, league + "roi?year=2026"},
-		{"export", alex, "/api/v1/reports/summary/export?year=2026&format=xlsx"},
+		{"export", alex, "/api/v1/reports/performance/export?year=2026&format=xlsx"},
 	}
 }

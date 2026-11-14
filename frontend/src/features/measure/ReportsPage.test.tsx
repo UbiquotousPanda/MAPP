@@ -10,35 +10,28 @@ import { apiError, reply } from '@/testing/replies';
 import { ReportsPage } from './ReportsPage';
 
 describe('ReportsPage (039 FR-001, 039-C7, US1 scenarios 1 and 2)', () => {
-  it('lists the reports by group in order with their purposes; Coming soon has no link', async () => {
+  it('lists the reports as tiles in order with their questions; Coming soon has no link', async () => {
     mockApi([reply('GET /api/v1/reports', { body: catalogue() })]);
     renderWithProviders(<ReportsPage />, { user: testUser() });
 
     const items = await screen.findAllByRole('listitem');
-    expect(items.map((item) => item.querySelector('a, span')?.textContent)).toEqual([
-      'Summary',
-      'Revenue',
-      'Funnel stages',
-      'Plan budget',
-      'Purchase requests',
-      'GSAP link',
-      'Approvals',
-      'Plan details',
-    ]);
-    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
+    expect(
+      items.map((item) => within(item).getByRole('heading', { level: 2 }).textContent),
+    ).toEqual([
       'Performance',
       'Budget and spend',
-      'Process and governance',
+      'Purchasing',
+      'Approval performance',
+      'Plan data and access',
     ]);
-    const performance = screen.getByRole('region', { name: 'Performance' });
-    expect(within(performance).getAllByRole('listitem')).toHaveLength(3);
-    expect(screen.getByRole('link', { name: 'Plan details' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Plan data and access' })).toHaveAttribute(
       'href',
-      '/reports/plan-details',
+      '/reports/plan-data',
     );
-    expect(screen.queryByRole('link', { name: 'Plan budget' })).not.toBeInTheDocument();
-    expect(screen.getAllByText('Coming soon')).toHaveLength(7);
-    expect(screen.getByText('What Plan budget answers.')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Budget and spend' })).not.toBeInTheDocument();
+    expect(screen.getAllByText('Coming soon')).toHaveLength(4);
+    expect(screen.getByText('Are we on budget?')).toBeInTheDocument();
+    expect(screen.queryByText('What Budget and spend answers.')).not.toBeInTheDocument();
     await expectNoAxeViolations();
   });
 
@@ -47,23 +40,37 @@ describe('ReportsPage (039 FR-001, 039-C7, US1 scenarios 1 and 2)', () => {
     renderWithProviders(<ReportsPage />, { user: testUser() });
     const user = userEvent.setup();
 
-    await user.click(await screen.findByRole('button', { name: 'About Plan budget' }));
+    await user.click(await screen.findByRole('button', { name: 'About Budget and spend' }));
 
-    const tip = screen.getByRole('dialog', { name: 'About Plan budget' });
+    const tip = screen.getByRole('dialog', { name: 'About Budget and spend' });
     expect(tip).toHaveTextContent(/^Are we on budget\?/);
     expect(tip).toHaveTextContent('For planners, team leaders and finance.');
   });
 
-  it('leaves out a group with no report the person may open (039-C7)', async () => {
-    const performanceOnly = catalogue();
-    performanceOnly.items = performanceOnly.items.filter((item) =>
-      ['summary', 'revenue', 'funnel'].includes(item.key),
+  it('names the Approvals report "Approval performance" and points to the Approvals page to decide (039-C7)', async () => {
+    mockApi([reply('GET /api/v1/reports', { body: catalogue() })]);
+    renderWithProviders(<ReportsPage />, { user: testUser() });
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'About Approval performance' }));
+
+    expect(screen.getByRole('dialog', { name: 'About Approval performance' })).toHaveTextContent(
+      /open the Approvals page\.$/,
     );
+  });
+
+  it('shows only the reports the person may open (039-C7)', async () => {
+    const performanceOnly = catalogue();
+    performanceOnly.items = performanceOnly.items.filter((item) => item.key === 'performance');
     mockApi([reply('GET /api/v1/reports', { body: performanceOnly })]);
     renderWithProviders(<ReportsPage />, { user: testUser() });
 
-    expect(await screen.findByRole('heading', { name: 'Performance' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Budget and spend' })).not.toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Performance' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { level: 2, name: 'Budget and spend' }),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the standard no-access page without "See reports"', async () => {

@@ -155,12 +155,7 @@ export function DecisionDialog({ mode, approval, onClose, onDecided }: DecisionD
           name="comment"
           render={(field) =>
             approve ? (
-              <TextAreaField
-                label="Comment (optional)"
-                rows={3}
-                maxLength={COMMENT_MAX}
-                {...field}
-              />
+              <TextAreaField label="Comment" rows={3} maxLength={COMMENT_MAX} {...field} />
             ) : (
               <TextAreaField
                 label="Why are you declining it?"

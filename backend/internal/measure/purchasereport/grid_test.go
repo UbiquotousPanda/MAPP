@@ -170,8 +170,8 @@ func TestGridPaging_042_C3(t *testing.T) {
 	if len(beyond.Vendors) != 0 || beyond.Total != 12 {
 		t.Errorf("a page past the end = %d vendors of %d, want none of 12", len(beyond.Vendors), beyond.Total)
 	}
-	if defaults.PageSize != 25 || len(defaults.Vendors) != 12 {
-		t.Errorf("defaults = page size %d, %d vendors, want 25 and all 12", defaults.PageSize, len(defaults.Vendors))
+	if defaults.PageSize != 50 || len(defaults.Vendors) != 12 {
+		t.Errorf("defaults = page size %d, %d vendors, want 50 and all 12", defaults.PageSize, len(defaults.Vendors))
 	}
 }
 
@@ -206,7 +206,7 @@ func TestParseQuery_042_FR016(t *testing.T) {
 func TestParseQuery_Malformed_042_FR016(t *testing.T) {
 	t.Parallel()
 
-	bad := []url.Values{{"sort": {"nope"}}, {"order": {"up"}}, {"page": {"0"}}, {"pageSize": {"7"}}, {"columns": {"id,id"}},
+	bad := []url.Values{{"sort": {"nope"}}, {"order": {"up"}}, {"page": {"0"}}, {"pageSize": {"7"}}, {"pageSize": {"5"}}, {"columns": {"id,id"}},
 		{"columns": {"nonsense"}}}
 	for _, values := range bad {
 		if _, err := purchasereport.ParseQuery(values); err == nil {

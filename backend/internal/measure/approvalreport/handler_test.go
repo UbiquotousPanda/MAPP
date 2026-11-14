@@ -44,9 +44,9 @@ func TestApprovalsReport_Contract_041(t *testing.T) {
 	for _, unknown := range []string{"statusType=nonsense", "recordType=nonsense", "outcome=nonsense", "approver=nobody"} {
 		get(t, alex, reportURL+"?year=2026&"+unknown, http.StatusOK)
 	}
-	get(t, alex, reportURL+"?year=2026&sort=amount&order=asc&pageSize=10&page=1&outcome=waiting&q=event", http.StatusOK)
+	get(t, alex, reportURL+"?year=2026&sort=amount&order=asc&pageSize=25&page=1&outcome=waiting&q=event", http.StatusOK)
 	get(t, alex, reportURL+"?year=2026&recordType=purchaseRequest&approver=U-1001", http.StatusOK)
-	for _, malformed := range []string{"year=abc", "period=year", "sort=nope", "order=up", "page=0", "pageSize=7"} {
+	for _, malformed := range []string{"year=abc", "period=year", "sort=nope", "order=up", "page=0", "pageSize=7", "pageSize=10"} {
 		get(t, alex, reportURL+"?"+malformed, http.StatusBadRequest)
 	}
 	signedOut := server.Do(t, http.MethodGet, reportURL, nil)

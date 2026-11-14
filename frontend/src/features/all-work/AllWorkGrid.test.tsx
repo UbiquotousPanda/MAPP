@@ -86,7 +86,7 @@ describe('AllWorkGrid (US1)', () => {
       'Unassigned planned cost',
     ]);
     const plan = bodyRow('FY2026 Lubricants Europe');
-    expect(within(plan).getByText('PLAN')).toBeInTheDocument();
+    expect(within(plan).getByText('Plan')).toBeInTheDocument();
     expect(within(plan).getByRole('link', { name: 'FY2026 Lubricants Europe' })).toHaveAttribute(
       'href',
       '/plans/P-1001',
@@ -95,7 +95,7 @@ describe('AllWorkGrid (US1)', () => {
     expect(within(plan).getByText('Published')).toBeInTheDocument();
     expect(within(plan).getByText('01 Jan 2026')).toBeInTheDocument();
     expect(within(plan).getByText('$1,200,000.00')).toBeInTheDocument();
-    expect(within(bodyRow('Helix launch$')).getByText('CAMPAIGN')).toBeInTheDocument();
+    expect(within(bodyRow('Helix launch ?Campaign$')).getByText('Campaign')).toBeInTheDocument();
     expect(within(bodyRow('Helix digital')).getByRole('link')).toHaveAttribute(
       'href',
       '/plans/P-1001/initiatives/I-1001',
@@ -148,7 +148,9 @@ describe('AllWorkGrid (US1)', () => {
 
     screen.getByRole('button', { name: 'Collapse FY2026 Lubricants Europe' }).focus();
     await user.keyboard(' ');
-    expect(screen.queryByRole('rowheader', { name: /Helix launch$/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('rowheader', { name: /Helix launch ?Campaign$/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the unassigned planned cost under an open activity, in red with a minus sign when negative (FR-012)', async () => {
@@ -157,7 +159,7 @@ describe('AllWorkGrid (US1)', () => {
     await user.click(screen.getByRole('button', { name: 'Expand Helix social ads' }));
 
     const unassigned = screen.getAllByRole('rowheader', {
-      name: /Unassigned planned cost \(Sys_Gen_Balance\)/,
+      name: /Unassigned planned cost/,
     });
     expect(unassigned).toHaveLength(1);
     const row = closestTo(nth(unassigned, 0), 'tr');
@@ -223,7 +225,7 @@ describe('AllWorkGrid (US1)', () => {
   it('closes the grid with the totals row (FR-014)', () => {
     renderGrid();
 
-    const totals = screen.getByRole('rowheader', { name: 'Total · 3 activities' });
+    const totals = screen.getByRole('rowheader', { name: 'Total' });
     const row = closestTo(totals, 'tr');
     expect(within(row).getByText('$2,000,000.00')).toBeInTheDocument();
     expect(within(row).getByText('$17,000.00')).toBeInTheDocument();
@@ -244,7 +246,7 @@ describe('AllWorkGrid (US1)', () => {
   it('writes the approval roll-up as "Partly approved", "In progress" only for running activities (functional review A-02)', () => {
     renderGrid();
 
-    const campaign = bodyRow('Helix launch$');
+    const campaign = bodyRow('Helix launch ?Campaign$');
     expect(within(campaign).getByText('Partly approved')).toBeInTheDocument();
     expect(within(campaign).queryByText('In progress')).not.toBeInTheDocument();
   });
@@ -278,13 +280,13 @@ describe('AllWorkGrid (US1)', () => {
     const { user } = renderGrid();
 
     const heading = screen.getByRole('columnheader', { name: 'Planned cost' });
-    expect(heading).not.toHaveAttribute('aria-sort');
+    expect(heading).toHaveAttribute('aria-sort', 'none');
     await user.click(within(heading).getByRole('button', { name: 'Planned cost' }));
     expect(heading).toHaveAttribute('aria-sort', 'ascending');
     await user.click(within(heading).getByRole('button', { name: 'Planned cost' }));
     expect(heading).toHaveAttribute('aria-sort', 'descending');
     await user.click(within(heading).getByRole('button', { name: 'Planned cost' }));
-    expect(heading).not.toHaveAttribute('aria-sort');
+    expect(heading).toHaveAttribute('aria-sort', 'none');
 
     // The rows come sorted from the API (D-114); Name is not a column and is not sortable.
     expect(
@@ -305,6 +307,6 @@ describe('AllWorkGrid (US1)', () => {
       ),
     ).toBeInTheDocument();
     // The totals row closes every page.
-    expect(screen.getByRole('rowheader', { name: 'Total · 3 activities' })).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'Total' })).toBeInTheDocument();
   });
 });

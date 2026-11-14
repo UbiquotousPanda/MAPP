@@ -37,24 +37,23 @@ function renderPanel(answers: HttpHandler[] = []) {
 /** The panel once its form is shown (the loading panel is another one). */
 async function findPanel() {
   await screen.findByLabelText('Initiative name');
-  await screen.findByText('From the campaign');
+  await screen.findByText(/Alex Morgan/);
   return screen.getByRole('dialog', { name: 'New initiative' });
 }
 
 describe('NewInitiativePanel (feature 005, US2)', () => {
-  it('fixes the campaign and takes owner and dates from it, labelled (US2#1, FR-002, FR-003)', async () => {
-    renderPanel();
+  it('fixes the campaign and takes owner and dates from it (US2#1, FR-002, FR-003)', async () => {
+    const { user } = renderPanel();
     const panel = await findPanel();
 
-    expect(within(panel).getByText("Inside campaign 'Helix launch'")).toBeInTheDocument();
-    const field = within(panel).getByLabelText('Campaign');
-    expect(field).toHaveValue('Helix launch');
-    expect(field).toHaveAttribute('readonly');
-    expect(field).toHaveAccessibleDescription('Change it with Move');
+    expect(within(panel).getByText('Helix launch')).toBeInTheDocument();
+    await user.click(within(panel).getByRole('button', { name: "Why Campaign can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Campaign can't change" })).toHaveTextContent(
+      'Change it with Move',
+    );
     expect(within(panel).getByText(/Alex Morgan/)).toBeInTheDocument();
-    expect(within(panel).getByLabelText('Start date')).toHaveValue('2026-03-01');
-    expect(within(panel).getByLabelText('End date')).toHaveValue('2026-12-31');
-    expect(within(panel).getByText("The campaign's dates")).toBeInTheDocument();
+    expect(within(panel).getByLabelText('Start date')).toHaveValue('01 Mar 2026');
+    expect(within(panel).getByLabelText('End date')).toHaveValue('31 Dec 2026');
     expect(document.title).toBe('New initiative · SP&A One');
   });
 
@@ -81,8 +80,6 @@ describe('NewInitiativePanel (feature 005, US2)', () => {
     expect(
       within(panel).getByText("Must be inside the campaign's dates (01 Mar 2026 – 31 Dec 2026)"),
     ).toBeInTheDocument();
-    expect(within(panel).getByLabelText('Start date')).toHaveAttribute('min', '2026-03-01');
-    expect(within(panel).getByLabelText('End date')).toHaveAttribute('max', '2026-12-31');
 
     await user.type(within(panel).getByLabelText('Initiative name'), 'Early bird');
     await user.click(within(panel).getByRole('button', { name: 'Save' }));
@@ -103,7 +100,6 @@ describe('NewInitiativePanel (feature 005, US2)', () => {
 
     expect(within(panel).getByLabelText('Start date')).toHaveValue('');
     expect(within(panel).getByLabelText('Start date')).not.toHaveAttribute('min');
-    expect(within(panel).queryByText("The campaign's dates")).not.toBeInTheDocument();
     expect(within(panel).queryByText(/Must be inside/)).not.toBeInTheDocument();
   });
 

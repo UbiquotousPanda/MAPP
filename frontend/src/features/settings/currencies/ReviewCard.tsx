@@ -1,6 +1,6 @@
-import { CircleAlert } from 'lucide-react';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { formatWhole } from '@/format/decimal';
 import { OutcomeGroup } from './OutcomeGroup';
 import type { RateImportCheck } from './rates-api';
@@ -41,12 +41,7 @@ export function ReviewCard({ review, importing, failure, onImport, onCancel }: R
           <OutcomeGroup key={outcome} outcome={outcome} rows={rows} />
         );
       })}
-      {failure && (
-        <p role="alert" className={styles.error}>
-          <CircleAlert aria-hidden="true" />
-          {failure}
-        </p>
-      )}
+      {failure && <InlineError>{failure}</InlineError>}
       <div className={styles.actions}>
         {toImport > 0 ? (
           <Button variant="primary" aria-busy={importing || undefined} onClick={onImport}>

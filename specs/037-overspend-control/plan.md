@@ -66,7 +66,7 @@ decision log, feature map, domain model)
 | Principle / standard | Check | Result |
 |---|---|---|
 | I Spec-first | 037 FR-001 – FR-020, acceptance scenarios per story; amendments listed and noted in 032 | Pass |
-| II Plain language | "When planned cost goes over this budget: Warn / Refuse"; no Hive9 words ("hard limit" is not shown) | Pass |
+| II Plain language | "If planned cost exceeds the budget: Warn / Refuse"; no Hive9 words ("hard limit" is not shown) | Pass |
 | III Documented design | plan, research R1–R8, data model, contract fragment and route table, quickstart | Pass |
 | IV Server source of truth | The rule runs in `overspend.Guard` inside the write transaction; the web app repeats it only for feedback, from figures the API gives | Pass |
 | V Simplicity | One guard instead of twenty call sites (R3); one new package following the handler → service → store layout | Pass |

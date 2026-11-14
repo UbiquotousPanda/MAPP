@@ -48,6 +48,7 @@ func (y *yearReader) addContainer(ctx context.Context, c container) error {
 		Description: c.description, Owner: owner, StartDate: c.start, EndDate: c.end,
 		Status: c.progress.State, Approved: c.progress.Approved, Total: c.progress.Total,
 		Missing: y.missingCount(len(c.completeness.Missing)), CreatedAt: c.meta.CreatedAt, UpdatedAt: c.meta.UpdatedAt,
+		Version: c.meta.Version,
 	}
 	if c.timing != nil {
 		node.Timing = *c.timing
@@ -209,7 +210,7 @@ func (y *yearReader) lineItemNode(ctx context.Context, li lineitem.LineItem, rat
 		Level: allwork.LevelLineItem, ID: li.ID, ParentID: li.ActivityID, PlanID: planID, Name: li.Name,
 		Description: li.Description, Owner: owner, PlannedCost: &plannedUSD,
 		LocalPlannedCost: &money.Money{Amount: li.PlannedCost, Currency: li.Currency},
-		Swbs:             string(lineitem.SwbsStatusOf(li, f)), CreatedAt: li.CreatedAt, UpdatedAt: li.UpdatedAt,
+		Swbs:             string(lineitem.SwbsStatusOf(li, f)), CreatedAt: li.CreatedAt, UpdatedAt: li.UpdatedAt, Version: li.Version,
 		MonthsUSD: []allwork.MonthAmount{}, MonthsPlan: []allwork.PlanMonth{}, PlannedCostPlan: y.inPlan(planID, &plannedPlan),
 		Fields: map[string]allwork.Value{
 			"lineItem.description":      {Text: li.Description},

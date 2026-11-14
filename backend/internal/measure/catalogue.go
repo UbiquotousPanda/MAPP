@@ -28,10 +28,20 @@ type (
 	}
 )
 
+const (
+	stageMQL, stageINQ                           = "mql", "inq"
+	tabRequests, tabSwbs, tabWaiting, tabOrders  = "requests", "swbs", "waiting", "orders"
+	tabCompleteness, tabPeople                   = "completeness", "people"
+	nameRevenue, namePurchaseRequests            = "Revenue", "Purchase requests"
+	paramVendor, paramOwner, paramStatus, paramQ = "vendor", "requestOwner", "status", "q"
+	widgetStatus                                 = "status"
+)
+
 type entry struct {
 	key, path, name, purpose string
-	requires                 authz.Permission // beyond reports.view; "" for none
 	controls                 frameControls
+	selector, opening        string
+	sections                 []section
 }
 
 type frameControls struct {
@@ -39,49 +49,64 @@ type frameControls struct {
 	showOpensOn           string
 }
 
-func entries() []entry {
+func reports() []entry {
 	return []entry{
-		{KeyPlanBudget, "plan-budget", "Plan budget",
-			"Budget, planned cost, committed and actual by month, and which plans, campaigns or activities lead or lag.", "",
-			frameControls{period: true, showOpensOn: ShowCampaign}},
-		{KeyApprovals, "approvals", "Approvals",
-			"How many approvals wait, how long decisions take, and every approval round.", "", frameControls{}},
-		{KeyPurchaseRequests, "purchase-requests", "Purchase requests",
-			"What is committed to each vendor and owner by delivery month, and what has been invoiced.", "", frameControls{}},
-		{KeyPlanDetails, "plan-details", "Plan details",
-			"How activities and planned cost spread across each Shell attribute, and what is not filled in.", "",
-			frameControls{period: true, showOpensOn: ShowActivity}},
-		{KeyGsapLink, "gsap-link", "GSAP link",
-			"SWBS codes not received, purchase requests waiting for GSAP, and the purchase orders of each line item.", "",
-			frameControls{}},
-		{KeyUserAccess, "user-access", "User access",
-			"Who has which role and teams, and when they last signed in.", authz.AccessManage, frameControls{noPlanFilters: true}},
-		{KeySummary, "summary", "Summary",
-			"Whether the year is on track: projected against goal, the leading segments and the funnel.", "",
-			frameControls{period: true}},
-		{KeyRevenue, "revenue", "Revenue",
-			"Revenue against goal by month, and the plans, campaigns or activities behind it.", "",
-			frameControls{period: true, showOpensOn: ShowCampaign}},
-		{KeyFunnel, "funnel", "Funnel stages",
-			"One funnel stage against goal by month, and where the funnel leaks.", "",
-			frameControls{period: true, showOpensOn: ShowCampaign}},
+		{key: KeyPerformance, path: "performance", name: "Performance",
+			purpose:  "Whether the year is on track: projected against goal, each funnel stage and what earned the revenue.",
+			controls: frameControls{period: true, showOpensOn: ShowCampaign}, selector: selectorStage, opening: KeyRevenue,
+			sections: []section{
+				{key: KeySummary, widgets: []string{KeyRevenue, KeyFunnel, "conversion"}, keep: []string{"category"}},
+				{key: KeyRevenue, value: KeyRevenue, label: nameRevenue},
+				{key: KeyFunnel, value: stageMQL, label: "MQL"}, {key: KeyFunnel, value: stageINQ, label: "INQ"},
+			}},
+		{key: KeyBudget, path: "budget", name: "Budget and spend",
+			purpose:  "Budget, planned cost, committed and actual by month, and which plans, campaigns or activities lead or lag.",
+			controls: frameControls{period: true, showOpensOn: ShowCampaign}, sections: []section{{key: KeyPlanBudget}}},
+		{key: KeyPurchasing, path: "purchasing", name: "Purchasing",
+			purpose:  "What is committed to each vendor and owner, and each purchase request's way to its purchase order.",
+			selector: selectorTab, opening: tabRequests, sections: purchasingSections()},
+		{key: KeyApprovals, path: "approvals", name: "Approvals",
+			purpose:  "How many approvals wait, how long decisions take, and every approval round.",
+			sections: []section{{key: KeyApprovals}}},
+		{key: KeyPlanData, path: "plan-data", name: "Plan data and access",
+			purpose:  "How plan data spreads across each Shell attribute and, for administrators, who has which role.",
+			controls: frameControls{period: true, showOpensOn: ShowActivity}, selector: selectorTab, opening: tabCompleteness,
+			sections: []section{{key: KeyPlanDetails, value: tabCompleteness, label: "Data completeness"},
+				{key: KeyUserAccess, value: tabPeople, label: "People", requires: authz.AccessManage,
+					noPlanFilters: true}}},
 	}
 }
 
+func purchasingSections() []section {
+	return []section{
+		{key: KeyPurchaseRequests, widgets: []string{"cards", widgetStatus, "byVendor", "byOwner"},
+			keep: []string{paramVendor, paramOwner, paramStatus, paramQ}},
+		{key: KeyPurchaseRequests, value: tabRequests, label: namePurchaseRequests, widgets: []string{"grid"}},
+		{key: KeyGsapLink, value: tabSwbs, label: "Waiting for SWBS", widgets: []string{tabSwbs, "swbsBands"}},
+		{key: KeyGsapLink, value: tabWaiting, label: "Waiting for GSAP", widgets: []string{tabWaiting}},
+		{key: KeyGsapLink, value: tabOrders, label: "Purchase orders", widgets: []string{tabOrders}},
+	}
+}
+
+// Keys are the section keys the reports register under, the old reports' keys.
 func Keys() []string {
 	var keys []string
-	for _, e := range entries() {
-		keys = append(keys, e.key)
+	for _, e := range reports() {
+		for _, s := range e.sections {
+			if !slices.Contains(keys, s.key) {
+				keys = append(keys, s.key)
+			}
+		}
 	}
 	return keys
 }
 
 func KeyOfPath(path string) (string, bool) {
-	i := slices.IndexFunc(entries(), func(e entry) bool { return e.path == path })
+	i := slices.IndexFunc(reports(), func(e entry) bool { return e.path == path })
 	if i < 0 {
 		return "", false
 	}
-	return entries()[i].key, true
+	return reports()[i].key, true
 }
 
 // Registry holds the report of each key; app/measure.go fills it, one register function per report (D-369).
@@ -105,21 +130,21 @@ func (r *Registry) Register(report Report) error {
 	return nil
 }
 
+// Get gives a catalogue report composed of its sections, or the report registered under a section key.
 func (r *Registry) Get(key string) (Report, bool) {
+	if i := slices.IndexFunc(reports(), func(e entry) bool { return e.key == key }); i >= 0 {
+		return composed{e: reports()[i], reports: r.reports}, true
+	}
 	report, found := r.reports[key]
 	return report, found
 }
 
-// Catalogue lists the reports the person may open, in order; a report not registered or a stub is not available.
-func (r *Registry) Catalogue(ctx context.Context) ReportCatalogue {
+// Catalogue lists the five reports in order; one is available once any of its sections is registered and built.
+func (r *Registry) Catalogue(context.Context) ReportCatalogue {
 	items := []ReportEntry{}
-	for _, e := range entries() {
-		if e.requires != "" && !authz.AvailableAnywhere(ctx, e.requires).Available {
-			continue
-		}
-		report, found := r.reports[e.key]
-		items = append(items, ReportEntry{Key: e.key, Path: e.path, Name: e.name, Purpose: e.purpose,
-			Available: found && report.Available()})
+	for _, e := range reports() {
+		available := composed{e: e, reports: r.reports}.Available()
+		items = append(items, ReportEntry{Key: e.key, Path: e.path, Name: e.name, Purpose: e.purpose, Available: available})
 	}
 	return ReportCatalogue{Items: items}
 }
@@ -136,16 +161,10 @@ func (s stub) Sheets(context.Context, actor.Actor, Filter) ([]WidgetSheet, error
 	return []WidgetSheet{}, nil
 }
 
-// openable refuses a report the person's roles do not open, as the catalogue leaves it out.
-func openable(ctx context.Context, report string) error {
-	i := slices.IndexFunc(entries(), func(e entry) bool { return e.key == report })
-	if i < 0 {
+// openable refuses a report outside the catalogue; a section's own permission is checked when it is shown.
+func openable(report string) error {
+	if !slices.ContainsFunc(reports(), func(e entry) bool { return e.key == report }) {
 		return errs.NotFound(msgNoReport)
-	}
-	if p := entries()[i].requires; p != "" {
-		if a := authz.AvailableAnywhere(ctx, p); !a.Available {
-			return errs.Forbidden(a.Reason)
-		}
 	}
 	return nil
 }

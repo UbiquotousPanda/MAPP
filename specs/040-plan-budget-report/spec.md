@@ -57,7 +57,7 @@ the cards and every period against the plan page and the dashboards of 036.
 5. **Given** a plan whose financial data Priya may not see, **When** the report is shown, **Then** committed, actual
    and the figures made from them cover only the plans she may see, and 039's coverage note says so.
 6. **Given** the chart, **When** she chooses Table, **Then** every period is a row with budget, planned cost and
-   actual, their running totals, and a totals row.
+   actual and their running totals; the running totals' last row is the year, so there is no totals row.
 
 ---
 
@@ -163,7 +163,7 @@ with 039's In view and About this export sheets.
 - **FR-006**: Committed, Actual and every figure made from them MUST cover only plans whose financial data the person
   may see; the rest show "—" when nothing remains, with 039's coverage note.
 - **FR-007**: The chart MUST have a table view (039 FR-020) with each period's budget, planned cost, actual, their
-  running totals and a totals row.
+  running totals. No totals row: the running totals' last row already gives the year (product owner, 2026-11-12).
 - **FR-008**: The ranked list MUST show the Show level's entries (plan, campaign, initiative or activity) ranked by
   the chosen figure and order, each listing its children one level down; an activity's children are its line items
   (040-C1).
@@ -176,7 +176,7 @@ with 039's In view and About this export sheets.
 - **FR-013**: Group by MUST offer None, Plan, Owner and each choice Shell attribute of the Show level or above;
   groups MUST carry totals and be ordered by their total of the sorted figure; a % split counts by share (D-270) and
   records without a value group under *Not filled in*.
-- **FR-014**: The list MUST page its top entries (10, 25 or 50, default 10) and search them by name; page, size,
+- **FR-014**: The list MUST page its top entries (25, 50, 100 or 200, default 50; D-432) and search them by name; page, size,
   search, group, sort, order and drill MUST live in the address; saved views keep all of them but the page (039).
 - **FR-015**: With Group by None and no search or drill, the top entries' planned cost, committed and actual over all
   pages MUST equal the cards.
@@ -184,6 +184,9 @@ with 039's In view and About this export sheets.
   as grouped, sorted and drilled) besides 039's sheets; each widget MUST export on its own as CSV and Excel.
 - **FR-017**: The ranked list MUST be built as a part 049 reuses with its own figures (revenue, stages).
 - **FR-018**: The report is read-only; it MUST store nothing but the person's saved views (039).
+- **FR-019**: The ranked list MUST end with a **Total** row (039 FR-035): the figures of every entry in view at the
+  chosen level, on every page and in every group, each entry counted once; left to plan and unspent budget are those
+  of the totals. Its export ends with the same line.
 
 ### Key Entities
 

@@ -9,6 +9,7 @@ import { mockApi } from '@/testing/mock-api';
 import { findMessages, renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { activityRecord } from '@/testing/fixtures/line-item-financials';
+import { currentRates } from '@/testing/fixtures/line-item-forms';
 import { launchFilm, launchFilmRow, DELETED, RESTORED } from '@/testing/fixtures/activities';
 import { destinations } from '@/testing/fixtures/activity-destinations';
 import { reply } from '@/testing/replies';
@@ -104,6 +105,7 @@ describe('activityTreeRows (feature 006)', () => {
 
   it('shows the planned cost in the plan currency with the display currency under it (016 FR-013)', async () => {
     openRows([
+      reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
       reply(
         'GET /api/v1/plans/{planId}/activities',
         {
@@ -128,7 +130,7 @@ describe('activityTreeRows (feature 006)', () => {
 
     const row = closestTo(await screen.findByRole('link', { name: 'Launch film' }), 'tr');
     expect(within(row).getByText(/3,950\.00/)).toHaveTextContent(/GBP|£/);
-    expect(within(row).getByText(/≈/)).toHaveTextContent(/5,000\.00/);
+    expect(within(row).getByRole('button', { name: 'about $5,000.00' })).toHaveTextContent('≈');
   });
 
   it('shows only the display currency when the plan is planned in it', async () => {

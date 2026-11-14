@@ -112,7 +112,7 @@ func TestRankedRevenue_ROIDashSaysWhy_050_FR007(t *testing.T) {
 		{"P-2's financial data is not shown", hidden, roiReturns(), "A-2", roiRow{Credited: ptrTo[int64](50_000),
 			CostWhy: revenue.ReasonNoFinancialAccess, ROIWhy: revenue.ReasonNoFinancialAccess}},
 		{"nothing paid in the year", roiScope(), unpaid, "A-1", roiRow{Credited: ptrTo[int64](300_000),
-			Cost: ptrTo[int64](0), ROIWhy: revenue.ReasonNoActualCost}},
+			CostWhy: revenue.ReasonNoActualCost, ROIWhy: revenue.ReasonNoActualCost}},
 		{"no revenue credited", roiScope(), uncredited, "A-1", roiRow{Cost: ptrTo[int64](200_000),
 			CreditedWhy: revenue.ReasonNoData, ROIWhy: revenue.ReasonNoData}},
 	}

@@ -1813,6 +1813,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/activities/{activityId}/line-items/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * What saving the line-item form would give, worked out by the API and saving nothing
+         * @description The planned cost in USD and in the plan currency, the activity's unassigned planned cost after saving and the month spread, worked out as a save works them out (D-061: the web app never converts). An amount is null while the typed text is not one or its currency has no rate; the spread is null while a custom month is not valid.
+         */
+        post: operations["previewLineItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/line-items/{lineItemId}": {
         parameters: {
             query?: never;
@@ -2599,7 +2619,7 @@ export interface paths {
         put?: never;
         /**
          * Import the ready rows of a plan workbook in one step - create rows without ID, update rows with one
-         * @description Runs the same check as imports/check and applies its ready rows; rows with problems, and the rows below them in the file, are left out and listed. Every record created or updated gets an activity-log entry with the note "Imported from '<file>' (IMP-…)".
+         * @description Runs the same check as imports/check and applies its ready rows; rows with problems, and the rows below them in the file, are left out and listed. Every record created or updated gets an activity-log entry with the note "Imported from '<file>' (IMP-…)". The request names the check of this very file (checkId, a field error otherwise), and each check is imported once: a second Import of it answers 409 not_allowed.
          */
         post: operations["importPlanWorkbook"];
         delete?: never;
@@ -5134,7 +5154,7 @@ export interface paths {
         };
         /**
          * The reports the person may open, in the catalogue's order (feature 039, FR-001)
-         * @description A report not built yet is listed with available false ("Coming soon"); a report needing more than reports.view (User access needs access.manage) is listed only to people who hold it.
+         * @description The five reports, each made of sections; a report none of whose sections is built yet is listed with available false ("Coming soon").
          */
         get: operations["listReports"];
         put?: never;
@@ -5176,7 +5196,7 @@ export interface paths {
         };
         /**
          * A report as an Excel workbook, or one of its widgets as Excel or CSV (feature 039, FR-022)
-         * @description Excel holds one sheet per widget, then In view and About this export (report, year, filters in words, period, currency, exporter, date and time, rates used). CSV needs a widget and puts the notes before the rows. A report not built yet exports In view and About this export only. Nothing is stored or logged.
+         * @description Excel holds one sheet per widget, then In view and About this export (report, year, filters in words, period, currency, exporter, date and time, rates used). CSV needs a widget and puts the notes before the rows. A report not built yet exports In view and About this export only. The export of a merged report holds the section shown, named in About this export. Nothing is stored or logged.
          */
         get: operations["exportReport"];
         put?: never;
@@ -5808,6 +5828,16 @@ export interface components {
              *     off for your organisation."
              */
             notice: string;
+            /**
+             * @description The step a save of this purchase request takes now; empty while it cannot be saved (Closed).
+             * @enum {string}
+             */
+            saveThen: "save" | "resubmit" | "submitChanges" | "";
+            /**
+             * @description The step of a save that only adds lines: save when the setting lets lines join an Approved purchase request without approval; empty when no line may be added.
+             * @enum {string}
+             */
+            addedLinesThen: "save" | "resubmit" | "submitChanges" | "";
             access: components["schemas"]["PurchaseRequestAccess"];
             version: number;
             /** Format: date-time */
@@ -6166,7 +6196,7 @@ export interface components {
             /** @description Every pinned plan after the change, in the order pinned (018, D-317). Duplicates are dropped, keeping the order sent; the server also checks each id (^P-\d+$) and the cap of 100 and answers validation_failed otherwise. Ids of deleted or out-of-sight plans are allowed — they are harmless. */
             pinnedPlanIds?: string[];
         };
-        /** @description Extended by later features: version (003), teams (003). Properties beyond the required list are always sent by the feature that adds them; they stay optional so that earlier answers remain valid (D-191). */
+        /** @description Extended by later features: version (003), teams (003). Properties beyond the required list are always sent by the feature that adds them; they stay optional so that earlier answers remain valid (D-191), except version, which a profile save cannot do without. */
         CurrentUser: {
             id: string;
             name: string;
@@ -6176,11 +6206,16 @@ export interface components {
             initials: string;
             preferences: components["schemas"]["Preferences"];
             /** @description The person's version, sent back by PATCH /api/v1/me. */
-            version?: number;
+            version: number;
             /** @description The signed-in person's teams, active or not, sorted by name ("My teams" filters, plan defaults). */
             teams?: components["schemas"]["TeamRef"][];
-            /** @description The person's roles, permissions with scopes, administrators and access rule (014). Optional in the contract; always sent once its feature is built (D-298). */
-            access?: components["schemas"]["MyAccess"];
+            /** @description The person's roles, permissions with scopes, administrators and access rule (014). Until it is known the web app allows nothing. */
+            access: components["schemas"]["MyAccess"];
+            /**
+             * Format: date
+             * @description The server's date, for every "today" the web app shows (waiting days, sign-in bands, default years).
+             */
+            today: string;
         };
         Change: {
             /** @example name */
@@ -6365,10 +6400,10 @@ export interface components {
         };
         UsagePart: {
             /**
-             * @description What uses the record (the purchase request levels since 032, activity types and categories since 047).
+             * @description What uses the record (the purchase request levels since 032, activity types and categories since 047, performance facts and GSAP transactions for a currency).
              * @enum {string}
              */
-            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption" | "activityType" | "activityCategory";
+            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption" | "activityType" | "activityCategory" | "performanceFact" | "financialTransaction";
             /** @description The part as people read it, for example Used by 12 activities (1 in the recycle bin). */
             text: string;
             /** @description Records using it, those in the recycle bin included. */
@@ -7274,6 +7309,8 @@ export interface components {
             name: string;
             year: number;
             status: components["schemas"]["PlanStatus"];
+            /** @description Sent with a delete from the list, as the version the person saw. */
+            version: number;
             aop: boolean;
             /** @description 013. BCPIR plan. Optional in the contract; always sent once its feature is built (D-298). */
             bcpir?: boolean;
@@ -8236,6 +8273,40 @@ export interface components {
              */
             amount: string;
         };
+        LineItemPreviewInput: {
+            /** @description The line item being edited, whose saved planned cost the preview replaces; null for a new one. */
+            lineItemId?: string | null;
+            /** @example EUR */
+            currency: string;
+            /**
+             * @description The planned cost as typed.
+             * @example 10000.00
+             */
+            plannedCost: string;
+            spread: components["schemas"]["SpreadInput"];
+        };
+        LineItemPreview: {
+            plannedCostUsd: components["schemas"]["Money"] | null;
+            plannedCostPlan: components["schemas"]["Money"] | null;
+            /** @description The activity's unassigned planned cost after saving, in the plan currency; null without a planned cost. */
+            afterSaving: components["schemas"]["Money"] | null;
+            /** @description The activity's unassigned planned cost without the line item edited, in the form's currency: what a pre-filled planned cost becomes when the currency changes. Null without a planned cost or a rate. */
+            balanceIn: components["schemas"]["Money"] | null;
+            /** @description balanceIn converted back into the plan currency; it differs from the balance by rounding only. */
+            balanceInPlan: components["schemas"]["Money"] | null;
+            spread: components["schemas"]["SpreadPreview"] | null;
+        };
+        SpreadPreview: {
+            /** @enum {string} */
+            state: "spread" | "notSpread";
+            months: components["schemas"]["SpreadMonth"][];
+            customTotal: components["schemas"]["Money"] | null;
+            /** @description Custom only - the planned cost minus the month total (negative when the months are above it). */
+            difference: components["schemas"]["Money"] | null;
+            addsUp: boolean;
+            /** @description The month amounts a switch to Custom starts from - this spread's months, or the planned cost evenly over the plan's year when it is not spread. */
+            seed: components["schemas"]["SpreadMonthInput"][];
+        };
         SpreadInput: {
             method: components["schemas"]["SpreadMethod"];
             /** @description The custom month amounts; stored only when method is custom (an empty list is stored otherwise). */
@@ -8341,8 +8412,10 @@ export interface components {
              * @example 2026-03
              */
             key: string;
-            /** @description The month (YYYY-MM); null for the No dates yet column. */
+            /** @description The month (YYYY-MM); null for the No dates yet column and for a quarter. */
             month: string | null;
+            /** @description The quarter of a column of the quarterly grid, "2026-Q1". */
+            quarter?: string;
             outsideActivityDates: boolean;
         };
         SpreadGridRow: {
@@ -8352,7 +8425,7 @@ export interface components {
             cells: (components["schemas"]["Money"] | null)[];
             total: components["schemas"]["Money"];
         };
-        /** @description The activity's line items by month (FR-003, FR-020), worked out in the plan currency (016 FR-015) and answered in the signed-in person's display currency (007 FR-005, D-213): every cell and total is converted on its own, so a total can differ by a cent from the sum of its converted cells; in the plan currency they add up exactly. Quarterly is calculated by the web app. */
+        /** @description The activity's line items by month (FR-003, FR-020), worked out in the plan currency (016 FR-015) and answered in the signed-in person's display currency (007 FR-005, D-213): every cell and total is converted on its own, so a total can differ by a cent from the sum of its converted cells; in the plan currency they add up exactly. The quarterly grid adds up the months in the plan currency the same way. */
         SpreadGrid: {
             columns: components["schemas"]["SpreadGridColumn"][];
             rows: components["schemas"]["SpreadGridRow"][];
@@ -8366,6 +8439,7 @@ export interface components {
             items: components["schemas"]["LineItem"][];
             balance: components["schemas"]["UnassignedBalance"];
             grid: components["schemas"]["SpreadGrid"];
+            gridQuarterly: components["schemas"]["SpreadGrid"];
             /** @description 014. Optional in the contract; always sent once its feature is built (D-298). */
             access?: components["schemas"]["LineItemAccess"];
         };
@@ -9028,6 +9102,8 @@ export interface components {
             waitingDays?: number | null;
             /** @description As ApprovalChainLevel.noApprover for the current level. */
             noApprover?: boolean;
+            /** @description Why the record can't be approved now, such as a purchase request whose activity is no longer Approved; left out when nothing stops it. */
+            blockedReason?: string;
         };
         ApprovalRowPage: {
             items: components["schemas"]["ApprovalRow"][];
@@ -9351,6 +9427,8 @@ export interface components {
             activityId?: string;
             depth: number;
             name: string;
+            /** @description The record's version, sent with a bulk action as the version the person saw; absent on "Not in an activity" rows. */
+            version?: number;
             /** @enum {string} */
             role: "match" | "context";
             searchHit?: components["schemas"]["AllWorkSearchHit"];
@@ -9468,6 +9546,8 @@ export interface components {
             count: components["schemas"]["AllWorkCount"];
             totals: components["schemas"]["AllWorkTotals"];
             leftOut: components["schemas"]["AllWorkLeftOut"][];
+            /** @description Whether the person may export a plan in view (data.export covers it); the export holds only those plans. */
+            canExport: boolean;
             /** @description 016. Optional in the contract; always sent once its feature is built (D-298). */
             yearFrom?: number;
             /** @description 016. Optional in the contract; always sent once its feature is built (D-298). */
@@ -9797,6 +9877,10 @@ export interface components {
             restartApproval: boolean;
             /** @description submit - an optional comment for the approvers (at most 2,000 characters). */
             comment?: string;
+            /** @description The version the person saw of each selected record, by ID; a selected record without one is a field error on versions. A record whose version has changed since is skipped with "Changed since you selected it" and left unchanged. */
+            versions: {
+                [key: string]: number;
+            };
         };
         BulkRecordRef: {
             recordId: string;
@@ -9815,6 +9899,8 @@ export interface components {
             outcome: "done" | "skipped" | "failed";
             /** @description Every reason, in plain language (empty when done). */
             reasons: string[];
+            /** @description The record's version when the action ran; "Select failed items" selects it at this version. */
+            version?: number;
             /** @description copy - the ID of the copy. */
             newRecordId?: string;
         };
@@ -9873,6 +9959,8 @@ export interface components {
         BulkUndoResult: {
             bulkActionId: string;
             restored: components["schemas"]["RestoreResult"][];
+            /** @description The recycle-bin entries of the bulk delete that were undone or restored on their own since; Undo skips them. */
+            alreadyBack: string[];
         };
         BulkFieldOption: {
             id: string;
@@ -9933,6 +10021,13 @@ export interface components {
             /** @description The plan workbook (.xlsx) or an Activities sheet (.csv), base64-encoded (at most 5 MB before encoding). */
             content: string;
         };
+        ImportRun: {
+            fileName: string;
+            /** @description The file that was checked, as sent to imports/check. */
+            content: string;
+            /** @description The checkId of the check of this file; it imports once. */
+            checkId: string;
+        };
         /** @enum {string} */
         ImportLevel: "campaign" | "initiative" | "activity" | "lineItem";
         ImportProblem: {
@@ -9972,6 +10067,8 @@ export interface components {
             /** @description Rows to create or update that leave a needed-to-publish or needed-to-submit column empty. */
             needMoreFields: number;
             nothingToChange: boolean;
+            /** @description Send it with Import to apply this check's file; each check imports once. */
+            checkId: string;
         };
         ImportLevelTotals: {
             campaigns: number;
@@ -10223,6 +10320,8 @@ export interface components {
             /** @description Publish and Unpublish (the plan's own readiness rules still apply). */
             publish: components["schemas"]["ActionAvailability"];
             copy: components["schemas"]["ActionAvailability"];
+            /** @description Export to Excel, PowerPoint and PDF (data.export in the plan's scope). */
+            export: components["schemas"]["ActionAvailability"];
             content: components["schemas"]["PlanContentAccess"];
         };
         /** @description A campaign's or an initiative's actions; addChild is Add initiative or Add activity. */
@@ -10252,6 +10351,8 @@ export interface components {
             delete: components["schemas"]["ActionAvailability"];
             duplicate: components["schemas"]["ActionAvailability"];
             seeFinance: components["schemas"]["ActionAvailability"];
+            /** @description SWBS Send now (finance.import in the plan's scope). */
+            sendSwbs: components["schemas"]["ActionAvailability"];
         };
         BinEntryAccess: {
             /** @description Also Undo and the restore preview. */
@@ -10934,6 +11035,8 @@ export interface components {
             total: components["schemas"]["Money"] | null;
             /** @description "Adds up to 590,000.00 GBP, not the budget 600,000.00 GBP"; null when fine. */
             problem: string | null;
+            /** @description The budget split evenly over the 12 months (the rest in December), whatever the method: what Evenly and the editor's Spread evenly show, so the web app never splits money. [] without a budget. */
+            evenly: components["schemas"]["Money"][];
         };
         BudgetPhasingUpdate: {
             method: components["schemas"]["PhasingMethod"];
@@ -10941,6 +11044,13 @@ export interface components {
             months: components["schemas"]["PhasingMonthInput"][];
             /** @description The record's version. */
             version: number;
+        };
+        /** @description The row's periods added up by the API; the planned cost includes other years and activities without dates. */
+        BudgetByMonthTotals: {
+            budget: components["schemas"]["Money"] | null;
+            plannedCost: components["schemas"]["Money"];
+            difference: components["schemas"]["Money"] | null;
+            allocated: components["schemas"]["Money"] | null;
         };
         BudgetByMonthPeriods: {
             /** @description One per period; null entries when not phased. */
@@ -10951,6 +11061,9 @@ export interface components {
             allocated: (components["schemas"]["Money"] | null)[] | null;
             /** @description True where planned cost or allocated exceeds the phased budget. */
             over: boolean[];
+            /** @description Per period, how far the larger of planned cost and allocated is above the phased budget; null when not over. */
+            overBy: (components["schemas"]["Money"] | null)[];
+            totals: components["schemas"]["BudgetByMonthTotals"];
         };
         BudgetByMonthRow: {
             /** @enum {string} */
@@ -11833,6 +11946,8 @@ export interface components {
             updatedBy: components["schemas"]["ActorRef"];
         };
         CustomDashboardSummary: {
+            /** @description Sent with a delete from the list, as the version the person saw. */
+            version: number;
             id: string;
             name: string;
             description: string;
@@ -12140,6 +12255,10 @@ export interface components {
          * @enum {string}
          */
         WebMetric: "sessions" | "visits" | "engagementTouches";
+        /** @description The version the person saw; a change from an older one answers version_conflict, and to the status the source already has, not_allowed. */
+        PerformanceSourceStatusChange: {
+            version: number;
+        };
         /** @description Where performance data comes from (Settings › Performance data). */
         PerformanceSource: {
             id: string;
@@ -12328,6 +12447,8 @@ export interface components {
             comment: string;
         };
         CorrectInput: {
+            /** @description The row's version the person corrected; an older one answers version_conflict. */
+            version: number;
             date?: string | null;
             currency?: string | null;
             keys?: {
@@ -12548,13 +12669,16 @@ export interface components {
         ColumnMappingList: {
             items: components["schemas"]["ColumnMapping"][];
         };
-        /** @enum {string} */
-        ReportKey: "planBudget" | "approvals" | "purchaseRequests" | "planDetails" | "gsapLink" | "userAccess" | "summary" | "revenue" | "funnel";
+        /**
+         * @description The five reports of the catalogue (feature 059); saved views of the old nine moved to them.
+         * @enum {string}
+         */
+        ReportKey: "performance" | "budget" | "purchasing" | "approvals" | "planData";
         ReportEntry: {
             key: components["schemas"]["ReportKey"];
-            /** @example plan-budget */
+            /** @example budget */
             path: string;
-            /** @example Plan budget */
+            /** @example Budget and spend */
             name: string;
             purpose: string;
             /** @description False while the report is not built ("Coming soon"). */
@@ -12744,6 +12868,8 @@ export interface components {
             period: "month" | "quarter";
             periods: components["schemas"]["PlanBudgetPeriod"][];
             notes: {
+                /** @description Line items above their activity's planned cost, so periods + noDates + otherYears − this = cards.planned. */
+                linesAbovePlannedCost: components["schemas"]["Money"] | null;
                 notPhased: components["schemas"]["Money"] | null;
                 noDates: components["schemas"]["Money"] | null;
                 otherYears: components["schemas"]["Money"] | null;
@@ -12772,6 +12898,8 @@ export interface components {
             page: number;
             size: number;
             total: number;
+            /** @description Every entry in view on every page, each counted once however many groups it falls in, for the list's Total row (039 FR-035). */
+            totals: components["schemas"]["PlanBudgetFigures"];
             trail: {
                 id: string;
                 level: string;
@@ -12818,11 +12946,20 @@ export interface components {
             goal: components["schemas"]["Money"] | null;
             inProgress: boolean;
         };
+        /** @description The period table's Total row (039 FR-035, D-414): each column's periods added up over the year, the same in month and quarter view, converted once from US dollars; null where no period of the column has a figure. */
+        RevenuePeriodTotals: {
+            goal: components["schemas"]["Money"] | null;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            /** @description The goal card less the Goal total, both as shown: the part a model's velocity carries past December (D-414). Null when every goal lands inside the year. */
+            goalAfterYear: components["schemas"]["Money"] | null;
+        };
         RevenueReport: {
             cards: components["schemas"]["RevenueCards"];
             /** @enum {string} */
             period: "month" | "quarter";
             periods: components["schemas"]["RevenuePeriod"][];
+            totals: components["schemas"]["RevenuePeriodTotals"];
             /** @description The first model in view, kept for compatibility; projections names every one. */
             projection: components["schemas"]["ProjectionStamp"] | null;
             /** @description Every model behind a projected figure in view, by name (049 SC-006). */
@@ -12853,7 +12990,7 @@ export interface components {
              * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
              * @enum {string}
              */
-            actualCostReason: "" | "attributionNotConfigured" | "noFinancialAccess";
+            actualCostReason: "" | "attributionNotConfigured" | "noFinancialAccess" | "noActualCost";
             /**
              * @description attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
              * @enum {string}
@@ -12883,13 +13020,15 @@ export interface components {
             /** @enum {string} */
             level: "plan" | "campaign" | "initiative" | "activity";
             /** @enum {string} */
-            sort: "actualRevenue" | "projectedRevenue";
+            sort: "actualRevenue" | "projectedRevenue" | "goal" | "performance" | "actualCost" | "roi";
             /** @enum {string} */
             order: "desc" | "asc";
             group: string;
             page: number;
             size: number;
             total: number;
+            /** @description Every entry in view on every page, each counted once, for the list's Total row (039 FR-035). */
+            totals: components["schemas"]["RevenueFigures"];
             trail: {
                 id: string;
                 level: string;
@@ -13032,12 +13171,19 @@ export interface components {
             stage: "inq" | "mql";
             /** @description Every stage any model in view allows, in funnel order (049-C11). */
             availableStages: ("inq" | "mql")[];
-            /** @description Plans whose model does not allow the selected stage (049-C11, FR-018). */
+            /** @description Plans whose model does not allow the selected stage; their activities count in none of the stage's figures (049-C11, FR-018, D-426). */
             uncoveredCount: number;
             cards: components["schemas"]["FunnelCards"];
             /** @enum {string} */
             period: "month" | "quarter";
             periods: components["schemas"]["FunnelPeriod"][];
+            /** @description The period table's Total row, as RevenuePeriodTotals but whole counts. */
+            totals: {
+                goal: number | null;
+                actual: number | null;
+                projected: number | null;
+                goalAfterYear: number | null;
+            };
             /** @description The first model in view, kept for compatibility; projections names every one. */
             projection: components["schemas"]["ProjectionStamp"] | null;
             /** @description Every model behind a projected figure in view, by name (049 SC-006). */
@@ -13070,13 +13216,15 @@ export interface components {
             /** @enum {string} */
             level: "plan" | "campaign" | "initiative" | "activity";
             /** @enum {string} */
-            sort: "actual" | "projected";
+            sort: "actual" | "projected" | "goal" | "performance";
             /** @enum {string} */
             order: "desc" | "asc";
             group: string;
             page: number;
             size: number;
             total: number;
+            /** @description Every entry in view on every page, each counted once, for the list's Total row (039 FR-035). */
+            totals: components["schemas"]["FunnelFigures"];
             trail: {
                 id: string;
                 level: string;
@@ -13158,6 +13306,13 @@ export interface components {
         PrReportGrid: {
             vendors: components["schemas"]["PrReportVendor"][];
             total: number;
+            /** @description Every vendor the grid holds on every page, added up as each vendor row is, for the grid's Total row (042 FR-029). */
+            totals: {
+                purchaseRequests: number;
+                lines: number;
+                committed: components["schemas"]["PrReportMoney"];
+                invoiced: components["schemas"]["PrReportMoney"];
+            };
             page: number;
             pageSize: number;
             columns: string[];
@@ -13215,6 +13370,13 @@ export interface components {
                     percent: number | null;
                 }[];
                 trend: components["schemas"]["SummaryTrendPeriod"][];
+                /** @description The trend table's Total row, as RevenuePeriodTotals (039 FR-035, D-414). */
+                trendTotals: {
+                    actual: components["schemas"]["PrReportMoney"];
+                    projected: components["schemas"]["PrReportMoney"];
+                    goal: components["schemas"]["PrReportMoney"];
+                    goalAfterYear: components["schemas"]["PrReportMoney"];
+                };
             };
             funnel: {
                 stages: {
@@ -13696,6 +13858,8 @@ export interface components {
         };
     };
     parameters: {
+        /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+        SeenVersion: number;
         /** @example DB-1001 */
         CustomDashboardId: string;
         /** @example DS-1001 */
@@ -13721,7 +13885,7 @@ export interface components {
         /** @description Sort inside each vendor group; "-" sorts descending. */
         PurchaseRequestSort: "name" | "-name" | "id" | "-id" | "status" | "-status" | "amount" | "-amount" | "created" | "-created";
         PurchaseRequestPageNumber: number;
-        PurchaseRequestPageSize: 50 | 100 | 200;
+        PurchaseRequestPageSize: 25 | 50 | 100 | 200;
         /** @example BIN-1001 */
         EntryId: string;
         /** @example SF-1001 */
@@ -13834,7 +13998,7 @@ export interface components {
         /** @description A column and a direction. Default postingDate:desc (ties by ID, newest first). amount sorts by the USD value. */
         FinancialSort: string;
         FinancialPageNumber: number;
-        FinancialPageSize: 50 | 100 | 200;
+        FinancialPageSize: 25 | 50 | 100 | 200;
         /** @description Financials filter (FR-024), tested on activities; values combine with OR. committedAbovePlanned holds when the activity or one of its line items is committed above its planned cost. */
         AllWorkFinance: ("hasPurchaseOrder" | "noPurchaseOrder" | "invoiced" | "committedAbovePlanned")[];
         /** @example XR-1001 */
@@ -13900,8 +14064,8 @@ export interface components {
         MappingId: string;
         /** @description The report the frame is for. */
         ReportKey: components["schemas"]["ReportKey"];
-        /** @description The report's path in the web app's address. */
-        ReportPath: "plan-budget" | "approvals" | "purchase-requests" | "plan-details" | "gsap-link" | "user-access" | "summary" | "revenue" | "funnel";
+        /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
+        ReportPath: "performance" | "budget" | "purchasing" | "approvals" | "plan-data";
         /** @description The report's own sort, which the report validates (039 FR-022); a leading minus sorts descending. */
         ReportOwnSort: string;
         /** @description The report's own tab, which the report validates (044). */
@@ -13916,8 +14080,8 @@ export interface components {
         ReportOwnColumns: string;
         /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
         ReportOwnCategory: string;
-        /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
-        ReportOwnStage: "inq" | "mql";
+        /** @description The stage Performance shows, revenue or a funnel stage, which the report validates (059, 049). */
+        ReportOwnStage: "revenue" | "inq" | "mql";
         /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
         ReportOwnRevenueBy: string;
         /** @description The Summary report's Performance league segment, a Shell attribute ID, which the report validates (048). */
@@ -13941,8 +14105,10 @@ export interface components {
         RevenueCategory: string;
         /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
         FunnelStage: "inq" | "mql";
-        RevenueRankedSort: "actualRevenue" | "projectedRevenue";
-        FunnelRankedSort: "actual" | "projected";
+        /** @description Without sort or order the list opens on performance, lowest first, so the most behind is on top. Entries without the figure come last in either order. */
+        RevenueRankedSort: "actualRevenue" | "projectedRevenue" | "goal" | "performance" | "actualCost" | "roi";
+        /** @description Entries without the figure come last in either order. */
+        FunnelRankedSort: "actual" | "projected" | "goal" | "performance";
         /** @example RV-1001 */
         ReportViewId: string;
         /** @description Time widgets by month (default) or quarter of the plan year. */
@@ -13963,7 +14129,7 @@ export interface components {
         /** @description The page of the report's table, from 1. */
         ReportPage: number;
         /** @description Rows per page of the report's table. */
-        ReportPageSize: number;
+        ReportPageSize: 25 | 50 | 100 | 200;
         GsapLinkTab: "swbs" | "waiting" | "orders";
         /** @description A column of the tab, "-" for descending; default -waiting (swbs, waiting) and lineItem (orders). swbs: lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, plan, routedAt, gsapPrNumber, amount, waiting; orders: lineItem, plan, purchaseRequest, gsapPrNumber, poNumber, poDate, vendor, poAmount, invoiced, paid. Ties break by ID. */
         GsapLinkSort: string;
@@ -13984,7 +14150,7 @@ export interface components {
         PrReportSort: "name" | "status" | "amount" | "invoiced" | "created" | "delivery";
         PrReportOrder: "asc" | "desc";
         /** @description Vendors per page of the grid. */
-        PrReportPageSize: 5 | 10 | 25 | 50 | 100;
+        PrReportPageSize: 25 | 50 | 100 | 200;
         /** @description The grid's columns, comma-separated, in order. */
         PrReportColumns: string;
         /** @description The record type of the status widget. A value that matches nothing answers with empty figures. */
@@ -14001,7 +14167,7 @@ export interface components {
         ApprovalsSort: "itemId" | "itemName" | "recordType" | "approver" | "decidedOn" | "outcome" | "submittedOn" | "level" | "purchaseOrder" | "amount" | "owner" | "comments";
         ApprovalsOrder: "asc" | "desc";
         /** @description Rows per page of the grid. */
-        ApprovalsPageSize: 5 | 10 | 25 | 50 | 100;
+        ApprovalsPageSize: 25 | 50 | 100 | 200;
         /** @example CAT-1001 */
         ActivityCategoryId: string;
     };
@@ -14423,7 +14589,10 @@ export interface operations {
     };
     deleteSampleFolder: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example SF-1001 */
@@ -14442,9 +14611,11 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -14515,7 +14686,10 @@ export interface operations {
     };
     deleteSampleNote: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example SN-1001 */
@@ -14534,9 +14708,11 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -14643,7 +14819,10 @@ export interface operations {
     };
     deleteModel: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example MOD-1001 */
@@ -14662,6 +14841,7 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -14847,7 +15027,10 @@ export interface operations {
     };
     deleteActivityType: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example AT-1001 */
@@ -14866,6 +15049,7 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -15055,7 +15239,10 @@ export interface operations {
     };
     deleteShellAttribute: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example SA-1001 */
@@ -15074,6 +15261,7 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -15374,7 +15562,10 @@ export interface operations {
     };
     deleteShellAttributeOption: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example SO-1001 */
@@ -15639,7 +15830,10 @@ export interface operations {
     };
     deleteCurrency: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /**
@@ -15893,7 +16087,10 @@ export interface operations {
     };
     deleteFinanceBudgetItem: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example FBI-1001 */
@@ -15912,6 +16109,7 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -16241,7 +16439,10 @@ export interface operations {
     };
     deleteTeam: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example T-1001 */
@@ -16260,6 +16461,7 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -16512,7 +16714,10 @@ export interface operations {
     };
     deletePlan: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example P-1001 */
@@ -16531,9 +16736,11 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -16843,7 +17050,10 @@ export interface operations {
     };
     deleteCampaign: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example C-1001 */
@@ -16862,9 +17072,11 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -17058,7 +17270,10 @@ export interface operations {
     };
     deleteInitiative: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example I-1001 */
@@ -17077,9 +17292,11 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -17327,7 +17544,10 @@ export interface operations {
     };
     deleteActivity: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example A-1001 */
@@ -17346,9 +17566,11 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -17591,6 +17813,38 @@ export interface operations {
             default: components["responses"]["Error"];
         };
     };
+    previewLineItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LineItemPreviewInput"];
+            };
+        };
+        responses: {
+            /** @description The preview. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LineItemPreview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
     getLineItem: {
         parameters: {
             query?: never;
@@ -17620,12 +17874,14 @@ export interface operations {
     };
     deleteLineItem: {
         parameters: {
-            query?: {
+            query: {
                 /**
                  * @deprecated
                  * @description Ignored since feature 034 (D-322) - a line-item delete never sends the activity back for approval.
                  */
                 restartApproval?: components["parameters"]["RestartApproval"];
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
             };
             header?: never;
             path: {
@@ -17799,7 +18055,10 @@ export interface operations {
     };
     deleteApprovalWorkflow: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example WF-1001 */
@@ -17818,6 +18077,7 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -19092,7 +19352,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ImportUpload"];
+                "application/json": components["schemas"]["ImportRun"];
             };
         };
         responses: {
@@ -19109,6 +19369,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -19405,7 +19666,10 @@ export interface operations {
     };
     deleteRole: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example RL-1003 */
@@ -19424,6 +19688,7 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -19692,7 +19957,10 @@ export interface operations {
     };
     deleteGlobalBudget: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example GB-1001 */
@@ -19711,6 +19979,7 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -20411,7 +20680,10 @@ export interface operations {
     };
     deletePurchaseRequest: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example PR-1001 */
@@ -20430,6 +20702,7 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
@@ -21065,7 +21338,10 @@ export interface operations {
     };
     deleteExchangeRate: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example XR-1001 */
@@ -21088,6 +21364,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -22084,7 +22361,10 @@ export interface operations {
     };
     deleteCustomDashboard: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example DB-1001 */
@@ -22103,9 +22383,11 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -22320,7 +22602,10 @@ export interface operations {
     };
     deleteDataset: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example DS-1001 */
@@ -22339,9 +22624,11 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -22574,7 +22861,10 @@ export interface operations {
     };
     deleteActivityCategory: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description The version of the record the person saw. A delete of a record changed since answers 409 version_conflict; without it, 400 with a field error on version. */
+                version: components["parameters"]["SeenVersion"];
+            };
             header?: never;
             path: {
                 /** @example CAT-1001 */
@@ -22593,9 +22883,11 @@ export interface operations {
                     "application/json": components["schemas"]["DeleteResult"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -22828,7 +23120,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerformanceSourceStatusChange"];
+            };
+        };
         responses: {
             /** @description The source, now inactive; every activity that depended only on it stops counting as integrated. */
             200: {
@@ -22842,6 +23138,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -22855,7 +23152,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerformanceSourceStatusChange"];
+            };
+        };
         responses: {
             /** @description The source, active again. */
             200: {
@@ -22869,6 +23170,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
@@ -23736,7 +24038,7 @@ export interface operations {
                 columns?: components["parameters"]["ReportOwnColumns"];
                 /** @description An activity category ID or uncategorised, which Revenue, Funnel stages and Summary validate (049, 048). */
                 category?: components["parameters"]["ReportOwnCategory"];
-                /** @description The funnel stage Funnel stages or Summary shows, which the report validates (049, 048). */
+                /** @description The stage Performance shows, revenue or a funnel stage, which the report validates (059, 049). */
                 stage?: components["parameters"]["ReportOwnStage"];
                 /** @description The Summary report's Revenue league segment, a Shell attribute ID, which the report validates (048). */
                 revenueBy?: components["parameters"]["ReportOwnRevenueBy"];
@@ -23753,7 +24055,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
             };
             cookie?: never;
@@ -23784,7 +24086,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
             };
             cookie?: never;
@@ -23811,7 +24113,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
             };
             cookie?: never;
@@ -23843,7 +24145,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
                 /** @example RV-1001 */
                 viewId: components["parameters"]["ReportViewId"];
@@ -23872,7 +24174,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The report's path in the web app's address. */
+                /** @description The report's path in the web app's address. The old reports' addresses redirect to these in the web app; the API answers 404 for them. */
                 report: components["parameters"]["ReportPath"];
                 /** @example RV-1001 */
                 viewId: components["parameters"]["ReportViewId"];
@@ -23990,7 +24292,7 @@ export interface operations {
                 order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */
                 group?: components["parameters"]["RankedGroup"];
-                size?: 10 | 25 | 50;
+                size?: 25 | 50 | 100 | 200;
                 page?: number;
                 q?: components["parameters"]["RankedSearch"];
                 /** @description The record whose children the list shows under it. */
@@ -24105,11 +24407,12 @@ export interface operations {
                 table?: components["parameters"]["ReportTable"];
                 /** @description An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the cards, the periods and the ranked list. */
                 category?: components["parameters"]["RevenueCategory"];
+                /** @description Without sort or order the list opens on performance, lowest first, so the most behind is on top. Entries without the figure come last in either order. */
                 sort?: components["parameters"]["RevenueRankedSort"];
                 order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */
                 group?: components["parameters"]["RankedGroup"];
-                size?: 10 | 25 | 50;
+                size?: 25 | 50 | 100 | 200;
                 page?: number;
                 q?: components["parameters"]["RankedSearch"];
                 /** @description The record whose children the list shows under it. */
@@ -24265,11 +24568,12 @@ export interface operations {
                 category?: components["parameters"]["RevenueCategory"];
                 /** @description The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is not selectable (049-C12). */
                 stage?: components["parameters"]["FunnelStage"];
+                /** @description Entries without the figure come last in either order. */
                 sort?: components["parameters"]["FunnelRankedSort"];
                 order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */
                 group?: components["parameters"]["RankedGroup"];
-                size?: 10 | 25 | 50;
+                size?: 25 | 50 | 100 | 200;
                 page?: number;
                 q?: components["parameters"]["RankedSearch"];
                 /** @description The record whose children the list shows under it. */

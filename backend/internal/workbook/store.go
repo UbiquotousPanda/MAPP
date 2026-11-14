@@ -16,7 +16,14 @@ type Transactor interface {
 // Store reads only imports of plans the scope sees, newest first; ListImports without their problems.
 type Store interface {
 	AddImport(ctx context.Context, imp Import) error
+	CheckUsed(ctx context.Context, checkID string) (bool, error)
 	ListImports(ctx context.Context, scope authz.Scope, planID string, limit int) ([]Import, error)
 	GetImport(ctx context.Context, scope authz.Scope, id string) (Import, bool, error)
-	MarkUndone(ctx context.Context, id string, by actor.Actor, at time.Time) error
+	MarkUndone(ctx context.Context, id string, u Undone) error
+}
+
+type Undone struct {
+	By   actor.Actor
+	At   time.Time
+	Kept []Kept
 }

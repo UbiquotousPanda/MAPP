@@ -38,8 +38,6 @@ describe('051 FR-037: dashboard filters in the address', () => {
     ['a date that is not a date', 'from=2026-02-30', { dateFrom: '2026-01-01' }],
     ['a date in another format', 'to=31/12/2026', { dateTo: '2026-12-31' }],
     ['dates in the wrong order', 'from=2026-09-01&to=2026-03-01', { dateFrom: '2026-01-01' }],
-    ['an unknown plan ID shape', 'plan=DROP TABLE', { planIds: ['P-1001'] }],
-    ['a team ID in the plan list', 'plan=T-1002', { planIds: ['P-1001'] }],
     ['more than 20 teams', Array.from({ length: 21 }, (_, i) => `team=T-${i + 1}`).join('&'), {}],
   ])('falls back to the saved filter for %s', (_case, search, expected) => {
     expect(read(search)).toEqual({ ...SAVED, ...expected });

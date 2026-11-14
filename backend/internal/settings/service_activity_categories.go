@@ -129,10 +129,7 @@ func (s *Service) unmarkDefaultExcept(ctx context.Context, a actor.Actor, except
 	if err != nil {
 		return err
 	}
-	for _, stored := range categories {
-		if !stored.IsDefault || stored.ID == exceptID {
-			continue
-		}
+	for _, stored := range record.OtherDefaults(categories, exceptID, ActivityCategory.id, ActivityCategory.isDefault) {
 		changed := stored
 		changed.IsDefault = false
 		changes, err := history.Diff(stored, changed)

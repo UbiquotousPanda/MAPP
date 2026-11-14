@@ -4,18 +4,18 @@ import { useMatches } from 'react-router';
 import { DemoBanner } from '@/ui/DemoBanner/DemoBanner';
 import { cx } from '@/ui/cx';
 import { isWidePage } from '@/session/page-handle';
-import { useCurrentUser } from '@/session/useSession';
 import styles from './AppLayout.module.css';
 import { PageLoading } from './PageLoading';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { useSidebarCollapsed } from './useSidebarCollapsed';
 
 export function AppLayout({ children }: { children: ReactNode }) {
-  const person = useCurrentUser();
+  const { collapsed } = useSidebarCollapsed();
   const wide = isWidePage(useMatches());
 
   return (
-    <div className={cx(styles.layout, person.preferences.sidebarCollapsed && styles.collapsed)}>
+    <div className={cx(styles.layout, collapsed && styles.collapsed)}>
       <a href="#main" className="skip-link">
         Skip to main content
       </a>

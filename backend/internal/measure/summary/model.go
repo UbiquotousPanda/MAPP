@@ -29,10 +29,12 @@ const (
 	uncategorisedCategory = "Uncategorised"
 )
 
+// Figures are a stage's year; NoActual says no fact of the stage was counted, so a rate on it is "—".
 type Figures struct {
 	Actual    int64
 	Projected int64
 	Goal      int64
+	NoActual  bool
 }
 
 type Performance struct {
@@ -63,6 +65,15 @@ type RevenueSection struct {
 	Performance
 	GoalCoverage []Coverage    `json:"goalCoverage"`
 	Trend        []TrendPeriod `json:"trend"`
+	TrendTotals  TrendTotals   `json:"trendTotals"`
+}
+
+// TrendTotals is the trend table's Total row: each column over the year; nil where no period has a figure.
+type TrendTotals struct {
+	Actual        *money.Money `json:"actual"`
+	Projected     *money.Money `json:"projected"`
+	Goal          *money.Money `json:"goal"`
+	GoalAfterYear *money.Money `json:"goalAfterYear"`
 }
 
 type Coverage struct {

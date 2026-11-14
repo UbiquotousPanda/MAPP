@@ -55,4 +55,10 @@ describe('the report address of Purchase requests (042 FR-004, FR-016, FR-017)',
       ...COLUMN_KEYS,
     ]);
   });
+
+  it('opens at 50 rows and reads a size no longer offered as 50 (D-432)', () => {
+    expect(DEFAULT_PARAMS.pageSize).toBe(50);
+    expect(readRequestsParams(new URLSearchParams('pageSize=10')).pageSize).toBe(50);
+    expect(readRequestsParams(new URLSearchParams('pageSize=200')).pageSize).toBe(200);
+  });
 });

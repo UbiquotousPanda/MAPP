@@ -26,7 +26,7 @@ export const OVERSPEND = 'Overspend';
 
 export const PERIODS = {
   title: 'Spend by period',
-  tip: 'Planned cost by the line items’ spreads (an activity’s cost not on line items evenly over its months); actual spend by the month GSAP posted it.',
+  tip: 'Planned by line-item spread; actual by GSAP posting month.',
   planned: 'Planned',
   actual: 'Actual spend',
   notScheduled: 'Not yet scheduled',

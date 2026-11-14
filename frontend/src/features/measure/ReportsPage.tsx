@@ -1,5 +1,3 @@
-import { ChartColumnIncreasing } from 'lucide-react';
-import { Link } from 'react-router';
 import type { components } from '@/api/generated/schema';
 import { ApiError } from '@/api/errors';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -8,15 +6,18 @@ import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import { Tile, TileList } from '@/ui/Tile/Tile';
+import type { TileAccent } from '@/ui/Tile/Tile';
 import { usePageTitle } from '@/ui/usePageTitle';
-import { REPORT_ABOUT, REPORT_GROUPS } from './reports';
-import type { ReportGroup } from './reports';
+import { ReportPreview } from './ReportPreview';
+import { REPORT_ABOUT, REPORT_ROUTES } from './reports';
+import type { ReportKey } from './reports';
 import { useReportCatalogue } from './shared/api';
 import styles from './ReportsPage.module.css';
 
 type CatalogueEntry = components['schemas']['ReportCatalogue']['items'][number];
 
-/** The reports the person may open, by group, each with its one-line purpose and an ⓘ saying who it is for. */
+/** The reports the person may open as equal tiles, each with its question and an ⓘ saying who it is for. */
 export function ReportsPage() {
   usePageTitle('Reports');
   const catalogue = useReportCatalogue();
@@ -25,14 +26,13 @@ export function ReportsPage() {
   }
   return (
     <>
-      <PageHeader
-        title="Reports"
-        description="Read-only reports of your plans, approvals, purchase requests and their figures."
-      />
+      <PageHeader title="Reports" />
       {catalogue.data ? (
-        REPORT_GROUPS.map((group) => (
-          <GroupSection key={group.title} group={group} items={catalogue.data.items} />
-        ))
+        <TileList>
+          {catalogue.data.items.map((report) => (
+            <ReportItem key={report.key} report={report} />
+          ))}
+        </TileList>
       ) : catalogue.isError ? (
         <ErrorState error={catalogue.error} onRetry={() => void catalogue.refetch()} />
       ) : (
@@ -44,45 +44,37 @@ export function ReportsPage() {
   );
 }
 
-function GroupSection({ group, items }: { group: ReportGroup; items: CatalogueEntry[] }) {
-  const reports = items.filter((item) => group.reports.includes(item.key));
-  if (reports.length === 0) {
-    return null;
-  }
-  const headingId = `reports-${group.reports[0]}`;
-  return (
-    <section className={styles.group} aria-labelledby={headingId}>
-      <h2 id={headingId} className={styles.groupTitle}>
-        {group.title}
-      </h2>
-      <p className={styles.groupDescription}>{group.description}</p>
-      <ul className={styles.list}>
-        {reports.map((report) => (
-          <ReportItem key={report.key} report={report} />
-        ))}
-      </ul>
-    </section>
-  );
+// Each report keeps its old group's chart colour, carried by its drawing.
+const ACCENTS: Partial<Record<ReportKey, TileAccent>> = {
+  performance: 4,
+  budget: 1,
+  purchasing: 1,
+  approvals: 3,
+  planData: 3,
+};
+
+/** "Is the year on track?" and "For marketing leaders.": the ⓘ text's question and audience. */
+function aboutParts(about: string): { question: string; audience: string } {
+  const question = about.slice(0, about.indexOf('?') + 1);
+  const audience = /\bFor ([^.]+)\./.exec(about)?.[1] ?? '';
+  return { question, audience };
 }
 
 function ReportItem({ report }: { report: CatalogueEntry }) {
+  const about = REPORT_ABOUT[report.key] ?? report.purpose;
+  const { question, audience } = aboutParts(about);
+  const name = REPORT_ROUTES.find((route) => route.key === report.key)?.name ?? report.name;
   return (
-    <li className={styles.report}>
-      <ChartColumnIncreasing aria-hidden="true" className={styles.icon} />
-      <div className={styles.text}>
-        <div className={styles.title}>
-          {report.available ? (
-            <Link to={`/reports/${report.path}`} className={styles.name}>
-              {report.name}
-            </Link>
-          ) : (
-            <span className={styles.name}>{report.name}</span>
-          )}
-          <InfoTip label={report.name} text={REPORT_ABOUT[report.key]} />
-        </div>
-        <p className={styles.purpose}>{report.purpose}</p>
-      </div>
-      {!report.available && <StatusChip tone="neutral">Coming soon</StatusChip>}
-    </li>
+    <Tile
+      title={name}
+      to={report.available ? `/reports/${report.path}` : undefined}
+      accent={ACCENTS[report.key] ?? 4}
+      picture={<ReportPreview report={report.key} />}
+      aside={<InfoTip label={name} text={about} />}
+      foot={audience && `For ${audience}`}
+      status={<StatusChip tone="neutral">Coming soon</StatusChip>}
+    >
+      {question && <p className={styles.question}>{question}</p>}
+    </Tile>
   );
 }

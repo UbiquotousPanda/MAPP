@@ -58,19 +58,18 @@ type funnelReportInput struct {
 
 func buildFunnelReport(in funnelReportInput) FunnelReport {
 	m := stageMeasure(in.stage)
-	series := withoutExcludedStage(in.series, in.stage)
+	series := AllowingStage(in.series, in.stage)
 	sums := sumMonths(series, m)
 	anyGoal := slices.ContainsFunc(series, func(a ActivitySeries) bool { return m.covers(a) && a.HasProjection })
-	out := FunnelReport{Stage: in.stage, AvailableStages: in.available, UncoveredCount: uncoveredCount(series, in.stage),
-		Period: periodShown(in.period), Periods: funnelPeriods(sums, in.period, in.w), Projection: stampOf(series),
-		Projections: stampsOf(series)}
-	allowing := allowingStage(series, in.stage)
-	out.Cards = funnelCards(sums, sumMonths(allowing, m).total(), anyGoal, previousStageTotal(in.series, in.stage))
+	out := FunnelReport{Stage: in.stage, AvailableStages: in.available, UncoveredCount: uncoveredCount(in.series, in.stage),
+		Period: periodShown(in.period), Periods: funnelPeriods(sums, in.period, in.w), Totals: funnelTotals(sums),
+		Projection: stampOf(series), Projections: stampsOf(series)}
+	out.Cards = funnelCards(sums, sums.total(), anyGoal, previousStageTotal(in.series, in.stage))
 	out.Cards.Actual = intCard(sums.actualTotal(), counted(series, m), actualReason(series, m))
 	if _, hasPrevious := previousStage(in.stage); hasPrevious && out.Cards.Actual.Value == nil {
 		out.Cards.Conversion = NumberCard{Reason: out.Cards.Actual.Reason}
 	}
-	if !anyTotal(allowing, m) {
+	if !anyTotal(series, m) {
 		out.Cards.Projected = NumberCard{Reason: reportReason(in.series, false)}
 	}
 	out.Reason = reportReason(in.series, anyGoal)
@@ -94,7 +93,7 @@ func previousStageTotal(series []ActivitySeries, stage string) *int64 {
 	if !found {
 		return nil
 	}
-	total := sumMonths(series, stageMeasure(previous)).actualTotal()
+	total := sumMonths(AllowingStage(series, previous), stageMeasure(previous)).actualTotal()
 	return &total
 }
 

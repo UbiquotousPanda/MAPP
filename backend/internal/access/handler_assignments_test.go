@@ -88,7 +88,7 @@ func TestTeamDelete_LeavesChosenScopes_FR004(t *testing.T) {
 		t.Fatalf("PUT = %d %s", saved.Status, saved.Body)
 	}
 
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/teams/"+team.ID, nil)
+	deleted := alex.DeleteSeen(t, "/api/v1/teams/"+team.ID)
 
 	var saras personRoles
 	alex.Do(t, http.MethodGet, "/api/v1/people/U-1006/roles", nil).Decode(t, &saras)

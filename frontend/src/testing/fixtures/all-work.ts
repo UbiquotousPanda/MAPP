@@ -26,6 +26,7 @@ export function gridResult(overrides: Partial<AllWorkResult> = {}): AllWorkResul
     view: 'grid',
     displayCurrency: 'USD',
     generatedAt: '2026-10-18T14:05:00Z',
+    canExport: true,
     columns: columnsOf(columns),
     periods: [],
     rows: seedRows(columns),

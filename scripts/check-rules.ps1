@@ -24,9 +24,9 @@ $changed = @(@(git -C $root diff --name-only --diff-filter=ACMR $since -- backen
 # With no paths, git diff and ls-files would read every file in the repository.
 if ($changed.Count -eq 0) { exit 0 }
 
-# Where a comment starts on a line, or -1. Tool directives (nolint, go:, eslint, @ts-, goose, sqlc) are not comments.
+# Where a comment starts on a line, or -1. Tool directives (nolint, go:, eslint, stylelint, @ts-, goose, sqlc) are not comments.
 function Get-CommentStart([string]$text, [bool]$sql) {
-  $marker = if ($sql) { '(^|\s)--(?!\s*(\+goose|name:))' } else { '(^|[\s{(])(//(?!/\s*<|\s*(nolint|go:|eslint|@ts-|prettier-ignore))|/\*(?!\s*eslint))' }
+  $marker = if ($sql) { '(^|\s)--(?!\s*(\+goose|name:))' } else { '(^|[\s{(])(//(?!/\s*<|\s*(nolint|go:|eslint|@ts-|prettier-ignore))|/\*(?!\s*(eslint|stylelint)))' }
   $quoted = "'(?:[^'\\]|\\.)*'|`"(?:[^`"\\]|\\.)*`"|``[^``]*``"
   $code = [regex]::Replace($text, $quoted, { param($m) 'x' * $m.Value.Length })
   $match = [regex]::Match($code, $marker)

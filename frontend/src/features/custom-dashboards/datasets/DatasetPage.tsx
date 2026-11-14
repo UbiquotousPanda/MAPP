@@ -13,6 +13,8 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { Dataset } from '../model';
 import { SharingDialog } from '../sharing/SharingDialog';
 import { useDataset, useShareDataset } from './api';
@@ -171,7 +173,7 @@ function Facts({ dataset }: { dataset: Dataset }) {
 function ColumnsTable({ dataset }: { dataset: Dataset }) {
   return (
     <div role="region" aria-label="Columns" tabIndex={0} className={styles.scroller}>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">Columns of the dataset</caption>
         <thead>
           <tr>

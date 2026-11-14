@@ -41,10 +41,11 @@ type File struct {
 // Export writes the report, or one widget of it, as the screen shows it: Excel holds the widgets' sheets, In view
 // and About this export; a CSV is one widget with the notes before its rows (research R7). Nothing is kept.
 func (s *Service) Export(ctx context.Context, a actor.Actor, report string, req ExportRequest) (File, error) {
-	if err := openable(ctx, report); err != nil {
+	if err := openable(report); err != nil {
 		return File{}, err
 	}
 	e := entryOf(report)
+	e.controls = e.controlsFor(req.Filter.Own)
 	req, err := checked(req)
 	if err != nil {
 		return File{}, err
@@ -158,7 +159,7 @@ func inViewRows(v InView) [][]sheet.Cell {
 }
 
 func entryOf(report string) entry {
-	for _, e := range entries() {
+	for _, e := range reports() {
 		if e.key == report {
 			return e
 		}

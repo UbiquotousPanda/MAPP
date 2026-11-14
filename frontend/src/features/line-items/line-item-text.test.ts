@@ -9,14 +9,14 @@ describe('line-item texts', () => {
   });
 
   it('writes the custom total (FR-018)', () => {
-    expect(customTotalText('12,000.00', '10,000.00', 'EUR', { sign: -1, amount: '2,000.00' })).toBe(
-      '12,000.00 of 10,000.00 EUR spread — 2,000.00 EUR too much',
+    expect(customTotalText('€12,000.00', '€10,000.00', { sign: -1, amount: '€2,000.00' })).toBe(
+      '€12,000.00 of €10,000.00 spread — €2,000.00 too much',
     );
-    expect(customTotalText('9,500.00', '10,000.00', 'EUR', { sign: 1, amount: '500.00' })).toBe(
-      '9,500.00 of 10,000.00 EUR spread — 500.00 EUR left',
+    expect(customTotalText('€9,500.00', '€10,000.00', { sign: 1, amount: '€500.00' })).toBe(
+      '€9,500.00 of €10,000.00 spread — €500.00 left',
     );
-    expect(customTotalText('10,000.00', '10,000.00', 'EUR', { sign: 0, amount: '0.00' })).toBe(
-      '10,000.00 of 10,000.00 EUR spread — adds up',
+    expect(customTotalText('€10,000.00', '€10,000.00', { sign: 0, amount: '€0.00' })).toBe(
+      '€10,000.00 of €10,000.00 spread — adds up',
     );
   });
 });

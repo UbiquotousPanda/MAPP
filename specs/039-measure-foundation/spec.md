@@ -7,7 +7,7 @@
 **Status**: Built (2026-11-02)
 
 **Input**: User description: "Measure foundation (lane A, issue #32): the Reports area and everything every report
-shares — report frame, filter panel (year, plans, Shell attributes per level with Not filled in, owner, activity
+shares — report frame, filter bar (year, plans, Shell attributes per level with Not filled in, owner, activity
 type, status, team), periods (months, quarters), display currency, saved report views, table view and CSV/Excel
 export of every widget, the permission to see reports." (feature map row 039, D-366–D-369)
 
@@ -28,7 +28,7 @@ FR-012 (unknown values fall back).
 Answered by the product owner for lane A. Recorded here as `039-Cn`; the integrator moves them into the decision
 log at the end of wave A (build guide §4.5).
 
-- **039-C1** Q: When does a report follow a change in the filter panel? → A: on **Apply**, as Hive9's Update and
+- **039-C1** *(superseded by 039-C8)* Q: When does a report follow a change in the filter panel? → A: on **Apply**, as Hive9's Update and
   client 016 FR-017. Ticking several values (brands, countries, cost centres) then refreshes the report once, not
   on every tick. The year, Period, Currency, Show, the chart or table choice and removing a chip still apply at
   once (FR-013).
@@ -62,17 +62,37 @@ Asked by the product owner after the Shell demo preparation.
   User access). A group with no report the person may open is left out. Each report has an ⓘ that says the
   question it answers, what it shows and who it is for (FR-001).
 
+### Session 2026-11-12 (UI review)
+
+Asked by the product owner while reviewing the Measure screens before the demo.
+
+- **039-C8** Q: Should a report's filters look and behave like All work's? → A: yes. Behind **Filters (n)** a button
+  per filter opens its check boxes, **More filters** holds the Shell attributes by level, and every change applies
+  at once, as on All work (010 FR-009). This replaces the left filter panel and its **Apply** (039-C1): one way to
+  filter across SP&A One outweighs refreshing once for several ticks (FR-008 – FR-013).
+- **039-C9** Q: Where do Period and Show sit? → A: on the widget they change: **Months · Quarters** in the header of
+  each time chart, **Plan · Campaign · Initiative · Activity** in the ranked list's header (Plan details, whose
+  every widget follows it, shows it above the report as **Count**). The toolbar keeps Year, the report's own
+  choices (a category, a stage) and Currency (FR-016 – FR-018). *Currency left the toolbar with 039-C10.*
+
+### Session 2026-11-12 (top bar currency)
+
+- **039-C10** Q: Should a report keep its own Currency choice? → A: no. The person's display currency is chosen in
+  the top bar, beside the theme switch, and every page follows it, reports and shared report links included
+  (D-413). Reports leave the currency out of their address and saved views; a `currency` in an old link or an old
+  saved view is ignored, and the API answers in the reader's display currency (FR-015, FR-018).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Open a report and narrow it to what I care about (Priority: P1)
 
 Priya, a marketing team leader for Lubricants Europe, opens **Reports** in the sidebar. The Reports page lists the
 reports she may open, each with one line saying what it answers. She opens one. The page shows the report's title,
-the year and when its figures were worked out, and on the left a filter panel: **Year**, **Plans**, **Plan type**,
-**Team**, **Owner**, **Activity type**, **Activity status**, and one tab per planning level holding that level's
-Shell attributes, each with its values and **Not filled in**. Above the report a line says what is in view —
-"In view: 1 plan · 6 campaigns · 14 initiatives · 38 activities · 72 line items". She ticks one brand and one
-country, presses **Apply**, and the line, the chips above the report and every figure follow. She copies the
+the year and when its figures were worked out, and a toolbar with **Year**, **Currency** and **Filters**, which opens
+All work's filter buttons: **Plans**, **Plan type**, **Team**, **Owner**, **Activity type**, **Activity status** and
+**More filters** with the Shell attributes of every planning level, each with its values and **Not filled in**. The
+toolbar says what is in view — "In view: 1 plan · 6 campaigns · 14 initiatives · 38 activities · 72 line items".
+She ticks one brand and one country, and the line, the chips above the report and every figure follow at once. She copies the
 address and sends it to a colleague, who sees the same report with the same filters.
 
 **Why this priority**: every Measure report (040–050) is built inside this frame; without it no report can be
@@ -90,27 +110,25 @@ filters and compare the "In view" counts with All work's counts for the same yea
    address, **Then** the sidebar has no Reports item and the address shows the standard "no access" page
    (014 FR-012, 039-C4).
 3. **Given** Priya opens a report for the first time, **When** the page loads, **Then** the year is the current
-   year, every plan of that year in her scope is selected, every value of every group is ticked including **Not
-   filled in**, the period is **Months**, the currency is her display currency, and the "In view" line counts
+   year, no filter value is chosen, so every plan of that year in her scope counts, the period is **Months**, the currency is her display currency, and the "In view" line counts
    exactly the records All work shows for the same year with no filters.
-4. **Given** the filter panel, **When** Priya opens the **Activity** tab, **Then** it lists one group per active
-   choice or yes/no Shell attribute of the activity level, each with "(selected / all)", **Select all**, **Clear
-   all**, its values and **Not filled in**, and a search box when the group has more than ten values.
-5. **Given** a Shell attribute with the same label at two levels, **When** the panel is shown, **Then** it
-   appears as two separate groups, one in each level's tab.
-6. **Given** Priya changes filters, **When** she has not pressed **Apply** yet, **Then** the report keeps its
-   figures, the panel says "Changes not applied yet", and **Apply** shows the new figures, chips and "In view"
-   line together.
+4. **Given** the filter buttons, **When** Priya opens **More filters**, **Then** it lists, under each level, one
+   group per active choice or yes/no Shell attribute with its values and **Not filled in**, searchable by
+   attribute or value.
+5. **Given** a Shell attribute with the same label at two levels, **When** **More filters** is open, **Then** it
+   appears as two separate groups, one under each level.
+6. **Given** Priya ticks a value, **When** the tick lands, **Then** the figures, the chips, the filter button's
+   count and the "In view" line follow at once (039-C8).
 7. **Given** filters are applied, **When** Priya presses **Back**, opens a bookmark or another person opens the
    copied address, **Then** the same year, filters, period and currency are shown — for the other person only
    within their own scope.
 8. **Given** an address that names a plan, a value or a currency that no longer exists or that the reader may
    not see, **When** it is opened, **Then** the report applies everything else and says "1 filter value is no
    longer available and was left out", without naming an out-of-scope record.
-9. **Given** applied filters, **When** Priya removes one chip or presses **Reset filters**, **Then** that filter
+9. **Given** applied filters, **When** Priya removes one chip or presses **Clear filters** (D-421), **Then** that filter
    (or every filter but the year) returns to its default and the report follows at once.
 10. **Given** a report with time widgets, **When** Priya switches **Period** from Months to Quarters or chooses
-    another **Currency**, **Then** every figure follows at once without **Apply**, the address keeps the choice,
+    another **Currency**, **Then** every figure follows at once, the address keeps the choice,
     and every amount shows its currency.
 
 ---
@@ -191,7 +209,7 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 1. **Given** a year with no plans in Priya's scope, **When** the report opens, **Then** it says "No plans you may
    see for 2027" with the years that have plans, and shows no zeros as if they were figures.
 2. **Given** filters that match no record, **When** they are applied, **Then** every widget is replaced by "Your
-   filters exclude everything" with **Reset filters**.
+   filters exclude everything" with **Clear filters** (D-421).
 3. **Given** a person who may view plans but not see financial data in some of them, **When** a money figure is
    shown, **Then** it covers only the plans where they may, says "Covers 1 of 2 plans", and is "—" with "You can't
    see financial data" when it covers none.
@@ -204,10 +222,9 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - A value a business-unit condition hides on a record counts as **Not filled in** for that record (016 FR-039).
 - A % split value matches when its share is above 0 (016 FR-039).
 - An inactive Shell attribute value is listed, labelled "(inactive)", only while some record in view still uses it.
-- A group with no value ticked would match nothing, so **Apply** stays off and the panel says why next to it:
-  "Tick at least one value in Owner."
-- The year changes the plan list; plans chosen in the old year are dropped, and while plans are chosen the panel
-  says so under **Year** before the change ("Another year clears the 2 plans you chose.").
+- A filter with no value ticked filters nothing, as on All work, so no choice can hide everything by itself.
+- The year changes the plan list; plans chosen in the old year are dropped, and while plans are chosen the toolbar
+  says so beside **Year** before the change ("Another year clears the 2 plans you chose.").
 - A past year has no "in progress" period: every period is actual; a future year has no actual period.
 - A deleted record in the recycle bin is not in view (as All work).
 - Two tabs open on different filters keep their own state; only saved views are shared across tabs. If both
@@ -250,47 +267,49 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 
 **Filter panel**
 
-- **FR-008**: The filter panel MUST offer, in this order: **Year** (one plan year; the years with plans in the
-  person's scope plus the current year; default the current year), **Plans** (several; the year's plans in scope;
-  default all), **Plan type** (Operational, Strategic, Cross-market; default all), **Team** (several; the teams of
-  the plans in the year, **My teams** first; default all), **Owner** (several; people who own a record in the
-  year's plans in scope; default all), **Activity type** (several; default all), **Activity status** (Created,
-  Submitted, Declined, Approved, In progress, Complete; default all) and one tab per level — **Plan**,
-  **Campaign**, **Initiative**, **Activity**, **Line item** — holding that level's Shell attributes (FR-009).
-- **FR-009**: Each active choice or yes/no Shell attribute MUST be one group in its level's tab, identified by its
+- **FR-008**: The report's toolbar MUST offer **Year** (one plan year; the years with plans in the person's scope
+  plus the current year; default the current year) and **Filters (n)**, which opens All work's filter buttons, in
+  this order (039-C8): **Plans** (several; the year's plans in scope), **Plan type** (Operational, Strategic,
+  Cross-market), **Team** (several; the teams of the plans in the year, **My teams** first), **Owner** (several;
+  people who own a record in the year's plans in scope), **Activity type** (several), **Activity status**
+  (Created, Submitted, Declined, Approved, In progress, Complete) and **More filters**, holding the Shell
+  attributes grouped by level — Plan, Campaign, Initiative, Activity, Line item (FR-009). Each defaults to no
+  value chosen, which filters nothing.
+- **FR-009**: Each active choice or yes/no Shell attribute MUST be one group of **More filters** under its level, identified by its
   level and attribute and never merged with another by label. A group lists its active values, the inactive
   values still used by a record in view labelled "(inactive)", and **Not filled in**; text, long-text and number
   attributes are not offered.
-- **FR-010**: Every group with choices MUST show "(selected / all)" counting **Not filled in**, **Select all** and
-  **Clear all**, and a search box when it has more than ten values; each level tab MUST offer **Select all** and
-  **Clear all** for its groups.
-- **FR-011**: The Plans list MUST follow the year; plans of the old year are dropped and the panel says how many.
+- **FR-010**: Every filter button MUST say what it holds — the value when one is chosen ("Team · Lubricants
+  Europe"), the count when several ("Owner · 2") — and its list MUST offer a search box above ten values; **More
+  filters** MUST be searchable by attribute or value.
+- **FR-011**: The Plans list MUST follow the year; plans of the old year are dropped, and the Year control says so
+  before the change ("Another year clears the 2 plans you chose").
   Owner and Activity type MUST list only choices present in the selected plans.
 - **FR-012**: A record MUST match when it meets every filter tested on its level, with All work's rules (010
   FR-005, 016 FR-039): a filter tested on lower levels is met when a record below matches; a % split value matches
   when its share is above 0; a value hidden by its business-unit condition counts as **Not filled in**; a group
-  with every choice ticked does not filter. Records in the recycle bin never match.
-- **FR-013**: Changes in the filter panel MUST take effect on **Apply** (039-C1); until then the report keeps its
-  figures and the panel says "Changes not applied yet". The year, Period, Currency, Show, the chart or table
-  choice and removing a chip apply at once.
+  with no value chosen does not filter. Records in the recycle bin never match.
+- **FR-013**: Every change MUST apply at once, as on All work (039-C8): a filter value, the year, Period,
+  Currency, Show, the chart or table choice and removing a chip.
 - **FR-014**: The applied filters MUST appear above the widgets as removable chips naming each restricted filter
-  ("Brand: Helix, Pennzoil"); removing a chip applies at once; **Reset filters** returns every filter but the year
-  to its default.
-- **FR-015**: The year, filters, period, currency, Show choice and each widget's chart or table choice MUST live in
-  the page address, so Back, a bookmark and a shared link show the same report (constitution F3, D-368); nothing is
+  ("Brand: Helix, Pennzoil"); removing a chip applies at once; **Clear filters** returns every filter but the year
+  to its default (D-421; was **Reset filters**).
+- **FR-015**: The year, filters, period, Show choice and each widget's chart or table choice MUST live in
+  the page address, written in place so Back leaves the report (D-421), and a bookmark and a shared link show the same report (constitution F3, D-368); nothing is
   kept between visits except saved views. A value in the address that no longer exists, is inactive or is outside
   the reader's scope MUST be left out with "N filter values are no longer available and were left out", never
   naming it and never breaking the page (038 FR-012).
 
 **Controls above the widgets**
 
-- **FR-016**: Reports with time widgets MUST offer **Period**: Months (default; January to December of the plan
-  year) or Quarters (Q1–Q4); the change applies at once.
-- **FR-017**: Reports that rank records MUST offer **Show**: Plan, Campaign, Initiative or Activity; the change
-  applies at once.
-- **FR-018**: Every report MUST offer **Currency**: the active currencies, default the person's display currency.
-  Every amount MUST be worked out in US dollars and converted once into the chosen currency at the current rate
-  (D-303), and shown with its currency.
+- **FR-016**: Each time widget MUST offer **Period** in its own header (039-C9): Months (default; January to
+  December of the plan year) or Quarters (Q1–Q4); the change applies at once.
+- **FR-017**: Each ranked list MUST offer **Show** in its own header (039-C9): Plan, Campaign, Initiative or
+  Activity; the change applies at once.
+- **FR-018**: Every report MUST show its amounts in the person's display currency, chosen in the top bar (039-C10,
+  D-413); a report has no Currency control of its own and a shared link shows the reader's display currency.
+  Every amount MUST be worked out in US dollars and converted once into the display currency at the current rate
+  (D-303), and shown with its currency symbol.
 - **FR-019**: Time widgets MUST place a **Today** marker: periods before the current one show actual figures, the
   current period is labelled "in progress", later periods show planned or projected figures; a past year shows
   only actual periods and a future year none.
@@ -336,16 +355,31 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - **FR-030**: With no filters in the address and no default view, a report MUST open on: the current year, every
   plan of the year in scope, every value ticked including **Not filled in**, Months, the person's display currency.
 - **FR-031**: A report MUST say why it is empty: "No plans you may see for <year>" with the years that have plans;
-  "Your filters exclude everything" with **Reset filters**; a widget-specific "No data yet" naming what would create
+  "Your filters exclude everything" with **Clear filters** (D-421); a widget-specific "No data yet" naming what would create
   it; and never show zeros as if they were figures.
 - **FR-032**: Report pages MUST use Shell's words and the replacements of design system §8 and the build guide §7
   (Reports, Summary cards, Not filled in, Period, Saved views, Show); nothing on screen says Measure, Tactic,
   Program or HUD.
-- **FR-033**: The Reports page and every report MUST meet WCAG 2.2 AA: the filter panel, menus and chart/table
+- **FR-033**: The Reports page and every report MUST meet WCAG 2.2 AA: the filter buttons, menus and chart/table
   switches work by keyboard, Escape closes a menu or dialog without change, focus returns to the control that
   opened it; below 1024 px wide the panel collapses into **Filters (n)**.
 - **FR-034**: **Reports** MUST be its own sidebar item, directly after **Dashboards**; the 036 Executive and
   Regional dashboards stay where they are, unchanged (039-C3, answers Q-031).
+- **FR-035**: Every report table whose figures add up MUST end with a **Total** row (D-414): ranked lists, widget
+  table views, the Purchase requests grid and the GSAP link tables. The API works the total out over every row the
+  filters, search and drill keep, on every page, counting a record that sits in several groups once; a ratio column
+  (performance, ROI, conversion, share) shows the ratio of the totals, never a sum or an average of rows. The row is a
+  `<tfoot>` row headed "Total", stays last whatever the sort or page, shows "—" where the person may not see the
+  figure, is absent when the table has no row, and is written as the last line of the widget's export. The goal,
+  actual and projected period tables (Summary's Revenue trend, Revenue by month or quarter, Volume by month or
+  quarter) end with one too: each column's own periods added up over the year in view, the same in month and
+  quarter view, "—" for a column with no figure in any period. The period in progress sits in both Actual and
+  Projected, so it counts once in each column and the row never adds the two; Actual or projected stays the card's.
+  When a model's velocity carries part of the goal past December, the Goal total stays its column's sum and a note
+  under the table, "Goal landing after December: …", gives the rest from the API (also the export's last line), so
+  the two add up to the Goal card exactly.
+  Tables of people, approval steps, average days, stage volumes and conversion rates have no Total row, nor has
+  Plan budget's Spend by month or quarter, whose running to-date columns already end on the year (040 FR-007).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -370,7 +404,7 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - **SC-002**: A person whose scope is one market never sees a name, count, filter choice or figure of another
   market on the Reports page, a report or an exported file — in 100% of scope tests.
 - **SC-003**: At the reference volume (feature 028: 50 plans, 5,000 activities, 20,000 line items) a report's frame
-  — filter panel choices and the "In view" line — is shown within 2 seconds of opening or applying.
+  — filter choices and the "In view" line — is shown within 2 seconds of opening or applying.
 - **SC-004**: A first-time user narrows a report to one market and one brand and saves it as their default view in
   at most 8 steps and under one minute, without help (design system §10).
 - **SC-005**: Opening any report address reproduces the same year, filters, period, currency and Show — 100% of

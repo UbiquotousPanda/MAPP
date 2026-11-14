@@ -10,6 +10,7 @@ import (
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/clock"
+	"mapp/internal/platform/errs"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/sheet"
 )
@@ -81,6 +82,7 @@ func (s *Service) Check(ctx context.Context, a actor.Actor, planID string, up Up
 			return applyErr
 		}
 		result = ap.result
+		result.CheckID = newCheckID(planID, up.Content)
 		return errDiscard
 	})
 	if err != nil && !errors.Is(err, errDiscard) {
@@ -90,13 +92,20 @@ func (s *Service) Check(ctx context.Context, a actor.Actor, planID string, up Up
 }
 
 // Import applies the ready rows of the check in one Write and keeps the import for its plan (FR-034, FR-035).
+// The check ID says which file was checked; each check is imported once, so a repeated click adds nothing.
 func (s *Service) Import(ctx context.Context, a actor.Actor, planID string, up Upload) (Detail, error) {
+	if !checkFits(up.CheckID, planID, up.Content) {
+		return Detail{}, errs.Validation(errs.FieldError{Field: "checkId", Message: checkFileFirst})
+	}
 	file, err := readFileOf(up)
 	if err != nil {
 		return Detail{}, err
 	}
 	var imp Import
 	err = s.tx.Write(ctx, func(ctx context.Context) error {
+		if used, usedErr := s.repo.CheckUsed(ctx, up.CheckID); usedErr != nil || used {
+			return errors.Join(usedErr, usedCheck(used))
+		}
 		id, err := s.ids.Next(ctx, ids.PrefixPlanImport)
 		if err != nil {
 			return err
@@ -106,13 +115,20 @@ func (s *Service) Import(ctx context.Context, a actor.Actor, planID string, up U
 			return err
 		}
 		imp = Import{ID: id, PlanID: planID, FileName: up.FileName, ImportedAt: s.now(), ImportedBy: a,
-			RowsRead: ap.result.Rows, RowsLeftOut: ap.result.WithProblems, Records: ap.records, Problems: ap.result.Problems}
+			RowsRead: ap.result.Rows, RowsLeftOut: ap.result.WithProblems, CheckID: up.CheckID, Records: ap.records, Problems: ap.result.Problems}
 		return s.repo.AddImport(ctx, imp)
 	})
 	if err != nil {
 		return Detail{}, err
 	}
 	return s.Get(ctx, a, imp.ID)
+}
+
+func usedCheck(used bool) error {
+	if !used {
+		return nil
+	}
+	return errs.NotAllowed(checkAlreadyImported)
 }
 
 type readFile struct {

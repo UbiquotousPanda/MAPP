@@ -49,6 +49,15 @@ export function prLine(
   };
 }
 
+const SAVE_STEPS: Record<S['PurchaseRequestStatus'], S['PurchaseRequest']['saveThen']> = {
+  created: 'save',
+  declined: 'save',
+  submitted: 'resubmit',
+  inReview: 'resubmit',
+  approved: 'submitChanges',
+  closed: '',
+};
+
 export const PR_ACCESS: S['PurchaseRequestAccess'] = {
   edit: YES,
   delete: YES,
@@ -74,6 +83,7 @@ export const ROUTING: S['PurchaseRequestRouting'] = {
 export function purchaseRequest(
   overrides: Partial<S['PurchaseRequest']> = {},
 ): S['PurchaseRequest'] {
+  const step = SAVE_STEPS[overrides.status ?? 'created'];
   return {
     id: 'PR-1002',
     name: 'PR for Stand build',
@@ -103,6 +113,8 @@ export function purchaseRequest(
     readiness: { ready: true, problems: [] },
     missing: [],
     notice: '',
+    saveThen: step,
+    addedLinesThen: step,
     access: PR_ACCESS,
     version: 3,
     createdAt: '2026-10-27T09:00:00Z',

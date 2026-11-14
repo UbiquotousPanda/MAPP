@@ -9,6 +9,7 @@ import { coverageText, pathText } from './gsap-text';
 import { PagedTable } from './PagedTable';
 import type { PagedColumn } from './PagedTable';
 import styles from './GsapLink.module.css';
+import { PathCell } from './PathCell';
 
 /** Amount columns: right-aligned, largest first. */
 const amount = { numeric: true, largestFirst: true };
@@ -44,7 +45,7 @@ export function OrdersTab({ tab, finance, total, table, onChange }: OrdersTabPro
         </>
       ),
     },
-    { key: 'plan', label: 'Plan › Activity', cell: (r) => pathText(r.path) },
+    { key: 'plan', label: 'Plan › Activity', cell: (r) => <PathCell text={pathText(r.path)} /> },
     {
       key: 'purchaseRequest',
       label: 'Purchase request',
@@ -62,7 +63,9 @@ export function OrdersTab({ tab, finance, total, table, onChange }: OrdersTabPro
       cell: (r) => (
         <>
           {r.poNumber}
-          <span className={styles.sub}>{`Lines ${r.poLines.join(', ')}`}</span>
+          <span
+            className={styles.sub}
+          >{`PO ${r.poLines.length === 1 ? 'line' : 'lines'} ${r.poLines.join(', ')}`}</span>
         </>
       ),
     },
@@ -74,6 +77,12 @@ export function OrdersTab({ tab, finance, total, table, onChange }: OrdersTabPro
   ];
   const { poAmount, invoiced, paid } = tab.totals;
   const shown = (m: typeof poAmount) => (m ? money(m) : '—');
+  const totals: Record<string, string> = {
+    poAmount: shown(poAmount),
+    invoiced: shown(invoiced),
+    paid: shown(paid),
+  };
+  const shownColumns = columns.filter((c) => !blankColumn(c.key, tab.rows));
   const note = coverageText(finance);
   return (
     <div className={styles.body}>
@@ -81,15 +90,23 @@ export function OrdersTab({ tab, finance, total, table, onChange }: OrdersTabPro
       <PagedTable
         title="Purchase orders"
         widget="orders"
-        columns={columns}
+        columns={shownColumns}
         rows={tab.rows}
         rowKey={(r) => `${r.lineItemId} ${r.poNumber}`}
         table={table}
         total={total}
         empty="No purchase order is linked to a line item in view."
-        totals={['Total', '', '', '', '', '', '', shown(poAmount), shown(invoiced), shown(paid)]}
+        totals={shownColumns.slice(1).map((c) => totals[c.key] ?? '')}
         onChange={onChange}
       />
     </div>
   );
+}
+
+/** A request column with no value on the page is left out rather than shown as a column of dashes. */
+function blankColumn(key: string, rows: GsapOrderRow[]): boolean {
+  if (key === 'purchaseRequest') {
+    return rows.every((r) => !r.purchaseRequestId);
+  }
+  return key === 'gsapPrNumber' && rows.every((r) => !r.gsapPrNumber);
 }

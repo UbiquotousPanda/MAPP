@@ -74,9 +74,35 @@ export function formatAmount(amount: string): string {
   return twoDecimals.format(exact(amount));
 }
 
-/** "1,234.50 EUR" even for dollars, as the API's messages write it; screens use formatMoney. */
+/** "€1,234.50": every currency in its en-US symbol form (design system §4.4). */
 export function formatMoneyText(money: { amount: string; currency: string }): string {
-  return `${formatAmount(money.amount)} ${money.currency}`;
+  return isCurrencyCode(money.currency)
+    ? moneyFormat(money.currency).format(exact(money.amount))
+    : `${formatAmount(money.amount)} ${money.currency}`.trim();
+}
+
+/** Intl throws on a malformed code; one never comes from the API, but a half-filled form may have "". */
+export function isCurrencyCode(currency: string): boolean {
+  return /^[a-z]{3}$/i.test(currency);
+}
+
+const moneyFormats = new Map<string, Intl.NumberFormat>();
+
+export function moneyFormat(currency: string, compact = false): Intl.NumberFormat {
+  const key = `${currency}${compact ? ' compact' : ''}`;
+  let format = moneyFormats.get(key);
+  if (!format) {
+    format = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'symbol',
+      ...(compact
+        ? { notation: 'compact', maximumFractionDigits: 2 }
+        : { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    });
+    moneyFormats.set(key, format);
+  }
+  return format;
 }
 
 export function formatPercent(percent: string): string {

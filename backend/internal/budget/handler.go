@@ -100,11 +100,14 @@ func (h *Handler) update(c *gin.Context) {
 	web.Respond(c, http.StatusOK, view)
 }
 
-// delete answers DELETE /api/v1/global-budgets/{globalBudgetId} with the recycle-bin entry, so the web app can
-// offer Undo.
 func (h *Handler) delete(c *gin.Context) {
+	ctx, err := history.SeenVersion(c, c.Param("globalBudgetId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
 	a, _ := actor.From(c.Request.Context())
-	entry, err := h.service.Delete(c.Request.Context(), a, c.Param("globalBudgetId"))
+	entry, err := h.service.Delete(ctx, a, c.Param("globalBudgetId"))
 	if err != nil {
 		web.RespondError(c, err)
 		return
@@ -112,8 +115,6 @@ func (h *Handler) delete(c *gin.Context) {
 	web.Respond(c, http.StatusOK, history.DeleteResult{RecycleBinEntry: entry.View()})
 }
 
-// allocationOptions answers GET /api/v1/global-budgets/{globalBudgetId}/allocation-options: the plans the
-// Allocate dialog offers.
 func (h *Handler) allocationOptions(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context())
 	page, err := h.service.AllocationOptions(c.Request.Context(), a, c.Param("globalBudgetId"))
@@ -124,8 +125,6 @@ func (h *Handler) allocationOptions(c *gin.Context) {
 	web.Respond(c, http.StatusOK, page)
 }
 
-// allocate answers POST /api/v1/global-budgets/{globalBudgetId}/allocations with 201 and the global budget
-// after the allocation.
 func (h *Handler) allocate(c *gin.Context) {
 	var input AllocationInput
 	if err := web.BindJSON(c, &input); err != nil {
@@ -141,8 +140,6 @@ func (h *Handler) allocate(c *gin.Context) {
 	web.Respond(c, http.StatusCreated, view)
 }
 
-// updateAllocation answers PATCH /api/v1/budget-allocations/{allocationId} with the global budget after the
-// change.
 func (h *Handler) updateAllocation(c *gin.Context) {
 	var update AllocationUpdate
 	if err := web.BindJSON(c, &update); err != nil {
@@ -158,8 +155,6 @@ func (h *Handler) updateAllocation(c *gin.Context) {
 	web.Respond(c, http.StatusOK, view)
 }
 
-// removeAllocation answers DELETE /api/v1/budget-allocations/{allocationId} with the global budget after the
-// removal.
 func (h *Handler) removeAllocation(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context())
 	view, err := h.service.RemoveAllocation(c.Request.Context(), a, c.Param("allocationId"))

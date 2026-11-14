@@ -1,5 +1,6 @@
 import { Download, Send } from 'lucide-react';
 import { useId, useState } from 'react';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { asApiError } from '@/api/errors';
 import { isShown } from '@/session/access';
 import { Button } from '@/ui/Button/Button';
@@ -65,11 +66,7 @@ export function RoutingHistory({ purchaseRequest }: { purchaseRequest: PurchaseR
   return (
     <Card title={ROUTING_TITLE} subtitle={ROUTING_SUBTITLE} actions={actions || undefined}>
       <div className={styles.stack}>
-        {problem && (
-          <p role="alert" className={styles.problem}>
-            {problem}
-          </p>
-        )}
+        {problem && <InlineError>{problem}</InlineError>}
         {purchaseRequest.routings.length === 0 ? (
           <p className={styles.note}>{NO_FORM_YET}</p>
         ) : (

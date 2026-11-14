@@ -1,6 +1,6 @@
 # The API and the seed command for running MAPP locally with compose (ADR-0012). Not a production image.
 
-FROM golang:1.27.3-alpine AS build
+FROM golang:1.27.4-alpine AS build
 WORKDIR /src
 # Modules first, so a change to the code alone reuses this layer.
 COPY go.mod go.sum ./

@@ -1,31 +1,22 @@
-import { Info } from 'lucide-react';
+import { Info, Lock } from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 import styles from './InfoTip.module.css';
 
 export interface InfoTipProps {
-  /** One or two plain sentences that explain the term (from the glossary). */
   text: string;
-  /** The term it explains; the button is named "About <label>". */
   label: string;
+  kind?: 'info' | 'locked';
 }
 
-/** How long a mouse that leaves the ⓘ has to reach the bubble before it closes. */
 const CLOSE_DELAY_MS = 150;
 
-/**
- * A muted ⓘ next to a label that explains it in plain words (design system §5). It opens on hover,
- * keyboard focus, click and tap, so it works with a mouse, a keyboard and a touch screen. It
- * closes on Escape, when the mouse leaves, and — through Radix — when the focus moves to another
- * control or someone clicks outside it.
- *
- * A Radix Popover rather than a tooltip, because a tooltip cannot be opened by tapping.
- */
-export function InfoTip({ text, label }: InfoTipProps) {
+/** A Radix Popover rather than a tooltip, because a tooltip cannot be opened by tapping. */
+export function InfoTip({ text, label, kind = 'info' }: InfoTipProps) {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef(0);
-  const name = `About ${label}`;
+  const name = kind === 'locked' ? `Why ${label} can't change` : `About ${label}`;
 
   function show() {
     window.clearTimeout(closeTimer.current);
@@ -62,7 +53,7 @@ export function InfoTip({ text, label }: InfoTipProps) {
             show();
           }}
         >
-          <Info />
+          {kind === 'locked' ? <Lock /> : <Info />}
         </button>
       </Popover.Trigger>
       <Popover.Portal>
@@ -71,7 +62,6 @@ export function InfoTip({ text, label }: InfoTipProps) {
           side="top"
           sideOffset={6}
           aria-label={name}
-          // The focus stays on the ⓘ while the tip is open, and is not moved when it closes.
           onOpenAutoFocus={(event) => event.preventDefault()}
           onCloseAutoFocus={(event) => event.preventDefault()}
           onPointerEnter={showOnHover}

@@ -149,7 +149,7 @@ export function SourceForm({ source, onClose }: SourceFormProps) {
           render={(field) => (
             <ChoiceField
               label="Delivery"
-              hint="How rows arrive: a file upload, or a pull from the simulated feed."
+              tip="How rows arrive: a file upload, or a pull from the simulated feed."
               options={choicesOf(DELIVERY_WORDS)}
               {...field}
               onChange={(value) =>
@@ -180,7 +180,7 @@ export function SourceForm({ source, onClose }: SourceFormProps) {
           render={(field) => (
             <TextField
               label="Integration ID"
-              hint="The source's own identifier for its rows' integration-ID key; leave empty without one."
+              tip="The source's own identifier for its rows' integration-ID key; leave empty without one."
               {...field}
             />
           )}

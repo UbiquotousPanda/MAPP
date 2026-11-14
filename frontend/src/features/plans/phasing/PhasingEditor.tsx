@@ -5,7 +5,9 @@ import { ApiError, conflictMessage } from '@/api/errors';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { FormField } from '@/ui/FormField/FormField';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { formatCents, toCents } from '@/format/decimal';
@@ -19,9 +21,9 @@ import {
   amountText,
   balanceOf,
   balanceText,
+  moneyText,
   monthKeys,
   readAmount,
-  splitEvenly,
 } from './phasing-math';
 import { monthProblems, namedProblems, phasingSchema } from './schemas';
 import type { PhasingValues } from './schemas';
@@ -73,6 +75,7 @@ export function PhasingEditor({
 }: PhasingEditorProps) {
   const { show } = useToast();
   const { dateFormat } = useFormatters();
+  const { version } = useEditedRecord(record);
   const save = useSetPhasing(level, record.id);
   const keys = monthKeys(year);
   const budget = record.budget ? toCents(record.budget.amount) : null;
@@ -93,7 +96,7 @@ export function PhasingEditor({
   const [copiedNote, setCopiedNote] = useState<string | null>(null);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   const cents = values.months.map((text) => readAmount(text) ?? 0n);
-  const evenly = budget === null ? [] : splitEvenly(budget, 12);
+  const evenly = phasing.evenly.map((month) => toCents(month.amount));
 
   async function submit({ method, months }: PhasingValues) {
     const amounts = months.map((text) => readAmount(text) ?? 0n);
@@ -105,7 +108,7 @@ export function PhasingEditor({
           })
         : [];
     try {
-      await save.mutateAsync({ method, months: sent, version: record.version });
+      await save.mutateAsync({ method, months: sent, version });
       show({ message: `Budget by month of '${record.name}' saved` });
       onOpenChange(false);
     } catch (error) {
@@ -149,31 +152,20 @@ export function PhasingEditor({
           control={form.control}
           name="method"
           render={(field) => (
-            <fieldset className={styles.methods}>
-              <legend className={styles.legend}>How to phase the budget</legend>
-              {METHODS.map((choice) => (
-                <label key={choice.value} className={styles.method}>
-                  <input
-                    type="radio"
-                    name="method"
-                    value={choice.value}
-                    checked={field.value === choice.value}
-                    onChange={() => field.onChange(choice.value)}
-                  />
-                  <span>
-                    <span className={styles.methodLabel}>{choice.label}</span>
-                    <span className={styles.methodText}>{choice.text}</span>
-                  </span>
-                </label>
-              ))}
-            </fieldset>
+            <RadioGroup
+              label="How to phase the budget"
+              name="method"
+              options={METHODS.map(({ value, label, text }) => ({ value, label, hint: text }))}
+              value={field.value}
+              onChange={field.onChange}
+            />
           )}
         />
 
         {values.method === 'evenly' && budget !== null && (
           <p className={styles.note}>
-            Each month gets {amountText(first)} {currency}
-            {december !== first && `; December gets ${amountText(december)} ${currency}`}.
+            Each month gets {moneyText(first, currency)}
+            {december !== first && `; December gets ${moneyText(december, currency)}`}.
           </p>
         )}
 
@@ -182,7 +174,7 @@ export function PhasingEditor({
             form={form}
             year={year}
             currency={currency}
-            budget={budget}
+            evenly={evenly}
             plannedByMonth={plannedByMonth}
             leftOut={leftOut}
             entry={entry}

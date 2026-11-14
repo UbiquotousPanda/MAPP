@@ -2,6 +2,8 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { nth } from '@/testing/dom';
+import { openFilters } from '@/testing/filters';
+import { choose } from '@/testing/select';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { allWorkOptions, standard2026 } from '@/testing/fixtures/all-work';
@@ -44,8 +46,9 @@ function current(): ViewState {
 }
 
 describe('FilterBar (US2)', () => {
-  it('offers the filters of FR-004 with Years, Plan type and Financials (FR-004, FR-010, 016 FR-034, FR-037, 015 FR-024)', () => {
-    renderBar();
+  it('offers the filters of FR-004 with Years, Plan type and Financials (FR-004, FR-010, 016 FR-034, FR-037, 015 FR-024)', async () => {
+    const { user } = renderBar();
+    await openFilters(user);
 
     const filters = screen.getByRole('group', { name: 'Filters' });
     expect(
@@ -76,6 +79,7 @@ describe('FilterBar (US2)', () => {
 
   it('applies a filter as soon as it is ticked and shows it as a chip (FR-008, FR-009)', async () => {
     const { user } = renderBar();
+    await openFilters(user);
 
     await user.click(screen.getByRole('button', { name: 'Activity status' }));
     const menu = await screen.findByRole('dialog', { name: 'Activity status' });
@@ -95,6 +99,7 @@ describe('FilterBar (US2)', () => {
 
   it('keeps the name of a chosen person with the value (FR-031)', async () => {
     const { user } = renderBar();
+    await openFilters(user);
 
     await user.click(screen.getByRole('button', { name: 'Owner' }));
     const menu = await screen.findByRole('dialog', { name: 'Owner' });
@@ -109,6 +114,7 @@ describe('FilterBar (US2)', () => {
 
   it('puts My teams first in the Team filter (FR-004)', async () => {
     const { user } = renderBar();
+    await openFilters(user);
 
     await user.click(screen.getByRole('button', { name: 'Team' }));
     const menu = await screen.findByRole('dialog', { name: 'Team' });
@@ -126,6 +132,7 @@ describe('FilterBar (US2)', () => {
 
   it('groups the campaign / initiative statuses by Approval progress and Timing', async () => {
     const { user } = renderBar();
+    await openFilters(user);
 
     await user.click(screen.getByRole('button', { name: 'Campaign / initiative status' }));
     const menu = await screen.findByRole('dialog', { name: 'Campaign / initiative status' });
@@ -147,7 +154,7 @@ describe('FilterBar (US2)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Years · 2026' }));
     const menu = await screen.findByRole('dialog', { name: 'Years' });
-    await user.selectOptions(within(menu).getByRole('combobox', { name: 'From' }), '2027');
+    await choose(user, within(menu).getByRole('combobox', { name: 'From' }), '2027');
 
     expect(current().year).toBe(2027);
     expect(current()).not.toHaveProperty('yearTo');
@@ -160,18 +167,22 @@ describe('FilterBar (US2)', () => {
     const { user } = renderBar({
       options: allWorkOptions({ years: [2030, 2029, 2028, 2027, 2026, 2025] }),
     });
+    await openFilters(user);
 
     await user.click(screen.getByRole('button', { name: 'Years · 2026' }));
     const menu = await screen.findByRole('dialog', { name: 'Years' });
     const to = within(menu).getByRole('combobox', { name: 'To' });
-    // 2031 would be a sixth year: To offers 2026 to 2030 only.
-    expect(
-      within(to)
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual(['2026', '2027', '2028', '2029', '2030']);
     expect(to).toHaveAccessibleDescription('Choose at most 5 years.');
-    await user.selectOptions(to, '2028');
+    await user.click(to);
+    // 2031 would be a sixth year: To offers 2026 to 2030 only.
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      '2026',
+      '2027',
+      '2028',
+      '2029',
+      '2030',
+    ]);
+    await user.click(screen.getByRole('option', { name: '2028' }));
 
     expect(current()).toMatchObject({ year: 2026, yearFrom: 2026, yearTo: 2028, period: 'year' });
     expect(screen.getByRole('button', { name: 'Years · 2026–2028' })).toBeInTheDocument();
@@ -179,6 +190,7 @@ describe('FilterBar (US2)', () => {
 
   it('filters by plan type and by Financials, with a chip per value (016 FR-037, 015 FR-024)', async () => {
     const { user } = renderBar();
+    await openFilters(user);
 
     await user.click(screen.getByRole('button', { name: 'Plan type' }));
     const types = await screen.findByRole('dialog', { name: 'Plan type' });
@@ -217,6 +229,7 @@ describe('FilterBar (US2)', () => {
 
   it('offers Plan currency once the API names the currencies of the range (016 FR-037)', async () => {
     const { user } = renderBar({ options: allWorkOptions({ planCurrencies: ['EUR', 'USD'] }) });
+    await openFilters(user);
 
     await user.click(screen.getByRole('button', { name: 'Plan currency' }));
     const menu = await screen.findByRole('dialog', { name: 'Plan currency' });
@@ -227,6 +240,7 @@ describe('FilterBar (US2)', () => {
 
   it('chooses Strategic / AOP plans and Show levels, one value each', async () => {
     const { user } = renderBar();
+    await openFilters(user);
 
     await user.click(screen.getByRole('button', { name: 'Strategic / AOP plans' }));
     await user.click(
@@ -255,7 +269,7 @@ describe('FilterBar (US2)', () => {
     ).toBeVisible();
   });
 
-  it('removes one chip, and Clear all clears every filter and the search but the year (FR-008)', async () => {
+  it('removes one chip, and Clear filters clears every filter but keeps the search and the year (FR-008, D-421)', async () => {
     const initial: ViewState = {
       ...standard2026(),
       year: 2027,
@@ -274,10 +288,13 @@ describe('FilterBar (US2)', () => {
     );
     expect(current().filters.activityStatuses).toEqual(['declined']);
 
-    await user.click(screen.getByRole('button', { name: 'Clear all' }));
-    expect(current()).toMatchObject({ year: 2027, search: '', filters: standard2026().filters });
-    expect(screen.getByRole('searchbox', { name: 'Search' })).toHaveValue('');
-    expect(screen.queryByRole('button', { name: 'Clear all' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(current()).toMatchObject({
+      year: 2027,
+      search: 'helix',
+      filters: standard2026().filters,
+    });
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
   });
 
   it('searches once typing stops (FR-006, FR-009)', async () => {

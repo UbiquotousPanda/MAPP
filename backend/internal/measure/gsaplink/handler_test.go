@@ -80,7 +80,7 @@ func TestGsapLink_MeasureDemoFillsEveryWaitBand(t *testing.T) {
 
 func TestGsapLink_OrdersInReportCurrency_Contract(t *testing.T) {
 	t.Parallel()
-	r := reportOf(t, apitest.New(t).SignIn(t, carlos), report+"&tab=orders&sort=-poAmount&currency=EUR&page=1&pageSize=5")
+	r := reportOf(t, apitest.New(t).SignIn(t, carlos), report+"&tab=orders&sort=-poAmount&currency=EUR&page=1&pageSize=25")
 
 	if r.Orders == nil || r.Total == 0 {
 		t.Fatalf("orders tab = %+v, want the demo purchase orders", r)
@@ -109,26 +109,4 @@ func TestGsapLink_NoReportsView_FR003(t *testing.T) {
 	giveMeiOnly(t, server, "plans.view")
 
 	get(t, server.SignIn(t, mei), report, http.StatusForbidden)
-}
-
-// TestGsapLinkExport_OwnParameters_FR019: the export reads the report's tab and sort and refuses one of another tab.
-func TestGsapLinkExport_OwnParameters_FR019(t *testing.T) {
-	t.Parallel()
-	carlosSees := apitest.New(t).SignIn(t, carlos)
-	export := "/api/v1/reports/gsap-link/export?year=2026&format=csv&widget=swbs"
-
-	if r := carlosSees.Do(t, http.MethodGet, export+"&tab=swbs&sort=lineItem", nil); r.Status != http.StatusOK {
-		t.Errorf("export sorted by line item = %d %s, want 200", r.Status, r.Body)
-	}
-	get(t, carlosSees, export+"&sort=vendor", http.StatusBadRequest)
-}
-
-func TestGsapLinkExport_NeedsDataExport(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	giveMeiOnly(t, server, "reports.view")
-	meiSees := server.SignIn(t, mei)
-
-	get(t, meiSees, report, http.StatusOK)
-	get(t, meiSees, "/api/v1/reports/gsap-link/export?year=2026&format=xlsx", http.StatusForbidden)
 }

@@ -17,8 +17,9 @@ describe('ActivityTypesPage: create and edit (US5 scenarios 1 and 2, FR-013)', (
     const form = await screen.findByRole('dialog', { name: 'New activity type' });
     await user.type(within(form).getByRole('textbox', { name: /^Name/ }), 'Webinar');
     const cost = within(form).getByRole('textbox', { name: /^Default planned cost/ });
-    expect(cost).toHaveAccessibleDescription(
-      expect.stringContaining('Offered when someone picks this type for an activity.'),
+    await user.click(within(form).getByRole('button', { name: 'About Default planned cost' }));
+    expect(screen.getByRole('dialog', { name: 'About Default planned cost' })).toHaveTextContent(
+      'Offered when someone picks this type for an activity.',
     );
     await user.type(cost, '5,000');
     const models = await within(form).findByRole('group', { name: /^Allowed in models/ });

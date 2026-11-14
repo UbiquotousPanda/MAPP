@@ -24,11 +24,11 @@ func BenchmarkReportsFrame(b *testing.B) {
 func reportPages() []page {
 	return []page{
 		{"catalogue", alex, "/api/v1/reports"},
-		{"frame every plan", alex, "/api/v1/reports/frame?report=planBudget&year=2026"},
-		{"frame one market", priya, "/api/v1/reports/frame?report=planBudget&year=2026"},
-		{"frame filtered", alex, "/api/v1/reports/frame?report=planBudget&year=2026&planType=operational&activityStatus=approved"},
-		{"saved views", priya, "/api/v1/reports/plan-budget/views"},
-		{"export xlsx", alex, "/api/v1/reports/plan-budget/export?year=2026&format=xlsx"},
+		{"frame every plan", alex, "/api/v1/reports/frame?report=budget&year=2026"},
+		{"frame one market", priya, "/api/v1/reports/frame?report=budget&year=2026"},
+		{"frame filtered", alex, "/api/v1/reports/frame?report=budget&year=2026&planType=operational&activityStatus=approved"},
+		{"saved views", priya, "/api/v1/reports/budget/views"},
+		{"export xlsx", alex, "/api/v1/reports/budget/export?year=2026&format=xlsx"},
 		{"plan budget", alex, "/api/v1/reports/plan-budget?year=2026"},
 		{"plan budget ranked", alex, "/api/v1/reports/plan-budget/ranked?year=2026&show=activity&group=owner"},
 	}

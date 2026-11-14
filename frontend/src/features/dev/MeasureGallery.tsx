@@ -10,7 +10,7 @@ const BY_BRAND: ReportTableData = {
     { key: 'pennzoil', cells: ['Pennzoil', '7'] },
     { key: 'none', cells: ['Not filled in', '3'] },
   ],
-  total: ['Total', '22'],
+  total: ['22'],
 };
 
 const MOST = 12;
@@ -38,7 +38,7 @@ export function MeasureGallery() {
   return (
     <Card title="ReportWidget and ReportTable">
       <ReportWidget
-        report="planDetails"
+        report="planData"
         widget="galleryBrands"
         title="Activities by brand"
         tip="Activities per Brand value, Not filled in last."

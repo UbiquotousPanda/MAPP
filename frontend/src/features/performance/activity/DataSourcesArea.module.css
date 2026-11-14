@@ -34,24 +34,6 @@
   cursor: pointer;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  text-align: left;
-}
-
-.numeric {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
 .fields {
   display: flex;
   flex-direction: column;
@@ -72,8 +54,4 @@
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: var(--radius-1);
-}
-
-.scroll {
-  overflow-x: auto;
 }

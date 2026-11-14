@@ -1,14 +1,11 @@
 import { Link } from 'react-router';
 import { businessUnitOf, isEmptyValue, isVisible } from './rules';
 import type { AttributeForm, AttributeValues } from './rules';
+import { SectionHeading } from '../SectionHeading/SectionHeading';
+import type { HeadingRank } from '../SectionHeading/SectionHeading';
+import { HEADING_LEVELS } from './layout';
 import styles from './ShellAttributeFields.module.css';
-import {
-  conditionUnits,
-  hasConditions,
-  NO_BUSINESS_UNIT_NOTE,
-  shownBecauseText,
-  valueText,
-} from './texts';
+import { hasConditions, NO_BUSINESS_UNIT_NOTE, valueText } from './texts';
 
 export interface ShellAttributeValuesProps {
   form: AttributeForm;
@@ -18,23 +15,21 @@ export interface ShellAttributeValuesProps {
   /** The plan's address, linked from the "appear once the business unit is chosen" note. */
   planLink?: string;
   /** The heading of each attribute section; 'none' when the details have their own heading. */
-  sectionHeading?: 'h2' | 'h3' | 'none';
+  sectionHeading?: 'h2' | 'h3' | 'h4' | 'none';
+  sectionRank?: HeadingRank;
 }
 
-/**
- * A record's Shell attribute values, read-only (feature 002, FR-024 – FR-027): the shown
- * attributes by section, "—" for empty ones, Yes or No for yes/no, "(inactive)" for inactive
- * attributes and options; hidden attributes are left out, with the same notes as the form.
- */
+/** Read-only, with the form's notes: "—" for empty, "(inactive)" for inactive ones; hidden attributes left out. */
 export function ShellAttributeValues({
   form,
   values,
   businessUnit,
   planLink,
   sectionHeading = 'h3',
+  sectionRank = 'sub',
 }: ShellAttributeValuesProps) {
   const units = businessUnitOf(form, values, businessUnit);
-  const Heading = sectionHeading === 'none' ? null : sectionHeading;
+  const level = HEADING_LEVELS[sectionHeading];
 
   return (
     <div className={styles.fields}>
@@ -60,9 +55,10 @@ export function ShellAttributeValues({
         }
         return (
           <div key={section.name} className={styles.section}>
-            {Heading && <Heading className={styles.heading}>{section.name}</Heading>}
-            {section.conditional && (
-              <p className={styles.note}>{shownBecauseText(conditionUnits(form, shown, units))}</p>
+            {level && (
+              <SectionHeading level={level} rank={sectionRank}>
+                {section.name}
+              </SectionHeading>
             )}
             <dl className={styles.values}>
               {shown.map((attribute) => (

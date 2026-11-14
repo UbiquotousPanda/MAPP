@@ -71,14 +71,16 @@ export function useUpdatePerformanceSource(sourceId: string) {
 export function useSetSourceStatus(sourceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (next: 'deactivate' | 'reactivate') =>
+    mutationFn: ({ next, version }: { next: 'deactivate' | 'reactivate'; version: number }) =>
       call(
         next === 'deactivate'
           ? api.POST('/api/v1/performance/sources/{sourceId}/deactivate', {
               params: { path: { sourceId } },
+              body: { version },
             })
           : api.POST('/api/v1/performance/sources/{sourceId}/reactivate', {
               params: { path: { sourceId } },
+              body: { version },
             }),
       ),
     onSettled: () => queryClient.invalidateQueries({ queryKey: performanceKeys.sources }),

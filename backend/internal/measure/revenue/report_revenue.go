@@ -35,7 +35,7 @@ func (s *Service) buildRevenueReport(series []ActivitySeries, period string, sc 
 		cards.Projected = MoneyCard{Reason: reportReason(series, false)}
 	}
 	return RevenueReport{Cards: cards, Period: periodShown(period), Periods: revenuePeriods(sums, period, w, display),
-		Projection: stampOf(series), Projections: stampsOf(series), Reason: reportReason(series, anyGoal)}
+		Totals: revenueTotals(sums, display), Projection: stampOf(series), Projections: stampsOf(series), Reason: reportReason(series, anyGoal)}
 }
 
 func periodShown(period string) string {

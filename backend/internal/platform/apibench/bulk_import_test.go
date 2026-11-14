@@ -33,7 +33,7 @@ func bulkAndImport(b *testing.B, data apibench.Data) {
 	selected := growPlan(b, server, alexClient, bulkRecords)[:bulkRecords]
 	c := &changes{server: server, alex: alexClient}
 	b.Run("bulk change owner preview", func(b *testing.B) { c.changeOwner(b, "/api/v1/bulk-actions/preview", selected) })
-	b.Run("bulk change owner", func(b *testing.B) { c.changeOwner(b, "/api/v1/bulk-actions", selected) })
+	b.Run("bulk change owner", func(b *testing.B) { c.changeOwner(b, bulkRunPath, selected) })
 	file := activitiesFile(b, server)
 	path := "/api/v1/plans/" + demoPlan + "/imports/check"
 	var check struct {
@@ -61,13 +61,29 @@ func growPlan(b *testing.B, server *apibench.Server, client *apibench.Client, wa
 	return activities
 }
 
+const bulkRunPath = "/api/v1/bulk-actions"
+
 func (c *changes) changeOwner(b *testing.B, path string, recordIDs []string) {
 	b.Helper()
 	owners := [2]string{"U-1001", "U-1002"}
+	versions := map[string]int{}
+	for _, id := range recordIDs {
+		versions[id] = c.alex.Version(b, "/api/v1/activities/"+id)
+	}
 	c.measure(b, func() int64 {
 		owners[0], owners[1] = owners[1], owners[0]
-		body := map[string]any{"action": "changeOwner", "recordIds": recordIDs, "ownerId": owners[0]}
-		return c.alex.Do(b, http.MethodPost, path, body).Queries
+		body := map[string]any{"action": "changeOwner", "recordIds": recordIDs, "ownerId": owners[0], "versions": versions}
+		answer := c.alex.Do(b, http.MethodPost, path, body)
+		var result struct {
+			Outcomes []struct{ RecordID, Outcome string }
+		}
+		answer.Decode(b, &result)
+		for _, o := range result.Outcomes {
+			if o.Outcome == "done" && path == bulkRunPath {
+				versions[o.RecordID]++
+			}
+		}
+		return answer.Queries
 	})
 }
 

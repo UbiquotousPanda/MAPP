@@ -7,15 +7,14 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// Deleting a plan answers its recycle-bin entry, so the web app can offer Undo; Undo brings it back with
-// the same ID and status (FR-029, FR-030, US6 scenarios 3 and 4).
+// Undo brings the plan back with the same ID and status.
 func TestDeletePlan_AndUndo_FR029_FR030(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
-	server.GrantRole(t, priyasEmail, "globalPlanner", "all") // 014: deleting plans
+	server.GrantRole(t, priyasEmail, "globalPlanner", "all") // deleting plans
 
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/plans/P-1001", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/plans/P-1001")
 	inBin := priya.Do(t, http.MethodGet, "/api/v1/plans/P-1001", nil)
 	var result struct {
 		RecycleBinEntry struct {
@@ -29,7 +28,7 @@ func TestDeletePlan_AndUndo_FR029_FR030(t *testing.T) {
 	deleted.Decode(t, &result)
 	undone := priya.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+result.RecycleBinEntry.ID+"/undo", nil)
 	back := priya.Do(t, http.MethodGet, "/api/v1/plans/P-1001", nil)
-	gone := priya.Do(t, http.MethodDelete, "/api/v1/plans/P-9999", nil)
+	gone := priya.DeleteSeen(t, "/api/v1/plans/P-9999")
 
 	if deleted.Status != http.StatusOK || result.RecycleBinEntry.RecordType != "plan" ||
 		result.RecycleBinEntry.RecordTypeLabel != "plan" || result.RecycleBinEntry.RecordID != "P-1001" ||

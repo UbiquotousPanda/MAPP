@@ -1,33 +1,24 @@
 import { toCents } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
-import { ReportWidget } from '../shared';
-import type { ReportTableData } from '../shared';
+import {
+  moneyPoint,
+  moneyUnit,
+  PeriodSwitch,
+  ReportChart,
+  ReportWidget,
+  shortPeriod,
+} from '../shared';
+import type { ReportChartData, ReportTableData } from '../shared';
 import type { PlanBudgetPeriod, PlanBudgetReport } from './api';
-import styles from './PlanBudget.module.css';
 
-const WIDTH = 720;
-const HEIGHT = 240;
-const BASELINE = 205;
-const PLOT = 180;
-const SERIES = ['budget', 'planned', 'actual'] as const;
-
-type Series = (typeof SERIES)[number];
-
-function cents(period: PlanBudgetPeriod, series: Series): bigint {
-  const value = period[series];
-  return value ? toCents(value.amount) : 0n;
-}
-
-function height(value: bigint, top: bigint): number {
-  return top > 0n && value > 0n ? Number((value * BigInt(PLOT)) / top) : 0;
-}
+type Money = PlanBudgetPeriod['budget'];
 
 /** Budget, planned cost and actual per period; actual stops at today's period, which is marked. */
 export function PacingChart({ report }: { report: PlanBudgetReport }) {
   const { money, month } = useFormatters();
   const label = (key: string) => (key.includes('Q') ? key.slice(5) : month(key));
   const amount = (value: PlanBudgetPeriod['actual']) => (value ? money(value) : '—');
-  const last = report.periods.at(-1);
+  const today = report.periods.find((p) => p.state === 'inProgress');
   const table: ReportTableData = {
     columns: [
       { label: 'Period' },
@@ -52,103 +43,59 @@ export function PacingChart({ report }: { report: PlanBudgetReport }) {
         amount(p.actualToDate),
       ],
     })),
-    total: last
-      ? ['Total', money(last.budgetToDate), money(last.plannedToDate), amount(lastActual(report))]
-      : undefined,
   };
   return (
     <ReportWidget
       wide
-      report="planBudget"
+      report="budget"
       widget="periods"
+      controls={<PeriodSwitch />}
       title={report.period === 'quarter' ? 'Spend by quarter' : 'Spend by month'}
       tip="Budget as phased, planned cost as spread and actual by posting date; actual stops at today."
-      chart={<Bars periods={report.periods} label={label} />}
+      chart={
+        <ReportChart
+          chart={chartOf(report.periods, money)}
+          description={`${phased(report.periods) ? 'Budget, planned cost' : 'Planned cost'} and actual by period${today ? `; today is in ${label(today.key)}` : ''}. The Table view lists every period.`}
+        />
+      }
       table={table}
       note={notesOf(report, money).join(' ') || undefined}
     />
   );
 }
 
-function lastActual(report: PlanBudgetReport) {
-  return report.periods.findLast((p) => p.actualToDate !== null)?.actualToDate ?? null;
-}
-
-function notesOf(
-  report: PlanBudgetReport,
-  money: (m: PlanBudgetPeriod['budget']) => string,
-): string[] {
+function notesOf(report: PlanBudgetReport, money: (m: Money) => string): string[] {
   const n = report.notes;
   return [
     n.notPhased && `Budget not phased by month: ${money(n.notPhased)}.`,
     n.noDates && `Planned cost without dates: ${money(n.noDates)}.`,
     n.otherYears && `Planned cost in other years: ${money(n.otherYears)}.`,
+    n.linesAbovePlannedCost && `Line items above planned cost: ${money(n.linesAbovePlannedCost)}.`,
     n.actualOtherYears && `Actual posted in other years: ${money(n.actualOtherYears)}.`,
   ].filter((note): note is string => Boolean(note));
 }
 
-function Bars({ periods, label }: { periods: PlanBudgetPeriod[]; label: (key: string) => string }) {
-  const top = periods
-    .flatMap((p) => SERIES.map((s) => cents(p, s)))
-    .reduce((a, b) => (a > b ? a : b), 0n);
-  const group = WIDTH / Math.max(periods.length, 1);
-  const bar = (group * 0.7) / SERIES.length;
-  const today = periods.find((p) => p.state === 'inProgress');
-  return (
-    <>
-      <ul className={styles.legend}>
-        {SERIES.map((s) => (
-          <li key={s}>
-            <span className={`${styles.swatch} ${styles[s]}`} aria-hidden="true" />
-            {{ budget: 'Budget', planned: 'Planned cost', actual: 'Actual' }[s]}
-          </li>
-        ))}
-      </ul>
-      <svg
-        className={styles.chart}
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        role="img"
-        aria-label={`Budget, planned cost and actual by period${today ? `; today is in ${label(today.key)}` : ''}. The Table view lists every period.`}
-      >
-        {periods.map((p, i) => {
-          const x = i * group + group * 0.15;
-          return (
-            <g key={p.key}>
-              {p === today && (
-                <rect
-                  className={styles.today}
-                  x={i * group}
-                  y={0}
-                  width={group}
-                  height={BASELINE}
-                />
-              )}
-              {SERIES.map((s, j) => {
-                const h = height(cents(p, s), top);
-                return (
-                  <rect
-                    key={s}
-                    className={styles[s]}
-                    x={x + j * bar}
-                    y={BASELINE - h}
-                    width={bar}
-                    height={h}
-                  />
-                );
-              })}
-              <text
-                className={styles.axisLabel}
-                x={x + group * 0.35}
-                y={HEIGHT - 14}
-                textAnchor="middle"
-              >
-                {p === today ? 'Today' : label(p.key).slice(0, 3)}
-              </text>
-            </g>
-          );
-        })}
-        <line className={styles.axis} x1={0} x2={WIDTH} y1={BASELINE} y2={BASELINE} />
-      </svg>
-    </>
-  );
+// A budget that is not phased by month has no amount per period: the note under the chart names it.
+function phased(periods: PlanBudgetPeriod[]): boolean {
+  return periods.some((p) => toCents(p.budget.amount) !== 0n);
+}
+
+function chartOf(periods: PlanBudgetPeriod[], money: (m: Money) => string): ReportChartData {
+  const points = (pick: (p: PlanBudgetPeriod) => Money | null) =>
+    periods.map((p) => moneyPoint(pick(p), money));
+  return {
+    labels: periods.map((p) => shortPeriod(p.key)),
+    unit: moneyUnit(periods.map((p) => p.planned)),
+    today: periods.findIndex((p) => p.state === 'inProgress'),
+    series: [
+      {
+        name: 'Budget',
+        tone: 'budget',
+        look: 'outline',
+        points: phased(periods) ? points((p) => p.budget) : [],
+      },
+      { name: 'Planned cost', tone: 'planned', look: 'bar', points: points((p) => p.planned) },
+      { name: 'Actual', tone: 'actual', look: 'bar', points: points((p) => p.actual) },
+    ],
+  };
 }

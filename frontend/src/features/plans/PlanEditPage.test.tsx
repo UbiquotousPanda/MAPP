@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { HttpHandler } from 'msw';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { FORM_ANSWERS, plan } from '@/testing/fixtures/plans';
 import { reply } from '@/testing/replies';
@@ -33,14 +34,13 @@ function renderPage(answers: HttpHandler[] = [], route = '/plans/P-1001/edit') {
 
 describe('PlanEditPage (US4, FR-018 – FR-023)', () => {
   it('opens the form with the year locked (US4#1, FR-018)', async () => {
-    renderPage();
+    const { user } = renderPage();
 
     expect(screen.getByRole('heading', { level: 1, name: 'Edit plan' })).toBeInTheDocument();
-    expect(
-      await screen.findByText(
-        "Year can't change once the plan is saved — copy the plan into the next year or create a new plan.",
-      ),
-    ).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: "Why Year can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Year can't change" })).toHaveTextContent(
+      "Year can't change once the plan is saved — copy the plan into the next year or create a new plan.",
+    );
     expect(screen.queryByRole('combobox', { name: /Year/ })).not.toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /Plan name/ })).toHaveValue(
       'FY2026 Lubricants Europe',
@@ -50,6 +50,33 @@ describe('PlanEditPage (US4, FR-018 – FR-023)', () => {
       '/plans/P-1001',
     );
     await waitFor(() => expect(document.title).toBe('Edit FY2026 Lubricants Europe · SP&A One'));
+  });
+
+  it('shows an allocated plan budget read-only, naming whom to ask (014 US6#3)', async () => {
+    const allocated = plan({
+      allocation: {
+        allocationId: 'BA-1001',
+        globalBudget: { id: 'GB-1001', name: 'FY2026 Global marketing budget' },
+        amount: { amount: '1200000.00', currency: 'USD' },
+        owner: {
+          id: 'U-1005',
+          name: 'Carlos Mendes',
+          initials: 'CM',
+          jobTitle: 'Global brand lead',
+          active: true,
+        },
+        canOpen: false,
+      },
+    });
+    const { user } = renderPage([
+      reply('GET /api/v1/plans/{planId}', { body: allocated }, { planId: 'P-1001' }),
+    ]);
+
+    await user.click(await screen.findByRole('button', { name: "Why Plan budget can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Plan budget can't change" })).toHaveTextContent(
+      "Allocated from 'FY2026 Global marketing budget' — ask Carlos Mendes to change it.",
+    );
+    expect(screen.queryByRole('textbox', { name: /^Plan budget/ })).not.toBeInTheDocument();
   });
 
   it('saves the whole form with the version it started from', async () => {
@@ -91,7 +118,7 @@ describe('PlanEditPage (US4, FR-018 – FR-023)', () => {
       ),
     ]);
 
-    await user.selectOptions(await screen.findByRole('combobox', { name: /Model/ }), 'MOD-1002');
+    await choose(user, await screen.findByRole('combobox', { name: /Model/ }), 'Mobility 2.0');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     const dialog = await screen.findByRole('alertdialog', { name: 'Change the model?' });
@@ -170,9 +197,10 @@ describe('PlanEditPage (US4, FR-018 – FR-023)', () => {
         'This plan is published. Changes are saved straight away and recorded in the activity log.',
       ),
     ).toBeInTheDocument();
-    await user.selectOptions(
+    await choose(
+      user,
       screen.getByRole('combobox', { name: 'Default line-item spread' }),
-      'lastMonth',
+      'All in last month',
     );
     expect(screen.getByText('Applies to line items created from now on.')).toBeInTheDocument();
   });

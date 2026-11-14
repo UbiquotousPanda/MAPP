@@ -34,7 +34,7 @@ func TestReport_Swbs_FR001_FR005(t *testing.T) {
 	t.Parallel()
 	r := waitingWorld(t).report(Table{})
 
-	want := summary{Tab: TabSwbs, Sort: "-waiting", Currency: "USD", Page: 1, PageSize: DefaultPageSize, Total: 3, Count: 3,
+	want := summary{Tab: TabSwbs, Sort: "-waiting", Currency: "USD", Page: 1, PageSize: 50, Total: 3, Count: 3,
 		OnlySwbs: true}
 	if diff := cmp.Diff(want, summaryOf(r)); diff != "" {
 		t.Errorf("report (-want +got):\n%s", diff)

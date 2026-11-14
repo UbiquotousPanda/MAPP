@@ -17,7 +17,9 @@ type Store struct {
 func NewStore(db *fake.DB) Store {
 	return Store{
 		preferences: fake.TableOf(db, "all_work_preferences", func(p allwork.PreferencesRecord) string { return p.PersonID }),
-		views:       fake.TableOf(db, "saved_views", func(v allwork.StoredView) string { return v.ID }),
+		views: fake.TableOf(db, "saved_views", func(v allwork.StoredView) string { return v.ID }).
+			Unique("saved_views_name_key", func(v allwork.StoredView) string { return v.PersonID + "/" + fake.LowerC(v.Name) }).
+			Unique("saved_views_default_key", func(v allwork.StoredView) string { return defaultOf(v.PersonID, v.IsDefault) }),
 	}
 }
 
@@ -43,4 +45,11 @@ func (s Store) PutView(ctx context.Context, v allwork.StoredView) error {
 
 func (s Store) DeleteView(ctx context.Context, id string) error {
 	return s.views.Delete(ctx, id)
+}
+
+func defaultOf(personID string, isDefault bool) string {
+	if !isDefault {
+		return ""
+	}
+	return personID
 }

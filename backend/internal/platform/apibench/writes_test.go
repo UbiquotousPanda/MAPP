@@ -125,7 +125,7 @@ func (c *changes) moveInitiative(b *testing.B, t apibench.Tree) {
 func (c *changes) deletePlan(b *testing.B, planID string, undo bool) {
 	b.Helper()
 	c.measure(b, func() int64 {
-		deleted := c.alex.Do(b, http.MethodDelete, "/api/v1/plans/"+planID, nil)
+		deleted := c.alex.DeleteSeen(b, "/api/v1/plans/"+planID)
 		undone := c.alex.Do(b, http.MethodPost, "/api/v1/recycle-bin/"+entryID(b, deleted)+"/undo", nil)
 		if undo {
 			return undone.Queries
@@ -137,7 +137,7 @@ func (c *changes) deletePlan(b *testing.B, planID string, undo bool) {
 func (c *changes) restore(b *testing.B, planID string) {
 	b.Helper()
 	c.measure(b, func() int64 {
-		deleted := c.alex.Do(b, http.MethodDelete, "/api/v1/plans/"+planID, nil)
+		deleted := c.alex.DeleteSeen(b, "/api/v1/plans/"+planID)
 		return c.alex.Do(b, http.MethodPost, "/api/v1/recycle-bin/"+entryID(b, deleted)+"/restore", nil).Queries
 	})
 }
@@ -147,7 +147,7 @@ func (c *changes) purge(b *testing.B, planID string) {
 	b.Helper()
 	c.measure(b, func() int64 {
 		copied := c.copyOf(b, planID)
-		deleted := c.alex.Do(b, http.MethodDelete, "/api/v1/plans/"+copied, nil)
+		deleted := c.alex.DeleteSeen(b, "/api/v1/plans/"+copied)
 		return c.alex.Do(b, http.MethodDelete, "/api/v1/recycle-bin/"+entryID(b, deleted), nil).Queries
 	})
 }
@@ -157,7 +157,7 @@ func (c *changes) purge(b *testing.B, planID string) {
 func (c *changes) emptyBin(b *testing.B, planID string, all bool) {
 	b.Helper()
 	c.measure(b, func() int64 {
-		deleted := c.alex.Do(b, http.MethodDelete, "/api/v1/plans/"+c.copyOf(b, planID), nil)
+		deleted := c.alex.DeleteSeen(b, "/api/v1/plans/"+c.copyOf(b, planID))
 		entries := []string{entryID(b, deleted)}
 		if all {
 			var bin struct {

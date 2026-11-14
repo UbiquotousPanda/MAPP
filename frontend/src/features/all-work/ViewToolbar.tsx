@@ -12,21 +12,15 @@ export interface ViewToolbarProps {
   state: ViewState;
   /** When the data on screen was read ("Updated at 14:05"); undefined while loading. */
   generatedAt: string | undefined;
-  /** Changes how the rows are shown (expansion, unassigned rows, period, layout). */
   onChange: (next: ViewState) => void;
   onColumns: () => void;
   onRefresh: () => void;
 }
 
 /**
- * The toolbar at the top of a view's card (plan "Page layout"), in one order in every view: the
- * view's layout (Calendar: Timeline · Month; Budget & cost: Monthly · Quarterly · Yearly, 016
- * FR-035), Expand all and Collapse all, the Unassigned planned cost switch (FR-012) and, in Budget
- * & cost, Compare with phased budget (016 FR-038); then, at the end, Columns (Grid),
- * "Updated at …" and Refresh. Below 600 px the buttons show their icons only (their names stay),
- * so the toolbar takes two rows and the data starts higher (UI audit PH-04). Budget & cost has the
- * most controls: while its card is too narrow for all of them on one row, the Unassigned switch
- * shows its short words and the time is read out but not shown, so the toolbar keeps one row.
+ * One order in every view (plan "Page layout"). Below 600 px the buttons show icons only (names stay), so
+ * the data starts higher; while Budget & cost's card is too narrow for one row, the Unassigned switch shows
+ * its short words and the time is read out but not shown.
  */
 export function ViewToolbar({
   state,
@@ -36,6 +30,7 @@ export function ViewToolbar({
   onRefresh,
 }: ViewToolbarProps) {
   const tree = state.view !== 'calendar';
+  const allOpen = state.expansion.mode === 'allExpanded' && state.expansion.toggled.length === 0;
 
   return (
     <div className={cx(styles.toolbar, state.view === 'budget' && styles.crowded)}>
@@ -67,21 +62,15 @@ export function ViewToolbar({
           <>
             <Button
               size="sm"
-              icon={<ChevronsUpDown />}
+              icon={allOpen ? <ChevronsDownUp /> : <ChevronsUpDown />}
               onClick={() =>
-                onChange({ ...state, expansion: { mode: 'allExpanded', toggled: [] } })
+                onChange({
+                  ...state,
+                  expansion: { mode: allOpen ? 'allCollapsed' : 'allExpanded', toggled: [] },
+                })
               }
             >
-              <span className={styles.label}>Expand all</span>
-            </Button>
-            <Button
-              size="sm"
-              icon={<ChevronsDownUp />}
-              onClick={() =>
-                onChange({ ...state, expansion: { mode: 'allCollapsed', toggled: [] } })
-              }
-            >
-              <span className={styles.label}>Collapse all</span>
+              <span className={styles.label}>{allOpen ? 'Collapse all' : 'Expand all'}</span>
             </Button>
             <Switch
               label="Unassigned planned cost"

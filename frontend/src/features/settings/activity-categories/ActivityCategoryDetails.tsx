@@ -5,6 +5,7 @@ import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import styles from '@/ui/settings-table.module.css';
 import { CanChange } from '@/ui/CanChange/CanChange';
+import { Tag } from '@/ui/Tag/Tag';
 import { MetaLine } from '../MetaLine';
 import { SETTING_NOUNS } from '../settings-nouns';
 import { UsageLine } from '../UsageLine';
@@ -76,8 +77,8 @@ export function ActivityCategoryDetails({
               ) : (
                 <ul role="list" className={styles.chips}>
                   {category.activityTypes.map((type) => (
-                    <li key={type.id} className={styles.chip}>
-                      {type.active ? type.name : `${type.name} (inactive)`}
+                    <li key={type.id}>
+                      <Tag>{type.active ? type.name : `${type.name} (inactive)`}</Tag>
                     </li>
                   ))}
                 </ul>

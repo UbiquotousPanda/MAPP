@@ -13,13 +13,9 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// The handler tests run the real API on the demo data (apitest), and every request and answer is checked
-// against the contract. The seed has the global budget GB-1001 "FY2026 Global marketing budget" (2026,
-// 2,500,000.00 USD, owner Carlos Mendes) with BA-1001 → P-1001 FY2026 Lubricants Europe (1,200,000.00) and
-// BA-1002 → P-1002 FY2026 Mobility China (800,000.00); P-1003 FY2027 Global Brand has none (FR-040).
+// The seed's GB-1001 (2026, 2,500,000.00 USD, owner Carlos Mendes) allocates BA-1001 → P-1001 (1,200,000.00) and
+// BA-1002 → P-1002 FY2026 Mobility China (800,000.00); P-1003 FY2027 Global Brand has none.
 
-// The Global budgets list of 2026 has the demo global budget with its four totals; 2027 has none; the years
-// are those with a global budget; New global budget is available (FR-036, FR-032).
 func TestListGlobalBudgets_200_FR036(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -50,10 +46,7 @@ func TestListGlobalBudgets_200_FR036(t *testing.T) {
 		`"fields":[{"field":"year","message":"Choose a year such as 2026."}]}}`)
 }
 
-// The global budget page (US6 scenario 1): Global budget 2,500,000.00 USD, Allocated 2,000,000.00,
-// Unallocated 500,000.00 and the plans' planned cost; one row per plan by name with teams, owner, status,
-// planned cost, left to plan and budget used; no plan of 2026 without an allocation; the year lock and the
-// delete lock (FR-032). An unknown global budget is not found.
+// The global budget page: 2,500,000.00 USD, 2,000,000.00 allocated and 500,000.00 unallocated, one row per plan.
 func TestGetGlobalBudget_200_404_FR032(t *testing.T) { //nolint:gocyclo // 11: the figures and rows, then the page's other markets, owner, locks and access in one condition
 	t.Parallel()
 	server := apitest.New(t)
@@ -83,7 +76,6 @@ func TestGetGlobalBudget_200_404_FR032(t *testing.T) { //nolint:gocyclo // 11: t
 	assertAnswer(t, gone, http.StatusNotFound, budgetGoneBody)
 }
 
-// allocationLines writes the allocation rows of a global budget page one per line.
 func allocationLines(rows []budget.AllocationRow) []string {
 	var lines []string
 	for _, r := range rows {
@@ -97,7 +89,6 @@ func allocationLines(rows []budget.AllocationRow) []string {
 	return lines
 }
 
-// assertLeftToPlan checks that each row's left to plan is its allocation less its planned cost (domain model §4.2).
 func assertLeftToPlan(t *testing.T, rows []budget.AllocationRow) {
 	t.Helper()
 	for _, r := range rows {
@@ -111,8 +102,6 @@ func assertLeftToPlan(t *testing.T, rows []budget.AllocationRow) {
 	}
 }
 
-// Creating a global budget answers 201 with GB-1002 and its empty figures; a form with problems answers
-// every problem at once (FR-029, messages 24 and 26).
 func TestCreateGlobalBudget_201_400_FR029(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -145,8 +134,6 @@ func TestCreateGlobalBudget_201_400_FR029(t *testing.T) {
 			`{"field":"ownerId","message":"Choose a person who can manage global budgets for all markets."}`))
 }
 
-// Saving changed fields answers the global budget after the change, version 2; a save from the old version
-// is refused naming who changed it and when; an unknown global budget is not found (FR-029).
 func TestUpdateGlobalBudget_200_409_404_FR029(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -172,8 +159,7 @@ func TestUpdateGlobalBudget_200_409_404_FR029(t *testing.T) {
 	}
 }
 
-// A global budget with allocations cannot be deleted (409 in_use, message 30); one without goes to the
-// recycle bin, and the answer offers Undo (FR-035).
+// A global budget with allocations cannot be deleted; one without goes to the recycle bin with Undo.
 func TestDeleteGlobalBudget_409_200_404_FR035(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -185,8 +171,8 @@ func TestDeleteGlobalBudget_409_200_404_FR035(t *testing.T) {
 		t.Fatalf("create = %d %s", created.Status, created.Body)
 	}
 
-	inUse := carlos.Do(t, http.MethodDelete, "/api/v1/global-budgets/GB-1001", nil)
-	deleted := carlos.Do(t, http.MethodDelete, "/api/v1/global-budgets/GB-1002", nil)
+	inUse := carlos.DeleteSeen(t, "/api/v1/global-budgets/GB-1001")
+	deleted := carlos.DeleteSeen(t, "/api/v1/global-budgets/GB-1002")
 	gone := carlos.Do(t, http.MethodGet, "/api/v1/global-budgets/GB-1002", nil)
 
 	assertAnswer(t, inUse, http.StatusConflict, `{"error":{"code":"in_use","message":"'FY2026 Global marketing budget' has allocations to 2 plans. Remove them first.","fields":[]}}`)
@@ -196,5 +182,5 @@ func TestDeleteGlobalBudget_409_200_404_FR035(t *testing.T) {
 		t.Errorf("delete = %s", deleted.Body)
 	}
 	assertAnswer(t, gone, http.StatusNotFound, budgetGoneBody)
-	assertAnswer(t, carlos.Do(t, http.MethodDelete, "/api/v1/global-budgets/GB-1002", nil), http.StatusNotFound, budgetGoneBody)
+	assertAnswer(t, carlos.DeleteSeen(t, "/api/v1/global-budgets/GB-1002"), http.StatusNotFound, budgetGoneBody)
 }

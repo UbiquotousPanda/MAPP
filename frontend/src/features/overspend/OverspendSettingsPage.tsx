@@ -1,12 +1,14 @@
-import { Lock } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { asApiError, conflictMessage, isSessionLost } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
@@ -26,7 +28,6 @@ import {
   OVERSPEND_CONTROL,
   SAVE,
   SETTING_SAVED,
-  SETTINGS_DESCRIPTION,
   lastChangedText,
 } from './overspend-text';
 import styles from './OverspendSettingsPage.module.css';
@@ -44,7 +45,6 @@ export function OverspendSettingsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: OVERSPEND_CONTROL }]}
         title={OVERSPEND_CONTROL}
-        description={SETTINGS_DESCRIPTION}
       />
       <Card>
         {config.data ? (
@@ -59,7 +59,9 @@ export function OverspendSettingsPage() {
   );
 }
 
-function SettingForm({ config }: { config: OverspendConfiguration }) {
+function SettingForm({ config: opened }: { config: OverspendConfiguration }) {
+  const { record: config, version, keep, loadLatest } = useEditedRecord(opened);
+  const latest = useOverspendConfiguration();
   const save = useSaveOverspendConfiguration();
   const { show } = useToast();
   const { date, dateFormat } = useFormatters();
@@ -71,14 +73,15 @@ function SettingForm({ config }: { config: OverspendConfiguration }) {
   async function send() {
     setProblem('');
     try {
-      await save.mutateAsync({
-        version: config.version,
-        defaultMode: mode,
-        approvalOverPlannedCost: approval,
-      });
+      keep(
+        await save.mutateAsync({ version, defaultMode: mode, approvalOverPlannedCost: approval }),
+      );
       show({ message: SETTING_SAVED });
     } catch (error) {
       const failure = asApiError(error);
+      if (failure.kind === 'conflict') {
+        void loadLatest(() => latest.refetch().then((answer) => answer.data));
+      }
       if (!isSessionLost(failure)) {
         setProblem(conflictMessage(failure, 'setting', dateFormat));
       }
@@ -95,11 +98,7 @@ function SettingForm({ config }: { config: OverspendConfiguration }) {
         void send();
       }}
     >
-      {problem && (
-        <p role="alert" className={styles.problem}>
-          {problem}
-        </p>
-      )}
+      {problem && <InlineError>{problem}</InlineError>}
       <Choices
         name="defaultMode"
         legend={DEFAULT_LABEL}
@@ -107,7 +106,7 @@ function SettingForm({ config }: { config: OverspendConfiguration }) {
         words={MODE_WORDS}
         hints={MODE_HINTS}
         value={mode}
-        disabled={locked}
+        disabledReason={locked ? config.canChange.reason : undefined}
         onChange={setMode}
         note={EXISTING_KEEP}
       />
@@ -118,15 +117,9 @@ function SettingForm({ config }: { config: OverspendConfiguration }) {
         words={APPROVAL_WORDS}
         hints={APPROVAL_HINTS}
         value={approval}
-        disabled={locked}
+        disabledReason={locked ? config.canChange.reason : undefined}
         onChange={setApproval}
       />
-      {locked && (
-        <p className={styles.lock} role="note">
-          <Lock aria-hidden="true" />
-          <span>{config.canChange.reason}</span>
-        </p>
-      )}
       <p className={styles.note}>
         {config.updatedBy && config.updatedAt
           ? lastChangedText(config.updatedBy.name, date(localDate(config.updatedAt)))
@@ -150,37 +143,26 @@ interface ChoicesProps<T extends string> {
   words: Record<T, string>;
   hints: Record<T, string>;
   value: T;
-  disabled: boolean;
+  disabledReason?: string;
   onChange: (value: T) => void;
   note?: string;
 }
 
 function Choices<T extends string>(props: ChoicesProps<T>) {
-  const noteId = useId();
+  const { name, legend, choices, words, hints, value, disabledReason, onChange, note } = props;
   return (
-    <fieldset className={styles.group} aria-describedby={props.note ? noteId : undefined}>
-      <legend className={styles.legend}>{props.legend}</legend>
-      {props.choices.map((choice) => (
-        <label key={choice} className={styles.radio}>
-          <input
-            type="radio"
-            name={props.name}
-            value={choice}
-            checked={props.value === choice}
-            disabled={props.disabled}
-            onChange={() => props.onChange(choice)}
-          />
-          <span>
-            <span className={styles.word}>{props.words[choice]}</span>
-            <span className={styles.note}>{props.hints[choice]}</span>
-          </span>
-        </label>
-      ))}
-      {props.note && (
-        <p id={noteId} className={styles.note}>
-          {props.note}
-        </p>
-      )}
-    </fieldset>
+    <RadioGroup
+      label={legend}
+      name={name}
+      options={choices.map((choice) => ({
+        value: choice,
+        label: words[choice],
+        hint: hints[choice],
+      }))}
+      value={value}
+      onChange={onChange}
+      disabledReason={disabledReason}
+      note={note}
+    />
   );
 }

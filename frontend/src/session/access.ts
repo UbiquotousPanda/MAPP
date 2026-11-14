@@ -1,5 +1,5 @@
 // What the signed-in person may do (D-229): the app shows the server's decisions and never works a
-// permission out itself; an answer without `access` counts as allowed (D-298).
+// permission out itself; until the session has loaded nothing is allowed.
 import { ApiError } from '@/api/errors';
 import type { components } from '@/api/generated/schema';
 import { useSession } from './useSession';
@@ -24,7 +24,6 @@ export interface Access {
   administrators: PersonRef[];
   adminNames: () => string;
   rulesNoSelfApproval: boolean;
-  /** false while the API sends no access (before feature 014): everything counts as allowed. */
   known: boolean;
 }
 
@@ -37,11 +36,8 @@ export function accessOf(access: MyAccess | undefined): Access {
   const administrators = access?.administrators ?? [];
   const byKey = new Map((access?.permissions ?? []).map((p) => [p.key, p]));
   return {
-    has: (permission) => !access || byKey.has(permission),
+    has: (permission) => byKey.has(permission),
     scopeOf: (permission) => {
-      if (!access) {
-        return { all: true, teams: [] };
-      }
       const held = byKey.get(permission);
       return held ? { all: held.all, teams: held.all ? [] : held.teams } : null;
     },

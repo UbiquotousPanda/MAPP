@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
-import type { BulkLevel, BulkRequest } from './bulk-types';
+import type { BulkLevel, BulkRequest, SelectedRecord } from './bulk-types';
 
 export function useBulkFields(level: BulkLevel, enabled: boolean) {
   return useQuery({
@@ -51,8 +51,22 @@ export function useUndoBulk() {
   });
 }
 
+/** The selected records with the version of each that the person saw. */
+export function selectionOf(records: SelectedRecord[]) {
+  return {
+    recordIds: records.map((record) => record.id),
+    versions: Object.fromEntries(records.map((record) => [record.id, record.version])),
+  };
+}
+
 function bodyOf(request: BulkRequest | null) {
-  return { restartApproval: false, action: 'delete' as const, recordIds: [], ...request };
+  return {
+    restartApproval: false,
+    action: 'delete' as const,
+    recordIds: [],
+    versions: {},
+    ...request,
+  };
 }
 
 function useRefreshAfterChange() {

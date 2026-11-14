@@ -3,6 +3,7 @@ import { useCurrentUser } from '@/session/useSession';
 import type { components } from '@/api/generated/schema';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import { Tag } from '@/ui/Tag/Tag';
 import type { DateFormat } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
 import type { ApprovalPerson, ApprovalRound } from './api';
@@ -23,7 +24,6 @@ type WorkflowLevel = components['schemas']['ApprovalWorkflowLevel'];
 type ChainLevel = components['schemas']['ApprovalChainLevel'];
 
 export type ApprovalChainProps =
-  /** The chain of a round: each level with its state. */
   | { round: ApprovalRound }
   /** The levels of the chosen workflow while the activity was never submitted (no states). */
   | { upcomingLevels: WorkflowLevel[] };
@@ -33,7 +33,6 @@ interface ChainRow {
   label: string;
   approvers: ApprovalPerson[];
   state?: ChainState;
-  /** The level's rules and what happened to it, one line each, in secondary ink. */
   lines: string[];
   /** Each approver's own state on a level where all must approve ("Approved", "Waiting"). */
   approverState?: (person: ApprovalPerson) => string | undefined;
@@ -41,15 +40,6 @@ interface ChainRow {
   noApprover?: string;
 }
 
-/**
- * The approval chain (008 FR-024, 017 FR-033): one row per level, in order — the badge "L1", the
- * level's name, its approvers ("(you)" for the signed-in person, "(inactive)"), where they came
- * from (line manager, role), and its state as a status chip with what follows it ("Approved" by
- * Carlos Mendes on 12 Mar 2026, "Waiting", "Not needed — only when …", "Approved automatically —
- * …"). Under it: "1 of 3 approved · waiting for …" on a level where all must approve, the reminder
- * and escalation, the people left out and why, and "No approver" with its advice. Each state word
- * has one colour (design system §4.1).
- */
 export function ApprovalChain(props: ApprovalChainProps) {
   const user = useCurrentUser();
   const { dateFormat } = useFormatters();
@@ -67,8 +57,8 @@ export function ApprovalChain(props: ApprovalChainProps) {
     <ol role="list" className={styles.chain}>
       {rows.map((row) => (
         <li key={row.number} className={styles.level}>
-          <span className={styles.badge} aria-hidden="true">
-            {`L${row.number}`}
+          <span aria-hidden="true">
+            <Tag>{`L${row.number}`}</Tag>
           </span>
           <div className={styles.main}>
             <p className={styles.label}>
@@ -119,10 +109,6 @@ export function ApprovalChain(props: ApprovalChainProps) {
   );
 }
 
-/**
- * What follows an approver's name: their own state on a level where all must approve, and 014's
- * flag when they hold no role that approves (FR-028).
- */
 function approverDetail(row: ChainRow, person: ApprovalPerson): string | undefined {
   const parts = [
     row.approverState?.(person),
@@ -131,7 +117,6 @@ function approverDetail(row: ChainRow, person: ApprovalPerson): string | undefin
   return parts.length > 0 ? parts.join(' ') : undefined;
 }
 
-/** A level of a round with its state and the lines of 017 (absent fields read as before 017). */
 function roundRow(level: ChainLevel, round: ApprovalRound, dateFormat: DateFormat): ChainRow {
   const all = level.mode === 'all' && (level.requiredCount ?? 0) > 1;
   const approvedIds = new Set(

@@ -39,3 +39,9 @@ export const SORTABLE: readonly string[] = [
 export function statusWord(status: string): string {
   return STATUS_WORDS[status] ?? status;
 }
+
+export const COMMITTED = 'Committed by approved purchase requests';
+
+export const COMMITTED_TIP =
+  'The amount of the Approved and Closed purchase request lines. It counts only purchase requests, so it ' +
+  'can differ from Committed on Plan budget, Home and Financials.';

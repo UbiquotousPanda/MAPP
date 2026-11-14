@@ -1,5 +1,7 @@
 # Measure wave A — QA pass (issue #46)
 
+**2026-11-12 (D-425):** the `waveaqa` package is removed; its checks duplicated the owning packages' tests, and the regression tests of the fixed findings live there (`measure/revenue`, `measure/summary`, `projection`). The record below is history.
+
 Lane C, 2026-11-02. Every built wave A report on the demo data under the demo roles, through the API test
 harness (`backend/internal/measure/waveaqa`), so a role's scope, access and financial visibility are checked
 without a browser. A first browser pass ran on 3 Nov 2026 (below).

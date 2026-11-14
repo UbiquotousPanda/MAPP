@@ -1,13 +1,20 @@
 import { toCents } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
-import { ReportWidget } from '../shared';
+import { BarList } from '@/ui/BarList/BarList';
+import type { BarListItem } from '@/ui/BarList/BarList';
+import { PeriodSwitch, ReportWidget } from '../shared';
 import type { ReportAddress, ReportTableData } from '../shared';
 import { allWorkLink } from './allWorkLink';
 import type { PlanDetailsValue, PlanDetailsWidget } from './api';
-import { BarList } from './BarList';
-import type { Bar } from './BarList';
-import { countsInEachText, doesNotApplyText, RECORDS, tipOf } from './plan-details-text';
+import {
+  countsInEachText,
+  doesNotApplyText,
+  RECORDS,
+  shortTitle,
+  tipOf,
+} from './plan-details-text';
 import type { Level } from './plan-details-text';
+import styles from './PlanDetails.module.css';
 
 const SPECIAL = ['none', 'doesNotApply', 'noDates', 'outsideYear'];
 const CHART_VALUES = 10;
@@ -30,17 +37,21 @@ export function ValueWidget({ widget, level, address, attributeId, currency }: V
       ? allWorkLink(address, widget.filterParam, v.key, attributeId)
       : undefined;
   const note = noteOf(widget, level);
-  return (
+  const title = shortTitle(widget, level);
+  const periods = widget.key === 'startPeriodCount';
+  const card = (
     <ReportWidget
-      report="planDetails"
+      report="planData"
       widget={widget.key}
-      title={widget.title}
+      title={title}
       tip={tipOf(widget, level)}
       note={note === '' ? undefined : note}
-      chart={<BarList title={widget.title} bars={barsOf(widget, money, href)} />}
+      chart={<BarList label={widget.title} items={barsOf(widget, money, href)} />}
       table={tableOf(widget, RECORDS[level].many, currency, money)}
+      controls={periods ? <PeriodSwitch /> : undefined}
     />
   );
+  return periods ? <div className={styles.fullRow}>{card}</div> : card;
 }
 
 /** The ten largest values, Other, then Not filled in, Does not apply and the date values. */
@@ -48,15 +59,15 @@ function barsOf(
   widget: PlanDetailsWidget,
   money: Money,
   href: (v: PlanDetailsValue) => string | undefined,
-): Bar[] {
+): BarListItem[] {
   const cost = widget.measure === 'plannedCost';
-  const bar = (v: PlanDetailsValue): Bar => ({
+  const bar = (v: PlanDetailsValue): BarListItem => ({
     key: v.key,
     label: v.label,
     size: cost ? Number(toCents(v.plannedCost?.amount ?? '0')) : v.count,
-    text: cost ? money(v.plannedCost) : v.count.toLocaleString('en-GB'),
+    value: cost ? money(v.plannedCost) : v.count.toLocaleString('en-GB'),
     href: href(v),
-    muted: SPECIAL.includes(v.key),
+    colour: SPECIAL.includes(v.key) ? 'var(--chart-budget)' : undefined,
   });
   const regular = widget.values.filter((v) => !SPECIAL.includes(v.key));
   const drawn = widget.other ? regular.slice(0, CHART_VALUES) : regular;
@@ -85,7 +96,6 @@ function tableOf(
       cells: [v.label, v.count.toLocaleString('en-GB'), ...(cost ? [money(v.plannedCost)] : [])],
     })),
     total: [
-      'Total',
       widget.total.count.toLocaleString('en-GB'),
       ...(cost ? [money(widget.total.plannedCost)] : []),
     ],

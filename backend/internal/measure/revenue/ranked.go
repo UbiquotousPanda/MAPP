@@ -13,7 +13,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// RankedRevenue is the ranked list of entries sorted by actual or projected revenue.
+// RankedRevenue is the ranked list of entries sorted by goal, actual or projected revenue, or performance.
 func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Filter, q RankedQuery) (RevenueRanked, error) {
 	var out RevenueRanked
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -35,7 +35,7 @@ func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Fi
 	return out, err
 }
 
-// RankedFunnel is the ranked list sorted by the selected stage's actual or projected volume.
+// RankedFunnel is the ranked list sorted by the selected stage's goal, actual or projected volume, or performance.
 func (s *Service) RankedFunnel(ctx context.Context, a actor.Actor, f measure.Filter, q RankedQuery) (FunnelRanked, error) {
 	var out FunnelRanked
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -114,22 +114,46 @@ func (r *revenueRanking) Of(id string) revenueSums {
 	return s
 }
 
-func (*revenueRanking) Part(s revenueSums, share money.Percent) revenueSums {
+func (*revenueRanking) Part(s revenueSums, share ranking.Slice) revenueSums {
 	return revenueSums{figures: revenueTimes(s.figures, share), roiCredited: partOf(s.roiCredited, share), models: s.models}
 }
 func (*revenueRanking) Plus(a, b revenueSums) revenueSums { return addRevenueSums(a, b) }
 func (r *revenueRanking) Shown(s revenueSums) RevenueFigures {
-	f := withPerformance(withROI(s.figures, s.roiCredited), r.display)
+	f := withPerformance(withoutZeroCost(withROI(s.figures, s.roiCredited)), r.display)
 	f.Projection = singleStamp(s.models)
 	return f
 }
 
 func (*revenueRanking) Key(f RevenueFigures, sort string) (int64, bool) {
-	m := f.Projected
-	if sort == SortActualRevenue {
-		m = f.Actual
+	switch sort {
+	case SortPerformance:
+		return performanceKey(f.Performance)
+	case SortGoal:
+		return centsOf(f.Goal), f.Goal != nil
+	case SortActualRevenue:
+		return centsOf(f.Actual), f.Actual != nil
+	case SortActualCost:
+		return centsOf(f.ActualCost), f.ActualCost != nil
+	case SortROI:
+		return performanceKey(f.ROI)
 	}
-	return centsOf(m), m != nil
+	return centsOf(f.Projected), f.Projected != nil
+}
+
+// withoutZeroCost shows nothing paid as no cost data, "—" with its reason, as the league tables did.
+func withoutZeroCost(f RevenueFigures) RevenueFigures {
+	if f.ActualCost != nil && f.ActualCost.Amount.Sign() == 0 {
+		f.ActualCost, f.ActualCostReason = nil, ReasonNoActualCost
+	}
+	return f
+}
+
+// performanceKey ranks by the whole percent the entry shows, performance or ROI.
+func performanceKey(p *float64) (int64, bool) {
+	if p == nil {
+		return 0, false
+	}
+	return int64(*p), true
 }
 
 // funnelSums is an entry's figures with its previous-stage actual, which its conversion divides by.
@@ -162,7 +186,7 @@ func (r *funnelRanking) Of(id string) funnelSums {
 	return s
 }
 
-func (*funnelRanking) Part(s funnelSums, share money.Percent) funnelSums {
+func (*funnelRanking) Part(s funnelSums, share ranking.Slice) funnelSums {
 	return funnelSums{figures: funnelTimes(s.figures, share), previous: share.OfWhole(s.previous), models: s.models}
 }
 
@@ -178,9 +202,13 @@ func (*funnelRanking) Shown(s funnelSums) FunnelFigures {
 }
 
 func (*funnelRanking) Key(f FunnelFigures, sort string) (int64, bool) {
-	v := f.Projected
-	if sort == SortActual {
-		v = f.Actual
+	switch sort {
+	case SortPerformance:
+		return performanceKey(f.Performance)
+	case SortGoal:
+		return int64Of(f.Goal), f.Goal != nil
+	case SortActual:
+		return int64Of(f.Actual), f.Actual != nil
 	}
-	return int64Of(v), v != nil
+	return int64Of(f.Projected), f.Projected != nil
 }

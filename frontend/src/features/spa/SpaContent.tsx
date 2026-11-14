@@ -1,7 +1,7 @@
-import { useId } from 'react';
 import { useFormatters } from '@/format/useFormatters';
 import { LinkButton } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
+import { Select } from '@/ui/Select/Select';
 import type { SpaView } from './api';
 import type { TraceRequest } from './FigureButton';
 import type { SpaUrlState } from './schemas';
@@ -77,27 +77,19 @@ function ScopeBar({
   view: SpaView;
   onCampaign: (id: string | undefined) => void;
 }) {
-  const id = useId();
   const { dateTime } = useFormatters();
   const scope = view.scope.type === 'campaign' ? view.scope.id : '';
   return (
     <div className={styles.scopeBar}>
-      <label className={styles.picker} htmlFor={id}>
-        Scope
-        <select
-          id={id}
-          className={styles.select}
-          value={scope}
-          onChange={(event) => onCampaign(event.target.value || undefined)}
-        >
-          <option value="">{WHOLE_PLAN}</option>
-          {view.campaigns.map((campaign) => (
-            <option key={campaign.id} value={campaign.id}>
-              {campaign.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Select
+        label="Scope"
+        value={scope}
+        options={[
+          { value: '', label: WHOLE_PLAN },
+          ...view.campaigns.map((campaign) => ({ value: campaign.id, label: campaign.name })),
+        ]}
+        onChange={(value) => onCampaign(value || undefined)}
+      />
       <span className={styles.muted}>
         {view.financeNote ??
           (view.financeDataAsOf ? financeAsOf(dateTime(view.financeDataAsOf)) : FINANCE_NONE)}

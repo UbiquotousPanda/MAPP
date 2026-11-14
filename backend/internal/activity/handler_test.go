@@ -10,21 +10,16 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// The contract tests of the activity operations: the real API on the demo data, every request and answer
-// checked against backend/api/openapi.yaml by apitest. They check the parts of each answer the operation is
-// about; the rules themselves are proven by the service tests.
+// Contract tests check the parts of each answer the operation is about; the service tests prove the rules.
 
 const priyasEmail = "priya.raman@shell.com"
 
-// The not-found answers.
 const (
 	activityGoneBody   = `{"error":{"code":"not_found","message":"This activity no longer exists — someone may have deleted it.","fields":[]}}`
 	initiativeGoneBody = `{"error":{"code":"not_found","message":"This initiative no longer exists — someone may have deleted it.","fields":[]}}`
 	planGoneBody       = `{"error":{"code":"not_found","message":"This plan no longer exists — someone may have deleted it.","fields":[]}}`
 )
 
-// The new-activity form answers the context, choices and defaults of the initiative (FR-001); a gone
-// initiative answers not found.
 func TestNewActivityForm_Contract_FR001(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -42,8 +37,6 @@ func TestNewActivityForm_Contract_FR001(t *testing.T) {
 	assertAnswer(t, priya.Do(t, http.MethodGet, "/api/v1/initiatives/I-9999/activity-form", nil), http.StatusNotFound, initiativeGoneBody)
 }
 
-// Creating an activity answers 201 with the new activity, Created (FR-004); every field problem is listed
-// at once (FR-006, FR-009); a gone initiative answers not found.
 func TestCreateActivity_Contract_FR004(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -60,8 +53,7 @@ func TestCreateActivity_Contract_FR004(t *testing.T) {
 	var view activity.View
 	assertStatus(t, created, http.StatusCreated)
 	created.Decode(t, &view)
-	// A-1013 is the activity of the demo history's deleted initiative, in the recycle bin (011 T019); A-1011 and
-	// A-1012 are 016's GBP plan.
+	// A-1013 sits in the recycle bin with the demo history's deleted initiative; A-1011 and A-1012 are on the GBP plan.
 	if view.ID != "A-1014" || view.Status != activity.StatusCreated || view.PlannedCost.Format() != "25,000.00 USD" {
 		t.Errorf("created = %+v", view)
 	}
@@ -72,13 +64,12 @@ func TestCreateActivity_Contract_FR004(t *testing.T) {
 	assertAnswer(t, gone, http.StatusNotFound, initiativeGoneBody)
 }
 
-// The plan's activities are its plan-tree rows, ordered by start date, then name, without dates last
-// (FR-033, D-111); a gone plan answers not found.
+// Rows are ordered by start date, then name, without dates last.
 func TestListPlanActivities_Contract_FR033(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
-	server.GrantRole(t, priyasEmail, "globalPlanner", "all") // 014: every market's plans
+	server.GrantRole(t, priyasEmail, "globalPlanner", "all") // every market's plans
 
 	response := priya.Do(t, http.MethodGet, "/api/v1/plans/P-1002/activities", nil)
 
@@ -95,8 +86,7 @@ func TestListPlanActivities_Contract_FR033(t *testing.T) {
 	assertAnswer(t, priya.Do(t, http.MethodGet, "/api/v1/plans/P-9999/activities", nil), http.StatusNotFound, planGoneBody)
 }
 
-// An activity answers with its status, completeness and ready-to-submit check (FR-019 – FR-023): A-1001
-// "Launch film" has three needed fields empty; a gone activity answers not found.
+// A-1001 "Launch film" has three needed fields empty.
 func TestGetActivity_Contract_FR019(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -119,8 +109,7 @@ func TestGetActivity_Contract_FR019(t *testing.T) {
 	assertAnswer(t, priya.Do(t, http.MethodGet, "/api/v1/activities/A-9999", nil), http.StatusNotFound, activityGoneBody)
 }
 
-// The edit form has no defaults and leaves the activity's own name out of the names in use (FR-013,
-// FR-026); a gone activity answers not found.
+// The edit form leaves the activity's own name out of the names in use.
 func TestEditActivityForm_Contract_FR013(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -137,9 +126,7 @@ func TestEditActivityForm_Contract_FR013(t *testing.T) {
 	assertAnswer(t, priya.Do(t, http.MethodGet, "/api/v1/activities/A-9999/form", nil), http.StatusNotFound, activityGoneBody)
 }
 
-// Saving an edit answers the activity after the save (FR-026); a re-approval change on a Submitted
-// activity needs restartApproval (FR-027, D-106); a save from an out-of-date version is refused with
-// version_conflict.
+// A re-approval change on a Submitted activity needs restartApproval.
 func TestUpdateActivity_Contract_FR026(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -168,14 +155,13 @@ func TestUpdateActivity_Contract_FR026(t *testing.T) {
 	assertAnswer(t, priya.Do(t, http.MethodPatch, "/api/v1/activities/A-9999", form), http.StatusNotFound, activityGoneBody)
 }
 
-// Deleting an activity answers its recycle-bin entry, and Undo brings it back exactly (FR-031).
 func TestDeleteActivity_ThenUndo_Contract_FR031(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 	before := priya.Do(t, http.MethodGet, "/api/v1/activities/A-1002", nil)
 
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/activities/A-1002", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/activities/A-1002")
 	gone := priya.Do(t, http.MethodGet, "/api/v1/activities/A-1002", nil)
 
 	var result history.DeleteResult
@@ -190,10 +176,9 @@ func TestDeleteActivity_ThenUndo_Contract_FR031(t *testing.T) {
 	undone := priya.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+entry.ID+"/undo", nil)
 	assertStatus(t, undone, http.StatusOK)
 	assertAnswer(t, priya.Do(t, http.MethodGet, "/api/v1/activities/A-1002", nil), http.StatusOK, string(before.Body))
-	assertAnswer(t, priya.Do(t, http.MethodDelete, "/api/v1/activities/A-9999", nil), http.StatusNotFound, activityGoneBody)
+	assertAnswer(t, priya.DeleteSeen(t, "/api/v1/activities/A-9999"), http.StatusNotFound, activityGoneBody)
 }
 
-// assertStatus checks the status of an answer.
 func assertStatus(t *testing.T, r *apitest.Response, status int) {
 	t.Helper()
 	if r.Status != status {
@@ -201,10 +186,25 @@ func assertStatus(t *testing.T, r *apitest.Response, status int) {
 	}
 }
 
-// assertAnswer checks the status and the exact body of an answer.
 func assertAnswer(t *testing.T, r *apitest.Response, status int, body string) {
 	t.Helper()
 	if r.Status != status || string(r.Body) != body {
 		t.Errorf("answer = %d %s\nwant     %d %s", r.Status, r.Body, status, body)
+	}
+}
+
+func TestDeleteActivity_NeedsTheVersionSeenAndRefusesAStaleOne_Contract_SMM10(t *testing.T) {
+	t.Parallel()
+	priya := apitest.New(t).SignIn(t, priyasEmail)
+
+	missing := priya.Do(t, http.MethodDelete, "/api/v1/activities/A-1002", nil, apitest.SkipRequestValidation())
+	stale := priya.Do(t, http.MethodDelete, "/api/v1/activities/A-1002?version=99", nil)
+	still := priya.Do(t, http.MethodGet, "/api/v1/activities/A-1002", nil)
+
+	var conflict struct{ Error struct{ Code string } }
+	stale.Decode(t, &conflict)
+	if missing.Status != http.StatusBadRequest || stale.Status != http.StatusConflict ||
+		conflict.Error.Code != "version_conflict" || still.Status != http.StatusOK {
+		t.Errorf("without version %d, stale %d %s, then the activity %d", missing.Status, stale.Status, stale.Body, still.Status)
 	}
 }

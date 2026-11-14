@@ -89,6 +89,9 @@ func TestAdapter_ActivityDeletingKeepsRound_008P3(t *testing.T) {
 
 	var after approval.Round
 	err := db.Write(t.Context(), func(ctx context.Context) error {
+		if err := repo.PutWorkflow(ctx, approval.Workflow{ID: "WF-1001", Name: "Lubricants EU approval"}); err != nil {
+			return err
+		}
 		if err := repo.PutRound(ctx, open); err != nil {
 			return err
 		}

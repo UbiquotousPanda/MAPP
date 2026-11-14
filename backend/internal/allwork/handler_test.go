@@ -37,6 +37,9 @@ func TestGetAllWork_Contract(t *testing.T) {
 	levels := map[allwork.Level]int{}
 	for _, row := range r.Rows {
 		levels[row.Level]++
+		if row.Level != allwork.LevelUnassigned && row.Version < 1 {
+			t.Errorf("row %s has no version, so a bulk action cannot say which one the person saw", row.RecordID)
+		}
 		if row.Level == allwork.LevelPlan {
 			plans = append(plans, row.Name)
 		}
@@ -88,7 +91,7 @@ func TestLocate_Contract(t *testing.T) {
 	priya := server.SignIn(t, priyasEmail)
 
 	found := priya.Do(t, http.MethodGet, "/api/v1/all-work/records/L-1002", nil)
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/campaigns/C-1002", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/campaigns/C-1002")
 	inBin := priya.Do(t, http.MethodGet, "/api/v1/all-work/records/A-1005", nil) // Fleet roadshow, under Rimula fleet
 	unknown := priya.Do(t, http.MethodGet, "/api/v1/all-work/records/I-9999", nil)
 
@@ -182,7 +185,7 @@ func TestExport_XlsxAndCsvContentTypeAndDisposition_FR034(t *testing.T) {
 	if csv.Status != http.StatusOK || csv.Header.Get("Content-Type") != "text/csv" ||
 		!strings.Contains(csv.Header.Get("Content-Disposition"), `filename="SP&A One All work - Budget & cost - 2026 - 12 Mar 2026.csv"`) ||
 		!strings.HasPrefix(body, "\xEF\xBB\xBFView,Budget & cost\nYear,2026\nFilters,None\n") ||
-		!strings.Contains(body, "Exported by,Priya Raman\n") || strings.Contains(body, "Unassigned planned cost (Sys_Gen_Balance)") ||
+		!strings.Contains(body, "Exported by,Priya Raman\n") || strings.Contains(body, "Unassigned planned cost") ||
 		!strings.Contains(body, "Total · 10 activities") {
 		t.Errorf("csv = %d %v\n%s", csv.Status, csv.Header, body)
 	}

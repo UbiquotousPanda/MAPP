@@ -9,13 +9,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Paging of every tab.
-const (
-	DefaultPageSize = 20
-	MinPageSize     = 5
-	MaxPageSize     = 500
-	descending      = "-"
-)
+const descending = "-"
 
 const (
 	sortLineItem        = "lineItem"

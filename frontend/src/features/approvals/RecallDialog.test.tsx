@@ -37,7 +37,7 @@ describe('RecallDialog (feature 008, US5)', () => {
     expect(dialog).toHaveTextContent(
       "It goes back to Created and leaves the approvers' lists. You can submit it again later.",
     );
-    expect(within(dialog).getByRole('textbox', { name: 'Reason (optional)' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('textbox', { name: 'Reason' })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus();
     expect(within(dialog).getByRole('button', { name: 'Recall submission' })).toBeInTheDocument();
   });
@@ -51,10 +51,7 @@ describe('RecallDialog (feature 008, US5)', () => {
       ),
     ]);
 
-    await user.type(
-      screen.getByRole('textbox', { name: 'Reason (optional)' }),
-      '  Budget moves to Q3  ',
-    );
+    await user.type(screen.getByRole('textbox', { name: 'Reason' }), '  Budget moves to Q3  ');
     await user.click(screen.getByRole('button', { name: 'Recall submission' }));
 
     expect(await screen.findByText("Submission of 'Launch film' recalled")).toBeInTheDocument();
@@ -138,13 +135,13 @@ describe('RecallDialog (feature 008, US5)', () => {
       ),
     ]);
 
-    await user.type(screen.getByRole('textbox', { name: 'Reason (optional)' }), 'Too long');
+    await user.type(screen.getByRole('textbox', { name: 'Reason' }), 'Too long');
     await user.click(screen.getByRole('button', { name: 'Recall submission' }));
 
     await waitFor(() =>
-      expect(
-        screen.getByRole('textbox', { name: 'Reason (optional)' }),
-      ).toHaveAccessibleDescription(expect.stringContaining('Use 2,000 characters or fewer.')),
+      expect(screen.getByRole('textbox', { name: 'Reason' })).toHaveAccessibleDescription(
+        expect.stringContaining('Use 2,000 characters or fewer.'),
+      ),
     );
     expect(onClose).not.toHaveBeenCalled();
   });

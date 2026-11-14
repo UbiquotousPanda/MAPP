@@ -20,8 +20,9 @@ type fakeStore struct {
 
 func newFakeStore(db *fake.DB) fakeStore {
 	return fakeStore{
-		workflows:     fake.TableOf(db, "approval_workflows", func(w Workflow) string { return w.ID }),
-		rounds:        fake.TableOf(db, "approval_rounds", func(r Round) string { return r.ID }),
+		workflows: fake.TableOf(db, "approval_workflows", func(w Workflow) string { return w.ID }),
+		rounds: fake.TableOf(db, "approval_rounds", func(r Round) string { return r.ID }).
+			References("approval_rounds_workflow_fk", "approval_workflows", func(r Round) string { return r.WorkflowID }),
 		actions:       fake.TableOf(db, "approval_actions", func(a Action) string { return a.ID }),
 		notifications: fake.TableOf(db, "notifications", func(n Notification) string { return n.ID }),
 		delegations:   fake.TableOf(db, "approval_delegations", func(dl Delegation) string { return dl.ID }),

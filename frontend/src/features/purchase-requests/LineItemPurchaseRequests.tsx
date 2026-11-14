@@ -4,6 +4,8 @@ import { LinkButton } from '@/ui/Button/Button';
 import { purchaseRequestHref } from '@/ui/record-links';
 import { formatMoneyText } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { useLineItemPurchaseRequests } from './api';
 import type { LineItemPurchaseRequests as Section, Money } from './api';
 import { FIELD_LABELS, NEW_PURCHASE_REQUEST } from './purchase-request-text';
@@ -93,14 +95,14 @@ function Figures({ requested, available }: { requested: Money; available: Money 
 function Rows({ section }: { section: Section }) {
   const { money, date } = useFormatters();
   return (
-    <div className={styles.scroll}>
-      <table className={styles.table}>
+    <ScrollBox label="Purchase requests">
+      <table className={dataTable.table}>
         <caption className="visually-hidden">{`Purchase requests on ${section.lineItemId}`}</caption>
         <thead>
           <tr>
             <th scope="col">Purchase request</th>
             <th scope="col">{FIELD_LABELS.status}</th>
-            <th scope="col" className={styles.numeric}>
+            <th scope="col" className={dataTable.numeric}>
               {FIELD_LABELS.lineAmount}
             </th>
             <th scope="col">{FIELD_LABELS.sentOn}</th>
@@ -118,7 +120,7 @@ function Rows({ section }: { section: Section }) {
               <td>
                 <PurchaseRequestStatusChip status={row.status} changePending={row.changePending} />
               </td>
-              <td className={styles.numeric}>
+              <td className={dataTable.numeric}>
                 {money(row.amount)}
                 {row.amount.currency !== row.amountInLineItemCurrency.currency && (
                   <span className={styles.secondary}>
@@ -133,6 +135,6 @@ function Rows({ section }: { section: Section }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollBox>
   );
 }

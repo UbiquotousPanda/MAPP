@@ -8,6 +8,7 @@ import { useToast } from '@/ui/Toast/useToast';
 import { useCanChange } from '@/ui/useCanChange';
 import { Detail, DetailsList } from '@/features/line-items';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import { useDataSourcesArea, useDeleteAlias, useDeleteIntegrationId } from './api';
 import type { DataSourcesArea as Area, ExternalNameAlias, SourceOfFacts } from './api';
 import { KeyDialog } from './KeyDialog';
@@ -123,64 +124,67 @@ function SourceRows(props: { activityId: string; sources: SourceOfFacts[]; canLi
   const deleteKey = useDeleteIntegrationId(props.activityId);
   const [removing, setRemoving] = useState<SourceOfFacts | null>(null);
   return (
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          <th scope="col">Source</th>
-          <th scope="col">Integration ID</th>
-          <th scope="col">Facts</th>
-          <th scope="col">Last fact</th>
-          {props.canLink && (
-            <th scope="col">
-              <span className="visually-hidden">Actions</span>
-            </th>
-          )}
-        </tr>
-      </thead>
-      <tbody>
-        {props.sources.map((source) => (
-          <tr key={source.sourceId}>
-            <td>{source.sourceName || source.sourceId}</td>
-            <td>{source.integrationId || '—'}</td>
-            <td className={styles.numeric}>{source.factCount}</td>
-            <td>{source.lastFactDate ? date(source.lastFactDate) : '—'}</td>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
+        <thead>
+          <tr>
+            <th scope="col">Source</th>
+            <th scope="col">Integration ID</th>
+            <th scope="col">Facts</th>
+            <th scope="col">Last fact</th>
             {props.canLink && (
-              <td>
-                {source.integrationId && (
-                  <Button variant="tertiary" onClick={() => setRemoving(source)}>
-                    Remove ID
-                  </Button>
-                )}
-              </td>
+              <th scope="col">
+                <span className="visually-hidden">Actions</span>
+              </th>
             )}
           </tr>
-        ))}
-        {removing && (
-          <ConfirmDialog
-            open
-            onOpenChange={(open) => {
-              if (!open) setRemoving(null);
-            }}
-            title="Remove this integration ID?"
-            confirmLabel="Remove ID"
-            tone="danger"
-            busy={deleteKey.isPending}
-            onConfirm={() => {
-              deleteKey.mutate(removing.sourceId, {
-                onSuccess: () => {
-                  show({
-                    message: 'Integration ID removed — that source’s rows will stop matching here',
-                  });
-                  setRemoving(null);
-                },
-              });
-            }}
-          >
-            Rows from {removing.sourceName || removing.sourceId} carrying ‘{removing.integrationId}’
-            will stop matching this activity.
-          </ConfirmDialog>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {props.sources.map((source) => (
+            <tr key={source.sourceId}>
+              <td>{source.sourceName || source.sourceId}</td>
+              <td>{source.integrationId || '—'}</td>
+              <td className={dataTable.numeric}>{source.factCount}</td>
+              <td>{source.lastFactDate ? date(source.lastFactDate) : '—'}</td>
+              {props.canLink && (
+                <td>
+                  {source.integrationId && (
+                    <Button variant="tertiary" onClick={() => setRemoving(source)}>
+                      Remove ID
+                    </Button>
+                  )}
+                </td>
+              )}
+            </tr>
+          ))}
+          {removing && (
+            <ConfirmDialog
+              open
+              onOpenChange={(open) => {
+                if (!open) setRemoving(null);
+              }}
+              title="Remove this integration ID?"
+              confirmLabel="Remove ID"
+              tone="danger"
+              busy={deleteKey.isPending}
+              onConfirm={() => {
+                deleteKey.mutate(removing.sourceId, {
+                  onSuccess: () => {
+                    show({
+                      message:
+                        'Integration ID removed — that source’s rows will stop matching here',
+                    });
+                    setRemoving(null);
+                  },
+                });
+              }}
+            >
+              Rows from {removing.sourceName || removing.sourceId} carrying ‘
+              {removing.integrationId}’ will stop matching this activity.
+            </ConfirmDialog>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }

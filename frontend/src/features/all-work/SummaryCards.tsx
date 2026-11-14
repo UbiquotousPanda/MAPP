@@ -1,5 +1,6 @@
 import { useFieldHelp } from '@/features/settings';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
@@ -11,29 +12,25 @@ export interface SummaryCardsProps {
   summary: AllWorkSummary | null;
 }
 
-/**
- * The six summary cards of All work, which follow every filter and search: counts, and money in
- * compact form with the full value on hover and focus.
- */
 export function SummaryCards({ summary }: SummaryCardsProps) {
   const { money, moneyCompact } = useFormatters();
   const { help } = useFieldHelp();
 
   if (!summary) {
     return (
-      <section className={styles.cards} aria-label="Summary">
+      <StatStrip label="Summary">
         {[0, 1, 2, 3, 4, 5].map((card) => (
           <div key={card} className={styles.skeleton}>
             <Skeleton width="60%" />
             <Skeleton height="24px" width="40%" />
           </div>
         ))}
-      </section>
+      </StatStrip>
     );
   }
 
   return (
-    <section className={styles.cards} aria-label="Summary">
+    <StatStrip label="Summary">
       <SummaryCard
         label="Campaigns"
         value={formatWhole(summary.campaigns)}
@@ -74,6 +71,6 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
           )
         }
       />
-    </section>
+    </StatStrip>
   );
 }

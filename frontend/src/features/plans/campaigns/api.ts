@@ -1,9 +1,4 @@
-/**
- * What feature 005 asks the API (plan "Data and refresh"): a plan's campaigns with their
- * initiatives, one campaign, one initiative, and every change to them. Every change waits for
- * refreshPlanning before it is done, so rows, panels, the plan's summary cards and the totals row
- * show the new values together, without a reload (FR-012, FR-015).
- */
+// A change waits for refreshPlanning, so rows, panels, cards and totals change together.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
@@ -23,7 +18,6 @@ export type Destination = components['schemas']['Destination'];
 export type DestinationList = components['schemas']['DestinationList'];
 export type MoveConsequences = components['schemas']['MoveConsequences'];
 
-/** What a destination list is for (FR-023, FR-026). */
 export type Purpose = 'move' | 'copy';
 
 export const campaignKeys = {
@@ -37,15 +31,10 @@ export const campaignKeys = {
     'destinations',
     purpose,
   ],
-  /** Feature 004's key of the plan page (GET /api/v1/plans/{planId}). */
   plan: (planId: string): QueryKey => ['plan', planId],
 };
 
-/**
- * Everything a change to a campaign or initiative can show in: plan lists and the campaigns list
- * (['plans']), the plan page and its summary cards (['plan']), the panels, the activity rows and
- * pages below them (feature 006), the recycle bin and the activity log. Undo refreshes the same.
- */
+// Everything a change to a campaign or initiative can show in; Undo refreshes the same.
 export const PLANNING_KEYS: QueryKey[] = [
   ['plans'],
   ['plan'],
@@ -57,12 +46,10 @@ export const PLANNING_KEYS: QueryKey[] = [
   ['activity-log'],
 ];
 
-/** Asks for everything a change can show in again; a change waits for it before it is done. */
 export async function refreshPlanning(queryClient: QueryClient): Promise<void> {
   await Promise.all(PLANNING_KEYS.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
 }
 
-/** The campaigns of a plan with their initiatives, in the API's order, and the plan's totals. */
 export function usePlanCampaigns(planId: string) {
   return useQuery({
     queryKey: campaignKeys.planCampaigns(planId),
@@ -71,7 +58,6 @@ export function usePlanCampaigns(planId: string) {
   });
 }
 
-/** One campaign with its initiatives and roll-ups (its details panel). */
 export function useCampaign(campaignId: string) {
   return useQuery({
     queryKey: campaignKeys.campaign(campaignId),
@@ -79,7 +65,6 @@ export function useCampaign(campaignId: string) {
   });
 }
 
-/** One initiative with its roll-ups. */
 export function useInitiative(initiativeId: string) {
   return useQuery({
     queryKey: campaignKeys.initiative(initiativeId),
@@ -87,10 +72,7 @@ export function useInitiative(initiativeId: string) {
   });
 }
 
-/**
- * The plan (feature 004's GET /api/v1/plans/{planId}, same key as its plan page): the forms need its
- * business unit, which decides the Shell attributes shown.
- */
+// The plan page's key: the forms need the plan's business unit, which decides the attributes shown.
 export function usePlan(planId: string) {
   return useQuery({
     queryKey: campaignKeys.plan(planId),
@@ -98,10 +80,7 @@ export function usePlan(planId: string) {
   });
 }
 
-/**
- * Asks for a campaign or initiative again, never from the cache: after a conflict the edit form
- * takes the version that includes the other person's change.
- */
+// Never cached: after a conflict the form takes the version with the other person's change.
 export function fetchLatestRecord(
   queryClient: QueryClient,
   level: 'campaign' | 'initiative',
@@ -143,10 +122,8 @@ export function useCreateInitiative(campaignId: string) {
   });
 }
 
-/** What a save of an edit form sends: the whole form and the version it started from (FR-018). */
 export type RecordUpdate = CampaignUpdate & InitiativeUpdate;
 
-/** Saves a campaign's or an initiative's edit form. */
 export function useUpdateRecord(level: 'campaign' | 'initiative', id: string) {
   const refresh = useRefresh();
   return useMutation({
@@ -168,36 +145,31 @@ export function useUpdateRecord(level: 'campaign' | 'initiative', id: string) {
   });
 }
 
-/** What a delete names: the level and the record's id. */
 export interface DeleteTarget {
   level: 'campaign' | 'initiative';
   id: string;
+  version: number;
 }
 
-/**
- * Moves a campaign or initiative, with everything below it, to the recycle bin (FR-028). The
- * caller refreshes (refreshPlanning) once its panel has closed, so a panel never shows its own
- * record as gone.
- */
+// The caller refreshes once its panel has closed, so a panel never shows its own record as gone.
 export function useDeleteRecord() {
   return useMutation({
-    mutationFn: ({ level, id }: DeleteTarget) =>
+    mutationFn: ({ level, id, version }: DeleteTarget) =>
       level === 'campaign'
         ? call(
-            api.DELETE('/api/v1/campaigns/{campaignId}', { params: { path: { campaignId: id } } }),
+            api.DELETE('/api/v1/campaigns/{campaignId}', {
+              params: { path: { campaignId: id }, query: { version } },
+            }),
           )
         : call(
             api.DELETE('/api/v1/initiatives/{initiativeId}', {
-              params: { path: { initiativeId: id } },
+              params: { path: { initiativeId: id }, query: { version } },
             }),
           ),
   });
 }
 
-/**
- * Where a campaign or initiative can be moved or copied to (FR-023, FR-026), current first for
- * copies. Never from an earlier opening of the dialog: what is available changes with every move.
- */
+// Never from an earlier opening of the dialog: what is available changes with every move.
 export function useDestinations(level: 'campaign' | 'initiative', id: string, purpose: Purpose) {
   return useQuery({
     queryKey: campaignKeys.destinations(level, id, purpose),
@@ -218,17 +190,12 @@ export function useDestinations(level: 'campaign' | 'initiative', id: string, pu
   });
 }
 
-/** What a move or copy names: the record, and the plan (campaign) or campaign (initiative) to go to. */
 export interface DestinationTarget {
   level: 'campaign' | 'initiative';
   id: string;
   destinationId: string;
 }
 
-/**
- * Moves a campaign to another plan of its year, or an initiative to another campaign of its plan,
- * with everything below it (FR-025). Sends the version the row or panel showed.
- */
 export function useMoveRecord() {
   const refresh = useRefresh();
   return useMutation({
@@ -255,7 +222,6 @@ export function useMoveRecord() {
   });
 }
 
-/** Copies a campaign or initiative with everything below it, under a new name (FR-027). */
 export function useCopyRecord() {
   const refresh = useRefresh();
   return useMutation({

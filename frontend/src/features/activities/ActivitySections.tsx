@@ -2,10 +2,11 @@ import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { ShellAttributeValues } from '@/ui/ShellAttributeFields/ShellAttributeValues';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
-import { Detail, DetailsList, MoneyPair, moneyText } from '@/features/line-items';
+import { Detail, DetailsList, ConvertedAmount, moneyText } from '@/features/line-items';
 import { formatWhole } from '@/format/decimal';
 import { localDate } from '@/format/intl';
 import { recordHref } from '@/ui/record-links';
@@ -61,7 +62,11 @@ export function ActivityDetails({ activity }: { activity: Activity }) {
           </Detail>
           <Detail label="Planned cost" helpKey="activity.plannedCost" numeric>
             {activity.plannedCost ? (
-              <MoneyPair primary={activity.plannedCost} secondary={activity.display.plannedCost} />
+              <ConvertedAmount
+                primary={activity.plannedCost}
+                secondary={activity.display.plannedCost}
+                inline
+              />
             ) : null}
           </Detail>
           <Detail label="Approval workflow" helpKey="activity.approvalWorkflow">
@@ -107,10 +112,13 @@ export function ActivityAttributes({
           businessUnit={businessUnits}
           planLink={recordHref('plan', activity.plan.id)}
           sectionHeading="h2"
+          sectionRank="card"
         />
       ) : (
         <>
-          <h2 className={styles.heading}>Shell attributes</h2>
+          <SectionHeading level={2} rank="card">
+            Shell attributes
+          </SectionHeading>
           {error ? <ErrorState error={error} onRetry={onRetry} /> : <Skeleton lines={4} />}
         </>
       )}

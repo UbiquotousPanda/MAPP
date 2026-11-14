@@ -42,3 +42,47 @@
 .action {
   margin-top: var(--space-5);
 }
+
+.compact {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-3);
+  padding: var(--space-2) 0;
+  text-align: left;
+}
+
+.compact > :not(.icon, .action) {
+  grid-column: 2;
+}
+
+.compact:has(.text) .icon,
+.compact:has(.text) .action {
+  grid-row: 1 / span 2;
+}
+
+.compact .action {
+  grid-column: 3;
+}
+
+.compact .icon {
+  width: var(--space-8);
+  height: var(--space-8);
+  margin: 0;
+}
+
+.compact .icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.compact .title {
+  font-family: var(--font);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-sm);
+}
+
+.compact .action {
+  margin: 0;
+}

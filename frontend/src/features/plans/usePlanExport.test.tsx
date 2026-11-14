@@ -9,15 +9,6 @@ import type { Answer } from '@/testing/replies';
 import { usePlanExport } from './usePlanExport';
 
 const NAME = 'SP&A One – FY2026 Lubricants Europe – 28 Oct 2026.pptx';
-const VIEWER = testUser({
-  access: {
-    roles: [],
-    administrators: [],
-    noSelfApproval: true,
-    permissions: [{ key: 'plans.view', all: true, teams: [] }],
-  },
-});
-
 let saved: string[];
 
 beforeEach(() => {
@@ -33,16 +24,18 @@ beforeEach(() => {
 
 afterEach(() => vi.restoreAllMocks());
 
-function PlanMenu() {
-  return <ActionsMenu label="More actions" trigger="more" items={usePlanExport('P-1001')} />;
+function PlanMenu({ canExport }: { canExport: boolean }) {
+  const items = usePlanExport('P-1001', canExport);
+  return <ActionsMenu label="More actions" trigger="more" items={items} />;
 }
 
-function renderMenu(answer: Answer<'GET /api/v1/plans/{planId}/export'>, user = testUser()) {
+function renderMenu(answer: Answer<'GET /api/v1/plans/{planId}/export'>, canExport = true) {
+  const user = testUser();
   const api = mockApi([
     reply('GET /api/v1/plans/{planId}/export', answer),
     reply('GET /api/v1/me', { body: user }),
   ]);
-  return { ...renderWithProviders(<PlanMenu />, { user }), api };
+  return { ...renderWithProviders(<PlanMenu canExport={canExport} />, { user }), api };
 }
 
 describe('usePlanExport (036 US2, FR-023)', () => {
@@ -76,8 +69,8 @@ describe('usePlanExport (036 US2, FR-023)', () => {
     ).toBeInTheDocument();
   });
 
-  it('offers nothing to a person without the export permission (US2 scenario 6)', async () => {
-    const { user } = renderMenu({ status: 403 }, VIEWER);
+  it('offers nothing where the plan does not allow exporting (US2 scenario 6)', async () => {
+    const { user } = renderMenu({ status: 403 }, false);
 
     await user.click(screen.getByRole('button', { name: 'More' }));
 

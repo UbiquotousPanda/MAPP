@@ -11,8 +11,6 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-const keptReason = "It could not be deleted when the import was undone"
-
 // Get returns an import with its records and what Undo import would do (FR-035).
 func (s *Service) Get(ctx context.Context, _ actor.Actor, id string) (Detail, error) {
 	var detail Detail
@@ -47,7 +45,7 @@ func (s *Service) Undo(ctx context.Context, a actor.Actor, id string) (Detail, e
 			return err
 		}
 		at := s.now()
-		if err = s.repo.MarkUndone(ctx, id, a, at); err != nil {
+		if err = s.repo.MarkUndone(ctx, id, Undone{By: a, At: at, Kept: kept}); err != nil {
 			return err
 		}
 		imp.UndoneAt, imp.UndoneBy = &at, &a
@@ -128,20 +126,17 @@ func (s *Service) detail(ctx context.Context, imp Import, kept []Kept) (Detail, 
 	case imp.UndoneAt == nil:
 		d.Undo, d.Kept = &undo, []Kept{}
 	case d.Kept == nil:
-		d.Kept = s.stillThere(d.Records, imp)
+		d.Kept = keptAtUndo(imp)
 	}
 	return d, nil
 }
 
-func (s *Service) stillThere(records []RecordRef, imp Import) []Kept {
-	created := map[string]bool{}
-	for _, r := range imp.Records {
-		created[r.RecordID] = r.Action == ActionCreated
-	}
+// keptAtUndo is what Undo could not delete, as recorded then: a record restored from the bin later is not kept.
+func keptAtUndo(imp Import) []Kept {
 	kept := []Kept{}
-	for i, r := range records {
-		if r.Exists && r.Action == ActionCreated && !created[imp.Records[i].ParentID] {
-			kept = append(kept, Kept{ID: r.ID, Level: r.Level, Name: r.Name, Reason: keptReason})
+	for _, r := range imp.Records {
+		if r.KeptReason != "" {
+			kept = append(kept, Kept{ID: r.RecordID, Level: r.Level, Name: r.Name, Reason: r.KeptReason})
 		}
 	}
 	return kept

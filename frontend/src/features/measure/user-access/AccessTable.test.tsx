@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { AccessTable } from './AccessTable';
 import { userAccessReport } from './user-access-fixture';
 
@@ -11,10 +12,10 @@ function renderTable(total = 3) {
     <AccessTable
       rows={userAccessReport().rows}
       total={total}
-      table={{ q: '', teams: [], status: 'active', sort: 'name', page: 1, pageSize: 20 }}
+      table={{ q: '', teams: [], status: 'active', sort: 'name', page: 1, pageSize: 50 }}
       onChange={onChange}
     />,
-    { route: '/reports/user-access', user: testUser(), path: '/reports/user-access' },
+    { route: '/reports/plan-data?tab=people', user: testUser(), path: '/reports/plan-data' },
   );
   return { onChange, ...rendered };
 }
@@ -33,13 +34,13 @@ describe('AccessTable (045 FR-006)', () => {
     expect(onChange).toHaveBeenLastCalledWith({ sort: '-lastSignedIn' });
   });
 
-  it('pages 5 to 500 rows', async () => {
-    const { user, onChange } = renderTable(45);
+  it('pages 25 to 200 rows, opening at 50 (D-432)', async () => {
+    const { user, onChange } = renderTable(120);
 
-    expect(screen.getByText('1–20 of 45')).toBeInTheDocument();
-    await user.selectOptions(screen.getByLabelText('Per page'), '50');
-    expect(onChange).toHaveBeenLastCalledWith({ pageSize: 50 });
-    await user.click(screen.getByRole('button', { name: 'Next' }));
+    expect(screen.getByText('1–50 of 120')).toBeInTheDocument();
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '200');
+    expect(onChange).toHaveBeenLastCalledWith({ pageSize: 200 });
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
     expect(onChange).toHaveBeenLastCalledWith({ page: 2 });
   });
 });

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import type { PageSize } from '@/ui/Pager/page-sizes';
 
 export const STATUSES = [
   'created',
@@ -29,8 +31,8 @@ export const COLUMN_KEYS = [
 ] as const;
 export type ColumnKey = (typeof COLUMN_KEYS)[number];
 
-export const PAGE_SIZES = [5, 10, 25, 50, 100] as const;
-export type PageSize = (typeof PAGE_SIZES)[number];
+export { PAGE_SIZES };
+export type { PageSize };
 
 export interface RequestsParams {
   vendors: string[];
@@ -52,7 +54,7 @@ export const DEFAULT_PARAMS: RequestsParams = {
   sort: 'name',
   order: 'asc',
   page: 1,
-  pageSize: 25,
+  pageSize: DEFAULT_PAGE_SIZE,
   columns: [...COLUMN_KEYS],
 };
 

@@ -1,8 +1,12 @@
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { asApiError } from '@/api/errors';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
 import { formatMoneyText } from '@/format/decimal';
+import dataTable from '@/ui/Table/Table.module.css';
+import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { useClosePreview, useClosePurchaseRequest } from './api';
 import type { PurchaseRequest, PurchaseRequestClosePreview } from './api';
 import {
@@ -14,7 +18,6 @@ import {
   closeTitle,
   releasedText,
 } from './page-text';
-import { PreviewDialog } from './PreviewDialog';
 import styles from './PurchaseRequestPage.module.css';
 
 export interface ClosePurchaseRequestDialogProps {
@@ -47,15 +50,15 @@ export function ClosePurchaseRequestDialog({
   }
 
   return (
-    <PreviewDialog
+    <ConfirmDialog
       open={open}
       onOpenChange={onOpenChange}
       title={closeTitle(purchaseRequest.name)}
-      confirm={
-        ready
-          ? { label: CLOSE_PR, onConfirm: () => confirm(ready.version), busy: close.isPending }
-          : undefined
-      }
+      size="lg"
+      cancelLabel="Cancel"
+      {...(ready
+        ? { confirmLabel: CLOSE_PR, onConfirm: () => confirm(ready.version), busy: close.isPending }
+        : { acknowledgeOnly: true })}
     >
       {preview.data ? (
         preview.data.available ? (
@@ -68,12 +71,8 @@ export function ClosePurchaseRequestDialog({
       ) : (
         <Skeleton lines={4} />
       )}
-      {close.error && (
-        <p role="alert" className={styles.problem}>
-          {asApiError(close.error).message}
-        </p>
-      )}
-    </PreviewDialog>
+      {close.error && <InlineError>{asApiError(close.error).message}</InlineError>}
+    </ConfirmDialog>
   );
 }
 
@@ -81,21 +80,21 @@ function ClosePreviewLines({ preview }: { preview: PurchaseRequestClosePreview }
   return (
     <div className={styles.dialogText}>
       <p>{CLOSE_INTRO}</p>
-      <div className={styles.scroll}>
-        <table className={styles.table}>
+      <ScrollBox label="Lines">
+        <table className={dataTable.table}>
           <thead>
             <tr>
               <th scope="col">{CLOSE_COLUMNS.line}</th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 {CLOSE_COLUMNS.amount}
               </th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 {CLOSE_COLUMNS.invoiced}
               </th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 {CLOSE_COLUMNS.closed}
               </th>
-              <th scope="col" className={styles.number}>
+              <th scope="col" className={dataTable.numeric}>
                 {CLOSE_COLUMNS.released}
               </th>
             </tr>
@@ -104,15 +103,15 @@ function ClosePreviewLines({ preview }: { preview: PurchaseRequestClosePreview }
             {preview.lines.map((line) => (
               <tr key={line.lineId}>
                 <th scope="row">{`${line.lineItemId} · ${line.hxKey}`}</th>
-                <td className={styles.number}>{formatMoneyText(line.amount)}</td>
-                <td className={styles.number}>{formatMoneyText(line.invoiced)}</td>
-                <td className={styles.number}>{formatMoneyText(line.closedAmount)}</td>
-                <td className={styles.number}>{formatMoneyText(line.released)}</td>
+                <td className={dataTable.numeric}>{formatMoneyText(line.amount)}</td>
+                <td className={dataTable.numeric}>{formatMoneyText(line.invoiced)}</td>
+                <td className={dataTable.numeric}>{formatMoneyText(line.closedAmount)}</td>
+                <td className={dataTable.numeric}>{formatMoneyText(line.released)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollBox>
       <p>{releasedText(preview.releasedDisplay)}</p>
       <p>{CLOSE_FINAL}</p>
     </div>

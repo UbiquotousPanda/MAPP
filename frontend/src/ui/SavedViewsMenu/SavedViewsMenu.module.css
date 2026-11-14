@@ -1,0 +1,17 @@
+/* "Modified": a small amber word on the button. */
+.modified {
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-chip);
+  background: color-mix(in srgb, var(--status-review) 16%, var(--surface));
+  color: var(--status-review-text);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

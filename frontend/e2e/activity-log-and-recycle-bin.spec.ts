@@ -1,10 +1,11 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
-  callApi,
+  deleteSeen,
   escapeRegExp,
   expectNoAxeViolations,
   expectToast,
   itemAt,
+  openFilters,
   signInAs,
 } from './fixtures';
 import { changeActivityPlannedCost } from './planning-changes';
@@ -14,7 +15,6 @@ import { createInitiative, createPlanningRecords } from './planning';
 // none empties the bin or restores the demo's "Trade shows" (recycle-bin.spec.ts relies on both).
 
 const MEI = 'mei.lin@shell.com';
-const ALEX = 'alex.morgan@shell.com';
 
 /** The list item of an entry whose sentence holds `sentence` (the avatar's initials come first). */
 function entry(scope: Page | Locator, sentence: string): Locator {
@@ -69,7 +69,7 @@ test('An activity deleted from its page is found in the recycle bin and restored
     records.year,
     '1000.00',
   );
-  await callApi(page, 'DELETE', `/api/v1/initiatives/${binned.id}`);
+  await deleteSeen(page, `/api/v1/initiatives/${binned.id}`);
 
   await page.goto(records.activityPath);
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
@@ -135,8 +135,9 @@ test('An activity deleted from its page is found in the recycle bin and restored
   await expectEntries(log.locator('ol[role="list"]'), lifeOf);
   await expectNoAxeViolations(page);
 
-  await page.getByRole('button', { name: 'Action: Any action' }).click();
-  await page.getByRole('menuitemcheckbox', { name: 'Restored', exact: true }).click();
+  await openFilters(page);
+  await page.getByRole('button', { name: 'Action', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Restored', exact: true }).click();
   await page.keyboard.press('Escape');
   await expect(chip(page, 'Action: Restored')).toBeVisible();
   await expect(page.getByText(/^1 of [\d,]+ entries$/)).toBeVisible();
@@ -152,55 +153,6 @@ test('An activity deleted from its page is found in the recycle bin and restored
   await page.getByRole('button', { name: 'Clear filters' }).click();
   await expect(page).toHaveURL(/\/activity-log$/);
   await expect(page.getByText(/^([\d,]+) of \1 entries$/)).toBeVisible();
-});
-
-test('Delete permanently: the activity leaves the bin for good and the log keeps every step, without a link (011 US5, FR-008, FR-028, FR-030)', async ({
-  page,
-}) => {
-  test.slow();
-  await signInAs(page, MEI);
-  const records = await createPlanningRecords(page, 'Gone', {
-    withWorkflow: false,
-    leaveEmpty: [],
-  });
-  const name = records.activityName;
-  await callApi(page, 'DELETE', `/api/v1/activities/${records.activityId}`);
-
-  // Deleting permanently needs "Delete permanently and empty the recycle bin": Alex's (014).
-  await signInAs(page, ALEX);
-  await page.goto('/recycle-bin');
-  await page.getByRole('searchbox', { name: 'Search name or ID' }).fill(name);
-  const row = binRow(page, name);
-  await expect(row).toBeVisible();
-  await row.getByRole('button', { name: `Actions for activity '${name}'` }).click();
-  await page.getByRole('menuitem', { name: 'Delete permanently' }).click();
-  const purge = page.getByRole('alertdialog', { name: `Delete '${name}' permanently?` });
-  await expect(purge.getByText("This can't be undone.")).toBeVisible();
-  await expect(purge.getByRole('button', { name: 'Cancel' })).toBeFocused();
-  await expectNoAxeViolations(page);
-  await purge.getByRole('button', { name: 'Delete permanently' }).click();
-  await expectToast(page, `Activity '${name}' deleted permanently`);
-  await expect(page.getByText('Nothing matches these filters')).toBeVisible();
-
-  await page.goto(records.activityPath);
-  await expect(
-    page.getByText('This activity no longer exists — someone may have deleted it.'),
-  ).toBeVisible();
-
-  // The log: permanently deleted, deleted, created — the name is plain text now, with no link.
-  await page.goto(`/activity-log?q=${encodeURIComponent(name)}`);
-  await expect(page.getByText(/^3 of [\d,]+ entries$/)).toBeVisible();
-  await expectEntries(page.getByRole('main').locator('ol[role="list"]'), [
-    {
-      text: `Alex Morgan permanently deleted activity '${name}' (permanently deleted)`,
-      chip: 'Permanently deleted',
-    },
-    { text: `Mei Lin deleted activity '${name}' (permanently deleted)`, chip: 'Deleted' },
-    { text: `Mei Lin created activity '${name}' (permanently deleted)`, chip: 'Created' },
-  ]);
-  await expect(
-    page.getByRole('main').locator('ol[role="list"]').getByRole('link', { name }),
-  ).toHaveCount(0);
 });
 
 test('Home: Recent changes shows the latest changes in Mei’s plans, newest first, with links while the record exists (009 FR-015, FR-016)', async ({
@@ -219,27 +171,26 @@ test('Home: Recent changes shows the latest changes in Mei’s plans, newest fir
     records.year,
     '1000.00',
   );
-  await callApi(page, 'DELETE', `/api/v1/initiatives/${binned.id}`);
+  await deleteSeen(page, `/api/v1/initiatives/${binned.id}`);
   await changeActivityPlannedCost(page, records.activityId, '26000.00');
 
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: 'Welcome back, Mei.' })).toBeVisible();
   const card = page.getByRole('region', { name: 'Recent changes' });
-  await expect(card.getByText("Latest changes in your teams' plans")).toBeVisible();
   const items = card.getByRole('listitem');
 
   await expect(items.first()).toContainText(
-    `Mei Lin changed planned cost of activity '${records.activityName}' (${records.activityId})`,
+    `Mei Lin changed planned cost of activity ${records.activityName} · ${records.activityId}`,
   );
   await expect(
     items.first().getByRole('button', { name: /^(just now|\d+ minutes? ago)/ }),
   ).toBeVisible();
   await expect(items.nth(1)).toContainText(
-    `Mei Lin deleted initiative '${binned.name}' (${binned.id}) (in recycle bin)`,
+    `Mei Lin deleted initiative ${binned.name} · ${binned.id} (in recycle bin)`,
   );
   await expect(items.nth(1).getByRole('link')).toHaveCount(0);
   await expect(items.nth(2)).toContainText(
-    `Mei Lin created initiative '${binned.name}' (${binned.id}) (in recycle bin)`,
+    `Mei Lin created initiative ${binned.name} · ${binned.id} (in recycle bin)`,
   );
   await expectNoAxeViolations(page);
 

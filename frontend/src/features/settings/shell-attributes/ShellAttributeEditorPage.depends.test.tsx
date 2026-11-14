@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { emptyForm, LUBRICANTS, MEDIA_CHANNEL, PIR } from '@/testing/fixtures/shell-attributes';
 import { offered, renderAttributeEditor } from '@/testing/fixtures/shell-attribute-pages';
+import { choose } from '@/testing/select';
 import { reply } from '@/testing/replies';
 
 describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-023)', () => {
@@ -17,15 +18,16 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     );
 
     await user.type(await screen.findByRole('textbox', { name: /^Label/ }), 'Spot type');
-    await user.selectOptions(screen.getByRole('combobox', { name: /Type/ }), 'singleChoice');
+    await choose(user, screen.getByRole('combobox', { name: /Type/ }), 'Single choice');
     const dependsOn = await screen.findByRole('combobox', { name: /Depends on/ });
     // Only single and multiple choice attributes placed before it (not the % split Brands).
-    expect(offered(/^Depends on/)).toEqual(['None', 'Media channel', 'PIR']);
-    expect(dependsOn).toHaveValue('none');
-    expect(dependsOn).toHaveAccessibleDescription(
+    expect(await offered(user, /^Depends on/)).toEqual(['None', 'Media channel', 'PIR']);
+    expect(dependsOn).toHaveTextContent('None');
+    await user.click(screen.getByRole('button', { name: 'About Depends on' }));
+    expect(screen.getByRole('dialog', { name: 'About Depends on' })).toHaveTextContent(
       'Its options are filtered by the value chosen for that attribute.',
     );
-    await user.selectOptions(dependsOn, 'SA-1010');
+    await choose(user, dependsOn, 'Media channel');
     for (const label of ['TV spot', 'Radio spot']) {
       await user.click(screen.getByRole('button', { name: 'Add option' }));
       await waitFor(() =>
@@ -45,7 +47,10 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     expect(api.bodiesOf('POST /api/v1/shell-attributes')).toEqual([]);
 
     const first = screen.getByRole('group', { name: 'Option 1' });
-    expect(first).toHaveTextContent('Shown when one of these media channel options is chosen.');
+    await user.click(within(first).getByRole('button', { name: 'About Linked to' }));
+    expect(screen.getByRole('dialog', { name: 'About Linked to' })).toHaveTextContent(
+      'Shown when one of these media channel options is chosen.',
+    );
     // An inactive parent option can't be newly linked.
     expect(within(first).queryByRole('checkbox', { name: /Print/ })).not.toBeInTheDocument();
     await user.click(within(first).getByRole('checkbox', { name: 'TV' }));
@@ -81,11 +86,15 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     ]);
 
     await user.type(await screen.findByRole('textbox', { name: /^Label/ }), 'Lubricants code');
-    await user.selectOptions(screen.getByRole('combobox', { name: /Type/ }), 'text');
+    await choose(user, screen.getByRole('combobox', { name: /Type/ }), 'Text');
     const condition = await screen.findByRole('group', {
       name: /Shown when the plan's business unit includes/,
     });
-    expect(condition).toHaveTextContent('Leave all unticked to show it always.');
+    const about = "About Shown when the plan's business unit includes";
+    await user.click(within(condition).getByRole('button', { name: about }));
+    expect(screen.getByRole('dialog', { name: about })).toHaveTextContent(
+      'Leave all unticked to show it always.',
+    );
     // Only choice attributes depend on others.
     expect(screen.queryByRole('combobox', { name: /Depends on/ })).not.toBeInTheDocument();
     await user.click(within(condition).getByRole('checkbox', { name: 'Lubricants' }));
@@ -101,7 +110,7 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
   });
 
   it('says why no condition can be set while there is no Business unit attribute', async () => {
-    renderAttributeEditor('/settings/shell-attributes/new?level=plan', [
+    const { user } = renderAttributeEditor('/settings/shell-attributes/new?level=plan', [
       reply(
         'GET /api/v1/shell-attribute-forms/{level}',
         {
@@ -111,11 +120,11 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
       ),
     ]);
 
-    expect(
-      await screen.findByText(
-        "There is no Business unit attribute yet, so conditions can't be set.",
-      ),
-    ).toBeInTheDocument();
+    const lock = "Why Shown when the plan's business unit includes can't change";
+    await user.click(await screen.findByRole('button', { name: lock }));
+    expect(screen.getByRole('dialog', { name: lock })).toHaveTextContent(
+      "There is no Business unit attribute yet, so conditions can't be set.",
+    );
     expect(
       screen.queryByRole('group', { name: /Shown when the plan's business unit includes/ }),
     ).not.toBeInTheDocument();
@@ -139,8 +148,8 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
 
     const dependsOn = await screen.findByRole('combobox', { name: /Depends on/ });
     // PIR keeps its place, after Media channel only.
-    expect(offered(/^Depends on/)).toEqual(['None', 'Media channel']);
-    await user.selectOptions(dependsOn, 'SA-1010');
+    expect(await offered(user, /^Depends on/)).toEqual(['None', 'Media channel']);
+    await choose(user, dependsOn, 'Media channel');
     const yes = await screen.findByRole('group', { name: 'Yes' });
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
@@ -188,8 +197,8 @@ describe('ShellAttributeEditorPage: depends on and condition (US3, FR-022, FR-02
     ]);
 
     const dependsOn = await screen.findByRole('combobox', { name: /Depends on/ });
-    expect(dependsOn).toHaveValue('SA-1010');
-    await user.selectOptions(dependsOn, 'none');
+    expect(dependsOn).toHaveTextContent('Media channel');
+    await choose(user, dependsOn, 'None');
     const condition = screen.getByRole('group', {
       name: /Shown when the plan's business unit includes/,
     });

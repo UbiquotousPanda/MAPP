@@ -1,5 +1,7 @@
-import { CircleAlert } from 'lucide-react';
+import type { ComponentProps } from 'react';
+import { cx } from '../cx';
 import { InfoTip } from '../InfoTip/InfoTip';
+import { InlineError } from '../InlineError/InlineError';
 import { LockedNote } from '../LockedNote/LockedNote';
 import styles from './CheckboxField.module.css';
 
@@ -9,19 +11,13 @@ export interface CheckboxFieldProps {
   name: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
-  /** A short help text under the label. */
   hint?: string;
-  /** A plain explanation in an ⓘ tip next to the label. */
   tip?: string;
   error?: string;
   /** Locks the check box and says why under it ("Ongoing can't be undone after saving."). */
   disabledReason?: string;
 }
 
-/**
- * A labelled tick box (design system §7): yes/no Shell attributes, "Strategic / AOP plan",
- * "Ongoing (no end date)". A locked one keeps its value and says why.
- */
 export function CheckboxField({
   label,
   name,
@@ -42,16 +38,14 @@ export function CheckboxField({
   return (
     <div className={styles.field}>
       <div className={styles.row}>
-        <input
+        <Checkbox
           id={name}
           name={name}
-          type="checkbox"
           checked={checked}
           disabled={Boolean(disabledReason)}
           onChange={(event) => onChange(event.target.checked)}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          className={styles.box}
         />
         <label htmlFor={name} className={styles.label}>
           {label}
@@ -69,11 +63,30 @@ export function CheckboxField({
         </div>
       )}
       {error && (
-        <p id={errorId} className={styles.error}>
-          <CircleAlert />
-          {error}
-        </p>
+        <div className={styles.indented}>
+          <InlineError id={errorId} quiet>
+            {error}
+          </InlineError>
+        </div>
       )}
     </div>
+  );
+}
+
+export interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
+  indeterminate?: boolean;
+}
+
+/** The bare 20 px check box, for a row of a list or a table; it needs a label or an aria-label. */
+export function Checkbox({ indeterminate = false, className, ...props }: CheckboxProps) {
+  return (
+    <input
+      type="checkbox"
+      ref={(box) => {
+        if (box) box.indeterminate = indeterminate;
+      }}
+      className={cx(styles.box, className)}
+      {...props}
+    />
   );
 }

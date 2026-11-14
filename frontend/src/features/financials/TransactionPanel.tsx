@@ -12,6 +12,7 @@ import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useToast } from '@/ui/Toast/useToast';
 import { localDate } from '@/format/intl';
 import { recordHref } from '@/ui/record-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
 import { useFinancialTransaction, useUnlinkTransaction } from './api';
 import type { FinancialRecordRef, FinancialTransaction } from './api';
@@ -136,9 +137,9 @@ function Details({ transaction }: { transaction: FinancialTransaction }) {
   return (
     <div className={styles.body} tabIndex={0} role="group" aria-label="Transaction details">
       <section aria-labelledby="transaction-fields" className={styles.section}>
-        <h3 id="transaction-fields" className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id="transaction-fields">
           From GSAP
-        </h3>
+        </SectionHeading>
         <dl className={styles.list}>
           <Item label="Document number">{t.documentNumber}</Item>
           <Item label="Line">{t.lineNumber || '—'}</Item>
@@ -174,9 +175,9 @@ function Details({ transaction }: { transaction: FinancialTransaction }) {
       </section>
 
       <section aria-labelledby="transaction-link" className={styles.section}>
-        <h3 id="transaction-link" className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id="transaction-link">
           Link
-        </h3>
+        </SectionHeading>
         <dl className={styles.list}>
           <Item label="Linked to">
             <LinkedPath transaction={t} />
@@ -194,9 +195,9 @@ function Details({ transaction }: { transaction: FinancialTransaction }) {
       </section>
 
       <section aria-labelledby="transaction-source" className={styles.section}>
-        <h3 id="transaction-source" className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id="transaction-source">
           Source
-        </h3>
+        </SectionHeading>
         <dl className={styles.list}>
           <Item label="From import">
             {`${t.import.feedName}${t.import.fileName ? ` '${t.import.fileName}'` : ''} on ${dateTime(t.import.importedAt)} by ${t.import.importedBy.name}`}

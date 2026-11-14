@@ -4,7 +4,7 @@ import styles from './PlanForm.module.css';
 /** The form's shape while its data loads. */
 export function PlanFormSkeleton() {
   return (
-    <div className={styles.main} aria-busy="true" aria-label="Loading the form">
+    <div className={styles.skeleton} aria-busy="true" aria-label="Loading the form">
       {[0, 1, 2, 3].map((section) => (
         <div key={section} className={styles.card}>
           <div className={styles.skeletonSection}>

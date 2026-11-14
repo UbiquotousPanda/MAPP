@@ -592,6 +592,7 @@ paths:
       summary: Delete a sample folder and its notes (they go to the recycle bin)
       parameters:
         - $ref: "#/components/parameters/FolderId"
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -599,6 +600,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -651,6 +656,7 @@ paths:
           schema:
             type: string
           example: SN-1001
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -658,6 +664,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -788,6 +798,8 @@ paths:
         - Models
       operationId: deleteModel
       summary: Delete an unused model (it goes to the recycle bin); a model in use answers 409 in_use
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -795,6 +807,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -975,6 +989,8 @@ paths:
         - Activity types
       operationId: deleteActivityType
       summary: Delete an unused activity type (not used by activities and not allowed in any model)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -982,6 +998,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -1169,6 +1187,8 @@ paths:
         - Shell attributes
       operationId: deleteShellAttribute
       summary: Delete an unused Shell attribute and its options (they go to the recycle bin)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -1176,6 +1196,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -1495,6 +1517,8 @@ paths:
         inactive instead.") and when it is the last option of its choice attribute ("'<attribute>' needs at least one
         option, so '<label>' can't be deleted."). The second is also the option's delete lock (locks, field delete), so
         the web app shows the reason without sending the request (D-211).
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -1744,6 +1768,8 @@ paths:
         - Currencies
       operationId: deleteCurrency
       summary: Delete an unused currency (never USD)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -1974,6 +2000,8 @@ paths:
         - Finance budgets
       operationId: deleteFinanceBudgetItem
       summary: Delete an unused finance budget item (it goes to the recycle bin)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -1981,6 +2009,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -2307,6 +2337,8 @@ paths:
       operationId: deleteTeam
       summary: Delete a team no plan uses (it goes to the recycle bin with its memberships)
       description: Answers 409 in_use while any plan uses the team, including plans in the recycle bin.
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -2314,6 +2346,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -2588,6 +2622,7 @@ paths:
       summary: Delete a plan and everything in it (they go to the recycle bin)
       parameters:
         - $ref: "#/components/parameters/PlanId"
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -2595,6 +2630,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -2921,6 +2960,8 @@ paths:
         - Campaigns
       operationId: deleteCampaign
       summary: Delete a campaign with its initiatives, activities and line items (they go to the recycle bin)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -2928,6 +2969,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -3135,6 +3180,8 @@ paths:
         - Campaigns
       operationId: deleteInitiative
       summary: Delete an initiative with its activities and line items (they go to the recycle bin)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -3142,6 +3189,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -3404,6 +3455,7 @@ paths:
       summary: Delete an activity and its line items (they go to the recycle bin)
       parameters:
         - $ref: "#/components/parameters/ActivityId"
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -3411,6 +3463,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -3628,6 +3684,42 @@ paths:
           $ref: "#/components/responses/NotFound"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/activities/{activityId}/line-items/preview:
+    post:
+      tags:
+        - Line items
+      operationId: previewLineItem
+      summary: What saving the line-item form would give, worked out by the API and saving nothing
+      description: >-
+        The planned cost in USD and in the plan currency, the activity's unassigned planned cost after saving and the
+        month spread, worked out as a save works them out (D-061: the web app never converts). An amount is null
+        while the typed text is not one or its currency has no rate; the spread is null while a custom month is
+        not valid.
+      parameters:
+        - $ref: "#/components/parameters/ActivityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LineItemPreviewInput"
+      responses:
+        "200":
+          description: The preview.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LineItemPreview"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/line-items/{lineItemId}:
     get:
       tags:
@@ -3698,6 +3790,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/LineItemId"
         - $ref: "#/components/parameters/RestartApproval"
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -3865,6 +3958,7 @@ paths:
       description: Refused with 409 in_use when any stored activity uses it or has an approval round with it.
       parameters:
         - $ref: "#/components/parameters/WorkflowId"
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -3872,6 +3966,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -5044,7 +5140,8 @@ paths:
       description: >-
         Runs the same check as imports/check and applies its ready rows; rows with problems, and the rows below
         them in the file, are left out and listed. Every record created or updated gets an activity-log entry with
-        the note "Imported from '<file>' (IMP-…)".
+        the note "Imported from '<file>' (IMP-…)". The request names the check of this very file (checkId, a field
+        error otherwise), and each check is imported once: a second Import of it answers 409 not_allowed.
       parameters:
         - $ref: "#/components/parameters/PlanId"
       requestBody:
@@ -5052,7 +5149,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ImportUpload"
+              $ref: "#/components/schemas/ImportRun"
       responses:
         "201":
           description: Imported.
@@ -5062,6 +5159,8 @@ paths:
                 $ref: "#/components/schemas/ImportDetail"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -5369,6 +5468,8 @@ paths:
       description: >-
         409 in_use while people hold the role ("'Viewer' is given to 1 person. Take it away from them first."); 409
         not_allowed for the Administrator role.
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -5376,6 +5477,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -5628,6 +5731,8 @@ paths:
       tags: [Global budgets]
       operationId: deleteGlobalBudget
       summary: Delete a global budget without allocations (it goes to the recycle bin); 409 in_use otherwise
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -5635,6 +5740,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -6314,6 +6421,8 @@ paths:
       tags: [Purchase requests]
       operationId: deletePurchaseRequest
       summary: Delete a Created or Declined purchase request to the recycle bin (FR-040, FR-042)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin with its lines; the reservations are released.
@@ -6321,6 +6430,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -6957,6 +7068,8 @@ paths:
       description: |
         Refused with validation_failed on id when it is the currency's last rate dated today or earlier
         ("EUR needs a rate dated today or earlier.").
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Deleted; Undo through the recycle bin entry.
@@ -6966,6 +7079,8 @@ paths:
                 $ref: "#/components/schemas/DeleteResult"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -7916,6 +8031,8 @@ paths:
       tags: [Custom dashboards]
       operationId: deleteCustomDashboard
       summary: Delete a dashboard to the recycle bin — owner only (feature 051, FR-010)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -7923,6 +8040,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -8143,6 +8264,8 @@ paths:
       tags: [Datasets]
       operationId: deleteDataset
       summary: Delete a dataset to the recycle bin — owner only (feature 051, FR-045)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -8150,6 +8273,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -8390,6 +8517,8 @@ paths:
         - Settings
       operationId: deleteActivityCategory
       summary: Delete an activity category; its activity types become Uncategorised (FR-021)
+      parameters:
+        - $ref: "#/components/parameters/SeenVersion"
       responses:
         "200":
           description: Moved to the recycle bin.
@@ -8397,6 +8526,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -8541,6 +8674,11 @@ paths:
       tags: [Performance data]
       operationId: deactivatePerformanceSource
       summary: Stop a data source accepting data, keeping everything it has loaded (046 FR-004)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceSourceStatusChange" }
       responses:
         "200":
           description: The source, now inactive; every activity that depended only on it stops counting as integrated.
@@ -8550,6 +8688,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
         default: { $ref: "#/components/responses/Error" }
   /api/v1/performance/sources/{sourceId}/reactivate:
     parameters:
@@ -8558,6 +8697,11 @@ paths:
       tags: [Performance data]
       operationId: reactivatePerformanceSource
       summary: Let a deactivated data source accept data again (046 FR-004)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceSourceStatusChange" }
       responses:
         "200":
           description: The source, active again.
@@ -8567,6 +8711,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
         default: { $ref: "#/components/responses/Error" }
   /api/v1/performance/sources/{sourceId}/mappings:
     parameters:
@@ -9082,8 +9227,8 @@ paths:
       operationId: listReports
       summary: The reports the person may open, in the catalogue's order (feature 039, FR-001)
       description: >-
-        A report not built yet is listed with available false ("Coming soon"); a report needing more than
-        reports.view (User access needs access.manage) is listed only to people who hold it.
+        The five reports, each made of sections; a report none of whose sections is built yet is listed with
+        available false ("Coming soon").
       responses:
         "200":
           description: The catalogue.
@@ -9147,7 +9292,8 @@ paths:
       description: >-
         Excel holds one sheet per widget, then In view and About this export (report, year, filters in words,
         period, currency, exporter, date and time, rates used). CSV needs a widget and puts the notes before the
-        rows. A report not built yet exports In view and About this export only. Nothing is stored or logged.
+        rows. A report not built yet exports In view and About this export only. The export of a merged report
+        holds the section shown, named in About this export. Nothing is stored or logged.
       parameters:
         - $ref: "#/components/parameters/ReportPath"
         - $ref: "#/components/parameters/ReportFormat"
@@ -9386,7 +9532,8 @@ paths:
           in: query
           schema:
             type: integer
-            enum: [10, 25, 50]
+            enum: [25, 50, 100, 200]
+            default: 50
         - name: page
           in: query
           schema:
@@ -9477,7 +9624,8 @@ paths:
           in: query
           schema:
             type: integer
-            enum: [10, 25, 50]
+            enum: [25, 50, 100, 200]
+            default: 50
         - name: page
           in: query
           schema:
@@ -9613,7 +9761,8 @@ paths:
           in: query
           schema:
             type: integer
-            enum: [10, 25, 50]
+            enum: [25, 50, 100, 200]
+            default: 50
         - name: page
           in: query
           schema:
@@ -10069,6 +10218,16 @@ components:
       name: mapp_session
       description: HttpOnly session cookie set by sign-in.
   parameters:
+    SeenVersion:
+      name: version
+      in: query
+      required: true
+      description: >-
+        The version of the record the person saw. A delete of a record changed since answers 409 version_conflict;
+        without it, 400 with a field error on version.
+      schema:
+        type: integer
+        minimum: 1
     # Feature 051 Dashboard builder
     CustomDashboardId:
       name: dashboardId
@@ -10197,7 +10356,7 @@ components:
       in: query
       schema:
         type: integer
-        enum: [50, 100, 200]
+        enum: [25, 50, 100, 200]
         default: 50
     EntryId:
       name: entryId
@@ -10685,7 +10844,7 @@ components:
       in: query
       schema:
         type: integer
-        enum: [50, 100, 200]
+        enum: [25, 50, 100, 200]
         default: 50
     AllWorkFinance:
       name: finance
@@ -10914,19 +11073,12 @@ components:
       name: report
       in: path
       required: true
-      description: The report's path in the web app's address.
+      description: >-
+        The report's path in the web app's address. The old reports' addresses redirect to these in the web app;
+        the API answers 404 for them.
       schema:
         type: string
-        enum:
-          - plan-budget
-          - approvals
-          - purchase-requests
-          - plan-details
-          - gsap-link
-          - user-access
-          - summary
-          - revenue
-          - funnel
+        enum: [performance, budget, purchasing, approvals, plan-data]
     ReportOwnSort:
       name: sort
       in: query
@@ -10994,10 +11146,10 @@ components:
     ReportOwnStage:
       name: stage
       in: query
-      description: The funnel stage Funnel stages or Summary shows, which the report validates (049, 048).
+      description: The stage Performance shows, revenue or a funnel stage, which the report validates (059, 049).
       schema:
         type: string
-        enum: [inq, mql]
+        enum: [revenue, inq, mql]
     ReportOwnRevenueBy:
       name: revenueBy
       in: query
@@ -11092,15 +11244,19 @@ components:
     RevenueRankedSort:
       name: sort
       in: query
+      description: >-
+        Without sort or order the list opens on performance, lowest first, so the most behind is on top. Entries
+        without the figure come last in either order.
       schema:
         type: string
-        enum: [actualRevenue, projectedRevenue]
+        enum: [actualRevenue, projectedRevenue, goal, performance, actualCost, roi]
     FunnelRankedSort:
       name: sort
       in: query
+      description: Entries without the figure come last in either order.
       schema:
         type: string
-        enum: [actual, projected]
+        enum: [actual, projected, goal, performance]
     ReportViewId:
       name: viewId
       in: path
@@ -11194,9 +11350,8 @@ components:
       description: Rows per page of the report's table.
       schema:
         type: integer
-        minimum: 5
-        maximum: 500
-        default: 20
+        enum: [25, 50, 100, 200]
+        default: 50
     GsapLinkTab:
       name: tab
       in: query
@@ -11323,8 +11478,8 @@ components:
       description: Vendors per page of the grid.
       schema:
         type: integer
-        enum: [5, 10, 25, 50, 100]
-        default: 25
+        enum: [25, 50, 100, 200]
+        default: 50
     PrReportColumns:
       name: columns
       in: query
@@ -11412,12 +11567,7 @@ components:
       description: Rows per page of the grid.
       schema:
         type: integer
-        enum:
-          - 5
-          - 10
-          - 25
-          - 50
-          - 100
+        enum: [25, 50, 100, 200]
         default: 50
     ActivityCategoryId:
       name: categoryId
@@ -11884,7 +12034,7 @@ components:
     PurchaseRequest:
       type: object
       additionalProperties: false
-      required: [id, name, description, owner, moaApprover, approvalWorkflow, modificationWorkflow, status, changePending, plan, path, companyCode, costCentres, hxKeys, attributes, vendor, amountDisplay, invoicedDisplay, gsapPrNumber, gsapPrDate, gsapSource, waitingForGsap, lines, approvedVersion, routings, readiness, missing, notice, access, version, createdAt, createdBy, updatedAt, updatedBy]
+      required: [id, name, description, owner, moaApprover, approvalWorkflow, modificationWorkflow, status, changePending, plan, path, companyCode, costCentres, hxKeys, attributes, vendor, amountDisplay, invoicedDisplay, gsapPrNumber, gsapPrDate, gsapSource, waitingForGsap, lines, approvedVersion, routings, readiness, missing, notice, saveThen, addedLinesThen, access, version, createdAt, createdBy, updatedAt, updatedBy]
       properties:
         id:
           type: string
@@ -11978,6 +12128,16 @@ components:
             One sentence the page shows above the details, or empty: "Awaiting approval — saving changes will
             restart approval.", "Closed purchase requests cannot be changed.", "Purchase requests are switched
             off for your organisation."
+        saveThen:
+          type: string
+          enum: [save, resubmit, submitChanges, ""]
+          description: The step a save of this purchase request takes now; empty while it cannot be saved (Closed).
+        addedLinesThen:
+          type: string
+          enum: [save, resubmit, submitChanges, ""]
+          description: >-
+            The step of a save that only adds lines: save when the setting lets lines join an Approved purchase
+            request without approval; empty when no line may be added.
         access:
           $ref: "#/components/schemas/PurchaseRequestAccess"
         version:
@@ -12807,6 +12967,9 @@ components:
         - jobTitle
         - initials
         - preferences
+        - access
+        - today
+        - version
       properties:
         id:
           type: string
@@ -12833,10 +12996,15 @@ components:
             $ref: "#/components/schemas/TeamRef"
         access:
           $ref: "#/components/schemas/MyAccess"
-          description: "The person's roles, permissions with scopes, administrators and access rule (014). Optional in the contract; always sent once its feature is built (D-298)."
+          description: "The person's roles, permissions with scopes, administrators and access rule (014). Until it is known the web app allows nothing."
+        today:
+          type: string
+          format: date
+          description: The server's date, for every "today" the web app shows (waiting days, sign-in bands, default years).
       description: >-
         Extended by later features: version (003), teams (003). Properties beyond the required list are always sent by
-        the feature that adds them; they stay optional so that earlier answers remain valid (D-191).
+        the feature that adds them; they stay optional so that earlier answers remain valid (D-191), except version,
+        which a profile save cannot do without.
     Change:
       type: object
       additionalProperties: false
@@ -13277,7 +13445,9 @@ components:
             - linkedOption
             - activityType
             - activityCategory
-          description: What uses the record (the purchase request levels since 032, activity types and categories since 047).
+            - performanceFact
+            - financialTransaction
+          description: What uses the record (the purchase request levels since 032, activity types and categories since 047, performance facts and GSAP transactions for a currency).
         text:
           type: string
           description: The part as people read it, for example Used by 12 activities (1 in the recycle bin).
@@ -15518,6 +15688,7 @@ components:
         - teams
         - businessUnit
         - figures
+        - version
         - completeness
       properties:
         id:
@@ -15528,6 +15699,10 @@ components:
           type: integer
         status:
           $ref: "#/components/schemas/PlanStatus"
+        version:
+          type: integer
+          minimum: 1
+          description: Sent with a delete from the list, as the version the person saw.
         aop:
           type: boolean
         bcpir:
@@ -17942,6 +18117,106 @@ components:
           type: string
           description: Decimal amount in the line item's currency, 0 or more.
           example: "2000.00"
+    LineItemPreviewInput:
+      type: object
+      additionalProperties: false
+      required:
+        - currency
+        - plannedCost
+        - spread
+      properties:
+        lineItemId:
+          description: The line item being edited, whose saved planned cost the preview replaces; null for a new one.
+          oneOf:
+            - type: string
+            - type: "null"
+        currency:
+          type: string
+          example: EUR
+        plannedCost:
+          type: string
+          description: The planned cost as typed.
+          example: "10000.00"
+        spread:
+          $ref: "#/components/schemas/SpreadInput"
+    LineItemPreview:
+      type: object
+      additionalProperties: false
+      required:
+        - plannedCostUsd
+        - plannedCostPlan
+        - afterSaving
+        - balanceIn
+        - balanceInPlan
+        - spread
+      properties:
+        plannedCostUsd:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        plannedCostPlan:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        afterSaving:
+          description: The activity's unassigned planned cost after saving, in the plan currency; null without a planned cost.
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        balanceIn:
+          description: >-
+            The activity's unassigned planned cost without the line item edited, in the form's currency: what a
+            pre-filled planned cost becomes when the currency changes. Null without a planned cost or a rate.
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        balanceInPlan:
+          description: balanceIn converted back into the plan currency; it differs from the balance by rounding only.
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        spread:
+          oneOf:
+            - $ref: "#/components/schemas/SpreadPreview"
+            - type: "null"
+    SpreadPreview:
+      type: object
+      additionalProperties: false
+      required:
+        - state
+        - months
+        - customTotal
+        - difference
+        - addsUp
+        - seed
+      properties:
+        state:
+          type: string
+          enum:
+            - spread
+            - notSpread
+        months:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpreadMonth"
+        customTotal:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        difference:
+          description: Custom only - the planned cost minus the month total (negative when the months are above it).
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        addsUp:
+          type: boolean
+        seed:
+          type: array
+          description: >-
+            The month amounts a switch to Custom starts from - this spread's months, or the planned cost evenly over
+            the plan's year when it is not spread.
+          items:
+            $ref: "#/components/schemas/SpreadMonthInput"
     SpreadInput:
       type: object
       additionalProperties: false
@@ -18208,7 +18483,11 @@ components:
           oneOf:
             - type: string
             - type: "null"
-          description: The month (YYYY-MM); null for the No dates yet column.
+          description: The month (YYYY-MM); null for the No dates yet column and for a quarter.
+        quarter:
+          type: string
+          pattern: ^[0-9]{4}-Q[1-4]$
+          description: The quarter of a column of the quarterly grid, "2026-Q1".
         outsideActivityDates:
           type: boolean
     SpreadGridRow:
@@ -18236,7 +18515,7 @@ components:
     SpreadGrid:
       type: object
       additionalProperties: false
-      description: "The activity's line items by month (FR-003, FR-020), worked out in the plan currency (016 FR-015) and answered in the signed-in person's display currency (007 FR-005, D-213): every cell and total is converted on its own, so a total can differ by a cent from the sum of its converted cells; in the plan currency they add up exactly. Quarterly is calculated by the web app."
+      description: "The activity's line items by month (FR-003, FR-020), worked out in the plan currency (016 FR-015) and answered in the signed-in person's display currency (007 FR-005, D-213): every cell and total is converted on its own, so a total can differ by a cent from the sum of its converted cells; in the plan currency they add up exactly. The quarterly grid adds up the months in the plan currency the same way."
       required:
         - columns
         - rows
@@ -18268,6 +18547,7 @@ components:
         - items
         - balance
         - grid
+        - gridQuarterly
       properties:
         activity:
           $ref: "#/components/schemas/LineItemActivity"
@@ -18279,6 +18559,8 @@ components:
         balance:
           $ref: "#/components/schemas/UnassignedBalance"
         grid:
+          $ref: "#/components/schemas/SpreadGrid"
+        gridQuarterly:
           $ref: "#/components/schemas/SpreadGrid"
         access:
           $ref: "#/components/schemas/LineItemAccess"
@@ -19752,6 +20034,11 @@ components:
         noApprover:
           type: boolean
           description: As ApprovalChainLevel.noApprover for the current level.
+        blockedReason:
+          type: string
+          description: >-
+            Why the record can't be approved now, such as a purchase request whose activity is no longer Approved;
+            left out when nothing stops it.
     ApprovalRowPage:
       type: object
       additionalProperties: false
@@ -20671,6 +20958,10 @@ components:
           maximum: 4
         name:
           type: string
+        version:
+          type: integer
+          minimum: 1
+          description: The record's version, sent with a bulk action as the version the person saw; absent on "Not in an activity" rows.
         role:
           type: string
           enum:
@@ -20953,6 +21244,7 @@ components:
         - count
         - totals
         - leftOut
+        - canExport
       properties:
         year:
           description: "The first year of the range, equal to yearFrom (016). Kept for saved views and older clients (D-298)."
@@ -20998,6 +21290,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AllWorkLeftOut"
+        canExport:
+          type: boolean
+          description: Whether the person may export a plan in view (data.export covers it); the export holds only those plans.
         yearFrom:
           description: "016. Optional in the contract; always sent once its feature is built (D-298)."
           type: integer
@@ -21847,6 +22142,7 @@ components:
       required:
         - action
         - recordIds
+        - versions
       properties:
         action:
           $ref: "#/components/schemas/BulkActionKind"
@@ -21873,6 +22169,15 @@ components:
         comment:
           type: string
           description: submit - an optional comment for the approvers (at most 2,000 characters).
+        versions:
+          type: object
+          description: >-
+            The version the person saw of each selected record, by ID; a selected record without one is a field error
+            on versions. A record whose version has changed since is skipped with "Changed since you selected it" and
+            left unchanged.
+          additionalProperties:
+            type: integer
+            minimum: 1
     BulkRecordRef:
       type: object
       additionalProperties: false
@@ -21923,6 +22228,10 @@ components:
           description: Every reason, in plain language (empty when done).
           items:
             type: string
+        version:
+          type: integer
+          minimum: 1
+          description: The record's version when the action ran; "Select failed items" selects it at this version.
         newRecordId:
           type: string
           description: copy - the ID of the copy.
@@ -22085,6 +22394,7 @@ components:
       required:
         - bulkActionId
         - restored
+        - alreadyBack
       properties:
         bulkActionId:
           type: string
@@ -22092,6 +22402,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RestoreResult"
+        alreadyBack:
+          type: array
+          description: The recycle-bin entries of the bulk delete that were undone or restored on their own since; Undo skips them.
+          items:
+            type: string
     BulkFieldOption:
       type: object
       additionalProperties: false
@@ -22257,6 +22572,26 @@ components:
           type: string
           contentEncoding: base64
           description: The plan workbook (.xlsx) or an Activities sheet (.csv), base64-encoded (at most 5 MB before encoding).
+    ImportRun:
+      type: object
+      additionalProperties: false
+      required:
+        - fileName
+        - content
+        - checkId
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        content:
+          type: string
+          contentEncoding: base64
+          description: The file that was checked, as sent to imports/check.
+        checkId:
+          type: string
+          minLength: 1
+          description: The checkId of the check of this file; it imports once.
     ImportLevel:
       type: string
       enum:
@@ -22322,6 +22657,7 @@ components:
         - ignoredColumns
         - needMoreFields
         - nothingToChange
+        - checkId
       properties:
         fileName:
           type: string
@@ -22353,6 +22689,9 @@ components:
           description: Rows to create or update that leave a needed-to-publish or needed-to-submit column empty.
         nothingToChange:
           type: boolean
+        checkId:
+          type: string
+          description: Send it with Import to apply this check's file; each check imports once.
     ImportLevelTotals:
       type: object
       additionalProperties: false
@@ -22964,7 +23303,7 @@ components:
     PlanAccess:
       type: object
       additionalProperties: false
-      required: [edit, editBudget, delete, publish, copy, content]
+      required: [edit, editBudget, delete, publish, copy, export, content]
       properties:
         edit:
           $ref: "#/components/schemas/ActionAvailability"
@@ -22978,6 +23317,9 @@ components:
           description: Publish and Unpublish (the plan's own readiness rules still apply).
         copy:
           $ref: "#/components/schemas/ActionAvailability"
+        export:
+          $ref: "#/components/schemas/ActionAvailability"
+          description: Export to Excel, PowerPoint and PDF (data.export in the plan's scope).
         content:
           $ref: "#/components/schemas/PlanContentAccess"
     ContainerAccess:
@@ -23024,7 +23366,7 @@ components:
     LineItemAccess:
       type: object
       additionalProperties: false
-      required: [add, edit, delete, duplicate, seeFinance]
+      required: [add, edit, delete, duplicate, seeFinance, sendSwbs]
       properties:
         add:
           $ref: "#/components/schemas/ActionAvailability"
@@ -23036,6 +23378,9 @@ components:
           $ref: "#/components/schemas/ActionAvailability"
         seeFinance:
           $ref: "#/components/schemas/ActionAvailability"
+        sendSwbs:
+          $ref: "#/components/schemas/ActionAvailability"
+          description: SWBS Send now (finance.import in the plan's scope).
     BinEntryAccess:
       type: object
       additionalProperties: false
@@ -24589,6 +24934,7 @@ components:
         - monthly
         - total
         - problem
+        - evenly
       properties:
         method:
           $ref: "#/components/schemas/PhasingMethod"
@@ -24610,6 +24956,13 @@ components:
         problem:
           type: [string, "null"]
           description: '"Adds up to 590,000.00 GBP, not the budget 600,000.00 GBP"; null when fine.'
+        evenly:
+          type: array
+          description: >-
+            The budget split evenly over the 12 months (the rest in December), whatever the method: what Evenly and the
+            editor's Spread evenly show, so the web app never splits money. [] without a budget.
+          items:
+            $ref: "#/components/schemas/Money"
     BudgetPhasingUpdate:
       type: object
       additionalProperties: false
@@ -24628,6 +24981,30 @@ components:
         version:
           type: integer
           description: The record's version.
+    BudgetByMonthTotals:
+      type: object
+      additionalProperties: false
+      description: The row's periods added up by the API; the planned cost includes other years and activities without dates.
+      required:
+        - budget
+        - plannedCost
+        - difference
+        - allocated
+      properties:
+        budget:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        plannedCost:
+          $ref: "#/components/schemas/Money"
+        difference:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        allocated:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
     BudgetByMonthPeriods:
       type: object
       additionalProperties: false
@@ -24637,6 +25014,8 @@ components:
         - difference
         - allocated
         - over
+        - overBy
+        - totals
       properties:
         budget:
           type: array
@@ -24667,6 +25046,15 @@ components:
           description: True where planned cost or allocated exceeds the phased budget.
           items:
             type: boolean
+        overBy:
+          type: array
+          description: Per period, how far the larger of planned cost and allocated is above the phased budget; null when not over.
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/Money"
+              - type: "null"
+        totals:
+          $ref: "#/components/schemas/BudgetByMonthTotals"
     BudgetByMonthRow:
       type: object
       additionalProperties: false
@@ -26706,8 +27094,12 @@ components:
     CustomDashboardSummary:
       type: object
       additionalProperties: false
-      required: [id, name, description, owner, sharedWith, widgetCount, updatedAt, access]
+      required: [id, name, description, owner, sharedWith, widgetCount, updatedAt, version, access]
       properties:
+        version:
+          type: integer
+          minimum: 1
+          description: Sent with a delete from the list, as the version the person saw.
         id:
           type: string
           pattern: ^DB-[0-9]+$
@@ -26751,11 +27143,11 @@ components:
       properties:
         name:
           type: string
-          maxLength: 200
+          maxLength: 80
           description: Required, trimmed, at most 80 characters (validation_failed names the limit).
         description:
           type: string
-          maxLength: 2000
+          maxLength: 500
         filters:
           $ref: "#/components/schemas/CustomDashboardFilters"
         widgets:
@@ -26774,10 +27166,10 @@ components:
           minimum: 1
         name:
           type: string
-          maxLength: 200
+          maxLength: 80
         description:
           type: string
-          maxLength: 2000
+          maxLength: 500
         filters:
           $ref: "#/components/schemas/CustomDashboardFilters"
         widgets:
@@ -26791,7 +27183,7 @@ components:
       properties:
         name:
           type: string
-          maxLength: 200
+          maxLength: 80
           description: The copy's name; left out gives "Copy of <name>".
     CustomDashboardRef:
       type: object
@@ -27164,7 +27556,7 @@ components:
           maximum: 49
         label:
           type: string
-          maxLength: 200
+          maxLength: 60
           description: Required, at most 60 characters, unique in the dataset ignoring case.
         kind:
           $ref: "#/components/schemas/DataFieldKind"
@@ -27187,11 +27579,11 @@ components:
           description: The same file as checked, base64-encoded (at most 5 MB before encoding).
         name:
           type: string
-          maxLength: 200
+          maxLength: 80
           description: Required, at most 80 characters, unique among the person's datasets ignoring case.
         description:
           type: string
-          maxLength: 2000
+          maxLength: 500
         columns:
           type: array
           description: One per column of the file, positions 0… in order.
@@ -27414,6 +27806,13 @@ components:
       type: string
       description: The web-analytics vocabulary — counts by month, never money (clarification 046-C11).
       enum: [sessions, visits, engagementTouches]
+    PerformanceSourceStatusChange:
+      type: object
+      additionalProperties: false
+      required: [version]
+      description: The version the person saw; a change from an older one answers version_conflict, and to the status the source already has, not_allowed.
+      properties:
+        version: { type: integer, minimum: 1 }
     PerformanceSource:
       type: object
       description: Where performance data comes from (Settings › Performance data).
@@ -27674,7 +28073,9 @@ components:
     CorrectInput:
       type: object
       additionalProperties: false
+      required: [version]
       properties:
+        version: { type: integer, minimum: 1, description: "The row's version the person corrected; an older one answers version_conflict." }
         date: { type: [string, "null"] }
         currency: { type: [string, "null"] }
         keys:
@@ -27969,16 +28370,9 @@ components:
     # Feature 039 Measure foundation
     ReportKey:
       type: string
-      enum:
-        - planBudget
-        - approvals
-        - purchaseRequests
-        - planDetails
-        - gsapLink
-        - userAccess
-        - summary
-        - revenue
-        - funnel
+      description: >-
+        The five reports of the catalogue (feature 059); saved views of the old nine moved to them.
+      enum: [performance, budget, purchasing, approvals, planData]
     ReportEntry:
       type: object
       additionalProperties: false
@@ -27988,10 +28382,10 @@ components:
           $ref: "#/components/schemas/ReportKey"
         path:
           type: string
-          example: plan-budget
+          example: budget
         name:
           type: string
-          example: Plan budget
+          example: Budget and spend
         purpose:
           type: string
         available:
@@ -28467,8 +28861,13 @@ components:
         notes:
           type: object
           additionalProperties: false
-          required: [notPhased, noDates, otherYears, actualOtherYears]
+          required: [notPhased, noDates, otherYears, linesAbovePlannedCost, actualOtherYears]
           properties:
+            linesAbovePlannedCost:
+              description: Line items above their activity's planned cost, so periods + noDates + otherYears − this = cards.planned.
+              oneOf:
+                - $ref: "#/components/schemas/Money"
+                - type: "null"
             notPhased:
               oneOf:
                 - $ref: "#/components/schemas/Money"
@@ -28511,7 +28910,7 @@ components:
     PlanBudgetRanked:
       type: object
       additionalProperties: false
-      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      required: [level, sort, order, group, page, size, total, totals, trail, groups, drillLost]
       properties:
         level:
           type: string
@@ -28530,6 +28929,11 @@ components:
           type: integer
         total:
           type: integer
+        totals:
+          description: >-
+            Every entry in view on every page, each counted once however many groups it falls in, for the list's Total
+            row (039 FR-035).
+          $ref: "#/components/schemas/PlanBudgetFigures"
         trail:
           type: array
           items:
@@ -28603,16 +29007,36 @@ components:
         goal:
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
         inProgress: { type: boolean }
+    RevenuePeriodTotals:
+      type: object
+      additionalProperties: false
+      description: >-
+        The period table's Total row (039 FR-035, D-414): each column's periods added up over the year, the same in
+        month and quarter view, converted once from US dollars; null where no period of the column has a figure.
+      required: [goal, actual, projected, goalAfterYear]
+      properties:
+        goal:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        actual:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        goalAfterYear:
+          description: >-
+            The goal card less the Goal total, both as shown: the part a model's velocity carries past December (D-414).
+            Null when every goal lands inside the year.
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
     RevenueReport:
       type: object
       additionalProperties: false
-      required: [cards, period, periods, projection, projections, reason]
+      required: [cards, period, periods, totals, projection, projections, reason]
       properties:
         cards: { $ref: "#/components/schemas/RevenueCards" }
         period: { type: string, enum: [month, quarter] }
         periods:
           type: array
           items: { $ref: "#/components/schemas/RevenuePeriod" }
+        totals: { $ref: "#/components/schemas/RevenuePeriodTotals" }
         projection:
           description: The first model in view, kept for compatibility; projections names every one.
           oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
@@ -28663,7 +29087,7 @@ components:
         actualCostReason:
           type: string
           description: attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
-          enum: ["", attributionNotConfigured, noFinancialAccess]
+          enum: ["", attributionNotConfigured, noFinancialAccess, noActualCost]
         roiReason:
           type: string
           description: attributionNotConfigured is no longer served; it stays until the wave's contract cleanup.
@@ -28695,16 +29119,19 @@ components:
     RevenueRanked:
       type: object
       additionalProperties: false
-      required: [level, sort, order, group, page, size, total, trail, groups, drillLost, attribution]
+      required: [level, sort, order, group, page, size, total, totals, trail, groups, drillLost, attribution]
       properties:
         attribution: { $ref: "#/components/schemas/AttributionStamp" }
         level: { type: string, enum: [plan, campaign, initiative, activity] }
-        sort: { type: string, enum: [actualRevenue, projectedRevenue] }
+        sort: { type: string, enum: [actualRevenue, projectedRevenue, goal, performance, actualCost, roi] }
         order: { type: string, enum: [desc, asc] }
         group: { type: string }
         page: { type: integer }
         size: { type: integer }
         total: { type: integer }
+        totals:
+          description: Every entry in view on every page, each counted once, for the list's Total row (039 FR-035).
+          $ref: "#/components/schemas/RevenueFigures"
         trail:
           type: array
           items:
@@ -28890,7 +29317,7 @@ components:
     FunnelReport:
       type: object
       additionalProperties: false
-      required: [stage, availableStages, uncoveredCount, cards, period, periods, projection, projections, reason]
+      required: [stage, availableStages, uncoveredCount, cards, period, periods, totals, projection, projections, reason]
       properties:
         stage: { type: string, enum: [inq, mql] }
         availableStages:
@@ -28899,12 +29326,24 @@ components:
           items: { type: string, enum: [inq, mql] }
         uncoveredCount:
           type: integer
-          description: Plans whose model does not allow the selected stage (049-C11, FR-018).
+          description: >-
+            Plans whose model does not allow the selected stage; their activities count in none of the stage's
+            figures (049-C11, FR-018, D-426).
         cards: { $ref: "#/components/schemas/FunnelCards" }
         period: { type: string, enum: [month, quarter] }
         periods:
           type: array
           items: { $ref: "#/components/schemas/FunnelPeriod" }
+        totals:
+          type: object
+          additionalProperties: false
+          description: The period table's Total row, as RevenuePeriodTotals but whole counts.
+          required: [goal, actual, projected, goalAfterYear]
+          properties:
+            goal: { type: [integer, "null"] }
+            actual: { type: [integer, "null"] }
+            projected: { type: [integer, "null"] }
+            goalAfterYear: { type: [integer, "null"] }
         projection:
           description: The first model in view, kept for compatibility; projections names every one.
           oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
@@ -28950,15 +29389,18 @@ components:
     FunnelRanked:
       type: object
       additionalProperties: false
-      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      required: [level, sort, order, group, page, size, total, totals, trail, groups, drillLost]
       properties:
         level: { type: string, enum: [plan, campaign, initiative, activity] }
-        sort: { type: string, enum: [actual, projected] }
+        sort: { type: string, enum: [actual, projected, goal, performance] }
         order: { type: string, enum: [desc, asc] }
         group: { type: string }
         page: { type: integer }
         size: { type: integer }
         total: { type: integer }
+        totals:
+          description: Every entry in view on every page, each counted once, for the list's Total row (039 FR-035).
+          $ref: "#/components/schemas/FunnelFigures"
         trail:
           type: array
           items:
@@ -29131,7 +29573,7 @@ components:
     PrReportGrid:
       type: object
       additionalProperties: false
-      required: [vendors, total, page, pageSize, columns, choices]
+      required: [vendors, total, totals, page, pageSize, columns, choices]
       properties:
         vendors:
           type: array
@@ -29140,6 +29582,24 @@ components:
         total:
           type: integer
           minimum: 0
+        totals:
+          description: >-
+            Every vendor the grid holds on every page, added up as each vendor row is, for the grid's Total row
+            (042 FR-029).
+          type: object
+          additionalProperties: false
+          required: [purchaseRequests, lines, committed, invoiced]
+          properties:
+            purchaseRequests:
+              type: integer
+              minimum: 0
+            lines:
+              type: integer
+              minimum: 0
+            committed:
+              $ref: "#/components/schemas/PrReportMoney"
+            invoiced:
+              $ref: "#/components/schemas/PrReportMoney"
         page:
           type: integer
           minimum: 1
@@ -29266,7 +29726,7 @@ components:
         revenue:
           type: object
           additionalProperties: false
-          required: [periodLabel, actualOrProjected, goal, performance, variance, goalCoverage, trend]
+          required: [periodLabel, actualOrProjected, goal, performance, variance, goalCoverage, trend, trendTotals]
           properties:
             periodLabel:
               type: string
@@ -29293,6 +29753,20 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/SummaryTrendPeriod"
+            trendTotals:
+              type: object
+              additionalProperties: false
+              description: The trend table's Total row, as RevenuePeriodTotals (039 FR-035, D-414).
+              required: [actual, projected, goal, goalAfterYear]
+              properties:
+                actual:
+                  $ref: "#/components/schemas/PrReportMoney"
+                projected:
+                  $ref: "#/components/schemas/PrReportMoney"
+                goal:
+                  $ref: "#/components/schemas/PrReportMoney"
+                goalAfterYear:
+                  $ref: "#/components/schemas/PrReportMoney"
         funnel:
           type: object
           additionalProperties: false

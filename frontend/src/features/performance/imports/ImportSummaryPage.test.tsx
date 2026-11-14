@@ -9,11 +9,24 @@ import { findMessages, renderWithProviders } from '@/testing/render';
 import { reply } from '@/testing/replies';
 import type { CurrentUser } from '@/session/useSession';
 import { ImportSummaryPage } from './ImportSummaryPage';
+import { UNDO_NEEDS_ADMIN as UNDO_NEEDS_BOTH } from './imports-text';
 
 type Load = components['schemas']['PerformanceImport'];
 const UNDO = 'POST /api/v1/performance/imports/{importId}/undo';
 
-function renderPage(load: Load, user: CurrentUser = testUser()) {
+const everything = testUser();
+const ADMINISTRATOR: CurrentUser = {
+  ...everything,
+  access: everything.access && {
+    ...everything.access,
+    permissions: [
+      ...everything.access.permissions,
+      { key: 'performance.import', all: true, teams: [] },
+    ],
+  },
+};
+
+function renderPage(load: Load, user: CurrentUser = ADMINISTRATOR) {
   const api = mockApi([
     reply('GET /api/v1/performance/sources', { body: { items: [performanceSource()] } }),
     reply('GET /api/v1/performance/imports/{importId}', { body: load }),
@@ -56,11 +69,6 @@ describe('ImportSummaryPage', () => {
       '1',
       '2',
     ]);
-    expect(
-      screen.getByText(
-        'It read 20 rows: 12 matched, 3 held, 1 unattributed, 2 rejected and 2 unmatched.',
-      ),
-    ).toBeVisible();
     expect(screen.getByText(/An import can't be edited/)).toBeVisible();
     await expectNoAxeViolations();
   });
@@ -101,7 +109,18 @@ describe('ImportSummaryPage', () => {
   it('046 FR-043 046-C16 says only an administrator can undo, to someone who may only load', async () => {
     renderPage(performanceLoad(), LOADER);
 
-    expect(await screen.findByText('Only an administrator can undo an import.')).toBeVisible();
+    expect(await screen.findByText(UNDO_NEEDS_BOTH)).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Undo import' })).not.toBeInTheDocument();
+  });
+
+  it('046-C16 offers no undo to an administrator who may not load performance data, as the API refuses it', async () => {
+    const noLoading = everything.access.permissions.filter((p) => p.key !== 'performance.import');
+    renderPage(performanceLoad(), {
+      ...everything,
+      access: { ...everything.access, permissions: noLoading },
+    });
+
+    expect(await screen.findByText(UNDO_NEEDS_BOTH)).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Undo import' })).not.toBeInTheDocument();
   });
 

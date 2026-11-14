@@ -11,6 +11,7 @@ type PlanSummary struct {
 	Name            string            `json:"name"`
 	Year            int               `json:"year"`
 	Status          Status            `json:"status"`
+	Version         int               `json:"version"`
 	AOP             bool              `json:"aop"`
 	BCPIR           bool              `json:"bcpir"`
 	Owner           *people.PersonRef `json:"owner"`

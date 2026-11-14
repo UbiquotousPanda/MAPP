@@ -48,7 +48,7 @@ func TestOperations_FailClosedWithoutTheirPermission_FR043(t *testing.T) {
 			name: "FR-043 deactivating a data source needs performance.import",
 			held: []authz.Permission{authz.PlansView},
 			call: func(ctx context.Context, f *fixture) error {
-				return f.service.SetSourceStatus(ctx, alex, "PS-1", performance.StatusInactive)
+				return f.service.SetSourceStatus(ctx, alex, "PS-1", performance.StatusChange{Status: performance.StatusInactive, Version: 1})
 			},
 		},
 		{

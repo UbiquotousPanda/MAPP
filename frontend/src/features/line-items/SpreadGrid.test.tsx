@@ -8,10 +8,14 @@ import { SpreadGrid } from './SpreadGrid';
 
 const KEY = 'mapp.lineItemGrid';
 
-function renderGrid(grid = launchFilmSection().grid, noDates = false) {
+function renderGrid(
+  grid = launchFilmSection().grid,
+  noDates = false,
+  quarterly = launchFilmSection().gridQuarterly,
+) {
   return renderWithProviders(
     <Tooltip.Provider>
-      <SpreadGrid grid={grid} noDates={noDates} />
+      <SpreadGrid grid={grid} quarterly={quarterly} noDates={noDates} />
     </Tooltip.Provider>,
   );
 }
@@ -28,10 +32,10 @@ afterEach(() => {
 });
 
 describe('SpreadGrid (FR-003, FR-020)', () => {
-  it('sums the months into quarters and remembers the choice (scenario 2)', async () => {
+  it('shows the quarters the API added up and remembers the choice (scenario 2, D-061)', async () => {
     const user = userEvent.setup();
-    const grid = launchFilmSection().grid;
-    renderGrid(grid);
+    const { grid, gridQuarterly } = launchFilmSection();
+    renderGrid(grid, false, gridQuarterly);
 
     expect(headers()).toEqual(['Line item', 'Mar 2026', 'Apr 2026', 'May 2026', 'Total']);
     await user.click(screen.getByRole('button', { name: 'Quarterly' }));
@@ -40,6 +44,7 @@ describe('SpreadGrid (FR-003, FR-020)', () => {
     expect(screen.getByRole('row', { name: /^Agency fee/ })).toHaveTextContent(
       'Agency fee16,666.6633,333.3450,000.00',
     );
+    expect(screen.getByRole('row', { name: /^Total/ })).toHaveTextContent('33,333.3266,666.68');
     expect(localStorage.getItem(KEY)).toBe('quarterly');
   });
 
@@ -99,12 +104,9 @@ describe('SpreadGrid (FR-003, FR-020)', () => {
     ).toBeInTheDocument();
   });
 
-  it('keeps the line-item names in a sticky first column, scrolling inside the card', () => {
+  it('keeps the line-item names in a sticky first column', () => {
     renderGrid();
     const name = screen.getByRole('rowheader', { name: 'Agency fee' });
     expect(name.className).toMatch(/sticky/);
-    expect(
-      screen.getByRole('region', { name: 'Line items spread over time, in USD' }),
-    ).toHaveAttribute('tabindex', '0');
   });
 });

@@ -205,30 +205,20 @@ func TestActivitySelfApprovalStillBarred(t *testing.T) {
 
 func TestSectionActions(t *testing.T) {
 	t.Parallel()
-	open := &Round{SubjectKind: KindPurchaseRequest, Outcome: OutcomeOpen}
-	openChanges := &Round{SubjectKind: KindModifiedPurchaseRequest, Outcome: OutcomeOpen}
 	tests := []struct {
-		name   string
-		kind   SubjectKind
-		status string
-		open   *Round
-		want   string
+		name string
+		sub  subject
+		want string
 	}{
-		{"031 FR-024 created PR submits", KindPurchaseRequest, StatusCreated, nil, kindSubmit},
-		{"031 FR-024 declined PR re-submits", KindPurchaseRequest, StatusDeclined, nil, kindResubmit},
-		{"031 FR-024 PR in review re-submits", KindPurchaseRequest, StatusInReview, open, kindResubmit},
-		{"031 FR-024 approved PR has no first submission", KindPurchaseRequest, StatusApproved, nil, ""},
-		{"031 FR-024 approved PR submits changes", KindModifiedPurchaseRequest, StatusApproved, nil, kindSubmit},
-		{"031 FR-024 changes in review re-submit", KindModifiedPurchaseRequest, StatusInReview, openChanges, kindResubmit},
-		{"031 FR-024 no changes while the first round is open", KindModifiedPurchaseRequest, StatusSubmitted, open, ""},
-		{"031 FR-024 closed PR submits nothing", KindModifiedPurchaseRequest, StatusClosed, nil, ""},
-		{"031 FR-017 submitted activity re-submits", KindActivity, StatusSubmitted, nil, kindResubmit},
-		{"031 FR-017 approved activity submits nothing", KindActivity, StatusApproved, nil, ""},
+		{"031 FR-017 submitted activity re-submits", subject{Kind: KindActivity, Status: StatusSubmitted}, kindResubmit},
+		{"031 FR-017 approved activity submits nothing", subject{Kind: KindActivity, Status: StatusApproved}, ""},
+		{"031 FR-024 a purchase request answers for itself", subject{Kind: KindModifiedPurchaseRequest,
+			Submissions: map[SubjectKind]string{KindModifiedPurchaseRequest: kindSubmit}}, kindSubmit},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if got := submissionKind(subject{Kind: tt.kind, Status: tt.status}, tt.open); got != tt.want {
+			if got := submissionKind(tt.sub); got != tt.want {
 				t.Errorf("submissionKind = %q, want %q", got, tt.want)
 			}
 		})

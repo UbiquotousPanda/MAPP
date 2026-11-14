@@ -1,10 +1,15 @@
 import type { ReactNode } from 'react';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import { StatusDots } from '@/ui/StatusDot/StatusDot';
+import type { StatusDotProps } from '@/ui/StatusDot/StatusDot';
 import { SubjectStatusChip } from '@/ui/SubjectStatusChip/SubjectStatusChip';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { formatWaitingTime, localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
 import type { Formatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { ApprovalRow, ApprovalTab } from './api';
 import { progressText } from './chain-messages';
 import type { PreviewSubject } from './schemas';
@@ -38,41 +43,43 @@ export function ApprovalsTable({ rows, tab, onOpen }: ApprovalsTableProps) {
   }
 
   return (
-    <div className={styles.scroll}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th scope="col" className={styles.nameCol}>
-              Record
-            </th>
-            <th scope="col">Record type</th>
-            <th scope="col" className={styles.pathCol}>
-              Plan › campaign
-            </th>
-            <th scope="col">Owner</th>
-            <th scope="col" className={styles.amount}>
-              Planned cost
-            </th>
-            <th scope="col" className={styles.workflowCol}>
-              Workflow
-            </th>
-            <th scope="col">Level</th>
-            <th scope="col">Submitted</th>
-            {decided && <th scope="col">My decision</th>}
-            {decided && <th scope="col">Status</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <Row
-              key={`${row.subject.kind}-${row.subject.id}`}
-              row={row}
-              decided={decided}
-              onOpen={onOpen}
-            />
-          ))}
-        </tbody>
-      </table>
+    <div className={styles.bleed}>
+      <ScrollBox label="Approvals">
+        <table className={cx(dataTable.table, styles.table)}>
+          <thead>
+            <tr>
+              <th scope="col" className={styles.nameCol}>
+                Record
+              </th>
+              <th scope="col">Record type</th>
+              <th scope="col" className={styles.pathCol}>
+                Plan › campaign
+              </th>
+              <th scope="col">Owner</th>
+              <th scope="col" className={dataTable.numeric}>
+                Planned cost
+              </th>
+              <th scope="col" className={styles.workflowCol}>
+                Workflow
+              </th>
+              <th scope="col">Level</th>
+              <th scope="col">Submitted</th>
+              {decided && <th scope="col">My decision</th>}
+              {decided && <th scope="col">Status</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <Row
+                key={`${row.subject.kind}-${row.subject.id}`}
+                row={row}
+                decided={decided}
+                onOpen={onOpen}
+              />
+            ))}
+          </tbody>
+        </table>
+      </ScrollBox>
     </div>
   );
 }
@@ -85,20 +92,21 @@ interface RowProps {
 
 function Row({ row, decided, onOpen }: RowProps) {
   const format = useFormatters();
-  const chips = rowChips(row);
+  const flags = rowFlags(row);
 
   return (
     <tr>
       <th scope="row">
-        <OpenButton row={row} onOpen={onOpen} />
-        <span className={styles.id}>{row.subject.id}</span>
+        <span className={styles.nameLine}>
+          {(flags.problems || flags.escalated) && <StatusDots dots={dotsOf(flags)} />}
+          <OpenButton row={row} onOpen={onOpen} />
+        </span>
         <DelegateNote row={row} />
-        {chips && <span className={styles.chips}>{chips}</span>}
       </th>
       <td className={styles.nowrap}>{row.subject.label}</td>
       <td>{pathText(row)}</td>
       <td className={styles.nowrap}>{row.owner ? <PersonLabel person={row.owner} /> : '—'}</td>
-      <td className={styles.amount}>{format.money(row.plannedCost)}</td>
+      <td className={dataTable.numeric}>{format.money(row.plannedCost)}</td>
       <td>{workflowText(row)}</td>
       <td className={styles.nowrap}>
         <LevelCell row={row} />
@@ -129,7 +137,6 @@ function RowCard({ row, decided, onOpen }: RowProps) {
     <li className={styles.card}>
       <div className={styles.cardHead}>
         <OpenButton row={row} onOpen={onOpen} />
-        <span className={styles.id}>{row.subject.id}</span>
         <DelegateNote row={row} />
       </div>
       {(decided || chips) && (
@@ -224,22 +231,42 @@ function SubmittedCell({ row, format }: { row: ApprovalRow; format: Formatters }
   );
 }
 
-function rowChips(row: ApprovalRow): ReactNode {
+function rowFlags(row: ApprovalRow): { problems: string | null; escalated: string | null } {
   const open = row.round.outcome === 'open';
   const problems = [
     open && row.noApprover && 'No approver',
     open && row.overdue && 'Overdue',
     row.startDatePassed && 'Start date passed',
+    open && row.blockedReason,
   ].filter((word): word is string => Boolean(word));
+  return {
+    problems: problems.length > 0 ? problems.join(' · ') : null,
+    escalated: open && row.escalatedTo ? `Escalated to ${row.escalatedTo.name}` : null,
+  };
+}
+
+function dotsOf(flags: ReturnType<typeof rowFlags>): StatusDotProps[] {
+  const dots: StatusDotProps[] = [];
+  if (flags.problems) {
+    dots.push({ tone: 'problem', label: flags.problems });
+  }
+  if (flags.escalated) {
+    dots.push({ tone: 'review', label: flags.escalated });
+  }
+  return dots;
+}
+
+function rowChips(row: ApprovalRow): ReactNode {
+  const { problems, escalated } = rowFlags(row);
   const chips = [
-    problems.length > 0 && (
+    problems && (
       <StatusChip key="problem" tone="problem">
-        {problems.join(' · ')}
+        {problems}
       </StatusChip>
     ),
-    open && row.escalatedTo && (
+    escalated && (
       <StatusChip key="escalated" tone="review">
-        {`Escalated to ${row.escalatedTo.name}`}
+        {escalated}
       </StatusChip>
     ),
   ].filter(Boolean);

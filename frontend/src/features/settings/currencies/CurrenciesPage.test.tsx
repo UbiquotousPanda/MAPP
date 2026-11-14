@@ -66,7 +66,10 @@ describe('CurrenciesPage: details (US4 scenarios 2 and 4)', () => {
     const { user, api } = renderCurrenciesPage([], '/settings/currencies?id=USD');
 
     const panel = await screen.findByRole('dialog', { name: 'US dollar (USD)' });
-    expect(within(panel).getAllByText(USD_LOCK)).toHaveLength(2);
+    expect(within(panel).getAllByText(USD_LOCK)).toHaveLength(1);
+    const rateLock = "Why Rate (units per 1 USD) can't change";
+    await user.click(within(panel).getByRole('button', { name: rateLock }));
+    expect(screen.getByRole('dialog', { name: rateLock })).toHaveTextContent(USD_LOCK);
 
     await user.click(within(panel).getByRole('button', { name: 'Actions for USD' }));
     const setInactive = await screen.findByRole('menuitem', { name: /^Set inactive/ });

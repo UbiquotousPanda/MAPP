@@ -16,7 +16,7 @@ function rowsText() {
 }
 
 describe('GoalFields (FR-009)', () => {
-  it('works forwards from INQ 250,000: MQL 5,000, deals 250 and revenue 2,500,000.00 USD, calculated', () => {
+  it('works forwards from INQ 250,000: MQL 5,000, deals 250 and revenue $2,500,000.00, calculated', () => {
     renderWithProviders(
       <GoalFields
         stage="inq"
@@ -31,7 +31,7 @@ describe('GoalFields (FR-009)', () => {
     expect(rowsText()).toEqual([
       'MQL: 5,000Calculated MQL = INQ × 2.00 %',
       'Deals: 250Calculated Deals = MQL × 5.00 %',
-      'Revenue: 2,500,000.00 USDCalculated Revenue = deals × 10,000.00 USD',
+      'Revenue: $2,500,000.00Calculated Revenue = deals × $10,000.00',
     ]);
   });
 
@@ -55,16 +55,16 @@ describe('GoalFields (FR-009)', () => {
         stage: 'deals',
         value: '250',
         calculated: true,
-        formula: 'Deals = revenue ÷ 10,000.00 USD',
+        formula: 'Deals = revenue ÷ $10,000.00',
         reason: undefined,
       },
-      { stage: 'revenue', value: '2,500,000.00 USD', calculated: false },
+      { stage: 'revenue', value: '$2,500,000.00', calculated: false },
     ]);
   });
 
   it('works partly backwards from MQL, rounding half up', () => {
     const rows = goalRows('mql', '5,001', LUBRICANTS_1);
-    expect(rows.map((row) => row.value)).toEqual(['250,050', '5,001', '250', '2,500,000.00 USD']);
+    expect(rows.map((row) => row.value)).toEqual(['250,050', '5,001', '250', '$2,500,000.00']);
   });
 
   it('says why a stage cannot be worked out when a rate is 0', () => {

@@ -1,10 +1,11 @@
-import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
 import { Link } from 'react-router';
+import { DisclosureButton, DisclosureSpace } from '@/ui/DisclosureButton/DisclosureButton';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
-import { LevelTag } from '@/ui/LevelTag/LevelTag';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
+import { cx } from '@/ui/cx';
+import { LEVEL_LABELS } from '@/ui/AttributeFilterMenu/attribute-filter';
 import { CONTEXT_LABEL, CONTEXT_TIP } from './all-work-text';
 import type { AllWorkRow } from './all-work-types';
 import { Highlight } from './Highlight';
@@ -36,7 +37,11 @@ export function RowName({ visible, search, showStatus, onToggle, onOpen, childre
   }
 
   const link = (
-    <Link to={rowHref(row)} className={styles.link} onClick={open}>
+    <Link
+      to={rowHref(row)}
+      className={cx(styles.link, row.level === 'plan' && styles.planLink)}
+      onClick={open}
+    >
       <Highlight text={row.name} search={search} />
     </Link>
   );
@@ -44,22 +49,20 @@ export function RowName({ visible, search, showStatus, onToggle, onOpen, childre
   return (
     <div className={styles.name} style={{ paddingLeft: `${row.depth * 24}px` }}>
       {childCount > 0 ? (
-        <button
-          type="button"
-          className={styles.toggle}
-          aria-expanded={expanded}
-          aria-label={`${expanded ? 'Collapse' : 'Expand'} ${row.name}`}
+        <DisclosureButton
+          expanded={expanded}
+          label={`${expanded ? 'Collapse' : 'Expand'} ${row.name}`}
           onClick={() => onToggle(row.key)}
-        >
-          {expanded ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
-        </button>
+        />
       ) : (
-        <span className={styles.toggleSpace} />
+        <DisclosureSpace />
       )}
       <div className={styles.text}>
         <div className={styles.line}>
-          {row.level !== 'unassigned' && <LevelTag level={row.level} />}
           {row.name.length > LONG_NAME ? <Tooltip content={row.name}>{link}</Tooltip> : link}
+          {LEVEL_LABELS[row.level] && (
+            <span className={styles.level}>{LEVEL_LABELS[row.level]}</span>
+          )}
           {row.level === 'plan' && row.year !== undefined && (
             <span className={styles.year}>{row.year}</span>
           )}

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { nth } from '@/testing/dom';
 import { allWorkOptions, standard2026 } from '@/testing/fixtures/all-work';
 import type { ViewState } from './all-work-types';
-import { chipsOf, clearAll, hasFilters, removeChip } from './view-chips';
+import { chipsOf, clearAll, clearFilters, removeChip } from './view-chips';
 
 describe('chips and Clear all (FR-008)', () => {
   const state: ViewState = {
@@ -43,9 +43,15 @@ describe('chips and Clear all (FR-008)', () => {
   });
 
   it('clears every filter and the search but keeps the year', () => {
-    const cleared = clearAll({ ...state, year: 2027 });
+    const cleared = clearAll({ ...state, search: 'film', year: 2027 });
     expect(cleared.year).toBe(2027);
-    expect(hasFilters(cleared)).toBe(false);
-    expect(hasFilters(state)).toBe(true);
+    expect(cleared.search).toBe('');
+    expect(chipsOf(cleared)).toEqual([]);
+  });
+
+  it("the chips' Clear filters keeps the search", () => {
+    const cleared = clearFilters({ ...state, search: 'film' });
+    expect(cleared.search).toBe('film');
+    expect(chipsOf(cleared)).toEqual([]);
   });
 });

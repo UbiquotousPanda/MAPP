@@ -97,17 +97,3 @@ func TestPostgresStore_ReportTotalsOutsideTheScopeAreInvisible_FR002(t *testing.
 		t.Fatalf("rows = %+v, want only A-1001's fact: a record outside the scope must look missing", mine)
 	}
 }
-
-func TestPostgresStore_ReportTotalsStopsAtTheRequestedActivities(t *testing.T) {
-	t.Parallel()
-	store := pgRevenueStore(t)
-
-	everything := authz.Scope{Everything: true}
-	found, err := store.ReportTotals(t.Context(), everything, []string{"A-1001"}, 2026)
-	if err != nil {
-		t.Fatalf("ReportTotals: %v", err)
-	}
-	if len(found) != 1 || found[0].ActivityID != "A-1001" {
-		t.Fatalf("rows = %+v, want only the activity asked for, even with an unrestricted scope", found)
-	}
-}

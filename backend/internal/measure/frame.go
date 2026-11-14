@@ -13,7 +13,7 @@ const msgNoReport = "There is no such report."
 
 // Frame works out what every report page shares for the report and the filter, in one Read.
 func (s *Service) Frame(ctx context.Context, a actor.Actor, report string, f Filter) (Frame, error) {
-	if err := openable(ctx, report); err != nil {
+	if err := openable(report); err != nil {
 		return Frame{}, err
 	}
 	var frame Frame

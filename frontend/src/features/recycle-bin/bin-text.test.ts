@@ -5,7 +5,6 @@ import {
   matchSearch,
   restoreStateLine,
   rowContentsText,
-  showingLine,
   typePills,
   wasInText,
 } from './bin-text';
@@ -13,12 +12,6 @@ import {
 const PARENT = { type: 'initiative', typeLabel: 'initiative', id: 'I-1009', name: 'Trade shows' };
 
 describe('rows (FR-014, FR-015, FR-017)', () => {
-  it('counts the items shown of all, singular for one (FR-016)', () => {
-    expect(showingLine(3, 12)).toBe('3 of 12 items');
-    expect(showingLine(1, 1)).toBe('1 of 1 item');
-    expect(showingLine(1250, 1250)).toBe('1,250 of 1,250 items');
-  });
-
   it('says what was inside, or Nothing inside', () => {
     expect(rowContentsText(binItem().contents)).toBe('1 activity · 1 line item');
     expect(rowContentsText([])).toBe('Nothing inside');

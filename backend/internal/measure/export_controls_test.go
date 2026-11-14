@@ -18,27 +18,28 @@ import (
 func TestExport_NotesNameOnlyTheReportsOwnControls_039_FR022(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		report string
-		values url.Values
-		want   [][2]string
-		inView bool
+		section, report string
+		values          url.Values
+		want            [][2]string
+		inView          bool
 	}{
-		{measure.KeyPlanDetails, url.Values{"show": {"campaign"}}, [][2]string{{"Report", "Plan details"},
-			{"Year", "2026"}, {"Filters", "None"}, {"Period", "Months"}, {"Show", "Campaign"}, {"Currency", "GBP"}}, true},
-		{measure.KeyApprovals, nil, [][2]string{{"Report", "Approvals"}, {"Year", "2026"}, {"Filters", "None"},
-			{"Currency", "GBP"}}, true},
-		{measure.KeyUserAccess, url.Values{"team": {"T-1"}}, [][2]string{{"Report", "User access"},
-			{"Filters", "Team: Lubricants Europe"}}, false},
+		{measure.KeyPlanDetails, measure.KeyPlanData, url.Values{"show": {"campaign"}}, [][2]string{
+			{"Report", "Plan data and access"}, {"Year", "2026"}, {"Filters", "None"}, {"Section", "Data completeness"},
+			{"Period", "Months"}, {"Show", "Campaign"}, {"Currency", "GBP"}}, true},
+		{measure.KeyApprovals, measure.KeyApprovals, nil, [][2]string{{"Report", "Approvals"}, {"Year", "2026"},
+			{"Filters", "None"}, {"Currency", "GBP"}}, true},
+		{measure.KeyUserAccess, measure.KeyPlanData, url.Values{"team": {"T-1"}, "tab": {"people"}}, [][2]string{
+			{"Report", "Plan data and access"}, {"Filters", "Team: Lubricants Europe"}, {"Section", "People"}}, false},
 	}
 	for _, tt := range tests {
-		t.Run(tt.report, func(t *testing.T) {
+		t.Run(tt.section, func(t *testing.T) {
 			t.Parallel()
 			f, err := measure.ParseFilter(tt.values)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			file, err := exportService(t, sheetsReport{key: tt.report}).Export(withPermissions(t, authz.AccessManage),
+			file, err := exportService(t, sheetsReport{key: tt.section}).Export(withPermissions(t, authz.AccessManage),
 				actor.Actor{ID: "U-2", Name: "Priya Raman"}, tt.report, measure.ExportRequest{Filter: f})
 			if err != nil {
 				t.Fatal(err)

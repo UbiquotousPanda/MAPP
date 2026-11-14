@@ -17,18 +17,16 @@ import (
 	"mapp/internal/settings"
 )
 
-// socialAlwaysOn is the seeded Approved Lubricants activity, approved by Daniel Okoro in round 1, with the
-// line items Venue hire (L-1003, GBP) and Speaker fees (L-1004).
+// socialAlwaysOn is seeded Approved by Daniel Okoro in round 1, with Venue hire (L-1003, GBP) and Speaker fees (L-1004).
 const socialAlwaysOn = "A-1002"
 
-// Mei Lin recalls the Mobility activity waiting at level 2 with a reason: it is Created, its round is
-// recalled at level 2 with the reason, and it leaves Alex Morgan's Waiting for me. Recalling it again
-// explains what happened; an Approved activity can't be recalled (FR-021, FR-018).
+// Recalling makes the activity Created and drops it from Alex Morgan's Waiting for me; recalling it again explains
+// what happened; an Approved activity can't be recalled.
 func TestRecall_WaitingMobilityActivity_FR021(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	mei := server.SignIn(t, meisEmail)
-	server.GrantRole(t, meisEmail, "globalPlanner", "all") // 014: every market's plans
+	server.GrantRole(t, meisEmail, "globalPlanner", "all") // every market's plans
 	alex := server.SignIn(t, alexsEmail)
 	recall := map[string]any{"roundId": "AR-1008", "reason": "Wrong workflow — use the fleet one."}
 
@@ -57,9 +55,8 @@ func TestRecall_WaitingMobilityActivity_FR021(t *testing.T) {
 	assertError(t, gone, http.StatusNotFound, "not_found", "This activity no longer exists — someone may have deleted it.")
 }
 
-// Changing the planned cost through 006's edit, confirmed, returns a Submitted and an Approved activity to
-// Created: the open round ends as restarted with the change; the approved round stays approved and gets the
-// restart in its history (FR-022, US5 scenario 1).
+// A confirmed planned-cost change returns Submitted and Approved activities to Created: the open round ends as
+// restarted; the approved round stays approved and gets the restart in its history.
 func TestPlannedCostChangeRestartsApproval_FR022(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -89,8 +86,7 @@ func TestPlannedCostChangeRestartsApproval_FR022(t *testing.T) {
 }
 
 // Changing a line item's currency through 007's edit keeps the Approved activity Approved: no confirmation,
-// its approved round stays approved and its history gets no entry (034 FR-001, D-322; replaces 008 US5
-// scenario 2).
+// its approved round stays approved and its history gets no entry.
 func TestLineItemCurrencyChangeKeepsApproval_034_FR001(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -112,8 +108,7 @@ func TestLineItemCurrencyChangeKeepsApproval_034_FR001(t *testing.T) {
 	}
 }
 
-// Adding a line item to the Submitted "Trade magazine ads" and re-costing it keep the activity Submitted: its
-// open round stays at its level and Daniel Okoro still finds it waiting for him (034 FR-001, US1 scenario 2).
+// Adding and re-costing a line item keep "Trade magazine ads" Submitted at its level, still waiting for Daniel Okoro.
 func TestLineItemChangeOnSubmittedKeepsRound_034_FR001(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -148,14 +143,14 @@ func TestLineItemChangeOnSubmittedKeepsRound_034_FR001(t *testing.T) {
 	}
 }
 
-// Deleting a Submitted activity: Undo brings it back Submitted with the same round (D-031); a later Restore
-// brings it back Created and ends that round as cancelled, dated at the delete (FR-023, 008-P3).
+// Undo brings a deleted Submitted activity back with the same round; a later Restore brings it back Created and
+// ends that round as cancelled, dated at the delete.
 func TestDeleteSubmittedActivity_UndoKeepsRound_RestoreCancels_FR023(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 	mei := server.SignIn(t, meisEmail)
-	server.GrantRole(t, meisEmail, "globalPlanner", "all") // 014: every market's plans
+	server.GrantRole(t, meisEmail, "globalPlanner", "all") // every market's plans
 	daniel := server.SignIn(t, danielsEmail)
 	path := "/api/v1/activities/" + tradeMagazineAds
 
@@ -292,7 +287,7 @@ func lineItemForm(t *testing.T, client *apitest.Client, id string) map[string]an
 
 func deleteActivity(t *testing.T, client *apitest.Client, id string) string {
 	t.Helper()
-	response := client.Do(t, http.MethodDelete, "/api/v1/activities/"+id, nil)
+	response := client.DeleteSeen(t, "/api/v1/activities/"+id)
 	if response.Status != http.StatusOK {
 		t.Fatalf("DELETE %s = %d %s, want 200", id, response.Status, response.Body)
 	}

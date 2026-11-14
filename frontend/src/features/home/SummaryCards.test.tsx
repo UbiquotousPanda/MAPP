@@ -235,10 +235,10 @@ describe('SummaryCards', () => {
 
     expect(
       await screen.findByRole('link', {
-        name: 'Planned cost vs plan budget: 922.76K EUR (922,760.00 EUR) — open the Plans list',
+        name: 'Planned cost vs plan budget: €922.76K (€922,760.00) — open the Plans list',
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText('of 1.1M EUR plan budget')).toBeInTheDocument();
+    expect(screen.getByText('of €1.1M plan budget')).toBeInTheDocument();
   });
 
   it('shows a placeholder in each card while loading (FR-022)', () => {

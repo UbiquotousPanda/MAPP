@@ -24,6 +24,9 @@ func (s *Store) ListReviewRows(_ context.Context, f performance.ReviewFilter) ([
 		src, _, _ := s.sources.Get(r.SourceID)
 		views = append(views, performance.ReviewRowView{ReviewRow: r, SourceName: src.Name})
 	}
+	if f.ByID {
+		views = pagedByID(views, f.AfterID)
+	}
 	if f.Limit > 0 && len(views) > f.Limit {
 		views = views[:f.Limit]
 	}
@@ -278,4 +281,9 @@ func (s *Store) CurrencyCodes(ctx context.Context) (map[string]bool, error) {
 		return map[string]bool{"USD": true}, nil
 	}
 	return s.Currencies, nil
+}
+
+func pagedByID(views []performance.ReviewRowView, afterID string) []performance.ReviewRowView {
+	slices.SortFunc(views, func(a, b performance.ReviewRowView) int { return strings.Compare(a.ID, b.ID) })
+	return slices.DeleteFunc(views, func(v performance.ReviewRowView) bool { return v.ID <= afterID })
 }

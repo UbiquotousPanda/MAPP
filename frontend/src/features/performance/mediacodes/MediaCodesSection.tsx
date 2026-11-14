@@ -8,6 +8,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useToast } from '@/ui/Toast/useToast';
 import { useCanChange } from '@/ui/useCanChange';
+import dataTable from '@/ui/Table/Table.module.css';
 import styles from '../activity/DataSourcesArea.module.css';
 import { GenerateCodeDialog } from './GenerateCodeDialog';
 import { useDeactivateMediaCode, useDeleteMediaCode, useMediaCodes } from './api';
@@ -77,82 +78,87 @@ function CodeRows({
   }
 
   return (
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          <th scope="col">Code</th>
-          <th scope="col">Landing page</th>
-          <th scope="col">Status</th>
-          <th scope="col">
-            <span className="visually-hidden">Actions</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((code) => (
-          <tr key={code.id}>
-            <td className={styles.numeric}>{code.code}</td>
-            <td>{code.landingPage || '—'}</td>
-            <td>
-              <StatusChip tone={code.status === 'active' ? 'positive' : 'neutral'}>
-                {code.status}
-              </StatusChip>
-            </td>
-            <td>
-              <Button variant="tertiary" onClick={() => void copy(String(code.code), 'Code')}>
-                Copy code
-              </Button>
-              <Button variant="tertiary" onClick={() => void copy(taggedLink(code), 'Tagged link')}>
-                Copy tagged link
-              </Button>
-              {canLink && (
-                <Button variant="tertiary" onClick={() => setRemoving(code)}>
-                  Delete
-                </Button>
-              )}
-            </td>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
+        <thead>
+          <tr>
+            <th scope="col">Code</th>
+            <th scope="col">Landing page</th>
+            <th scope="col">Status</th>
+            <th scope="col">
+              <span className="visually-hidden">Actions</span>
+            </th>
           </tr>
-        ))}
-        {removing && (
-          <ConfirmDialog
-            open
-            onOpenChange={(open) => {
-              if (!open) setRemoving(null);
-            }}
-            title="Delete this media code?"
-            confirmLabel="Delete code"
-            tone="danger"
-            busy={deleteCode.isPending}
-            onConfirm={() => {
-              deleteCode.mutate(removing.id, {
-                onSuccess: () => {
-                  show({ message: `Code ${removing.code} deleted` });
-                  setRemoving(null);
-                },
-                onError: (error) => {
-                  const refused = asApiError(error);
-                  show({ message: refused.message });
-                  if (refused.kind !== 'notAllowed') {
+        </thead>
+        <tbody>
+          {items.map((code) => (
+            <tr key={code.id}>
+              <td className={dataTable.numeric}>{code.code}</td>
+              <td>{code.landingPage || '—'}</td>
+              <td>
+                <StatusChip tone={code.status === 'active' ? 'positive' : 'neutral'}>
+                  {code.status}
+                </StatusChip>
+              </td>
+              <td>
+                <Button variant="tertiary" onClick={() => void copy(String(code.code), 'Code')}>
+                  Copy code
+                </Button>
+                <Button
+                  variant="tertiary"
+                  onClick={() => void copy(taggedLink(code), 'Tagged link')}
+                >
+                  Copy tagged link
+                </Button>
+                {canLink && (
+                  <Button variant="tertiary" onClick={() => setRemoving(code)}>
+                    Delete
+                  </Button>
+                )}
+              </td>
+            </tr>
+          ))}
+          {removing && (
+            <ConfirmDialog
+              open
+              onOpenChange={(open) => {
+                if (!open) setRemoving(null);
+              }}
+              title="Delete this media code?"
+              confirmLabel="Delete code"
+              tone="danger"
+              busy={deleteCode.isPending}
+              onConfirm={() => {
+                deleteCode.mutate(removing.id, {
+                  onSuccess: () => {
+                    show({ message: `Code ${removing.code} deleted` });
                     setRemoving(null);
-                    return;
-                  }
-                  deactivate.mutate(removing.id, {
-                    onSuccess: () => {
-                      show({
-                        message: `Code ${removing.code} deactivated — matching stops, its history stays`,
-                      });
+                  },
+                  onError: (error) => {
+                    const refused = asApiError(error);
+                    show({ message: refused.message });
+                    if (refused.kind !== 'notAllowed') {
                       setRemoving(null);
-                    },
-                  });
-                },
-              });
-            }}
-          >
-            Its number {removing.code} is never reused. A code already used by facts is deactivated
-            instead.
-          </ConfirmDialog>
-        )}
-      </tbody>
-    </table>
+                      return;
+                    }
+                    deactivate.mutate(removing.id, {
+                      onSuccess: () => {
+                        show({
+                          message: `Code ${removing.code} deactivated — matching stops, its history stays`,
+                        });
+                        setRemoving(null);
+                      },
+                    });
+                  },
+                });
+              }}
+            >
+              Its number {removing.code} is never reused. A code already used by facts is
+              deactivated instead.
+            </ConfirmDialog>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }

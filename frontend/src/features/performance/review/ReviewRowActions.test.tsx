@@ -129,7 +129,7 @@ describe('Review row actions', () => {
       await screen.findByText('Row corrected and matched', { exact: false }),
     ).toBeInTheDocument();
     expect(api.bodiesOf('POST /api/v1/performance/review-rows/PRR-1001/correct')).toEqual([
-      { keys: { activityId: 'A-1042' } },
+      { keys: { activityId: 'A-1042' }, version: reviewRow().version },
     ]);
   });
 

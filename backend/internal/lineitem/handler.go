@@ -22,6 +22,7 @@ func NewHandler(s *Service) *Handler {
 func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.GET("/activities/:activityId/line-items", h.section)
 	r.GET("/activities/:activityId/line-items/form-options", h.formOptions)
+	r.POST("/activities/:activityId/line-items/preview", h.preview)
 	r.POST("/activities/:activityId/line-items", h.create)
 	r.GET("/line-items/:lineItemId", h.get)
 	r.PATCH("/line-items/:lineItemId", h.update)
@@ -56,8 +57,13 @@ func (h *Handler) update(c *gin.Context) {
 
 // delete ignores the deprecated query parameter restartApproval.
 func (h *Handler) delete(c *gin.Context) {
-	a, _ := actor.From(c.Request.Context())
-	entry, err := h.service.Delete(c.Request.Context(), a, c.Param("lineItemId"))
+	ctx, err := history.SeenVersion(c, c.Param("lineItemId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	a, _ := actor.From(ctx)
+	entry, err := h.service.Delete(ctx, a, c.Param("lineItemId"))
 	if err != nil {
 		web.RespondError(c, err)
 		return
@@ -114,4 +120,19 @@ func (h *Handler) create(c *gin.Context) {
 		return
 	}
 	web.Respond(c, http.StatusCreated, view)
+}
+
+func (h *Handler) preview(c *gin.Context) {
+	var in PreviewInput
+	if err := web.BindJSON(c, &in); err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	a, _ := actor.From(c.Request.Context())
+	preview, err := h.service.Preview(c.Request.Context(), a, c.Param("activityId"), in)
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	web.Respond(c, http.StatusOK, preview)
 }

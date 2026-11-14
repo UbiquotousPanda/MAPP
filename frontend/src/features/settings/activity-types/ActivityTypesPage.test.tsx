@@ -17,7 +17,6 @@ describe('ActivityTypesPage: the list (FR-002)', () => {
     expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent('Settings');
     expect(screen.getByRole('heading', { level: 1, name: 'Activity types' })).toBeInTheDocument();
     expect(document.title).toBe('Activity types · SP&A One');
-    expect(screen.getByText('The kinds of work activities can be.')).toBeInTheDocument();
 
     await screen.findByRole('table');
     const event = rowOf('Event');
@@ -34,9 +33,9 @@ describe('ActivityTypesPage: the list (FR-002)', () => {
     const { user, router } = renderActivityTypesPage();
     await screen.findByRole('table');
 
-    await user.click(screen.getByRole('button', { name: 'Inactive 1' }));
+    await user.click(screen.getByRole('button', { name: 'Inactive' }));
     expect(within(rowOf('Print advert')).getByText('Inactive')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'All 3' }));
+    await user.click(screen.getByRole('button', { name: 'All' }));
     await user.type(screen.getByRole('searchbox', { name: 'Search activity types' }), 'pod');
 
     expect(

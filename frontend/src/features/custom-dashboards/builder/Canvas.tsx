@@ -97,9 +97,7 @@ export function Canvas({ draft, selectedId, problems, announcement, onAction }: 
         style={{ gridTemplateRows: `repeat(${rows}, ${ROW_HEIGHT}px)` }}
       >
         {draft.widgets.length === 0 && (
-          <p className={styles.empty}>
-            Add a widget: click a type in the palette, or drag it here.
-          </p>
+          <p className={styles.empty}>Add a widget: click a type above, or drag it here.</p>
         )}
         {draft.widgets.map((widget) => (
           <CanvasWidget

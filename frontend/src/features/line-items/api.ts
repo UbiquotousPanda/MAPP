@@ -1,7 +1,9 @@
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 // What the line-item screens ask the API; every change, failed or not, refreshes what it shows in.
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { QueryKey } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
+import { useDebounced } from '@/ui/useDebounced';
+import { invalidateAllButSession } from '@/api/invalidate';
 import type { components } from '@/api/generated/schema';
 
 export type LineItem = components['schemas']['LineItem'];
@@ -15,21 +17,26 @@ export type UnassignedBalance = components['schemas']['UnassignedBalance'];
 export type LineItemCurrency = components['schemas']['LineItemCurrency'];
 export type FinanceBudgetItemRef = components['schemas']['FinanceBudgetItemRef'];
 export type Money = components['schemas']['Money'];
+export type LineItemPreview = components['schemas']['LineItemPreview'];
+export type LineItemPreviewInput = components['schemas']['LineItemPreviewInput'];
 
-// Everything a line-item change shows in, Undo included: the activity's balance, completeness and
-// Ready to submit, the plan tree's rows and roll-ups, the recycle bin and the activity log.
-export const LINE_ITEM_CHANGE_KEYS: QueryKey[] = [
-  ['line-items'],
-  ['activity'],
-  ['approval'],
-  ['plan-activities'],
-  ['plans'],
-  ['plan'],
-  ['campaigns'],
-  ['initiatives'],
-  ['recycle-bin'],
-  ['activity-log'],
-];
+const PREVIEW_DELAY_MS = 250;
+
+/** What saving the form would give, worked out by the API once the typing settles (D-061). */
+export function useLineItemPreview(activityId: string, input: LineItemPreviewInput) {
+  const settled = useDebounced(input, PREVIEW_DELAY_MS);
+  return useQuery({
+    queryKey: ['line-items', 'preview', activityId, settled],
+    queryFn: () =>
+      call(
+        api.POST('/api/v1/activities/{activityId}/line-items/preview', {
+          params: { path: { activityId } },
+          body: settled,
+        }),
+      ),
+    placeholderData: keepPreviousData,
+  });
+}
 
 export function useLineItemSection(activityId: string, enabled = true) {
   return useQuery({
@@ -109,11 +116,15 @@ export function useDuplicateLineItem() {
 export function useDeleteLineItem() {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: (lineItemId: string) =>
-      call(api.DELETE('/api/v1/line-items/{lineItemId}', { params: { path: { lineItemId } } })),
+    mutationFn: ({ id: lineItemId, version }: Seen) =>
+      call(
+        api.DELETE('/api/v1/line-items/{lineItemId}', {
+          params: { path: { lineItemId }, query: { version } },
+        }),
+      ),
     // The deleted line item's own queries are left out: asked again they answer 404.
-    onSuccess: (_result, lineItemId) => {
-      void refresh(lineItemId);
+    onSuccess: (_result, { id }) => {
+      void refresh(id);
     },
     onError: () => {
       void refresh();
@@ -123,15 +134,7 @@ export function useDeleteLineItem() {
 
 function useRefresh() {
   const queryClient = useQueryClient();
-  return (deletedId?: string) =>
-    Promise.all(
-      LINE_ITEM_CHANGE_KEYS.map((queryKey) =>
-        queryClient.invalidateQueries({
-          queryKey,
-          predicate: (query) => deletedId === undefined || !query.queryKey.includes(deletedId),
-        }),
-      ),
-    );
+  return (deletedId?: string) => invalidateAllButSession(queryClient, deletedId);
 }
 
 /** Reads a line item again, bypassing the cache: the version to save over after a conflict. */

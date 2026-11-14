@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
@@ -16,13 +17,7 @@ import { checkAttributeValues } from './api';
 import type { AttributeCheckResult, ShellAttribute } from './api';
 import styles from './AttributePreview.module.css';
 
-/**
- * Preview — <Level> form (feature 002, FR-020, US3): the level's Shell attributes exactly as
- * people will see them, with this attribute highlighted. Below the plan level it can be shown for
- * any business unit, so conditions can be checked; dependent choices, auto-fill and clearing
- * behave as on the real forms. **Try saving** asks the API what a save would say. Nothing is
- * saved.
- */
+/** The level's form as people see it; Try saving asks the API what a save would say, saving nothing. */
 export function AttributePreview({ attribute }: { attribute: ShellAttribute }) {
   const form = useAttributeForm(attribute.level);
   const title = `Preview — ${LEVEL_WORDS[attribute.level]} form`;
@@ -47,7 +42,6 @@ interface PreviewFormProps {
   attributeId: string;
 }
 
-/** The preview's own values, which nobody saves, and the answer of the last Try saving. */
 function PreviewForm({ form, attributeId }: PreviewFormProps) {
   const isPlan = form.level === 'plan';
   const unitOptions = form.businessUnitOptions.filter((option) => option.active);
@@ -65,7 +59,6 @@ function PreviewForm({ form, attributeId }: PreviewFormProps) {
   const problems = result?.problems ?? NO_PROBLEMS;
   const errors = Object.fromEntries(problems.map((problem) => [problem.field, problem.message]));
 
-  /** Any change makes the last answer out of date. */
   function forget() {
     setResult(null);
     setCheckFailure(null);
@@ -138,11 +131,7 @@ function PreviewForm({ form, attributeId }: PreviewFormProps) {
         </Button>
         <p className={styles.note}>Shows what saving a real record would say. Nothing is saved.</p>
       </div>
-      {checkFailure && (
-        <p role="alert" className={styles.failure}>
-          {checkFailure}
-        </p>
-      )}
+      {checkFailure && <InlineError>{checkFailure}</InlineError>}
       {result && <CheckAnswer result={result} />}
     </div>
   );

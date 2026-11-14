@@ -1,5 +1,6 @@
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { DecimalField } from '@/ui/DecimalField/DecimalField';
+import { FieldRow } from '@/ui/FieldRow/FieldRow';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { useFieldHelp } from '@/features/settings';
 import type { WaterfallModel } from '@/features/settings';
@@ -25,8 +26,6 @@ export interface GoalFieldsProps {
   model: WaterfallModel | null;
   stageError?: string;
   amountError?: string;
-  /** "Default: INQ" while the stage is the default one. */
-  stageHint?: string;
 }
 
 /** The goal stage and amount, and the other stages worked out live from the model. */
@@ -38,49 +37,49 @@ export function GoalFields({
   model,
   stageError,
   amountError,
-  stageHint,
 }: GoalFieldsProps) {
   const rows = goalRows(stage, amount, model).filter((row) => row.calculated);
   const { help } = useFieldHelp();
 
   return (
     <>
-      <ChoiceField
-        label="Goal stage"
-        name="goalStage"
-        marking="Needed to publish"
-        tip={help('plan.goalStage')}
-        hint={stageHint}
-        options={GOAL_STAGES.map((id) => ({
-          id,
-          label: STAGE_OPTIONS[id],
-          active: true,
-        }))}
-        value={stage}
-        onChange={(value) => onStageChange(GOAL_STAGES.find((known) => known === value) ?? stage)}
-        error={stageError}
-      />
-      {stage === 'revenue' ? (
-        <MoneyField
-          label={goalAmountLabel(stage)}
-          name="goalAmount"
-          tip={help('plan.goalAmount')}
-          currency="USD"
-          value={amount}
-          onChange={onAmountChange}
-          error={amountError}
+      <FieldRow>
+        <ChoiceField
+          label="Goal stage"
+          name="goalStage"
+          marking="Needed to publish"
+          tip={help('plan.goalStage')}
+          options={GOAL_STAGES.map((id) => ({
+            id,
+            label: STAGE_OPTIONS[id],
+            active: true,
+          }))}
+          value={stage}
+          onChange={(value) => onStageChange(GOAL_STAGES.find((known) => known === value) ?? stage)}
+          error={stageError}
         />
-      ) : (
-        <DecimalField
-          label={goalAmountLabel(stage)}
-          name="goalAmount"
-          tip={help('plan.goalAmount')}
-          decimals={0}
-          value={amount}
-          onChange={onAmountChange}
-          error={amountError}
-        />
-      )}
+        {stage === 'revenue' ? (
+          <MoneyField
+            label={goalAmountLabel(stage)}
+            name="goalAmount"
+            tip={help('plan.goalAmount')}
+            currency="USD"
+            value={amount}
+            onChange={onAmountChange}
+            error={amountError}
+          />
+        ) : (
+          <DecimalField
+            label={goalAmountLabel(stage)}
+            name="goalAmount"
+            tip={help('plan.goalAmount')}
+            decimals={0}
+            value={amount}
+            onChange={onAmountChange}
+            error={amountError}
+          />
+        )}
+      </FieldRow>
       <dl className={styles.goals} aria-label="Calculated goals">
         {rows.map((row) => (
           <div key={row.stage} className={styles.goalRow}>

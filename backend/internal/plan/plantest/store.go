@@ -16,7 +16,12 @@ type Store struct {
 }
 
 func NewStore(db *fake.DB) Store {
-	return Store{plans: fake.TableOf(db, "plans", func(p plan.Plan) string { return p.ID })}
+	plans := fake.TableOf(db, "plans", func(p plan.Plan) string { return p.ID }).
+		Unique("plans_name_key", func(p plan.Plan) string { return fake.LowerC(p.Name) }).
+		Check("plans_budget_minor_check", func(p plan.Plan) bool { return p.Budget == nil || p.Budget.Sign() >= 0 }).
+		Check("plans_year_check", func(p plan.Plan) bool { return p.Year >= 2000 && p.Year <= 2100 }).
+		References("plans_currency_fkey", "currencies", func(p plan.Plan) string { return p.Currency })
+	return Store{plans: plans}
 }
 
 func (s Store) Get(_ context.Context, id string) (plan.Plan, bool, error) {

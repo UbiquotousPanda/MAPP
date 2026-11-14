@@ -1,11 +1,13 @@
 import { Send } from 'lucide-react';
 import { useId, useState } from 'react';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useSendSwbsRequests, useSwbsRuns } from './api';
 import type { SwbsRun, SwbsRunPage } from './api';
 import {
@@ -81,15 +83,11 @@ function Loaded({ page }: { page: SwbsRunPage }) {
           <CodeList codes={result.codes} />
         </div>
       )}
-      {send.error && (
-        <p role="alert" className={styles.problem}>
-          {send.error.message}
-        </p>
-      )}
+      {send.error && <InlineError>{send.error.message}</InlineError>}
       <section aria-labelledby={`${reasonId}-history`} className={styles.stack}>
-        <h3 id={`${reasonId}-history`} className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id={`${reasonId}-history`}>
           {HISTORY_TITLE}
-        </h3>
+        </SectionHeading>
         <SwbsRunList runs={page.items} total={page.total} />
       </section>
       <ConfirmDialog

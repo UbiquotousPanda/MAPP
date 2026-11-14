@@ -17,8 +17,12 @@ type Store struct {
 
 func NewStore(db *fake.DB) Store {
 	return Store{
-		budgets:     fake.TableOf(db, "global_budgets", func(b budget.GlobalBudget) string { return b.ID }),
-		allocations: fake.TableOf(db, "budget_allocations", func(a budget.Allocation) string { return a.ID }),
+		budgets: fake.TableOf(db, "global_budgets", func(b budget.GlobalBudget) string { return b.ID }),
+		allocations: fake.TableOf(db, "budget_allocations", func(a budget.Allocation) string { return a.ID }).
+			Unique("budget_allocations_plan_id_key", func(a budget.Allocation) string { return a.PlanID }).
+			References("budget_allocations_global_budget_id_fkey", "global_budgets", func(a budget.Allocation) string {
+				return a.GlobalBudgetID
+			}),
 	}
 }
 

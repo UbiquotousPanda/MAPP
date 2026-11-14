@@ -17,6 +17,50 @@ const TEST_ONLY = {
   group: ['msw', 'msw/*', 'openapi-msw', '@/testing', '@/testing/*'],
   message: 'Test-only code never reaches the application.',
 };
+const RADIX = {
+  group: ['radix-ui', 'radix-ui/*', '@radix-ui/*'],
+  message: 'Wrap Radix in ui/ (Popover, Menu, FormDialog, Tooltip, …) and use the wrapper (F6).',
+};
+const UI_ELEMENTS = {
+  select: 'ui/Select or ui/ChoiceField',
+  textarea: 'ui/TextAreaField',
+  dialog: 'ui/FormDialog or ui/ConfirmDialog',
+  progress: 'ui/ProgressBar',
+  hr: 'a ui/ section (FormSection, Card)',
+};
+const UI_INPUTS = {
+  radio: 'ui/RadioGroup',
+  checkbox: 'ui/CheckboxField (or its Checkbox)',
+  date: 'ui/DateField',
+  search: 'ui/SearchField',
+  number: 'ui/DecimalField or ui/MoneyField',
+  text: 'ui/TextField',
+};
+const rawElement = (selector, use) => ({ selector, message: `Use ${use} (F6).` });
+const RAW_ELEMENTS = [
+  ...Object.entries(UI_ELEMENTS).map(([tag, use]) =>
+    rawElement(`JSXOpeningElement[name.name='${tag}']`, use),
+  ),
+  ...Object.entries(UI_INPUTS).map(([type, use]) =>
+    rawElement(
+      `JSXOpeningElement[name.name='input']:has(JSXAttribute[name.name='type'][value.value='${type}'])`,
+      use,
+    ),
+  ),
+  rawElement(
+    `JSXOpeningElement[name.name='input']:not(:has(JSXAttribute[name.name='type']))`,
+    UI_INPUTS.text,
+  ),
+  rawElement(
+    `JSXOpeningElement[name.name=/^[a-z]/] > JSXAttribute[name.name='title']`,
+    'ui/Tooltip, not a title',
+  ),
+];
+const ROUTER_PARAMS = {
+  name: 'react-router',
+  importNames: ['useSearchParams'],
+  message: 'Use useAddressParams from ui/: its setter builds on the latest address (D-424).',
+};
 const API_CLIENT = {
   name: '@/api/client',
   message: 'Use a query hook from an api.ts module (F2).',
@@ -105,13 +149,37 @@ export default defineConfig([
   {
     files: ['src/**/*.ts'],
     ignores: TESTS,
-    rules: { 'no-restricted-imports': ['error', { patterns: [TEST_ONLY] }] },
+    rules: {
+      'no-restricted-imports': ['error', { paths: [ROUTER_PARAMS], patterns: [TEST_ONLY, RADIX] }],
+    },
   },
   {
     // Components draw and handle events; requests go through the query hooks of an api module.
     files: ['src/**/*.tsx'],
     ignores: TESTS,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { paths: [API_CLIENT, ROUTER_PARAMS], patterns: [TEST_ONLY, RADIX] },
+      ],
+    },
+  },
+  {
+    // F6: ui/ is the one place that wraps Radix.
+    files: ['src/ui/**/*.ts'],
+    ignores: TESTS,
+    rules: { 'no-restricted-imports': ['error', { patterns: [TEST_ONLY] }] },
+  },
+  {
+    files: ['src/ui/**/*.tsx'],
+    ignores: TESTS,
     rules: { 'no-restricted-imports': ['error', { paths: [API_CLIENT], patterns: [TEST_ONLY] }] },
+  },
+  {
+    // F6: a generic element comes from ui/, so features and app never draw their own copy.
+    files: ['src/features/**/*.tsx', 'src/app/**/*.tsx'],
+    ignores: TESTS,
+    rules: { 'no-restricted-syntax': ['error', ...RAW_ELEMENTS] },
   },
   {
     files: ['src/**/*.{ts,tsx}'],

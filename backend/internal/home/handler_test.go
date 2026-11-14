@@ -31,7 +31,7 @@ func TestHomeSummary_Contract(t *testing.T) {
 		t.Errorf("scope %q, currency %q", got.Scope, got.DisplayCurrency)
 	}
 	// Since 016 her team also has P-1004, FY2027 Lubricants UK & Ireland (Draft, planned in GBP), with two of
-	// her activities: 600,000.00 GBP = 759,493.67 USD budget, 65,000.00 GBP = 82,278.48 USD planned (FR-014).
+	// her activities: 600,000.00 GBP = 800,000.00 USD budget, 65,000.00 GBP = 86,666.67 USD planned.
 	if got.Plans != (home.PlanCounts{Count: 2, Published: 1, Draft: 1}) || everything.Plans != (home.PlanCounts{Count: 4, Published: 1, Draft: 3}) {
 		t.Errorf("plans = %+v (everything %+v); want 1 published, 1 draft (4: 1 published, 3 draft)", got.Plans, everything.Plans)
 	}
@@ -43,10 +43,10 @@ func TestHomeSummary_Contract(t *testing.T) {
 		t.Errorf("waiting for Priya = %+v, want nothing", got.WaitingForMe)
 	}
 	cost := got.PlannedCost
-	if cost.PlanCount != 2 || cost.PlannedCost != usd(t, "542278.48") || cost.PlanBudget == nil ||
-		*cost.PlanBudget != usd(t, "1959493.67") || cost.BudgetUsedPercent == nil || *cost.BudgetUsedPercent != 28 ||
+	if cost.PlanCount != 2 || cost.PlannedCost != usd(t, "546666.67") || cost.PlanBudget == nil ||
+		*cost.PlanBudget != usd(t, "2000000.00") || cost.BudgetUsedPercent == nil || *cost.BudgetUsedPercent != 27 ||
 		cost.OverBudget || cost.PlansWithoutBudget != 0 {
-		t.Errorf("planned cost = %+v, want 542,278.48 of 1,959,493.67 USD, 28 %%", cost)
+		t.Errorf("planned cost = %+v, want 546,666.67 of 2,000,000.00 USD, 27 %%", cost)
 	}
 	w := danielsCards.WaitingForMe
 	if w.Count != 1 || w.OldestWaitingSince == nil || !w.OldestWaitingSince.Equal(now.Add(-48*time.Hour)) {
@@ -133,9 +133,9 @@ func TestHomePlans_Contract(t *testing.T) {
 		*lubricants.PlannedCost != usd(t, "460000.00") || *lubricants.BudgetUsedPercent != 38 || lubricants.OverBudget {
 		t.Errorf("FY2026 Lubricants Europe = %+v", lubricants)
 	}
-	if uk := mine.Items[0]; uk.Budget == nil || *uk.Budget != usd(t, "759493.67") || uk.PlannedCost == nil ||
-		*uk.PlannedCost != usd(t, "82278.48") || uk.BudgetUsedPercent == nil || *uk.BudgetUsedPercent != 11 {
-		t.Errorf("FY2027 Lubricants UK & Ireland = %+v, want its GBP converted: 759,493.67 USD budget, 82,278.48 USD planned, 11 %%", uk)
+	if uk := mine.Items[0]; uk.Budget == nil || *uk.Budget != usd(t, "800000.00") || uk.PlannedCost == nil ||
+		*uk.PlannedCost != usd(t, "86666.67") || uk.BudgetUsedPercent == nil || *uk.BudgetUsedPercent != 11 {
+		t.Errorf("FY2027 Lubricants UK & Ireland = %+v, want its GBP converted: 800,000.00 USD budget, 86,666.67 USD planned, 11 %%", uk)
 	}
 	if global := all.Items[0]; len(global.Teams) != 1 || global.Teams[0].Mine || !global.StrategicAOP {
 		t.Errorf("FY2027 Global Brand = %+v, want an AOP plan of a team that is not Sara's", global)
@@ -247,8 +247,8 @@ func TestHomeMyActivities_Contract(t *testing.T) {
 	if launchFilm.Plan.Name != "FY2026 Lubricants Europe" || launchFilm.Campaign.Name != "Helix launch" ||
 		launchFilm.StartDate == nil || launchFilm.StartDate.String() != "2026-03-01" || launchFilm.EndDate.String() != "2026-05-31" ||
 		launchFilm.PlannedCost == nil || *launchFilm.PlannedCost != usd(t, "120000.00") || len(launchFilm.Missing) != 3 ||
-		ukLaunch.PlannedCost == nil || *ukLaunch.PlannedCost != usd(t, "50632.91") {
-		t.Errorf("Launch film = %+v\nUK launch event = %+v, want its 40,000.00 GBP as 50,632.91 USD", launchFilm, ukLaunch)
+		ukLaunch.PlannedCost == nil || *ukLaunch.PlannedCost != usd(t, "53333.33") {
+		t.Errorf("Launch film = %+v\nUK launch event = %+v, want its 40,000.00 GBP as 53,333.33 USD", launchFilm, ukLaunch)
 	}
 	if partner := view.Groups[4].Items[1]; !partner.Ongoing || partner.EndDate != nil {
 		t.Errorf("Partner co-marketing fund = %+v, want ongoing without an end date", partner)

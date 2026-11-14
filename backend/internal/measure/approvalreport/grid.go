@@ -4,6 +4,8 @@ import (
 	"cmp"
 	"slices"
 	"strings"
+
+	"mapp/internal/platform/paging"
 )
 
 // matching applies the grid's filters and search to all rows, then orders them; paging is left to the caller.
@@ -44,7 +46,7 @@ func searchText(r Row) string {
 
 // pageOf cuts the page the person asked for out of the ordered rows.
 func pageOf(rows []Row, q Query) Grid {
-	size, page := cmp.Or(q.PageSize, defaultPageSize), cmp.Or(q.Page, 1)
+	size, page := cmp.Or(q.PageSize, paging.Default), cmp.Or(q.Page, 1)
 	from := min((page-1)*size, len(rows))
 	to := min(from+size, len(rows))
 	return Grid{Items: slices.Clone(rows[from:to]), Total: len(rows), Page: page, PageSize: size}

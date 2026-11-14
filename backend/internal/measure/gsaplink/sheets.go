@@ -67,7 +67,7 @@ func (s *Service) sheets(ctx context.Context, y year, t Table) ([]measure.Widget
 	return []measure.WidgetSheet{
 		{Key: widgetSwbs, Sheet: sheet.Sheet{Name: names[TabSwbs], Rows: swbsTable(swbs.Rows)}},
 		{Key: widgetBands, Sheet: sheet.Sheet{Name: "Waiting by time", Rows: bandsTable(swbs.Bands)}},
-		{Key: widgetWaiting, Sheet: sheet.Sheet{Name: names[TabWaiting], Rows: waitingTable(waiting.Rows, code)}},
+		{Key: widgetWaiting, Sheet: sheet.Sheet{Name: names[TabWaiting], Rows: waitingTable(waiting, code)}},
 		{Key: widgetOrders, Sheet: sheet.Sheet{Name: names[TabOrders],
 			Rows: ordersTable(orders, code, y.coverage().Plans > 0)}},
 	}, nil
@@ -148,12 +148,12 @@ func yesNo(b bool) string {
 	return "No"
 }
 
-// waitingTable leaves an amount the person may not see empty, as the screen shows "—".
-func waitingTable(rows []WaitingRow, code string) [][]sheet.Cell {
+// waitingTable leaves an amount the person may not see empty, as the screen shows "—", and ends with the total.
+func waitingTable(tab WaitingTab, code string) [][]sheet.Cell {
 	table := [][]sheet.Cell{boldRow("Purchase request ID", "Purchase request", "Vendor", "Owner", "Plan", "Campaign",
 		"Initiative", "Activity", "Routed on", "Routing", "GSAP PR number", "Amount ("+code+")", "Waiting (working days)",
 		"Over 2 working days")}
-	for _, r := range rows {
+	for _, r := range tab.Rows {
 		amount := sheet.Cell{}
 		if r.Amount != nil {
 			amount = sheet.Money(r.Amount.Amount)
@@ -163,7 +163,15 @@ func waitingTable(rows []WaitingRow, code string) [][]sheet.Cell {
 			sheet.Text(r.Path.Activity), sheet.DateTime(r.RoutedAt), sheet.Text(routingWords(r.Routing)),
 			sheet.Text(r.GsapPrNumber), amount, sheet.Number(int64(r.WaitingWorkingDays)), sheet.Text(yesNo(r.OverTurnaround))})
 	}
-	return table
+	if len(tab.Rows) == 0 {
+		return table
+	}
+	total := make([]sheet.Cell, len(table[0]))
+	total[0] = sheet.Bold("Total")
+	if tab.Amount != nil {
+		total[11] = sheet.Money(tab.Amount.Amount)
+	}
+	return append(table, total)
 }
 
 func routingWords(routing string) string {

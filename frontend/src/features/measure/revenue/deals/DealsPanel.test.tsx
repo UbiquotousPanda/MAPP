@@ -11,7 +11,8 @@ import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
-import { RevenueReport } from '../RevenueReport';
+import { choose } from '@/testing/select';
+import { RevenueStage } from '@/testing/fixtures/performance-stages';
 
 const DEALS = 'GET /api/v1/reports/revenue/activities/{activityId}/deals';
 const DEALS_PATH = '/api/v1/reports/revenue/activities/A-1001/deals';
@@ -22,7 +23,7 @@ const AGREEING = { credited: usd('240000.00') };
 
 function renderPage(
   deals: Answer<typeof DEALS> = { body: webinarDeals(AGREEING) },
-  route = '/reports/revenue?year=2026',
+  route = '/reports/performance?year=2026',
 ) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
@@ -34,10 +35,10 @@ function renderPage(
     reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
     reply(DEALS, deals),
   ]);
-  const rendered = renderWithProviders(<RevenueReport />, {
+  const rendered = renderWithProviders(<RevenueStage />, {
     route,
     user: testUser(),
-    path: '/reports/revenue',
+    path: '/reports/performance',
   });
   return { ...rendered, api };
 }
@@ -86,7 +87,7 @@ describe('DealsPanel (058 US1)', () => {
   it('reopens from the address, so a link or Back brings the panel back (FR-007)', async () => {
     const { router } = renderPage(
       { body: webinarDeals() },
-      '/reports/revenue?year=2026&deals=A-1001',
+      '/reports/performance?year=2026&deals=A-1001',
     );
 
     const panel = await screen.findByRole('dialog');
@@ -102,15 +103,52 @@ describe('DealsPanel (058 US1)', () => {
     expect(within(panel).getByLabelText('Loading the deals')).toBeInTheDocument();
   });
 
-  it('says "No data has arrived yet" and why when nothing credits the activity (FR-019)', async () => {
+  it('names why nothing credits an activity not approved yet, with no $0.00 credited (FR-019)', async () => {
     const { user } = renderPage({
       body: webinarDeals({ deals: [], total: 0, credited: usd('0.00'), reason: 'notApproved' }),
     });
 
     const { panel } = await openFromTheRow(user);
 
+    expect(await within(panel).findByText("This activity isn't approved yet")).toBeInTheDocument();
+    expect(within(panel).getByText(/facts are held until it is approved/)).toBeInTheDocument();
+    expect(
+      within(panel).getByText('Credited to this activity').nextElementSibling,
+    ).toHaveTextContent(/^—$/);
+  });
+
+  it('shows a credit of $0.00 when the model gives the activity nothing from its deals, as the list does (FR-011)', async () => {
+    renderPage(
+      { body: webinarDeals({ credited: usd('0.00') }) },
+      '/reports/performance?year=2026&deals=A-1001',
+    );
+
+    const panel = await screen.findByRole('dialog');
+
+    expect(await within(panel).findByText('Credited to this activity')).toBeInTheDocument();
+    expect(
+      within(panel).getByText('Credited to this activity').nextElementSibling,
+    ).toHaveTextContent(/^\$0\.00$/);
+  });
+
+  it('says "No data has arrived yet" when no deal of the year touches the activity (FR-019)', async () => {
+    const { user } = renderPage({
+      body: webinarDeals({ deals: [], total: 0, credited: usd('0.00'), reason: '' }),
+    });
+
+    const { panel } = await openFromTheRow(user);
+
     expect(await within(panel).findByText('No data has arrived yet')).toBeInTheDocument();
-    expect(within(panel).getByText(/not approved yet, so its facts are held/)).toBeInTheDocument();
+    expect(within(panel).getByText(/credits or was booked on this activity/)).toBeInTheDocument();
+  });
+
+  it('opens on the activity heading, with the one close button (scenario 8)', async () => {
+    const { user } = renderPage();
+
+    const { panel } = await openFromTheRow(user);
+
+    await waitFor(() => expect(within(panel).getByRole('heading', { level: 2 })).toHaveFocus());
+    expect(within(panel).getAllByRole('button', { name: 'Close' })).toHaveLength(1);
   });
 
   it('fails on its own and tries again (FR-020)', async () => {
@@ -195,10 +233,7 @@ describe('DealsPanel (058 US1)', () => {
     );
 
     const { panel } = await openFromTheRow(user);
-    await user.selectOptions(
-      within(panel).getByRole('combobox', { name: 'Compare with' }),
-      'Last touch',
-    );
+    await choose(user, within(panel).getByRole('combobox', { name: 'Compare with' }), 'Last touch');
 
     await waitFor(() => expect(dealsRequests(api).at(-1)?.get('compare')).toBe('lastTouch'));
     expect(await within(panel).findByText('$44,108.70 under Last touch')).toBeInTheDocument();
@@ -217,7 +252,7 @@ describe('DealsPanel (058 US1)', () => {
 
     const exports = () =>
       api.requests
-        .filter((r) => r.path === '/api/v1/reports/revenue/export')
+        .filter((r) => r.path === '/api/v1/reports/performance/export')
         .map((r) => new URLSearchParams(r.search));
     await waitFor(() => expect(exports()).toHaveLength(1));
     expect(exports()[0]?.get('widget')).toBe('deals');
@@ -226,15 +261,16 @@ describe('DealsPanel (058 US1)', () => {
     save.mockRestore();
   });
 
-  it('asks for the display currency and shows its figures (scenario 4)', async () => {
+  it('leaves the currency to the display currency and shows its figures (scenario 4, 039-C10)', async () => {
     const { user, api } = renderPage(
       { body: webinarDeals({ credited: { amount: '17206.67', currency: 'EUR' } }) },
-      '/reports/revenue?year=2026&currency=EUR',
+      '/reports/performance?year=2026&currency=EUR',
     );
 
     const { panel } = await openFromTheRow(user);
 
-    await waitFor(() => expect(dealsRequests(api)[0]?.get('currency')).toBe('EUR'));
-    expect(await within(panel).findByText('17,206.67 EUR')).toBeInTheDocument();
+    await waitFor(() => expect(dealsRequests(api)).toHaveLength(1));
+    expect(dealsRequests(api)[0]?.get('currency')).toBeNull();
+    expect(await within(panel).findByText('€17,206.67')).toBeInTheDocument();
   });
 });

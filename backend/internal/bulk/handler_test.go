@@ -39,6 +39,24 @@ func decoded[T any](t *testing.T, response *apitest.Response, status int) T {
 	return v
 }
 
+// seenBy is body with the version client sees of each selected record; 1 for one it cannot read.
+func seenBy(t *testing.T, client *apitest.Client, body map[string]any) map[string]any {
+	t.Helper()
+	paths := map[string]string{"C": "/api/v1/campaigns/", "I": "/api/v1/initiatives/", "A": "/api/v1/activities/"}
+	versions := map[string]int{}
+	for _, id := range body["recordIds"].([]string) {
+		var record struct{ Version int }
+		response := client.Do(t, http.MethodGet, paths[id[:1]]+id, nil, apitest.SkipValidation())
+		versions[id] = 1
+		if response.Status == http.StatusOK {
+			response.Decode(t, &record)
+			versions[id] = record.Version
+		}
+	}
+	body["versions"] = versions
+	return body
+}
+
 func outcomesOf(result bulk.Result) map[string]string {
 	got := map[string]string{}
 	for _, o := range result.Outcomes {
@@ -75,8 +93,8 @@ func TestRun_ChangeOwner_Contract_012FR008_FR023(t *testing.T) {
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 	body := map[string]any{"action": "changeOwner", "ownerId": danielID, "recordIds": []string{"A-1001", "A-1005"}}
 
-	preview := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, previewPath, body), http.StatusOK)
-	run := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath, body), http.StatusCreated)
+	preview := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, previewPath, seenBy(t, priya, seenBy(t, priya, body))), http.StatusOK)
+	run := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath, seenBy(t, priya, seenBy(t, priya, body))), http.StatusCreated)
 
 	if !preview.Preview || preview.Counts.Done != 2 || run.ID == nil || run.Counts.Done != 2 {
 		t.Fatalf("preview %+v, run %+v", preview.Counts, run.Counts)
@@ -101,7 +119,7 @@ func TestRun_ForbiddenSkippedUnseenFailed_Contract_012FR024(t *testing.T) {
 	sara := server.SignIn(t, sarasEmail)
 
 	result := decoded[bulk.Result](t, sara.Do(t, http.MethodPost, runPath,
-		map[string]any{"action": "changeOwner", "ownerId": danielID, "recordIds": []string{"A-1001", "A-9999"}}), http.StatusCreated)
+		seenBy(t, sara, map[string]any{"action": "changeOwner", "ownerId": danielID, "recordIds": []string{"A-1001", "A-9999"}})), http.StatusCreated)
 
 	got := outcomesOf(result)
 	if !strings.HasPrefix(got["A-1001"], "skipped: ") || got["A-9999"] != "failed: No longer exists" {
@@ -115,9 +133,9 @@ func TestRun_ChangeField_Contract_012FR010_FR011(t *testing.T) {
 	body := map[string]any{"action": "changeField", "recordIds": []string{"A-1002", "A-1001"},
 		"field": map[string]any{"key": "endDate", "value": map[string]any{"date": "2026-06-20"}}}
 
-	left := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, previewPath, body), http.StatusOK)
+	left := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, previewPath, seenBy(t, priya, seenBy(t, priya, body))), http.StatusOK)
 	body["restartApproval"] = true
-	restarted := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath, body), http.StatusCreated)
+	restarted := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath, seenBy(t, priya, seenBy(t, priya, body))), http.StatusCreated)
 
 	if len(left.Reapproval) != 1 || left.Reapproval[0].RecordID != "A-1002" || outcomesOf(left)["A-1002"] == "done: " {
 		t.Errorf("leave unchanged: reapproval %+v, outcomes %v", left.Reapproval, outcomesOf(left))
@@ -132,7 +150,7 @@ func TestRun_Submit_Contract_012FR012_FR013(t *testing.T) {
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 
 	result := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, previewPath,
-		map[string]any{"action": "submit", "recordIds": []string{"C-1001", "A-1002", "A-1004", "A-1005"}}), http.StatusOK)
+		seenBy(t, priya, map[string]any{"action": "submit", "recordIds": []string{"C-1001", "A-1002", "A-1004", "A-1005"}})), http.StatusOK)
 
 	got := outcomesOf(result)
 	want := map[string]string{"C-1001": "skipped: Only activities go through approval", "A-1002": "skipped: Already approved",
@@ -175,11 +193,11 @@ func TestRun_CopyMoveDeleteUndo_Contract_012FR014_FR020(t *testing.T) {
 	priya := server.SignIn(t, priyasEmail)
 
 	copied := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath,
-		map[string]any{"action": "copy", "recordIds": []string{"A-1001"}, "targetId": "I-1001"}), http.StatusCreated)
+		seenBy(t, priya, map[string]any{"action": "copy", "recordIds": []string{"A-1001"}, "targetId": "I-1001"})), http.StatusCreated)
 	moved := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath,
-		map[string]any{"action": "move", "recordIds": []string{"A-1003"}, "targetId": "I-1001"}), http.StatusCreated)
+		seenBy(t, priya, map[string]any{"action": "move", "recordIds": []string{"A-1003"}, "targetId": "I-1001"})), http.StatusCreated)
 	deleted := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath,
-		map[string]any{"action": "delete", "recordIds": []string{"I-1003", "A-1001", copied.Outcomes[0].NewRecordID}}), http.StatusCreated)
+		seenBy(t, priya, map[string]any{"action": "delete", "recordIds": []string{"I-1003", "A-1001", copied.Outcomes[0].NewRecordID}})), http.StatusCreated)
 
 	if copied.Outcomes[0].Outcome != "done" || moved.Outcomes[0].Outcome != "done" {
 		t.Fatalf("copy %v, move %v", outcomesOf(copied), outcomesOf(moved))
@@ -196,9 +214,26 @@ func TestRun_CopyMoveDeleteUndo_Contract_012FR014_FR020(t *testing.T) {
 		t.Errorf("a second undo = %+v", body)
 	}
 	late := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath,
-		map[string]any{"action": "delete", "recordIds": []string{"A-1001"}}), http.StatusCreated)
+		seenBy(t, priya, map[string]any{"action": "delete", "recordIds": []string{"A-1001"}})), http.StatusCreated)
 	server.Advance(3 * time.Minute)
 	if body := decoded[apiError](t, priya.Do(t, http.MethodPost, runPath+"/"+*late.ID+"/undo", nil), http.StatusConflict); body.Error.Code != "undo_expired" {
 		t.Errorf("undo after 3 minutes = %+v", body)
+	}
+}
+
+func TestUndo_SkipsARecordAlreadyBroughtBackOnItsOwn_SMM6(t *testing.T) {
+	t.Parallel()
+	priya := apitest.New(t).SignIn(t, priyasEmail)
+	deleted := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath,
+		seenBy(t, priya, map[string]any{"action": "delete", "recordIds": []string{"A-1001", "A-1002"}})), http.StatusCreated)
+	alone := deleted.RecycleBinEntries[0].ID
+	if back := priya.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+alone+"/undo", nil); back.Status != http.StatusOK {
+		t.Fatalf("undo one entry on its own = %d %s", back.Status, back.Body)
+	}
+
+	undone := decoded[bulk.UndoResult](t, priya.Do(t, http.MethodPost, runPath+"/"+*deleted.ID+"/undo", nil), http.StatusOK)
+
+	if len(undone.Restored) != 1 || len(undone.AlreadyBack) != 1 || undone.AlreadyBack[0] != alone {
+		t.Errorf("bulk undo restored %d and listed %v as already back, want 1 and [%s]", len(undone.Restored), undone.AlreadyBack, alone)
 	}
 }

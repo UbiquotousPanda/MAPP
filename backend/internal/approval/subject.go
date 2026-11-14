@@ -29,6 +29,8 @@ type subject struct {
 	TypeName       string
 	BusinessUnits  []Choice
 	Overages       []Overage
+	Blocked        string
+	Submissions    map[SubjectKind]string
 }
 
 func activitySubject(f ActivityFacts) subject {
@@ -52,6 +54,7 @@ func purchaseSubject(kind SubjectKind, f PurchaseRequestFacts) subject {
 		Kind: kind, ID: f.ID, Name: f.Name, Status: f.Status, DisplayStatus: f.Status, Path: f.Path, OwnerID: f.OwnerID,
 		MoAApproverID: f.MoAApproverID, Amount: f.Amount, WorkflowID: f.WorkflowID,
 		ModificationWorkflowID: f.ModificationWorkflowID, Meta: f.Meta, Access: f.Access, Plan: f.Plan, Overages: f.Overages,
+		Blocked: f.Blocked, Submissions: f.Submissions,
 	}
 }
 

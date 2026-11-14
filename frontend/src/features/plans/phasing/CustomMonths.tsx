@@ -13,7 +13,6 @@ import {
   quarterLabels,
   quarterTotals,
   readAmount,
-  splitEvenly,
   withQuarter,
 } from './phasing-math';
 import { MONTH_PROBLEM } from './schemas';
@@ -27,8 +26,8 @@ export interface CustomMonthsProps {
   form: UseFormReturn<PhasingValues>;
   year: number;
   currency: string;
-  /** The record's budget in cents; null without one. */
-  budget: bigint | null;
+  /** The record's budget split evenly over the 12 months by the API, in cents; [] without a budget. */
+  evenly: bigint[];
   /** The record's planned cost of each month, for Copy from planned cost (FR-021). */
   plannedByMonth: (Money | null)[];
   /** Planned cost Copy from planned cost leaves out: in other years, and without dates. */
@@ -48,7 +47,7 @@ export function CustomMonths({
   form,
   year,
   currency,
-  budget,
+  evenly,
   plannedByMonth,
   leftOut,
   entry,
@@ -111,8 +110,8 @@ export function CustomMonths({
             form.setValue('quarters', null);
           }}
         />
-        {budget !== null && (
-          <Button size="sm" onClick={() => fill(splitEvenly(budget, 12))}>
+        {evenly.length === 12 && (
+          <Button size="sm" onClick={() => fill(evenly)}>
             Split evenly
           </Button>
         )}

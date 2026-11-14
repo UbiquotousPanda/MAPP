@@ -17,7 +17,6 @@ test('Settings: an activity type, a finance budget item, a dependent option in t
   await page.goto('/settings');
   await page.getByRole('link', { name: 'Activity types', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Activity types', level: 1 })).toBeVisible();
-  await expect(page.getByText('The kinds of work activities can be.')).toBeVisible();
   await expectNoAxeViolations(page);
   const typeName = uniqueName('E2E type');
   await page.getByRole('button', { name: 'New activity type' }).click();
@@ -43,11 +42,12 @@ test('Settings: an activity type, a finance budget item, a dependent option in t
   const code = uniqueName('E2E').replace(' ', '-').toUpperCase();
   await page.getByRole('button', { name: 'New finance budget item' }).click();
   const newItem = page.getByRole('dialog', { name: 'New finance budget item' });
-  await expect(newItem.getByRole('combobox', { name: 'Budget year' })).toHaveValue(
+  await expect(newItem.getByRole('combobox', { name: 'Budget year' })).toHaveText(
     String(THIS_YEAR),
   );
+  await newItem.getByRole('button', { name: 'About Budget name' }).click();
   await expect(
-    newItem.getByText('Items with the same year and budget name form one finance budget.'),
+    page.getByText('Items with the same year and budget name form one finance budget.'),
   ).toBeVisible();
   await newItem.getByRole('combobox', { name: 'Budget name' }).fill(budgetName);
   await newItem.getByRole('textbox', { name: /^Item name/ }).fill(itemName);
@@ -68,9 +68,10 @@ test('Settings: an activity type, a finance budget item, a dependent option in t
   await page.getByRole('button', { name: 'Add option' }).click();
   const addOption = page.getByRole('dialog', { name: 'Add option' });
   await addOption.getByRole('textbox', { name: /^Label/ }).fill(regionLabel);
-  await expect(
-    addOption.getByText('Shown when one of these cluster options is chosen.'),
-  ).toBeVisible();
+  await addOption.getByRole('button', { name: 'About Linked to' }).click();
+  await expect(page.getByRole('dialog', { name: 'About Linked to' })).toContainText(
+    'Shown when one of these cluster options is chosen.',
+  );
   await addOption.getByRole('checkbox', { name: 'Retail – India' }).check();
   await addOption.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, `Option '${regionLabel}' added`);

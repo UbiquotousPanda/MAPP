@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { asApiError } from '@/api/errors';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
@@ -11,7 +11,6 @@ import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { useDismissRow } from './api';
 import type { ReviewRow } from './api';
 import { COMMENT_NEEDED } from './review-text';
-import styles from '../imports/imports.module.css';
 
 const dismissSchema = z.object({ comment: z.string().trim().min(1, COMMENT_NEEDED) });
 
@@ -60,10 +59,9 @@ export function DismissDialog({ row, onClose }: DismissDialogProps) {
       onSubmit={() => void form.handleSubmit(send)()}
     >
       {failure && (
-        <p className={styles.failure} role="alert">
-          <CircleAlert aria-hidden="true" />
+        <InlineAlert tone="danger" role="alert">
           {failure}
-        </p>
+        </InlineAlert>
       )}
       <TextAreaField
         name="comment"

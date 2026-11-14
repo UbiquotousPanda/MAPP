@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Tabs } from '@/ui/Tabs/Tabs';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -16,14 +16,10 @@ const TABS: { value: AccessTab; label: string }[] = [
   { value: 'rules', label: 'Rules' },
 ];
 
-/**
- * Settings › Roles and access (feature 014, US3, US4, US7; plan "Pages"): the People, Roles and
- * Rules tabs, kept in the address (`?tab=`, `?person=` opens a person's roles), and the latest
- * access changes under them.
- */
+/** Roles and access: the People, Roles and Rules tabs in the address, the latest changes under them. */
 export function AccessPage() {
   usePageTitle('Roles and access');
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const tab = accessTabOf(params);
 
   function chooseTab(next: AccessTab) {
@@ -35,7 +31,7 @@ export function AccessPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Roles and access' }]}
         title="Roles and access"
-        description="Who can see and change what, by role and market. Changes apply on each person's next action."
+        description="Changes apply on each person's next action."
       />
       <div className={styles.page}>
         <Tabs label="Roles and access" tabs={TABS} value={tab} onChange={chooseTab}>

@@ -182,13 +182,13 @@ export function PersonFormPanel({ person, onClose }: PersonFormPanelProps) {
           control={form.control}
           name="teamIds"
           render={(field) => (
-            <TeamField label="Teams" hint="Only active teams can be added." {...field} />
+            <TeamField label="Teams" tip="Only active teams can be added." {...field} />
           )}
         />
         <FormField
           control={form.control}
           name="managerId"
-          render={(field) => <PersonField label="Line manager" hint={MANAGER_HINT} {...field} />}
+          render={(field) => <PersonField label="Line manager" tip={MANAGER_HINT} {...field} />}
         />
       </FormPanel>
       <OwnerImpactDialog

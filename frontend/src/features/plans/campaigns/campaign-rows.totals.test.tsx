@@ -64,17 +64,13 @@ describe('campaignRows: money and totals (feature 005, FR-022; 016 FR-013)', () 
     );
 
     const row = rowOf(tree, 'Helix launch');
-    // Two currencies on the screen: both in the code form (design system §4.4).
-    expect(row).toHaveTextContent('400,000.00 USD≈ about 368,000.00 EUR');
-    expect(row).toHaveTextContent('Remaining 100,000.00 USD');
-    expect(row).toHaveTextContent('50,000.00 USD≈ about 46,000.00 EUR');
-    expect(row).not.toHaveTextContent('$');
-    expect(rowOf(tree, 'Digital & social')).toHaveTextContent(
-      '300,000.00 USD≈ about 276,000.00 EUR',
-    );
+    // Each currency in its own symbol form (design system §4.4, D-413).
+    expect(row).toHaveTextContent('$400,000.00≈ about €368,000.00');
+    expect(row).toHaveTextContent('Remaining $100,000.00');
+    expect(row).toHaveTextContent('$50,000.00≈ about €46,000.00');
+    expect(rowOf(tree, 'Digital & social')).toHaveTextContent('$300,000.00≈ about €276,000.00');
     const totals = nth(within(tree).getAllByRole('row'), -1);
-    expect(totals).toHaveTextContent('400,000.00 USD≈ about 368,000.00 EUR');
-    expect(totals).not.toHaveTextContent('$');
+    expect(totals).toHaveTextContent('$400,000.00≈ about €368,000.00');
   });
 
   it('sums the plan in the totals row, with singular forms (FR-022)', () => {
@@ -96,7 +92,7 @@ describe('campaignRows: money and totals (feature 005, FR-022; 016 FR-013)', () 
     );
     renderWithProviders(<div data-testid="one">{one.name}</div>);
     expect(screen.getByTestId('one')).toHaveTextContent(
-      'Total1 campaign · 1 initiative · 0 activities',
+      'Total 1 campaign · 1 initiative · 0 activities',
     );
     expect(one.plannedCost).toBe('—');
   });

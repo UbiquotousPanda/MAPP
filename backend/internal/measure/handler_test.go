@@ -12,7 +12,7 @@ import (
 const (
 	alexEmail   = "alex.morgan@shell.com"
 	carlosEmail = "carlos.mendes@shell.com"
-	frameOfYear = "/api/v1/reports/frame?report=planBudget&year=2026"
+	frameOfYear = "/api/v1/reports/frame?report=budget&year=2026"
 )
 
 func call(t *testing.T, c *apitest.Client, path string, status int) *apitest.Response {
@@ -33,7 +33,7 @@ func TestReportsCatalogue_Contract_FR001(t *testing.T) {
 	var catalogue measure.ReportCatalogue
 	call(t, apitest.New(t).SignIn(t, carlosEmail), "/api/v1/reports", http.StatusOK).Decode(t, &catalogue)
 
-	if len(catalogue.Items) < 8 || catalogue.Items[0].Key != measure.KeyPlanBudget {
+	if len(catalogue.Items) != 5 || catalogue.Items[0].Key != measure.KeyPerformance {
 		t.Errorf("catalogue = %+v, want the reports in the catalogue's order", catalogue.Items)
 	}
 }
@@ -69,27 +69,28 @@ func TestReportsExport_FR022(t *testing.T) {
 	server := apitest.New(t)
 	carlos := server.SignIn(t, carlosEmail)
 
-	excel := call(t, carlos, "/api/v1/reports/plan-budget/export?year=2026", http.StatusOK)
+	excel := call(t, carlos, "/api/v1/reports/budget/export?year=2026", http.StatusOK)
 
-	if !strings.Contains(excel.Header.Get("Content-Disposition"), "SP%26A%20One%20%E2%80%93%20Plan%20budget") {
+	if !strings.Contains(excel.Header.Get("Content-Disposition"), "SP%26A%20One%20%E2%80%93%20Budget%20and%20spend") {
 		t.Errorf("Content-Disposition = %q, want the report's file name", excel.Header.Get("Content-Disposition"))
 	}
-	call(t, carlos, "/api/v1/reports/plan-budget/export?format=csv", http.StatusBadRequest)
-	call(t, carlos, "/api/v1/reports/plan-budget/export?format=csv&widget=statusCount", http.StatusBadRequest)
+	call(t, carlos, "/api/v1/reports/budget/export?format=csv", http.StatusBadRequest)
+	call(t, carlos, "/api/v1/reports/budget/export?format=csv&widget=statusCount", http.StatusBadRequest)
+	call(t, carlos, "/api/v1/reports/purchasing/export?year=2026&format=xlsx&tab=orders&sort=-poDate", http.StatusOK)
 	call(t, carlos, "/api/v1/reports/approvals/export?year=2026&format=xlsx&tab=waiting&sort=amount&order=asc"+
 		"&statusType=activity&recordType=activity&recordType=purchaseRequest&approver=P-1002&outcome=approved", http.StatusOK)
 
 	admin := server.SignIn(t, alexEmail)
-	call(t, admin, "/api/v1/reports/user-access/export?format=csv&widget=people&status=inactive&q=priya", http.StatusOK)
-	call(t, admin, "/api/v1/reports/funnel/export?year=2026&format=xlsx&category=uncategorised&stage=mql", http.StatusOK)
-	call(t, admin, "/api/v1/reports/summary/export?year=2026&format=xlsx&category=uncategorised&stage=mql"+
-		"&revenueBy=ATTR-1&performanceBy=ATTR-1&costBy=ATTR-1&roiBy=ATTR-1", http.StatusOK)
+	call(t, admin, "/api/v1/reports/plan-data/export?tab=people&format=csv&widget=people&status=inactive&q=priya",
+		http.StatusOK)
+	call(t, admin, "/api/v1/reports/performance/export?year=2026&format=xlsx&category=uncategorised&stage=mql",
+		http.StatusOK)
 	var created struct{ ID string }
 	admin.Do(t, http.MethodPost, "/api/v1/roles", map[string]any{"name": "No export", "defaultScope": "myTeams",
 		"permissions": []string{"plans.view", "reports.view"}}).Decode(t, &created)
 	admin.Do(t, http.MethodPut, "/api/v1/people/U-1004/roles", map[string]any{"version": 1,
 		"roles": []map[string]any{{"roleId": created.ID, "scope": map[string]any{"type": "myTeams"}}}})
-	call(t, server.SignIn(t, "mei.lin@shell.com"), "/api/v1/reports/plan-budget/export", http.StatusForbidden)
+	call(t, server.SignIn(t, "mei.lin@shell.com"), "/api/v1/reports/budget/export", http.StatusForbidden)
 }
 
 func TestReportsFrame_Refusals(t *testing.T) {

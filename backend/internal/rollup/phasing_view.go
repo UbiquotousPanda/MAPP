@@ -2,25 +2,30 @@ package rollup
 
 import "mapp/internal/platform/money"
 
-// PhasingMonthView is one typed month as the API answers it (contract PhasingMonth).
 type PhasingMonthView struct {
 	Month  string      `json:"month"`
 	Amount money.Money `json:"amount"`
 }
 
-// PhasingView is a phasing as the API answers it (contract BudgetPhasing), in the plan currency.
+// PhasingView is a phasing in the plan currency (contract BudgetPhasing); Evenly is the budget split evenly for the editor.
 type PhasingView struct {
 	Method  PhasingMethod      `json:"method"`
-	Months  []PhasingMonthView `json:"months"`  // Custom only: the stored months
-	Monthly []money.Money      `json:"monthly"` // the 12 monthly amounts; empty when not phased
-	Total   *money.Money       `json:"total"`   // the sum of Monthly; null when not phased
-	Problem *string            `json:"problem"` // the FR-022 problem; null when fine
+	Months  []PhasingMonthView `json:"months"`
+	Monthly []money.Money      `json:"monthly"`
+	Total   *money.Money       `json:"total"`
+	Problem *string            `json:"problem"`
+	Evenly  []money.Money      `json:"evenly"`
 }
 
 // ViewOf returns the phasing p of a record with budget in a plan of year, in the plan currency.
 func ViewOf(p Phasing, budget *money.Amount, year int, currency string) PhasingView {
 	p = p.Normalised()
-	view := PhasingView{Method: p.Method, Months: []PhasingMonthView{}, Monthly: []money.Money{}}
+	view := PhasingView{Method: p.Method, Months: []PhasingMonthView{}, Monthly: []money.Money{}, Evenly: []money.Money{}}
+	if budget != nil {
+		for _, a := range budget.SplitEvenly(12) {
+			view.Evenly = append(view.Evenly, money.Money{Amount: a, Currency: currency})
+		}
+	}
 	for _, m := range p.Months {
 		view.Months = append(view.Months, PhasingMonthView{Month: m.Month, Amount: money.Money{Amount: m.Amount, Currency: currency}})
 	}

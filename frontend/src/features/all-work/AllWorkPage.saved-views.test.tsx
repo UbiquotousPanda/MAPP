@@ -50,7 +50,7 @@ describe('AllWorkPage saved views (US6)', () => {
   }
 
   async function chooseView(user: ReturnType<typeof renderAllWorkPage>['user'], name: string) {
-    await user.click(screen.getByRole('button', { name: /^View/ }));
+    await user.click(screen.getByRole('button', { name: /^(View|Saved views)/ }));
     await user.click(await screen.findByRole('menuitemcheckbox', { name }));
   }
 
@@ -94,7 +94,7 @@ describe('AllWorkPage saved views (US6)', () => {
     await user.click(screen.getByRole('tab', { name: 'Budget & cost' }));
     await screen.findByRole('table', { name: 'Budget & cost' });
 
-    await user.click(screen.getByRole('button', { name: 'Views' }));
+    await user.click(screen.getByRole('button', { name: 'Saved views' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Save current view…' }));
     const dialog = await screen.findByRole('dialog', { name: 'Save current view' });
     await user.type(within(dialog).getByRole('textbox', { name: 'Name' }), 'Lubricants by month');
@@ -161,7 +161,7 @@ describe('AllWorkPage saved views (US6)', () => {
     await user.click(screen.getByRole('button', { name: 'View: Declined activities' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Standard view' }));
 
-    expect(await screen.findByRole('button', { name: 'Views' })).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Saved views' })).toBeVisible();
     // The standard view's answer was read at the start and is shown again from memory.
     expect(
       screen.queryByRole('button', { name: 'Remove filter: Activity status: Declined' }),

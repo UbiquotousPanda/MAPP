@@ -1,14 +1,16 @@
 import { useId } from 'react';
-import { LevelTag } from '@/ui/LevelTag/LevelTag';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
+import { LEVEL_LABELS } from '@/ui/AttributeFilterMenu/attribute-filter';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import gridStyles from './AllWorkGrid.module.css';
 import type { AllWorkResult, AllWorkRow } from './all-work-types';
 import { hasNoDates, todayOffset } from './calendar';
 import { CalendarRow } from './CalendarRow';
 import styles from './CalendarView.module.css';
 import { RecordLink } from './RecordLink';
-import { ScrollBox } from './ScrollBox';
 import { statusWord } from './status-words';
 import { legendOf, timelineOf } from './timeline';
 import type { VisibleRow } from './view-rows';
@@ -21,7 +23,7 @@ const RANGE_YEAR_MIN_PX = 320;
 
 export interface CalendarViewProps {
   result: AllWorkResult;
-  /** The rows of the page on screen (D-115). */
+  /** The rows of the page on screen. */
   rows: VisibleRow[];
   continued: string;
   search: string;
@@ -67,7 +69,7 @@ export function CalendarView({
       {continued && <p className={gridStyles.continued}>Continued: {continued}</p>}
       <ScrollBox label={caption}>
         <table
-          className={cx(gridStyles.table, styles.calendar)}
+          className={cx(dataTable.table, gridStyles.table, styles.calendar)}
           style={{ '--track-min': `${trackPx}px` }}
         >
           <caption className="visually-hidden">{caption}</caption>
@@ -120,16 +122,16 @@ export function CalendarView({
       </ScrollBox>
       {undated.length > 0 && (
         <section className={styles.undated} aria-labelledby={headingId}>
-          <h3 id={headingId} className={styles.undatedTitle}>
+          <SectionHeading level={3} rank="label" id={headingId}>
             No dates yet ({undated.length})
-          </h3>
+          </SectionHeading>
           <ul className={styles.undatedList}>
             {undated.map((row) => (
               <li key={row.key} className={styles.undatedItem}>
-                {row.level !== 'unassigned' && <LevelTag level={row.level} />}
                 <RecordLink row={row} onOpen={onOpen} className={styles.undatedLink}>
                   {row.name}
                 </RecordLink>
+                <span className={styles.undatedLevel}>{LEVEL_LABELS[row.level]}</span>
                 {row.status && (
                   <StatusChip tone={row.status.tone}>{statusWord(row.status.label)}</StatusChip>
                 )}

@@ -41,7 +41,7 @@ func (s *Service) revenueSheets(ctx context.Context, a actor.Actor, f measure.Fi
 	if err != nil {
 		return nil, err
 	}
-	q, err := unboundedRanked(f.Own, revenueSorts(), SortProjectedRevenue)
+	q, err := unboundedRanked(f.Own, revenueSorts(), revenueOpening())
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (s *Service) revenueSheets(ctx context.Context, a actor.Actor, f measure.Fi
 	}
 	sheets := []measure.WidgetSheet{
 		{Key: widgetCards, Sheet: revenueCardsSheet(report.Cards)},
-		{Key: widgetPeriods, Sheet: revenuePeriodsSheet(report.Periods)},
+		{Key: widgetPeriods, Sheet: revenuePeriodsSheet(report.Periods, report.Totals)},
 		{Key: widgetRanked, Sheet: revenueRankedSheet(ranked)},
 	}
 	return s.withDealsSheet(ctx, a, f, sheets)
@@ -76,8 +76,8 @@ func dealsQueryOf(f measure.Filter) (attribution.DealsQuery, bool) {
 		Compare: attribution.Model(f.Own.Get(paramCompare))}, id != ""
 }
 
-func unboundedRanked(own url.Values, sorts []string, defaultSort string) (RankedQuery, error) {
-	q, err := ranking.Parse(own, sorts, defaultSort)
+func unboundedRanked(own url.Values, sorts []string, opening ranking.Opening) (RankedQuery, error) {
+	q, err := ranking.Parse(own, sorts, opening)
 	q.Page, q.Size = 1, math.MaxInt32
 	return rankedQueryOf(q, ""), err
 }
@@ -96,10 +96,16 @@ func revenueCardsSheet(c RevenueCards) sheet.Sheet {
 	return sheet.Sheet{Name: sheetCards, Rows: rows}
 }
 
-func revenuePeriodsSheet(periods []RevenuePeriod) sheet.Sheet {
+func revenuePeriodsSheet(periods []RevenuePeriod, t RevenueTotals) sheet.Sheet {
 	rows := [][]sheet.Cell{boldRow("Period", "Goal", "Actual", "Projected")}
 	for _, p := range periods {
 		rows = append(rows, []sheet.Cell{sheet.Text(p.Key), moneyCell(p.Goal), moneyCell(p.Actual), moneyCell(p.Projected)})
+	}
+	if len(periods) > 0 {
+		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), moneyCell(t.Goal), moneyCell(t.Actual), moneyCell(t.Projected)})
+	}
+	if t.GoalAfterYear != nil {
+		rows = append(rows, []sheet.Cell{sheet.Text(LabelGoalAfterYear), moneyCell(t.GoalAfterYear)})
 	}
 	return sheet.Sheet{Name: sheetPeriods, Rows: rows}
 }
@@ -115,6 +121,9 @@ func revenueRankedSheet(r RevenueRanked) sheet.Sheet {
 			}
 		}
 	}
+	if r.Total > 0 {
+		rows = append(rows, totalRow(revenueEntryRow("", RevenueEntry{Figures: r.Totals}, "")))
+	}
 	return sheet.Sheet{Name: sheetRanked, Rows: rows}
 }
 
@@ -123,6 +132,12 @@ func revenueEntryRow(group string, e RevenueEntry, indent string) []sheet.Cell {
 	return []sheet.Cell{sheet.Text(group), sheet.Text(levelWords()[e.Level]), sheet.Text(indent + e.Name),
 		moneyCell(f.Goal), moneyCell(f.Actual), moneyCell(f.Projected), numberCell(f.Performance),
 		moneyCell(f.AttributedRevenue), moneyCell(f.ActualCost), numberCell(f.ROI), ownerCell(e.Owner), modelCell(f.Projection)}
+}
+
+// totalRow is the list's Total line: the word in the first column, no owner.
+func totalRow(cells []sheet.Cell) []sheet.Cell {
+	cells[0], cells[len(cells)-2] = sheet.Bold("Total"), sheet.Text("")
+	return cells
 }
 
 func boldRow(labels ...string) []sheet.Cell {
@@ -161,7 +176,7 @@ func (s *Service) funnelSheets(ctx context.Context, a actor.Actor, f measure.Fil
 	if err != nil {
 		return nil, err
 	}
-	q, err := unboundedRanked(f.Own, funnelSorts(), SortProjected)
+	q, err := unboundedRanked(f.Own, funnelSorts(), funnelOpening())
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +187,7 @@ func (s *Service) funnelSheets(ctx context.Context, a actor.Actor, f measure.Fil
 	}
 	return []measure.WidgetSheet{
 		{Key: widgetCards, Sheet: funnelCardsSheet(report.Stage, report.Cards)},
-		{Key: widgetPeriods, Sheet: funnelPeriodsSheet(report.Periods)},
+		{Key: widgetPeriods, Sheet: funnelPeriodsSheet(report.Periods, report.Totals)},
 		{Key: widgetRanked, Sheet: funnelRankedSheet(ranked)},
 	}, nil
 }
@@ -193,10 +208,16 @@ func funnelCardsSheet(stage string, c FunnelCards) sheet.Sheet {
 	return sheet.Sheet{Name: sheetCards, Rows: rows}
 }
 
-func funnelPeriodsSheet(periods []FunnelPeriod) sheet.Sheet {
+func funnelPeriodsSheet(periods []FunnelPeriod, t FunnelTotals) sheet.Sheet {
 	rows := [][]sheet.Cell{boldRow("Period", "Goal", "Actual", "Projected")}
 	for _, p := range periods {
 		rows = append(rows, []sheet.Cell{sheet.Text(p.Key), int64Cell(p.Goal), int64Cell(p.Actual), int64Cell(p.Projected)})
+	}
+	if len(periods) > 0 {
+		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), int64Cell(t.Goal), int64Cell(t.Actual), int64Cell(t.Projected)})
+	}
+	if t.GoalAfterYear != nil {
+		rows = append(rows, []sheet.Cell{sheet.Text(LabelGoalAfterYear), int64Cell(t.GoalAfterYear)})
 	}
 	return sheet.Sheet{Name: sheetPeriods, Rows: rows}
 }
@@ -211,6 +232,9 @@ func funnelRankedSheet(r FunnelRanked) sheet.Sheet {
 				rows = append(rows, funnelEntryRow(g.Label, child, "  "))
 			}
 		}
+	}
+	if r.Total > 0 {
+		rows = append(rows, totalRow(funnelEntryRow("", FunnelEntry{Figures: r.Totals}, "")))
 	}
 	return sheet.Sheet{Name: sheetRanked, Rows: rows}
 }

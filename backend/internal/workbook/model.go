@@ -30,6 +30,7 @@ const (
 type Upload struct {
 	FileName string `json:"fileName"`
 	Content  string `json:"content"`
+	CheckID  string `json:"checkId,omitempty"`
 }
 
 type Problem struct {
@@ -58,6 +59,7 @@ type Check struct {
 	IgnoredColumns  []string      `json:"ignoredColumns"`
 	NeedMoreFields  int           `json:"needMoreFields"`
 	NothingToChange bool          `json:"nothingToChange"`
+	CheckID         string        `json:"checkId"`
 }
 
 type LevelTotals struct {
@@ -124,6 +126,7 @@ type Import struct {
 	ImportedBy  actor.Actor
 	RowsRead    int
 	RowsLeftOut int
+	CheckID     string
 	Records     []ImportRecord
 	Problems    []Problem
 	UndoneAt    *time.Time
@@ -136,6 +139,8 @@ type ImportRecord struct {
 	Name     string
 	ParentID string
 	Action   string
+	// KeptReason is set when Undo could not delete this created record.
+	KeptReason string
 }
 
 // Values are the workbook's fields of one record, as the owning areas store them; "" and nil are empty.

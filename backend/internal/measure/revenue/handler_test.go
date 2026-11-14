@@ -22,7 +22,12 @@ func TestRevenueAndFunnelReports_Contract_049(t *testing.T) {
 		"/api/v1/reports/funnel?year=2026",
 		"/api/v1/reports/funnel?year=2026&stage=mql",
 		"/api/v1/reports/funnel/ranked?year=2026",
-		"/api/v1/reports/funnel/ranked?year=2026&show=activity&group=owner&sort=actual&order=asc&size=25&q=a",
+		"/api/v1/reports/funnel/ranked?year=2026&show=activity&group=owner&sort=actual&order=asc&size=200&q=a",
+		"/api/v1/reports/revenue/ranked?year=2026&sort=goal&order=desc",
+		"/api/v1/reports/revenue/ranked?year=2026&sort=performance&order=asc",
+		"/api/v1/reports/revenue/ranked?year=2026&group=attr:ATTR-3&sort=roi&order=desc",
+		"/api/v1/reports/funnel/ranked?year=2026&sort=goal&order=asc",
+		"/api/v1/reports/funnel/ranked?year=2026&sort=performance&order=desc",
 	} {
 		if r := planner.Do(t, http.MethodGet, path, nil); r.Status != http.StatusOK {
 			t.Errorf("GET %s = %d %s, want 200", path, r.Status, r.Body)
@@ -49,10 +54,8 @@ func TestRevenueAndFunnelReports_InTheCatalogue_049(t *testing.T) {
 	planner := apitest.New(t).SignIn(t, "priya.raman@shell.com")
 	var catalogue measure.ReportCatalogue
 	planner.Do(t, http.MethodGet, "/api/v1/reports", nil).Decode(t, &catalogue)
-	for _, key := range []string{measure.KeyRevenue, measure.KeyFunnel} {
-		if !slices.ContainsFunc(catalogue.Items, func(e measure.ReportEntry) bool { return e.Key == key && e.Available }) {
-			t.Errorf("catalogue %+v: %s is built", catalogue.Items, key)
-		}
+	if !slices.ContainsFunc(catalogue.Items, func(e measure.ReportEntry) bool { return e.Key == measure.KeyPerformance && e.Available }) {
+		t.Errorf("catalogue %+v: Performance, made of Revenue and Funnel stages, is built", catalogue.Items)
 	}
 }
 

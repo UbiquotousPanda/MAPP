@@ -36,7 +36,7 @@ describe('SubmitDialog (feature 008, US1)', () => {
     const { user, onConfirm } = renderDialog();
 
     await user.type(
-      screen.getByRole('textbox', { name: 'Comment for the approvers (optional)' }),
+      screen.getByRole('textbox', { name: 'Comment for the approvers' }),
       '  Ready for review ',
     );
     await user.click(screen.getByRole('button', { name: 'Submit for approval' }));
@@ -67,7 +67,7 @@ describe('SubmitDialog (feature 008, US1)', () => {
     renderDialog(submissionOf(), 'Use 2,000 characters or fewer.');
 
     expect(
-      screen.getByRole('textbox', { name: 'Comment for the approvers (optional)' }),
+      screen.getByRole('textbox', { name: 'Comment for the approvers' }),
     ).toHaveAccessibleDescription(expect.stringContaining('Use 2,000 characters or fewer.'));
   });
 

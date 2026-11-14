@@ -26,7 +26,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     () => ({
       show(toast) {
         const id = nextId.current++;
-        setToasts((current) => [...current, { ...toast, id }]);
+        // One Undo at a time (D-037): a newer one replaces the earlier.
+        setToasts((current) => [
+          ...current.filter((shown) => !(isUndo(shown) && isUndo(toast))),
+          { ...toast, id },
+        ]);
         return () => close(id);
       },
     }),
@@ -71,4 +75,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       </Toast.Provider>
     </ToastContext>
   );
+}
+
+function isUndo(toast: ToastOptions): boolean {
+  return toast.action?.label === 'Undo';
 }

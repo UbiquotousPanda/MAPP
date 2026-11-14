@@ -30,8 +30,13 @@ func TestReviewRows_Contract_FR023_FR024(t *testing.T) {
 		t.Errorf("dismiss without a comment = %d %s, want validation_failed", noComment.Status, noComment.Body)
 	}
 
+	stale := alex.Do(t, http.MethodPost, "/api/v1/performance/review-rows/"+rowID+"/correct",
+		map[string]any{"version": 99, "values": []map[string]string{{"column": "INQs", "value": "5"}}})
+	if stale.Status != http.StatusConflict || !strings.Contains(string(stale.Body), "version_conflict") {
+		t.Errorf("correct from another version = %d %s, want version_conflict", stale.Status, stale.Body)
+	}
 	corrected := alex.Do(t, http.MethodPost, "/api/v1/performance/review-rows/"+rowID+"/correct",
-		map[string]any{"values": []map[string]string{{"column": "INQs", "value": "5"}}})
+		map[string]any{"version": 1, "values": []map[string]string{{"column": "INQs", "value": "5"}}})
 	if corrected.Status != http.StatusOK {
 		t.Fatalf("correct = %d %s, want 200 with the row's new verdict", corrected.Status, corrected.Body)
 	}

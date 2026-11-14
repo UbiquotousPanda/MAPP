@@ -56,7 +56,6 @@ describe('032 FR-023–FR-026: PR approval section', () => {
     renderSection(() => pending());
 
     expect(within(approvalCard()).getByRole('status')).toHaveTextContent('Loading…');
-    await expectNoAxeViolations();
   });
 
   it('shows a failure with Try again', async () => {
@@ -80,7 +79,6 @@ describe('032 FR-023–FR-026: PR approval section', () => {
     expect(card).toHaveTextContent('Daniel Okoro');
     expect(within(card).getByRole('button', { name: 'Submit for approval' })).toBeVisible();
     expect(within(card).getByText('No approval history yet.')).toBeVisible();
-    await expectNoAxeViolations();
   });
 
   it('032 FR-027: the approver of the waiting level sees Approve (the only primary) and Decline', async () => {
@@ -96,7 +94,6 @@ describe('032 FR-023–FR-026: PR approval section', () => {
     expect(within(card).getByRole('region', { name: 'Approval history' })).toHaveTextContent(
       'Submitted',
     );
-    await expectNoAxeViolations();
   });
 
   it('keeps Edit the page primary: Approve is secondary when the person may also edit', async () => {

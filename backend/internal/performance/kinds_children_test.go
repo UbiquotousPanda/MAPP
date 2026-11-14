@@ -98,16 +98,9 @@ func binFixture(t *testing.T) (*fixture, history.Kind) {
 // come back held — otherwise unapproved data counts in every figure.
 func TestKinds_RestoredFactComesBackHeld_FR021(t *testing.T) {
 	t.Parallel()
-	f := newFixture(t)
-	if err := f.store.PutFact(t.Context(), performance.Fact{ID: "PF-1", SourceID: "PS-1", ImportID: "PIM-1",
-		SourceReference: "r1", ActivityID: "A-1001", Stage: "inq", Held: false}); err != nil {
-		t.Fatalf("PutFact: %v", err)
-	}
-	kind := kindNamed(t, f.service.Kinds(), "performanceFact")
-	snapshot, _, err := kind.Snapshot(t.Context(), "PF-1")
-	if err != nil {
-		t.Fatalf("Snapshot: %v", err)
-	}
+	f, kind, snapshot := binnedFact(t)
+	factID := snapshot.ID
+	var err error
 
 	if _, err = kind.PrepareRestore(t.Context(), history.RestoreContext{}, &snapshot); err != nil {
 		t.Fatalf("PrepareRestore: %v", err)
@@ -116,7 +109,7 @@ func TestKinds_RestoredFactComesBackHeld_FR021(t *testing.T) {
 		t.Fatalf("Put: %v", err)
 	}
 
-	back, found, _ := f.store.GetFact(t.Context(), "PF-1")
+	back, found, _ := f.store.GetFact(t.Context(), factID)
 	if !found {
 		t.Fatal("the fact did not come back")
 	}
@@ -127,13 +120,8 @@ func TestKinds_RestoredFactComesBackHeld_FR021(t *testing.T) {
 
 func TestKinds_UndoKeepsTheFactAsItWas_FR021(t *testing.T) {
 	t.Parallel()
-	f := newFixture(t)
-	if err := f.store.PutFact(t.Context(), performance.Fact{ID: "PF-1", SourceID: "PS-1", ImportID: "PIM-1",
-		SourceReference: "r1", ActivityID: "A-1001", Stage: "inq", Held: false}); err != nil {
-		t.Fatalf("PutFact: %v", err)
-	}
-	kind := kindNamed(t, f.service.Kinds(), "performanceFact")
-	snapshot, _, _ := kind.Snapshot(t.Context(), "PF-1")
+	f, kind, snapshot := binnedFact(t)
+	factID := snapshot.ID
 
 	if _, err := kind.PrepareRestore(t.Context(), history.RestoreContext{Undo: true}, &snapshot); err != nil {
 		t.Fatalf("PrepareRestore: %v", err)
@@ -142,8 +130,25 @@ func TestKinds_UndoKeepsTheFactAsItWas_FR021(t *testing.T) {
 		t.Fatalf("Put: %v", err)
 	}
 
-	back, _, _ := f.store.GetFact(t.Context(), "PF-1")
+	back, _, _ := f.store.GetFact(t.Context(), factID)
 	if back.Held {
 		t.Error("an Undo re-held the fact: an Undo keeps the activity's status, so the fact keeps its own")
 	}
+}
+
+// binnedFact is an unheld fact of a completed upload, removed as the bin removes it.
+func binnedFact(t *testing.T) (*fixture, history.Kind, history.Snapshot) {
+	t.Helper()
+	f, src := newImportFixture(t)
+	f.runImport(t, src.ID, map[string]string{"r1": "5"})
+	factID := f.currentFacts(t, src.ID, "r1")[0].ID
+	kind := kindNamed(t, f.service.Kinds(), "performanceFact")
+	snapshot, _, err := kind.Snapshot(t.Context(), factID)
+	if err != nil {
+		t.Fatalf("Snapshot: %v", err)
+	}
+	if err = kind.Remove(t.Context(), factID); err != nil {
+		t.Fatalf("Remove: %v", err)
+	}
+	return f, kind, snapshot
 }

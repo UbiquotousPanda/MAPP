@@ -1,20 +1,12 @@
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
-import type { ReportChoices } from './api';
-import type { Period, Show } from './report-address';
+import { Select } from '@/ui/Select/Select';
+import type { Show } from './report-address';
 import { SHOW_WORDS, SHOWS } from './report-text';
-import styles from './ReportFrame.module.css';
+import { useReportAddress } from './useReportAddress';
 
-export function InViewLine({ text }: { text: string }) {
-  return <p className={styles.inView}>{text}</p>;
-}
-
-export function PeriodControl({
-  value,
-  onChange,
-}: {
-  value: Period;
-  onChange: (period: Period) => void;
-}) {
+/** Months · Quarters, placed on the widget it changes; it writes the report's address. */
+export function PeriodSwitch() {
+  const [address, setAddress] = useReportAddress();
   return (
     <SegmentedFilter
       label="Period"
@@ -22,43 +14,45 @@ export function PeriodControl({
         { value: 'month', label: 'Months' },
         { value: 'quarter', label: 'Quarters' },
       ]}
-      value={value}
-      onChange={onChange}
+      value={address.period}
+      onChange={(period) => setAddress((latest) => ({ ...latest, period }))}
     />
   );
 }
 
-export function ShowControl({ value, onChange }: { value: Show; onChange: (show: Show) => void }) {
+/** Plan · Campaign · Initiative · Activity: the level the widget lists, defaulting to the report's own. */
+export function LevelSwitch({ fallback }: { fallback: Show }) {
+  const [address, setAddress] = useReportAddress();
   return (
     <SegmentedFilter
       label="Show"
-      options={SHOWS.map((show) => ({
-        value: show,
-        label: SHOW_WORDS[show],
-      }))}
-      value={value}
-      onChange={onChange}
+      options={SHOWS.map((show) => ({ value: show, label: SHOW_WORDS[show] }))}
+      value={address.show ?? fallback}
+      onChange={(show) => setAddress((latest) => ({ ...latest, show }))}
     />
   );
 }
 
-interface CurrencyControlProps {
-  currencies: ReportChoices['currencies'];
-  value: string;
-  onChange: (code: string) => void;
+interface YearControlProps {
+  years: number[];
+  value: number;
+  /** Plans chosen in the filters, which another year clears: said before it happens. */
+  plansChosen: number;
+  onChange: (year: number) => void;
 }
 
-export function CurrencyControl({ currencies, value, onChange }: CurrencyControlProps) {
+export function YearControl({ years, value, plansChosen, onChange }: YearControlProps) {
+  const note =
+    plansChosen === 1
+      ? 'Another year clears the plan you chose.'
+      : `Another year clears the ${plansChosen} plans you chose.`;
   return (
-    <label className={styles.field}>
-      Currency
-      <select className={styles.select} value={value} onChange={(e) => onChange(e.target.value)}>
-        {currencies.map((c) => (
-          <option key={c.code} value={c.code}>
-            {c.code} – {c.name}
-          </option>
-        ))}
-      </select>
-    </label>
+    <Select
+      label="Year"
+      value={String(value)}
+      options={years.map((y) => ({ value: String(y), label: String(y) }))}
+      note={plansChosen > 0 ? note : undefined}
+      onChange={(year) => onChange(Number(year))}
+    />
   );
 }

@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { approvedActivity, lineItem, usd } from '@/testing/fixtures/line-items';
 import { formOptions, validationError } from '@/testing/fixtures/line-item-forms';
 import {
@@ -46,7 +46,8 @@ describe('LineItemCreatePage, saving (US2)', () => {
         { activityId: 'A-1001' },
       ),
     ]);
-    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const shown = [['approvals-summary'], ['home'], ['purchase-requests'], ['plans']];
+    for (const key of shown) queryClient.setQueryData(key, {});
     const name = await findNameField();
 
     await user.clear(name);
@@ -72,9 +73,9 @@ describe('LineItemCreatePage, saving (US2)', () => {
       financeBudgetYear: 2026,
       financeBudgetItemId: null,
     });
-    const keys = invalidate.mock.calls.map(([filters]) => filters?.queryKey);
-    expect(keys).toEqual(
-      expect.arrayContaining([['line-items'], ['activity'], ['plan-activities'], ['plans']]),
+    // Every screen the change shows in is asked again, the approvals badge and home included.
+    expect(shown.map((key) => queryClient.getQueryState(key)?.isInvalidated)).toEqual(
+      shown.map(() => true),
     );
   });
 

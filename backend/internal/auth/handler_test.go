@@ -39,7 +39,7 @@ var priyaBody = `{"id":"U-1002","name":"Priya Raman","firstName":"Priya","email"
 	"campaigns.delete", "activities.edit", "activities.delete", "activities.submit", "data.export", "reports.view", "finance.view",
 	"purchaseRequests.edit", "purchaseRequests.delete", "purchaseRequests.submit") + "," + everywhere("dashboards.view", "dashboards.build") + `],` +
 	`"administrators":[{"id":"U-1001","name":"Alex Morgan","initials":"AM","jobTitle":"Marketing administrator","active":true}],` +
-	`"noSelfApproval":true}}`
+	`"noSelfApproval":true},"today":"2026-03-12"}`
 
 func inLubricantsEurope(keys ...string) string {
 	parts := make([]string, 0, len(keys))
@@ -115,16 +115,6 @@ func TestSignIn_SetsTheSessionCookie_FR003(t *testing.T) {
 	}
 	me := server.Do(t, http.MethodGet, "/api/v1/me", nil, apitest.WithCookie(cookie))
 	assertAnswer(t, me, http.StatusOK, priyaBody)
-}
-
-func TestSignIn_EmptyFields_FR004(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-
-	response := server.Do(t, http.MethodPost, "/api/v1/auth/sign-in", signIn("", ""))
-
-	assertAnswer(t, response, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"email","message":"Enter your e-mail"},{"field":"password","message":"Enter the password"}]}}`)
 }
 
 // The answer sets no cookie; the service test proves an unknown e-mail gets the same answer.

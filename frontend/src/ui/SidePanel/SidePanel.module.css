@@ -6,7 +6,10 @@
   animation: fade-in var(--dur) var(--ease-out);
 }
 
-/* 480–560 px wide on large screens; the whole width on phones. */
+.overlay[data-state='closed'] {
+  animation: fade-out var(--dur-fast) var(--ease-in) forwards;
+}
+
 .panel {
   position: fixed;
   top: 0;
@@ -15,7 +18,7 @@
   z-index: 50;
   display: flex;
   flex-direction: column;
-  width: clamp(480px, 40vw, 560px);
+  width: 480px;
   max-width: 100%;
   border-left: 1px solid var(--card-border);
   background: var(--surface);
@@ -23,11 +26,14 @@
   animation: slide-in var(--dur) var(--ease-out);
 }
 
+.panel[data-state='closed'] {
+  animation: slide-out var(--dur-fast) var(--ease-in) forwards;
+}
+
 .panel:focus {
   outline: none;
 }
 
-/* The header: the title on the left, Close on the right, at least 64 px high. */
 .header {
   display: flex;
   flex: none;
@@ -67,11 +73,12 @@
   padding: var(--card-padding);
 }
 
-/*
- * One footer for every panel: the buttons come in order of importance (the primary first) and
- * line up from the right edge, so the primary sits rightmost, Cancel next to it, and the More menu
- * (destructive actions) further left.
- */
+.body:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+/* Buttons in order of importance line up from the right: primary rightmost, the More menu furthest left. */
 .footer {
   display: flex;
   flex: none;
@@ -89,6 +96,10 @@
     width: 100%;
     border-left: 0;
   }
+
+  .footer > :is(a, button):not([aria-haspopup]) {
+    flex: 1 1 auto;
+  }
 }
 
 @keyframes fade-in {
@@ -99,6 +110,18 @@
 
 @keyframes slide-in {
   from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-out {
+  to {
     transform: translateX(100%);
   }
 }

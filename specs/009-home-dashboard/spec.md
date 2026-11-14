@@ -166,9 +166,13 @@ empty screen.
   *Corrected by [038](../038-qa-findings/spec.md) (QA L-26): the design system (§2) dropped the eyebrow — "Home is
   the only exception: its title greets" — and the subtitle shows only to people with a role; the code is right.
   038 FR-032 (QA M-5): "Activities I own" opens All work on the plan years of those activities.*
+  *Moved by D-413 (2026-11-12): the Currency picker left Home's header for the top bar, beside the theme switch.*
 - **FR-002**: The currency picker MUST list active currencies (feature 002), start on the user's display
   currency (feature 003) and, when changed, save it as the user's display currency and redraw every
   amount on Home in that currency.
+  *Clarified 2026-11-12 (D-413): the picker is the top bar's **Display currency**, beside the theme switch; it
+  shows the code ("USD"), lists "USD – US dollar" and the other choices, and every page, Home included, redraws
+  its amounts in the chosen currency. Scenarios 1 and 4 read the picker there.*
 - **FR-003**: Home MUST offer a pill switch **My teams / Everything**, default **My teams**, remembered
   per user. **My teams** covers plans with at least one of the user's teams; **Everything** covers all
   plans. The switch MUST change the plans card, the planned-cost card, Plans at a glance and Recent
@@ -194,9 +198,7 @@ empty screen.
 
 **Plans at a glance**
 
-- **FR-008**: A content card **Plans at a glance** (ⓘ "Every plan your teams work on, the teams on it,
-  and live status rolled up from its activities."; subtitle "Live roll-up across your teams" or "across
-  all plans") MUST list the plans in scope with: plan name (link), ID, year and AOP tag; status chip;
+- **FR-008**: A content card **Plans at a glance** (no subtitle or ⓘ, D-422) MUST list the plans in scope with: plan name (link), ID, year and AOP tag; status chip;
   teams as coloured pills with a dot, the user's own teams first; number of campaigns; number of
   activities; approval progress as a bar with "n of m approved" or "No activities"; budget used as a bar
   with a percentage (red above 100 %, "—" without a plan budget); planned cost.

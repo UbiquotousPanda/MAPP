@@ -1,17 +1,24 @@
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { formatMoneyText } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
+import { cx } from '@/ui/cx';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
+import { Pager } from '@/ui/Pager/Pager';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import { nextSortOrder } from '@/ui/SortHeader/sort-order';
+import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import dataTable from '@/ui/Table/Table.module.css';
+import { useToday } from '@/session/useToday';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { ApprovalsGridData, ApprovalsRowData } from './api';
 import { CommentDialog } from './CommentDialog';
 import { GridFilters } from './GridFilters';
-import { GridPager } from './GridPager';
 import { PAGE_SIZES } from './schemas';
 import type { ApprovalsParams, SortKey } from './schemas';
-import { NOTHING, OUTCOME_WORDS, recordWord } from './words';
+import { NOTHING, OUTCOME_TONES, OUTCOME_WORDS, oneRecordWord, waitingText } from './words';
 import styles from './ApprovalsGrid.module.css';
 
 const COLUMNS: { key: SortKey; label: string; numeric?: boolean }[] = [
@@ -66,24 +73,25 @@ function SortHeading(props: {
 }) {
   const { column, params, onParams } = props;
   const current = params.sort === column.key;
-  const Icon = !current ? ArrowUpDown : params.order === 'asc' ? ArrowUp : ArrowDown;
-  const sortBy = () =>
-    onParams({ sort: column.key, order: current && params.order === 'asc' ? 'desc' : 'asc' });
+  const sortBy = () => onParams({ sort: column.key, order: nextSortOrder(current, params.order) });
   return (
-    <th
-      scope="col"
-      className={column.numeric ? styles.numeric : undefined}
-      aria-sort={current ? (params.order === 'asc' ? 'ascending' : 'descending') : 'none'}
-    >
-      <button type="button" className={styles.sort} onClick={sortBy}>
-        {column.label}
-        <Icon aria-hidden="true" className={current ? undefined : styles.idle} />
-      </button>
-    </th>
+    <SortHeader
+      label={column.label}
+      className={column.numeric ? dataTable.numeric : undefined}
+      direction={current ? params.order : undefined}
+      onSort={sortBy}
+    />
   );
 }
 
-function Row({ row, onRead }: { row: ApprovalsRowData; onRead: (row: ApprovalsRowData) => void }) {
+interface RowProps {
+  row: ApprovalsRowData;
+  onRead: (row: ApprovalsRowData) => void;
+  showOrder: boolean;
+  today: string;
+}
+
+function Row({ row, onRead, showOrder, today }: RowProps) {
   const { date, money } = useFormatters();
   const long = row.comments.length > LONG_COMMENT;
   return (
@@ -92,14 +100,20 @@ function Row({ row, onRead }: { row: ApprovalsRowData; onRead: (row: ApprovalsRo
       <th scope="row" className={styles.name}>
         {row.canOpen ? <Link to={recordHref(row)}>{row.itemName}</Link> : row.itemName}
       </th>
-      <td>{recordWord(row.recordType)}</td>
+      <td>{oneRecordWord(row.recordType)}</td>
       <td>{row.approver?.name ?? NOTHING}</td>
       <td>{row.decidedOn ? date(row.decidedOn) : NOTHING}</td>
-      <td>{OUTCOME_WORDS[row.outcome] ?? row.outcome}</td>
+      <td>
+        <StatusChip tone={OUTCOME_TONES[row.outcome] ?? 'neutral'}>
+          {row.outcome === 'waiting'
+            ? waitingText(row.submittedOn, today)
+            : (OUTCOME_WORDS[row.outcome] ?? row.outcome)}
+        </StatusChip>
+      </td>
       <td>{date(row.submittedOn)}</td>
-      <td className={styles.numeric}>{row.level}</td>
-      <td>{row.purchaseOrderNumber ?? NOTHING}</td>
-      <td className={styles.numeric}>{row.amount ? money(row.amount) : NOTHING}</td>
+      <td className={dataTable.numeric}>{row.level}</td>
+      {showOrder && <td>{row.purchaseOrderNumber ?? NOTHING}</td>}
+      <td className={dataTable.numeric}>{row.amount ? money(row.amount) : NOTHING}</td>
       <td>{row.owner.name}</td>
       <td className={styles.commentCell}>
         {row.comments === ''
@@ -125,14 +139,14 @@ function tableOf(grid: ApprovalsGridData): ReportTableData {
       cells: [
         row.itemId,
         row.itemName,
-        recordWord(row.recordType),
+        oneRecordWord(row.recordType),
         row.approver?.name ?? NOTHING,
         row.decidedOn ?? NOTHING,
         OUTCOME_WORDS[row.outcome] ?? row.outcome,
         row.submittedOn,
         String(row.level),
         row.purchaseOrderNumber ?? NOTHING,
-        row.amount ? `${row.amount.amount} ${row.amount.currency}` : NOTHING,
+        row.amount ? formatMoneyText(row.amount) : NOTHING,
         row.owner.name,
         row.comments || NOTHING,
       ],
@@ -142,16 +156,12 @@ function tableOf(grid: ApprovalsGridData): ReportTableData {
 
 function Empty({ filtered, onReset }: { filtered: boolean; onReset: () => void }) {
   return filtered ? (
-    <div className={styles.empty}>
-      <p>Your filters exclude everything.</p>
-      <Button type="button" variant="secondary" size="sm" onClick={onReset}>
-        Reset filters
-      </Button>
-    </div>
+    <EmptyState compact title="Your filters exclude everything." onReset={onReset} />
   ) : (
-    <p className={styles.empty}>
-      No approvals yet. Rows appear once a record is submitted for approval.
-    </p>
+    <EmptyState
+      compact
+      title="No approvals yet. Rows appear once a record is submitted for approval."
+    />
   );
 }
 
@@ -170,6 +180,9 @@ export function ApprovalsGrid({
   const reset = () => onParams({ q: '', recordTypes: [], approvers: [], outcomes: [] });
   const note = financeNote(covers);
   const empty: ReportTableData = { columns: [{ label: 'Record ID' }], rows: [] };
+  const showOrder = Boolean(grid?.items.some((row) => row.purchaseOrderNumber));
+  const columns = COLUMNS.filter((c) => showOrder || c.key !== 'purchaseOrder');
+  const today = useToday();
   return (
     <>
       <ReportWidget
@@ -190,14 +203,14 @@ export function ApprovalsGrid({
               {grid.total === 0 ? (
                 <Empty filtered={filtered} onReset={reset} />
               ) : (
-                <div className={styles.scroll}>
-                  <table className={styles.table}>
+                <div className={cx(dataTable.scroll, styles.scroll)}>
+                  <table className={cx(dataTable.table, styles.table)}>
                     <caption className="visually-hidden">
                       Approvals, one row per approver step
                     </caption>
                     <thead>
                       <tr>
-                        {COLUMNS.map((c) => (
+                        {columns.map((c) => (
                           <SortHeading key={c.key} column={c} params={params} onParams={onParams} />
                         ))}
                       </tr>
@@ -208,13 +221,23 @@ export function ApprovalsGrid({
                           key={`${row.itemId}-${row.level}-${i}`}
                           row={row}
                           onRead={setReading}
+                          showOrder={showOrder}
+                          today={today}
                         />
                       ))}
                     </tbody>
                   </table>
                 </div>
               )}
-              <GridPager grid={grid} sizes={PAGE_SIZES} onParams={onParams} />
+              <Pager
+                placement="below"
+                page={grid.page}
+                pageSize={grid.pageSize}
+                total={grid.total}
+                sizes={PAGE_SIZES}
+                onPage={(page) => onParams({ page })}
+                onPageSize={(pageSize) => onParams({ pageSize })}
+              />
             </>
           )
         }

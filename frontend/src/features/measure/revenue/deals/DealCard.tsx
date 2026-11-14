@@ -1,4 +1,5 @@
 import { useFormatters } from '@/format/useFormatters';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { AttributionModelChoice, Deal, DealActivity } from './api';
 import { JourneySteps } from './JourneySteps';
 import styles from './Deals.module.css';
@@ -17,7 +18,9 @@ export function DealCard({ deal, activity, comparison }: DealCardProps) {
   return (
     <article className={styles.deal} aria-label={title}>
       <header className={styles.dealHeader}>
-        <h3 className={styles.dealTitle}>{title}</h3>
+        <SectionHeading level={3} rank="card">
+          {title}
+        </SectionHeading>
         <span className={styles.dealAmount}>
           {money(deal.amount)}
           {deal.rate && (

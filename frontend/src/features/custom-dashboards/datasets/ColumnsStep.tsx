@@ -13,6 +13,7 @@ import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { Dataset, DatasetPreview } from '../model';
 import { useCreateDataset } from './api';
 import type { DatasetUpload } from './api';
@@ -122,7 +123,9 @@ export function ColumnsStep({ upload, preview, onBack, onClose, onSaved }: Colum
         name="description"
         render={(field) => <TextAreaField label="Description" rows={2} {...field} />}
       />
-      <h3 className={styles.stepTitle}>Check the columns</h3>
+      <SectionHeading level={3} rank="sub">
+        Check the columns
+      </SectionHeading>
       <ColumnTypesForm
         control={form.control}
         preview={preview}

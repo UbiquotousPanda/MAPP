@@ -1,20 +1,15 @@
 import { useId } from 'react';
 import type { ReactNode } from 'react';
+import { SectionHeading } from '../SectionHeading/SectionHeading';
 import styles from './Card.module.css';
 
 export interface CardProps {
-  /** The card's heading; it also names the card for screen readers. */
   title?: string;
   subtitle?: string;
-  /** Buttons for the whole card, on the right of the title. */
   actions?: ReactNode;
   children: ReactNode;
 }
 
-/**
- * A white content card on the grey page (design system §2): an optional header with the title on
- * the left and its actions on the right, then 24 px of padding around the content.
- */
 export function Card({ title, subtitle, actions, children }: CardProps) {
   const titleId = useId();
   const hasHeader = Boolean(title || subtitle || actions);
@@ -25,9 +20,9 @@ export function Card({ title, subtitle, actions, children }: CardProps) {
         <div className={styles.header}>
           <div className={styles.heading}>
             {title && (
-              <h2 id={titleId} className={styles.title}>
+              <SectionHeading level={2} rank="card" id={titleId}>
                 {title}
-              </h2>
+              </SectionHeading>
             )}
             {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
           </div>

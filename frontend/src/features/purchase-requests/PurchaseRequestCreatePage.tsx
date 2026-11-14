@@ -1,5 +1,7 @@
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Card } from '@/ui/Card/Card';
+import { FormPage } from '@/ui/FormRail/FormRail';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { purchaseRequestHref, recordHref } from '@/ui/record-links';
 import { useToast } from '@/ui/Toast/useToast';
@@ -21,26 +23,27 @@ import styles from './PurchaseRequestForm.module.css';
  * pre-filled from the line item; without a line item, choosing one comes first.
  */
 export function PurchaseRequestCreatePage() {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const lineItemId = params.get('lineItemId') ?? '';
   usePageTitle(NEW_PURCHASE_REQUEST);
 
   if (!lineItemId) {
     return (
-      <div className={styles.step}>
-        <PageHeader
-          breadcrumb={[{ label: 'Plans', to: '/plans' }, { label: NEW_PURCHASE_REQUEST }]}
-          title={NEW_PURCHASE_REQUEST}
-          description={PICKER.stepDescription}
-        />
-        <Card title={PICKER.stepTitle}>
-          <LineItemOptionsList
-            query={{}}
-            action={PICKER.choose}
-            onChoose={(option) => setParams({ lineItemId: option.lineItem.id })}
+      <FormPage>
+        <div className={styles.step}>
+          <PageHeader
+            breadcrumb={[{ label: 'Plans', to: '/plans' }, { label: NEW_PURCHASE_REQUEST }]}
+            title={NEW_PURCHASE_REQUEST}
           />
-        </Card>
-      </div>
+          <Card title={PICKER.stepTitle}>
+            <LineItemOptionsList
+              query={{}}
+              action={PICKER.choose}
+              onChoose={(option) => setParams({ lineItemId: option.lineItem.id })}
+            />
+          </Card>
+        </div>
+      </FormPage>
     );
   }
   return <CreateForm key={lineItemId} lineItemId={lineItemId} />;

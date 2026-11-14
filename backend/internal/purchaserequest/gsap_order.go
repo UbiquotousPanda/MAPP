@@ -64,14 +64,18 @@ func (s *Service) orderable(ctx context.Context, id string, version int) (Purcha
 	if err != nil {
 		return PurchaseRequest{}, err
 	}
-	if reason := s.orderReason(pr, config); reason != "" {
+	facts, err := s.factsOf(ctx, pr)
+	if err != nil {
+		return PurchaseRequest{}, err
+	}
+	if reason := s.orderReason(pr, config, unapprovedActivity(pr, facts)); reason != "" {
 		return PurchaseRequest{}, errs.NotAllowed(reason)
 	}
 	return pr, pr.CheckVersion(version, recordNoun)
 }
 
 // orderReason is why GSAP cannot be asked for pr now, or "".
-func (s *Service) orderReason(pr PurchaseRequest, config Configuration) string {
+func (s *Service) orderReason(pr PurchaseRequest, config Configuration, unapproved string) string {
 	switch {
 	case !config.PurchaseSupport:
 		return msgSwitchedOff
@@ -84,7 +88,7 @@ func (s *Service) orderReason(pr PurchaseRequest, config Configuration) string {
 	case len(pendingLines(pr)) == 0:
 		return msgAlreadyOrdered
 	}
-	return ""
+	return unapproved
 }
 
 // gsapOrderAvailability is the action Create GSAP PR and PO: hidden without finance.import.
@@ -92,7 +96,7 @@ func (s *Service) gsapOrderAvailability(ctx context.Context, f accessFacts) auth
 	if !authz.Has(ctx, authz.FinanceImport) {
 		return hidden
 	}
-	if reason := s.orderReason(f.pr, f.config); reason != "" {
+	if reason := s.orderReason(f.pr, f.config, f.unapproved); reason != "" {
 		return authz.Unavailable(reason)
 	}
 	return authz.Allowed

@@ -13,7 +13,7 @@ natively, and Docker or Podman stays optional for everyone.
 - **`compose.yaml` builds and runs the whole app from the checkout**: `docker compose up -d --build` or
   `podman compose up -d --build`, then <http://127.0.0.1:3000>. Nothing is pushed to a registry; the
   images are built on the laptop. `docker compose up -d postgres` still starts PostgreSQL alone.
-- **`backend/Dockerfile`**: a `golang:1.27.3-alpine` stage builds `api` and `seed` with `CGO_ENABLED=0`,
+- **`backend/Dockerfile`**: a `golang:1.27.4-alpine` stage builds `api` and `seed` with `CGO_ENABLED=0`,
   `-trimpath` and `-ldflags="-s -w"`; the run stage is `gcr.io/distroless/static-debian13:nonroot`, with no
   shell or package manager, running as user 65532.
 - **`frontend/Dockerfile`**: a `node:24-alpine` stage runs `pnpm install --frozen-lockfile` and `pnpm run build`; the run stage is

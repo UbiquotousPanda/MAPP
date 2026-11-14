@@ -1,12 +1,10 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/ui/Pager/page-sizes';
+import type { PageSize } from '@/ui/Pager/page-sizes';
 
 export type GsapTab = 'swbs' | 'waiting' | 'orders';
 
-export const GSAP_TABS: GsapTab[] = ['swbs', 'waiting', 'orders'];
-
-/** Rows per page, 5 to 500. */
-export const PAGE_SIZES = [5, 10, 20, 50, 100, 200, 500] as const;
-const DEFAULT_PAGE_SIZE = 20;
+export { PAGE_SIZES };
 
 /** The columns each tab sorts by: the contract's GsapLinkSort. */
 const SORT_KEYS: Record<GsapTab, string[]> = {
@@ -39,7 +37,7 @@ export interface GsapTable {
   tab: GsapTab;
   sort: string;
   page: number;
-  pageSize: number;
+  pageSize: PageSize;
 }
 
 /** Longest waiting first on the first two tabs; line item, then PO number, on Purchase orders. */
@@ -59,10 +57,9 @@ function setOrDrop(params: URLSearchParams, name: string, value: string, fallbac
   }
 }
 
-/** The tab, its sort and its page in the address; a new tab, sort or page size starts at page 1. */
-export function useGsapTable() {
-  const [params, setParams] = useSearchParams();
-  const tab = GSAP_TABS.find((t) => t === params.get('tab')) ?? 'swbs';
+/** The tab's sort and page in the address; a new sort or page size starts at page 1. */
+export function useGsapTable(tab: GsapTab) {
+  const [params, setParams] = useAddressParams();
   const sort = params.get('sort');
   const page = Number(params.get('page'));
   const size = Number(params.get('pageSize'));
@@ -74,11 +71,7 @@ export function useGsapTable() {
   };
   const change = (patch: Partial<GsapTable>) => {
     const next = { ...table, page: 1, ...patch };
-    if (patch.tab !== undefined && patch.tab !== table.tab) {
-      next.sort = defaultSort(patch.tab);
-    }
     const written = new URLSearchParams(params);
-    setOrDrop(written, 'tab', next.tab, 'swbs');
     setOrDrop(written, 'sort', next.sort, defaultSort(next.tab));
     setOrDrop(written, 'page', String(next.page), '1');
     setOrDrop(written, 'pageSize', String(next.pageSize), String(DEFAULT_PAGE_SIZE));

@@ -52,7 +52,6 @@ type RevenueCards struct {
 	Performance PerformanceCard `json:"performance"`
 }
 
-// RevenuePeriod is one period of the series, split at today.
 type RevenuePeriod struct {
 	Key        string       `json:"key"`
 	State      string       `json:"state"`
@@ -62,10 +61,20 @@ type RevenuePeriod struct {
 	InProgress bool         `json:"inProgress"`
 }
 
+// RevenueTotals is the period table's Total row; a column with no figure in any period is nil. GoalAfterYear is
+// the goal card less the Goal total, the part a model's velocity carries past December, nil when there is none.
+type RevenueTotals struct {
+	Goal          *money.Money `json:"goal"`
+	Actual        *money.Money `json:"actual"`
+	Projected     *money.Money `json:"projected"`
+	GoalAfterYear *money.Money `json:"goalAfterYear"`
+}
+
 type RevenueReport struct {
 	Cards       RevenueCards    `json:"cards"`
 	Period      string          `json:"period"`
 	Periods     []RevenuePeriod `json:"periods"`
+	Totals      RevenueTotals   `json:"totals"`
 	Projection  *Stamp          `json:"projection"`
 	Projections []Stamp         `json:"projections"`
 	Reason      string          `json:"reason"`
@@ -105,6 +114,13 @@ type FunnelPeriod struct {
 	InProgress bool   `json:"inProgress"`
 }
 
+type FunnelTotals struct {
+	Goal          *int64 `json:"goal"`
+	Actual        *int64 `json:"actual"`
+	Projected     *int64 `json:"projected"`
+	GoalAfterYear *int64 `json:"goalAfterYear"`
+}
+
 type FunnelReport struct {
 	Stage           string         `json:"stage"`
 	AvailableStages []string       `json:"availableStages"`
@@ -112,6 +128,7 @@ type FunnelReport struct {
 	Cards           FunnelCards    `json:"cards"`
 	Period          string         `json:"period"`
 	Periods         []FunnelPeriod `json:"periods"`
+	Totals          FunnelTotals   `json:"totals"`
 	Projection      *Stamp         `json:"projection"`
 	Projections     []Stamp        `json:"projections"`
 	Reason          string         `json:"reason"`

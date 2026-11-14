@@ -10,10 +10,11 @@ import (
 
 const stageRevenue = "revenue"
 
-// activityTotals lays one activity's counted facts out month by month, in line with its projected series.
+// activityTotals lays one activity's counted facts out month by month; a month without a fact stays nil, so it shows
+// "—" while a month whose facts sum to zero shows 0.
 type activityTotals struct {
-	counts   map[string][]projection.MonthFigure // by stage ("inq", "mql")
-	revenue  []projection.MoneyFigure
+	inq, mql [projection.Months]*int64
+	revenue  [projection.Months]*money.Amount
 	excluded int
 }
 
@@ -39,18 +40,18 @@ func (s *Service) factsByActivity(ctx context.Context, scope authz.Scope, activi
 }
 
 func (s *Service) addRow(out map[string]activityTotals, r FactTotal, year int, rates money.Rates) {
-	t, ok := out[r.ActivityID]
-	if !ok {
-		t = activityTotals{counts: map[string][]projection.MonthFigure{}}
-	}
 	i := monthIndex(r.Month, year)
 	if i < 0 {
 		return
 	}
-	if r.Stage == stageRevenue {
+	t := out[r.ActivityID]
+	switch r.Stage {
+	case stageRevenue:
 		t = addRevenue(t, r, i, rates)
-	} else {
-		t.counts[r.Stage] = appendAt(t.counts[r.Stage], i, r.Counts, r.Month)
+	case StageINQ:
+		t.inq[i] = new(int64Of(t.inq[i]) + r.Counts)
+	case StageMQL:
+		t.mql[i] = new(int64Of(t.mql[i]) + r.Counts)
 	}
 	out[r.ActivityID] = t
 }
@@ -62,41 +63,13 @@ func addRevenue(t activityTotals, r FactTotal, i int, rates money.Rates) activit
 		t.excluded += r.FactCount
 		return t
 	}
-	if t.revenue == nil {
-		t.revenue = emptyRevenueMonths(r.Month, i)
+	var sum money.Amount
+	if t.revenue[i] != nil {
+		sum = *t.revenue[i]
 	}
-	t.revenue[i].Value.Amount = t.revenue[i].Value.Amount.Add(converted.Amount)
+	sum = sum.Add(converted.Amount)
+	t.revenue[i] = &sum
 	return t
-}
-
-func emptyRevenueMonths(sampleMonth string, atIndex int) []projection.MoneyFigure {
-	months := make([]projection.MoneyFigure, projection.Months)
-	year := sampleMonth[:4]
-	for i := range months {
-		months[i].Value = money.USD(money.Amount{})
-		months[i].Month = monthKey(year, i)
-	}
-	_ = atIndex
-	return months
-}
-
-func appendAt(months []projection.MonthFigure, i int, value int64, sampleMonth string) []projection.MonthFigure {
-	if months == nil {
-		months = make([]projection.MonthFigure, projection.Months)
-		year := sampleMonth[:4]
-		for j := range months {
-			months[j].Month = monthKey(year, j)
-		}
-	}
-	months[i].Value += value
-	return months
-}
-
-func monthKey(year string, zeroBasedMonth int) string {
-	m := zeroBasedMonth + 1
-	digits := "0123456789"
-	tens, ones := m/10, m%10
-	return year + "-" + string(digits[tens]) + string(digits[ones])
 }
 
 // monthIndex places a fact month ("2026-01") in the plan year, or -1 when it belongs to another year.

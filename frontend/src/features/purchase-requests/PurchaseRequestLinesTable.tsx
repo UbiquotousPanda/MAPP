@@ -1,13 +1,14 @@
 import { Link } from 'react-router';
-import { ScrollBox } from '@/features/financials';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { Card } from '@/ui/Card/Card';
+import { HxKey } from '@/ui/HxKey/HxKey';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { recordHref } from '@/ui/record-links';
 import { formatMoneyText } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { PurchaseRequest, PurchaseRequestLine } from './api';
-import { HxKey } from './HxKey';
 import { CHANGED, LINES_TITLE, poSourceText } from './page-text';
 import {
   FIELD_LABELS,
@@ -47,8 +48,8 @@ export function PurchaseRequestLinesTable({
   const source = GSAP_SOURCE_WORDS[purchaseRequest.gsapSource];
   return (
     <Card title={LINES_TITLE} subtitle={source ? poSourceText(source) : undefined}>
-      <ScrollBox label={LINES_TITLE} className={styles.scroll}>
-        <table className={styles.table}>
+      <ScrollBox label={LINES_TITLE}>
+        <table className={dataTable.table}>
           <thead>
             <tr>
               <Header label="#" />
@@ -83,7 +84,7 @@ function LineRow({ line, changePending }: { line: PurchaseRequestLine; changePen
   const optionalDate = (value: string | null) => (value ? date(value) : EMPTY);
   return (
     <tr>
-      <td className={styles.number}>{line.position}</td>
+      <td className={dataTable.numeric}>{line.position}</td>
       <th scope="row">
         <span className={styles.withReason}>
           <Link to={recordHref('lineItem', line.lineItem.id)}>
@@ -93,11 +94,11 @@ function LineRow({ line, changePending }: { line: PurchaseRequestLine; changePen
         </span>
       </th>
       <td>
-        <HxKey value={line.hxKey} compact />
+        <HxKey value={line.hxKey} />
       </td>
-      <td className={styles.number}>{formatMoneyText(line.amount)}</td>
+      <td className={dataTable.numeric}>{formatMoneyText(line.amount)}</td>
       <td>{date(line.deliveryDate)}</td>
-      <td className={styles.number}>
+      <td className={dataTable.numeric}>
         {line.overallLimit ? formatMoneyText(line.overallLimit) : EMPTY}
       </td>
       <td>{line.lineItem.swbsCode || EMPTY}</td>
@@ -106,8 +107,8 @@ function LineRow({ line, changePending }: { line: PurchaseRequestLine; changePen
       <td>{line.poLine || EMPTY}</td>
       <td>{line.poLineStatus || EMPTY}</td>
       <td>{optionalDate(line.poDate)}</td>
-      <td className={styles.number}>{line.poValue ? formatMoneyText(line.poValue) : EMPTY}</td>
-      <td className={styles.number}>{formatMoneyText(line.invoiced)}</td>
+      <td className={dataTable.numeric}>{line.poValue ? formatMoneyText(line.poValue) : EMPTY}</td>
+      <td className={dataTable.numeric}>{formatMoneyText(line.invoiced)}</td>
     </tr>
   );
 }

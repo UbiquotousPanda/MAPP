@@ -27,9 +27,16 @@ func (s *Service) logRestart(ctx context.Context, a actor.Actor, r restartLog) e
 	return s.hooks.ApprovalRestarted(ctx, a, r.before, r.after, r.changes)
 }
 
-// inApproval also covers the statuses shown as In progress and Complete, which are Submitted or Approved.
-func inApproval(a Activity) bool {
-	return a.Status == StatusSubmitted || a.Status == StatusApproved
+// InApproval also covers the statuses shown as In progress and Complete, which are Submitted or Approved.
+func InApproval(status Status) bool {
+	return status == StatusSubmitted || status == StatusApproved
+}
+
+// RestartsApproval says whether changing fields (contract names) of an activity in status restarts its approval.
+func RestartsApproval(status Status, fields []string) bool {
+	return InApproval(status) && slices.ContainsFunc(reapprovalWords(), func(w struct{ field, words string }) bool {
+		return slices.Contains(fields, w.field)
+	})
 }
 
 // reapprovalWords are the activity's own fields whose change restarts approval (D-322), in the reason's order.
@@ -43,7 +50,7 @@ func reapprovalWords() []struct{ field, words string } {
 }
 
 func reapprovalFields(before Activity, changes []history.Change) []string {
-	if !inApproval(before) {
+	if !InApproval(before.Status) {
 		return nil
 	}
 	var words []string

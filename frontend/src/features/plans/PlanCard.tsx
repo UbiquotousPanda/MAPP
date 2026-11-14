@@ -2,18 +2,19 @@ import { Link } from 'react-router';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
-import { AmountPair } from './AmountPair';
+import { ConvertedAmount } from '@/features/line-items';
 import { PinButton } from './PinButton';
 import styles from './PlanCard.module.css';
 import { BusinessUnitText, PlanCompleteness, PlanStatusChip } from './PlanFacts';
 import type { PlanSummary } from './api';
 import { changesNothingIn } from './plan-access';
 import { activitiesApprovedText } from './plan-text';
-import { PlanTypeTag } from './PlanTypeTag';
-import { BcpirTag } from './BcpirTag';
+import { Middots } from './Middots';
+import { PLAN_TYPE_LABELS, planTypeOf } from './plan-currency';
 import { FoundIn } from './FoundIn';
 
 export interface PlanCardProps {
@@ -30,16 +31,21 @@ export function PlanCard({ plan, actions, pinned, onPinToggle }: PlanCardProps) 
     <article className={styles.card} aria-labelledby={`plan-${plan.id}`}>
       <div className={styles.top}>
         <div className={styles.title}>
-          <h2 className={styles.name} id={`plan-${plan.id}`}>
-            <Link to={`/plans/${encodeURIComponent(plan.id)}`}>{plan.name}</Link>
-          </h2>
+          <SectionHeading level={2} rank="card" id={`plan-${plan.id}`}>
+            <Link to={`/plans/${encodeURIComponent(plan.id)}`} className={styles.name}>
+              {plan.name}
+            </Link>
+          </SectionHeading>
           <p className={styles.id}>
-            <span>
-              {plan.id} · {plan.year}
-              {plan.aop && ' · AOP'}
-            </span>
-            <PlanTypeTag plan={plan} />
-            <BcpirTag plan={plan} />
+            <Middots>
+              {[
+                <span key="id">{plan.id}</span>,
+                <span key="year">{plan.year}</span>,
+                plan.aop && <span key="aop">AOP</span>,
+                <span key="type">{PLAN_TYPE_LABELS[planTypeOf(plan)]}</span>,
+                plan.bcpir && <span key="bcpir">BCPIR</span>,
+              ]}
+            </Middots>
           </p>
           <FoundIn foundIn={plan.foundIn} />
         </div>
@@ -68,22 +74,20 @@ export function PlanCard({ plan, actions, pinned, onPinToggle }: PlanCardProps) 
         {plan.teams.length > 0 && <TeamPills teams={plan.teams} />}
         <BusinessUnitText units={plan.businessUnit} />
       </div>
-      <div className={styles.row}>
-        {figures.budget ? (
+      <div className={`${styles.row} ${styles.progress}`}>
+        {figures.budget && (
           <ProgressBar
             value={used}
             label="Budget used"
             tone={figures.overBudget ? 'problem' : undefined}
           />
-        ) : (
-          <span className={styles.muted}>No plan budget set</span>
         )}
       </div>
       <dl className={styles.money}>
         <div>
           <dt>Planned cost</dt>
           <dd>
-            <AmountPair
+            <ConvertedAmount
               primary={plan.planPlannedCost ?? figures.plannedCost}
               secondary={figures.plannedCost}
               inline
@@ -95,7 +99,7 @@ export function PlanCard({ plan, actions, pinned, onPinToggle }: PlanCardProps) 
           <dd>
             {figures.budget ? (
               <>
-                <AmountPair
+                <ConvertedAmount
                   primary={plan.planBudget ?? figures.budget}
                   secondary={figures.budget}
                   inline

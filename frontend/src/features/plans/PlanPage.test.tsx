@@ -121,7 +121,8 @@ describe('PlanPage (US3, FR-011 – FR-017)', () => {
 
     await screen.findByRole('region', { name: 'Summary' });
     expect(summaryCard('Plan budget')).toHaveTextContent('—No plan budget set');
-    expect(summaryCard('Budget used')).toHaveTextContent('—No plan budget set');
+    expect(summaryCard('Budget used')).toHaveTextContent('—');
+    expect(summaryCard('Budget used')).not.toHaveTextContent('No plan budget set');
     expect(summaryCard('Planned cost')).toHaveTextContent('Nothing planned yet');
     // "Nothing" is "—" with the reason under it (functional review FR·X-08).
     expect(summaryCard('Activities approved')).toHaveTextContent('—No activities yet');

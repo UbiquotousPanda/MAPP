@@ -1,11 +1,13 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
+import { nth } from '@/testing/dom';
 import { performanceSource, reviewRow } from '@/testing/fixtures/performance';
 import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
+import { openFilters } from '@/testing/filters';
 import type { Answer } from '@/testing/replies';
 import { ReviewQueuePage } from './ReviewQueuePage';
 
@@ -51,7 +53,6 @@ describe('ReviewQueuePage', () => {
       screen.getByRole('button', { name: 'Rejected: the date is in the future' }),
     ).toBeVisible();
     expect(screen.getByText('3 rows')).toBeVisible();
-    expect(screen.getByText(/none can be added by hand/)).toBeVisible();
     expect(askedFilters(api)).toEqual({ status: 'open' });
     await expectNoAxeViolations();
   });
@@ -78,10 +79,10 @@ describe('ReviewQueuePage', () => {
   it('046 FR-023 choosing a reason asks the API for that reason only', async () => {
     const { api, user } = renderQueue({ body: { items: [reviewRow()] } });
 
-    await user.selectOptions(
-      await screen.findByRole('combobox', { name: 'Reason' }),
-      'Keys disagree',
-    );
+    await screen.findByRole('searchbox', { name: 'Search rows' });
+    await openFilters(user);
+    await user.click(screen.getByRole('button', { name: 'Reason' }));
+    await user.click(await screen.findByRole('radio', { name: 'Keys disagree' }));
 
     expect(askedFilters(api)).toEqual({ status: 'open', reason: 'unmatched:disagree' });
   });
@@ -96,7 +97,8 @@ describe('ReviewQueuePage', () => {
     const { user, router } = renderQueue({ body: { items: [] } }, `${PATH}?status=any&key=nothing`);
 
     expect(await screen.findByText('Nothing matches these filters')).toBeVisible();
-    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    // The empty state's Clear filters, after the chips' own.
+    await user.click(nth(screen.getAllByRole('button', { name: 'Clear filters' }), -1));
 
     expect(router.state.location.search).toBe('');
   });

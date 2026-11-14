@@ -21,7 +21,7 @@ import { RecordForm } from './RecordForm';
 import { RefusedPanel } from './RefusedPanel';
 import { recordFormSchema } from './schemas';
 import type { RecordFormValues } from './schemas';
-import { createdToast, insideCampaign, NEW_INITIATIVE, openName, VIEW } from './texts';
+import { createdToast, NEW_INITIATIVE, openName, VIEW } from './texts';
 import { failureOf, useLeaveAfterSave } from './useLeaveAfterSave';
 
 /**
@@ -144,7 +144,6 @@ function NewInitiativeForm({
   return (
     <RecordFormPanel
       title={NEW_INITIATIVE}
-      description={insideCampaign(campaign.name)}
       isDirty={!leaving && form.formState.isDirty}
       saving={saving}
       problems={problems}
@@ -166,7 +165,6 @@ function NewInitiativeForm({
         planId={planId}
         planYear={campaign.plan.year}
         campaign={campaign}
-        defaults={defaults}
         parentRemaining={campaign.budgetAndCost.remainingForChildren}
         savedBudget={null}
         currency={currency}

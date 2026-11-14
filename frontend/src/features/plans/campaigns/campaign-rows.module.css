@@ -2,6 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  white-space: nowrap;
 }
 
 /* The row's quick action: a 24 px icon button, faded until the row is hovered or has the focus,
@@ -34,8 +35,8 @@
   outline-offset: 2px;
 }
 
-:global(tr):hover .quickAction,
-:global(tr):focus-within .quickAction,
+tr:hover .quickAction,
+tr:focus-within .quickAction,
 .quickAction:focus-visible {
   color: var(--ink);
 }
@@ -83,16 +84,4 @@
 .left {
   color: var(--ink-2);
   font-size: var(--text-xs);
-}
-
-/* The totals row's first cell: "Total", then the counts on one line. */
-.total {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.total .left {
-  font-weight: var(--weight-regular);
-  white-space: nowrap;
 }

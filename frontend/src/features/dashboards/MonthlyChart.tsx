@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { toCents } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
-import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { monthsAboveText } from '@/features/all-work';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
+import { ViewSwitch } from '@/ui/ViewSwitch/ViewSwitch';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { DashboardMonths, Money } from './api';
 import { FINANCE_HIDDEN, monthLabel } from './dashboard-text';
 import styles from './Dashboards.module.css';
@@ -32,19 +35,7 @@ export function MonthlyChart({ months }: MonthlyChartProps) {
     months.negativeBalanceCount > 0 && monthsAboveText(months.negativeBalanceCount),
   ].filter((note) => typeof note === 'string');
   const switcher = (
-    <div className={styles.switch} role="group" aria-label="Show as">
-      {(['chart', 'table'] as const).map((choice) => (
-        <Button
-          key={choice}
-          size="sm"
-          variant={view === choice ? 'secondary' : 'tertiary'}
-          aria-pressed={view === choice}
-          onClick={() => setView(choice)}
-        >
-          {choice === 'chart' ? 'Chart' : 'Table'}
-        </Button>
-      ))}
-    </div>
+    <ViewSwitch label="Show Planned and actual by month as" value={view} onChange={setView} />
   );
   return (
     <Card title="Planned and actual by month" actions={switcher}>
@@ -129,16 +120,16 @@ function Bars({ months }: MonthlyChartProps) {
 function MonthTable({ months }: MonthlyChartProps) {
   const { money } = useFormatters();
   return (
-    <div className={styles.scroll}>
-      <table className={styles.table}>
-        <caption>
+    <ScrollBox label="Planned cost and actual paid by month">
+      <table className={cx(dataTable.table, styles.table)}>
+        <caption className="visually-hidden">
           Planned cost spread by month and actual paid by posting month, with running totals
         </caption>
         <thead>
           <tr>
             {['Month', 'Planned cost', 'Actual', 'Planned to date', 'Actual to date'].map(
               (title, i) => (
-                <th key={title} scope="col" className={i > 0 ? styles.number : undefined}>
+                <th key={title} scope="col" className={i > 0 ? dataTable.numeric : undefined}>
                   {title}
                 </th>
               ),
@@ -149,14 +140,14 @@ function MonthTable({ months }: MonthlyChartProps) {
           {months.items.map((m) => (
             <tr key={m.month}>
               <th scope="row">{monthLabel(m.month)}</th>
-              <td className={styles.number}>{money(m.planned)}</td>
-              <td className={styles.number}>{money(m.actual)}</td>
-              <td className={styles.number}>{money(m.plannedToDate)}</td>
-              <td className={styles.number}>{money(m.actualToDate)}</td>
+              <td className={dataTable.numeric}>{money(m.planned)}</td>
+              <td className={dataTable.numeric}>{money(m.actual)}</td>
+              <td className={dataTable.numeric}>{money(m.plannedToDate)}</td>
+              <td className={dataTable.numeric}>{money(m.actualToDate)}</td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollBox>
   );
 }

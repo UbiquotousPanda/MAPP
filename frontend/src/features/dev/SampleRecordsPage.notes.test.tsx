@@ -96,7 +96,7 @@ describe('SampleRecordsPage: notes', () => {
     expect(api.requests).toContainEqual({
       method: 'DELETE',
       path: '/api/v1/sample-notes/SN-1003',
-      search: '',
+      search: expect.stringMatching(/^\?version=[1-9]\d*$/),
       body: undefined,
     });
   });

@@ -25,7 +25,7 @@ export function userAccessReport(overrides: Partial<UserAccessReport> = {}): Use
   return {
     total: 3,
     page: 1,
-    pageSize: 20,
+    pageSize: 50,
     sort: 'name',
     cards: { people: 3, signedInWithin30Days: 1, neverSignedIn: 1 },
     bands: [

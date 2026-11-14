@@ -1,5 +1,6 @@
-import { CircleAlert, LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { asApiError } from '@/api/errors';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
@@ -51,10 +52,9 @@ export function PullDialog({ sources, onClose, onLoaded }: PullDialogProps) {
       onSubmit={() => void send()}
     >
       {failure && (
-        <p className={styles.failure} role="alert">
-          <CircleAlert aria-hidden="true" />
+        <InlineAlert tone="danger" role="alert">
           {failure}
-        </p>
+        </InlineAlert>
       )}
       <div className={styles.fields}>
         <ChoiceField

@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import type { AttributionModel } from './api';
 
 export const DEALS_PARAM = 'deals';
@@ -28,7 +28,7 @@ export function useDealsAddress(): {
   compare: (model: AttributionModel | null) => void;
   close: () => void;
 } {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const rawCompare = params.get(COMPARE_PARAM);
   const address: DealsAddress = {
     activityId: params.get(DEALS_PARAM),

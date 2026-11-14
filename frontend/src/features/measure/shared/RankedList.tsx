@@ -1,18 +1,22 @@
+import { ChevronLeft } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router';
-import { recordHref } from '@/ui/record-links';
-import type { PlanningRecordType } from '@/ui/record-links';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { Pager } from '@/ui/Pager/Pager';
+import { PAGE_SIZES } from '@/ui/Pager/page-sizes';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import type { ReportKey } from '../reports';
 import { downloadReport } from './api';
 import { ExportMenu } from './ExportMenu';
-import { Paging, RankedControls } from './RankedControls';
+import { RankedControls } from './RankedControls';
+import { LevelSwitch } from './ReportControls';
+import type { Show } from './report-address';
 import type { Choice } from './RankedControls';
 import { useRankedState } from './ranked-params';
+import { RankedTable } from './RankedTable';
 import { useReportAddress } from './useReportAddress';
 import styles from './RankedList.module.css';
 
@@ -28,6 +32,7 @@ export interface RankedEntryData<F> {
 
 export interface RankedData<F> {
   total: number;
+  totals: F;
   trail: { id: string; level: string; name: string }[];
   groups: { key: string; label: string; totals: F; entries: RankedEntryData<F>[] }[];
   drillLost: boolean;
@@ -40,6 +45,8 @@ export interface RankedColumn<F> {
   sortable?: boolean;
   /** Draws an entry's cell instead of its text, such as a figure that opens a panel; group totals keep the text. */
   render?: (figures: F, entry: RankedEntryData<F>) => ReactNode;
+  /** Why an entry's figure is empty, from the API's reason: its cell shows "—" with this as a tip. */
+  empty?: (figures: F) => string | undefined;
 }
 
 export interface RankedListProps<F> {
@@ -51,199 +58,139 @@ export interface RankedListProps<F> {
   columns: RankedColumn<F>[];
   groups: Choice[];
   defaultSort: string;
+  defaultOrder?: 'desc' | 'asc';
   /** A word on an entry the reader must notice, such as "Over-allocated". */
   flag?: (figures: F) => string | undefined;
   /** Shows each entry's owner after its name. */
   owner?: boolean;
-}
-
-const DRILLS_TO = new Set(['plan', 'campaign', 'initiative', 'activity']);
-
-function isRecordType(level: string): level is PlanningRecordType {
-  return DRILLS_TO.has(level) || level === 'lineItem';
+  /** Offers Plan · Campaign · Initiative · Activity in the header, starting at this level. */
+  levelFallback?: Show;
+  /** One muted line above the table, such as what its figures rest on. */
+  caption?: string;
 }
 
 /** The ranked list: top entries with their children, drill with a trail, shared with 049. */
 export function RankedList<F>(props: RankedListProps<F>) {
   const { report, data, error, onRetry, columns, groups, defaultSort, flag, owner = false } = props;
-  const { state, change } = useRankedState(defaultSort);
+  const { levelFallback, caption, defaultOrder } = props;
+  const { state, change } = useRankedState(defaultSort, defaultOrder);
   const [address] = useReportAddress();
-  const [params] = useSearchParams();
-  const sorts = columns
-    .filter((c) => c.sortable !== false)
-    .map((c) => ({ value: c.key, label: c.label }));
-  const back = data && data.trail.length > 1 ? (data.trail.at(-2)?.id ?? '') : '';
+  const [params] = useAddressParams();
+  const box = useRef<HTMLDivElement>(null);
+  const focusAfterDrill = useRef(false);
+  const drill = (id: string) => {
+    focusAfterDrill.current = true;
+    change({ drill: id });
+  };
+  const at = data?.trail.at(-1)?.id ?? '';
+  useEffect(() => {
+    if (!focusAfterDrill.current) return;
+    focusAfterDrill.current = false;
+    box.current
+      ?.querySelector<HTMLElement>('[aria-current="location"], [data-focus-fallback]')
+      ?.focus();
+  }, [at]);
+  const sortBy = (key: string) =>
+    change(
+      key === state.sort
+        ? { order: state.order === 'desc' ? 'asc' : 'desc' }
+        : { sort: key, order: 'desc' },
+    );
+  const notes = data ? emptyColumns(data, columns) : [];
   return (
     <Card
       title="Ranked list"
       actions={
-        <ExportMenu
-          label="Export"
-          formats={['xlsx', 'csv']}
-          download={(format) =>
-            downloadReport(report, address, format, { widget: 'ranked', own: params })
-          }
-        />
+        <div className={styles.headerActions}>
+          {levelFallback && <LevelSwitch fallback={levelFallback} />}
+          <ExportMenu
+            label="Export ranked list"
+            iconOnly
+            formats={['xlsx', 'csv']}
+            download={(format) =>
+              downloadReport(report, address, format, { widget: 'ranked', own: params })
+            }
+          />
+        </div>
       }
     >
-      <RankedControls state={state} sorts={sorts} groups={groups} onChange={change} />
-      {data && data.trail.length > 0 && (
-        <nav className={styles.trail} aria-label="Drill trail">
-          <Button size="sm" variant="tertiary" onClick={() => change({ drill: back })}>
-            Back
-          </Button>
-          {data.trail.map((step, i) =>
-            i < data.trail.length - 1 ? (
-              <Button
-                key={step.id}
-                size="sm"
-                variant="tertiary"
-                onClick={() => change({ drill: step.id })}
-              >
-                {step.name}
-              </Button>
-            ) : (
-              <span key={step.id} aria-current="location">
-                {step.name}
-              </span>
-            ),
-          )}
-        </nav>
-      )}
-      {data?.drillLost && (
-        <p className={styles.note}>
-          The record you opened is no longer in view, so the list starts at the top.
-        </p>
-      )}
-      {error ? (
-        <ErrorState error={error} onRetry={onRetry} />
-      ) : data ? (
-        <RankedTable
-          data={data}
-          columns={columns}
-          sort={state}
-          flag={flag}
-          owner={owner}
-          onDrill={(id) => change({ drill: id })}
-        />
-      ) : (
-        <Skeleton lines={5} height="24px" />
-      )}
-      {data && <Paging state={state} total={data.total} onChange={change} />}
+      <div ref={box}>
+        <RankedControls state={state} groups={groups} onChange={change} />
+        {data && data.trail.length > 0 && <Trail trail={data.trail} onDrill={drill} />}
+        {data?.drillLost && (
+          <p className={styles.note}>
+            The record you opened is no longer in view, so the list starts at the top.
+          </p>
+        )}
+        {(caption || notes.length > 0) && (
+          <p className={styles.note}>{[caption, ...notes].filter(Boolean).join(' · ')}</p>
+        )}
+        {error ? (
+          <ErrorState error={error} onRetry={onRetry} />
+        ) : data ? (
+          <RankedTable
+            data={data}
+            columns={columns}
+            sort={state}
+            onSort={sortBy}
+            flag={flag}
+            owner={owner}
+            onDrill={drill}
+          />
+        ) : (
+          <Skeleton lines={5} height="24px" />
+        )}
+        {data && (
+          <Pager
+            placement="below"
+            page={state.page}
+            pageSize={state.size}
+            total={data.total}
+            sizes={PAGE_SIZES}
+            onPage={(page) => change({ page })}
+            onPageSize={(size) => change({ size })}
+          />
+        )}
+      </div>
     </Card>
   );
 }
 
-interface TableProps<F> {
-  data: RankedData<F>;
-  columns: RankedColumn<F>[];
-  sort: { sort: string; order: 'desc' | 'asc' };
-  flag?: (figures: F) => string | undefined;
-  owner: boolean;
+function Trail({
+  trail,
+  onDrill,
+}: {
+  trail: RankedData<unknown>['trail'];
   onDrill: (id: string) => void;
-}
-
-function RankedTable<F>({ data, columns, sort, flag, owner, onDrill }: TableProps<F>) {
-  if (data.groups.length === 0) {
-    return <p className={styles.note}>Nothing to rank on this page.</p>;
-  }
+}) {
+  const back = trail.length > 1 ? (trail.at(-2)?.id ?? '') : '';
   return (
-    <div className={styles.tableWrap}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            {owner && <th scope="col">Owner</th>}
-            {columns.map((c) => (
-              <th
-                key={c.key}
-                scope="col"
-                className={c.key === sort.sort ? styles.sorted : styles.numeric}
-                aria-sort={
-                  c.key === sort.sort
-                    ? sort.order === 'asc'
-                      ? 'ascending'
-                      : 'descending'
-                    : undefined
-                }
-              >
-                {c.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        {data.groups.map((g) => (
-          <tbody key={g.key}>
-            {g.label && (
-              <tr className={styles.groupRow}>
-                <th scope="rowgroup">{g.label}</th>
-                {owner && <td />}
-                {columns.map((c) => (
-                  <td key={c.key} className={styles.numeric}>
-                    {c.value(g.totals)}
-                  </td>
-                ))}
-              </tr>
-            )}
-            {g.entries.map((e) => (
-              <Rows
-                key={`${g.key}-${e.id}`}
-                entry={e}
-                columns={columns}
-                flag={flag}
-                owner={owner}
-                onDrill={onDrill}
-              />
-            ))}
-          </tbody>
-        ))}
-      </table>
-    </div>
+    <nav className={styles.trail} aria-label="Drill trail">
+      <Button size="sm" icon={<ChevronLeft />} onClick={() => onDrill(back)}>
+        Back
+      </Button>
+      {trail.map((step, i) =>
+        i < trail.length - 1 ? (
+          <Button key={step.id} size="sm" variant="tertiary" onClick={() => onDrill(step.id)}>
+            {step.name}
+          </Button>
+        ) : (
+          <span key={step.id} className={styles.current} aria-current="location" tabIndex={-1}>
+            {step.name}
+          </span>
+        ),
+      )}
+    </nav>
   );
 }
 
-interface RowsProps<F> {
-  entry: RankedEntryData<F>;
-  columns: RankedColumn<F>[];
-  flag?: (figures: F) => string | undefined;
-  owner: boolean;
-  onDrill: (id: string) => void;
-}
-
-function Rows<F>({ entry, columns, flag, owner, onDrill }: RowsProps<F>) {
-  const row = (e: RankedEntryData<F>, child: boolean) => {
-    const word = flag?.(e.figures);
-    const href = isRecordType(e.level) ? recordHref(e.level, e.id, e.planId) : undefined;
-    return (
-      <tr key={e.id} className={child ? styles.child : styles.top}>
-        <th scope="row">
-          {child && DRILLS_TO.has(e.level) ? (
-            <Button size="sm" variant="tertiary" onClick={() => onDrill(e.id)}>
-              {e.name}
-            </Button>
-          ) : (
-            <span className={styles.name}>{e.name}</span>
-          )}
-          {href && (
-            <Link className={styles.open} to={href} aria-label={`Open ${e.name} in Plan`}>
-              Open
-            </Link>
-          )}
-          {word && <StatusChip tone="problem">{word}</StatusChip>}
-        </th>
-        {owner && <td>{e.owner?.name ?? '—'}</td>}
-        {columns.map((c) => (
-          <td key={c.key} className={styles.numeric}>
-            {c.render ? c.render(e.figures, e) : c.value(e.figures)}
-          </td>
-        ))}
-      </tr>
-    );
-  };
-  return (
-    <>
-      {row(entry, false)}
-      {entry.children?.map((child) => row(child, true))}
-    </>
-  );
+/** A column with no figure for any entry says its reason once, above the table, instead of only per row. */
+function emptyColumns<F>(data: RankedData<F>, columns: RankedColumn<F>[]): string[] {
+  const entries = data.groups.flatMap((g) => g.entries.flatMap((e) => [e, ...(e.children ?? [])]));
+  return columns.flatMap((c) => {
+    const reasons = entries.map((e) => c.empty?.(e.figures));
+    const first = reasons[0];
+    const same = first && first !== '—' && reasons.every((r) => r === first);
+    return same ? [`${c.label}: ${first}`] : [];
+  });
 }

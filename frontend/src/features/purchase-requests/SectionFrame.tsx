@@ -4,6 +4,7 @@ import { ApiError } from '@/api/errors';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { PURCHASE_REQUESTS } from './purchase-request-text';
 import { NOT_VISIBLE } from './section-text';
 import styles from './PurchaseRequestSections.module.css';
@@ -20,9 +21,9 @@ export function SectionFrame({ tip, action, children }: SectionFrameProps) {
   return (
     <section id="purchase-requests" className={styles.card} aria-labelledby={titleId}>
       <div className={styles.header}>
-        <h2 id={titleId} className={styles.title}>
+        <SectionHeading level={2} rank="panel" id={titleId}>
           {PURCHASE_REQUESTS}
-        </h2>
+        </SectionHeading>
         <InfoTip label={PURCHASE_REQUESTS} text={tip} />
         {action && <div className={styles.action}>{action}</div>}
       </div>

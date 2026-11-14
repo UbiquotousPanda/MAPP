@@ -26,6 +26,8 @@ const (
 	msgSourceInactive   = "Not loaded — %s is deactivated and accepts no further data. Reactivate it first."
 	msgStageSupplied    = "Not saved — %s already supplies %s for this model. Deactivate that source first, or choose another stage."
 	msgRevenueSupplied  = "Not saved — %s already supplies revenue for this model. Deactivate that source first."
+	msgStatusUnchanged  = "Nothing changed — %s is already %s."
+	reviewRowNoun       = "row to review"
 )
 
 const (

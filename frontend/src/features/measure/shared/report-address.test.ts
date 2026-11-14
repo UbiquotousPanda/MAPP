@@ -24,7 +24,6 @@ const addressArb: fc.Arbitrary<ReportAddress> = fc.record({
   ),
   period: fc.constantFrom('month', 'quarter'),
   show: fc.constantFrom(null, 'plan', 'campaign', 'initiative', 'activity'),
-  currency: fc.constantFrom(null, 'EUR', 'GBP'),
   tables: set(fc.constantFrom('statusCount', 'attr12Count')),
 });
 
@@ -76,6 +75,13 @@ describe('report address (039 T020, FR-015, FR-024)', () => {
       'year=2026&plan=P-1&plan=P-2&attr=SA-1%3Anone&attr=SA-2%3ASO-1%2CSO-2&show=campaign' +
         '&table=attr12Count&table=statusCount',
     );
+  });
+
+  it('ignores a currency in an old link: the top bar chooses it (039-C10, D-413)', () => {
+    const address = readAddress(new URLSearchParams('year=2026&currency=EUR'));
+
+    expect(address).toEqual({ ...DEFAULT_ADDRESS, year: 2026 });
+    expect(writeAddress(address).toString()).toBe('year=2026');
   });
 
   it('drops malformed values and keeps the rest', () => {

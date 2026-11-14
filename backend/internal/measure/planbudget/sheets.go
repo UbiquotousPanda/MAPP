@@ -72,22 +72,7 @@ func periodsSheet(periods []Period) sheet.Sheet {
 			moneyCell(p.Actual), sheet.Money(p.BudgetToDate.Amount), sheet.Money(p.PlannedToDate.Amount),
 			moneyCell(p.ActualToDate)})
 	}
-	if len(periods) > 0 {
-		last := periods[len(periods)-1]
-		rows = append(rows, []sheet.Cell{sheet.Bold("Total"), sheet.Money(last.BudgetToDate.Amount),
-			sheet.Money(last.PlannedToDate.Amount), moneyCell(lastActual(periods))})
-	}
 	return sheet.Sheet{Name: "Periods", Rows: rows}
-}
-
-func lastActual(periods []Period) *money.Money {
-	var last *money.Money
-	for _, p := range periods {
-		if p.ActualToDate != nil {
-			last = p.ActualToDate
-		}
-	}
-	return last
 }
 
 func rankedSheet(r Ranked) sheet.Sheet {
@@ -95,7 +80,7 @@ func rankedSheet(r Ranked) sheet.Sheet {
 		"Left to plan", "Unspent budget", "Over-allocated")}
 	for _, g := range r.Groups {
 		if g.Label != "" {
-			rows = append(rows, totalsRow(g))
+			rows = append(rows, totalsRow(g.Label, g.Totals))
 		}
 		for _, e := range g.Entries {
 			rows = append(rows, entryRow(g.Label, e, ""))
@@ -104,12 +89,14 @@ func rankedSheet(r Ranked) sheet.Sheet {
 			}
 		}
 	}
+	if r.Total > 0 {
+		rows = append(rows, totalsRow("", r.Totals))
+	}
 	return sheet.Sheet{Name: "Ranked list", Rows: rows}
 }
 
-func totalsRow(g Group) []sheet.Cell {
-	f := g.Totals
-	return []sheet.Cell{sheet.Bold(g.Label), sheet.Bold("Total"), sheet.Text(""), moneyCell(f.Budget), moneyCell(f.Planned),
+func totalsRow(label string, f Figures) []sheet.Cell {
+	return []sheet.Cell{sheet.Bold(label), sheet.Bold("Total"), sheet.Text(""), moneyCell(f.Budget), moneyCell(f.Planned),
 		moneyCell(f.Committed), moneyCell(f.Actual), moneyCell(f.LeftToPlan), moneyCell(f.Unspent), sheet.Text("")}
 }
 

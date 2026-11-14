@@ -19,8 +19,7 @@ Europe only).
    as "Coming soon" (FR-001, 039-C3).
 2. Open `/reports/plan-budget`: the frame shows the current year, every plan in scope, Months, your currency, and
    "In view: …" equal to All work's counts for the same year with no filters (FR-007, SC-001).
-3. Tick a brand in the **Activity** tab, see "Changes not applied yet", press **Apply**: chips, "In view" and the
-   address change together; copy the address into another window — same report (FR-013–FR-015, SC-005).
+3. Open **Filters**, then **More filters**, and tick a brand: chips, "In view" and the address change at once; copy the address into another window — same report (FR-013–FR-015, SC-005).
 4. Edit the address to name a plan of another market: "1 filter value is no longer available and was left out",
    nothing named (FR-015, SC-002).
 5. **Saved views**: save, star, reload `/reports/plan-budget` without a query (the view applies), change a

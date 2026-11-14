@@ -1,22 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
-import {
-  action,
-  chooseOption,
-  escapeRegExp,
-  expectNoAxeViolations,
-  expectToast,
-  signInAs,
-} from './fixtures';
+import { action, escapeRegExp, expectNoAxeViolations, expectToast, signInAs } from './fixtures';
 import { approveThroughApi, decideAs } from './planning-changes';
-import { createPlanningRecords, planTree, treeRow } from './planning';
-
-// The journeys read FY2026 Lubricants Europe (P-1001, Priya's) and create their own records.
+import { createPlanningRecords } from './planning';
 
 const MEI = 'mei.lin@shell.com';
 const CARLOS = 'carlos.mendes@shell.com';
-const SARA = 'sara.novak@shell.com';
-
-const SEED_YEAR = 2026;
 
 function bell(page: Page) {
   return page.getByRole('button', { name: /^Notifications(, \d+ unread)?$/ });
@@ -53,7 +41,7 @@ test('Approval restart and the bell: changing an approved activity restarts its 
       `Saving returns '${name}' to Created; it must be submitted for approval again.`,
     ),
   ).toBeVisible();
-  await expect(restart.getByText('Planned cost: 20,000.00 USD → 25,000.00 USD')).toBeVisible();
+  await expect(restart.getByText('Planned cost: $20,000.00 → $25,000.00')).toBeVisible();
   await restart.getByRole('button', { name: 'Save and restart approval' }).click();
   await expectToast(page, `Activity '${name}' saved`);
 
@@ -117,60 +105,4 @@ test('Approval restart and the bell: changing an approved activity restarts its 
   await panel.getByRole('button', { name: 'Mark all as read' }).click();
   await expect(bell(page)).toHaveAccessibleName('Notifications');
   await expect(panel.getByRole('button', { name: 'Mark all as read' })).toHaveCount(0);
-});
-
-test('My profile: the display currency and date format follow on the Plans list and the plan page (003 US4)', async ({
-  page,
-}) => {
-  await signInAs(page, SARA);
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Sara — account menu' }).click();
-  await page.getByRole('menuitem', { name: 'My profile' }).click();
-  await expect(page).toHaveURL(/\/profile$/);
-  await expect(page.getByRole('heading', { name: 'My profile', level: 1 })).toBeVisible();
-  await expect(
-    page.getByText(
-      'Your details, teams and access, and how SP&A One shows dates and money to you.',
-    ),
-  ).toBeVisible();
-  const preferences = page.getByRole('region', { name: 'Display preferences' });
-  await expect(preferences).toContainText('USD — US dollar');
-  await expect(preferences).toContainText('12 Mar 2026 (DD MMM YYYY)');
-  await expect(page.getByRole('region', { name: 'My teams' })).toContainText('Lubricants Europe');
-  await expectNoAxeViolations(page);
-
-  await preferences.getByRole('button', { name: 'Edit preferences' }).click();
-  const panel = page.getByRole('dialog', { name: 'Edit display preferences' });
-  await chooseOption(panel.getByRole('combobox', { name: 'Display currency' }), 'EUR — Euro');
-  await chooseOption(panel.getByRole('combobox', { name: 'Date format' }), '12/03/2026');
-  await panel.getByRole('button', { name: 'Save', exact: true }).click();
-  await expectToast(page, 'Your preferences saved');
-  await expect(preferences).toContainText('EUR — Euro');
-  await expect(preferences).toContainText('12/03/2026 (DD/MM/YYYY)');
-
-  // The Plans list: FY2026 Lubricants Europe's 1,200,000.00 USD budget is 1,104,000.00 EUR at 0.92.
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Plans' }).click();
-  await expect(page.getByRole('heading', { name: 'Plans', level: 1 })).toBeVisible();
-  const card = page.getByRole('article', { name: 'FY2026 Lubricants Europe' });
-  await expect(card).toContainText('1,200,000.00 USD');
-  await expect(card).toContainText('about 1,104,000.00 EUR');
-  await expect(card).toContainText(/Planned cost[\d,]+\.\d{2} USD≈ about [\d,]+\.\d{2} EUR/);
-  await expect(card).not.toContainText('$');
-
-  // The plan page: amounts with their EUR value, and dates as DD/MM/YYYY everywhere.
-  await card.getByRole('link', { name: 'FY2026 Lubricants Europe', exact: true }).click();
-  await expect(
-    page.getByRole('heading', { name: 'FY2026 Lubricants Europe', level: 1 }),
-  ).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Plan facts' })).toContainText(
-    `01/01/${SEED_YEAR} – 31/12/${SEED_YEAR}`,
-  );
-  await expect(page.getByRole('region', { name: 'Summary' })).toContainText('≈ 1,104,000.00 EUR');
-  const planRow = treeRow(page, 'P-1001');
-  await expect(planRow).toContainText(`01/01/${SEED_YEAR} – 31/12/${SEED_YEAR}`);
-  await expect(planRow).toContainText('1,104,000.00 EUR');
-  const helix = treeRow(page, 'C-1001');
-  await expect(helix).toContainText(`01/01/${SEED_YEAR} – 31/12/${SEED_YEAR}`);
-  await expect(helix).toContainText('644,000.00 EUR');
-  await expect(planTree(page)).not.toContainText('$');
 });

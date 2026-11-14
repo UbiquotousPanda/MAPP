@@ -16,11 +16,12 @@ func (s *Service) Kinds() []history.Kind {
 	}, {
 		Name: mappingKind, Singular: mappingKindSingular, Plural: mappingKindPlural, Parent: sourceKind,
 		Snapshot: s.snapshotMapping, ChildIDs: s.mappingIDsOf, Remove: s.removeMapping, Put: s.restoreMapping,
+		PrepareRestore: s.prepareMappingRestore,
 	}, {
 		Name: importKind, Singular: importKindSingular, Plural: importKindPlural,
 		Snapshot: neverBinned, Remove: noRemove, Put: noPut,
 	}, {
-		Name: reviewKind, Singular: "row to review", Plural: "rows to review",
+		Name: reviewKind, Singular: reviewRowNoun, Plural: "rows to review",
 		Snapshot: neverBinned, Remove: noRemove, Put: noPut,
 	}, {
 		Name: configurationKind, Singular: configurationWord, Plural: configurationWord,
@@ -93,9 +94,15 @@ func (s *Service) removeMapping(ctx context.Context, id string) error {
 }
 
 func (s *Service) restoreMapping(ctx context.Context, snapshot history.Snapshot) error {
-	var mapping Mapping
-	if err := json.Unmarshal(snapshot.Data, &mapping); err != nil {
+	mapping, err := mappingOf(&snapshot)
+	if err != nil {
 		return err
 	}
 	return s.repo.PutMapping(ctx, mapping)
+}
+
+func mappingOf(snapshot *history.Snapshot) (Mapping, error) {
+	var mapping Mapping
+	err := json.Unmarshal(snapshot.Data, &mapping)
+	return mapping, err
 }

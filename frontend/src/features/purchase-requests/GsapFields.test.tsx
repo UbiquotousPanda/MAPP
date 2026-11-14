@@ -56,13 +56,11 @@ describe('033 FR-004/FR-011: GSAP answer labelled Simulated GSAP', () => {
     });
 
     const lines = screen.getByRole('region', { name: 'Lines' });
-    expect(lines).toHaveTextContent(
-      'PO number, line, status, date and value: filled by Simulated GSAP',
-    );
+    expect(lines).toHaveTextContent('PO fields filled by Simulated GSAP');
     const row = within(lines).getByRole('row', { name: /Stand build \(L-1006\)/ });
     expect(row).toHaveTextContent('SIM-4500001001');
     expect(row).toHaveTextContent('Released');
-    expect(row).toHaveTextContent('9,200.00 EUR');
+    expect(row).toHaveTextContent('€9,200.00');
     expect(row).toHaveTextContent('SIM-GB01-0001');
     expect(within(lines).getByRole('button', { name: 'About PO number' })).toBeInTheDocument();
     await expectNoAxeViolations();

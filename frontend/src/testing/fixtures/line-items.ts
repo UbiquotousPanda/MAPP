@@ -237,6 +237,28 @@ export function launchFilmSection(overrides: Partial<LineItemSection> = {}): Lin
       totals: [usd('33333.32'), usd('33333.32'), usd('33333.36')],
       total: usd('100000.00'),
     },
+    gridQuarterly: {
+      columns: [
+        { key: '2026-Q1', month: null, quarter: '2026-Q1', outsideActivityDates: false },
+        { key: '2026-Q2', month: null, quarter: '2026-Q2', outsideActivityDates: false },
+      ],
+      rows: [
+        {
+          lineItemId: 'L-1001',
+          name: 'Agency fee',
+          cells: [usd('16666.66'), usd('33333.34')],
+          total: usd('50000.00'),
+        },
+        {
+          lineItemId: 'L-1002',
+          name: 'Film production',
+          cells: [usd('16666.66'), usd('33333.34')],
+          total: usd('50000.00'),
+        },
+      ],
+      totals: [usd('33333.32'), usd('66666.68')],
+      total: usd('100000.00'),
+    },
     ...overrides,
   };
 }

@@ -1,4 +1,5 @@
-import { useParams, useSearchParams } from 'react-router';
+import { useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
@@ -10,14 +11,10 @@ import { RoleForm } from './RoleForm';
 import { copyOfParam, EMPTY_ROLE } from './schemas';
 import type { RoleValues } from './schemas';
 
-/**
- * New role (empty, or `?copyOf=RL-…` filled in from another role as "Copy of …") at
- * /settings/access/roles/new, and Edit role at /settings/access/roles/:roleId/edit (US4, FR-018):
- * name, description, default scope and the permissions by group. Unsaved changes are protected.
- */
+/** New role (`?copyOf=` fills it in from another as "Copy of …") and Edit role, on one page. */
 export function RoleFormPage() {
   const { roleId } = useParams();
-  const [params] = useSearchParams();
+  const [params] = useAddressParams();
   const copyOf = copyOfParam(params);
   const sourceId = roleId ?? copyOf;
   const source = useRole(sourceId);

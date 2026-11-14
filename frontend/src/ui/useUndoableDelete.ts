@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { QueryKey } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
 import { ApiError, resolvedMessage } from '@/api/errors';
+import { invalidateAllButSession } from '@/api/invalidate';
 import type { components } from '@/api/generated/schema';
 import { useFormatters } from '@/format/useFormatters';
 import { useToast } from './Toast/useToast';
@@ -10,13 +11,10 @@ type DeleteResult = components['schemas']['DeleteResult'];
 type RecycleBinEntry = components['schemas']['RecycleBinEntry'];
 
 export interface UndoableDeleteOptions {
-  invalidate: QueryKey[];
+  /** What an Undo refreshes; every query but the session's when left out. */
+  invalidate?: QueryKey[];
   altText?: string;
 }
-
-// Only one Undo is offered at a time in the whole app (D-037), so this is shared by every page
-// that deletes; an earlier delete stays restorable from the recycle bin.
-let closeShownUndo: (() => void) | null = null;
 
 export function useUndoableDelete({
   invalidate,
@@ -36,7 +34,9 @@ export function useUndoableDelete({
       showRefusal(error, entry);
     } finally {
       // Refreshed whatever the answer: the record is back, or someone changed it meanwhile.
-      await Promise.all(invalidate.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+      await (invalidate
+        ? Promise.all(invalidate.map((queryKey) => queryClient.invalidateQueries({ queryKey })))
+        : invalidateAllButSession(queryClient));
     }
   }
 
@@ -60,8 +60,7 @@ export function useUndoableDelete({
   }
 
   return function afterDelete({ recycleBinEntry: entry }: DeleteResult) {
-    closeShownUndo?.();
-    closeShownUndo = show({
+    show({
       message: `${recordTitle(entry)} deleted`,
       action: { label: 'Undo', altText, onClick: () => undo(entry) },
     });

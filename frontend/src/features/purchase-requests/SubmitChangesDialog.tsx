@@ -1,5 +1,6 @@
 import { ApprovalChain, SubmissionOutcomes } from '@/features/approvals';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { usePurchaseRequestSubmission } from './api';
 import { workflowText } from './approval-text';
 import {
@@ -8,7 +9,6 @@ import {
   SUBMIT_CHANGES,
   submitChangesTitle,
 } from './form-text';
-import { PreviewDialog } from './PreviewDialog';
 
 export interface SubmitChangesDialogProps {
   purchaseRequestId: string;
@@ -25,11 +25,14 @@ export function SubmitChangesDialog(props: SubmitChangesDialogProps) {
   const data = check.data;
 
   return (
-    <PreviewDialog
+    <ConfirmDialog
       open={props.open}
       onOpenChange={props.onOpenChange}
       title={submitChangesTitle(props.name)}
-      confirm={{ label: SUBMIT_CHANGES, onConfirm: props.onConfirm, busy: props.busy }}
+      size="lg"
+      confirmLabel={SUBMIT_CHANGES}
+      onConfirm={props.onConfirm}
+      busy={props.busy}
     >
       <p>{CHANGE_ROUND_STARTS}</p>
       {data ? (
@@ -45,6 +48,6 @@ export function SubmitChangesDialog(props: SubmitChangesDialogProps) {
         !check.isError && <Skeleton lines={2} />
       )}
       <p>{STAYS_RESERVED}</p>
-    </PreviewDialog>
+    </ConfirmDialog>
   );
 }

@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"mapp/internal/history"
+	"mapp/internal/platform/web"
 )
 
 // createOption answers POST /api/v1/shell-attributes/{attributeId}/options with 201 and the new option.
@@ -16,8 +19,6 @@ func (h *Handler) createOption(c *gin.Context) {
 	respond(c, http.StatusCreated, option, err)
 }
 
-// checkImport answers POST /api/v1/shell-attributes/{attributeId}/options/import-check with every row's outcome.
-// The request body holds a file, which is never logged.
 func (h *Handler) checkImport(c *gin.Context) {
 	var file ImportFile
 	if !readBody(c, &file) {
@@ -27,8 +28,6 @@ func (h *Handler) checkImport(c *gin.Context) {
 	respond(c, http.StatusOK, check, err)
 }
 
-// importOptions answers POST /api/v1/shell-attributes/{attributeId}/options/import with what was added and
-// skipped. The request body holds a file, which is never logged.
 func (h *Handler) importOptions(c *gin.Context) {
 	var file ImportFile
 	if !readBody(c, &file) {
@@ -56,12 +55,15 @@ func (h *Handler) updateOption(c *gin.Context) {
 
 // deleteOption answers DELETE /api/v1/shell-attribute-options/{optionId} with the recycle-bin entry.
 func (h *Handler) deleteOption(c *gin.Context) {
-	entry, err := h.service.DeleteOption(c.Request.Context(), actorOf(c), c.Param("optionId"))
+	ctx, err := history.SeenVersion(c, c.Param("optionId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	entry, err := h.service.DeleteOption(ctx, actorOf(c), c.Param("optionId"))
 	respondDeleted(c, entry, err)
 }
 
-// setOptionStatus answers POST /api/v1/shell-attribute-options/{optionId}/status with the option in its new
-// status.
 func (h *Handler) setOptionStatus(c *gin.Context) {
 	var update StatusUpdate
 	if !readBody(c, &update) {
@@ -81,8 +83,6 @@ func (h *Handler) moveOption(c *gin.Context) {
 	respond(c, http.StatusOK, option, err)
 }
 
-// listOptions answers GET /api/v1/shell-attributes/{attributeId}/options?q=&status=&limit=&offset=. A limit or
-// offset that is not a whole number gets the message of a number out of range.
 func (h *Handler) listOptions(c *gin.Context) {
 	query := c.Request.URL.Query()
 	filter := OptionFilter{Q: query.Get("q"), Status: query.Get("status"), Limit: defaultOptionLimit}

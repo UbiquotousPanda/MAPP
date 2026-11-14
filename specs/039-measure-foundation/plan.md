@@ -76,7 +76,7 @@ function metrics; VIII comment budget; build guide §4 ownership (no lane edits 
 | VI Meaningful tests | Unit per rule, contract per operation, scope per persona, one PostgreSQL person-isolation test, state tests per widget, e2e for P1 | Pass |
 | VII Security | Scope from the actor; route rules fail closed; left-out values never named; views by person; allowlists; files never stored | Pass |
 | VIII Clean construction | Comment budget per file; one concept per file | Pass |
-| IX Experience | One title; Apply with "not applied yet"; Back keeps state; no primary button on a read-only page; Undo on delete; every empty state says why | Pass |
+| IX Experience | One title; filters as on All work, each change at once (039-C8); Back keeps state; no primary button on a read-only page; Undo on delete; every empty state says why | Pass |
 | X Palette | Tokens only; chart tokens of D-345 | Pass |
 | B1–B9 | Gin only in `handler.go`; service without `net/http`; ctx first; contract first; tests on fakes | Pass |
 | F1–F10 | Query hooks in `api.ts`; Zod for the address; no chart library; tests by role; axe | Pass |
@@ -155,7 +155,7 @@ and F2; the hub files are written once here so the other lanes never edit them (
 | Export: sheets, About this export, CSV needs a widget, file names, values as screen (FR-022) | `measure/export.go` | `TestExport_FR022`, contract `TestReportsExport_FR022` |
 | Route rules for every wave A operation, fail closed | `access/routes_measure.go` | existing route-table tests |
 | Address ↔ filter round trip; malformed values dropped (FR-015, SC-005) | `shared/report-address.ts` | `report-address.test.ts` (fast-check) |
-| Apply and "not applied yet"; chips; reset; controls at once (FR-013, FR-014, FR-016–FR-018) | `shared/FilterPanel`, `FilterChips` | `FilterPanel.test.tsx`, `ReportFrame.test.tsx` |
+| Filters at once, as on All work; chips; reset; controls at once (FR-013, FR-014, FR-016–FR-018) | `shared/ReportToolbar`, `ReportFilters`, `FilterChips` | `ReportFrame.test.tsx` |
 | Widget states: loading, data, table, error with Try again, "—", no financial access (FR-020–FR-023, FR-031) | `shared/ReportWidget` | `ReportWidget.test.tsx` |
 | Saved views menu: modified, update, save as new, star, rename, delete with Undo (FR-024–FR-029) | `shared/SavedViewsMenu` | `SavedViewsMenu.test.tsx` |
 | Reports page: coming soon, no access (FR-001) | `ReportsPage` | `ReportsPage.test.tsx` |

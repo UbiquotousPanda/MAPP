@@ -16,12 +16,18 @@ import type { MockedApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { RevenueStage } from '@/testing/fixtures/performance-stages';
 import type { RevenueCards } from './api';
-import { RevenueReport } from './RevenueReport';
+
+// jsdom has no canvas for ECharts to measure text; report-chart.test.ts covers what is drawn.
+vi.mock('echarts/core', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  init: () => ({ setOption() {}, resize() {}, dispose() {} }),
+}));
 
 function renderPage(
   report: Answer<'GET /api/v1/reports/revenue'> = { body: revenueReport() },
-  route = '/reports/revenue?year=2026',
+  route = '/reports/performance?year=2026',
   ranked: Answer<'GET /api/v1/reports/revenue/ranked'> = { body: revenueRanked() },
   frame = reportFrame(),
 ) {
@@ -34,10 +40,10 @@ function renderPage(
     reply('GET /api/v1/reports/revenue/ranked', ranked),
     reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
   ]);
-  const rendered = renderWithProviders(<RevenueReport />, {
+  const rendered = renderWithProviders(<RevenueStage />, {
     route,
     user: testUser(),
-    path: '/reports/revenue',
+    path: '/reports/performance',
   });
   return { ...rendered, api };
 }
@@ -45,7 +51,7 @@ function renderPage(
 const asked = (api: MockedApi, path: string) =>
   api.requests.filter((r) => r.path === path).map((r) => new URLSearchParams(r.search));
 
-describe('RevenueReport (049 US1)', () => {
+describe('Performance, Revenue stage (049 US1)', () => {
   it('shows the four cards, names the model behind the goal, and is accessible (FR-010, FR-012)', async () => {
     renderPage();
 
@@ -97,8 +103,10 @@ describe('RevenueReport (049 US1)', () => {
       const summary = await screen.findByLabelText('Summary');
       expect(within(summary).getByText(word)).toBeInTheDocument();
       const ranked = screen.getByRole('region', { name: 'Ranked list' });
-      const shown = value === null ? '—' : `${value}% · ${word}`;
-      expect((await within(ranked).findAllByText(shown)).length).toBeGreaterThan(0);
+      const row = await within(ranked).findByRole('row', { name: /^Helix launch/ });
+      for (const shown of value === null ? ['—'] : [`${value}%`, word]) {
+        expect(within(row).getAllByText(shown).length).toBeGreaterThan(0);
+      }
       await expectNoAxeViolations();
     },
   );
@@ -110,46 +118,93 @@ describe('RevenueReport (049 US1)', () => {
     await user.click(nth(screen.getAllByRole('button', { name: 'Table' }), 0));
 
     const table = screen.getByRole('table', { name: /Revenue by month/ });
-    expect(within(table).getAllByRole('row')).toHaveLength(13);
+    expect(within(table).getAllByRole('row')).toHaveLength(14);
   });
 
-  it('names the model and cost basis beside attributed revenue and ROI (050 FR-008, FR-010)', async () => {
+  it('names the model and cost basis once, in plain words, above attributed revenue and ROI (050 FR-008, FR-010)', async () => {
     renderPage();
 
     await screen.findByText('Helix launch');
     const ranked = screen.getByRole('region', { name: 'Ranked list' });
     expect(
-      within(ranked).getByRole('columnheader', {
-        name: /^ROI \(Equally distributed, on actual cost\)/,
-      }),
+      within(ranked).getByText(
+        'Revenue credit: split equally across the steps · ROI on actual cost',
+      ),
     ).toBeInTheDocument();
-    expect(
-      within(ranked).getByRole('columnheader', {
-        name: /^Attributed revenue \(Equally distributed\)/,
-      }),
-    ).toBeInTheDocument();
+    for (const name of ['Attributed revenue', 'ROI']) {
+      expect(within(ranked).getByRole('columnheader', { name })).toBeInTheDocument();
+    }
     expect(within(ranked).getAllByText('20%').length).toBeGreaterThan(0);
+  });
+
+  it('shows "—" with the reason as a tip in a row, and a column empty for every entry says why once (FR-009, 050 FR-007)', async () => {
+    const ranked = revenueRanked();
+    for (const e of [
+      nth(nth(ranked.groups, 0).entries, 0),
+      ...(nth(nth(ranked.groups, 0).entries, 0).children ?? []),
+    ]) {
+      e.figures = { ...e.figures, attributedRevenue: null, attributedRevenueReason: 'noData' };
+    }
+    renderPage(undefined, undefined, { body: ranked });
+
+    const list = await screen.findByRole('region', { name: 'Ranked list' });
+    const row = await within(list).findByRole('row', { name: /^Launch film/ });
+    expect(within(row).getByRole('button', { name: 'No data has arrived yet.' })).toHaveTextContent(
+      '—',
+    );
+    expect(
+      within(list).getByText(/Attributed revenue: No data has arrived yet\.$/),
+    ).toBeInTheDocument();
+  });
+
+  it('shortens a large amount on its card and keeps the full amount at hand (FR-010)', async () => {
+    renderPage();
+
+    const cards = await screen.findByLabelText('Summary');
+    expect(within(cards).getByRole('button', { name: /\(\$2,730,000\.00\)$/ })).toBeInTheDocument();
   });
 
   it('sorts the ranked list by Actual, not silently by Projected (review of 049)', async () => {
     const { user, api } = renderPage();
 
     await screen.findByText('Helix launch');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Sort by' }), 'Actual');
+    await user.click(
+      within(screen.getByRole('columnheader', { name: 'Actual' })).getByRole('button'),
+    );
 
     const requests = api.requests.filter((r) => r.path === '/api/v1/reports/revenue/ranked');
     expect(requests.at(-1)?.search).toContain('sort=actualRevenue');
   });
 
-  it('offers only the sorts the API accepts, so no column sorts silently by Projected (FR-006)', async () => {
+  it('offers only the sorts the API accepts, cost and ROI among them (FR-006, D-410, 059 FR-003)', async () => {
     renderPage();
 
     await screen.findByText('Helix launch');
-    const sortBy = screen.getByRole('combobox', { name: 'Sort by' });
-    const values = within(sortBy)
-      .getAllByRole('option')
-      .map((o) => o.getAttribute('value'));
-    expect(values).toEqual(['actualRevenue', 'projectedRevenue']);
+    const sortable = screen
+      .getAllByRole('columnheader')
+      .filter((h) => within(h).queryByRole('button'))
+      .map((h) => h.textContent);
+    expect(sortable).toEqual(['Goal', 'Actual', 'Projected', 'Performance', 'Actual cost', 'ROI']);
+  });
+
+  it('opens on Performance, lowest first, so the most behind is on top (D-410)', async () => {
+    const { user, api } = renderPage();
+
+    await screen.findByText('Helix launch');
+    const first = asked(api, '/api/v1/reports/revenue/ranked').at(0);
+    expect([first?.get('sort'), first?.get('order')]).toEqual(['performance', 'asc']);
+    expect(screen.getByRole('columnheader', { name: 'Performance' })).toHaveAttribute(
+      'aria-sort',
+      'ascending',
+    );
+
+    await user.click(
+      within(screen.getByRole('columnheader', { name: 'Actual' })).getByRole('button'),
+    );
+    await waitFor(() => {
+      const last = asked(api, '/api/v1/reports/revenue/ranked').at(-1);
+      expect([last?.get('sort'), last?.get('order')]).toEqual(['actualRevenue', 'desc']);
+    });
   });
 
   it('fails on its own: the ranked list stays when the figures fail', async () => {
@@ -159,48 +214,14 @@ describe('RevenueReport (049 US1)', () => {
     expect(await screen.findByText('Helix launch')).toBeInTheDocument();
   });
 
-  it('keeps the chosen category in the address and asks every widget for it (US3 scenario 3, FR-019)', async () => {
-    const { user, api, router } = renderPage();
-
-    await screen.findByText('Helix launch');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Activity category' }), 'Asset');
-
-    expect(new URLSearchParams(router.state.location.search).get('category')).toBe('CAT-1001');
-    await waitFor(() =>
-      expect(asked(api, '/api/v1/reports/revenue').at(-1)?.get('category')).toBe('CAT-1001'),
-    );
-    expect(asked(api, '/api/v1/reports/revenue/ranked').at(-1)?.get('category')).toBe('CAT-1001');
-  });
-
-  it('restores the category from the address, as a saved view or Back reopens it (US3 scenario 3, FR-019)', async () => {
-    const { api } = renderPage(undefined, '/reports/revenue?year=2026&category=uncategorised');
-
-    expect(await screen.findByDisplayValue('Uncategorised')).toBeInTheDocument();
-    expect(nth(asked(api, '/api/v1/reports/revenue'), 0).get('category')).toBe('uncategorised');
-  });
-
-  it('exports the report for the chosen category (FR-019)', async () => {
-    URL.createObjectURL = () => 'blob:export';
-    URL.revokeObjectURL = () => {};
-    const save = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    const { user, api } = renderPage();
-
-    await screen.findByText('Helix launch');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Activity category' }), 'Asset');
-    await user.click(nth(screen.getAllByRole('button', { name: 'Export' }), 0));
-    await user.click(await screen.findByRole('menuitem', { name: 'Excel (.xlsx)' }));
-
-    await waitFor(() => expect(asked(api, '/api/v1/reports/revenue/export')).toHaveLength(1));
-    expect(nth(asked(api, '/api/v1/reports/revenue/export'), 0).get('category')).toBe('CAT-1001');
-    save.mockRestore();
-  });
-
   it('names the model behind the projected figures and when it last changed (049 FR-022, SC-006)', async () => {
-    renderPage();
+    const { user } = renderPage();
 
     const summary = await screen.findByLabelText('Summary');
+    expect(within(summary).getByText('From Lubricants 1.0')).toBeInTheDocument();
+    await user.click(within(summary).getByRole('button', { name: 'About Actual or projected' }));
     expect(
-      within(summary).getByText(/^Projected from Lubricants 1\.0, last changed [^T:]+ 2026\.$/),
+      await screen.findByText(/Projected from Lubricants 1\.0, last changed [^T:]+ 2026\.$/),
     ).toBeInTheDocument();
   });
 
@@ -210,12 +231,14 @@ describe('RevenueReport (049 US1)', () => {
       { modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' },
       { modelName: 'Mobility 1.0', modelChangedAt: '2026-01-05T09:00:00Z' },
     ];
-    renderPage({ body: report });
+    const { user } = renderPage({ body: report });
 
     const summary = await screen.findByLabelText('Summary');
+    expect(within(summary).getByText('From 2 projection models')).toBeInTheDocument();
+    await user.click(within(summary).getByRole('button', { name: 'About Actual or projected' }));
     expect(
-      within(summary).getByText(
-        /^Projected from Lubricants 1\.0, last changed [^;]+; and Mobility 1\.0, last changed [^T:]+ 2026\.$/,
+      await screen.findByText(
+        /Projected from Lubricants 1\.0, last changed [^;]+; and Mobility 1\.0, last changed [^T:]+ 2026\.$/,
       ),
     ).toBeInTheDocument();
   });
@@ -233,7 +256,9 @@ describe('RevenueReport (049 US1)', () => {
     const list = await screen.findByRole('region', { name: 'Ranked list' });
     const row = await within(list).findByRole('row', { name: /^Helix launch/ });
     expect(within(list).getByRole('columnheader', { name: 'Owner' })).toBeInTheDocument();
-    expect(within(list).getByRole('columnheader', { name: 'Model' })).toBeInTheDocument();
+    expect(
+      within(list).getByRole('columnheader', { name: 'Projection model' }),
+    ).toBeInTheDocument();
     expect(row).toHaveTextContent('Priya Raman');
     expect(row).toHaveTextContent('Lubricants 1.0');
   });

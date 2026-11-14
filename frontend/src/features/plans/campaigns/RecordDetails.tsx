@@ -30,7 +30,6 @@ import { Fact, Facts, PanelSection } from './PanelSection';
 import styles from './RecordDetails.module.css';
 import { ApprovalProgressChip, OutsideYearNote } from './StatusChips';
 import {
-  activitiesLine,
   ADD_INITIATIVE,
   APPROVAL_PROGRESS_LABEL,
   CAMPAIGN,
@@ -40,7 +39,6 @@ import {
   DESCRIPTION,
   EDIT,
   ID,
-  NO_ACTIVITIES_YET,
   OWNER,
   PLAN,
   TIMING_WORD,
@@ -217,18 +215,7 @@ export function RecordDetails({
           {isCampaign ? (
             <CampaignInitiatives campaign={record} planId={planId} />
           ) : (
-            <>
-              <p className={styles.text}>
-                {record.counts.activities === 0
-                  ? NO_ACTIVITIES_YET
-                  : activitiesLine(
-                      record.counts.activities,
-                      record.counts.approvedActivities,
-                      record.counts.lineItems,
-                    )}
-              </p>
-              <InitiativeActivitiesSection planId={planId} initiativeId={record.id} />
-            </>
+            <InitiativeActivitiesSection planId={planId} initiativeId={record.id} />
           )}
           <HistorySection
             recordType={level}

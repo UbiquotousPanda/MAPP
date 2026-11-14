@@ -1,15 +1,20 @@
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
 import { useFormatters } from '@/format/useFormatters';
-import { Button } from '@/ui/Button/Button';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
+import { Pager } from '@/ui/Pager/Pager';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import { nextSortOrder } from '@/ui/SortHeader/sort-order';
+import dataTable from '@/ui/Table/Table.module.css';
+import { TotalLabel } from '@/ui/Table/TotalLabel';
+import { cx } from '@/ui/cx';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { RequestsGridData } from './api';
-import { lineText, NUMERIC, requestText, vendorText } from './cells';
+import { lineText, NUMERIC, requestText, totalText, vendorText } from './cells';
 import type { Format } from './cells';
-import { GridPager } from './GridPager';
 import { GridRows } from './GridRows';
 import { GridToolbar } from './GridToolbar';
+import { PAGE_SIZES } from './schemas';
 import type { ColumnKey, RequestsParams, SortKey } from './schemas';
 import { COLUMN_WORDS, SORTABLE } from './words';
 import styles from './PurchaseRequests.module.css';
@@ -42,7 +47,7 @@ function SortHeading(props: {
   onParams: RequestsGridProps['onParams'];
 }) {
   const { column, params, onParams } = props;
-  const numeric = NUMERIC.includes(column) ? styles.numeric : undefined;
+  const numeric = NUMERIC.includes(column) ? dataTable.numeric : undefined;
   const key = SORTABLE.find((s) => s === column);
   const sortable = params.columns.includes(column) && key !== undefined;
   if (!sortable) {
@@ -53,22 +58,17 @@ function SortHeading(props: {
     );
   }
   const current = params.sort === column;
-  const Icon = !current ? ArrowUpDown : params.order === 'asc' ? ArrowUp : ArrowDown;
   const sortBy = () => {
     const sort: SortKey = params.sort === column ? params.sort : toSort(column);
-    onParams({ sort, order: current && params.order === 'asc' ? 'desc' : 'asc' });
+    onParams({ sort, order: nextSortOrder(current, params.order) });
   };
   return (
-    <th
-      scope="col"
+    <SortHeader
+      label={COLUMN_WORDS[column]}
       className={numeric}
-      aria-sort={current ? (params.order === 'asc' ? 'ascending' : 'descending') : 'none'}
-    >
-      <button type="button" className={styles.sort} onClick={sortBy}>
-        {COLUMN_WORDS[column]}
-        <Icon aria-hidden="true" className={current ? undefined : styles.idle} />
-      </button>
-    </th>
+      direction={current ? params.order : undefined}
+      onSort={sortBy}
+    />
   );
 }
 
@@ -99,21 +99,44 @@ function tableOf(grid: RequestsGridData, columns: ColumnKey[], f: Format): Repor
   return {
     columns: columns.map((c) => ({ label: COLUMN_WORDS[c], numeric: NUMERIC.includes(c) })),
     rows,
+    total: columns.slice(1).map((c) => totalText(grid.totals, c, f)),
+    totalCount: columns[0] && totalText(grid.totals, columns[0], f),
   };
+}
+
+function TotalRow({
+  grid,
+  columns,
+  f,
+}: {
+  grid: RequestsGridData;
+  columns: ColumnKey[];
+  f: Format;
+}) {
+  return (
+    <tfoot>
+      <tr className={dataTable.total}>
+        <th scope="row">
+          <TotalLabel />
+        </th>
+        {columns.map((column) => (
+          <td key={column} className={cx(NUMERIC.includes(column) && dataTable.numeric)}>
+            {totalText(grid.totals, column, f)}
+          </td>
+        ))}
+      </tr>
+    </tfoot>
+  );
 }
 
 function Empty({ filtered, onReset }: { filtered: boolean; onReset: () => void }) {
   return filtered ? (
-    <div className={styles.empty}>
-      <p>Your filters exclude everything.</p>
-      <Button type="button" variant="secondary" size="sm" onClick={onReset}>
-        Reset filters
-      </Button>
-    </div>
+    <EmptyState compact title="Your filters exclude everything." onReset={onReset} />
   ) : (
-    <p className={styles.empty}>
-      No purchase requests yet. Raise one from an approved activity’s line items.
-    </p>
+    <EmptyState
+      compact
+      title="No purchase requests yet. Raise one from an approved activity’s line items."
+    />
   );
 }
 
@@ -143,7 +166,7 @@ export function RequestsGrid({
   return (
     <ReportWidget
       wide
-      report="purchaseRequests"
+      report="purchasing"
       widget="grid"
       title="Purchase requests"
       tip={TIP}
@@ -159,8 +182,8 @@ export function RequestsGrid({
             {grid.total === 0 ? (
               <Empty filtered={filtered} onReset={reset} />
             ) : (
-              <div className={styles.scroll}>
-                <table className={styles.table}>
+              <div className={cx(dataTable.scroll, styles.scroll)}>
+                <table className={cx(dataTable.table, styles.table)}>
                   <caption className="visually-hidden">Purchase requests by vendor</caption>
                   <thead>
                     <tr>
@@ -183,10 +206,19 @@ export function RequestsGrid({
                       />
                     ))}
                   </tbody>
+                  <TotalRow grid={grid} columns={params.columns} f={{ money, date }} />
                 </table>
               </div>
             )}
-            <GridPager grid={grid} onParams={onParams} />
+            <Pager
+              placement="below"
+              page={grid.page}
+              pageSize={grid.pageSize}
+              total={grid.total}
+              sizes={PAGE_SIZES}
+              onPage={(page) => onParams({ page })}
+              onPageSize={(pageSize) => onParams({ pageSize })}
+            />
           </>
         )
       }

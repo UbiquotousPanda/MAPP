@@ -5,8 +5,11 @@ import { TeamPill } from '@/ui/TeamPill/TeamPill';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import type { TeamRef } from '@/ui/TeamPill/TeamPill';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
-import { AmountPair } from './AmountPair';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
+import { ConvertedAmount } from '@/features/line-items';
 import { PinButton } from './PinButton';
 import { PlanCompleteness, PlanStatusChip } from './PlanFacts';
 import type { PlanSummary } from './api';
@@ -27,8 +30,8 @@ const TEAMS_SHOWN = 2;
 
 export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTableProps) {
   return (
-    <div className={styles.scroll}>
-      <table className={styles.table} aria-label="Plans">
+    <ScrollBox label="Plans">
+      <table className={cx(dataTable.table, styles.table)} aria-label="Plans">
         <thead>
           <tr>
             <th scope="col" className={styles.pin}>
@@ -42,16 +45,16 @@ export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTabl
               Owner
             </th>
             <th scope="col">Teams</th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Plan budget
             </th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Planned cost
             </th>
-            <th scope="col" className={styles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Approved
             </th>
-            <th scope="col" className={styles.actions}>
+            <th scope="col" className={dataTable.actions}>
               <span className="visually-hidden">Actions</span>
             </th>
           </tr>
@@ -99,9 +102,9 @@ export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTabl
                 <td>
                   <Teams teams={plan.teams} />
                 </td>
-                <td className={styles.number}>
+                <td className={dataTable.numeric}>
                   {figures.budget ? (
-                    <AmountPair
+                    <ConvertedAmount
                       primary={plan.planBudget ?? figures.budget}
                       secondary={figures.budget}
                     />
@@ -109,9 +112,9 @@ export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTabl
                     <span className={styles.muted}>—</span>
                   )}
                 </td>
-                <td className={styles.number}>
+                <td className={dataTable.numeric}>
                   <span className={styles.stack}>
-                    <AmountPair
+                    <ConvertedAmount
                       primary={plan.planPlannedCost ?? figures.plannedCost}
                       secondary={figures.plannedCost}
                     />
@@ -122,7 +125,7 @@ export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTabl
                     )}
                   </span>
                 </td>
-                <td className={styles.number}>
+                <td className={dataTable.numeric}>
                   {figures.activities === 0 ? (
                     <span className={styles.muted}>—</span>
                   ) : (
@@ -131,7 +134,7 @@ export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTabl
                     </span>
                   )}
                 </td>
-                <td className={styles.actions}>
+                <td className={dataTable.actions}>
                   <ViewOnlyArea active={changesNothingIn(plan.access)}>
                     <ActionsMenu label={plan.name} items={actionsFor(plan)} />
                   </ViewOnlyArea>
@@ -141,7 +144,7 @@ export function PlanTable({ plans, actionsFor, isPinned, onPinToggle }: PlanTabl
           })}
         </tbody>
       </table>
-    </div>
+    </ScrollBox>
   );
 }
 

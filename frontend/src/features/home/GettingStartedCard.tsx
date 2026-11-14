@@ -50,8 +50,6 @@ export interface GettingStartedCardProps {
   reason: NonNullable<HomeSummary['gettingStarted']>;
 }
 
-const COUNT_WORDS = ['', 'one step', 'two steps', 'three steps', 'four steps', 'five steps'];
-
 /** Only for new people (D-170), with the steps their roles allow. */
 export function GettingStartedCard({ reason }: GettingStartedCardProps) {
   const access = useAccess();
@@ -59,10 +57,7 @@ export function GettingStartedCard({ reason }: GettingStartedCardProps) {
   const admins = access.adminNames();
 
   return (
-    <Card
-      title="Getting started"
-      subtitle={steps.length > 0 ? `The Plan module in ${COUNT_WORDS[steps.length]}` : undefined}
-    >
+    <Card title="Getting started">
       {reason === 'notInTeam' &&
         (access.has('people.manage') ? (
           <p className={styles.notice}>

@@ -1,6 +1,5 @@
 import { formatAmount, parseMoneyInput } from '@/format/decimal';
 import type {
-  LinesOnApproved,
   PurchaseRequest,
   PurchaseRequestDefaults,
   PurchaseRequestInput,
@@ -133,19 +132,14 @@ export function onlyAddsLines(start: PurchaseRequestFormValues, now: PurchaseReq
   );
 }
 
-/** The footer's primary action by status (032 FR-023, FR-036, FR-039, Record Operations). */
-export function saveModeOf(
-  pr: PurchaseRequest | null,
-  onlyAdded: boolean,
-  linesOnApproved: LinesOnApproved | undefined,
-): SaveMode {
-  if (!pr || pr.status === 'created' || pr.status === 'declined') {
-    return { then: 'save', label: SAVE };
-  }
-  if (pr.status === 'approved' && !pr.changePending) {
-    return onlyAdded && linesOnApproved === 'withoutApproval'
-      ? { then: 'save', label: SAVE }
-      : { then: 'submitChanges', label: SUBMIT_CHANGES };
-  }
-  return { then: 'resubmit', label: SAVE_AND_RESUBMIT };
+/** The footer's primary action: the API's next step, or its step for a save that only adds lines. */
+export function saveModeOf(pr: PurchaseRequest | null, onlyAdded: boolean): SaveMode {
+  const then = (onlyAdded && pr?.addedLinesThen) || pr?.saveThen || 'save';
+  return { then, label: SAVE_LABELS[then] };
 }
+
+const SAVE_LABELS: Record<Then, string> = {
+  save: SAVE,
+  resubmit: SAVE_AND_RESUBMIT,
+  submitChanges: SUBMIT_CHANGES,
+};

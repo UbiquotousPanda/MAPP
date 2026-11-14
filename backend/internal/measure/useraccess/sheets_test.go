@@ -45,7 +45,7 @@ func cellsEqual() cmp.Option {
 
 func TestSheets_EveryRow_FR013(t *testing.T) {
 	t.Parallel()
-	sheets := sheetsOf(t, url.Values{"status": {"all"}, "sort": {"-lastSignedIn"}, "pageSize": {"5"}, "page": {"2"}})
+	sheets := sheetsOf(t, url.Values{"status": {"all"}, "sort": {"-lastSignedIn"}, "pageSize": {"25"}, "page": {"2"}})
 
 	if len(sheets) != 2 || sheets[0].Key != "people" || sheets[1].Key != "signInBands" {
 		t.Fatalf("widgets = %v, want people and signInBands", sheets)
@@ -73,7 +73,7 @@ func TestSheets_EqualTable_SC005(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	q.PageSize = MaxPageSize
+	q.PageSize = 500
 	want := []sheet.Cell{}
 	for _, r := range newOffice().report(t, q).Rows {
 		want = append(want, sheet.Text(r.Person.Name))

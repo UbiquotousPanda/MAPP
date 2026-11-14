@@ -5,9 +5,11 @@ import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { closestTo, nth } from '@/testing/dom';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { PEOPLE, RULE_OPTIONS } from '@/testing/fixtures/approval-workflows';
 import { reply } from '@/testing/replies';
+import { expectNoAxeViolations } from '@/testing/axe';
 import { emptyLevel, toInputs } from './level-drafts';
 import type { LevelDraft } from './level-drafts';
 import { LevelsEditor } from './LevelsEditor';
@@ -101,7 +103,7 @@ describe('LevelsEditor (feature 008, US4)', () => {
   });
 
   it('shows each level problem at its field (FR-003)', async () => {
-    renderEditor(TWO, [
+    const { user } = renderEditor(TWO, [
       { field: 'levels.2.approverIds', message: 'Level 2: choose at least one approver.' },
       { field: 'levels.1.name', message: 'Level 1: use 60 characters or fewer.' },
     ]);
@@ -114,9 +116,12 @@ describe('LevelsEditor (feature 008, US4)', () => {
     expect(nth(names, 0)).toHaveAccessibleDescription(
       expect.stringContaining('Level 1: use 60 characters or fewer.'),
     );
-    expect(
-      within(closestTo(nth(names, 0), 'li')).getByText("Shown as 'Level 1' when empty"),
-    ).toBeInTheDocument();
+    await user.click(
+      within(closestTo(nth(names, 0), 'li')).getByRole('button', { name: 'About Level name' }),
+    );
+    expect(screen.getByRole('dialog', { name: 'About Level name' })).toHaveTextContent(
+      "Shown as 'Level 1' when empty",
+    );
   });
 });
 
@@ -143,8 +148,7 @@ describe('LevelsEditor rules (feature 017, US1 and US2)', () => {
 
     await user.click(screen.getByRole('radio', { name: 'People with a role' }));
     const role = await screen.findByRole('combobox', { name: /^Role/ });
-    await screen.findByRole('option', { name: 'Approver' });
-    await user.selectOptions(role, 'Approver');
+    await choose(user, role, 'Approver');
     await user.click(screen.getByRole('radio', { name: 'All must approve' }));
 
     expect(sent()).toEqual([
@@ -230,10 +234,9 @@ describe('LevelsEditor rules (feature 017, US1 and US2)', () => {
     const { user } = renderEditor([level({ key: 'a', approverIds: ['U-1005'] })]);
 
     const backup = await screen.findByRole('combobox', { name: /Backup approver/ });
-    expect(backup).toHaveAccessibleDescription(
-      expect.stringContaining(
-        'Takes over when an approval is escalated, or when nobody else can approve.',
-      ),
+    await user.click(screen.getByRole('button', { name: 'About Backup approver' }));
+    expect(screen.getByRole('dialog', { name: 'About Backup approver' })).toHaveTextContent(
+      'Takes over when an approval is escalated, or when nobody else can approve.',
     );
     await user.click(backup);
     await user.click(screen.getByRole('option', { name: /Alex Morgan/ }));
@@ -268,5 +271,6 @@ describe('LevelsEditor rules (feature 017, US1 and US2)', () => {
     ).toHaveAccessibleDescription(
       expect.stringContaining('Level 1: choose a backup approver, or turn escalation off.'),
     );
+    await expectNoAxeViolations();
   });
 });

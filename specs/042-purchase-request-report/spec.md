@@ -136,8 +136,8 @@ page, and the same columns are still hidden; search for a purchase request name 
 4. **Given** the grid, **When** the person types in the search box, **Then** it narrows to vendors, purchase
    requests, lines and line items containing the words, keeping the path to each match, and the total updates.
 5. **Given** the grid, **When** the person sorts by a column, **Then** the rows of each level are ordered by it
-   across all pages, with the same order on every page; **When** they choose a page size of 5, 10, 25, 50 or 100
-   (default 25), **Then** the page and the total change accordingly; paging counts vendors, the top level.
+   across all pages, with the same order on every page; **When** they choose a page size of 25, 50, 100 or 200
+   (default 50; D-432), **Then** the page and the total change accordingly; paging counts vendors, the top level.
 6. **Given** a row, **Then** the name links to the record when the person may open it and is plain text when not;
    nothing in the grid creates, edits, sends or closes anything.
 7. **Given** a purchase request routed to GSAP, **Then** its GSAP PR number and each line's purchase order number
@@ -279,7 +279,7 @@ These scenarios cover each state a widget or the grid can render; each has its o
 - **FR-016**: The person MUST be able to show, hide and reorder columns and reset them; the choice MUST live in
   the page address so Back, a link and a saved view keep it.
 - **FR-017**: The grid MUST offer free-text search over its text columns, sort by any column across all rows,
-  page sizes 5, 10, 25, 50 and 100 (default 25) counting vendors, and the total count.
+  page sizes 25, 50, 100 and 200 (default 50; D-432) counting vendors, and the total count.
 - **FR-018**: Each row's record name MUST link to the record when the person may open it and MUST be plain text
   when not; the report offers no action on a purchase request.
 - **FR-019**: A line's purchase order number, line number, status and date, and a purchase request's GSAP number,
@@ -313,6 +313,9 @@ These scenarios cover each state a widget or the grid can render; each has its o
   per-person card choice, accrual filters or the OA vendor, outline agreement and contract holder attribute
   groups that only the China pack uses; SP&A One does not hold the data or has no such attribute (Q-030, 033,
   constitution 4.8.0).
+- **FR-029**: The grid MUST end with a **Total** row (039 FR-035): purchase requests, lines, committed and invoiced
+  over every vendor the filters and search keep, on every page, added up as each vendor row is; "—" where no plan's
+  financial data may be seen. The grid's export lists lines of every status, so it has no Total line.
 
 ### Key Entities *(include if feature involves data)*
 

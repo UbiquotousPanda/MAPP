@@ -1,6 +1,6 @@
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
-import { TeamPicker } from '@/ui/TeamPicker/TeamPicker';
+import { Select } from '@/ui/Select/Select';
 import type { TeamRef } from './api';
 import type { AccessStatus, AccessTable } from './access-address';
 import styles from './UserAccess.module.css';
@@ -21,23 +21,28 @@ export function AccessControls({ table, teams, onChange }: AccessControlsProps) 
         value={table.q}
         onChange={(q) => onChange({ q })}
       />
-      <TeamPicker
-        name="team"
+      <Select
         label="Team"
-        teams={teams}
-        value={table.teams}
-        onChange={(chosen) => onChange({ teams: chosen })}
-      />
-      <SegmentedFilter<AccessStatus>
-        label="Status"
+        value={table.teams[0] ?? ''}
         options={[
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
-          { value: 'all', label: 'All' },
+          { value: '', label: 'All teams' },
+          ...teams.filter((t) => t.active).map((t) => ({ value: t.id, label: t.name })),
         ]}
-        value={table.status}
-        onChange={(status) => onChange({ status })}
+        onChange={(team) => onChange({ teams: team ? [team] : [] })}
       />
+      <div className={styles.field}>
+        <span aria-hidden="true">Status</span>
+        <SegmentedFilter<AccessStatus>
+          label="Status"
+          options={[
+            { value: 'active', label: 'Active' },
+            { value: 'inactive', label: 'Inactive' },
+            { value: 'all', label: 'All' },
+          ]}
+          value={table.status}
+          onChange={(status) => onChange({ status })}
+        />
+      </div>
     </div>
   );
 }

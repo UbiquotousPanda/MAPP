@@ -4,11 +4,12 @@ import type { HttpHandler } from 'msw';
 import { CONFLICT_NEXT_STEP } from '@/api/errors';
 import { launchFilmSection } from '@/testing/fixtures/line-items';
 import { mockApi } from '@/testing/mock-api';
+import { choose } from '@/testing/select';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { launchFilm, PEOPLE } from '@/testing/fixtures/activities';
 import { activityAttributeForm, editForm } from '@/testing/fixtures/activity-forms';
-import { reply } from '@/testing/replies';
+import { apiError, reply } from '@/testing/replies';
 import type { Activity } from './api';
 import { ActivityFormPage } from './ActivityFormPage';
 
@@ -66,6 +67,25 @@ function openEditForm(activity: Activity, answers: HttpHandler[] = [], route = E
   return { ...rendered, api };
 }
 
+/** The API's answer to a change that restarts approval: refused until restartApproval confirms it. */
+function restartingSave(activity: Activity) {
+  return reply(
+    'PATCH /api/v1/activities/{activityId}',
+    async (request) => {
+      const confirmed = JSON.stringify(await request.json()).includes('"restartApproval":true');
+      return confirmed
+        ? { body: activity }
+        : {
+            status: 400,
+            body: apiError('validation_failed', 'Some fields need your attention.', {
+              fields: [{ field: 'restartApproval', message: 'Confirm the change to save it.' }],
+            }),
+          };
+    },
+    { activityId: 'A-1042' },
+  );
+}
+
 describe('ActivityFormPage, edit (feature 006, US4)', () => {
   it('opens with the activity and saves it with the version it opened with (FR-026)', async () => {
     let reads = 0;
@@ -85,7 +105,6 @@ describe('ActivityFormPage, edit (feature 006, US4)', () => {
     expect(document.title).toBe('Edit Launch film · SP&A One');
     expect(screen.getByLabelText('Activity name')).toHaveValue('Launch film');
     expect(screen.getByLabelText('Planned cost')).toHaveValue('120,000.00');
-    expect(screen.queryByText('From the initiative')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save and add another' })).toBeNull();
     expect(screen.queryByText('Save the activity to add its line items')).toBeNull();
 
@@ -151,9 +170,8 @@ describe('ActivityFormPage, edit (feature 006, US4)', () => {
   });
 
   it('asks before a cost change sends a submitted activity back for approval (FR-027)', async () => {
-    const { user, api } = openEditForm(
-      launchFilm({ status: 'submitted', displayStatus: 'submitted' }),
-    );
+    const submitted = launchFilm({ status: 'submitted', displayStatus: 'submitted' });
+    const { user, api } = openEditForm(submitted, [restartingSave(submitted)]);
 
     const cost = await screen.findByLabelText('Planned cost');
     await user.clear(cost);
@@ -166,25 +184,29 @@ describe('ActivityFormPage, edit (feature 006, US4)', () => {
     expect(question).toHaveTextContent(
       "Saving returns 'Launch film' to Created; it must be submitted for approval again.",
     );
-    expect(question).toHaveTextContent('Planned cost: 120,000.00 USD → 150,000.00 USD');
+    expect(question).toHaveTextContent('Planned cost: $120,000.00 → $150,000.00');
     await user.click(within(question).getByRole('button', { name: 'Keep editing' }));
-    expect(api.bodiesOf('PATCH /api/v1/activities/A-1042')).toEqual([]);
+    expect(api.bodiesOf('PATCH /api/v1/activities/A-1042')).toEqual([
+      expect.objectContaining({ restartApproval: false }),
+    ]);
     expect(screen.getByLabelText('Planned cost')).toHaveValue('150,000.00');
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await user.click(await screen.findByRole('button', { name: 'Save and restart approval' }));
 
     expect(await screen.findByText("Activity 'Launch film' saved")).toBeVisible();
-    expect(api.bodiesOf('PATCH /api/v1/activities/A-1042')).toEqual([
+    expect(api.bodiesOf('PATCH /api/v1/activities/A-1042').at(-1)).toEqual(
       expect.objectContaining({
         plannedCost: { amount: '150000.00', currency: 'USD' },
         restartApproval: true,
       }),
-    ]);
+    );
   });
 
   it('says in the re-approval question what new dates do to the line-item spreads (007 FR-022, D-150)', async () => {
-    const { user } = openEditForm(launchFilm({ status: 'approved', displayStatus: 'approved' }), [
+    const approved = launchFilm({ status: 'approved', displayStatus: 'approved' });
+    const { user } = openEditForm(approved, [
+      restartingSave(approved),
       reply(
         'GET /api/v1/activities/{activityId}/line-items',
         { body: launchFilmSection() },
@@ -259,14 +281,14 @@ describe('ActivityFormPage, edit (feature 006, US4)', () => {
     const { user } = openEditForm(launchFilm());
 
     const type = await screen.findByLabelText('Activity type');
-    await user.selectOptions(type, 'AT-1002');
+    await choose(user, type, /^Digital campaign/);
     const question = await screen.findByRole('alertdialog', {
-      name: "Use the default planned cost of 10,000.00 USD for 'Digital campaign'?",
+      name: "Use the default planned cost of $10,000.00 for 'Digital campaign'?",
     });
-    await user.click(within(question).getByRole('button', { name: 'Keep 120,000.00 USD' }));
+    await user.click(within(question).getByRole('button', { name: 'Keep $120,000.00' }));
     expect(screen.getByLabelText('Planned cost')).toHaveValue('120,000.00');
 
-    await user.selectOptions(type, 'AT-1001');
+    await choose(user, type, /^Event/);
     await user.click(await screen.findByRole('button', { name: 'Use default' }));
     expect(screen.getByLabelText('Planned cost')).toHaveValue('25,000.00');
     expect(screen.getByText('From the activity type')).toBeVisible();

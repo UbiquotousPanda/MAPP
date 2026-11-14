@@ -130,8 +130,8 @@ func (y *yearReader) addPlan(ctx context.Context, p plan.Plan, missing int) erro
 	planNode := allwork.Node{
 		Level: allwork.LevelPlan, ID: p.ID, PlanID: p.ID, Name: p.Name, Description: p.Description, Owner: owner,
 		Status: string(p.Status), Missing: missing, Budget: y.usd(p.ID, p.Budget), BudgetPlan: y.inPlan(p.ID, p.Budget),
-		CreatedAt: p.CreatedAt, UpdatedAt: p.UpdatedAt, Strategic: p.AOP, TeamIDs: append([]string{}, p.TeamIDs...),
-		BusinessUnitIDs: units, Fields: fields,
+		CreatedAt: p.CreatedAt, UpdatedAt: p.UpdatedAt, Version: p.Version, Strategic: p.AOP, TeamIDs: append([]string{}, p.TeamIDs...),
+		BusinessUnitIDs: units, Fields: fields, PlanAccess: plan.AccessFacts(p),
 	}
 	y.planFacts(&planNode)
 	planNode.Attrs = y.attrValues(settings.LevelPlan, p.Attributes)
@@ -196,7 +196,8 @@ func (y *yearReader) addActivities(ctx context.Context, planID string) error {
 		y.activities[a.ID] = len(y.nodes)
 		y.nodes = append(y.nodes, allwork.Node{
 			Level: allwork.LevelActivity, ID: a.ID, ParentID: a.InitiativeID, PlanID: planID, Order: order, Name: a.Name,
-			Owner: ownerOf(a.Owner), StartDate: a.StartDate, EndDate: a.EndDate, Ongoing: a.Ongoing, Months: months,
+			Version: a.Version,
+			Owner:   ownerOf(a.Owner), StartDate: a.StartDate, EndDate: a.EndDate, Ongoing: a.Ongoing, Months: months,
 			Status: string(a.DisplayStatus), Missing: a.Completeness.MissingFields, PlannedCost: y.usd(planID, planned),
 			PlannedCostPlan: y.inPlan(planID, planned), ActivityTypeID: a.ActivityType.ID,
 			Fields: map[string]allwork.Value{

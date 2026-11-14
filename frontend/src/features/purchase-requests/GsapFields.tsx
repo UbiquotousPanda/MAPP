@@ -2,7 +2,7 @@ import { Card } from '@/ui/Card/Card';
 import { useFormatters } from '@/format/useFormatters';
 import type { PurchaseRequest } from './api';
 import { Detail, DetailsList } from './Details';
-import { GSAP_EMPTY, GSAP_SUBTITLE, GSAP_TITLE } from './page-text';
+import { GSAP_EMPTY, GSAP_TITLE } from './page-text';
 import { FIELD_LABELS, FILLED_BY_GSAP, GSAP_SOURCE_WORDS } from './purchase-request-text';
 import styles from './PurchaseRequestPage.module.css';
 
@@ -11,7 +11,7 @@ export function GsapFields({ purchaseRequest }: { purchaseRequest: PurchaseReque
   const { date } = useFormatters();
   const { gsapPrNumber, gsapPrDate, gsapSource } = purchaseRequest;
   return (
-    <Card title={GSAP_TITLE} subtitle={GSAP_SUBTITLE}>
+    <Card title={GSAP_TITLE}>
       <div className={styles.stack}>
         {gsapSource === '' && <p className={styles.note}>{GSAP_EMPTY}</p>}
         <DetailsList>

@@ -1,7 +1,8 @@
-import { Ban, ChevronLeft, ChevronRight, FileText, Plus, SearchX } from 'lucide-react';
-import { useSearchParams } from 'react-router';
+import { Ban, FileText, Plus, SearchX } from 'lucide-react';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { Button, LinkButton } from '@/ui/Button/Button';
+import { Pager } from '@/ui/Pager/Pager';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
@@ -13,14 +14,7 @@ import { useAttributeForm } from '@/features/settings';
 import { usePurchaseRequestList } from './api';
 import type { PurchaseRequestListPage } from './api';
 import type { Choice } from './list-filters';
-import {
-  CLEAR_FILTERS,
-  LIST_DESCRIPTION,
-  NO_MATCH,
-  NO_PURCHASE_REQUESTS,
-  NOTHING_WAITING,
-  pageText,
-} from './list-text';
+import { CLEAR_FILTERS, NO_MATCH, NO_PURCHASE_REQUESTS, NOTHING_WAITING } from './list-text';
 import { PurchaseRequestFilters } from './PurchaseRequestFilters';
 import { NEW_PURCHASE_REQUEST, PURCHASE_REQUESTS, SWITCHED_OFF } from './purchase-request-text';
 import {
@@ -41,15 +35,17 @@ import styles from './PurchaseRequestsPage.module.css';
  */
 export function PurchaseRequestsPage() {
   usePageTitle(PURCHASE_REQUESTS);
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const search = readListSearch(params);
   const list = usePurchaseRequestList(toListQuery(search));
   const error = list.error instanceof ApiError ? list.error : null;
   const switchedOff = error?.kind === 'notAllowed' || list.data?.purchaseSupport === false;
 
-  /** New filters go back to page 1 unless the page itself changes; typing replaces the address. */
-  function change(patch: Partial<ListSearch>, replace = false) {
-    setParams(writeListSearch({ ...search, page: 1, ...patch }), { replace });
+  /** New filters go back to page 1 unless the page itself changes; Back leaves the page. */
+  function change(patch: Partial<ListSearch>) {
+    setParams((latest) => writeListSearch({ ...readListSearch(latest), page: 1, ...patch }), {
+      replace: true,
+    });
   }
 
   if (error?.kind === 'forbidden') {
@@ -60,7 +56,6 @@ export function PurchaseRequestsPage() {
     <>
       <PageHeader
         title={PURCHASE_REQUESTS}
-        description={LIST_DESCRIPTION}
         actions={
           !switchedOff && (
             <LinkButton to="/purchase-requests/new" icon={<Plus />}>
@@ -97,7 +92,7 @@ interface ToolbarProps {
   search: ListSearch;
   total: number | undefined;
   page: PurchaseRequestListPage | undefined;
-  onChange: (patch: Partial<ListSearch>, replace?: boolean) => void;
+  onChange: (patch: Partial<ListSearch>) => void;
 }
 
 /** The toolbar with the PR type options of Settings and the people to choose owners from. */
@@ -141,7 +136,15 @@ function Results({ page, search, onChange }: ResultsProps) {
     return (
       <>
         <VendorGroupTable page={page} />
-        <Pager page={page.page} total={page.total} onPage={(next) => onChange({ page: next })} />
+        {page.total > LIST_PAGE_SIZE && (
+          <Pager
+            page={page.page}
+            pageSize={LIST_PAGE_SIZE}
+            total={page.total}
+            placement="cardFooter"
+            onPage={(next) => onChange({ page: next })}
+          />
+        )}
       </>
     );
   }
@@ -161,39 +164,5 @@ function Results({ page, search, onChange }: ResultsProps) {
       icon={<FileText />}
       title={search.waiting ? NOTHING_WAITING : NO_PURCHASE_REQUESTS}
     />
-  );
-}
-
-function Pager({
-  page,
-  total,
-  onPage,
-}: {
-  page: number;
-  total: number;
-  onPage: (page: number) => void;
-}) {
-  const pages = Math.max(1, Math.ceil(total / LIST_PAGE_SIZE));
-  if (pages === 1) {
-    return null;
-  }
-  return (
-    <nav className={styles.pager} aria-label="Pages">
-      <p className={styles.range} aria-live="polite">
-        {pageText(page, pages)}
-      </p>
-      <Button
-        size="sm"
-        icon={<ChevronLeft />}
-        disabled={page <= 1}
-        onClick={() => onPage(page - 1)}
-      >
-        Previous
-      </Button>
-      <Button size="sm" disabled={page >= pages} onClick={() => onPage(page + 1)}>
-        Next
-        <ChevronRight aria-hidden="true" className={styles.after} />
-      </Button>
-    </nav>
   );
 }

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   action,
   callApi,
-  chooseOption,
+  choose,
   expectNoAxeViolations,
   expectToast,
   signInAs,
@@ -68,11 +68,12 @@ test('031 US2: an administrator creates a purchase request workflow; activities 
 
   const panel = page.getByRole('dialog', { name: 'New approval workflow' });
   await panel.getByRole('textbox', { name: /^Name/ }).fill(workflowName);
-  await chooseOption(panel.getByRole('combobox', { name: /^Approves/ }), 'Purchase requests');
+  await choose(page, panel.getByRole('combobox', { name: /^Approves/ }), /^Purchase requests/);
   await panel.getByRole('radio', { name: 'Person named on the record' }).check();
-  await chooseOption(
+  await choose(
+    page,
     panel.getByRole('combobox', { name: /^Field that names the approver/ }),
-    'MoA approver',
+    /^MoA approver/,
   );
   await panel.getByRole('checkbox', { name: 'Escalate to the backup approver' }).uncheck();
   await expectNoAxeViolations(page);
@@ -97,7 +98,8 @@ test('031 US2: an administrator creates a purchase request workflow; activities 
   await page.goto(records.activityPath);
   await action(page, 'Edit').click();
   await expect(page.getByRole('heading', { name: 'Edit activity', level: 1 })).toBeVisible();
-  const offered = page.getByLabel(/^Approval workflow/).locator('option');
+  await page.getByLabel(/^Approval workflow/).click();
+  const offered = page.getByRole('option');
   await expect(offered.filter({ hasText: CHINA_WORKFLOW })).toHaveCount(1);
   await expect(offered.filter({ hasText: workflowName })).toHaveCount(0);
 });

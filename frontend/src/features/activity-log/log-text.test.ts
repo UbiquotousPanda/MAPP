@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { logEntry } from '@/testing/fixtures/activity-log';
 import {
-  countLine,
   dayLabel,
   detailLines,
   entrySentence,
@@ -204,12 +203,6 @@ describe('day headings and counts (FR-004, FR-003, FR-009)', () => {
     expect(dayLabel('2026-10-27', '2026-11-02', 'DD/MM/YYYY')).toBe('Tuesday 27/10/2026');
     expect(dayLabel('2026-11-02', '2026-11-02', 'YYYY-MM-DD')).toBe('Today');
     expect(dayLabel('2026-11-01', '2026-11-02', 'MM/DD/YYYY')).toBe('Yesterday');
-  });
-
-  it('counts all entries, or the matching ones of all while a filter is in use', () => {
-    expect(countLine(1204, 1204)).toBe('1,204 of 1,204 entries');
-    expect(countLine(1, 1)).toBe('1 of 1 entry');
-    expect(countLine(12, 1204)).toBe('12 of 1,204 entries');
   });
 
   it('says how many entries are loaded of all', () => {

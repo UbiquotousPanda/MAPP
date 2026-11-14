@@ -7,13 +7,19 @@ import { developmentHeaders, securityHeaders } from './security-headers.ts';
 // 127.0.0.1, not localhost: Node may resolve localhost to IPv6, where the API does not listen.
 const apiTarget = process.env.MAPP_API_URL ?? 'http://127.0.0.1:8080';
 
-// Unit tests format dates and times, so they always run in the same time zone, whatever the laptop's.
 if (process.env.VITEST) {
   process.env.TZ = 'UTC';
 }
 
 // xfwd: the API counts sign-in attempts per client, so it must see the browser's address.
 const proxy = { '/api': { target: apiTarget, xfwd: true } };
+
+const TESTS = ['src/**/*.test.{ts,tsx}', 'security-headers.test.ts'];
+const OWN_PROCESS = [
+  'src/app/RouteErrorPage.test.tsx',
+  'src/format/intl.test.ts',
+  'src/features/activity-log/log-filters.test.ts',
+];
 
 export default defineConfig({
   plugins: [react()],
@@ -29,9 +35,16 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.{ts,tsx}', 'security-headers.test.ts'],
-    setupFiles: ['src/testing/setup.ts'],
+    setupFiles: ['src/testing/node-globals.ts', 'src/testing/setup.ts'],
     testTimeout: 15000,
+    // vmThreads builds jsdom once per worker; its contexts cannot change the time zone or window.location.
+    projects: [
+      {
+        extends: true,
+        test: { name: 'vm', pool: 'vmThreads', include: TESTS, exclude: OWN_PROCESS },
+      },
+      { extends: true, test: { name: 'forks', pool: 'forks', include: OWN_PROCESS } },
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text-summary', 'lcov'],

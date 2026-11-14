@@ -60,7 +60,7 @@ export function KeyDialog({ activityId, onClose }: { activityId: string; onClose
         <TextField
           label="Integration ID"
           name="integrationValue"
-          hint="The source's own id for this activity, exactly as its rows will carry it."
+          tip="The source's own id for this activity, exactly as its rows will carry it."
           value={value}
           onChange={setValue}
           error={problem || undefined}

@@ -61,11 +61,10 @@ describe('017 FR-016: the line manager on Settings › People', () => {
 
     await chooseAction(user, 'Priya Raman', 'Edit');
     const panel = await screen.findByRole('dialog', { name: 'Edit person' });
-    expect(
-      within(panel).getByText(
-        "Approves this person's activities when a workflow level uses the line manager.",
-      ),
-    ).toBeVisible();
+    await user.click(within(panel).getByRole('button', { name: 'About Line manager' }));
+    expect(screen.getByRole('dialog', { name: 'About Line manager' })).toHaveTextContent(
+      "Approves this person's activities when a workflow level uses the line manager.",
+    );
     await user.click(within(panel).getByRole('button', { name: 'Remove Daniel Okoro' }));
     await user.type(within(panel).getByRole('combobox', { name: 'Line manager' }), 'Alex');
     await user.click(await screen.findByRole('option', { name: /Alex Morgan/ }));

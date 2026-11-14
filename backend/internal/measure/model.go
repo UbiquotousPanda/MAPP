@@ -11,10 +11,17 @@ import (
 	"mapp/internal/platform/sheet"
 )
 
-// The report keys of the catalogue (data-model §3), in its order.
+const (
+	KeyPerformance = "performance"
+	KeyBudget      = "budget"
+	KeyPurchasing  = "purchasing"
+	KeyApprovals   = "approvals"
+	KeyPlanData    = "planData"
+)
+
+// The old report keys name the sections the five reports are made of; their packages still register under them.
 const (
 	KeyPlanBudget       = "planBudget"
-	KeyApprovals        = "approvals"
 	KeyPurchaseRequests = "purchaseRequests"
 	KeyPlanDetails      = "planDetails"
 	KeyGsapLink         = "gsapLink"

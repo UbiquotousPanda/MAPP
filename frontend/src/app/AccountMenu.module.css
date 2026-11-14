@@ -20,7 +20,6 @@
   background: var(--hover);
 }
 
-/* A long first name is cut short with an ellipsis (the tooltip has it in full). */
 .name {
   overflow: hidden;
   max-width: 140px;
@@ -37,28 +36,11 @@
   color: var(--ink-2);
 }
 
-.menu {
-  z-index: 50;
-  min-width: 240px;
-  max-width: min(320px, calc(100vw - 32px));
-  padding: var(--space-1);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-control);
-  background: var(--raised);
-  box-shadow: var(--shadow-md);
-}
-
-/* Dark Raised is 3.9:1 for Text Subtle, so secondary text there is Text Strong (constitution X). */
-:global(:root[data-theme='dark']) .menu {
-  --ink-2: var(--ink);
-}
-
 /* Name, e-mail and job title wrap instead of being cut (there is no tooltip inside a menu). */
 .header {
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3);
 }
 
 .details {
@@ -77,42 +59,6 @@
 .detail {
   color: var(--ink-2);
   font-size: var(--text-xs);
-}
-
-.separator {
-  height: 1px;
-  margin: var(--space-1) 0;
-  background: var(--row-divider);
-}
-
-.item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: var(--control-md);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-chip);
-  color: var(--ink);
-  font-size: var(--text-sm);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.item:hover {
-  text-decoration: none;
-}
-
-/* Radix marks the item under the pointer or the arrow keys with data-highlighted; keyboard
-   focus also shows the focus ring. */
-.item[data-highlighted] {
-  background: var(--hover);
-}
-
-.item svg {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  color: var(--ink-2);
 }
 
 /* On phones the button is the avatar alone; the first name stays in its name for screen

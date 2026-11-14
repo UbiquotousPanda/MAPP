@@ -1,7 +1,8 @@
 import { useId, useState } from 'react';
 import { DecimalField } from '@/ui/DecimalField/DecimalField';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
-import { formatAmount, formatWhole, parseWholeInput } from '@/format/decimal';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
+import { formatMoneyText, formatWhole, parseWholeInput } from '@/format/decimal';
 import { plural } from '@/format/text';
 import { waterfall } from './waterfall';
 import styles from './WaterfallExample.module.css';
@@ -53,16 +54,16 @@ export function WaterfallExample({
           ? 'Too large to calculate — try fewer inquiries.'
           : `${formatWhole(inq)} INQ → ${formatWhole(goals.mql)} MQL${placement(inqToMqlVelocityMonths)} → ` +
             `${plural(goals.deals, 'deal')}${placement(mqlToDealVelocityMonths)} → ` +
-            `${formatAmount(goals.revenue)} USD revenue`;
+            `${formatMoneyText({ amount: goals.revenue, currency: 'USD' })} revenue`;
     }
   }
 
   return (
     <section aria-labelledby={titleId} className={styles.example}>
       <div className={styles.header}>
-        <h3 id={titleId} className={styles.title}>
+        <SectionHeading level={3} rank="label" id={titleId}>
           Worked example
-        </h3>
+        </SectionHeading>
         <InfoTip
           label="Worked example"
           text="MQL = inquiries × INQ→MQL rate and deals = MQL × MQL→deal rate, each rounded to a whole number; revenue = deals × average deal size. Each velocity says how many months later a stage lands."

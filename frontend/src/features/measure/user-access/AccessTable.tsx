@@ -1,9 +1,12 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useId } from 'react';
-import { Link, useSearchParams } from 'react-router';
-import { formatWhole } from '@/format/decimal';
+import { Link } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useFormatters } from '@/format/useFormatters';
-import { Button } from '@/ui/Button/Button';
+import { cx } from '@/ui/cx';
+import { Pager } from '@/ui/Pager/Pager';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import dataTable from '@/ui/Table/Table.module.css';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { downloadReport, ExportMenu, useReportAddress } from '../shared';
 import type { UserAccessRow } from './api';
 import { PAGE_SIZES, sortOf } from './access-address';
@@ -32,24 +35,24 @@ interface AccessTableProps {
 export function AccessTable({ rows, total, table, onChange }: AccessTableProps) {
   const headingId = useId();
   const [address] = useReportAddress();
-  const [own] = useSearchParams();
+  const [own] = useAddressParams();
   const { dateTime } = useFormatters();
   return (
     <section className={styles.card} aria-labelledby={headingId}>
       <div className={styles.cardHeader}>
-        <h2 id={headingId} className={styles.heading}>
+        <SectionHeading level={2} rank="card" id={headingId}>
           People
-        </h2>
+        </SectionHeading>
         <ExportMenu
           label="Export"
           formats={['xlsx', 'csv']}
           download={(format) =>
-            downloadReport('userAccess', address, format, { widget: 'people', own })
+            downloadReport('planData', address, format, { widget: 'people', own })
           }
         />
       </div>
-      <div className={styles.scroll}>
-        <table className={styles.table}>
+      <div className={dataTable.scroll}>
+        <table className={cx(dataTable.table, styles.table)}>
           <caption className="visually-hidden">People</caption>
           <thead>
             <tr>
@@ -96,7 +99,15 @@ export function AccessTable({ rows, total, table, onChange }: AccessTableProps) 
           </tbody>
         </table>
       </div>
-      <Pager table={table} total={total} onChange={onChange} />
+      <Pager
+        placement="cardFooter"
+        page={table.page}
+        pageSize={table.pageSize}
+        total={total}
+        sizes={PAGE_SIZES}
+        onPage={(page) => onChange({ page })}
+        onPageSize={(pageSize) => onChange({ pageSize })}
+      />
     </section>
   );
 }
@@ -111,67 +122,12 @@ interface SortHeadingProps {
 function SortHeading({ column, sort, onSort }: SortHeadingProps) {
   const current = sort.replace(/^-/, '') === column.key;
   const descending = sort.startsWith('-');
-  const Icon = !current ? ArrowUpDown : descending ? ArrowDown : ArrowUp;
   const next = current ? !descending : Boolean(column.latestFirst);
   return (
-    <th scope="col" aria-sort={current ? (descending ? 'descending' : 'ascending') : 'none'}>
-      <button
-        type="button"
-        className={styles.sort}
-        onClick={() => onSort(sortOf(`${next ? '-' : ''}${column.key}`))}
-      >
-        {column.label}
-        <Icon aria-hidden="true" className={current ? undefined : styles.idle} />
-      </button>
-    </th>
-  );
-}
-
-function Pager({ table, total, onChange }: Omit<AccessTableProps, 'rows'>) {
-  const id = useId();
-  const { page, pageSize } = table;
-  const pages = Math.max(1, Math.ceil(total / pageSize));
-  const first = Math.min(total, (page - 1) * pageSize + 1);
-  const last = Math.min(total, page * pageSize);
-  return (
-    <nav className={styles.pager} aria-label="Pages">
-      <div className={styles.size}>
-        <label htmlFor={id}>Per page</label>
-        <select
-          id={id}
-          className={styles.select}
-          value={pageSize}
-          onChange={(event) => {
-            const size = PAGE_SIZES.find((s) => String(s) === event.target.value);
-            if (size !== undefined) {
-              onChange({ pageSize: size });
-            }
-          }}
-        >
-          {PAGE_SIZES.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-      </div>
-      <p className={styles.range} aria-live="polite">
-        {`${formatWhole(first)}–${formatWhole(last)} of ${formatWhole(total)}`}
-      </p>
-      <div className={styles.buttons}>
-        <Button
-          size="sm"
-          icon={<ChevronLeft />}
-          disabled={page <= 1}
-          onClick={() => onChange({ page: page - 1 })}
-        >
-          Previous
-        </Button>
-        <Button size="sm" disabled={page >= pages} onClick={() => onChange({ page: page + 1 })}>
-          Next
-          <ChevronRight aria-hidden="true" />
-        </Button>
-      </div>
-    </nav>
+    <SortHeader
+      label={column.label}
+      direction={current ? (descending ? 'desc' : 'asc') : undefined}
+      onSort={() => onSort(sortOf(`${next ? '-' : ''}${column.key}`))}
+    />
   );
 }

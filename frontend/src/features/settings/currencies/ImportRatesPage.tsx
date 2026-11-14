@@ -1,10 +1,11 @@
-import { CircleAlert, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -118,7 +119,7 @@ export function ImportRatesPage() {
           { label: 'Import GSAP rates' },
         ]}
         title="Import GSAP rates"
-        description="Import the GSAP daily rate extract until GSAP sends rates by itself. SP&A One reads the file and connects to no system."
+        description="Import the GSAP daily rate extract."
       />
       <div className={styles.stack}>
         <Card title="Rate file">
@@ -155,12 +156,7 @@ export function ImportRatesPage() {
                 Reviewing the file…
               </p>
             )}
-            {fileError && (
-              <p id={fileErrorId} role="alert" className={styles.error}>
-                <CircleAlert aria-hidden="true" />
-                {fileError}
-              </p>
-            )}
+            {fileError && <InlineError id={fileErrorId}>{fileError}</InlineError>}
           </div>
         </Card>
         {review && (

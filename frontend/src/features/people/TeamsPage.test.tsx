@@ -10,7 +10,7 @@ describe("TeamsPage (feature 003, US2): the list and a team's details", () => {
     renderTeams([], '/settings/teams?status=all');
 
     expect(await screen.findByText('3 of 3 teams')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'All 3' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('heading', { level: 1, name: 'Teams' })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent('Settings');
     const europe = rowOf('Lubricants Europe');

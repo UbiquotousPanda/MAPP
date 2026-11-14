@@ -104,8 +104,8 @@ the Over 48 hours count of one row by hand.
 3. **Given** a line item whose code was received, or whose request is off, or whose activity is not approved,
    **Then** it is not listed (030 FR-001).
 4. **Given** an activity approved, then In progress, **Then** its line items still waiting are listed (030 FR-001).
-5. **Given** more than 20 rows, **Then** the table shows 20 per page with page sizes 5 to 500, sorts by any
-   column (longest waiting first by default) and states "1–20 of 64".
+5. **Given** more than 50 rows, **Then** the table shows 50 per page with page sizes 25, 50, 100 and 200 (D-432),
+   sorts by any column (longest waiting first by default) and states "1–50 of 64".
 6. **Given** the planner selects a row, **Then** the line item page opens, where the SWBS request card offers
    what 030 offers.
 
@@ -130,7 +130,7 @@ the Over 48 hours count of one row by hand.
 *Filters exclude everything*
 
 12. **Given** filters that match no activity (for example a team with no plans this year), **Then** the tab
-    shows 039's "Your filters exclude everything" state with **Reset filters**, and the cards show 0.
+    shows 039's "Your filters exclude everything" state with **Clear filters** (D-421), and the cards show 0.
 
 ---
 
@@ -296,17 +296,19 @@ the export, the report supplies the rows.
 
 - **FR-014**: Every amount MUST be converted to the currency of 039's **Currency** control at the current rate,
   each with its currency. *(D-303; client 019 FR-018; 039 FR-018)*
-- **FR-015**: Each table MUST page (5 to 500 rows, default 20) and sort by any column; the default sort is longest
+- **FR-015**: Each table MUST page (25, 50, 100 or 200 rows, default 50; D-432) and sort by any column; the default sort is longest
   waiting first on the first two tabs and line item then PO number on the third. *(client 019 FR-013)*
 - **FR-016**: Selecting a row MUST open its line item (SWBS, Purchase orders) or purchase request (Waiting for
   GSAP) page. *(client 019 FR-015)*
 - **FR-017**: The report MUST use 039's filters, Currency, saved views, "as of" line, widget table view and export
   as 039 defines them, and MUST NOT add filters of its own. *(D-368)*
 - **FR-018**: Each tab MUST render one of 039's states: data; "No plans you may see for <year>"; "No data yet",
-  naming what is missing; "Your filters exclude everything" with **Reset filters**; and on Purchase orders "You
+  naming what is missing; "Your filters exclude everything" with **Clear filters** (D-421); and on Purchase orders "You
   can't see financial data". *(D-368; client 019 FR-020)*
 - **FR-019**: Each tab's export, and each sheet of the report's export, MUST hold every row in the current sort
   with the screen's columns, hidden amounts and totals. *(client 019 FR-014; 039 FR-022)*
+- **FR-020**: The Waiting for GSAP and Purchase orders tables MUST end with a **Total** row (039 FR-035): the
+  Amount waiting card's amount, and the PO amount, invoiced and paid over every row; their exports end with it.
 
 ### Key Entities
 

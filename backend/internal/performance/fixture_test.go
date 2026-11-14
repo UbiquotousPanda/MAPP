@@ -67,6 +67,15 @@ func (f *fixture) createSource(t *testing.T, name string) performance.Source {
 	return src
 }
 
+func (f *fixture) setSourceStatus(t *testing.T, id string, status performance.Status) error {
+	t.Helper()
+	src, err := f.service.Source(t.Context(), alex, id)
+	if err != nil {
+		return err
+	}
+	return f.service.SetSourceStatus(t.Context(), alex, id, performance.StatusChange{Status: status, Version: src.Version})
+}
+
 func (f *fixture) log(t *testing.T) []history.Entry {
 	t.Helper()
 	entries, _, err := f.history.ListLog(t.Context(), alex, history.LogFilter{Limit: 200})

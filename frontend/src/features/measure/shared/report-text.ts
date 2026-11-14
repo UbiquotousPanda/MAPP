@@ -1,6 +1,9 @@
 import type { ReportChoices, ReportFrame } from './api';
 import type { ActivityStatus, PlanType, ReportAddress, Show } from './report-address';
 
+/** A figure with no data; never 0. */
+export const NOTHING = '—';
+
 export const PLAN_TYPE_WORDS: Record<PlanType, string> = {
   operational: 'Operational',
   strategic: 'Strategic',
@@ -108,4 +111,9 @@ export function withoutChip(address: ReportAddress, key: string): ReportAddress 
     return { ...address, attributes: address.attributes.filter((a) => a.attributeId !== id) };
   }
   return { ...address, [key]: [] };
+}
+
+/** Under a period table's Total, so the Total and this add up to the goal card. */
+export function goalAfterYearText(amount: string): string {
+  return `Goal landing after December: ${amount}.`;
 }

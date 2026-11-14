@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { nth } from '@/testing/dom';
 import { attribute, option } from '@/testing/fixtures/attribute-forms';
 import { activity, lineItem, usd } from '@/testing/fixtures/line-items';
-import { formOptions, lineItemForm, notFound } from '@/testing/fixtures/line-item-forms';
+import { formOptions, lineItemForm, notFound, preview } from '@/testing/fixtures/line-item-forms';
 import {
   CREATE,
   findNameField,
@@ -11,10 +11,15 @@ import {
   renderCreatePage,
 } from '@/testing/fixtures/line-item-pages';
 import { reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
 
 describe('LineItemCreatePage (US2)', () => {
   it('opens filled in with the defaults, each labelled with its source (scenario 1, FR-008)', async () => {
-    renderCreatePage();
+    const { api } = renderCreatePage([
+      reply('POST /api/v1/activities/{activityId}/line-items/preview', {
+        body: preview({ afterSaving: usd('0.00') }),
+      }),
+    ]);
 
     expect(await findNameField()).toHaveValue('Launch film – line item');
     expect(document.title).toBe('New line item · SP&A One');
@@ -24,21 +29,17 @@ describe('LineItemCreatePage (US2)', () => {
         name: 'Launch film',
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("From the activity's name")).toBeInTheDocument();
-    expect(screen.getByLabelText('Currency')).toHaveValue('USD');
+    expect(screen.getByLabelText('Currency')).toHaveTextContent(/^USD/);
     expect(screen.getByLabelText('Planned cost')).toHaveValue('20,000.00');
     expect(screen.getByText("The activity's unassigned planned cost")).toBeInTheDocument();
     expect(screen.getByLabelText('Evenly')).toBeChecked();
-    expect(screen.getByText("The plan's default")).toBeInTheDocument();
-    expect(screen.getByLabelText('Finance budget year')).toHaveValue('2026');
-    expect(screen.getByText("The plan's year")).toBeInTheDocument();
+    expect(screen.getByLabelText('Finance budget year')).toHaveTextContent('2026');
     expect(
       screen.getByText(
         "Items of '2026 Lubricants Budget', the plan's default finance budget, are listed first.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Request SWBS code from GSAP')).toBeChecked();
-    expect(screen.getByText(/On by default/)).toBeInTheDocument();
     expect(
       screen.getByText(
         'Filled by the simulated GSAP once the activity is approved and the request is sent',
@@ -46,9 +47,15 @@ describe('LineItemCreatePage (US2)', () => {
     ).toBeInTheDocument();
 
     const summary = screen.getByLabelText('Activity summary');
-    expect(summary).toHaveTextContent('Activity planned cost120,000.00 USD');
-    expect(summary).toHaveTextContent('Unassigned now20,000.00 USD');
-    expect(summary).toHaveTextContent('After saving0.00 USD');
+    expect(summary).toHaveTextContent('Activity planned cost$120,000.00');
+    expect(summary).toHaveTextContent('Unassigned now$20,000.00');
+    await waitFor(() => expect(summary).toHaveTextContent('After saving$0.00'));
+    expect(nth(api.bodiesOf('POST /api/v1/activities/A-1001/line-items/preview'), -1)).toEqual({
+      lineItemId: null,
+      currency: 'USD',
+      plannedCost: '20000.00',
+      spread: { method: 'evenly', months: [] },
+    });
 
     const breadcrumb = screen.getByLabelText('Breadcrumb');
     expect(within(breadcrumb).getByRole('link', { name: 'Launch film' })).toHaveAttribute(
@@ -90,9 +97,9 @@ describe('LineItemCreatePage (US2)', () => {
     expect(glCode).toBeDisabled();
     expect(screen.getByText('Choose a spend type first.')).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText('Spend type'), 'ATL – Media');
-    await user.selectOptions(glCode, '7250080 – Advertising digital');
-    await user.selectOptions(screen.getByLabelText('Spend type'), 'BTL – Event');
+    await choose(user, screen.getByLabelText('Spend type'), 'ATL – Media');
+    await choose(user, glCode, '7250080 – Advertising digital');
+    await choose(user, screen.getByLabelText('Spend type'), 'BTL – Event');
     expect(
       screen.getByText(
         "GL code '7250080 – Advertising digital' will be cleared — it doesn't fit 'BTL – Event'.",
@@ -110,8 +117,8 @@ describe('LineItemCreatePage (US2)', () => {
     const { user } = renderCreatePage();
     await findNameField();
 
-    await user.selectOptions(screen.getByLabelText('Spend type'), 'BTL – Event');
-    expect(screen.getByLabelText('GL code')).toHaveValue('SO-GL-EVT');
+    await choose(user, screen.getByLabelText('Spend type'), 'BTL – Event');
+    expect(screen.getByLabelText('GL code')).toHaveTextContent('7260010 – Event costs');
   });
 
   /** The line-item form as Shell's lists are seeded: GL code depends on no other attribute (D-325). */
@@ -150,8 +157,8 @@ describe('LineItemCreatePage (US2)', () => {
 
     const glCode = screen.getByLabelText('GL code');
     expect(glCode).toBeEnabled();
-    await user.selectOptions(glCode, '7250150 - Sponsorship programmes');
-    await user.selectOptions(screen.getByLabelText('Spend type'), 'ATL - Digital');
+    await choose(user, glCode, '7250150 - Sponsorship programmes');
+    await choose(user, screen.getByLabelText('Spend type'), 'ATL - Digital');
     expect(screen.queryByText(/will be cleared/)).not.toBeInTheDocument();
 
     await user.click(formButton('Save'));

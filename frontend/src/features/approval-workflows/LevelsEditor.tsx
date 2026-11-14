@@ -3,12 +3,13 @@ import { Button } from '@/ui/Button/Button';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { problemOf } from '@/ui/FormPanel/problem-of';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { TextField } from '@/ui/TextField/TextField';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { PersonField } from '@/features/people';
 import { emptyLevel, levelFieldName, singlePerson } from './level-drafts';
 import type { ApproverType, LevelDraft, LevelField, LevelMode } from './level-drafts';
-import { RadioGroup } from './RadioGroup';
 import { RuleConditionFields } from './RuleConditionFields';
 import { useRuleOptions } from './api';
 import type { ApprovalRuleOptions } from './api';
@@ -88,7 +89,7 @@ export function LevelsEditor({ levels, onChange, problems, objectType }: LevelsE
           return (
             <li key={level.key} className={styles.level}>
               <div className={styles.header}>
-                <h3 className={styles.heading}>{`Level ${number}`}</h3>
+                <SectionHeading level={3} rank="label">{`Level ${number}`}</SectionHeading>
                 <div className={styles.tools}>
                   {index > 0 && (
                     <Button
@@ -176,14 +177,15 @@ function LevelFields({
       <TextField
         label="Level name"
         name={field('name')}
-        hint={`Shown as 'Level ${number}' when empty`}
+        tip={`Shown as 'Level ${number}' when empty`}
         maxLength={60}
         value={level.name}
         onChange={(name) => onChange({ name })}
         error={problem('name')}
       />
       <RadioGroup
-        legend="Who approves"
+        label="Who approves"
+        layout="row"
         name={field('approverType')}
         options={sourcesOf(objectType)}
         value={level.approverType}
@@ -205,7 +207,7 @@ function LevelFields({
         <ChoiceField
           label="Role"
           marking="Required"
-          hint="Only roles that approve activities are offered."
+          tip="Only roles that approve activities are offered."
           name={field('roleId')}
           options={roles}
           value={level.roleId}
@@ -228,7 +230,8 @@ function LevelFields({
       )}
       {!singlePerson(level.approverType) && (
         <RadioGroup
-          legend="When there are several approvers"
+          label="When there are several approvers"
+          layout="row"
           name={field('mode')}
           options={MODES}
           value={level.mode}
@@ -278,7 +281,7 @@ function LevelFields({
       </div>
       <PersonField
         label="Backup approver"
-        hint={BACKUP_HINT}
+        tip={BACKUP_HINT}
         name={field('backupApproverId')}
         value={level.backupApproverId}
         onChange={(backupApproverId) => onChange({ backupApproverId })}

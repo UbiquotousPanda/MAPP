@@ -1,11 +1,10 @@
 import { ClipboardList, Plus, SearchX } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useCurrentUser, useSession } from '@/session/useSession';
 import { Button, LinkButton } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
-import { FilterChips } from '@/ui/FilterChips/FilterChips';
+import { FilterBar } from '@/ui/FilterBar/FilterBar';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
@@ -13,6 +12,8 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useToast } from '@/ui/Toast/useToast';
 import { useAccess } from '@/session/access';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import { DEFAULT_FILTERS, readFilters, remember, toSearchParams } from './list-preferences';
 import type { PlanListFilters } from './list-preferences';
 import { NewPlanButton } from './NewPlanButton';
@@ -21,7 +22,7 @@ import { PlansFilters } from './PlansFilters';
 import styles from './PlansPage.module.css';
 import { usePlans } from './api';
 import type { PlanSummary } from './api';
-import { chipReset, filterChips } from './plan-list-chips';
+import { chipReset, filterChips, filtersInUse } from './plan-list-chips';
 import { PlanListSummary } from './PlanListSummary';
 import { PlanTable } from './PlanTable';
 import { MY_TEAMS_HINT } from './plan-text';
@@ -45,11 +46,8 @@ export function PlansPage() {
   const { updatePreferences } = useSession();
   const { show } = useToast();
   const canCreate = useAccess().has('plans.create');
-  const [search, setSearch] = useSearchParams();
-  const [served016, setServed016] = useState(false);
-  const chosen = readFilters(search, user.id);
-  const filters = served016 ? chosen : { ...chosen, types: [] };
-  const [typed, setTyped] = useState(filters.q);
+  const [search, setSearch] = useAddressParams();
+  const filters = readFilters(search, user.id);
   const plans = usePlans({
     status: filters.status,
     yearFrom: filters.yearFrom,
@@ -60,10 +58,6 @@ export function PlansPage() {
     q: filters.q,
   });
   const actions = usePlanActions();
-  const answersTypes = plans.data?.items.some((plan) => plan.planType !== undefined) ?? false;
-  if (answersTypes && !served016) {
-    setServed016(true);
-  }
 
   function togglePin(plan: PlanSummary) {
     const pinnedIds = user.preferences.pinnedPlanIds;
@@ -91,45 +85,11 @@ export function PlansPage() {
     );
   }
 
-  const searchTimer = useRef<number | undefined>(undefined);
-  useEffect(() => {
-    // A link followed before the search settles must not have the search written onto the page it opens.
-    const leave = (event: MouseEvent) => {
-      if (event.target instanceof Element && event.target.closest('a[href]')) {
-        window.clearTimeout(searchTimer.current);
-      }
-    };
-    document.addEventListener('click', leave, true);
-    return () => {
-      document.removeEventListener('click', leave, true);
-      window.clearTimeout(searchTimer.current);
-    };
-  }, []);
-
-  function typeSearch(text: string) {
-    setTyped(text);
-    window.clearTimeout(searchTimer.current);
-    searchTimer.current = window.setTimeout(() => change({ q: text }), SEARCH_DELAY_MS);
-  }
-
-  function clearSearch() {
-    window.clearTimeout(searchTimer.current);
-    setTyped('');
-  }
-
   function clearFilters() {
-    clearSearch();
     change({ ...DEFAULT_FILTERS, layout: filters.layout });
   }
 
   const chips = filterChips(filters);
-
-  function removeChip(key: string) {
-    if (key === 'q') {
-      clearSearch();
-    }
-    change(chipReset(key));
-  }
 
   const data = plans.data;
   const summary = data?.summary;
@@ -148,7 +108,7 @@ export function PlansPage() {
       return (
         <EmptyState
           icon={<ClipboardList />}
-          title="No plans yet — create your first plan"
+          title="No plans yet"
           text="A plan holds one year of marketing for one business."
           action={
             canCreate && (
@@ -176,52 +136,43 @@ export function PlansPage() {
 
   return (
     <>
-      <PageHeader
-        title="Plans"
-        description="Every yearly marketing plan, its status, its budget and what's still missing."
-        actions={<NewPlanButton />}
-      />
+      <PageHeader title="Plans" actions={<NewPlanButton />} />
       <div className={styles.page}>
         <PlanListSummary summary={summary} />
 
-        <section className={styles.listCard} aria-label="Plan list">
-          <div className={styles.toolbar}>
-            <div className={styles.search}>
+        <section className={styles.list} aria-label="Plan list">
+          <FilterBar
+            search={
               <SearchField
+                size="sm"
+                delay={SEARCH_DELAY_MS}
                 label="Search plans"
                 placeholder="Search name or ID"
-                value={typed}
-                onChange={typeSearch}
+                value={filters.q}
+                onChange={(q) => change({ q })}
               />
-            </div>
-            <div className={styles.status}>
+            }
+            quick={
               <SegmentedFilter
                 label="Status"
                 options={[
-                  { value: 'all', label: summary ? `All (${summary.plans})` : 'All' },
-                  { value: 'draft', label: summary ? `Draft (${summary.draft})` : 'Draft' },
-                  {
-                    value: 'published',
-                    label: summary ? `Published (${summary.published})` : 'Published',
-                  },
+                  { value: 'all', label: 'All' },
+                  { value: 'draft', label: 'Draft' },
+                  { value: 'published', label: 'Published' },
                 ]}
                 value={filters.status}
                 onChange={(status) => change({ status })}
               />
-            </div>
-            <PlansFilters
-              filters={filters}
-              years={planYears}
-              served016={served016}
-              onChange={change}
-            />
-            <div className={styles.end}>
-              {data && (
-                <p className={styles.count} aria-live="polite">
-                  {data.items.length} of {data.total} {data.total === 1 ? 'plan' : 'plans'}
-                </p>
-              )}
-              <div className={styles.layout}>
+            }
+            inUse={filtersInUse(filters)}
+            menus={<PlansFilters filters={filters} years={planYears} onChange={change} />}
+            end={
+              <>
+                {data && (
+                  <ResultCount>
+                    {countText(data.items.length, data.total, { one: 'plan', many: 'plans' })}
+                  </ResultCount>
+                )}
                 <SegmentedFilter
                   label="Layout"
                   options={[
@@ -231,29 +182,26 @@ export function PlansPage() {
                   value={filters.layout}
                   onChange={(layout) => change({ layout })}
                 />
-              </div>
-            </div>
-          </div>
-          {(chips.length > 0 || filters.scope === 'myTeams') && (
-            <div className={styles.chips}>
-              <FilterChips chips={chips} onRemove={removeChip} onClearAll={clearFilters} />
-              {filters.scope === 'myTeams' && <p className={styles.hint}>{MY_TEAMS_HINT}</p>}
-            </div>
-          )}
-          <div aria-busy={plans.isFetching}>
-            {state ? (
-              <div className={styles.state}>{state}</div>
-            ) : (
-              showsTable &&
-              data && (
+              </>
+            }
+            chips={chips}
+            onRemoveChip={(key) => change(chipReset(key))}
+            onClearFilters={clearFilters}
+            note={filters.scope === 'myTeams' && <p className={styles.hint}>{MY_TEAMS_HINT}</p>}
+          />
+          <div
+            aria-busy={plans.isFetching}
+            className={state || showsTable ? styles.listCard : undefined}
+          >
+            {state ??
+              (showsTable && data && (
                 <PlanTable
                   plans={items}
                   actionsFor={actions.menuItems}
                   isPinned={isPinned}
                   onPinToggle={togglePin}
                 />
-              )
-            )}
+              ))}
           </div>
         </section>
 

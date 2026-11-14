@@ -4,15 +4,13 @@ import (
 	"cmp"
 	"slices"
 	"strings"
-
-	"mapp/internal/platform/money"
 )
 
 // Figures is what a report ranks by: S adds up and splits, F is what an entry shows, and Key is the whole number a
 // sort ranks F by (cents for money, a count for a count); without one the entry goes last.
 type Figures[S, F any] interface {
 	Of(id string) S
-	Part(s S, share money.Percent) S
+	Part(s S, share Slice) S
 	Plus(a, b S) S
 	Shown(s S) F
 	Key(f F, sort string) (int64, bool)
@@ -20,7 +18,7 @@ type Figures[S, F any] interface {
 
 type placed[F any] struct {
 	id    string
-	share *money.Percent
+	share *Slice
 	entry Entry[F]
 }
 
@@ -49,20 +47,24 @@ func Build[S, F any](x *Index, level string, q Query, fig Figures[S, F]) List[F]
 			out.DrillLost = true
 		}
 	}
-	groups := b.grouped(x.searched(tops, q.Search))
+	groups, total := b.grouped(x.searched(tops, q.Search))
 	for _, g := range groups {
 		out.Total += len(g.items)
 	}
+	out.Totals = fig.Shown(total)
 	out.Groups = b.page(groups)
 	return out
 }
 
-// grouped puts the entries in their groups, each group ranked, the groups ordered by their total.
-func (b builder[S, F]) grouped(ids []string) []*groupAcc[S, F] {
+// grouped puts the entries in their groups, each group ranked, the groups ordered by their total; the list's total
+// counts each entry whole once, however many groups it falls in.
+func (b builder[S, F]) grouped(ids []string) ([]*groupAcc[S, F], S) {
 	var groups []*groupAcc[S, F]
+	var total S
 	byKey := map[string]*groupAcc[S, F]{}
 	for _, id := range ids {
 		whole := b.fig.Of(id)
+		total = b.fig.Plus(total, whole)
 		for _, g := range b.x.groupsOf(id, b.q.Group) {
 			acc, found := byKey[g.key]
 			if !found {
@@ -80,7 +82,7 @@ func (b builder[S, F]) grouped(ids []string) []*groupAcc[S, F] {
 	slices.SortStableFunc(groups, func(x, y *groupAcc[S, F]) int {
 		return b.compare(Entry[F]{Name: x.label, Figures: b.fig.Shown(x.total)}, Entry[F]{Name: y.label, Figures: b.fig.Shown(y.total)})
 	})
-	return groups
+	return groups, total
 }
 
 // page keeps one page of top entries across the groups; a group's totals stay those of the whole group.
@@ -104,7 +106,7 @@ func (b builder[S, F]) page(groups []*groupAcc[S, F]) []Group[F] {
 	return out
 }
 
-func (b builder[S, F]) childrenOf(id string, share *money.Percent) []Entry[F] {
+func (b builder[S, F]) childrenOf(id string, share *Slice) []Entry[F] {
 	children := []Entry[F]{}
 	for _, child := range b.x.ChildrenInView(id) {
 		children = append(children, b.entryOf(child, b.part(b.fig.Of(child), share)))
@@ -113,7 +115,7 @@ func (b builder[S, F]) childrenOf(id string, share *money.Percent) []Entry[F] {
 	return children
 }
 
-func (b builder[S, F]) part(s S, share *money.Percent) S {
+func (b builder[S, F]) part(s S, share *Slice) S {
 	if share == nil {
 		return s
 	}

@@ -6,7 +6,7 @@ import { useToast } from '@/ui/Toast/useToast';
 import { recordHref } from '@/ui/record-links';
 import { useUndoableDelete } from '@/ui/useUndoableDelete';
 import { DeleteLineItemDialog } from './DeleteLineItemDialog';
-import { LINE_ITEM_CHANGE_KEYS, useDeleteLineItem, useDuplicateLineItem } from './api';
+import { useDeleteLineItem, useDuplicateLineItem } from './api';
 import type { LineItem, LineItemActivity } from './api';
 import { createdToast } from './line-item-text';
 
@@ -31,7 +31,7 @@ export function useLineItemActions(
   const { show } = useToast();
   const duplicateLineItem = useDuplicateLineItem();
   const deleteLineItem = useDeleteLineItem();
-  const afterDelete = useUndoableDelete({ invalidate: LINE_ITEM_CHANGE_KEYS });
+  const afterDelete = useUndoableDelete({});
   const [deleting, setDeleting] = useState<Target | null>(null);
 
   function showError(error: unknown) {
@@ -50,7 +50,7 @@ export function useLineItemActions(
 
   async function remove(target: Target) {
     try {
-      const result = await deleteLineItem.mutateAsync(target.lineItem.id);
+      const result = await deleteLineItem.mutateAsync(target.lineItem);
       setDeleting(null);
       onDeleted?.(target.activity);
       afterDelete(result);

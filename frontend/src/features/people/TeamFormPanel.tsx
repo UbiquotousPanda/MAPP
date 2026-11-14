@@ -160,7 +160,7 @@ export function TeamFormPanel({ team, onClose }: TeamFormPanelProps) {
           render={(field) => (
             <ChoiceField
               label="Colour"
-              hint="Shown as a dot next to the team's name."
+              tip="Shown as a dot next to the team's name."
               options={COLOUR_CHOICES}
               note={colourNote(field.value)}
               {...field}
@@ -173,7 +173,7 @@ export function TeamFormPanel({ team, onClose }: TeamFormPanelProps) {
           render={(field) => (
             <PersonField
               label="Members"
-              hint="Only active people can be added."
+              tip="Only active people can be added."
               multiple
               {...field}
             />

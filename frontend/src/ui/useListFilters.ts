@@ -1,36 +1,28 @@
-import { useSearchParams } from 'react-router';
 import { z } from 'zod';
+import { useAddressParams } from './useAddressParams';
 
 const statusSchema = z.enum(['active', 'inactive', 'all']).catch('active');
 
-/** The status filter of a Settings list: Active (the default), Inactive or All. */
 export type StatusFilter = z.infer<typeof statusSchema>;
 
-/** The status filter in the address (`?status=`); Active for anything else. */
 export function statusFilterOf(raw: string | null): StatusFilter {
   return statusSchema.parse(raw);
 }
 
 export interface ListFilters {
-  /** What is typed in the search box. */
   q: string;
   status: StatusFilter;
   setQ: (q: string) => void;
   setStatus: (status: StatusFilter) => void;
   /** "Clear filters": no search, every status. */
   clear: () => void;
-  /** The record whose details are open (`?id=`); "" when none. */
   openId: string;
-  /** Opens a record's details, or closes them with "". */
   setOpenId: (id: string) => void;
 }
 
-/**
- * The search, status filter and open record of a Settings list, kept in the page address (`q`,
- * `status`, `id`), so Back and shared links keep them (feature 002 plan, "Routes and navigation").
- */
+/** A Settings list's search, status and open record (`q`, `status`, `id`) in the address. */
 export function useListFilters(): ListFilters {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const status = statusFilterOf(params.get('status'));
 
   function update(changes: Record<string, string | null>, replace = true) {
@@ -62,16 +54,12 @@ export function useListFilters(): ListFilters {
   };
 }
 
-/** The records a Settings list shows, and how many each status choice would show. */
 export interface FilteredRecords<T> {
   shown: T[];
   counts: Record<StatusFilter, number>;
 }
 
-/**
- * Applies the search (any part of `searchText`, ignoring letter case) and the status filter. The
- * counts are those of the search alone, so each status choice says what it would show.
- */
+/** The counts are those of the search alone, so each status choice says what it would show. */
 export function filterRecords<T extends { active: boolean }>(
   records: T[],
   { q, status }: Pick<ListFilters, 'q' | 'status'>,

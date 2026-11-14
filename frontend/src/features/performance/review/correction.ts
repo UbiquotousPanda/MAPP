@@ -45,13 +45,13 @@ export function correctionOf(
   fields: CorrectableField[],
   raw: Record<string, string>,
   edited: Record<string, string>,
-): CorrectInput | null {
+): Omit<CorrectInput, 'version'> | null {
   const changed = fields.filter((f) => (edited[f.column] ?? '') !== (raw[f.column] ?? ''));
   if (changed.length === 0) {
     return null;
   }
   const valueOf = (f: CorrectableField) => edited[f.column] ?? '';
-  const input: CorrectInput = {};
+  const input: Omit<CorrectInput, 'version'> = {};
   const date = changed.find((f) => f.part === 'date');
   const currency = changed.find((f) => f.part === 'currency');
   if (date) {

@@ -18,12 +18,12 @@ func TestQuery_Allowlist_FR006(t *testing.T) {
 		t.Errorf("ParseQuery (-want +got):\n%s %v", diff, err)
 	}
 	defaults, err := ParseQuery(url.Values{})
-	if diff := cmp.Diff(Query{Teams: []string{}, Status: StatusActive, Sort: "name", Page: 1, PageSize: 20}, defaults); err != nil || diff != "" {
+	if diff := cmp.Diff(Query{Teams: []string{}, Status: StatusActive, Sort: "name", Page: 1, PageSize: 50}, defaults); err != nil || diff != "" {
 		t.Errorf("defaults (-want +got):\n%s %v", diff, err)
 	}
 
 	for _, bad := range []url.Values{{"q": {strings.Repeat("a", 101)}}, {"team": {"X-1"}}, {"status": {"gone"}},
-		{"sort": {"salary"}}, {"page": {"0"}}, {"pageSize": {"4"}}, {"pageSize": {"501"}}} {
+		{"sort": {"salary"}}, {"page": {"0"}}, {"pageSize": {"4"}}, {"pageSize": {"20"}}, {"pageSize": {"500"}}} {
 		if _, err := ParseQuery(bad); err == nil {
 			t.Errorf("ParseQuery(%v): no error, want the value refused", bad)
 		}

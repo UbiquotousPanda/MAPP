@@ -17,7 +17,14 @@ type Store struct {
 }
 
 func NewStore(db *fake.DB) Store {
-	return Store{lineItems: fake.TableOf(db, "line_items", func(li lineitem.LineItem) string { return li.ID })}
+	lineItems := fake.TableOf(db, "line_items", func(li lineitem.LineItem) string { return li.ID }).
+		Unique("line_items_name_key", func(li lineitem.LineItem) string { return li.ActivityID + "/" + fake.LowerC(li.Name) }).
+		Unique("line_items_swbs_code_key", func(li lineitem.LineItem) string { return li.SwbsCode }).
+		Check("line_items_contracted_amount_minor_check", func(li lineitem.LineItem) bool {
+			return li.ContractedAmount == nil || li.ContractedAmount.Sign() >= 0
+		}).
+		References("line_items_currency_fkey", "currencies", func(li lineitem.LineItem) string { return li.Currency })
+	return Store{lineItems: lineItems}
 }
 
 func (s Store) Get(_ context.Context, id string) (lineitem.LineItem, bool, error) {

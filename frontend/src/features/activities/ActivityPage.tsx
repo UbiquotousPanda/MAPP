@@ -3,9 +3,10 @@ import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Tabs } from '@/ui/Tabs/Tabs';
 import { HistorySection, showHistory } from '@/features/activity-log';
-import { ApprovalSection, useActivityApproval } from '@/features/approvals';
+import { ApprovalSection, submitOffer, useActivityApproval } from '@/features/approvals';
 import type { ApprovalActivity } from '@/features/approvals';
-import { ActivityFinancials, LineItemsSection, Notice } from '@/features/line-items';
+import { ActivityFinancials, LineItemsSection } from '@/features/line-items';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { ActivityPurchaseRequests } from '@/features/purchase-requests';
 import { useAttributeForm } from '@/features/settings';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -33,10 +34,7 @@ import { useActivityActions } from './useActivityActions';
 
 const ACTIVITY_GONE = 'This activity no longer exists — someone may have deleted it.';
 
-/**
- * An activity's page (006 US2; design system §2.4 B): header, notices, summary, then the tabs
- * Overview · Details · Approval · History, kept in ?tab=; a #part opens its tab.
- */
+/** The tabs are kept in ?tab=; a #part opens its tab. */
 export function ActivityPage() {
   const { planId = '', activityId = '' } = useParams();
   const location = useLocation();
@@ -98,7 +96,7 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
   // The plan's business units and model, which the activity itself does not carry.
   const facts = useActivityPlanFacts(activity.id, activity.plan.id, allows(access?.edit));
   const attributeForm = useAttributeForm('activity');
-  // Who may decide and the latest decline (feature 008); shared with the Approval tab.
+  // Who may decide and the latest decline; shared with the Approval tab.
   const approval = useActivityApproval(activity.id);
   const [panelOpen, setPanelOpen] = useState(activity.readiness.problemCount > 0 || openReadyFirst);
   const [submitProblems, setSubmitProblems] = useState<number | null>(null);
@@ -106,9 +104,8 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
   // Where the focus goes once the tab that holds it shows: Ready to submit or the History heading.
   const pendingFocus = useRef<'ready' | 'history' | null>(openReadyFirst ? 'ready' : null);
   const [focusRequests, setFocusRequests] = useState(0);
-  // Ready to submit only while the activity can still be submitted (functional review P-10).
-  const canSubmit =
-    allows(access?.submit) && (activity.status === 'created' || activity.status === 'declined');
+  // Ready to submit only while the activity can still be submitted.
+  const canSubmit = submitOffer(approval.data)?.available === true;
 
   useEffect(() => {
     if (pendingFocus.current === 'ready' && tab === 'overview' && panel.current) {
@@ -118,7 +115,8 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
       pendingFocus.current = null;
       showHistory();
     }
-  }, [focusRequests, tab]);
+    // canSubmit: the panel shows once the approval answer offers Submit.
+  }, [focusRequests, tab, canSubmit]);
 
   // A link to #line-items, #approval … lands on its part once its tab shows.
   useEffect(() => {
@@ -173,7 +171,7 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
       <div className={styles.page}>
         {viewOnly && <ViewOnlyNote area="record" />}
         {submitProblems !== null && (
-          <Notice tone="danger" role="alert">
+          <InlineAlert tone="danger" role="alert">
             <p>
               Submitting needs {thingsText(submitProblems)} —{' '}
               <a
@@ -186,7 +184,7 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
                 view list
               </a>
             </p>
-          </Notice>
+          </InlineAlert>
         )}
         <SplitLinks activity={activity} />
         <ActivityStatusNotice activity={activity} approval={approval.data} />
@@ -202,7 +200,7 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
                   onOpenChange={setPanelOpen}
                 />
               )}
-              {/* GSAP's money, open, right after the summary (015 FR-015, D-305). */}
+              {/* GSAP's money, open, right after the summary. */}
               <ActivityFinancials activityId={activity.id} />
               <div id="line-items" className={styles.anchor}>
                 <LineItemsSection activityId={activity.id} />
@@ -224,7 +222,7 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
                 }}
               />
               <ActivityGoals activity={activity} model={facts.model} />
-              {/* Feature 046's slot: the figures, then the matching keys and what each source delivered. */}
+              {/* The figures, then the matching keys and what each source delivered. */}
               <PerformancePanel activityId={activity.id} />
               <DataSourcesArea activityId={activity.id} />
               <MediaCodesSection activityId={activity.id} />

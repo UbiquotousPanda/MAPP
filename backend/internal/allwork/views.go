@@ -10,6 +10,7 @@ import (
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/ids"
+	"mapp/internal/platform/record"
 )
 
 const (
@@ -145,14 +146,13 @@ func (s *Service) ownView(ctx context.Context, a actor.Actor, id string) (Stored
 }
 
 func (s *Service) saveView(ctx context.Context, v StoredView, own []StoredView) error {
-	if v.IsDefault {
-		for _, other := range own {
-			if other.ID != v.ID && other.IsDefault {
-				other.IsDefault, other.UpdatedAt = false, v.UpdatedAt
-				if err := s.repo.PutView(ctx, other); err != nil {
-					return err
-				}
-			}
+	if !v.IsDefault {
+		return s.repo.PutView(ctx, v)
+	}
+	for _, other := range record.OtherDefaults(own, v.ID, StoredView.id, StoredView.isDefault) {
+		other.IsDefault, other.UpdatedAt = false, v.UpdatedAt
+		if err := s.repo.PutView(ctx, other); err != nil {
+			return err
 		}
 	}
 	return s.repo.PutView(ctx, v)

@@ -8,11 +8,17 @@ import { activityRecord } from './line-item-financials';
 import { PlanActionsMenu } from './PlanActionsMenu';
 import { testUser } from './users';
 
-export const CHINA: ActionPlan = { id: 'P-1002', name: 'FY2026 Mobility China', status: 'draft' };
+export const CHINA: ActionPlan = {
+  id: 'P-1002',
+  name: 'FY2026 Mobility China',
+  status: 'draft',
+  version: 1,
+};
 export const PUBLISHED: ActionPlan = {
   id: 'P-1003',
   name: 'FY2025 Lubricants Europe',
   status: 'published',
+  version: 1,
 };
 
 /** The ⋯ menu of `target` on the Plans list, with `answers` as the fake API. */

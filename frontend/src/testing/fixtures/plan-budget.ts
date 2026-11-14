@@ -43,7 +43,13 @@ export function planBudgetReport(overrides: Partial<Report> = {}): Report {
     },
     period: 'month',
     periods: months(),
-    notes: { notPhased: null, noDates: null, otherYears: null, actualOtherYears: usd('50.00') },
+    notes: {
+      notPhased: null,
+      noDates: null,
+      otherYears: null,
+      linesAbovePlannedCost: null,
+      actualOtherYears: usd('50.00'),
+    },
     ...overrides,
   };
 }
@@ -82,8 +88,9 @@ export function planBudgetRanked(overrides: Partial<Ranked> = {}): Ranked {
     order: 'desc',
     group: 'none',
     page: 1,
-    size: 10,
+    size: 50,
     total: 2,
+    totals: figures('500', null),
     trail: [],
     groups: [
       {

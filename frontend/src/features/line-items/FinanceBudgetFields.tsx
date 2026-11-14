@@ -66,7 +66,6 @@ export function FinanceBudgetFields({
         value={year === null ? '' : String(year)}
         onChange={(value) => onYearChange(value === '' ? null : Number(value))}
         error={problemOf(problems, 'financeBudgetYear')}
-        note={state.sources.financeBudgetYear}
       />
       <ChoiceField
         label={LABEL.financeBudgetItem}

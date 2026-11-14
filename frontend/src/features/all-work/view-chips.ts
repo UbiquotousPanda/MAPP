@@ -1,3 +1,4 @@
+import { withAttributeValues } from '@/ui/AttributeFilterMenu/attribute-filter';
 import {
   ACTIVITY_STATUS_LABELS,
   CONTAINER_STATUS_LABELS,
@@ -9,7 +10,7 @@ import {
   STRATEGIC_LABELS,
 } from './all-work-text';
 import type { AllWorkOptions, FilterValue, Filters, ViewState } from './all-work-types';
-import { attributeChipLabel, withAttributeValues } from './attribute-filters';
+import { attributeChipLabel } from './attribute-filters';
 import { ID_FILTERS, NO_FILTERS, VALUE_FILTERS, choicesOf } from './view-state';
 import type { IdFilter } from './view-state';
 
@@ -72,12 +73,14 @@ export function removeChip(state: ViewState, chipKey: string): ViewState {
   return { ...state, filters: withoutValue(state.filters, filter, value) };
 }
 
+/** Nothing matches: clears the search and every filter. */
 export function clearAll(state: ViewState): ViewState {
   return { ...state, filters: NO_FILTERS, search: '' };
 }
 
-export function hasFilters(state: ViewState): boolean {
-  return chipsOf(state).length > 0 || state.search.trim() !== '';
+/** The chips' Clear filters: every filter, the search stays. */
+export function clearFilters(state: ViewState): ViewState {
+  return { ...state, filters: NO_FILTERS };
 }
 
 function optionLabel(

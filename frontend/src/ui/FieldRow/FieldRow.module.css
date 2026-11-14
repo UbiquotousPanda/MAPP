@@ -1,0 +1,103 @@
+.row {
+  container-type: inline-size;
+}
+
+.cells {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+@container (min-width: 400px) {
+  .cells {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5) var(--space-6);
+  }
+
+  .cells > :only-child,
+  .cells:has(> :nth-child(3)) > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  /* One row of fields shares its lines (label, hint, input, note, problem), so each lines up across. */
+  .cells:not(:has(> :nth-child(3), fieldset, [type='checkbox'])) {
+    row-gap: 0;
+  }
+
+  .cells:not(:has(> :nth-child(3), fieldset, [type='checkbox'])) > * {
+    display: grid;
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+    gap: 0;
+  }
+
+  .cells:not(:has(> :nth-child(3), fieldset, [type='checkbox'])) > * > :first-child {
+    grid-row: 1;
+  }
+
+  .cells:not(:has(> :nth-child(3), fieldset, [type='checkbox'])) > * > [id$='-hint'] {
+    grid-row: 2;
+  }
+
+  .cells:not(:has(> :nth-child(3), fieldset, [type='checkbox']))
+    > *
+    > :not(:first-child, [id$='-hint'], [id$='-note'], [id$='-error']) {
+    grid-row: 3;
+  }
+
+  .cells:not(:has(> :nth-child(3), fieldset, [type='checkbox'])) > * > [id$='-note'] {
+    grid-row: 4;
+  }
+
+  .cells:not(:has(> :nth-child(3), fieldset, [type='checkbox'])) > * > [id$='-error'] {
+    grid-row: 5;
+  }
+
+  .cells:not(:has(> :nth-child(3), fieldset, [type='checkbox'])) > * > :not(:first-child) {
+    margin-top: var(--space-2);
+  }
+}
+
+@container (min-width: 900px) {
+  .cells:has(> :nth-child(3)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 0;
+  }
+
+  .cells:has(> :nth-child(3)) > :first-child {
+    grid-column: auto;
+  }
+
+  .cells:has(> :nth-child(3)) > * {
+    display: grid;
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+    gap: 0;
+  }
+
+  .cells:has(> :nth-child(3)) > * > :first-child {
+    grid-row: 1;
+  }
+
+  .cells:has(> :nth-child(3)) > * > [id$='-hint'] {
+    grid-row: 2;
+  }
+
+  .cells:has(> :nth-child(3))
+    > *
+    > :not(:first-child, [id$='-hint'], [id$='-note'], [id$='-error']) {
+    grid-row: 3;
+  }
+
+  .cells:has(> :nth-child(3)) > * > [id$='-note'] {
+    grid-row: 4;
+  }
+
+  .cells:has(> :nth-child(3)) > * > [id$='-error'] {
+    grid-row: 5;
+  }
+
+  .cells:has(> :nth-child(3)) > * > :not(:first-child) {
+    margin-top: var(--space-2);
+  }
+}

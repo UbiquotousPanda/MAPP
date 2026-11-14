@@ -7,6 +7,7 @@ import type { StatusTone } from '@/ui/StatusChip/StatusChip';
 import { formatWhole } from '@/format/decimal';
 import { localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
 import { usePerformancePanel } from './api';
 import type {
   MetricFigure,
@@ -76,39 +77,41 @@ function PanelBody({ panel }: { panel: Panel }) {
 
 function StageTable({ stages, revenue }: { stages: StageFigure[]; revenue: RevenueFigure }) {
   return (
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          <th scope="col">Stage</th>
-          <th scope="col">Goal</th>
-          <th scope="col">Actual</th>
-          <th scope="col">Projected</th>
-          <th scope="col">Conversion</th>
-        </tr>
-      </thead>
-      <tbody>
-        {stages.map((stage) => (
-          <tr key={stage.stage}>
-            <th scope="row">{STAGE_WORDS[stage.stage] ?? stage.stage}</th>
-            <td className={styles.numeric}>
-              {stage.goal === null ? '—' : formatWhole(stage.goal)}
-            </td>
-            <ActualCell reason={stage.reason}>
-              {stage.actual === null ? '—' : formatWhole(stage.actual)}
-            </ActualCell>
-            <td className={styles.numeric}>
-              {stage.projected === null
-                ? (REASON_WORDS[stage.projectedReason] ?? '—')
-                : formatWhole(stage.projected)}
-            </td>
-            <td className={styles.numeric}>
-              {stage.conversion === null ? '—' : `${stage.conversion.toFixed(1)} %`}
-            </td>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
+        <thead>
+          <tr>
+            <th scope="col">Stage</th>
+            <th scope="col">Goal</th>
+            <th scope="col">Actual</th>
+            <th scope="col">Projected</th>
+            <th scope="col">Conversion</th>
           </tr>
-        ))}
-        <RevenueRow revenue={revenue} />
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {stages.map((stage) => (
+            <tr key={stage.stage}>
+              <th scope="row">{STAGE_WORDS[stage.stage] ?? stage.stage}</th>
+              <td className={dataTable.numeric}>
+                {stage.goal === null ? '—' : formatWhole(stage.goal)}
+              </td>
+              <ActualCell reason={stage.reason}>
+                {stage.actual === null ? '—' : formatWhole(stage.actual)}
+              </ActualCell>
+              <td className={dataTable.numeric}>
+                {stage.projected === null
+                  ? (REASON_WORDS[stage.projectedReason] ?? '—')
+                  : formatWhole(stage.projected)}
+              </td>
+              <td className={dataTable.numeric}>
+                {stage.conversion === null ? '—' : `${stage.conversion.toFixed(1)} %`}
+              </td>
+            </tr>
+          ))}
+          <RevenueRow revenue={revenue} />
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -117,19 +120,19 @@ function RevenueRow({ revenue }: { revenue: RevenueFigure }) {
   return (
     <tr>
       <th scope="row">Revenue</th>
-      <td className={styles.numeric}>{revenue.goal ? money(revenue.goal) : '—'}</td>
+      <td className={dataTable.numeric}>{revenue.goal ? money(revenue.goal) : '—'}</td>
       <ActualCell reason={revenue.reason}>
         {revenue.actual ? money(revenue.actual) : '—'}
         {revenue.excludedCount > 0 && (
           <span className={styles.reason}> · {revenue.excludedCount} excluded without a rate</span>
         )}
       </ActualCell>
-      <td className={styles.numeric}>
+      <td className={dataTable.numeric}>
         {revenue.projected
           ? money(revenue.projected)
           : (REASON_WORDS[revenue.projectedReason] ?? '—')}
       </td>
-      <td className={styles.numeric}>—</td>
+      <td className={dataTable.numeric}>—</td>
     </tr>
   );
 }
@@ -139,7 +142,7 @@ function ActualCell({ reason, children }: { reason: string; children: ReactNode 
   if (reason) {
     return <td className={styles.reason}>{REASON_WORDS[reason] ?? reason}</td>;
   }
-  return <td className={styles.numeric}>{children}</td>;
+  return <td className={dataTable.numeric}>{children}</td>;
 }
 
 /** Every projected figure names the model behind it and when its parameters last changed. */

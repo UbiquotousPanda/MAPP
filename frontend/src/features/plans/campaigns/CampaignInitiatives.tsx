@@ -9,13 +9,13 @@ import { addInitiativeHref } from './campaign-rows';
 import { PanelSection } from './PanelSection';
 import styles from './RecordDetails.module.css';
 import { ApprovalProgressChip } from './StatusChips';
-import { ADD_INITIATIVE, initiativesHeading, NO_INITIATIVES } from './texts';
+import { ADD_INITIATIVE, INITIATIVES, NO_INITIATIVES } from './texts';
 
-/** "Initiatives (n)" in a campaign's panel: each with its link, dates, approval progress and budget. */
+/** "Initiatives" in a campaign's panel: each with its link, dates, approval progress and budget. */
 export function CampaignInitiatives({ campaign, planId }: { campaign: Campaign; planId: string }) {
   const { dateRange, money } = useFormatters();
   return (
-    <PanelSection title={initiativesHeading(campaign.initiatives.length)}>
+    <PanelSection title={INITIATIVES}>
       {campaign.initiatives.length === 0 ? (
         <div className={styles.empty}>
           <p className={styles.text}>{NO_INITIATIVES}</p>

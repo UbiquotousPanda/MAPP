@@ -1,3 +1,5 @@
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { DatasetPreview } from '../model';
 import styles from './datasets.module.css';
 
@@ -12,7 +14,7 @@ export function PreviewRows({ preview, labels }: PreviewRowsProps) {
   }
   return (
     <div role="region" aria-label="First rows" tabIndex={0} className={styles.scroller}>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">
           The first {preview.rows.length} rows of the file
         </caption>

@@ -4,66 +4,33 @@
   gap: var(--space-4);
 }
 
-.summaryActions {
+.summary {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: calc(-1 * var(--space-2));
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+.summaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-3);
 }
 
-.legend {
+/* A figure that follows from the card's headline: its label left, its value right. */
+.pair {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  margin: 0 0 var(--space-2);
-  padding: 0;
-  font-size: var(--text-sm);
-  list-style: none;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
-.swatch {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: var(--space-2);
-  border-radius: 2px;
-  vertical-align: -1px;
+.pairValue {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
 }
 
-.chart {
-  width: 100%;
-  height: auto;
-}
-
-.budget {
-  fill: var(--chart-budget);
-  background: var(--chart-budget);
-}
-
-.planned {
-  fill: var(--chart-planned);
-  background: var(--chart-planned);
-}
-
-.actual {
-  fill: var(--chart-actual);
-  background: var(--chart-actual);
-}
-
-.today {
-  fill: var(--hover);
-}
-
-.axis {
-  stroke: var(--ink);
-}
-
-.axisLabel {
-  fill: var(--ink);
-  font-size: 11px;
+.danger {
+  color: var(--danger-text);
 }

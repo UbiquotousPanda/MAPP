@@ -15,7 +15,7 @@ export function GoalStagesField({ name, value, onChange, error }: FieldBinding<G
       label="Allowed goal stages"
       name={name}
       marking="Required"
-      hint="A goal can be set against these stages; a projection runs forward from there."
+      tip="A goal can be set against these stages; a projection runs forward from there."
       multiple
       options={OPTIONS}
       value={value}

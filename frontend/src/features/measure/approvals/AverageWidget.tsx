@@ -52,7 +52,7 @@ function Figures({ avg }: { avg: Average }) {
           <li key={a.person.id}>
             <span>{a.person.name}</span>
             <span className={styles.value}>
-              {a.days} days · {a.decisions}
+              {a.days} days · {a.decisions} {a.decisions === 1 ? 'decision' : 'decisions'}
             </span>
           </li>
         ))}

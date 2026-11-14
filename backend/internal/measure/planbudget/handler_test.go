@@ -17,9 +17,9 @@ func TestPlanBudgetContract(t *testing.T) {
 		"/api/v1/reports/plan-budget?year=2026",
 		"/api/v1/reports/plan-budget?year=2026&period=quarter&currency=EUR",
 		"/api/v1/reports/plan-budget/ranked?year=2026",
-		"/api/v1/reports/plan-budget/ranked?year=2026&show=activity&group=owner&sort=actual&order=asc&size=25&q=a",
-		"/api/v1/reports/plan-budget/export?year=2026&format=xlsx",
-		"/api/v1/reports/plan-budget/export?year=2026&format=xlsx&sort=actual&order=asc&group=owner&q=a",
+		"/api/v1/reports/plan-budget/ranked?year=2026&show=activity&group=owner&sort=actual&order=asc&size=200&q=a",
+		"/api/v1/reports/budget/export?year=2026&format=xlsx",
+		"/api/v1/reports/budget/export?year=2026&format=xlsx&sort=actual&order=asc&group=owner&q=a",
 	} {
 		if r := planner.Do(t, http.MethodGet, path, nil); r.Status != http.StatusOK {
 			t.Errorf("GET %s = %d %s, want 200", path, r.Status, r.Body)
@@ -31,7 +31,7 @@ func TestPlanBudgetContract(t *testing.T) {
 	}
 	var catalogue measure.ReportCatalogue
 	planner.Do(t, http.MethodGet, "/api/v1/reports", nil).Decode(t, &catalogue)
-	if !slices.ContainsFunc(catalogue.Items, func(e measure.ReportEntry) bool { return e.Key == measure.KeyPlanBudget && e.Available }) {
+	if !slices.ContainsFunc(catalogue.Items, func(e measure.ReportEntry) bool { return e.Key == measure.KeyBudget && e.Available }) {
 		t.Errorf("catalogue %+v: Plan budget is built", catalogue.Items)
 	}
 }

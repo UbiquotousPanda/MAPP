@@ -19,7 +19,7 @@ import (
 
 const (
 	lea        = "lea.santos@shell.com"
-	exported   = "/api/v1/reports/gsap-link/export?year=2026"
+	exported   = "/api/v1/reports/purchasing/export?year=2026"
 	lubricants = "P-1001"
 )
 
@@ -124,7 +124,10 @@ func waitingRows(r gsaplink.Report) [][]string {
 				"modification": "Modification"}[x.Routing], x.GsapPrNumber, amount, strconv.Itoa(x.WaitingWorkingDays),
 			yes(x.OverTurnaround)})
 	}
-	return rows
+	if r.Waiting.Amount == nil {
+		return append(rows, []string{"Total"})
+	}
+	return append(rows, []string{"Total", "", "", "", "", "", "", "", "", "", "", r.Waiting.Amount.Amount.String()})
 }
 
 func orderRows(r gsaplink.Report) [][]string {
@@ -154,16 +157,16 @@ func TestOwnPass_ExportEqualsScreen_FR019_SC005(t *testing.T) {
 
 	for _, tab := range tabs {
 		own := "&currency=EUR&tab=" + tab.tab + "&sort=" + tab.sort
-		screen := reportOf(t, carlosSees, report+own+"&pageSize=500")
+		screen := reportOf(t, carlosSees, report+own+"&pageSize=200")
 		file := csvOf(t, carlosSees, own+"&widget="+tab.tab)
 		if diff := cmp.Diff(tab.rows(screen), file.rows); screen.Total == 0 || diff != "" {
 			t.Errorf("%s: %d rows on screen; export (-screen +file):\n%s", own, screen.Total, diff)
 		}
 		saysTabAndSort(t, file, "EUR", tab.words)
 	}
-	saysTabAndSort(t, csvOf(t, carlosSees, "&widget=swbs"), "USD", "SWBS not received; Waiting, descending")
+	saysTabAndSort(t, csvOf(t, carlosSees, "&tab=swbs&widget=swbs"), "USD", "SWBS not received; Waiting, descending")
 	screen := reportOf(t, carlosSees, report+"&currency=EUR")
-	if diff := cmp.Diff(bandRows(screen), csvOf(t, carlosSees, "&currency=EUR&widget=swbsBands").rows); diff != "" {
+	if diff := cmp.Diff(bandRows(screen), csvOf(t, carlosSees, "&tab=swbs&currency=EUR&widget=swbsBands").rows); diff != "" {
 		t.Errorf("Waiting by time (-screen +file):\n%s", diff)
 	}
 	if bands := bandRows(screen); bands[len(bands)-1][1] != strconv.Itoa(screen.Swbs.Waiting) {
@@ -174,31 +177,26 @@ func TestOwnPass_ExportEqualsScreen_FR019_SC005(t *testing.T) {
 // saysTabAndSort reports About this export without the report, the currency, or the tab and sort in words.
 func saysTabAndSort(t *testing.T, file exportFile, currency, words string) {
 	t.Helper()
-	if file.notes["Report"] != "GSAP link" || file.notes["Currency"] != currency ||
+	if file.notes["Report"] != "Purchasing" || file.notes["Currency"] != currency ||
 		file.notes["Tab"]+"; "+file.notes["Sort"] != words {
-		t.Errorf("About this export %v, want GSAP link, %s and %q", file.notes, currency, words)
+		t.Errorf("About this export %v, want Purchasing, %s and %q", file.notes, currency, words)
 	}
 }
 
-// TestOwnPass_WorkbookEqualsWidgetFiles_US4_2: one sheet per tab and the bands, then In view and About this export.
+// TestOwnPass_WorkbookEqualsWidgetFiles_US4_2: each tab's sheets come after the overview, then In view and About.
 func TestOwnPass_WorkbookEqualsWidgetFiles_US4_2(t *testing.T) {
 	t.Parallel()
 	carlosSees := apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, carlos)
-	own := "&currency=EUR&tab=orders&sort=-poAmount"
-
-	tables := workbookOf(t, carlosSees, own)
-	names := []string{}
-	for _, table := range tables {
-		names = append(names, table.Name)
-	}
-	want := []string{"SWBS not received", "Waiting by time", "Waiting for GSAP", "Purchase orders", "In view", "About this export"}
-	if diff := cmp.Diff(want, names); diff != "" {
-		t.Fatalf("sheets (-want +got):\n%s", diff)
-	}
-	for i, widget := range []string{"swbs", "swbsBands", "waiting", "orders"} {
-		file := csvOf(t, carlosSees, own+"&widget="+widget)
-		if diff := cmp.Diff(asRead(file.rows), textOf(tables[i].Rows)); diff != "" {
-			t.Errorf("sheet %s against the %s file (-file +sheet):\n%s", names[i], widget, diff)
+	for tab, widgets := range map[string][]string{"swbs": {"swbs", "swbsBands"}, "waiting": {"waiting"},
+		"orders": {"orders"}} {
+		own := "&currency=EUR&tab=" + tab
+		tables := workbookOf(t, carlosSees, own)
+		shown := tables[len(tables)-2-len(widgets) : len(tables)-2]
+		for i, widget := range widgets {
+			file := csvOf(t, carlosSees, own+"&widget="+widget)
+			if diff := cmp.Diff(asRead(file.rows), textOf(shown[i].Rows)); diff != "" {
+				t.Errorf("sheet %s against the %s file (-file +sheet):\n%s", shown[i].Name, widget, diff)
+			}
 		}
 	}
 }
@@ -223,12 +221,12 @@ func TestOwnPass_NoFinanceView_AmountsDashed_FR004(t *testing.T) {
 	server := apitest.New(t, apitest.WithMeasureDemo())
 	leaSees, carlosSees := server.SignIn(t, lea), server.SignIn(t, carlos)
 
-	dashed(t, reportOf(t, leaSees, report+"&tab=waiting&pageSize=500"))
+	dashed(t, reportOf(t, leaSees, report+"&tab=waiting&pageSize=200"))
 	if orders := reportOf(t, leaSees, report+"&tab=orders"); orders.Total != 0 || len(orders.Orders.Rows) != 0 ||
 		orders.Finance.Plans != 0 {
 		t.Errorf("orders: %d rows covering %+v, want none (US3-6)", orders.Total, orders.Finance)
 	}
-	all := report + "&pageSize=500"
+	all := report + "&pageSize=200"
 	if diff := cmp.Diff(swbsRows(reportOf(t, carlosSees, all)), swbsRows(reportOf(t, leaSees, all))); diff != "" {
 		t.Errorf("SWBS tab without finance.view (-Carlos +Lea), want it in full (US1-11):\n%s", diff)
 	}
@@ -258,12 +256,12 @@ func TestOwnPass_ExportWithoutFinanceView_US4_3(t *testing.T) {
 	grantRoles(t, server, "U-1004", nil)
 	meiSees := server.SignIn(t, mei)
 
-	screen := reportOf(t, meiSees, report+"&tab=waiting&pageSize=500")
-	if diff := cmp.Diff(waitingRows(screen), csvOf(t, meiSees, "&widget=waiting").rows); screen.Total == 0 || diff != "" {
+	screen := reportOf(t, meiSees, report+"&tab=waiting&pageSize=200")
+	if diff := cmp.Diff(waitingRows(screen), csvOf(t, meiSees, "&tab=waiting&widget=waiting").rows); screen.Total == 0 || diff != "" {
 		t.Errorf("waiting export, %d rows on screen (-screen +file):\n%s", screen.Total, diff)
 	}
-	orders, sheets := csvOf(t, meiSees, "&widget=orders").rows, workbookOf(t, meiSees, "")
-	diff := cmp.Diff(orders, textOf(sheets[3].Rows))
+	orders, sheets := csvOf(t, meiSees, "&tab=orders&widget=orders").rows, workbookOf(t, meiSees, "&tab=orders")
+	diff := cmp.Diff(orders, textOf(sheets[len(sheets)-3].Rows))
 	if len(orders) != 2 || !slices.Equal(orders[1], []string{"Total"}) || diff != "" {
 		t.Errorf("purchase orders without finance.view: %v, want no row and Total with no figure (US3-6); "+
 			"sheet (-file +sheet):\n%s", orders[1:], diff)
@@ -277,7 +275,7 @@ func TestOwnPass_FinanceInOnePlan_Covers1Of3_US2_6_US3_6(t *testing.T) {
 	grantRoles(t, server, "U-1002", map[string]string{"RL-1003": "myTeams"})
 	priyaSees, carlosSees := server.SignIn(t, priya), server.SignIn(t, carlos)
 
-	waiting := reportOf(t, priyaSees, report+"&tab=waiting&pageSize=500")
+	waiting := reportOf(t, priyaSees, report+"&tab=waiting&pageSize=200")
 	if waiting.Finance.Plans != 1 || waiting.Finance.Of != 3 || waiting.Total == 0 {
 		t.Fatalf("waiting covers %+v with %d rows; want 1 of 3 plans and the Measure demo's request", waiting.Finance,
 			waiting.Total)
@@ -285,24 +283,12 @@ func TestOwnPass_FinanceInOnePlan_Covers1Of3_US2_6_US3_6(t *testing.T) {
 	if amount := waiting.Waiting.Rows[0].Amount; amount != nil {
 		t.Errorf("%s of the Measure demo shows %v, want — (US2-6)", waiting.Waiting.Rows[0].PurchaseRequestID, amount)
 	}
-	orders := reportOf(t, priyaSees, report+"&tab=orders&pageSize=500")
-	theirs := reportOf(t, carlosSees, report+"&tab=orders&pageSize=500&plan="+lubricants)
+	orders := reportOf(t, priyaSees, report+"&tab=orders&pageSize=200")
+	theirs := reportOf(t, carlosSees, report+"&tab=orders&pageSize=200&plan="+lubricants)
 	if diff := cmp.Diff(orderRows(theirs), orderRows(orders)); orders.Finance.Plans != 1 || diff != "" {
 		t.Errorf("orders cover %+v; against Lubricants Europe's (-Carlos +Priya):\n%s", orders.Finance, diff)
 	}
-	if diff := cmp.Diff(orderRows(orders), csvOf(t, priyaSees, "&widget=orders").rows); diff != "" {
+	if diff := cmp.Diff(orderRows(orders), csvOf(t, priyaSees, "&tab=orders&widget=orders").rows); diff != "" {
 		t.Errorf("orders export (-screen +file):\n%s", diff)
-	}
-}
-
-// TestOwnPass_ExportRights_039_FR022: without data.export every export of the report answers 403.
-func TestOwnPass_ExportRights_039_FR022(t *testing.T) {
-	t.Parallel()
-	leaSees := apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, lea)
-
-	get(t, leaSees, report, http.StatusOK)
-	for _, query := range []string{"&format=xlsx", "&format=csv&widget=swbs", "&format=csv&widget=swbsBands",
-		"&format=csv&widget=waiting&tab=waiting", "&format=csv&widget=orders&tab=orders&sort=-paid"} {
-		get(t, leaSees, exported+query, http.StatusForbidden)
 	}
 }

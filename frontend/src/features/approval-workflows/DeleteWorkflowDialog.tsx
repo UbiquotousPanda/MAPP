@@ -29,7 +29,7 @@ export function DeleteWorkflowDialog({
       return;
     }
     try {
-      afterDelete(await deleteWorkflow.mutateAsync(workflow.id));
+      afterDelete(await deleteWorkflow.mutateAsync(workflow));
       onDeleted();
       onClose();
     } catch (error) {

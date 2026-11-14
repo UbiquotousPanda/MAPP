@@ -16,8 +16,13 @@ const (
 // share is one group an entry belongs to; part is its share of the entry under a % split, nil for all of it.
 type share struct {
 	key, label string
-	part       *money.Percent
+	part       *Slice
 }
+
+// Slice is a split entry's share up to To less its share up to From, so the rounded parts add up to the entry exactly.
+type Slice struct{ From, To money.Percent }
+
+func (s Slice) OfWhole(n int64) int64 { return s.To.OfWhole(n) - s.From.OfWhole(n) }
 
 func (x *Index) groupsOf(id, group string) []share {
 	n := x.byID[id]
@@ -36,7 +41,7 @@ func (x *Index) groupsOf(id, group string) []share {
 }
 
 // attributeGroups follow the value of the record or of its nearest ancestor that has one, as a campaign's value
-// applies to what is below it (client spec 016); a % split counts by share (D-270).
+// applies to what is below it (client spec 016); a % split counts by share (D-270), a plain multiple choice equally.
 func (x *Index) attributeGroups(id, attributeID string) []share {
 	value, found := x.attributeValue(id, attributeID)
 	if !found {
@@ -49,18 +54,42 @@ func (x *Index) attributeGroups(id, attributeID string) []share {
 		return []share{{key: "no", label: "No"}}
 	}
 	attribute := x.attributes[attributeID]
+	equal := equalShares(len(value.OptionIDs))
 	out := make([]share, 0, len(value.OptionIDs))
-	for _, optionID := range value.OptionIDs {
+	var from money.Percent
+	for i, optionID := range value.OptionIDs {
 		g := share{key: optionID, label: optionID}
 		for _, option := range attribute.Options {
 			if option.ID == optionID {
 				g.label = option.Label
 			}
 		}
-		if p, split := value.Shares[optionID]; split {
-			g.part = &p
+		p, split := value.Shares[optionID]
+		if !split && len(equal) > 1 {
+			p, split = equal[i], true
+		}
+		if split {
+			to := money.PercentFromHundredths(from.Hundredths() + p.Hundredths())
+			g.part, from = &Slice{From: from, To: to}, to
 		}
 		out = append(out, g)
+	}
+	return out
+}
+
+// equalShares split a plain multiple choice 100/n each, the first options taking the remainder of 100.00 %.
+func equalShares(n int) []money.Percent {
+	if n == 0 {
+		return nil
+	}
+	whole := money.Hundred.Hundredths()
+	out := make([]money.Percent, n)
+	for i := range out {
+		h := whole / int64(n)
+		if int64(i) < whole%int64(n) {
+			h++
+		}
+		out[i] = money.PercentFromHundredths(h)
 	}
 	return out
 }

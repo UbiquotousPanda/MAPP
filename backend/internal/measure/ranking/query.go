@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"mapp/internal/platform/errs"
+	"mapp/internal/platform/paging"
 )
 
 const (
@@ -34,7 +35,6 @@ const (
 	msgChooseListed = "Choose one of the listed values."
 	msgSearchLong   = "Use 100 characters or fewer."
 	maxSearch       = 100
-	defaultSize     = 10
 )
 
 var (
@@ -48,10 +48,15 @@ type Query struct {
 	Size, Page                        int
 }
 
+// Opening is the sort and order a report's list opens on when the address names none.
+type Opening struct {
+	Sort, Order string
+}
+
 // Parse reads the ranked list's parameters, sorted by one of the report's sorts; every problem is answered at once.
-func Parse(values url.Values, sorts []string, defaultSort string) (Query, error) {
+func Parse(values url.Values, sorts []string, opening Opening) (Query, error) {
 	var problems errs.Problems
-	q := Query{Sort: orDefault(values.Get(paramSort), defaultSort), Order: orDefault(values.Get(paramOrder), OrderDesc),
+	q := Query{Sort: orDefault(values.Get(paramSort), opening.Sort), Order: orDefault(values.Get(paramOrder), opening.Order),
 		Group: orDefault(values.Get(paramGroup), GroupNone), Search: strings.TrimSpace(values.Get(paramSearch)),
 		Drill: values.Get(paramDrill)}
 	listed := map[string]bool{paramSort: slices.Contains(sorts, q.Sort),
@@ -65,8 +70,8 @@ func Parse(values url.Values, sorts []string, defaultSort string) (Query, error)
 	if utf8.RuneCountInString(q.Search) > maxSearch {
 		problems.Add(paramSearch, msgSearchLong)
 	}
-	q.Size, q.Page = defaultSize, 1
-	if n, ok := number(values, paramSize, &problems, func(n int) bool { return slices.Contains([]int{10, 25, 50}, n) }); ok {
+	q.Size, q.Page = paging.Default, 1
+	if n, ok := number(values, paramSize, &problems, paging.Valid); ok {
 		q.Size = n
 	}
 	if n, ok := number(values, paramPage, &problems, func(n int) bool { return n >= 1 }); ok {

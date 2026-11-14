@@ -1,23 +1,7 @@
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: var(--space-4);
-  margin: 0;
+.cards section > * > :first-child {
+  min-height: calc(2 * var(--leading-xs));
 }
 
-.card dt {
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-}
-
-.card dd {
-  margin: var(--space-1) 0 0;
-  color: var(--ink);
-  font-size: var(--text-xl);
-  font-variant-numeric: tabular-nums;
-}
-
-.bars,
 .months {
   display: flex;
   flex-direction: column;
@@ -25,14 +9,6 @@
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.bar {
-  display: grid;
-  grid-template-columns: minmax(120px, 220px) 1fr auto;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-sm);
 }
 
 .month {
@@ -43,11 +19,12 @@
   font-size: var(--text-sm);
 }
 
+/* The track of ui/ProgressBar, holding one fill per series. */
 .track {
   display: flex;
-  height: 14px;
-  border-radius: 7px;
-  background: var(--hover);
+  height: var(--space-2);
+  border-radius: var(--radius-chip);
+  background: color-mix(in srgb, var(--ink) 14%, var(--surface));
   overflow: hidden;
 }
 
@@ -73,10 +50,10 @@
 
 .swatch {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   margin-right: var(--space-1);
-  border-radius: 2px;
+  border-radius: var(--radius-1);
 }
 
 .note {
@@ -85,82 +62,75 @@
   font-size: var(--text-sm);
 }
 
-.empty {
-  margin: 0;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-}
-
 .toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
 
-/* The search gives way first, down to 200 px, so the controls share one row where they can. */
-.toolbar > :first-child {
-  flex: 1 1 200px;
-  max-width: 320px;
-}
-
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--ink);
   font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
 }
 
 .select {
-  min-height: 36px;
-  padding: 0 var(--space-2);
+  height: var(--control-sm);
+  padding-left: var(--space-3);
   border: 1px solid var(--control-border);
-  border-radius: 4px;
-  background: var(--surface);
+  border-radius: var(--radius-control);
+  background-color: var(--surface);
   color: var(--ink);
-  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
 }
 
 .scroll {
   overflow-x: auto;
   contain: inline-size;
+  background:
+    linear-gradient(to left, var(--surface) 40%, transparent) right / 48px 100% no-repeat local,
+    linear-gradient(to left, color-mix(in srgb, var(--ink) 28%, transparent), transparent) right /
+      24px 100% no-repeat scroll;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--ink);
-  font-size: var(--text-sm);
+/* The toggle and the first column stay put while the others scroll; a fade on the right says more sit off-screen. */
+.table tr > :nth-child(-n + 2) {
+  position: sticky;
+  left: 0;
+  z-index: 1;
 }
 
-.table th,
+.table tbody tr > :nth-child(-n + 2) {
+  background: var(--surface);
+}
+
+.table tr > :first-child {
+  width: 56px;
+  min-width: 56px;
+  padding-inline: var(--space-2);
+}
+
+.table tr > :nth-child(2) {
+  left: 56px;
+  box-shadow: inset -1px 0 0 var(--row-divider);
+}
+
+.table tbody tr:hover > :nth-child(-n + 2),
+.table .vendorRow > :nth-child(-n + 2) {
+  background: var(--hover);
+}
+
+/* Dates, people, IDs and amounts stay on one line; only the named long-text cells wrap. */
 .table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  font-weight: var(--weight-regular);
-  text-align: left;
-  vertical-align: top;
-}
-
-.table thead th {
   white-space: nowrap;
 }
 
-.vendorRow th,
 .vendorRow td {
   background: var(--hover);
   font-weight: var(--weight-bold);
-}
-
-.numeric {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.name {
-  min-width: 220px;
 }
 
 .level1 {
@@ -171,54 +141,9 @@
   padding-left: var(--space-10);
 }
 
-.toggle {
-  margin-right: var(--space-2);
-  padding: 0 var(--space-1);
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.sort {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-weight: var(--weight-bold);
-  cursor: pointer;
-}
-
-.idle {
-  opacity: 0.5;
-}
-
-.chooser {
-  position: relative;
-}
-
-.chooser summary {
-  min-height: 36px;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--control-border);
-  border-radius: 4px;
-  cursor: pointer;
-}
-
 .chooserList {
-  position: absolute;
-  z-index: 2;
-  min-width: 260px;
-  margin: var(--space-1) 0 0;
-  padding: var(--space-3);
-  border: 1px solid var(--card-border);
-  border-radius: 4px;
-  background: var(--surface);
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
@@ -227,23 +152,4 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-1) 0;
-}
-
-.pager {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-  font-size: var(--text-sm);
-}
-
-.range {
-  margin: 0;
-}
-
-.buttons {
-  display: flex;
-  gap: var(--space-2);
 }

@@ -1,8 +1,7 @@
-/* The pages without sign-in look like the signed-in ones: the grey page under a white bar. */
 .layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--page-bg);
 }
 

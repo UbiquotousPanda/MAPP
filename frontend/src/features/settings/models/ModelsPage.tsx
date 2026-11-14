@@ -13,6 +13,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { filterRecords, useListFilters } from '@/ui/useListFilters';
 import type { ListFilters } from '@/ui/useListFilters';
 import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
@@ -68,7 +69,7 @@ export function ModelsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Models' }]}
         title="Models"
-        description="The rulebooks plans use. Changes apply to every plan using the model."
+        description="Changes apply to every plan using the model."
         actions={
           <CanChange>
             <Button variant="primary" icon={<Plus />} onClick={newModel}>
@@ -90,7 +91,7 @@ export function ModelsPage() {
           name={deleting.name}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteModel.mutateAsync(deleting.id)}
+          remove={() => deleteModel.mutateAsync(deleting)}
           setInactive={() => status.applyInactive(deleting)}
           invalidate={MODEL_LISTS}
           onDeleted={() => {
@@ -146,7 +147,7 @@ function ModelsCard({ models, filters, actions, onNew }: ModelsCardProps) {
     );
   }
 
-  const { shown, counts } = filterRecords(all, filters, (model) => model.name);
+  const { shown } = filterRecords(all, filters, (model) => model.name);
 
   return (
     <Card>
@@ -157,7 +158,7 @@ function ModelsCard({ models, filters, actions, onNew }: ModelsCardProps) {
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: MODEL_NOUN }}
       />
       {shown.length === 0 ? (
@@ -166,18 +167,18 @@ function ModelsCard({ models, filters, actions, onNew }: ModelsCardProps) {
           <Button onClick={filters.clear}>Clear filters</Button>
         </div>
       ) : (
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Name</th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Rates
                 </th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Average deal size
                 </th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Allowed activity types
                 </th>
                 <th scope="col">Used by</th>
@@ -204,23 +205,23 @@ function ModelRow({ model, actions }: { model: Model; actions: ModelActions }) {
   const { money } = useFormatters();
   return (
     <tr>
-      <th scope="row" className={styles.nameCell}>
+      <th scope="row" className={dataTable.nameCell}>
         <button type="button" className={styles.nameButton} onClick={() => actions.view(model)}>
           {model.name}
         </button>
       </th>
-      <td className={styles.number}>
+      <td className={dataTable.numeric}>
         {`${formatPercent(model.inqToMqlRate)} → ${formatPercent(model.mqlToDealRate)}`}
       </td>
-      <td className={styles.number}>{money(model.averageDealSize)}</td>
-      <td className={styles.number}>{model.activityTypes.length}</td>
+      <td className={dataTable.numeric}>{money(model.averageDealSize)}</td>
+      <td className={dataTable.numeric}>{model.activityTypes.length}</td>
       <td>{model.usage.summary}</td>
       <td className={styles.nowrap}>
         <StatusChip tone={model.active ? 'positive' : 'neutral'}>
           {model.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={model.name}
           items={[

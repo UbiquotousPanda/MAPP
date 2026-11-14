@@ -1,14 +1,15 @@
 <!--
 Sync Impact Report
-- Version change: 4.9.0 → 4.10.0 (MINOR: a hosted test environment is allowed; no principle removed or redefined)
+- Version change: 4.10.0 → 4.11.0 (MINOR: F6's shared-component rule materially expanded; no principle removed
+  or redefined)
 - Modified principles: none
-- Modified sections: Current Phase & Scope (Running locally) — besides `compose.yaml` on reviewers' own
-  computers, one Azure VM may run it as a hosted test environment for business analysts and testers, with the
-  demo seed only (ADR-0023). Amendment History.
+- Modified sections: F6 — one component per generic element, from `src/ui/`; no copies; a variant is a prop of
+  the `ui/` component; a pattern a second feature needs moves into `ui/` first; lint enforces it. Amendment History.
 - Added sections: none
 - Removed sections: none
-- Impact on existing code: the API's optional `PUBLIC_HOSTS` variable; `deploy/test-vm/`; the portal's Static
-  Web App workflow removed
+- Impact on existing code: copies found by the 2026-11-12 audit (Total rows, tables, pagers, sort headers,
+  selects, menus, popovers, alerts, radios, dialogs, …) are migrated into `src/ui/` (D-415, D-416), most visible
+  first; the lint rules start as warnings and become errors once each area is migrated
 - Templates: no change needed
 - Follow-up TODOs:
   - TODO(DARK_TOKENS): dark-theme values for Disabled Text, Link Hover and an error-text red
@@ -861,6 +862,12 @@ frontend/
   applies, it applies in addition, and the stricter requirement prevails.
 - Every user gets the same experience: navigation, components and behaviour are consistent across
   screens, so a screen is built from the shared components in `src/ui/`, not restyled.
+- **One component per element (NON-NEGOTIABLE).** A component, style or helper that already exists MUST NOT
+  be copied. Every generic element — one without domain knowledge, such as a button, table and its Total row,
+  pager, sort header, select, menu, popover, filter control, chip, alert, dialog, or empty, loading or error
+  state — MUST come from `src/ui/`. A feature composes these and MUST NOT restyle them; a variant it needs is
+  added to the `ui/` component as a prop. A pattern a second feature needs moves into `src/ui/` before the second
+  use. Lint rules flag raw `select`, `input`, `table`, `button` and Radix imports outside `src/ui/`.
 - Semantic HTML first: landmarks, headings in order, lists, tables, real buttons and links. ARIA
   only fills a gap native elements leave. A `div` or `span` with a click handler is forbidden.
 - Every control has an accessible name and a visible label (a placeholder is not a label). A form
@@ -1190,5 +1197,6 @@ amended to match.
 | 4.8.0 | 2026-10-30 | Current Phase & Scope: the Measure module — SP&A One's read-only reports, shown as Reports — in two waves: 039–045 from data MAPP holds, 046–050 performance reporting from a simulated feed; II and IV: a simulated performance feed stands in for the CRM, marketing-automation and web-analytics connectors behind an adapter; out of scope narrowed to live connectors and the reports that need the Finance budgets module, accruals, goods receipts, a dashboard builder or e-mail | D-366–D-370; Measure kick-off instruction of 2026-10-30 |
 | 4.9.0 | 2026-11-01 | Current Phase & Scope: the self-service dashboard builder (051) — dashboards people build from the Plan-module data they may see and from CSV or Excel datasets they upload, shown under Dashboards next to 036's built-in dashboards and shared view-only with their teams; out of scope gains dashboards shared outside SP&A One teams, scheduled or e-mailed dashboards and live data connectors. F1: Apache ECharts is the chart library (ADR-0020). 4.8.0 is the Measure-module amendment on `measure-module` | D-371–D-378; ADR-0020; product owner instruction of 2026-11-01 |
 | 4.10.0 | 2026-11-03 | Current Phase & Scope: one Azure VM may run `compose.yaml` as a hosted test environment for business analysts and testers, over HTTPS, with the demo seed only | ADR-0023; repository owner instruction of 2026-11-03 |
+| 4.11.0 | 2026-11-12 | F6: one component per element — nothing that exists is copied; generic elements come only from `src/ui/`; variants are props of the `ui/` component; a pattern a second feature needs moves into `ui/` first; lint enforces it | D-415, D-416; product owner instruction of 2026-11-12 |
 
-**Version**: 4.10.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-11-03
+**Version**: 4.11.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-11-12

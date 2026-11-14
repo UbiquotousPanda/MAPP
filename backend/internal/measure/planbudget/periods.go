@@ -14,6 +14,7 @@ const monthsInYear = 12
 type months struct {
 	budget, planned, actual                       [monthsInYear]money.Amount
 	notPhased, noDates, otherYears, actualOutside money.Amount
+	linesAbove                                    money.Amount
 	showsActual                                   bool
 }
 
@@ -38,15 +39,21 @@ func (r *records) budgetMonths(m *months) {
 	}
 }
 
+// plannedMonths keeps months + no dates + other years − line items above planned cost = the Planned card.
 func (r *records) plannedMonths(m *months) {
 	for _, id := range r.Matched().Activities {
 		spread := r.planned[id]
+		placed := spread.NoDates.Add(spread.OtherYears)
 		for month, amount := range spread.ByMonth {
+			placed = placed.Add(amount)
 			if i := r.monthIndex(month); i >= 0 {
 				m.planned[i] = m.planned[i].Add(amount)
 			}
 		}
 		m.noDates, m.otherYears = m.noDates.Add(spread.NoDates), m.otherYears.Add(spread.OtherYears)
+		if above := placed.Sub(orZero(r.Node(id).PlannedCost)); above.Sign() > 0 {
+			m.linesAbove = m.linesAbove.Add(above)
+		}
 	}
 }
 
@@ -97,7 +104,7 @@ func (r *records) periods(period string, today date.Date) ([]Period, Notes) {
 		out = append(out, p)
 	}
 	return out, Notes{NotPhased: r.noted(m.notPhased), NoDates: r.noted(m.noDates), OtherYears: r.noted(m.otherYears),
-		ActualOtherYears: r.noted(m.actualOutside)}
+		LinesAbovePlannedCost: r.noted(m.linesAbove), ActualOtherYears: r.noted(m.actualOutside)}
 }
 
 func (r *records) periodKey(first, size int) string {

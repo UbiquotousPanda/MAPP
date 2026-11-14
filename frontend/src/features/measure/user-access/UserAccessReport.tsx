@@ -5,7 +5,7 @@ import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { ReportFrame } from '../shared';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { AccessControls } from './AccessControls';
 import { AccessTable } from './AccessTable';
 import { useAccessTeams, useUserAccess } from './api';
@@ -15,16 +15,8 @@ import type { AccessTable as Table } from './access-address';
 import { SignInBands } from './SignInBands';
 import styles from './UserAccess.module.css';
 
-/** User access (feature 045): everyone with roles, teams and last sign-in, in 039's page without plan filters. */
-export function UserAccessReport() {
-  return (
-    <ReportFrame report="userAccess" filters={false}>
-      {() => <UserAccessBody />}
-    </ReportFrame>
-  );
-}
-
-function UserAccessBody() {
+/** People (feature 045): everyone with roles, teams and last sign-in, without the plan filters. */
+export function UserAccessBody() {
   const { table, change } = useAccessTable();
   const report = useUserAccess(table);
   const teams = useAccessTeams();
@@ -70,21 +62,13 @@ function Results({ report, table, onChange }: ResultsProps) {
       <EmptyState
         icon={<UsersRound />}
         title="No people match these filters"
-        action={
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => onChange({ teams: [], status: 'active' })}
-          >
-            Reset filters
-          </Button>
-        }
+        onReset={() => onChange({ teams: [], status: 'active' })}
       />
     );
   }
   return (
     <>
-      <div className={styles.cards} aria-label="Summary">
+      <StatStrip label="Summary">
         <SummaryCard label="People" value={formatWhole(report.cards.people)} />
         <SummaryCard
           label="Signed in within 30 days"
@@ -95,7 +79,7 @@ function Results({ report, table, onChange }: ResultsProps) {
           value={formatWhole(report.cards.neverSignedIn)}
           tip="Not since sign-in times were first recorded."
         />
-      </div>
+      </StatStrip>
       <SignInBands
         bands={report.bands}
         people={report.cards.people}

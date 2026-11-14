@@ -16,7 +16,7 @@
   gap: var(--space-1);
   padding: var(--space-3);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
 }
 
 .totalLabel {
@@ -25,6 +25,7 @@
 }
 
 .totalValue {
+  margin: 0;
   font-family: var(--font-heading);
   font-size: var(--text-xl);
   font-variant-numeric: tabular-nums;
@@ -67,7 +68,7 @@
   gap: var(--space-2);
   padding: var(--space-3);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
 }
 
 .dealHeader {
@@ -76,11 +77,6 @@
   gap: var(--space-2);
   align-items: baseline;
   justify-content: space-between;
-}
-
-.dealTitle {
-  margin: 0;
-  font-size: var(--text-md);
 }
 
 .dealAmount {
@@ -127,7 +123,7 @@
 }
 
 .kind {
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .who {
@@ -136,13 +132,6 @@
   gap: var(--space-2);
   align-items: baseline;
   min-width: 0;
-}
-
-.tag {
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-pill);
-  background: var(--chip);
-  font-size: var(--text-xs);
 }
 
 .when {
@@ -170,10 +159,6 @@
   border-top: 1px solid var(--row-divider);
 }
 
-.paging {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-  justify-content: space-between;
-  font-size: var(--text-sm);
+.focusedTitle:focus {
+  outline: none;
 }

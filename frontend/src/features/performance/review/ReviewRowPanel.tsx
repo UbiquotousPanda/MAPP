@@ -6,6 +6,7 @@ import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useToast } from '@/ui/Toast/useToast';
 import tableStyles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { importPath } from '../imports/imports-text';
 import { useReopenRow } from './api';
 import type { ReviewRow } from './api';
@@ -120,8 +121,8 @@ export function ReviewRowPanel({ row, onAction, onClose }: ReviewRowPanelProps) 
 
 function RawCells({ raw }: { raw: Record<string, string> }) {
   return (
-    <div className={tableStyles.tableScroll}>
-      <table className={tableStyles.table}>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
         <caption className="visually-hidden">The row as the file carried it</caption>
         <thead>
           <tr>

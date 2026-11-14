@@ -1,23 +1,15 @@
 import { FieldHelpTip } from '@/features/settings';
-import { formatAmount, toCents } from '@/format/decimal';
+import { toCents } from '@/format/decimal';
+import { formatMoney } from '@/format/intl';
+import dataTable from '@/ui/Table/Table.module.css';
 import styles from './BudgetByMonth.module.css';
 import type { BudgetByMonthPeriods } from './api';
-import { amountText, overBy } from './phasing-math';
 
 type Money = { amount: string; currency: string };
 
-/** "50,000.00" without the currency (the caption names it); "—" for none. */
+/** "$50,000.00" like every other amount on the page; "—" for none and for zero. */
 function amount(value: Money | null | undefined): string {
-  return value ? formatAmount(value.amount) : '—';
-}
-
-/** The sum of a row's amounts; null when none of them is set. */
-function totalOf(values: (Money | null)[]): string | null {
-  const set = values.filter((value): value is Money => value !== null);
-  if (set.length === 0) {
-    return null;
-  }
-  return amountText(set.reduce((total, value) => total + toCents(value.amount), 0n));
+  return value && toCents(value.amount) !== 0n ? formatMoney(value.amount, value.currency) : '—';
 }
 
 function RowHead({ label, helpKey }: { label: string; helpKey?: string }) {
@@ -33,6 +25,7 @@ export function PeriodRow({
   label,
   helpKey,
   values,
+  total,
   extra,
   extraCount = 0,
   empty,
@@ -40,6 +33,8 @@ export function PeriodRow({
   label: string;
   helpKey?: string;
   values: (Money | null)[];
+  /** The row's total, added up by the API. */
+  total: Money | null | undefined;
   extra?: Money[];
   extraCount?: number;
   /** Shown across the periods when the row has no amounts ("Not phased"). */
@@ -56,27 +51,26 @@ export function PeriodRow({
       </tr>
     );
   }
-  const total = totalOf([...values, ...(extra ?? [])]);
   return (
     <tr>
       <RowHead label={label} helpKey={helpKey} />
       {values.map((value, index) => (
-        <td key={index} className={styles.number}>
+        <td key={index} className={dataTable.numeric}>
           {amount(value)}
         </td>
       ))}
       {extra
         ? extra.map((value, index) => (
-            <td key={`extra-${index}`} className={styles.number}>
+            <td key={`extra-${index}`} className={dataTable.numeric}>
               {amount(value)}
             </td>
           ))
         : Array.from({ length: extraCount }, (_, index) => (
-            <td key={`extra-${index}`} className={styles.number}>
+            <td key={`extra-${index}`} className={dataTable.numeric}>
               —
             </td>
           ))}
-      <td className={`${styles.number} ${styles.total}`}>{total ?? '—'}</td>
+      <td className={`${dataTable.numeric} ${styles.total}`}>{amount(total)}</td>
     </tr>
   );
 }
@@ -94,25 +88,23 @@ export function DifferenceRow({
       <RowHead label="Difference" helpKey="phasing.difference" />
       {periods.difference.map((value, index) => {
         const over = periods.over[index];
-        const by = over
-          ? overBy(
-              periods.budget[index]?.amount,
-              periods.plannedCost[index]?.amount,
-              periods.allocated?.[index]?.amount,
-            )
-          : 0n;
+        const by = periods.overBy[index];
         return (
-          <td key={index} className={`${styles.number} ${over ? styles.over : ''}`}>
-            {over && by > 0n ? `Over by ${amountText(by)}` : amount(value)}
+          <td key={index} className={`${dataTable.numeric} ${over ? styles.over : ''}`}>
+            {over && by && toCents(by.amount) > 0n
+              ? `Over by ${formatMoney(by.amount, by.currency)}`
+              : amount(value)}
           </td>
         );
       })}
       {Array.from({ length: extraCount }, (_, index) => (
-        <td key={`extra-${index}`} className={styles.number}>
+        <td key={`extra-${index}`} className={dataTable.numeric}>
           —
         </td>
       ))}
-      <td className={`${styles.number} ${styles.total}`}>{totalOf(periods.difference) ?? '—'}</td>
+      <td className={`${dataTable.numeric} ${styles.total}`}>
+        {amount(periods.totals.difference)}
+      </td>
     </tr>
   );
 }

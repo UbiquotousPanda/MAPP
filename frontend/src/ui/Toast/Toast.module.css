@@ -32,6 +32,19 @@
   animation: slide-up var(--dur) var(--ease-out);
 }
 
+.toast[data-swipe='move'] {
+  transform: translateX(var(--radix-toast-swipe-move-x));
+}
+
+.toast[data-swipe='cancel'] {
+  transform: translateX(0);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.toast[data-swipe='end'] {
+  animation: swipe-out var(--dur-fast) var(--ease-in) forwards;
+}
+
 .message {
   flex: 1;
   color: var(--ink);
@@ -60,5 +73,16 @@
   from {
     opacity: 0;
     transform: translateY(16px);
+  }
+}
+
+@keyframes swipe-out {
+  from {
+    transform: translateX(var(--radix-toast-swipe-end-x));
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%);
   }
 }

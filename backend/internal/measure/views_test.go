@@ -84,7 +84,7 @@ func manyValues() string {
 func TestViews_NameAndQuery_FR024_FR027(t *testing.T) {
 	t.Parallel()
 	s, _ := viewService(t)
-	saved := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "  Europe  ", Query: "owner=U-1003&year=2026&owner=U-1002"}})
+	saved := create(t, s, priyaSaves, viewIn{measure.KeyBudget, measure.ViewCreate{Name: "  Europe  ", Query: "owner=U-1003&year=2026&owner=U-1002"}})
 	if saved.Name != "Europe" || saved.Query != "year=2026&owner=U-1002&owner=U-1003" || saved.Version != 1 {
 		t.Errorf("saved %+v: want the name trimmed and the canonical query", saved)
 	}
@@ -93,14 +93,14 @@ func TestViews_NameAndQuery_FR024_FR027(t *testing.T) {
 		name, report, view, query, want string
 		by                              actor.Actor
 	}{
-		{"no name", measure.KeyPlanBudget, "  ", "", "Enter a name for the view.", priyaSaves},
-		{"too long", measure.KeyPlanBudget, strings.Repeat("x", 61), "", "Use 60 characters or fewer.", priyaSaves},
-		{"taken, ignoring case", measure.KeyPlanBudget, "EUROPE", "", "You already have a view called 'Europe'.", priyaSaves},
-		{"a line break", measure.KeyPlanBudget, "Euro\npe", "", "Names can't contain tabs, line breaks or text-direction characters.", priyaSaves},
-		{"a value the report does not take", measure.KeyPlanBudget, "Yearly", "period=year", "The view can't be saved — reload the page and try again.", priyaSaves},
-		{"too long an address", measure.KeyPlanBudget, "Many", manyValues(), "The view can't be saved — reload the page and try again.", priyaSaves},
+		{"no name", measure.KeyBudget, "  ", "", "Enter a name for the view.", priyaSaves},
+		{"too long", measure.KeyBudget, strings.Repeat("x", 61), "", "Use 60 characters or fewer.", priyaSaves},
+		{"taken, ignoring case", measure.KeyBudget, "EUROPE", "", "You already have a view called 'Europe'.", priyaSaves},
+		{"a line break", measure.KeyBudget, "Euro\npe", "", "Names can't contain tabs, line breaks or text-direction characters.", priyaSaves},
+		{"a value the report does not take", measure.KeyBudget, "Yearly", "period=year", "The view can't be saved — reload the page and try again.", priyaSaves},
+		{"too long an address", measure.KeyBudget, "Many", manyValues(), "The view can't be saved — reload the page and try again.", priyaSaves},
 		{"the same name on another report", measure.KeyApprovals, "Europe", "", "", priyaSaves},
-		{"the same name for another person", measure.KeyPlanBudget, "Europe", "", "", danielSaves},
+		{"the same name for another person", measure.KeyBudget, "Europe", "", "", danielSaves},
 	} {
 		_, err := s.CreateView(t.Context(), c.by, c.report, measure.ViewCreate{Name: c.view, Query: c.query})
 		if got := problemOf(err); got != c.want {
@@ -116,11 +116,11 @@ func TestViews_PersonalWithOneDefault_FR025_FR026(t *testing.T) {
 	t.Parallel()
 	s, _ := viewService(t)
 	ctx := t.Context()
-	europe := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "europe", IsDefault: true}})
-	create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Asia", IsDefault: true}})
+	europe := create(t, s, priyaSaves, viewIn{measure.KeyBudget, measure.ViewCreate{Name: "europe", IsDefault: true}})
+	create(t, s, priyaSaves, viewIn{measure.KeyBudget, measure.ViewCreate{Name: "Asia", IsDefault: true}})
 	create(t, s, priyaSaves, viewIn{measure.KeyApprovals, measure.ViewCreate{Name: "Mine", IsDefault: true}})
 
-	page, err := s.ListViews(ctx, priyaSaves, measure.KeyPlanBudget)
+	page, err := s.ListViews(ctx, priyaSaves, measure.KeyBudget)
 	if err != nil {
 		t.Fatalf("ListViews: %v", err)
 	}
@@ -131,10 +131,10 @@ func TestViews_PersonalWithOneDefault_FR025_FR026(t *testing.T) {
 	if diff := cmp.Diff([]string{"Asia true v1", "europe false v2"}, got); diff != "" || page.Total != 2 {
 		t.Errorf("Priya's Plan budget views (-want +got):\n%s", diff)
 	}
-	if daniels, _ := s.ListViews(ctx, danielSaves, measure.KeyPlanBudget); daniels.Total != 0 {
+	if daniels, _ := s.ListViews(ctx, danielSaves, measure.KeyBudget); daniels.Total != 0 {
 		t.Errorf("Daniel sees %d of Priya's views", daniels.Total)
 	}
-	ref := measure.ViewRef{Report: measure.KeyPlanBudget, ID: europe.ID}
+	ref := measure.ViewRef{Report: measure.KeyBudget, ID: europe.ID}
 	gone := "This view no longer exists — it may have been deleted in another tab."
 	if _, err := s.DeleteView(ctx, danielSaves, ref); problemOf(err) != gone {
 		t.Errorf("Daniel deletes Priya's view: %v, want not found", err)
@@ -148,8 +148,8 @@ func TestViews_VersionChecked_FR028(t *testing.T) {
 	t.Parallel()
 	s, _ := viewService(t)
 	ctx := t.Context()
-	asia := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Asia"}})
-	asiaRef := measure.ViewRef{Report: measure.KeyPlanBudget, ID: asia.ID}
+	asia := create(t, s, priyaSaves, viewIn{measure.KeyBudget, measure.ViewCreate{Name: "Asia"}})
+	asiaRef := measure.ViewRef{Report: measure.KeyBudget, ID: asia.ID}
 	renamed := "Asia Pacific"
 
 	updated, err := s.UpdateView(ctx, priyaSaves, asiaRef, measure.ViewUpdate{Version: 1, Name: &renamed})
@@ -172,15 +172,15 @@ func TestViews_EveryChangeLogged_FR028(t *testing.T) {
 	t.Parallel()
 	s, log := viewService(t)
 	ctx := t.Context()
-	europe := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Europe", IsDefault: true}})
-	asia := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Asia", IsDefault: true}})
+	europe := create(t, s, priyaSaves, viewIn{measure.KeyBudget, measure.ViewCreate{Name: "Europe", IsDefault: true}})
+	asia := create(t, s, priyaSaves, viewIn{measure.KeyBudget, measure.ViewCreate{Name: "Asia", IsDefault: true}})
 	renamed := "Asia Pacific"
-	_, err := s.UpdateView(ctx, priyaSaves, measure.ViewRef{Report: measure.KeyPlanBudget, ID: asia.ID},
+	_, err := s.UpdateView(ctx, priyaSaves, measure.ViewRef{Report: measure.KeyBudget, ID: asia.ID},
 		measure.ViewUpdate{Version: 1, Name: &renamed})
 	if err != nil {
 		t.Fatalf("rename: %v", err)
 	}
-	deleted, err := s.DeleteView(ctx, priyaSaves, measure.ViewRef{Report: measure.KeyPlanBudget, ID: europe.ID})
+	deleted, err := s.DeleteView(ctx, priyaSaves, measure.ViewRef{Report: measure.KeyBudget, ID: europe.ID})
 	if err != nil || deleted.Name != "Europe" || deleted.IsDefault {
 		t.Errorf("delete = %+v, %v: want the view as it was, for Undo", deleted, err)
 	}
@@ -221,7 +221,7 @@ func TestViews_KeepTheReportsOwnParameters_039_B4(t *testing.T) {
 	query := "status=open&page=3&sort=name&status=declined&owner=U-1002&junk=1"
 
 	approvals := create(t, s, priyaSaves, viewIn{measure.KeyApprovals, measure.ViewCreate{Name: "Open", Query: query}})
-	budget := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Open", Query: query}})
+	budget := create(t, s, priyaSaves, viewIn{measure.KeyBudget, measure.ViewCreate{Name: "Open", Query: query}})
 
 	if want := "owner=U-1002&sort=name&status=declined&status=open"; approvals.Query != want {
 		t.Errorf("Approvals view query = %q, want %q: its own parameters kept, page and unknown ones dropped", approvals.Query, want)

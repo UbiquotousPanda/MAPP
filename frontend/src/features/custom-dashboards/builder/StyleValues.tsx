@@ -1,7 +1,8 @@
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { TextField } from '@/ui/TextField/TextField';
+import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import type { WidgetDisplay } from '../model';
-import { Select } from './Select';
+import { choices } from './choices';
 import { shows } from './style-options';
 import type { StyleSectionProps } from './style-options';
 import { tableColumnKeys } from './widget-defaults';
@@ -36,22 +37,22 @@ export function StyleValues({ widget, prefix, errorAt, set }: StyleSectionProps)
     <>
       {shows(type, 'numberFormat') && (
         <div className={styles.pair}>
-          <Select
+          <ChoiceField
             label="Number format"
             name={`${prefix}-format`}
             value={display.numberFormat ?? AUTOMATIC}
             placeholder="Automatic"
-            options={[...FORMATS]}
+            options={choices(FORMATS)}
             onChange={(value) =>
               set({ numberFormat: FORMATS.find((each) => each.value === value)?.value })
             }
           />
-          <Select
+          <ChoiceField
             label="Decimals"
             name={`${prefix}-decimals`}
             value={display.decimals === undefined ? AUTOMATIC : String(display.decimals)}
             placeholder="Automatic"
-            options={DECIMALS}
+            options={choices(DECIMALS)}
             onChange={(value) => set({ decimals: value === AUTOMATIC ? undefined : Number(value) })}
           />
         </div>
@@ -68,7 +69,7 @@ export function StyleValues({ widget, prefix, errorAt, set }: StyleSectionProps)
           <TextField
             label="Maximum"
             name={`${prefix}-gauge-max`}
-            hint="Empty rounds the value up."
+            tip="Empty rounds the value up."
             value={gauge.max ?? ''}
             onChange={(max) => set({ gauge: { ...gauge, max: max || null } }, 'gauge.max')}
             error={errorAt('display.gauge.max')}
@@ -77,15 +78,16 @@ export function StyleValues({ widget, prefix, errorAt, set }: StyleSectionProps)
       )}
       {shows(type, 'kpi') && (
         <>
-          <Select
+          <ChoiceField
             label="Compare with"
             name={`${prefix}-comparison`}
             value={kpi.comparison}
-            options={[...COMPARISONS]}
+            options={choices(COMPARISONS)}
             onChange={(value) => {
               const comparison = COMPARISONS.find((each) => each.value === value)?.value ?? 'none';
               set({ kpi: { ...kpi, comparison } });
             }}
+            placeholder={null}
           />
           {kpi.comparison === 'previousPeriod' && (
             <p className={styles.note}>Needs a date range in the dashboard's filters.</p>

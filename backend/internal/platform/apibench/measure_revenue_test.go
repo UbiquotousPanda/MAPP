@@ -29,6 +29,6 @@ func revenuePages() []page {
 		{"revenue ranked", alex, "/api/v1/reports/revenue/ranked?year=2026&show=campaign"},
 		{"funnel mql", alex, "/api/v1/reports/funnel?year=2026&stage=mql"},
 		{"funnel ranked", alex, "/api/v1/reports/funnel/ranked?year=2026&show=activity&stage=inq"},
-		{"export", alex, "/api/v1/reports/revenue/export?year=2026&format=xlsx"},
+		{"export", alex, "/api/v1/reports/performance/export?year=2026&stage=revenue&format=xlsx"},
 	}
 }

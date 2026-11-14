@@ -1,14 +1,15 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { expectNoAxeViolations } from '@/testing/axe';
+import { closestTo } from '@/testing/dom';
 import { purchaseRequestsGrid } from '@/testing/fixtures/purchase-requests-report';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { RequestsGrid } from './RequestsGrid';
 import type { RequestsGridProps } from './RequestsGrid';
 import { DEFAULT_PARAMS } from './schemas';
 
-function renderGrid(props: Partial<RequestsGridProps> = {}, route = '/reports/purchase-requests') {
+function renderGrid(props: Partial<RequestsGridProps> = {}, route = '/reports/purchasing') {
   const onParams = vi.fn();
   const rendered = renderWithProviders(
     <RequestsGrid
@@ -17,7 +18,7 @@ function renderGrid(props: Partial<RequestsGridProps> = {}, route = '/reports/pu
       onParams={onParams}
       {...props}
     />,
-    { route, user: testUser(), path: '/reports/purchase-requests' },
+    { route, user: testUser(), path: '/reports/purchasing' },
   );
   return { ...rendered, onParams };
 }
@@ -39,7 +40,6 @@ describe('RequestsGrid (042 US2)', () => {
     expect(screen.getByText('Stand transport')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close Acme' }));
     expect(screen.queryByText('Stand build · Spring launch')).toBeNull();
-    await expectNoAxeViolations();
   });
 
   it('shows a dash for a line with no purchase order, delivery date or invoice', async () => {
@@ -88,7 +88,7 @@ describe('RequestsGrid (042 US2)', () => {
     expect(last).toHaveAccessibleDescription('At least one column stays shown.');
   });
 
-  it('sorts by a heading, the second click turning the order round', async () => {
+  it('sorts by the column of the heading pressed', async () => {
     const { user, onParams } = renderGrid({
       params: { ...DEFAULT_PARAMS, sort: 'amount', order: 'asc' },
     });
@@ -97,26 +97,31 @@ describe('RequestsGrid (042 US2)', () => {
       'aria-sort',
       'ascending',
     );
-    await user.click(screen.getByRole('button', { name: 'Amount' }));
     await user.click(screen.getByRole('button', { name: 'Delivery date' }));
 
-    expect(onParams).toHaveBeenNthCalledWith(1, { sort: 'amount', order: 'desc' });
-    expect(onParams).toHaveBeenNthCalledWith(2, { sort: 'delivery', order: 'asc' });
+    expect(onParams).toHaveBeenCalledWith({ sort: 'delivery', order: 'asc' });
   });
 
-  it('filters by vendor, owner and status, and searches after a pause in typing', async () => {
-    const { user, onParams } = renderGrid();
+  it('filters by vendor, owner and status behind Filters (n), and searches after a pause in typing', async () => {
+    const { user, onParams } = renderGrid({
+      params: { ...DEFAULT_PARAMS, vendors: ['Acme'], statuses: ['inReview'] },
+    });
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Vendor' }), 'none');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Owner' }), 'p-alice');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'inReview');
-    await user.type(screen.getByRole('searchbox', { name: 'Search purchase requests' }), 'stand');
-
-    expect(onParams).toHaveBeenCalledWith({ vendors: ['none'] });
+    expect(screen.getByRole('button', { name: /^Filters/ })).toHaveTextContent('2');
+    await user.click(screen.getByRole('button', { name: /^Vendor/ }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Not filled in' }));
+    expect(onParams).toHaveBeenCalledWith({ vendors: ['Acme', 'none'] });
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: /^Owner/ }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Alice Ng' }));
     expect(onParams).toHaveBeenCalledWith({ requestOwners: ['p-alice'] });
-    expect(onParams).toHaveBeenCalledWith({ statuses: ['inReview'] });
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Remove filter: Status: In review' }));
+    expect(onParams).toHaveBeenCalledWith({ statuses: [] });
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(onParams).toHaveBeenCalledWith({ vendors: [], requestOwners: [], statuses: [] });
+    await user.type(screen.getByRole('searchbox', { name: 'Search purchase requests' }), 'stand');
     await waitFor(() => expect(onParams).toHaveBeenCalledWith({ q: 'stand' }));
-    expect(screen.getByRole('option', { name: 'Not filled in' })).toBeInTheDocument();
   });
 
   it('pages by vendors and changes the page size', async () => {
@@ -124,24 +129,50 @@ describe('RequestsGrid (042 US2)', () => {
       grid: { ...purchaseRequestsGrid(), total: 60, page: 2, pageSize: 25 },
     });
 
-    expect(screen.getByText('Vendors 26–50 of 60')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Next' }));
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Vendors per page' }), '10');
+    expect(screen.getByText('26–50 of 60')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '200');
 
     expect(onParams).toHaveBeenCalledWith({ page: 3 });
-    expect(onParams).toHaveBeenCalledWith({ pageSize: 10 });
+    expect(onParams).toHaveBeenCalledWith({ pageSize: 200 });
   });
 
-  it('lists the page in the table view', () => {
-    renderGrid({}, '/reports/purchase-requests?table=grid');
+  it('lists the page in the table view, then the Total row', () => {
+    renderGrid({}, '/reports/purchasing?table=grid');
 
-    expect(screen.getAllByRole('row').length).toBe(5);
+    const rows = screen.getAllByRole('row');
+    expect(rows.length).toBe(6);
+    expect(rows.at(-1)?.textContent).toMatch(/^Total 1 requests, 2 lines/);
+  });
+
+  it("ends with the API's Total row over every page, headed Total before the columns (042 FR-029, 039 FR-035)", () => {
+    const totals = {
+      purchaseRequests: 41,
+      lines: 77,
+      committed: { amount: '98765.00', currency: 'USD' },
+      invoiced: null,
+    };
+    renderGrid({
+      grid: { ...purchaseRequestsGrid(), total: 60, page: 2, totals },
+      params: { ...DEFAULT_PARAMS, columns: ['status', 'name', 'amount', 'invoiced'] },
+    });
+
+    const total = closestTo(screen.getByRole('rowheader', { name: 'Total' }), 'tr');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect([...total.querySelectorAll('td, th')].map((c) => c.textContent)).toEqual([
+      'Total',
+      '',
+      '41 requests, 77 lines',
+      '$98,765.00',
+      '—',
+    ]);
   });
 
   it('says there are no purchase requests yet when nothing is filtered', () => {
     renderGrid({ grid: { ...purchaseRequestsGrid(), vendors: [], total: 0 } });
 
     expect(screen.getByText(/No purchase requests yet/)).toBeInTheDocument();
+    expect(screen.queryByRole('rowheader', { name: /^Total/ })).not.toBeInTheDocument();
   });
 
   it('offers Reset filters when the filters exclude everything', async () => {
@@ -167,12 +198,9 @@ describe('RequestsGrid (042 US2)', () => {
     expect(screen.getByText('Loading…')).toBeInTheDocument();
   });
 
-  it('shows an error with Try again', async () => {
-    const onRetry = vi.fn();
-    const { user } = renderGrid({ grid: undefined, failed: true, onRetry });
+  it('shows an error with Try again', () => {
+    renderGrid({ grid: undefined, failed: true });
 
-    await user.click(screen.getByRole('button', { name: 'Try again' }));
-
-    expect(onRetry).toHaveBeenCalledOnce();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
 });

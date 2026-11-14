@@ -30,6 +30,7 @@ export function importCheck(
     ignoredColumns: ['Activities: Notes'],
     needMoreFields: 1,
     nothingToChange: false,
+    checkId: 'CHK-1.digest',
     ...overrides,
   };
 }

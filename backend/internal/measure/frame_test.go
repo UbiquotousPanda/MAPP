@@ -26,7 +26,7 @@ func frameOf(t *testing.T, s *measure.Service, values url.Values) measure.Frame 
 	if err != nil {
 		t.Fatalf("ParseFilter(%v) error = %v", values, err)
 	}
-	frame, err := s.Frame(t.Context(), priyaActs(), measure.KeyPlanBudget, f)
+	frame, err := s.Frame(t.Context(), priyaActs(), measure.KeyBudget, f)
 	if err != nil {
 		t.Fatalf("Frame() error = %v", err)
 	}

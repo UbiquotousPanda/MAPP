@@ -35,8 +35,7 @@
   font-size: var(--text-xs);
 }
 
-/* The Shell attributes card: a white card whose headings are the form's section names, drawn
-   like card titles (design system §5.3), each section 24 px from the next. */
+/* Shell attributes card: section headings drawn like card titles (design system §5.3). */
 .attributes {
   display: flex;
   flex-direction: column;
@@ -46,13 +45,4 @@
   border: 1px solid var(--card-border);
   border-radius: var(--radius-card);
   background: var(--surface);
-}
-
-.heading,
-.attributes h2 {
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-lg);
 }

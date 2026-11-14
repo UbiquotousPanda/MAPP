@@ -1,11 +1,13 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useId } from 'react';
 import type { ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
-import { formatWhole } from '@/format/decimal';
-import { Button } from '@/ui/Button/Button';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { cx } from '@/ui/cx';
+import { Pager } from '@/ui/Pager/Pager';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import dataTable from '@/ui/Table/Table.module.css';
+import { TotalLabel } from '@/ui/Table/TotalLabel';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { downloadReport, ExportMenu, useReportAddress } from '../shared';
 import { PAGE_SIZES } from './gsap-address';
 import type { GsapTable } from './gsap-address';
@@ -34,7 +36,7 @@ export interface PagedTableProps<R> {
   total: number;
   /** Said when the tab has no row at all. */
   empty: string;
-  /** The totals row over every page, one cell per column. */
+  /** The totals row over every page, one cell per column after the first (which reads "Total"). */
   totals?: ReactNode[];
   onChange: (patch: Partial<GsapTable>) => void;
 }
@@ -44,17 +46,18 @@ export function PagedTable<R>(props: PagedTableProps<R>) {
   const { title, widget } = props;
   const headingId = useId();
   const [address] = useReportAddress();
-  const [own] = useSearchParams();
+  const [own] = useAddressParams();
   return (
     <section className={styles.card} aria-labelledby={headingId}>
       <div className={styles.cardHeader}>
-        <h2 id={headingId} className={styles.heading}>
+        <SectionHeading level={2} rank="card" id={headingId}>
           {title}
-        </h2>
+        </SectionHeading>
         <ExportMenu
-          label="Export"
+          label={`Export ${title}`}
+          iconOnly
           formats={['xlsx', 'csv']}
-          download={(format) => downloadReport('gsapLink', address, format, { widget, own })}
+          download={(format) => downloadReport('purchasing', address, format, { widget, own })}
         />
       </div>
       <Rows {...props} />
@@ -70,8 +73,8 @@ function Rows<R>(props: PagedTableProps<R>) {
   }
   return (
     <>
-      <div className={styles.scroll}>
-        <table className={styles.table}>
+      <div className={dataTable.scroll}>
+        <table className={cx(dataTable.table, styles.table)}>
           <caption className="visually-hidden">{title}</caption>
           <thead>
             <tr>
@@ -89,7 +92,7 @@ function Rows<R>(props: PagedTableProps<R>) {
             {rows.map((row) => (
               <tr key={rowKey(row)}>
                 {columns.map((column) => (
-                  <td key={column.key} className={cx(column.numeric && styles.numeric)}>
+                  <td key={column.key} className={cx(column.numeric && dataTable.numeric)}>
                     {column.cell(row)}
                   </td>
                 ))}
@@ -98,11 +101,14 @@ function Rows<R>(props: PagedTableProps<R>) {
           </tbody>
           {totals && (
             <tfoot>
-              <tr>
+              <tr className={dataTable.total}>
+                <th scope="row">
+                  <TotalLabel />
+                </th>
                 {totals.map((cell, i) => (
                   <td
-                    key={columns[i]?.key ?? i}
-                    className={cx(columns[i]?.numeric && styles.numeric)}
+                    key={columns[i + 1]?.key ?? i}
+                    className={cx(columns[i + 1]?.numeric && dataTable.numeric)}
                   >
                     {cell}
                   </td>
@@ -112,7 +118,15 @@ function Rows<R>(props: PagedTableProps<R>) {
           )}
         </table>
       </div>
-      <Pager table={table} total={total} onChange={onChange} />
+      <Pager
+        placement="cardFooter"
+        page={table.page}
+        pageSize={table.pageSize}
+        total={total}
+        sizes={PAGE_SIZES}
+        onPage={(page) => onChange({ page })}
+        onPageSize={(pageSize) => onChange({ pageSize })}
+      />
     </>
   );
 }
@@ -123,89 +137,23 @@ interface SortHeadingProps<R> {
   onSort: (sort: string) => void;
 }
 
-/** A heading that sorts by its column; a second click turns the order round. */
 function SortHeading<R>({ column, sort, onSort }: SortHeadingProps<R>) {
   if (column.sortable === false) {
     return (
-      <th scope="col" className={cx(column.numeric && styles.numeric)}>
+      <th scope="col" className={cx(column.numeric && dataTable.numeric)}>
         {column.label}
       </th>
     );
   }
   const current = sort.replace(/^-/, '') === column.key;
   const descending = sort.startsWith('-');
-  const Icon = !current ? ArrowUpDown : descending ? ArrowDown : ArrowUp;
   const next = current ? !descending : Boolean(column.largestFirst);
   return (
-    <th
-      scope="col"
-      className={cx(column.numeric && styles.numeric)}
-      aria-sort={current ? (descending ? 'descending' : 'ascending') : 'none'}
-    >
-      <button
-        type="button"
-        className={styles.sort}
-        onClick={() => onSort(`${next ? '-' : ''}${column.key}`)}
-      >
-        {column.label}
-        <Icon aria-hidden="true" className={current ? undefined : styles.idle} />
-      </button>
-    </th>
-  );
-}
-
-interface PagerProps {
-  table: GsapTable;
-  total: number;
-  onChange: (patch: Partial<GsapTable>) => void;
-}
-
-/** "21–40 of 45" with Previous and Next, and the rows per page. */
-function Pager({ table, total, onChange }: PagerProps) {
-  const id = useId();
-  const { page, pageSize } = table;
-  const pages = Math.max(1, Math.ceil(total / pageSize));
-  const first = Math.min(total, (page - 1) * pageSize + 1);
-  const last = Math.min(total, page * pageSize);
-  return (
-    <nav className={styles.pager} aria-label="Pages">
-      <div className={styles.size}>
-        <label htmlFor={id}>Per page</label>
-        <select
-          id={id}
-          className={styles.select}
-          value={pageSize}
-          onChange={(event) => {
-            const size = PAGE_SIZES.find((s) => String(s) === event.target.value);
-            if (size !== undefined) {
-              onChange({ pageSize: size });
-            }
-          }}
-        >
-          {PAGE_SIZES.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-      </div>
-      <p className={styles.range} aria-live="polite">
-        {`${formatWhole(first)}–${formatWhole(last)} of ${formatWhole(total)}`}
-      </p>
-      <div className={styles.buttons}>
-        <Button
-          size="sm"
-          icon={<ChevronLeft />}
-          disabled={page <= 1}
-          onClick={() => onChange({ page: page - 1 })}
-        >
-          Previous
-        </Button>
-        <Button size="sm" disabled={page >= pages} onClick={() => onChange({ page: page + 1 })}>
-          Next
-          <ChevronRight aria-hidden="true" />
-        </Button>
-      </div>
-    </nav>
+    <SortHeader
+      label={column.label}
+      className={cx(column.numeric && dataTable.numeric)}
+      direction={current ? (descending ? 'desc' : 'asc') : undefined}
+      onSort={() => onSort(`${next ? '-' : ''}${column.key}`)}
+    />
   );
 }

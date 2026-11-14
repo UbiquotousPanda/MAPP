@@ -1,5 +1,5 @@
 /* Shaped like StatusChip (24 px, 4 px corners, 12 px bold), in the same status palette: green
-   (positive) when everything is filled in, a red fill (problem) while fields are missing. */
+   (positive) when everything is filled in, StatusChip's problem look (a red dot) while fields are missing. */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -21,10 +21,20 @@
   gap: var(--space-2);
 }
 
-/* A counted "items below" chip that is not a control. */
-.attention {
-  background: var(--danger-bg);
-  color: var(--on-accent);
+.attention,
+.incomplete {
+  background: color-mix(in srgb, var(--status-neutral) 12%, var(--surface));
+  color: var(--ink);
+}
+
+.attention::before,
+.incomplete::before {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-problem);
+  content: '';
 }
 
 .complete {
@@ -33,12 +43,10 @@
 }
 
 .incomplete {
-  background: var(--danger-bg);
-  color: var(--on-accent);
   cursor: pointer;
 }
 
-/* Red has no hover shade (constitution X): the words are underlined instead. */
+/* The hover shows on the words, so the chip keeps its tint. */
 .incomplete:hover {
   text-decoration: underline;
 }
@@ -46,21 +54,6 @@
 .incomplete svg {
   width: 14px;
   height: 14px;
-}
-
-.list {
-  z-index: 50;
-  min-width: 200px;
-  padding: var(--space-1);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-control);
-  background: var(--raised);
-  box-shadow: var(--shadow-md);
-}
-
-/* Dark Raised is 3.9:1 for Text Subtle, so secondary text there is Text Strong (constitution X). */
-:global(:root[data-theme='dark']) .list {
-  --ink-2: var(--ink);
 }
 
 .list ul {

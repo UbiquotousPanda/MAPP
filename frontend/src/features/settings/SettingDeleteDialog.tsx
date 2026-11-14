@@ -1,15 +1,12 @@
-import { LoaderCircle } from 'lucide-react';
-import { AlertDialog } from 'radix-ui';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { QueryKey } from '@tanstack/react-query';
 import { ApiError } from '@/api/errors';
 import type { components } from '@/api/generated/schema';
-import { Button } from '@/ui/Button/Button';
+import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { useUndoableDelete } from '@/ui/useUndoableDelete';
 import { SETTING_NOUNS } from './settings-nouns';
 import type { SettingKind } from './settings-nouns';
 import { useFailureToast } from './useSettingStatus';
-import styles from './SettingDeleteDialog.module.css';
 
 type DeleteResult = components['schemas']['DeleteResult'];
 type Usage = components['schemas']['Usage'];
@@ -25,19 +22,13 @@ export interface SettingDeleteDialogProps {
   remove: () => Promise<DeleteResult>;
   /** Sets it inactive (with its own message); answers whether that worked. */
   setInactive: () => Promise<boolean>;
-  /** The lists to refresh after Undo. */
   invalidate: QueryKey[];
-  /** After the record moved to the recycle bin. */
   onDeleted?: () => void;
   onClose: () => void;
 }
 
-/**
- * Delete of a Settings record (FR-003, FR-004): an unused record moves to the recycle bin with Undo;
- * a record in use can't be deleted — the dialog says where it is used and offers Set inactive (or,
- * when it is inactive already, only Close). A delete the API refuses as in use switches the dialog
- * to that state with the API's message.
- */
+// A record in use offers Set inactive instead (only Close when inactive already); a delete the
+// API refuses as in use switches to that state with the API's message.
 export function SettingDeleteDialog({
   kind,
   name,
@@ -56,7 +47,6 @@ export function SettingDeleteDialog({
   const [busy, setBusy] = useState(false);
   const afterDelete = useUndoableDelete({ invalidate });
   const showFailure = useFailureToast();
-  const focusBeforeOpen = useRef<HTMLElement | null>(null);
   const inUse = usage.inUse || refusal !== null;
 
   async function removeAndTell() {
@@ -115,42 +105,21 @@ export function SettingDeleteDialog({
     confirm = null;
   }
 
-  return (
-    <AlertDialog.Root open onOpenChange={(open) => !open && onClose()}>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className={styles.overlay} />
-        <AlertDialog.Content
-          className={styles.dialog}
-          onOpenAutoFocus={() => {
-            focusBeforeOpen.current =
-              document.activeElement instanceof HTMLElement ? document.activeElement : null;
-          }}
-          onCloseAutoFocus={(event) => {
-            event.preventDefault();
-            focusBeforeOpen.current?.focus();
-          }}
-        >
-          <AlertDialog.Title className={styles.title}>{title}</AlertDialog.Title>
-          <AlertDialog.Description className={styles.text}>{text}</AlertDialog.Description>
-          <div className={styles.actions}>
-            {/* The safe choice has the focus. */}
-            <AlertDialog.Cancel asChild>
-              <Button>{confirm ? 'Cancel' : 'Close'}</Button>
-            </AlertDialog.Cancel>
-            {confirm && (
-              <Button
-                variant="primary"
-                className={confirm.danger ? styles.danger : undefined}
-                icon={busy ? <LoaderCircle className={styles.spinner} /> : undefined}
-                aria-busy={busy || undefined}
-                onClick={confirm.onClick}
-              >
-                {confirm.label}
-              </Button>
-            )}
-          </div>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
+  return confirm ? (
+    <ConfirmDialog
+      open
+      onOpenChange={(open) => !open && onClose()}
+      title={title}
+      confirmLabel={confirm.label}
+      tone={confirm.danger ? 'danger' : undefined}
+      busy={busy}
+      onConfirm={confirm.onClick}
+    >
+      <p>{text}</p>
+    </ConfirmDialog>
+  ) : (
+    <ConfirmDialog open onOpenChange={(open) => !open && onClose()} title={title} acknowledgeOnly>
+      <p>{text}</p>
+    </ConfirmDialog>
   );
 }

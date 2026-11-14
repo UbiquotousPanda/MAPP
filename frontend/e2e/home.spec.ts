@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { chooseOption, expectNoAxeViolations, signInAs } from './fixtures';
+import type { Page } from '@playwright/test';
+import { choose, expectNoAxeViolations, signInAs } from './fixtures';
 
 // The Home dashboard (009) for a planner and an approver, against the real API with the demo data
 // (backend/seed); other journeys add plans, so the tests read only what they own or the seed's records.
@@ -19,9 +20,7 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Welcome back, Priya.', level: 1 })).toBeVisible();
   await expect(
-    page.getByText(
-      'Your own activities, what needs your attention and your approvals always cover all plans.',
-    ),
+    page.getByText('My activities, attention and approvals always cover all plans.'),
   ).toBeVisible();
   const scope = page.getByRole('group', { name: 'Scope' });
   await expect(scope.getByRole('button', { name: 'My teams' })).toHaveAttribute(
@@ -53,18 +52,15 @@ test('Home: the summary cards and sections for a planner and an approver, with w
 
   // Other journeys add plans of next year, so the newest of the team's plans is read, not the seed's.
   const glance = page.getByRole('region', { name: 'Plans at a glance' });
-  await expect(glance.getByText('Live roll-up across your teams')).toBeVisible();
   const glanceRow = glance.getByRole('row').nth(1);
   await expect(glanceRow).toContainText(/Published|Draft/);
   await expect(glanceRow).toContainText('Lubricants Europe');
   await expect(glanceRow).toContainText(/\d+ of \d+ approved/);
 
   const attention = page.getByRole('region', { name: 'Needs your attention' });
-  await expect(attention.getByText('Things you own that have a problem')).toBeVisible();
   await expect(attention.getByText(/^Declined by Daniel Okoro on /).first()).toBeVisible();
 
   const mine = page.getByRole('region', { name: 'My activities' });
-  await expect(mine.getByText('Activities you own, by status')).toBeVisible();
   await expect(mine.getByRole('button', { name: /^Declined \d+$/ })).toHaveAttribute(
     'aria-expanded',
     'true',
@@ -81,17 +77,18 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await expect(
     summary.getByRole('link', { name: /^All plans: \d+ — open the Plans list$/ }),
   ).toBeVisible();
-  await expect(glance.getByText('Live roll-up across all plans')).toBeVisible();
   await scope.getByRole('button', { name: 'My teams' }).click();
   await expect(teamPlans).toBeVisible();
 
-  const currency = page.getByRole('combobox', { name: 'Currency' });
-  await chooseOption(currency, 'EUR — Euro');
+  // D-413: the display currency sits in the top bar, beside the theme switch.
+  const currency = page.getByRole('banner').getByRole('combobox', { name: 'Display currency' });
+  await expect(currency).toHaveText('USD');
+  await choose(page, currency, 'EUR – Euro');
   await expect(
-    summary.getByRole('link', { name: /^Planned cost vs plan budget: [\d.]+K EUR / }),
+    summary.getByRole('link', { name: /^Planned cost vs plan budget: €[\d.]+K / }),
   ).toBeVisible();
-  await expect(glanceRow).toContainText(/[\d,]+\.\d{2} EUR/);
-  await chooseOption(currency, 'USD — US dollar');
+  await expect(glanceRow).toContainText(/€[\d,]+\.\d{2}/);
+  await choose(page, currency, 'USD – US dollar');
   await expect(
     summary.getByRole('link', { name: /^Planned cost vs plan budget: \$/ }),
   ).toBeVisible();
@@ -159,8 +156,7 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await expect(page.getByRole('heading', { name: 'Approvals', level: 1 })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Trade magazine ads', exact: true })).toBeVisible();
 
-  // A Global planner: Carlos Mendes sees every market, so Everything counts more plans than his teams'
-  // (FR-003, 014 FR-007). Each card's value is the link's text.
+  // Carlos Mendes sees every market, so Everything counts more plans than his teams'.
   await signInAs(page, CARLOS);
   await page.goto('/');
   await expect(
@@ -177,4 +173,38 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await expect.poll(async () => cardValue(allPlans)).toBeGreaterThan(teamPlanCount);
   await scope.getByRole('button', { name: 'My teams' }).click();
   await expect(teamPlans).toBeVisible();
+});
+
+/** Scrolls to the bottom and answers how far the page moved; polled, as the page grows while its data arrives. */
+function scrollToBottom(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    window.scrollTo(0, document.body.scrollHeight);
+    return window.scrollY;
+  });
+}
+
+test('001 FR-010: the logo opens Home at its top, from Home and from another page, and Back keeps that page where it was', async ({
+  page,
+}) => {
+  await signInAs(page, PRIYA);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Welcome back, Priya.', level: 1 })).toBeVisible();
+  const logo = page.getByRole('link', { name: 'SP&A One home' });
+
+  await expect.poll(() => scrollToBottom(page)).toBeGreaterThan(0);
+  await logo.click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+  await page.goto('/plans');
+  await expect(page.getByRole('heading', { name: 'Plans', level: 1 })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'FY2026 Lubricants Europe' }).first()).toBeVisible();
+  await expect.poll(() => scrollToBottom(page)).toBeGreaterThan(0);
+  const plansScroll = await page.evaluate(() => window.scrollY);
+  await logo.click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/plans$/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(plansScroll);
 });

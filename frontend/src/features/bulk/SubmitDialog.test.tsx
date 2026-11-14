@@ -8,8 +8,8 @@ import { reply } from '@/testing/replies';
 import { SubmitDialog } from './SubmitDialog';
 
 const RECORDS = [
-  { id: 'A-1001', level: 'activity' as const, name: 'Launch film', planId: 'P-1001' },
-  { id: 'A-1002', level: 'activity' as const, name: 'Fleet card', planId: 'P-1001' },
+  { id: 'A-1001', level: 'activity' as const, name: 'Launch film', planId: 'P-1001', version: 1 },
+  { id: 'A-1002', level: 'activity' as const, name: 'Fleet card', planId: 'P-1001', version: 1 },
 ];
 
 function openDialog(done: number, skipped: number) {

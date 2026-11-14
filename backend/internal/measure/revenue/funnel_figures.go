@@ -1,8 +1,6 @@
 package revenue
 
-import (
-	"mapp/internal/platform/money"
-)
+import "mapp/internal/measure/ranking"
 
 func previousActualsOfActivities(series []ActivitySeries, stage string) map[string]int64 {
 	out := make(map[string]int64, len(series))
@@ -11,7 +9,7 @@ func previousActualsOfActivities(series []ActivitySeries, stage string) map[stri
 		return out
 	}
 	m := stageMeasure(previous)
-	for _, a := range series {
+	for _, a := range AllowingStage(series, previous) {
 		out[a.ID] = int64Of(ownFigureOf(a, m).actual)
 	}
 	return out
@@ -25,7 +23,7 @@ func funnelFiguresOfActivities(series []ActivitySeries, stage string) map[string
 	for _, a := range series {
 		own := ownFigureOf(a, m)
 		if excludesStage(a, stage) {
-			out[a.ID] = FunnelFigures{Actual: own.actual}
+			out[a.ID] = FunnelFigures{}
 			continue
 		}
 		out[a.ID] = FunnelFigures{Goal: own.goal, Actual: own.actual, Projected: own.total}
@@ -55,7 +53,7 @@ func addFunnelFigures(a, b FunnelFigures) FunnelFigures {
 }
 
 // funnelTimes is the share of f a % split gives, each count rounded half up.
-func funnelTimes(f FunnelFigures, part money.Percent) FunnelFigures {
+func funnelTimes(f FunnelFigures, part ranking.Slice) FunnelFigures {
 	scale := func(v *int64) *int64 {
 		if v == nil {
 			return nil

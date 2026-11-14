@@ -7,6 +7,7 @@ import (
 
 const (
 	msgSelectOne       = "Select at least one record."
+	msgSelectAgain     = "Select the records again, so the action is based on what you see."
 	msgTooMany         = "Bulk actions handle up to 1,000 records at a time — narrow the filters"
 	msgNotSelectable   = "Only campaigns, initiatives and activities can be selected."
 	msgChooseAction    = "Choose one of the listed actions."
@@ -29,6 +30,7 @@ const (
 	notOfferedText     = "Names, IDs, money, calculated fields, Ongoing, text and % split fields are edited one record at a time."
 
 	reasonGone           = "No longer exists"
+	reasonChangedSince   = "Changed since you selected it — select it again to see the change"
 	reasonAlreadySet     = "Already set — nothing to change"
 	reasonOnlyActivities = "Only activities go through approval"
 	reasonSubmitted      = "Already submitted"

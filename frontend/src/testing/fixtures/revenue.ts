@@ -39,6 +39,12 @@ export function revenueReport(overrides: Partial<RevenueReport> = {}): RevenueRe
     },
     period: 'month',
     periods: revenuePeriods(),
+    totals: {
+      goal: usd('1200000.00'),
+      actual: usd('350000.00'),
+      projected: usd('360000.00'),
+      goalAfterYear: null,
+    },
     projection: { modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' },
     projections: [{ modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' }],
     reason: '',
@@ -85,8 +91,9 @@ export function revenueRanked(overrides: Partial<RevenueRanked> = {}): RevenueRa
     order: 'desc',
     group: 'none',
     page: 1,
-    size: 10,
+    size: 50,
     total: 1,
+    totals: revenueFigures('2730000.00', '300000.00'),
     trail: [],
     groups: [
       {
@@ -146,6 +153,7 @@ export function funnelReport(overrides: Partial<FunnelReport> = {}): FunnelRepor
     },
     period: 'month',
     periods: funnelPeriods(),
+    totals: { goal: 372000, actual: 210000, projected: 186000, goalAfterYear: null },
     projection: { modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' },
     projections: [{ modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' }],
     reason: '',
@@ -179,8 +187,9 @@ export function funnelRanked(overrides: Partial<FunnelRanked> = {}): FunnelRanke
     order: 'desc',
     group: 'none',
     page: 1,
-    size: 10,
+    size: 50,
     total: 1,
+    totals: funnelFigures(365000, 180000),
     trail: [],
     groups: [
       {

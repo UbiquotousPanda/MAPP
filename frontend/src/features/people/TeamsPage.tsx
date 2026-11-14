@@ -13,6 +13,7 @@ import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { TeamPill } from '@/ui/TeamPill/TeamPill';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { filterRecords, useListFilters } from '@/ui/useListFilters';
 import { useStatusFlow } from '@/ui/useStatusFlow';
 import { formatWhole } from '@/format/decimal';
@@ -32,14 +33,12 @@ import page from './lists.module.css';
 
 const TEAM_NOUN = { one: 'team', many: 'teams' };
 
-/** How many member avatars a row shows before the count. */
 const AVATARS_SHOWN = 5;
 
 /** What setting a team inactive does, said before it applies. */
 const TEAM_INACTIVE_EFFECT =
   "New plans can't choose an inactive team; plans using it keep it, shown as '(inactive)'.";
 
-/** The form panel that is open. */
 type OpenForm = { kind: 'new' } | { kind: 'edit'; team: Team };
 
 /**
@@ -135,7 +134,6 @@ interface TeamsCardProps {
   actions: TeamActions;
 }
 
-/** The toolbar and the table, with the list's loading, empty, no-match and error states. */
 function TeamsCard({ onNew, onOpen, actions }: TeamsCardProps) {
   const teams = useTeams();
   const filters = useListFilters();
@@ -170,11 +168,7 @@ function TeamsCard({ onNew, onOpen, actions }: TeamsCardProps) {
     );
   }
 
-  const { shown, counts } = filterRecords(
-    all,
-    filters,
-    (team) => `${team.name} ${team.description}`,
-  );
+  const { shown } = filterRecords(all, filters, (team) => `${team.name} ${team.description}`);
 
   return (
     <Card>
@@ -185,7 +179,7 @@ function TeamsCard({ onNew, onOpen, actions }: TeamsCardProps) {
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: TEAM_NOUN }}
       />
       {shown.length === 0 ? (
@@ -195,16 +189,16 @@ function TeamsCard({ onNew, onOpen, actions }: TeamsCardProps) {
         </div>
       ) : (
         // On narrow screens the table scrolls sideways inside its card (design system §2).
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Team</th>
                 <th scope="col">Description</th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Members
                 </th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Plans
                 </th>
                 <th scope="col">Status</th>
@@ -235,13 +229,13 @@ function TeamRow({ team, onOpen, actions }: TeamRowProps) {
   const canChange = useCanChange('people.manage');
   return (
     <tr>
-      <th scope="row" className={`${styles.nameCell} ${styles.nowrap}`}>
+      <th scope="row" className={`${dataTable.nameCell} ${styles.nowrap}`}>
         <TeamPill team={team} to={`/settings/teams/${encodeURIComponent(team.id)}`} />
       </th>
       <td>
         <span className={page.clamp}>{team.description || '—'}</span>
       </td>
-      <td className={styles.number}>
+      <td className={dataTable.numeric}>
         <span className={page.members}>
           {team.members.length > 0 && (
             <ul className={page.avatars} aria-hidden="true">
@@ -255,13 +249,13 @@ function TeamRow({ team, onOpen, actions }: TeamRowProps) {
           {formatWhole(team.members.length)}
         </span>
       </td>
-      <td className={styles.number}>{formatWhole(team.plans.length)}</td>
+      <td className={dataTable.numeric}>{formatWhole(team.plans.length)}</td>
       <td className={styles.nowrap}>
         <StatusChip tone={team.active ? 'positive' : 'neutral'}>
           {team.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={team.name}
           items={[

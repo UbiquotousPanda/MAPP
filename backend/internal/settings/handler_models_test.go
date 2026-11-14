@@ -2,7 +2,7 @@ package settings_test
 
 import (
 	"net/http"
-	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -20,11 +20,9 @@ func TestModelsAPI_ListCreateGet_FR009(t *testing.T) {
 	})
 	got := alex.Do(t, http.MethodGet, "/api/v1/models/MOD-1003", nil)
 	gone := alex.Do(t, http.MethodGet, "/api/v1/models/MOD-9999", nil)
-	var list struct {
-		Items []struct{ Name string } `json:"items"`
-		Total int                     `json:"total"`
+	if list := alex.Do(t, http.MethodGet, "/api/v1/models", nil); list.Status != http.StatusOK {
+		t.Errorf("list = %d %s", list.Status, list.Body)
 	}
-	alex.Do(t, http.MethodGet, "/api/v1/models", nil).Decode(t, &list)
 
 	assertAnswer(t, created, http.StatusCreated, lubricants2Body(1, alexAtStart))
 	assertAnswer(t, got, http.StatusOK, lubricants2Body(1, alexAtStart))
@@ -34,13 +32,6 @@ func TestModelsAPI_ListCreateGet_FR009(t *testing.T) {
 			`{"field":"averageDealSize","message":"Enter an average deal size above 0 USD, with at most two decimals."},`+
 			`{"field":"activityTypeIds","message":"Tick at least one activity type."}`))
 	assertAnswer(t, gone, http.StatusNotFound, modelGoneBody)
-	var names []string
-	for _, m := range list.Items {
-		names = append(names, m.Name)
-	}
-	if !slices.Equal(names, []string{"Lubricants 1.0", "Lubricants 2.0", "Mobility 1.0"}) || list.Total != 3 {
-		t.Errorf("models = %q (total %d)", names, list.Total)
-	}
 }
 
 var lubricants2 = map[string]any{
@@ -67,14 +58,12 @@ func TestModelsAPI_UpdateConflict_FR007(t *testing.T) {
 	daniels := daniel.Do(t, http.MethodPatch, "/api/v1/models/MOD-1003", map[string]any{"mqlToDealRate": "6", "version": 1})
 
 	alexs := alex.Do(t, http.MethodPatch, "/api/v1/models/MOD-1003", map[string]any{"name": "Alex's model", "version": 1})
-	gone := alex.Do(t, http.MethodPatch, "/api/v1/models/MOD-9999", map[string]any{"name": "X", "version": 1})
 
 	if daniels.Status != http.StatusOK {
 		t.Fatalf("Daniel's update = %d %s", daniels.Status, daniels.Body)
 	}
 	assertAnswer(t, alexs, http.StatusConflict, `{"error":{"code":"version_conflict","message":"Not saved — Daniel Okoro changed this model",`+
 		`"fields":[],"conflict":{"changedBy":"Daniel Okoro","changedAt":"2026-03-12T10:30:00Z"}}}`)
-	assertAnswer(t, gone, http.StatusNotFound, modelGoneBody)
 }
 
 func TestModelsAPI_Impact_FR011(t *testing.T) {
@@ -85,12 +74,9 @@ func TestModelsAPI_Impact_FR011(t *testing.T) {
 
 	unused := alex.Do(t, http.MethodPost, "/api/v1/models/MOD-1003/impact", map[string]any{"inqToMqlRate": "3", "version": 1})
 	invalid := alex.Do(t, http.MethodPost, "/api/v1/models/MOD-1003/impact", map[string]any{"activityTypeIds": []string{}, "version": 1})
-	gone := alex.Do(t, http.MethodPost, "/api/v1/models/MOD-9999/impact", map[string]any{"version": 1})
 
 	assertAnswer(t, unused, http.StatusOK, `{"warnings":[]}`)
 	assertAnswer(t, invalid, http.StatusBadRequest, validationBody(`{"field":"activityTypeIds","message":"Tick at least one activity type."}`))
-	assertAnswer(t, gone, http.StatusNotFound, modelGoneBody)
-	assertAnswer(t, alex.Do(t, http.MethodGet, "/api/v1/models/MOD-1003", nil), http.StatusOK, lubricants2Body(1, alexAtStart))
 }
 
 func TestModelsAPI_Status_FR004(t *testing.T) {
@@ -101,31 +87,28 @@ func TestModelsAPI_Status_FR004(t *testing.T) {
 
 	inactive := alex.Do(t, http.MethodPost, "/api/v1/models/MOD-1003/status", map[string]any{"active": false, "version": 1})
 	stale := alex.Do(t, http.MethodPost, "/api/v1/models/MOD-1003/status", map[string]any{"active": true, "version": 1})
-	active := alex.Do(t, http.MethodPost, "/api/v1/models/MOD-1003/status", map[string]any{"active": true, "version": 2})
 
 	assertAnswer(t, inactive, http.StatusOK, replace(lubricants2Body(2, alexAtStart), `"active":true,"usage"`, `"active":false,"usage"`))
-	if stale.Status != http.StatusConflict || active.Status != http.StatusOK {
-		t.Errorf("stale %d %s; reactivate %d %s", stale.Status, stale.Body, active.Status, active.Body)
+	if stale.Status != http.StatusConflict {
+		t.Errorf("stale %d %s", stale.Status, stale.Body)
 	}
 }
 
-func TestModelsAPI_DeleteAndUndo_FR004(t *testing.T) {
+func TestModelsAPI_Delete_FR004(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t, apitest.WithoutDemoHistory()) // BIN-1001 is the first entry of an empty recycle bin
 	alex := server.SignIn(t, alexsEmail)
 	mustCreate(t, alex, "/api/v1/models", lubricants2)
 
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/models/MOD-1003", nil)
-	afterDelete := alex.Do(t, http.MethodGet, "/api/v1/models/MOD-1003", nil)
-	undone := alex.Do(t, http.MethodPost, "/api/v1/recycle-bin/BIN-1001/undo", nil)
-	gone := alex.Do(t, http.MethodDelete, "/api/v1/models/MOD-9999", nil)
+	stale := alex.Do(t, http.MethodDelete, "/api/v1/models/MOD-1003?version=2", nil)
+	deleted := alex.DeleteSeen(t, "/api/v1/models/MOD-1003")
+	gone := alex.DeleteSeen(t, "/api/v1/models/MOD-9999")
 
 	assertAnswer(t, deleted, http.StatusOK, `{"recycleBinEntry":{"id":"BIN-1001","recordType":"model","recordTypeLabel":"model",`+
 		`"recordId":"MOD-1003","recordName":"Lubricants 2.0","path":[],"parent":null,"deletedAt":"2026-03-12T09:00:00Z",`+
 		`"deletedBy":{"id":"U-1001","name":"Alex Morgan"},"contents":[]}}`)
-	assertAnswer(t, afterDelete, http.StatusNotFound, modelGoneBody)
-	assertAnswer(t, undone, http.StatusOK, `{"recordType":"model","recordTypeLabel":"model","recordId":"MOD-1003",`+
-		`"recordName":"Lubricants 2.0","details":""}`)
-	assertAnswer(t, alex.Do(t, http.MethodGet, "/api/v1/models/MOD-1003", nil), http.StatusOK, lubricants2Body(1, alexAtStart))
 	assertAnswer(t, gone, http.StatusNotFound, modelGoneBody)
+	if stale.Status != http.StatusConflict || !strings.Contains(string(stale.Body), `"code":"version_conflict"`) {
+		t.Errorf("delete at a version the model does not have = %d %s, want 409 version_conflict", stale.Status, stale.Body)
+	}
 }

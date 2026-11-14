@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"mapp/internal/platform/errs"
+	"mapp/internal/platform/paging"
 )
 
 const (
@@ -63,10 +64,6 @@ func sortKeys() []string {
 	return []string{colName, colStatus, colAmount, colInvoiced, colCreated, colDelivery}
 }
 
-func pageSizes() []int {
-	return []int{5, 10, 25, 50, 100}
-}
-
 func allColumns() []string {
 	return []string{colName, colID, colStatus, colAmount, colOwner, colCreated, colDelivery, colSent, colPONumber, colPOLine,
 		colPOLineStatus, colInvoiced, colWorkflow}
@@ -87,7 +84,7 @@ func ParseQuery(own url.Values) (Query, error) {
 		problems.Add(paramOrder, msgChooseListed)
 	}
 	q.Page = number(own, numberRule{paramPage, msgPage, func(n int) bool { return n >= 1 }}, &problems)
-	q.PageSize = number(own, numberRule{paramPageSize, msgChooseListed, func(n int) bool { return slices.Contains(pageSizes(), n) }}, &problems)
+	q.PageSize = number(own, numberRule{paramPageSize, msgChooseListed, paging.Valid}, &problems)
 	q.Columns = columnsOf(own.Get(paramColumns), &problems)
 	return q, problems.Err()
 }

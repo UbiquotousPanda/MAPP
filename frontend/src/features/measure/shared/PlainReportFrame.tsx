@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -6,7 +6,7 @@ import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { usePageTitle } from '@/ui/usePageTitle';
-import { REPORT_ROUTES } from '../reports';
+import { reportName } from '../reports';
 import { downloadReport, useReportFrame } from './api';
 import { ExportMenu } from './ExportMenu';
 import type { ReportFrameProps } from './ReportFrame';
@@ -19,10 +19,10 @@ import styles from './ReportFrame.module.css';
  * filter panel, In view, chips, Period, Show or Currency.
  */
 export function PlainReportFrame({ report, children }: ReportFrameProps) {
-  const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
+  const name = reportName(report);
   usePageTitle(name);
   const [address] = useReportAddress();
-  const [params] = useSearchParams();
+  const [params] = useAddressParams();
   const frame = useReportFrame(report, address);
   const { dateTime } = useFormatters();
 
@@ -42,6 +42,7 @@ export function PlainReportFrame({ report, children }: ReportFrameProps) {
               <SavedViewsMenu report={report} />
               <ExportMenu
                 label="Export"
+                size="sm"
                 formats={['xlsx']}
                 download={(format) => downloadReport(report, address, format, { own: params })}
               />

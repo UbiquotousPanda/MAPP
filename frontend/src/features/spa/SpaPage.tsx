@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { BcpirTag, PlanStatusChip } from '@/features/plans';
 import { useFormatters } from '@/format/useFormatters';
@@ -21,7 +22,7 @@ import styles from './Spa.module.css';
 /** The SP&A view of a plan or of one of its campaigns (013 US1, US3), at /plans/:planId/spa. */
 export function SpaPage() {
   const { planId = '' } = useParams();
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const state = readSpaState(params);
   const { displayCurrency } = useFormatters();
   const query = useSpaView(

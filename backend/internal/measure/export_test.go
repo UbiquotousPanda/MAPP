@@ -65,7 +65,7 @@ func exportOf(t *testing.T, report string, values url.Values, req measure.Export
 
 func TestExport_Excel_FR022(t *testing.T) {
 	t.Parallel()
-	file, err := exportOf(t, measure.KeyPlanDetails, url.Values{"owner": {"U-3"}}, measure.ExportRequest{})
+	file, err := exportOf(t, measure.KeyPlanData, url.Values{"owner": {"U-3"}}, measure.ExportRequest{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,15 +78,16 @@ func TestExport_Excel_FR022(t *testing.T) {
 		names = append(names, table.Name)
 	}
 	want := []string{"Activities by status", "Activities by Brand", "In view", "About this export"}
-	if diff := cmp.Diff(want, names); diff != "" || file.Name != "SP&A One – Plan details – 2026 – 18 Oct 2026.xlsx" {
+	if diff := cmp.Diff(want, names); diff != "" || file.Name != "SP&A One – Plan data and access – 2026 – 18 Oct 2026.xlsx" {
 		t.Errorf("file %q, sheets in order (-want +got):\n%s", file.Name, diff)
 	}
 	about := map[string]string{}
 	for _, row := range tables[3].Rows {
 		about[row.Cells[0]] = row.Cells[1]
 	}
-	wantAbout := map[string]string{"Report": "Plan details", "Year": "2026", "Filters": "Owner: Daniel Okoro",
-		"Period": "Months", "Show": "Activity", "Currency": "GBP", "Exported by": "Priya Raman", "Exported at": "18 Oct 2026 14:05 UTC"}
+	wantAbout := map[string]string{"Report": "Plan data and access", "Section": "Data completeness", "Year": "2026",
+		"Filters": "Owner: Daniel Okoro",
+		"Period":  "Months", "Show": "Activity", "Currency": "GBP", "Exported by": "Priya Raman", "Exported at": "18 Oct 2026 14:05 UTC"}
 	if diff := cmp.Diff(wantAbout, about); diff != "" {
 		t.Errorf("About this export (-want +got):\n%s", diff)
 	}
@@ -94,14 +95,14 @@ func TestExport_Excel_FR022(t *testing.T) {
 
 func TestExport_CSV_FR022(t *testing.T) {
 	t.Parallel()
-	file, err := exportOf(t, measure.KeyPlanDetails, url.Values{},
+	file, err := exportOf(t, measure.KeyPlanData, url.Values{},
 		measure.ExportRequest{Format: measure.FormatCSV, Widget: "attr12Count"})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	text := string(file.Body)
-	if file.Name != "SP&A One – Plan details – Activities by Brand – 2026 – 18 Oct 2026.csv" ||
+	if file.Name != "SP&A One – Plan data and access – Activities by Brand – 2026 – 18 Oct 2026.csv" ||
 		strings.Index(text, "Report") > strings.Index(text, "Helix") || strings.Contains(text, "Approved") {
 		t.Errorf("file %q = %s, want the notes, then Activities by Brand only", file.Name, text)
 	}
@@ -114,7 +115,7 @@ func TestExport_Refusals_FR022(t *testing.T) {
 		"unknown widget":       {Widget: "nope"},
 		"unknown format":       {Format: "pdf", Widget: "attr12Count"},
 	} {
-		_, err := exportOf(t, measure.KeyPlanDetails, url.Values{}, req)
+		_, err := exportOf(t, measure.KeyPlanData, url.Values{}, req)
 		var e *errs.Error
 		if !errors.As(err, &e) || e.Status != 400 {
 			t.Errorf("%s: error = %v, want 400", name, err)
@@ -142,7 +143,7 @@ func TestExport_ReportSaysItsOwnParameters_FR022(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	file, err := service.Export(t.Context(), actor.Actor{ID: "U-2", Name: "Priya Raman"}, measure.KeyPlanDetails,
+	file, err := service.Export(t.Context(), actor.Actor{ID: "U-2", Name: "Priya Raman"}, measure.KeyPlanData,
 		measure.ExportRequest{Filter: f})
 	if err != nil {
 		t.Fatal(err)
@@ -152,10 +153,11 @@ func TestExport_ReportSaysItsOwnParameters_FR022(t *testing.T) {
 		t.Fatal(err)
 	}
 	var lines []string
-	for _, row := range tables[len(tables)-1].Rows[:5] {
+	for _, row := range tables[len(tables)-1].Rows[:6] {
 		lines = append(lines, row.Cells[0]+": "+row.Cells[1])
 	}
-	want := []string{"Report: Plan details", "Year: 2026", "Filters: None", "Search: planner", "Status: Active"}
+	want := []string{"Report: Plan data and access", "Year: 2026", "Filters: None", "Section: Data completeness",
+		"Search: planner", "Status: Active"}
 	if diff := cmp.Diff(want, lines); diff != "" {
 		t.Errorf("About this export, first lines (-want +got):\n%s", diff)
 	}
@@ -163,7 +165,7 @@ func TestExport_ReportSaysItsOwnParameters_FR022(t *testing.T) {
 
 func TestExport_LeftOutValuesNotNamed_FR015(t *testing.T) {
 	t.Parallel()
-	file, err := exportOf(t, measure.KeyPlanDetails, url.Values{"owner": {"U-9"}, "team": {"T-2"}}, measure.ExportRequest{})
+	file, err := exportOf(t, measure.KeyPlanData, url.Values{"owner": {"U-9"}, "team": {"T-2"}}, measure.ExportRequest{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +182,7 @@ func TestExport_LeftOutValuesNotNamed_FR015(t *testing.T) {
 
 func TestExport_FiltersInWords_FR022(t *testing.T) {
 	t.Parallel()
-	file, err := exportOf(t, measure.KeyPlanDetails, url.Values{"planType": {"crossMarket"}, "activityStatus": {"inProgress"}},
+	file, err := exportOf(t, measure.KeyPlanData, url.Values{"planType": {"crossMarket"}, "activityStatus": {"inProgress"}},
 		measure.ExportRequest{})
 	if err != nil {
 		t.Fatal(err)

@@ -1,20 +1,20 @@
-import { Plus, Share2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useAccess } from '@/session/access';
 import { LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
-import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
+import { AddTile, TileList } from '@/ui/Tile/Tile';
 import type { CustomDashboardSummary } from '../model';
 import { useCustomDashboards } from './api';
 import { BuiltInCards, DashboardCard } from './DashboardCard';
 import { DeleteDashboardDialog } from './DeleteDashboardDialog';
-import { NoDashboardsYet } from './NoDashboardsYet';
 import { useCopyDashboard } from './useCopyDashboard';
 import styles from './DashboardListPage.module.css';
 
@@ -33,7 +33,6 @@ export function DashboardListPage() {
     <>
       <PageHeader
         title="Dashboards"
-        description="The built-in dashboards and those you and your teams build."
         actions={
           canBuild && (
             <>
@@ -70,7 +69,7 @@ function CustomSections({ canBuild }: { canBuild: boolean }) {
             <ErrorState error={list.error} onRetry={() => void list.refetch()} />
           </Card>
         ) : (
-          <div aria-label="Loading dashboards" className={styles.cards}>
+          <div aria-label="Loading dashboards" className={styles.loading}>
             <Skeleton height="120px" />
             <Skeleton height="120px" />
           </div>
@@ -79,39 +78,44 @@ function CustomSections({ canBuild }: { canBuild: boolean }) {
     );
   }
 
-  const cards = (items: CustomDashboardSummary[], isMine: boolean) => (
-    <ul role="list" className={styles.cards}>
-      {items.map((dashboard) => (
-        <DashboardCard
-          key={dashboard.id}
-          dashboard={dashboard}
-          isMine={isMine}
-          canBuild={canBuild}
-          onCopy={(id) => void copyAndOpen(id)}
-          onDelete={setDeleting}
-        />
-      ))}
-    </ul>
-  );
+  const cards = (items: CustomDashboardSummary[], isMine: boolean) =>
+    items.map((dashboard) => (
+      <DashboardCard
+        key={dashboard.id}
+        dashboard={dashboard}
+        isMine={isMine}
+        canBuild={canBuild}
+        onCopy={(id) => void copyAndOpen(id)}
+        onDelete={setDeleting}
+      />
+    ));
+  const { mine, sharedWithMe } = list.data;
 
   return (
     <>
       <Section title="My dashboards">
-        {list.data.mine.length > 0 ? (
-          cards(list.data.mine, true)
+        {mine.length > 0 || canBuild ? (
+          <TileList>
+            {cards(mine, true)}
+            {mine.length === 0 && (
+              <AddTile
+                to="/builder"
+                title="New dashboard"
+                text="Pick charts, choose your data and arrange them the way you like — no code needed."
+              />
+            )}
+          </TileList>
         ) : (
-          <Card>
-            <NoDashboardsYet canBuild={canBuild} />
-          </Card>
+          <p className={styles.quiet}>
+            You have no dashboards of your own. Dashboards your teams share with you appear below.
+          </p>
         )}
       </Section>
       <Section title="Shared with me">
-        {list.data.sharedWithMe.length > 0 ? (
-          cards(list.data.sharedWithMe, false)
+        {sharedWithMe.length > 0 ? (
+          <TileList>{cards(sharedWithMe, false)}</TileList>
         ) : (
-          <Card>
-            <EmptyState icon={<Share2 />} title="Nothing shared with you yet." />
-          </Card>
+          <p className={styles.quiet}>Nothing shared with you yet.</p>
         )}
       </Section>
       {deleting && <DeleteDashboardDialog dashboard={deleting} onClose={() => setDeleting(null)} />}
@@ -123,9 +127,9 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   const titleId = useId();
   return (
     <section className={styles.section} aria-labelledby={titleId}>
-      <h2 id={titleId} className={styles.sectionTitle}>
+      <SectionHeading level={2} rank="section" id={titleId}>
         {title}
-      </h2>
+      </SectionHeading>
       {children}
     </section>
   );

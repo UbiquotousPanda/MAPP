@@ -27,6 +27,18 @@ type Reference struct {
 	FinanceBudgetItemID string
 }
 
+// CurrencyUse counts the records of a kind too numerous to list as References that hold amounts in Currency.
+type CurrencyUse struct {
+	Kind     string
+	Currency string
+	Count    int
+}
+
+const (
+	UseOfPerformanceFact      = "performanceFact"
+	UseOfFinancialTransaction = "financialTransaction"
+)
+
 // ReferenceSource lists every record of one kind, live and in the bin; each record area provides one.
 type ReferenceSource func(ctx context.Context) ([]Reference, error)
 
@@ -85,6 +97,8 @@ type usageIndex struct {
 	lineItemsByCurr    map[string]*tally
 	peopleByCurr       map[string]*tally
 	plansByCurr        map[string]*tally
+	prLinesByCurr      map[string]*tally
+	usesByCurr         map[string][]CurrencyUse
 	lineItemsByItem    map[string]*tally
 	plansByBudget      map[string]*tally
 }
@@ -98,7 +112,7 @@ func (s *Service) usage(ctx context.Context) (*usageIndex, error) {
 		dependents: map[string][]binned[Attribute]{}, conditionsByOption: map[string]*tally{},
 		linkedOptions:   map[string]map[string]*tally{},
 		lineItemsByCurr: map[string]*tally{}, peopleByCurr: map[string]*tally{}, plansByCurr: map[string]*tally{}, lineItemsByItem: map[string]*tally{},
-		plansByBudget: map[string]*tally{},
+		plansByBudget: map[string]*tally{}, prLinesByCurr: map[string]*tally{}, usesByCurr: map[string][]CurrencyUse{},
 	}
 	refs, err := s.references(ctx)
 	if err != nil {
@@ -141,7 +155,11 @@ func (s *Service) usage(ctx context.Context) (*usageIndex, error) {
 	for _, ref := range u.refs {
 		u.addReference(ref)
 	}
-	return u, nil
+	uses, err := s.repo.CurrencyUses(ctx)
+	for _, use := range uses {
+		u.usesByCurr[use.Currency] = append(u.usesByCurr[use.Currency], use)
+	}
+	return u, err
 }
 
 func (s *Service) references(ctx context.Context) ([]Reference, error) {
@@ -177,6 +195,8 @@ func (u *usageIndex) addReference(ref Reference) {
 			count(u.peopleByCurr, ref.Currency, ref.InBin)
 		case LevelPlan:
 			count(u.plansByCurr, ref.Currency, ref.InBin)
+		case LevelPurchaseRequestLine:
+			count(u.prLinesByCurr, ref.Currency, ref.InBin)
 		default:
 			count(u.lineItemsByCurr, ref.Currency, ref.InBin)
 		}

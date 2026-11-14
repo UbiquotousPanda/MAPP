@@ -1,28 +1,22 @@
 import { useFormatters } from '@/format/useFormatters';
-import { Button, LinkButton } from '@/ui/Button/Button';
+import { LinkButton } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { ReportFrame, useReportAddress } from '../shared';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { LevelSwitch, useReportAddress } from '../shared';
 import { isRestricted, resetFilters } from '../shared/report-address';
 import type { ReportAddress } from '../shared';
 import { usePlanDetails } from './api';
 import type { PlanDetailsReport as Report } from './api';
 import { noAttributesText, RECORDS } from './plan-details-text';
+import { AttributeWidgets } from './AttributeWidgets';
 import { ValueWidget } from './ValueWidget';
 import styles from './PlanDetails.module.css';
 
-/** Plan details (feature 043): how records and planned cost spread over each Shell attribute of a level. */
-export function PlanDetailsReport() {
-  return (
-    <ReportFrame report="planDetails" period show="activity">
-      {(_frame, address) => <PlanDetails address={address} />}
-    </ReportFrame>
-  );
-}
-
-function PlanDetails({ address }: { address: ReportAddress }) {
+/** Data completeness (feature 043): how records and planned cost spread over each Shell attribute of a level. */
+export function PlanDetailsBody({ address }: { address: ReportAddress }) {
   const report = usePlanDetails(address);
   if (report.isError) {
     return <ErrorState error={report.error} onRetry={() => void report.refetch()} />;
@@ -48,15 +42,7 @@ function NoRecords({ show, address }: { show: Report['show']; address: ReportAdd
       <EmptyState
         title="Your filters exclude everything"
         text="No record matches every filter."
-        action={
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setAddress(resetFilters(address))}
-          >
-            Reset filters
-          </Button>
-        }
+        onReset={() => setAddress(resetFilters)}
       />
     );
   }
@@ -82,7 +68,11 @@ function Widgets({ report, address }: { report: Report; address: ReportAddress }
     cards.allFilledInPercent === null ? '' : ` (${String(cards.allFilledInPercent)} %)`;
   return (
     <div className={styles.report}>
-      <div className={styles.cards}>
+      <div className={styles.levelBar}>
+        <span>Count</span>
+        <LevelSwitch fallback="activity" />
+      </div>
+      <StatStrip label="Summary">
         <SummaryCard label={records} value={cards.records.toLocaleString('en-GB')} />
         <SummaryCard
           label="Planned cost"
@@ -94,7 +84,7 @@ function Widgets({ report, address }: { report: Report; address: ReportAddress }
           value={`${cards.allFilledIn.toLocaleString('en-GB')} of ${cards.records.toLocaleString('en-GB')}${percent}`}
           tip="Records whose every needed field is filled in."
         />
-      </div>
+      </StatStrip>
       {report.builtIn.length > 0 && (
         <section aria-label="Built-in fields" className={styles.widgets}>
           {report.builtIn.map((widget) => (
@@ -109,20 +99,7 @@ function Widgets({ report, address }: { report: Report; address: ReportAddress }
         </section>
       )}
       {report.attributesSetUp ? (
-        report.attributes.map((row) => (
-          <section key={row.attributeId} aria-label={row.label} className={styles.widgets}>
-            {row.widgets.map((widget) => (
-              <ValueWidget
-                key={widget.key}
-                widget={widget}
-                level={level}
-                address={address}
-                attributeId={row.attributeId}
-                currency={report.currency}
-              />
-            ))}
-          </section>
-        ))
+        <AttributeWidgets report={report} address={address} />
       ) : (
         <EmptyState
           title={noAttributesText(level)}

@@ -104,13 +104,24 @@ describe('formatMoney', () => {
     expect(formatMoney('12500', 'USD')).toBe('$12,500.00');
   });
 
-  it('shows other currencies with their code after the amount (FR-021)', () => {
-    expect(formatMoney('12500', 'EUR')).toBe('12,500.00 EUR');
+  it('shows every other currency with its en-US symbol and two decimals (FR-021, D-413)', () => {
+    expect(formatMoney('12500', 'EUR')).toBe('€12,500.00');
+    expect(formatMoney('50000', 'GBP')).toBe('£50,000.00');
+    expect(formatMoney('1.5', 'CNY')).toBe('CN¥1.50');
+    expect(formatMoney('1.5', 'CAD')).toBe('CA$1.50');
+    expect(formatMoney('1.5', 'AUD')).toBe('A$1.50');
+    expect(formatMoney('1.5', 'INR')).toBe('₹1.50');
+    expect(formatMoney('1250', 'JPY')).toBe('¥1,250.00');
+  });
+
+  it('falls back to the code after the amount for a malformed code, never failing', () => {
+    expect(formatMoney('12.5', '')).toBe('12.50');
+    expect(formatMoneyCompact('12500', 'EU')).toBe('12,500.00 EU');
   });
 
   it('shows a negative amount with a minus sign (FR-021)', () => {
     expect(formatMoney('-12500', 'USD')).toBe('-$12,500.00');
-    expect(formatMoney('-12500', 'EUR')).toBe('-12,500.00 EUR');
+    expect(formatMoney('-12500', 'EUR')).toBe('-€12,500.00');
   });
 
   it('shows "—" when there is no amount, never 0 (FR-021)', () => {
@@ -132,13 +143,14 @@ describe('formatMoney', () => {
 describe('formatMoneyCompact', () => {
   it('shortens large amounts for summary cards (FR-021)', () => {
     expect(formatMoneyCompact('1250000', 'USD')).toBe('$1.25M');
-    expect(formatMoneyCompact('12500', 'EUR')).toBe('12.5K EUR');
+    expect(formatMoneyCompact('12500', 'EUR')).toBe('€12.5K');
+    expect(formatMoneyCompact('1250000', 'GBP')).toBe('£1.25M');
     expect(formatMoneyCompact('-1250000', 'USD')).toBe('-$1.25M');
   });
 
   it('shows amounts under 1,000 in full', () => {
     expect(formatMoneyCompact('950', 'USD')).toBe('$950.00');
-    expect(formatMoneyCompact('12.5', 'EUR')).toBe('12.50 EUR');
+    expect(formatMoneyCompact('12.5', 'EUR')).toBe('€12.50');
   });
 
   it('shows "—" when there is no amount (FR-021)', () => {
@@ -147,7 +159,7 @@ describe('formatMoneyCompact', () => {
 
   it('038 FR-044: never rounds up to "1000T"; the full amount shows instead', () => {
     expect(formatMoneyCompact('999999999999999.99', 'USD')).toBe('$999,999,999,999,999.99');
-    expect(formatMoneyCompact('-999995000000000', 'EUR')).toBe('-999,995,000,000,000.00 EUR');
+    expect(formatMoneyCompact('-999995000000000', 'EUR')).toBe('-€999,995,000,000,000.00');
     expect(formatMoneyCompact('999994999999999', 'USD')).toBe('$999.99T');
   });
 });

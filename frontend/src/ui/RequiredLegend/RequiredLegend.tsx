@@ -1,10 +1,11 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import styles from './RequiredLegend.module.css';
 
-/** "* Required", shown once per form by its first legend; screen readers skip it. */
+/** "* Required" and "◆ Needed to publish", once per form by its first legend; screen readers skip it. */
 export function RequiredLegend() {
   const legend = useRef<HTMLParagraphElement>(null);
   const [shown, setShown] = useState(false);
+  const [later, setLater] = useState<string[]>([]);
 
   useLayoutEffect(() => {
     const scope =
@@ -13,11 +14,14 @@ export function RequiredLegend() {
     if (!scope) {
       return;
     }
-    const check = () =>
-      setShown(
-        scope.querySelector('[data-required-legend]') === legend.current &&
-          scope.querySelector('[aria-required="true"]') !== null,
+    const check = () => {
+      const first = scope.querySelector('[data-required-legend]') === legend.current;
+      const markings = [...scope.querySelectorAll('[data-marking]')].map((m) =>
+        m.getAttribute('data-marking'),
       );
+      setLater(first ? [...new Set(markings.filter((m): m is string => Boolean(m)))] : []);
+      setShown(first && scope.querySelector('[aria-required="true"]') !== null);
+    };
     check();
     // Fields come and go with the form's choices; the legend follows them.
     const observer = new MutationObserver(check);
@@ -25,7 +29,7 @@ export function RequiredLegend() {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ['aria-required'],
+      attributeFilter: ['aria-required', 'data-marking'],
     });
     return () => observer.disconnect();
   }, []);
@@ -34,15 +38,20 @@ export function RequiredLegend() {
     <p
       ref={legend}
       data-required-legend=""
-      hidden={!shown}
+      hidden={!shown && later.length === 0}
       aria-hidden="true"
       className={styles.legend}
     >
       {shown && (
-        <>
+        <span className={styles.item}>
           <span className={styles.asterisk}>*</span> Required
-        </>
+        </span>
       )}
+      {later.map((marking) => (
+        <span key={marking} className={styles.item}>
+          <span className={styles.diamond}>◆</span> {marking}
+        </span>
+      ))}
     </p>
   );
 }

@@ -21,8 +21,9 @@ activityStatus, attr, period, show, currency, table) plus this feature's own:
   (049-C11, 049-C12)
 - the ranked parameters, as 040 defines them: `sort`, `order`, `group`, `size`, `page`, `q`, `drill`
 
-`sort` accepts this feature's figures — `actualRevenue`, `projectedRevenue` on Revenue; `actual`,
-`projected` on Funnel stages — not 040's money keys.
+`sort` accepts this feature's figures — `actualRevenue`, `projectedRevenue`, `goal`, `performance` on
+Revenue; `actual`, `projected`, `goal`, `performance` on Funnel stages — not 040's money keys. Without `sort`
+and `order`, Revenue ranks by `performance`, `asc`, and Funnel stages by `projected`, `desc` (D-410).
 
 ## Answers
 

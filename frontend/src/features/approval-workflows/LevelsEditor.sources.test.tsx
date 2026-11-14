@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { PEOPLE, RULE_OPTIONS } from '@/testing/fixtures/approval-workflows';
 import { reply } from '@/testing/replies';
@@ -63,8 +64,7 @@ describe('LevelsEditor sources (feature 031, US3)', () => {
     expect(sources()).toContain('Person named on the record');
     await user.click(screen.getByRole('radio', { name: 'Person named on the record' }));
     const field = await screen.findByRole('combobox', { name: /Field that names the approver/ });
-    await screen.findByRole('option', { name: 'MoA approver' });
-    await user.selectOptions(field, 'MoA approver');
+    await choose(user, field, 'MoA approver');
 
     expect(
       screen.queryByRole('group', { name: 'When there are several approvers' }),

@@ -69,6 +69,17 @@ func activityGates(pr PurchaseRequest, facts map[string]LineItemFacts) []Problem
 	return problems
 }
 
+// unapprovedActivity is why the purchase request can't be submitted, approved or ordered from GSAP now: a line
+// draws on an activity that is not Approved (any more). A GSAP PR and PO it already has stay as they are.
+func unapprovedActivity(pr PurchaseRequest, facts map[string]LineItemFacts) string {
+	for _, l := range pr.Lines {
+		if f := facts[l.LineItemID]; f.ActivityStatus != activityApproved {
+			return fmt.Sprintf(msgApproveAgain, f.ActivityName)
+		}
+	}
+	return ""
+}
+
 // overspentActivityGates stop a submission while an activity's line items cost more than its planned cost, whatever
 // its budgets' setting (037 FR-019, D-349), naming each activity once.
 func overspentActivityGates(pr PurchaseRequest, facts map[string]LineItemFacts) []Problem {

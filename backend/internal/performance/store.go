@@ -124,6 +124,9 @@ type ReviewFilter struct {
 	Since     *time.Time
 	Until     *time.Time
 	Limit     int
+	// ByID orders by id alone, so AfterID can page through every row whatever changes behind the cursor.
+	ByID    bool
+	AfterID string
 }
 
 type Review interface {

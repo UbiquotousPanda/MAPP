@@ -1,30 +1,30 @@
 import { useActivityCategories } from '@/features/settings';
-import styles from './Revenue.module.css';
+import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
+import type { OwnFilters } from '../shared/ReportToolbar';
+import { useOwnParam } from '../shared/useOwnParam';
 
-const ALL = '';
-const UNCATEGORISED = 'uncategorised';
+const TITLE = 'Activity category';
 
-/** The activity category control (049-C10): narrows the cards, the series and the ranked list. */
-export function CategorySelect({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) {
+/** The activity category (049-C10) behind Filters (n), with its chip: narrows the cards, the series and the list. */
+export function useCategoryFilter(): OwnFilters {
   const categories = useActivityCategories();
-  return (
-    <label className={styles.field}>
-      Activity category
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value={ALL}>All categories</option>
-        {categories.data?.items.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-        <option value={UNCATEGORISED}>Uncategorised</option>
-      </select>
-    </label>
-  );
+  const [category, setCategory] = useOwnParam('category');
+  const choices = [
+    ...(categories.data?.items ?? []).map((c) => ({ value: c.id, label: c.name })),
+    { value: 'uncategorised', label: 'Uncategorised' },
+  ];
+  const label = choices.find((c) => c.value === category)?.label ?? category;
+  return {
+    menus: (
+      <FilterMenu
+        label={TITLE}
+        choices={choices}
+        selected={category ? [category] : []}
+        multiple={false}
+        summary={category ? label : undefined}
+        onChange={(values) => setCategory(values[0] ?? '')}
+      />
+    ),
+    chips: category ? [{ key: 'category', label: `${TITLE}: ${label}` }] : [],
+  };
 }

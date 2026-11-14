@@ -86,7 +86,7 @@ check both last sign-in times, the "Never" of the others, the band widget and th
 5. **Given** a search for "planner", **Then** people whose name, e-mail, job title, role or team contains it
    are listed; the search ignores letter case.
 6. **Given** sorting by Last sign-in, **Then** the most recent comes first and "Never" last; any column sorts;
-   20 rows per page with page sizes 5 to 500 and "1–20 of 64".
+   50 rows per page with page sizes 25, 50, 100 and 200 and "1–50 of 64" (D-432).
 7. **Given** a person signs in successfully, **Then** their last sign-in becomes that moment (UTC), with no
    change to their version, "last changed" or the activity log; a refused sign-in records nothing (045-C4).
 8. **Given** a person with two roles, **Then** the Roles cell lists both with their scopes; **given** none, "No
@@ -174,7 +174,7 @@ export, the report supplies the rows.
   (date and time, or "Never"). *(client 019 FR-034; FA §E3.9.5; 045-C3)*
 - **FR-006**: The report MUST offer Search (name, e-mail, job title, role, team; ignoring letter case), Team (one
   or more teams), Status (Active default, Inactive, All), sort by any column (name by default; "Never" last when
-  sorting by Last sign-in) and paging (5 to 500 rows, default 20), all in the page address. *(client 019 FR-013,
+  sorting by Last sign-in) and paging (25, 50, 100 or 200 rows, default 50; D-432), all in the page address. *(client 019 FR-013,
   FR-034; constitution F3; 045-C1)*
 - **FR-007**: The report MUST show the cards **People**, **Signed in within 30 days** and **Never signed in** and
   the widget **Last sign-in** with the bands Within 30 days, 31 – 90 days, Over 90 days and Never, over the

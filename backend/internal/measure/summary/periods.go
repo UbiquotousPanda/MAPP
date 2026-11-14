@@ -73,10 +73,20 @@ func monthLabel(key string) string {
 	return t.Format("Jan 2006")
 }
 
-// shownValue is what a period counts toward a rate: its actual until today, its projection after.
-func (p period) shownValue() int64 {
+// shownValue is what a period counts toward a rate: its actual until today, its projection after; false when it has none.
+func (p period) shownValue() (int64, bool) {
 	if p.state == PeriodProjected {
-		return p.projected
+		return p.projected, p.projects
 	}
-	return p.actual
+	return p.actual, p.counted
+}
+
+// trendRate is "—" when either stage has no figure in the period, never a rate of a missing count.
+func trendRate(count, previous period) *string {
+	c, hasCount := count.shownValue()
+	prev, hasPrevious := previous.shownValue()
+	if !hasCount || !hasPrevious {
+		return nil
+	}
+	return rateOf(c, prev)
 }

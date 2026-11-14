@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 import {
   callApi,
-  chooseOption,
+  choose,
+  escapeRegExp,
   expectNoAxeViolations,
   expectToast,
   signInAs,
@@ -44,7 +45,7 @@ test('046 US1: a new data source is listed as Stale, and its template carries ex
     .getByRole('option', { name: /^Alex Morgan/ })
     .first()
     .click();
-  await chooseOption(form.getByRole('combobox', { name: /^Category/ }), 'Web analytics');
+  await choose(page, form.getByRole('combobox', { name: /^Category/ }), /^Web analytics/);
   await expectNoAxeViolations(page);
   await form.getByRole('button', { name: 'Save', exact: true }).click();
 
@@ -181,7 +182,11 @@ test('046 US4: an integration ID and the external name both match, a second ID i
   for (const attempt of ['e2e-helix-h2', 'e2e-helix-h2-again']) {
     await area.getByRole('button', { name: 'Register integration ID' }).click();
     const dialog = page.getByRole('dialog', { name: 'Register integration ID' });
-    await chooseOption(dialog.getByRole('combobox', { name: /^Data source/ }), FEED);
+    await choose(
+      page,
+      dialog.getByRole('combobox', { name: /^Data source/ }),
+      new RegExp(`^${escapeRegExp(FEED)}`),
+    );
     await dialog.getByRole('textbox', { name: /^Integration ID/ }).fill(attempt);
     await dialog.getByRole('button', { name: 'Register' }).click();
     if (attempt === 'e2e-helix-h2') {

@@ -25,11 +25,11 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .amount {
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums;
 }
 
@@ -60,7 +60,7 @@
 }
 
 .message.problem {
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .hint {

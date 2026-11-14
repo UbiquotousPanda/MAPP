@@ -1,9 +1,13 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, CircleAlert } from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
 import { Link } from 'react-router';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import type { StatusTone } from '@/ui/StatusChip/StatusChip';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
 import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { FinancialTransactionRow, FinancialTransactionType } from './api';
 import { transactionHref } from './financials-links';
 import type { SortColumn, SortDirection } from './financials-links';
@@ -14,7 +18,6 @@ import {
   recordLabel,
   TYPE_WORDS,
 } from './financials-text';
-import { ScrollBox } from './ScrollBox';
 import styles from './TransactionsTable.module.css';
 
 /** The type chips: one tone per type, the word carries the meaning. */
@@ -67,8 +70,8 @@ export function TransactionsTable({
   );
 
   return (
-    <ScrollBox label="Transactions" className={styles.scroll}>
-      <table className={styles.table}>
+    <ScrollBox label="Transactions">
+      <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">Transactions</caption>
         <thead>
           <tr>
@@ -103,25 +106,16 @@ interface SortHeadingProps {
 /** A heading that sorts by its column; a second click turns the order round. */
 function SortHeading({ column, label, numeric, sort, direction, onSort }: SortHeadingProps) {
   const current = sort === column;
-  const Icon = !current ? ArrowUpDown : direction === 'asc' ? ArrowUp : ArrowDown;
   // Dates and amounts start with the newest or largest; words start with A.
   const first: SortDirection = column === 'postingDate' || column === 'amount' ? 'desc' : 'asc';
 
   return (
-    <th
-      scope="col"
-      className={numeric ? styles.numeric : undefined}
-      aria-sort={current ? (direction === 'asc' ? 'ascending' : 'descending') : 'none'}
-    >
-      <button
-        type="button"
-        className={styles.sort}
-        onClick={() => onSort(column, current ? (direction === 'asc' ? 'desc' : 'asc') : first)}
-      >
-        {label}
-        <Icon aria-hidden="true" className={current ? undefined : styles.idle} />
-      </button>
-    </th>
+    <SortHeader
+      label={label}
+      direction={current ? direction : undefined}
+      className={numeric ? dataTable.numeric : undefined}
+      onSort={() => onSort(column, current ? (direction === 'asc' ? 'desc' : 'asc') : first)}
+    />
   );
 }
 
@@ -143,7 +137,7 @@ function TransactionRow({ row, search }: { row: FinancialTransactionRow; search:
       <td>
         <Vendor row={row} />
       </td>
-      <td className={styles.numeric}>
+      <td className={dataTable.numeric}>
         <Amount row={row} />
       </td>
       <td>
@@ -190,7 +184,7 @@ function Vendor({ row }: { row: FinancialTransactionRow }) {
   );
 }
 
-/** "9,800.00 EUR" with "$10,652.17" under it when the display currency differs. */
+/** "€9,800.00" with "$10,652.17" under it when the display currency differs. */
 function Amount({ row }: { row: FinancialTransactionRow }) {
   const { money } = useFormatters();
   const differs = row.amountDisplay !== null && row.amountDisplay.currency !== row.amount.currency;

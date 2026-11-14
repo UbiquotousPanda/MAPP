@@ -458,8 +458,9 @@ allows. Chosen 18 Oct 2026 from the npm registry, checking that peer dependencie
   The web app sets `data-theme="light|dark"` on `<html>`, follows the computer's setting live while the
   preference is `system`, and remembers the last theme in `localStorage` to avoid a flash of the wrong
   colours before the first answer from the API. The **sign-in and public "Page not found" pages** also
-  have the light/dark switch; there it only changes the stored browser choice, and after signing in the
-  person's saved preference takes over (US2 scenario 5 "any page"). Changing a preference updates the
+  have the light/dark switch; there it changes the stored browser choice; a choice made there before signing in
+  carries over and is saved for the person, otherwise the person's saved preference takes over (US2
+  scenario 5 "any page"; amended 2026-11-13, D-428). Changing a preference updates the
   screen at once and saves in the background; if the save fails the screen keeps the new choice and a
   toast says "Your choice couldn't be saved." with **Try again**.
 - **Rationale**: "remembered per user" — demo people often share one browser during demonstrations.

@@ -8,14 +8,12 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// pathStep is one step of a recycle-bin entry's path.
 type pathStep struct {
 	Type string `json:"type"`
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-// deleteResult is the part of a DeleteResult answer these tests read.
 type deleteResult struct {
 	RecycleBinEntry struct {
 		ID         string     `json:"id"`
@@ -31,11 +29,10 @@ type deleteResult struct {
 	} `json:"recycleBinEntry"`
 }
 
-// globalBrand is the plan FY2027 Global Brand as a path step (no activities below it in the demo data).
+// globalBrand has no activities below it in the demo data.
 var globalBrand = pathStep{Type: "plan", ID: "P-1003", Name: "FY2027 Global Brand"}
 
-// Deleting Brand platform answers its recycle-bin entry, with its 2 initiatives, so the web app can offer
-// Undo; the campaign is gone from the plan until Undo puts it back as it was (FR-028, FR-029).
+// The campaign is gone from the plan until Undo puts it back as it was.
 func TestDeleteCampaign_ContractAndUndo(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -43,7 +40,7 @@ func TestDeleteCampaign_ContractAndUndo(t *testing.T) {
 	var before campaignAnswer
 	alex.Do(t, http.MethodGet, "/api/v1/campaigns/C-1004", nil).Decode(t, &before)
 
-	response := alex.Do(t, http.MethodDelete, "/api/v1/campaigns/C-1004", nil)
+	response := alex.DeleteSeen(t, "/api/v1/campaigns/C-1004")
 
 	assertStatus(t, response, http.StatusOK)
 	var result deleteResult
@@ -71,14 +68,12 @@ func TestDeleteCampaign_ContractAndUndo(t *testing.T) {
 	}
 }
 
-// Deleting an initiative answers its recycle-bin entry with its path; one that no longer exists answers 404
-// (FR-028).
 func TestDeleteInitiative_Contract(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	alex := server.SignIn(t, "alex.morgan@shell.com")
 
-	response := alex.Do(t, http.MethodDelete, "/api/v1/initiatives/I-1007", nil)
+	response := alex.DeleteSeen(t, "/api/v1/initiatives/I-1007")
 
 	assertStatus(t, response, http.StatusOK)
 	var result deleteResult
@@ -95,6 +90,6 @@ func TestDeleteInitiative_Contract(t *testing.T) {
 		t.Errorf("Brand platform has %d initiatives after the delete, want 1", brand.Counts.Initiatives)
 	}
 
-	assertBody(t, alex.Do(t, http.MethodDelete, "/api/v1/initiatives/I-1007", nil), http.StatusNotFound, initiativeGoneBody)
-	assertBody(t, alex.Do(t, http.MethodDelete, "/api/v1/campaigns/C-9999", nil), http.StatusNotFound, campaignGoneBody)
+	assertBody(t, alex.DeleteSeen(t, "/api/v1/initiatives/I-1007"), http.StatusNotFound, initiativeGoneBody)
+	assertBody(t, alex.DeleteSeen(t, "/api/v1/campaigns/C-9999"), http.StatusNotFound, campaignGoneBody)
 }

@@ -41,7 +41,6 @@ export function BudgetCards({
   onRename,
 }: BudgetCardsProps) {
   const all = data.items.flatMap((budget) => budget.items);
-  const { counts } = filterRecords(all, filters, searchText);
   const shown = data.items
     .map((budget) => ({ budget, items: filterRecords(budget.items, filters, searchText).shown }))
     .filter((group) => group.items.length > 0);
@@ -64,7 +63,7 @@ export function BudgetCards({
               value: filters.q,
               onChange: filters.setQ,
             }}
-            status={{ value: filters.status, onChange: filters.setStatus, counts }}
+            status={{ value: filters.status, onChange: filters.setStatus }}
             count={{ shown: shownCount, total: all.length, noun: ITEM_NOUN }}
           />
         </div>

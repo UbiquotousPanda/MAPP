@@ -9,7 +9,7 @@ export const TOTAL_REQUESTED = 'Total requested';
 export const AVAILABLE = 'Available to request';
 export const PLANNED_COST = 'Planned cost';
 
-/** "Requested above planned cost by 120.00 EUR": rates moved a line in another currency (D-303). */
+/** "Requested above planned cost by €120.00": rates moved a line in another currency (D-303). */
 export function aboveText(amount: string): string {
   return `Requested above planned cost by ${amount}`;
 }

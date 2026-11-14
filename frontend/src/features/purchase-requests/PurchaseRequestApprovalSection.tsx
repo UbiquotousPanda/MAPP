@@ -1,8 +1,8 @@
 import { Check, Undo2, X } from 'lucide-react';
 import { useId, useState } from 'react';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { ApiError } from '@/api/errors';
 import {
-  ApprovalAlert,
   ApprovalChain,
   ApprovalHistory,
   OverPlannedCostAlert,
@@ -21,6 +21,7 @@ import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { useHidesUnavailable } from '@/ui/ViewOnlyNote/view-only-context';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
 import {
   APPROVAL_TITLE,
@@ -113,21 +114,21 @@ function SectionView({ approval, section, purchaseRequest, titled }: SectionView
   return (
     <section className={styles.section} aria-labelledby={titled ? headingId : undefined}>
       {titled && (
-        <h3 id={headingId} className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id={headingId}>
           {SECTION_TITLES[section.kind]}
-        </h3>
+        </SectionHeading>
       )}
       <p>{workflowText(section.workflow)}</p>
       {decline && (
-        <ApprovalAlert tone="danger" title={declineBoxText(decline, dateFormat)}>
+        <InlineAlert tone="danger" title={declineBoxText(decline, dateFormat)}>
           {decline.comment && <p className={styles.comment}>{decline.comment}</p>}
-        </ApprovalAlert>
+        </InlineAlert>
       )}
       {round ? (
         <ApprovalChain round={round} />
       ) : (
         <div className={styles.upcoming}>
-          <p className={styles.subheading}>{NOT_SUBMITTED}</p>
+          <p className={styles.status}>{NOT_SUBMITTED}</p>
           {section.upcomingLevels.length > 0 && (
             <ApprovalChain upcomingLevels={section.upcomingLevels} />
           )}

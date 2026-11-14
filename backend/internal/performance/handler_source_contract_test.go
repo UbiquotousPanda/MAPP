@@ -28,18 +28,25 @@ func TestPerformanceSources_ListGetAndEdit_Contract_FR001_FR005_FR045(t *testing
 	alex := apitest.New(t).SignIn(t, alexsEmail)
 	sourceID := preparedSource(t, alex)
 	path := "/api/v1/performance/sources/" + sourceID
+	file := "Ref,Date,Activity,INQs\nr1,2026-02-01,A-1001,5\n"
+	decoded[importAnswer](t, alex.Do(t, http.MethodPost, path+"/uploads", uploadBody(file)), http.StatusCreated)
 
 	listed := alex.Do(t, http.MethodGet, "/api/v1/performance/sources", nil)
 	read := decoded[sourceAnswer](t, alex.Do(t, http.MethodGet, path, nil), http.StatusOK)
-	saved := decoded[sourceAnswer](t, alex.Do(t, http.MethodPatch, path, sourceEdit("Eloqua EU", "upload", read.Version)),
-		http.StatusOK)
+	response := alex.Do(t, http.MethodPatch, path, sourceEdit("Eloqua EU", "upload", read.Version))
+	again := alex.Do(t, http.MethodGet, path, nil)
 	stale := alex.Do(t, http.MethodPatch, path, sourceEdit("Eloqua US", "upload", read.Version))
 
 	if listed.Status != http.StatusOK || !strings.Contains(string(listed.Body), `"name":"Eloqua"`) {
 		t.Errorf("list = %d %s, want the source", listed.Status, listed.Body)
 	}
+	saved := decoded[sourceAnswer](t, response, http.StatusOK)
 	if saved.Name != "Eloqua EU" || saved.Version != read.Version+1 {
 		t.Errorf("saved = %+v, want the new name at version %d", saved, read.Version+1)
+	}
+	if string(response.Body) != string(again.Body) || !strings.Contains(string(again.Body), `"factCount":1`) {
+		t.Errorf("PATCH answered %s,\nGET answers %s; want the same source, its load figures (factCount 1) included",
+			response.Body, again.Body)
 	}
 	if stale.Status != http.StatusConflict || !strings.Contains(string(stale.Body), "version_conflict") {
 		t.Errorf("stale save = %d %s, want version_conflict", stale.Status, stale.Body)
@@ -55,13 +62,23 @@ func TestReactivatePerformanceSource_Contract_FR004(t *testing.T) {
 	sourceID := preparedSource(t, alex)
 	path := "/api/v1/performance/sources/" + sourceID
 
-	off := decoded[sourceAnswer](t, alex.Do(t, http.MethodPost, path+"/deactivate", nil), http.StatusOK)
-	on := decoded[sourceAnswer](t, alex.Do(t, http.MethodPost, path+"/reactivate", nil), http.StatusOK)
+	read := decoded[sourceAnswer](t, alex.Do(t, http.MethodGet, path, nil), http.StatusOK)
+	off := decoded[sourceAnswer](t, alex.Do(t, http.MethodPost, path+"/deactivate", map[string]any{"version": read.Version}), http.StatusOK)
+	stale := alex.Do(t, http.MethodPost, path+"/reactivate", map[string]any{"version": read.Version})
+	on := decoded[sourceAnswer](t, alex.Do(t, http.MethodPost, path+"/reactivate", map[string]any{"version": off.Version}), http.StatusOK)
+	again := alex.Do(t, http.MethodPost, path+"/reactivate", map[string]any{"version": on.Version})
 
 	if off.Status != "inactive" || on.Status != "active" {
 		t.Errorf("deactivate then reactivate = %s then %s, want inactive then active", off.Status, on.Status)
 	}
-	if missing := alex.Do(t, http.MethodPost, "/api/v1/performance/sources/PS-9999/reactivate", nil); missing.Status != http.StatusNotFound {
+	if stale.Status != http.StatusConflict || !strings.Contains(string(stale.Body), "version_conflict") {
+		t.Errorf("reactivate from an old version = %d %s, want version_conflict", stale.Status, stale.Body)
+	}
+	if again.Status != http.StatusConflict || !strings.Contains(string(again.Body), "not_allowed") {
+		t.Errorf("reactivate an active source = %d %s, want not_allowed", again.Status, again.Body)
+	}
+	missing := alex.Do(t, http.MethodPost, "/api/v1/performance/sources/PS-9999/reactivate", map[string]any{"version": 1})
+	if missing.Status != http.StatusNotFound {
 		t.Errorf("reactivate a missing source = %d %s, want 404", missing.Status, missing.Body)
 	}
 }
@@ -128,26 +145,5 @@ func TestPullAndGetImport_Contract_FR010_FR022(t *testing.T) {
 	}
 	if missing := alex.Do(t, http.MethodGet, "/api/v1/performance/imports/PIM-9999", nil); missing.Status != http.StatusNotFound {
 		t.Errorf("GET a missing import = %d %s, want 404", missing.Status, missing.Body)
-	}
-}
-
-func TestUpdatePerformanceSource_AnswersWhatGetAnswers_Contract_FR002_FR005(t *testing.T) {
-	t.Parallel()
-	alex := apitest.New(t).SignIn(t, alexsEmail)
-	sourceID := preparedSource(t, alex)
-	path := "/api/v1/performance/sources/" + sourceID
-	file := "Ref,Date,Activity,INQs\nr1,2026-02-01,A-1001,5\n"
-	decoded[importAnswer](t, alex.Do(t, http.MethodPost, path+"/uploads", uploadBody(file)), http.StatusCreated)
-	read := decoded[sourceAnswer](t, alex.Do(t, http.MethodGet, path, nil), http.StatusOK)
-
-	saved := alex.Do(t, http.MethodPatch, path, sourceEdit("Eloqua EU", "upload", read.Version))
-	again := alex.Do(t, http.MethodGet, path, nil)
-
-	if saved.Status != http.StatusOK || string(saved.Body) != string(again.Body) {
-		t.Errorf("PATCH answered %d %s,\nGET answers %s; want the same source, its load figures included",
-			saved.Status, saved.Body, again.Body)
-	}
-	if !strings.Contains(string(again.Body), `"factCount":1`) {
-		t.Errorf("GET after the load = %s, want factCount 1", again.Body)
 	}
 }

@@ -1,12 +1,8 @@
-/**
- * What the activity pages ask the API (006 plan, "Data"): one activity, the two forms, a plan's
- * activities as tree rows, and every change. Every change, when settled, refreshes the activity,
- * the plan's activities and the planning views above it (plans, campaigns, initiatives), the
- * recycle bin and the activity log, whatever the answer.
- */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { QueryClient, QueryKey } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
+import { invalidateAllButSession } from '@/api/invalidate';
 import type { components } from '@/api/generated/schema';
 
 export type Activity = components['schemas']['Activity'];
@@ -27,31 +23,6 @@ export const editActivityFormKey = (id: string) => ['activity-form', 'edit', id]
 export const planActivitiesKey = (planId: string) => ['plan-activities', planId] as const;
 export const activityDestinationsKey = (id: string) => ['activity-destinations', id] as const;
 
-/**
- * The lists an activity change can show in: the activity itself and its forms, the plan's
- * activity rows, 004's plans, plan page and plan tree, 005's campaigns and initiatives (their
- * planned costs roll up), the recycle bin and the activity log.
- */
-export const ACTIVITY_PLANNING_KEYS: QueryKey[] = [
-  ['activity'],
-  ['activity-form'],
-  // Its line items' spreads and unassigned planned cost (007), and its approval (008).
-  ['line-items'],
-  ['approval'],
-  ['plan-activities'],
-  ['plans'],
-  ['plan'],
-  ['plan-tree'],
-  ['campaigns'],
-  ['initiatives'],
-  ['recycle-bin'],
-  ['activity-log'],
-];
-
-/** What a delete refreshes: everything but the deleted activity, its forms, line items and approval. */
-const LISTS_AFTER_DELETE = ACTIVITY_PLANNING_KEYS.slice(4);
-
-/** An activity with its status, completeness and ready-to-submit check (GET /api/v1/activities/{id}). */
 export function useActivity(id: string) {
   return useQuery({
     queryKey: activityKey(id),
@@ -60,10 +31,7 @@ export function useActivity(id: string) {
   });
 }
 
-/**
- * Everything the new-activity form needs, with its defaults. Asked again each time the form
- * opens, so the names in use and the Settings are current.
- */
+/** Everything the new-activity form needs, with its defaults. Asked again each time the form opens, so the names in use and the Settings are current. */
 export function useNewActivityForm(initiativeId: string) {
   return useQuery({
     queryKey: newActivityFormKey(initiativeId),
@@ -91,7 +59,6 @@ export function useEditActivityForm(id: string) {
   });
 }
 
-/** Every activity of a plan, as plan-tree rows (GET /api/v1/plans/{planId}/activities). */
 export function usePlanActivities(planId: string) {
   return useQuery({
     queryKey: planActivitiesKey(planId),
@@ -100,10 +67,7 @@ export function usePlanActivities(planId: string) {
   });
 }
 
-/**
- * Asks for the activity again and returns it as it is stored now. After a conflict, the edit
- * form takes the latest version from it.
- */
+/** Asks for the activity again and returns it as it is stored now. After a conflict, the edit form takes the latest version from it. */
 export function fetchLatestActivity(queryClient: QueryClient, id: string): Promise<Activity> {
   // staleTime 0: always ask the API, never answer from the cache.
   return queryClient.fetchQuery({
@@ -114,13 +78,11 @@ export function fetchLatestActivity(queryClient: QueryClient, id: string): Promi
   });
 }
 
-/** A new activity under an initiative. */
 export interface NewActivity {
   initiativeId: string;
   body: ActivityCreate;
 }
 
-/** Creates an activity (status Created). */
 export function useCreateActivity() {
   const refresh = useRefreshPlanning();
   return useMutation({
@@ -135,16 +97,12 @@ export function useCreateActivity() {
   });
 }
 
-/** An edited activity: every editable field and the version the form opened with. */
 export interface EditedActivity {
   id: string;
   body: ActivityUpdate;
 }
 
-/**
- * Saves an edited activity. The version comes from the edit form and never from the cache (001's
- * edit-form rule), so a save after someone else's change is refused with a conflict.
- */
+/** Saves an edited activity. The version comes from the edit form and never from the cache (001's edit-form rule), so a save after someone else's change is refused with a conflict. */
 export function useUpdateActivity() {
   const refresh = useRefreshPlanning();
   return useMutation({
@@ -159,23 +117,21 @@ export function useUpdateActivity() {
   });
 }
 
-/**
- * Moves an activity and its line items to the recycle bin; answers the entry for Undo. The deleted
- * activity itself is not asked again (its page is left), only the lists it was in.
- */
+/** Moves an activity and its line items to the recycle bin; answers the entry for Undo. The deleted activity itself is not asked again (its page is left), only the lists it was in. */
 export function useDeleteActivity() {
-  const refresh = useRefreshPlanning(LISTS_AFTER_DELETE);
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      call(api.DELETE('/api/v1/activities/{activityId}', { params: { path: { activityId: id } } })),
-    onSettled: refresh,
+    mutationFn: ({ id, version }: Seen) =>
+      call(
+        api.DELETE('/api/v1/activities/{activityId}', {
+          params: { path: { activityId: id }, query: { version } },
+        }),
+      ),
+    onSettled: (_result, _error, { id }) => invalidateAllButSession(queryClient, id),
   });
 }
 
-/**
- * The initiatives of the activity's plan, grouped by campaign, each with why the activity can't be
- * moved or copied there (FR-029, FR-030). Never from an earlier opening: a move changes them.
- */
+/** The initiatives of the activity's plan, grouped by campaign, each with why the activity can't be moved or copied there. Never from an earlier opening: a move changes them. */
 export function useActivityDestinations(id: string) {
   return useQuery({
     queryKey: activityDestinationsKey(id),
@@ -190,14 +146,12 @@ export function useActivityDestinations(id: string) {
   });
 }
 
-/** Where an activity goes: another initiative of its plan, and the version the person saw. */
 export interface ActivityMove {
   id: string;
   initiativeId: string;
   version: number;
 }
 
-/** Moves an activity, with its line items and status, to another initiative (FR-029). */
 export function useMoveActivity() {
   const refresh = useRefreshPlanning();
   return useMutation({
@@ -212,7 +166,6 @@ export function useMoveActivity() {
   });
 }
 
-/** Copies an activity and its line items into an initiative of its plan, as Created (FR-030). */
 export function useCopyActivity() {
   const refresh = useRefreshPlanning();
   return useMutation({
@@ -227,11 +180,8 @@ export function useCopyActivity() {
   });
 }
 
-/**
- * Refreshes everything an activity change can show in. A change waits for this before it is done,
- * so the next page already shows the new state.
- */
-function useRefreshPlanning(keys: QueryKey[] = ACTIVITY_PLANNING_KEYS) {
+/** Refreshes everything an activity change can show in. A change waits for this before it is done, so the next page already shows the new state. */
+function useRefreshPlanning() {
   const queryClient = useQueryClient();
-  return () => Promise.all(keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+  return () => invalidateAllButSession(queryClient);
 }

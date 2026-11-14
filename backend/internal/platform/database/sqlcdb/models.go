@@ -872,6 +872,7 @@ type PlanImport struct {
 	UndoneAt       *time.Time
 	UndoneByID     *string
 	UndoneByName   *string
+	CheckID        *string
 }
 
 type PlanImportProblem struct {
@@ -892,6 +893,7 @@ type PlanImportRecord struct {
 	RecordName string
 	ParentID   string
 	Action     string
+	KeptReason *string
 }
 
 type PlanPhasingMonth struct {

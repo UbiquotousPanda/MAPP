@@ -5,11 +5,10 @@ import type { SpreadMethod } from './line-item-math';
 export const EMPTY = '—';
 
 export const SECTION_TITLE = 'Line items';
-export const SECTION_SUBTITLE = 'The costs of this activity, each in its own currency';
 export const ADD_LINE_ITEM = 'Add line item';
 export const EMPTY_SECTION =
   "No line items yet — split this activity's planned cost into the costs you will pay";
-export const BALANCE_LABEL = 'Unassigned planned cost (Sys_Gen_Balance)';
+export const BALANCE_LABEL = 'Unassigned planned cost';
 export const METER_LABEL = 'Assigned to line items';
 export const ALL_ASSIGNED = 'All of the planned cost is assigned';
 export const NO_PLANNED_COST =
@@ -27,12 +26,8 @@ export function planCurrencyColumn(code: string): string {
   return `In plan currency (${code})`;
 }
 
-export function meterText(assigned: string, plannedCost: string, code: string): string {
-  return `${assigned} of ${plannedCost} ${code} assigned`;
-}
-
-export function leftText(amount: string): string {
-  return `${amount} not yet assigned to a line item`;
+export function meterText(assigned: string, plannedCost: string): string {
+  return `${assigned} of ${plannedCost} assigned`;
 }
 
 export function exceededText(amount: string): string {
@@ -81,14 +76,13 @@ export function monthAmountLabel(month: string): string {
 export function customTotalText(
   sum: string,
   cost: string,
-  code: string,
   difference: { sign: number; amount: string },
 ): string {
-  const start = `${sum} of ${cost} ${code} spread — `;
+  const start = `${sum} of ${cost} spread — `;
   if (difference.sign === 0) {
     return `${start}adds up`;
   }
-  return `${start}${difference.amount} ${code} ${difference.sign > 0 ? 'left' : 'too much'}`;
+  return `${start}${difference.amount} ${difference.sign > 0 ? 'left' : 'too much'}`;
 }
 
 export const EYEBROW = 'Line item';
@@ -114,15 +108,7 @@ export const LABEL = {
   swbsCode: 'SWBS code',
 } as const;
 
-export const SOURCE = {
-  name: "From the activity's name",
-  owner: 'From the activity',
-  currency: 'Default',
-  plannedCost: "The activity's unassigned planned cost",
-  spread: "The plan's default",
-  year: "The plan's year",
-  requestSwbs: 'On by default',
-} as const;
+export const PLANNED_COST_SOURCE = "The activity's unassigned planned cost";
 
 export const NOTHING_LEFT =
   "Nothing left to assign — the activity's planned cost is fully assigned";
@@ -145,14 +131,9 @@ export interface RatePart {
   code: string;
 }
 
-export function conversionText(
-  amount: string,
-  code: string,
-  rates: RatePart[],
-  dates?: string | null,
-): string {
+export function conversionText(amount: string, rates: RatePart[], dates?: string | null): string {
   const parts = rates.map((part) => `${part.rate} ${part.code}`).join(' and ');
-  return `= ${amount} ${code} at ${parts} per USD${dates ? ` (${dates})` : ''}`;
+  return `= ${amount} at ${parts} per USD${dates ? ` (${dates})` : ''}`;
 }
 
 export function rateDatesText(dates: string[]): string {

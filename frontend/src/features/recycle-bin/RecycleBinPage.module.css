@@ -6,29 +6,9 @@
   background: var(--surface);
 }
 
-/* Search, the record-type filter, then the count pushed to the end (design system §5.2). */
 .toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3) var(--space-2);
   padding: var(--space-4) var(--card-padding);
   border-bottom: 1px solid var(--hairline);
-}
-
-.search {
-  flex: 1 1 280px;
-  min-width: 0;
-  max-width: 360px;
-}
-
-.count {
-  margin-left: auto;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--leading-sm);
-  white-space: nowrap;
 }
 
 /* "That item is no longer in the recycle bin." above the list, as an info message. */
@@ -55,15 +35,4 @@
 
 .skeletonRow + .skeletonRow {
   border-top: 1px solid var(--row-divider);
-}
-
-@media (max-width: 599px) {
-  .search {
-    flex-basis: 100%;
-    max-width: none;
-  }
-
-  .count {
-    margin-left: 0;
-  }
 }

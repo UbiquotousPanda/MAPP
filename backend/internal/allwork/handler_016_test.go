@@ -11,8 +11,8 @@ import (
 )
 
 // In the demo data 2026 holds P-1001 and P-1002 (USD), 2027 P-1003 (USD, Strategic) and P-1004 "FY2027 Lubricants
-// UK & Ireland" (Cross-market, in GBP at 0.79 per USD, budget 600,000.00 GBP phased evenly, 65,000.00 GBP planned
-// = 82,278.48 USD).
+// UK & Ireland" (Cross-market, in GBP at 0.75 per USD, budget 600,000.00 GBP phased evenly, 65,000.00 GBP planned
+// = 86,666.66 USD).
 
 func allWorkOf(t *testing.T, client *apitest.Client, path string) allwork.Result {
 	t.Helper()
@@ -55,7 +55,7 @@ func TestGetAllWork_RangeYearlyCompare_Contract_FR034(t *testing.T) {
 		t.Errorf("periods = %q, want 2026 and 2027; by quarter %+v, want Q1-2026 labelled Q1 first", keys, quarters)
 	}
 	if uk.PlanType != "crossMarket" || len(uk.PhasedBudget) != 2 || uk.PhasedBudget[0] != nil || uk.PhasedBudget[1] == nil ||
-		uk.PhasedBudget[1].Format() != "759,493.67 USD" {
+		uk.PhasedBudget[1].Format() != "800,000.00 USD" {
 		t.Errorf("P-1004 row: type %q, phased %v", uk.PlanType, uk.PhasedBudget)
 	}
 	var gbpPlans []string
@@ -64,7 +64,7 @@ func TestGetAllWork_RangeYearlyCompare_Contract_FR034(t *testing.T) {
 			gbpPlans = append(gbpPlans, row.RecordID)
 		}
 	}
-	if !slices.Equal(gbpPlans, []string{"P-1004"}) || gbp.Summary.PlannedCost == nil || gbp.Summary.PlannedCost.Format() != "82,278.48 USD" {
+	if !slices.Equal(gbpPlans, []string{"P-1004"}) || gbp.Summary.PlannedCost == nil || gbp.Summary.PlannedCost.Format() != "86,666.66 USD" {
 		t.Errorf("GBP Cross-market plans %v, planned %v", gbpPlans, gbp.Summary.PlannedCost)
 	}
 	assertAnswer(t, tooLong, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+

@@ -11,8 +11,9 @@ import (
 )
 
 const addPlanImport = `-- name: AddPlanImport :exec
-INSERT INTO plan_imports (id, plan_id, file_name, imported_at, imported_by_id, imported_by_name, rows_read, rows_left_out)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO plan_imports (id, plan_id, file_name, imported_at, imported_by_id, imported_by_name, rows_read, rows_left_out,
+    check_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
 type AddPlanImportParams struct {
@@ -24,6 +25,7 @@ type AddPlanImportParams struct {
 	ImportedByName string
 	RowsRead       int
 	RowsLeftOut    int
+	CheckID        *string
 }
 
 func (q *Queries) AddPlanImport(ctx context.Context, arg AddPlanImportParams) error {
@@ -36,6 +38,7 @@ func (q *Queries) AddPlanImport(ctx context.Context, arg AddPlanImportParams) er
 		arg.ImportedByName,
 		arg.RowsRead,
 		arg.RowsLeftOut,
+		arg.CheckID,
 	)
 	return err
 }
@@ -95,7 +98,7 @@ func (q *Queries) ListPlanImportProblems(ctx context.Context, importID string) (
 }
 
 const listPlanImportRecords = `-- name: ListPlanImportRecords :many
-SELECT import_id, position, level, record_id, record_name, parent_id, action FROM plan_import_records
+SELECT import_id, position, level, record_id, record_name, parent_id, action, kept_reason FROM plan_import_records
 WHERE import_id = ANY ($1::text[])
 ORDER BY import_id, position
 `
@@ -117,6 +120,7 @@ func (q *Queries) ListPlanImportRecords(ctx context.Context, importIds []string)
 			&i.RecordName,
 			&i.ParentID,
 			&i.Action,
+			&i.KeptReason,
 		); err != nil {
 			return nil, err
 		}
@@ -129,7 +133,7 @@ func (q *Queries) ListPlanImportRecords(ctx context.Context, importIds []string)
 }
 
 const listPlanImportsInScope = `-- name: ListPlanImportsInScope :many
-SELECT id, plan_id, file_name, imported_at, imported_by_id, imported_by_name, rows_read, rows_left_out, undone_at, undone_by_id, undone_by_name FROM plan_imports
+SELECT id, plan_id, file_name, imported_at, imported_by_id, imported_by_name, rows_read, rows_left_out, undone_at, undone_by_id, undone_by_name, check_id FROM plan_imports
 WHERE ($1::text IS NULL OR id = $1)
     AND ($2::text IS NULL OR plan_id = $2)
     AND plan_in_scope(plan_id, $3::boolean, $4::text,
@@ -177,6 +181,7 @@ func (q *Queries) ListPlanImportsInScope(ctx context.Context, arg ListPlanImport
 			&i.UndoneAt,
 			&i.UndoneByID,
 			&i.UndoneByName,
+			&i.CheckID,
 		); err != nil {
 			return nil, err
 		}
@@ -186,6 +191,23 @@ func (q *Queries) ListPlanImportsInScope(ctx context.Context, arg ListPlanImport
 		return nil, err
 	}
 	return items, nil
+}
+
+const markPlanImportRecordKept = `-- name: MarkPlanImportRecordKept :exec
+UPDATE plan_import_records
+SET kept_reason = $1::text
+WHERE import_id = $2 AND record_id = $3
+`
+
+type MarkPlanImportRecordKeptParams struct {
+	KeptReason string
+	ImportID   string
+	RecordID   string
+}
+
+func (q *Queries) MarkPlanImportRecordKept(ctx context.Context, arg MarkPlanImportRecordKeptParams) error {
+	_, err := q.db.Exec(ctx, markPlanImportRecordKept, arg.KeptReason, arg.ImportID, arg.RecordID)
+	return err
 }
 
 const markPlanImportUndone = `-- name: MarkPlanImportUndone :exec
@@ -209,4 +231,15 @@ func (q *Queries) MarkPlanImportUndone(ctx context.Context, arg MarkPlanImportUn
 		arg.ID,
 	)
 	return err
+}
+
+const planImportCheckUsed = `-- name: PlanImportCheckUsed :one
+SELECT EXISTS (SELECT 1 FROM plan_imports WHERE check_id = $1::text)
+`
+
+func (q *Queries) PlanImportCheckUsed(ctx context.Context, checkID string) (bool, error) {
+	row := q.db.QueryRow(ctx, planImportCheckUsed, checkID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }

@@ -21,7 +21,7 @@ describe('ModelsPage: create and edit (US1 scenarios 1, 4, 5, 6)', () => {
     await user.click(await within(form).findByRole('checkbox', { name: 'Event' }));
     await user.click(within(form).getByRole('checkbox', { name: 'Webinar' }));
     expect(
-      within(form).getByText('250,000 INQ → 5,000 MQL → 250 deals → 2,500,000.00 USD revenue'),
+      within(form).getByText('250,000 INQ → 5,000 MQL → 250 deals → $2,500,000.00 revenue'),
     ).toBeInTheDocument();
     await user.click(within(form).getByRole('button', { name: 'Save' }));
 

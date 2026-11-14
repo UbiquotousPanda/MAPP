@@ -1,24 +1,20 @@
 import { SearchX, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { FilterBar } from '@/ui/FilterBar/FilterBar';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { useAccess } from '@/session/access';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import { BinRow } from './BinRow';
-import {
-  BIN_DESCRIPTION,
-  EMPTY_BIN_TEXT,
-  holdsRecord,
-  matchSearch,
-  showingLine,
-  typePills,
-} from './bin-text';
+import { EMPTY_BIN_TEXT, holdsRecord, ITEMS, matchSearch, typePills } from './bin-text';
 import type { BinItem } from './bin-text';
 import { EmptyBinDialog } from './EmptyBinDialog';
 import { PurgeDialog } from './PurgeDialog';
@@ -27,7 +23,6 @@ import { RestoreDialog } from './RestoreDialog';
 import { highlightedRecordOf } from './schemas';
 import styles from './RecycleBinPage.module.css';
 
-/** The dialog the page shows, if any. */
 type OpenDialog =
   | { kind: 'restore'; item: BinItem }
   | { kind: 'purge'; item: BinItem }
@@ -44,9 +39,25 @@ export function RecycleBinPage() {
   const bin = useRecycleBin();
   // Emptying the bin deletes for good: only for roles with recycleBin.purge (feature 014).
   const { has } = useAccess();
-  const [params] = useSearchParams();
-  const [search, setSearch] = useState('');
-  const [type, setType] = useState('all');
+  const [params, setParams] = useAddressParams();
+  const search = params.get('q') ?? '';
+  const type = params.get('type') ?? 'all';
+  // Written in place, so Back leaves the page instead of undoing the filters one by one.
+  const setFilters = (changes: { q?: string; type?: string }) =>
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        for (const [name, value] of Object.entries(changes)) {
+          if (value === '' || (name === 'type' && value === 'all')) {
+            next.delete(name);
+          } else {
+            next.set(name, value);
+          }
+        }
+        return next;
+      },
+      { replace: true },
+    );
   const [dialog, setDialog] = useState<OpenDialog | null>(null);
   const items = bin.data?.items ?? [];
   const closeDialog = () => setDialog(null);
@@ -55,7 +66,6 @@ export function RecycleBinPage() {
     <>
       <PageHeader
         title="Recycle bin"
-        description={BIN_DESCRIPTION}
         // Destructive and rare: in More, never a red button on the page (design system §5.1).
         moreActions={
           items.length > 0 && has('recycleBin.purge')
@@ -87,9 +97,10 @@ export function RecycleBinPage() {
         <BinList
           items={items}
           search={search}
-          onSearch={setSearch}
+          onSearch={(q) => setFilters({ q })}
           type={type}
-          onType={setType}
+          onType={(value) => setFilters({ type: value })}
+          onClear={() => setFilters({ q: '', type: 'all' })}
           highlight={highlightedRecordOf(params)}
           onRestore={(item) => setDialog({ kind: 'restore', item })}
           onPurge={(item) => setDialog({ kind: 'purge', item })}
@@ -115,19 +126,19 @@ interface BinListProps {
   onSearch: (search: string) => void;
   type: string;
   onType: (type: string) => void;
-  /** The record ID of `?record=`; '' for none. */
+  onClear: () => void;
   highlight: string;
   onRestore: (item: BinItem) => void;
   onPurge: (item: BinItem) => void;
 }
 
-/** The toolbar and the rows, filtered in the browser (FR-016, D-185). */
 function BinList({
   items,
   search,
   onSearch,
   type,
   onType,
+  onClear,
   highlight,
   onRestore,
   onPurge,
@@ -140,25 +151,27 @@ function BinList({
 
   return (
     <div className={styles.panel}>
-      <div className={styles.toolbar}>
-        <div className={styles.search}>
+      <FilterBar
+        className={styles.toolbar}
+        search={
           <SearchField
+            size="sm"
             label="Search name or ID"
             placeholder="Search name or ID"
             value={search}
             onChange={onSearch}
           />
-        </div>
-        <SegmentedFilter
-          label="Record type"
-          options={typePills(items)}
-          value={type}
-          onChange={onType}
-        />
-        <p className={styles.count} aria-live="polite">
-          {showingLine(shown.length, items.length)}
-        </p>
-      </div>
+        }
+        quick={
+          <SegmentedFilter
+            label="Record type"
+            options={typePills(items)}
+            value={type}
+            onChange={onType}
+          />
+        }
+        end={<ResultCount>{countText(shown.length, items.length, ITEMS)}</ResultCount>}
+      />
       {highlight && !highlighted && (
         <p className={styles.notice} role="status">
           That item is no longer in the recycle bin.
@@ -169,16 +182,7 @@ function BinList({
           icon={<SearchX />}
           title="Nothing matches these filters"
           text="Remove a filter or search for something else."
-          action={
-            <Button
-              onClick={() => {
-                onSearch('');
-                onType('all');
-              }}
-            >
-              Clear filters
-            </Button>
-          }
+          action={<Button onClick={onClear}>Clear filters</Button>}
         />
       ) : (
         <ul role="list" className={styles.rows}>

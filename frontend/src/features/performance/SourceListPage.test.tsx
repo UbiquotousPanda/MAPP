@@ -72,6 +72,14 @@ describe('SourceListPage', () => {
     await expectNoAxeViolations();
   });
 
+  it('046 FR-001 shows when a source last loaded as a date and time', async () => {
+    renderPage([listing({ items: [source()] })]);
+
+    expect(
+      await screen.findByRole('cell', { name: /^28 Oct 2026, \d{2}:\d{2}$/ }),
+    ).toBeInTheDocument();
+  });
+
   it('046 FR-001 shows the empty state before any source exists', async () => {
     renderPage([listing({ items: [] })]);
 

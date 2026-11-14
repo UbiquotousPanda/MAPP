@@ -146,31 +146,29 @@ func metricFigures(totals []StageTotals) []MetricFigure {
 	return figures
 }
 
-// panelSources lists the contributing sources with their freshness, failed overlaid from the latest load;
-// data through comes with each.
+// panelSources lists the contributing sources with their freshness and the date their data runs through.
 func (s *Service) panelSources(ctx context.Context, activityID string) ([]PanelSource, error) {
 	totals, err := s.repo.FactTotalsBySource(ctx, activityID)
 	if err != nil {
 		return nil, err
 	}
-	ids := make([]string, 0, len(totals))
-	for _, total := range totals {
-		ids = append(ids, total.SourceID)
-	}
-	failed, err := s.repo.LatestImportStatuses(ctx, ids)
-	if err != nil {
-		return nil, err
-	}
-	sources := make([]PanelSource, 0, len(totals))
+	views := make([]SourceView, 0, len(totals))
 	for _, total := range totals {
 		view, viewErr := s.sourceView(ctx, total.SourceID)
 		if viewErr != nil {
 			return nil, viewErr
 		}
-		view.LastLoadFailed = failed[total.SourceID] == string(ImportFailed)
-		src := PanelSource{SourceID: total.SourceID, SourceName: total.SourceName, Freshness: view.FreshnessAt(s.now())}
-		if !view.DataThrough.IsZero() {
-			through := view.DataThrough.Format(time.DateOnly)
+		view.ID = total.SourceID
+		views = append(views, view)
+	}
+	if views, err = s.markFailedLoads(ctx, views); err != nil {
+		return nil, err
+	}
+	sources := make([]PanelSource, 0, len(totals))
+	for i, total := range totals {
+		src := PanelSource{SourceID: total.SourceID, SourceName: total.SourceName, Freshness: views[i].FreshnessAt(s.now())}
+		if !views[i].DataThrough.IsZero() {
+			through := views[i].DataThrough.Format(time.DateOnly)
 			src.DataThrough = &through
 		}
 		sources = append(sources, src)

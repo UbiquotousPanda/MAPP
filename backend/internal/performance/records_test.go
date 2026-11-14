@@ -29,10 +29,10 @@ func TestSetSourceStatus_LogsDeactivationAndReactivation_FR004_FR045(t *testing.
 	f := newFixture(t)
 	src := f.createSource(t, "Marketing automation")
 
-	if err := f.service.SetSourceStatus(t.Context(), alex, src.ID, performance.StatusInactive); err != nil {
+	if err := f.setSourceStatus(t, src.ID, performance.StatusInactive); err != nil {
 		t.Fatalf("SetSourceStatus(inactive): %v", err)
 	}
-	if err := f.service.SetSourceStatus(t.Context(), alex, src.ID, performance.StatusActive); err != nil {
+	if err := f.setSourceStatus(t, src.ID, performance.StatusActive); err != nil {
 		t.Fatalf("SetSourceStatus(active): %v", err)
 	}
 
@@ -54,7 +54,7 @@ func TestSetSourceStatus_RaisesTheVersionEachTime_FR045(t *testing.T) {
 		t.Fatalf("a new source has version %d, want 1", src.Version)
 	}
 
-	if err := f.service.SetSourceStatus(t.Context(), alex, src.ID, performance.StatusInactive); err != nil {
+	if err := f.setSourceStatus(t, src.ID, performance.StatusInactive); err != nil {
 		t.Fatalf("SetSourceStatus: %v", err)
 	}
 

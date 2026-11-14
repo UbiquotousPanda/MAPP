@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { FormField } from '@/ui/FormField/FormField';
@@ -152,10 +152,9 @@ export function AllocationDialog({ budget, target, onClose }: AllocationDialogPr
     >
       <div className={styles.body}>
         {failure && (
-          <p className={styles.failure} role="alert">
-            <CircleAlert aria-hidden="true" />
+          <InlineAlert tone="danger" role="alert">
             {failure}
-          </p>
+          </InlineAlert>
         )}
         {choosing &&
           (options.data ? (
@@ -166,7 +165,7 @@ export function AllocationDialog({ budget, target, onClose }: AllocationDialogPr
                 <ChoiceField
                   label="Plan"
                   marking="Required"
-                  hint={`Plans of ${budget.year} without an allocation.`}
+                  tip={`Plans of ${budget.year} without an allocation.`}
                   options={planChoices}
                   {...field}
                   onChange={(id) => {
@@ -178,10 +177,9 @@ export function AllocationDialog({ budget, target, onClose }: AllocationDialogPr
               )}
             />
           ) : options.isError ? (
-            <p className={styles.failure} role="alert">
-              <CircleAlert aria-hidden="true" />
+            <InlineAlert tone="danger" role="alert">
               The plans couldn&apos;t be loaded. Close this and try again.
-            </p>
+            </InlineAlert>
           ) : (
             <Skeleton lines={1} height="40px" />
           ))}

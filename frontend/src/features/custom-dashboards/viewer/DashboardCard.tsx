@@ -1,5 +1,4 @@
-import { LayoutDashboard } from 'lucide-react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { plural } from '@/format/text';
 import { useFormatters } from '@/format/useFormatters';
 import { isShown } from '@/session/access';
@@ -7,7 +6,9 @@ import type { Availability } from '@/session/access';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
+import { Tile, TileList } from '@/ui/Tile/Tile';
 import type { CustomDashboardSummary } from '../model';
+import { CUSTOM_ART, EXECUTIVE_ART, REGIONAL_ART } from './dashboard-art';
 import styles from './DashboardListPage.module.css';
 
 interface DashboardCardProps {
@@ -40,23 +41,22 @@ export function DashboardCard({
   );
 
   return (
-    <li className={styles.card}>
-      <div className={styles.cardHeader}>
-        <h3 className={styles.name}>
-          <Link to={href}>{dashboard.name}</Link>
-        </h3>
-        <ActionsMenu label={dashboard.name} items={items} />
-      </div>
+    <Tile
+      title={dashboard.name}
+      to={href}
+      headingLevel={3}
+      accent={isMine ? 4 : 3}
+      picture={CUSTOM_ART}
+      aside={<ActionsMenu label={dashboard.name} items={items} />}
+      foot={`By ${dashboard.owner.name} · Updated ${dateTime(dashboard.updatedAt)} · ${plural(dashboard.widgetCount, 'widget')}`}
+    >
       {dashboard.description && <p className={styles.description}>{dashboard.description}</p>}
-      <p className={styles.facts}>
-        {`By ${dashboard.owner.name} · Updated ${dateTime(dashboard.updatedAt)} · ${plural(dashboard.widgetCount, 'widget')}`}
-      </p>
       {dashboard.sharedWith.length > 0 ? (
         <TeamPills teams={dashboard.sharedWith} />
       ) : (
         <p className={styles.facts}>Not shared</p>
       )}
-    </li>
+    </Tile>
   );
 }
 
@@ -101,28 +101,32 @@ const BUILT_IN = [
     kind: 'executive',
     name: 'Executive dashboard',
     text: 'Budget, planned cost and spend of every market you may see',
+    picture: EXECUTIVE_ART,
   },
   {
     kind: 'regional',
     name: 'Regional dashboard',
     text: 'The same for one market, with its plans and campaigns',
+    picture: REGIONAL_ART,
   },
 ] as const;
 
 export function BuiltInCards() {
   return (
-    <ul role="list" className={styles.cards}>
+    <TileList>
       {BUILT_IN.map((card) => (
-        <li key={card.kind} className={styles.card}>
-          <div className={styles.cardHeader}>
-            <h3 className={styles.name}>
-              <Link to={`/dashboards/${card.kind}`}>{card.name}</Link>
-            </h3>
-            <LayoutDashboard aria-hidden="true" className={styles.icon} />
-          </div>
+        <Tile
+          key={card.kind}
+          title={card.name}
+          to={`/dashboards/${card.kind}`}
+          headingLevel={3}
+          accent={1}
+          picture={card.picture}
+          foot="Built in"
+        >
           <p className={styles.description}>{card.text}</p>
-        </li>
+        </Tile>
       ))}
-    </ul>
+    </TileList>
   );
 }

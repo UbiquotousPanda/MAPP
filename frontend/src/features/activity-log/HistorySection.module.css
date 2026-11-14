@@ -14,7 +14,6 @@
   gap: var(--space-4);
 }
 
-/* In a side panel: a part like the panel's others, 32 px apart, with an h3 (§5.5 FormSection). */
 .panelPart {
   display: flex;
   flex-direction: column;
@@ -29,14 +28,6 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2) var(--space-3);
-}
-
-.panelTitle {
-  color: var(--ink);
-  font-family: var(--font);
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-md);
 }
 
 .panelSubtitle {

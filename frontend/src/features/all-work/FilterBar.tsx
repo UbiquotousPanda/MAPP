@@ -1,22 +1,26 @@
-import { SlidersHorizontal } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
-import { Button } from '@/ui/Button/Button';
-import { FilterChips } from '@/ui/FilterChips/FilterChips';
+import { FilterBar as ListFilterBar } from '@/ui/FilterBar/FilterBar';
+import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
+import type { FilterChoice } from '@/ui/FilterMenu/FilterMenu';
 import { SearchField } from '@/ui/SearchField/SearchField';
-import { cx } from '@/ui/cx';
+import { YearRangeMenu } from '@/ui/YearRangeMenu/YearRangeMenu';
 import { formatWhole } from '@/format/decimal';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
+import { AttributeFilterMenu } from '@/ui/AttributeFilterMenu/AttributeFilterMenu';
 import styles from './FilterBar.module.css';
 import {
   ACTIVITY_STATUS_LABELS,
   CONTAINER_STATUS_LABELS,
-  countText,
+  countNoun,
   FILTER_LABELS,
   FINANCE_LABELS,
   isLabelled,
+  MAX_YEARS,
   PLAN_STATUS_LABELS,
   PLAN_TYPE_LABELS,
   SHOW_LEVELS_LABELS,
   STRATEGIC_LABELS,
+  TOO_MANY_YEARS,
 } from './all-work-text';
 import type {
   AllWorkOptions,
@@ -25,13 +29,9 @@ import type {
   Filters,
   ViewState,
 } from './all-work-types';
-import { AttributeFilterMenu } from './AttributeFilterMenu';
-import { FilterMenu } from './FilterMenu';
-import type { FilterChoice } from './FilterMenu';
-import { chipsOf, clearAll, hasFilters, removeChip } from './view-chips';
+import { chipsOf, clearFilters, removeChip } from './view-chips';
 import { choicesOf, withYears, yearRange } from './view-state';
 import type { IdFilter, ValueFilter } from './view-state';
-import { YearRangeMenu } from './YearRangeMenu';
 
 const SEARCH_DELAY_MS = 300;
 
@@ -46,27 +46,6 @@ export interface FilterBarProps {
 }
 
 export function FilterBar({ state, options, count, updating, onChange }: FilterBarProps) {
-  const menusId = useId();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [typed, setTyped] = useState(state.search);
-  const [searchShown, setSearchShown] = useState(state.search);
-  const timer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(timer.current), []);
-
-  if (state.search !== searchShown) {
-    setSearchShown(state.search);
-    setTyped(state.search);
-  }
-
-  function typeSearch(text: string) {
-    setTyped(text);
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(
-      () => onChange((current) => ({ ...current, search: text })),
-      SEARCH_DELAY_MS,
-    );
-  }
-
   const { filters } = state;
   const setFilters = (change: Partial<Filters>) =>
     onChange((current) => ({ ...current, filters: { ...current.filters, ...change } }));
@@ -201,75 +180,57 @@ export function FilterBar({ state, options, count, updating, onChange }: FilterB
     },
   ];
 
-  function clear() {
-    window.clearTimeout(timer.current);
-    setTyped('');
-    onChange(clearAll);
-  }
-
   const chips = chipsOf(state, options);
   const hasAttributes = Boolean(options?.attributes?.length) || Boolean(filters.attributes?.length);
 
   return (
-    <div className={styles.bar}>
-      <div className={styles.top}>
-        <div className={styles.search}>
-          <SearchField
-            label="Search"
-            placeholder="Search name, ID or description"
-            value={typed}
-            onChange={typeSearch}
-          />
-        </div>
-        <Button
-          size="md"
-          icon={<SlidersHorizontal />}
-          className={styles.drawerButton}
-          aria-expanded={drawerOpen}
-          aria-controls={menusId}
-          onClick={() => setDrawerOpen(!drawerOpen)}
-        >
-          {chips.length > 0 ? `Filters (${formatWhole(chips.length)})` : 'Filters'}
-        </Button>
-        <p className={styles.count} aria-live="polite">
-          {count && countText(count.shown, count.total, count.noun)}
-          {updating && <span className={styles.updating}> Updating…</span>}
-        </p>
-      </div>
-      <div
-        id={menusId}
-        className={cx(styles.menus, drawerOpen && styles.open)}
-        role="group"
-        aria-label="Filters"
-      >
-        <YearRangeMenu
-          years={years}
-          from={range.from}
-          to={range.to}
-          onChange={(from, to) => onChange((current) => withYears(current, from, to))}
+    <ListFilterBar
+      className={styles.bar}
+      search={
+        <SearchField
+          size="sm"
+          delay={SEARCH_DELAY_MS}
+          label="Search"
+          placeholder="Search name, ID or description"
+          value={state.search}
+          onChange={(search) => onChange((current) => ({ ...current, search }))}
         />
-        {menus.map((menu) => (
-          <FilterMenu key={menu.label} {...menu} />
-        ))}
-        {hasAttributes && (
-          <AttributeFilterMenu
-            attributes={options?.attributes ?? []}
-            selected={filters.attributes ?? []}
-            onChange={(attributes) => setFilters({ attributes })}
+      }
+      inUse={chips.length}
+      menus={
+        <>
+          <YearRangeMenu
+            legend="Plans of the years"
+            years={years}
+            from={range.from}
+            to={range.to}
+            maxYears={MAX_YEARS}
+            note={TOO_MANY_YEARS}
+            onChange={(from, to) =>
+              onChange((current) => withYears(current, from ?? range.from, to ?? range.to))
+            }
           />
-        )}
-      </div>
-      {hasFilters(state) && (
-        <div className={styles.results}>
-          <FilterChips
-            chips={chips}
-            onRemove={(key) => onChange((current) => removeChip(current, key))}
-          />
-          <button type="button" className={styles.clearAll} onClick={clear}>
-            Clear all
-          </button>
-        </div>
-      )}
-    </div>
+          {menus.map((menu) => (
+            <FilterMenu key={menu.label} {...menu} />
+          ))}
+          {hasAttributes && (
+            <AttributeFilterMenu
+              attributes={options?.attributes ?? []}
+              selected={filters.attributes ?? []}
+              onChange={(attributes) => setFilters({ attributes })}
+            />
+          )}
+        </>
+      }
+      end={
+        <ResultCount>
+          {count && countText(count.shown, count.total, countNoun(count.noun))}
+          {updating && <span className={styles.updating}> Updating…</span>}
+        </ResultCount>
+      }
+      chips={chips}
+      onRemoveChip={(key) => onChange((current) => removeChip(current, key))}
+      onClearFilters={() => onChange(clearFilters)}
+    />
   );
 }

@@ -12,14 +12,6 @@
   font-size: var(--text-sm);
 }
 
-.box input {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  accent-color: var(--blue);
-}
-
 .box label {
   cursor: pointer;
 }

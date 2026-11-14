@@ -14,7 +14,6 @@ describe('the dashboard address (036 FR-007)', () => {
             true,
           );
           expect(['', 'operational', 'strategic', 'crossMarket']).toContain(filters.planType);
-          expect(filters.currency === '' || /^[A-Z]{3}$/.test(filters.currency)).toBe(true);
           expect(filters.team.length).toBeLessThanOrEqual(40);
         },
       ),
@@ -25,7 +24,6 @@ describe('the dashboard address (036 FR-007)', () => {
     const filters = {
       year: 2027,
       planType: 'strategic' as const,
-      currency: 'EUR',
       team: 'T-1002',
       plan: 'P-1003',
     };

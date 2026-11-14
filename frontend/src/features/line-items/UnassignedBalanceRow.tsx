@@ -2,13 +2,12 @@ import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { cx } from '@/ui/cx';
 import { FieldHelpTip } from '@/features/settings';
 import { toCents } from '@/format/decimal';
-import { amountText, centsInput } from './line-item-math';
+import { amountText, moneyText } from './line-item-math';
 import type { UnassignedBalance } from './api';
 import {
   ALL_ASSIGNED,
   BALANCE_LABEL,
   exceededText,
-  leftText,
   METER_LABEL,
   meterText,
   NO_PLANNED_COST,
@@ -16,9 +15,10 @@ import {
 } from './line-item-text';
 import styles from './UnassignedBalanceRow.module.css';
 
-/** The system row "Unassigned planned cost (Sys_Gen_Balance)": the balance, a meter and the state. */
+/** The system row "Unassigned planned cost": the balance, a meter and the state. */
 export function UnassignedBalanceRow({ balance }: { balance: UnassignedBalance }) {
   const exceeded = balance.state === 'exceeded';
+  const text = message(balance);
   return (
     <div className={styles.row}>
       <div className={styles.head}>
@@ -40,21 +40,17 @@ export function UnassignedBalanceRow({ balance }: { balance: UnassignedBalance }
             tone={exceeded ? 'problem' : undefined}
           />
           <span className={styles.meterText}>
-            {meterText(
-              centsInput(toCents(balance.assigned.amount)),
-              centsInput(toCents(balance.plannedCost.amount)),
-              balance.plannedCost.currency,
-            )}
+            {meterText(moneyText(balance.assigned), moneyText(balance.plannedCost))}
           </span>
         </div>
       )}
-      <p className={cx(styles.message, exceeded && styles.problem)}>{message(balance)}</p>
+      {text && <p className={cx(styles.message, exceeded && styles.problem)}>{text}</p>}
       {balance.roundingHint && <p className={styles.hint}>{ROUNDING_HINT}</p>}
     </div>
   );
 }
 
-function message(balance: UnassignedBalance): string {
+function message(balance: UnassignedBalance): string | null {
   if (balance.state === 'noPlannedCost' || !balance.balance) {
     return NO_PLANNED_COST;
   }
@@ -62,7 +58,7 @@ function message(balance: UnassignedBalance): string {
   const code = balance.balance.currency;
   switch (balance.state) {
     case 'left':
-      return leftText(amountText(cents, code));
+      return null;
     case 'exceeded':
       return exceededText(amountText(-cents, code));
     default:

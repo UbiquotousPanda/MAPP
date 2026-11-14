@@ -1,9 +1,46 @@
-.actions,
-.switch {
+.widget {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* The title with its ⓘ on the left, the widget's own controls on the right; they wrap below only when
+   the card is too narrow for both. */
+.head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--row-divider);
+}
+
+.titleRow {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: min(100%, 160px);
+}
+
+.body {
+  flex: 1;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
+  max-width: 100%;
 }
 
 .note {
@@ -23,56 +60,4 @@
 
 .failed p {
   margin: 0;
-}
-
-.tableWrap {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-.caption {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--hairline);
-  color: var(--ink);
-  text-align: left;
-}
-
-.table th {
-  font-weight: var(--weight-bold);
-}
-
-.numeric {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.table .numeric {
-  text-align: right;
-}
-
-.total td {
-  font-weight: var(--weight-bold);
-}
-
-.empty {
-  margin: 0;
-  padding: var(--space-6) 0;
-  color: var(--ink-2);
-  font-size: var(--text-sm);
-  text-align: center;
 }

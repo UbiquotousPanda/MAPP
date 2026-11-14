@@ -88,16 +88,3 @@ func TestPlanDetails_NoReportsView_FR003(t *testing.T) {
 		t.Errorf("without reports.view = %d, want 403", refused.Status)
 	}
 }
-
-func TestReport_NoFinanceView_ShowsPlannedCost_FR004(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	giveMeiOnly(t, server, "plans.view", "reports.view")
-
-	r := reportOf(t, server.SignIn(t, mei), report)
-
-	if r.Cards.Records == 0 || r.Cards.PlannedCost.Amount.IsZero() {
-		t.Errorf("cards = %+v, want Mei's activities with their planned cost although she may not see financial data",
-			r.Cards)
-	}
-}

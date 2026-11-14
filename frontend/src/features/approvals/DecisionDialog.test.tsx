@@ -40,7 +40,7 @@ describe('DecisionDialog (feature 008, US2)', () => {
     expect(dialog).toHaveTextContent(
       'You are not an approver of level 1. Your decision will be recorded as made on behalf of Carlos Mendes.',
     );
-    expect(screen.getByRole('textbox', { name: 'Comment (optional)' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Comment' })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus();
   });
 
@@ -95,7 +95,7 @@ describe('DecisionDialog (feature 008, US2)', () => {
       ),
     ]);
 
-    await user.type(screen.getByRole('textbox', { name: 'Comment (optional)' }), 'Fine');
+    await user.type(screen.getByRole('textbox', { name: 'Comment' }), 'Fine');
     await user.click(screen.getByRole('button', { name: 'Approve' }));
 
     expect(await screen.findByText("Activity 'Launch film' approved")).toBeInTheDocument();

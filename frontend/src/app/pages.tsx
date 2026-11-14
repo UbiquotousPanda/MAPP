@@ -105,6 +105,9 @@ export const LineItemEditPage = lazy(() =>
 export const LineItemPage = lazy(() =>
   lineItems().then((feature) => ({ default: feature.LineItemPage })),
 );
+export const CurrencyPicker = lazy(() =>
+  people().then((feature) => ({ default: feature.CurrencyPicker })),
+);
 export const AccessPage = lazy(() => people().then((feature) => ({ default: feature.AccessPage })));
 export const PeoplePage = lazy(() => people().then((feature) => ({ default: feature.PeoplePage })));
 export const ProfilePage = lazy(() =>

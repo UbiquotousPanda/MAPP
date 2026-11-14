@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import type { ApiError } from '@/api/errors';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { useToast } from '@/ui/Toast/useToast';
@@ -14,10 +15,7 @@ export interface EmptyBinDialogProps {
   onClose: () => void;
 }
 
-/**
- * Asks before emptying the recycle bin (FR-029, FR-030): how many entries and what is inside them.
- * Only the entries the person saw here are deleted, even when someone added one meanwhile.
- */
+/** Deletes only the entries the person saw here, even when someone added one meanwhile. */
 export function EmptyBinDialog({ items, onClose }: EmptyBinDialogProps) {
   const emptyBin = useEmptyBin();
   const { show } = useToast();
@@ -54,11 +52,7 @@ export function EmptyBinDialog({ items, onClose }: EmptyBinDialogProps) {
       <div className={styles.sentences}>
         <p>{emptyBinText(items)}</p>
         <p>This can&apos;t be undone.</p>
-        {failure && (
-          <p role="alert" className={styles.failure}>
-            {failure.message}
-          </p>
-        )}
+        {failure && <InlineError>{failure.message}</InlineError>}
       </div>
     </ConfirmDialog>
   );

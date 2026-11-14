@@ -175,8 +175,8 @@ Undo after the delete brings the record back unchanged.
 - **FR-001**: MAPP MUST show a single sign-in page in Shell's design language (design system v2 §2):
   logo on the brand gradient, "Welcome back", e-mail, password with a show/hide control, **Sign in**, and
   "Explore as a demo person" listing every active demo person with avatar, name and job title.
-- **FR-002**: The sign-in page MUST state "Demo sign-in — Shell single sign-on comes later" and show the
-  shared demo password (decision D-004).
+- **FR-002**: The sign-in page MUST state "Demo sign-in" and show the shared demo password (decision D-004;
+  wording D-422).
 - **FR-003**: MAPP MUST sign a user in when the e-mail matches an active demo person (ignoring letter
   case and surrounding spaces) and the password equals the demo password, or when a demo person is chosen
   from the list.
@@ -199,7 +199,7 @@ Undo after the delete brings the record back unchanged.
 - **FR-010**: Every signed-in page MUST use the layout of design system §2: left sidebar (logo; Home,
   Plans, Approvals, All work; MORE: Settings, Recycle bin, Activity log; footer with collapse toggle,
   account button, notification bell, light/dark switch), page header pattern, content area of at most
-  1120 px.
+  1120 px. The logo opens Home at its top, also when Home is already on screen (amended 2026-11-13).
 - **FR-011**: The sidebar MUST highlight the current section, collapse to an icon rail with tooltips,
   remember its collapsed state per user, and become a slide-in drawer on narrow screens.
 - **FR-012**: The account button MUST open a menu with avatar, name, e-mail, job title, **My profile** and

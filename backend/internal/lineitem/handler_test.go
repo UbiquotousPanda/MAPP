@@ -100,14 +100,14 @@ func TestListActivityLineItems_Contract(t *testing.T) {
 	}
 	fee, film := section.Items[0], section.Items[1]
 	if fee.ID != "L-1001" || len(fee.Missing) != 0 || fee.SwbsStatus != "waitingForApproval" ||
-		film.PlannedCostUSD.Format() != "50,000.00 USD" || len(film.Missing) != 3 {
+		film.PlannedCostUSD.Format() != "51,111.11 USD" || len(film.Missing) != 3 {
 		t.Errorf("Agency fee missing %+v; Film production %s missing %+v", fee.Missing, film.PlannedCostUSD.Format(), film.Missing)
 	}
-	if b := section.Balance; b.State != "left" || b.Balance.Format() != "20,000.00 USD" || b.Assigned.Format() != "100,000.00 USD" {
+	if b := section.Balance; b.State != "left" || b.Balance.Format() != "18,888.89 USD" || b.Assigned.Format() != "101,111.11 USD" {
 		t.Errorf("balance = %+v", b)
 	}
 	if g := section.Grid; len(g.Columns) != 3 || g.Columns[0].Key != "2026-03" || g.Columns[2].Key != "2026-05" ||
-		g.Total.Format() != "100,000.00 USD" {
+		g.Total.Format() != "101,111.11 USD" {
 		t.Errorf("grid = %+v", g)
 	}
 
@@ -120,7 +120,7 @@ func TestListActivityLineItems_Contract(t *testing.T) {
 	assertAnswer(t, gone, http.StatusNotFound, activityGoneBody)
 }
 
-// A new line item of Launch film starts with its 20,000.00 USD unassigned planned cost as the planned cost.
+// A new line item of Launch film starts with its 18,888.89 USD unassigned planned cost as the planned cost.
 func TestGetLineItemFormOptions_Contract(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -134,7 +134,7 @@ func TestGetLineItemFormOptions_Contract(t *testing.T) {
 	response.Decode(t, &options)
 	d := options.Defaults
 	if d.Name != "Launch film – line item" || d.Owner == nil || d.Owner.Name != "Priya Raman" || d.Currency != "USD" ||
-		d.PlannedCost == nil || d.PlannedCost.Format() != "20,000.00 USD" || d.PlannedCostSource != "unassignedBalance" ||
+		d.PlannedCost == nil || d.PlannedCost.Format() != "18,888.89 USD" || d.PlannedCostSource != "unassignedBalance" ||
 		d.SpreadMethod != "evenly" || d.FinanceBudgetYear != 2026 || d.FinanceBudgetItemID != nil || !d.RequestSwbs {
 		t.Errorf("defaults = %+v", d)
 	}
@@ -165,7 +165,7 @@ func TestCreateLineItem_Contract(t *testing.T) {
 	created.Decode(t, &v)
 	// L-1009 to L-1011 belong to the GBP plan and to the deleted initiative in the demo recycle bin.
 	if v.ID != "L-1012" || v.Name != "Music rights" || v.PlannedCost.Format() != "10,000.00 EUR" ||
-		v.PlannedCostUSD.Format() != "10,869.57 USD" || v.SwbsStatus != "waitingForApproval" || len(v.Spread.Months) != 3 ||
+		v.PlannedCostUSD.Format() != "11,111.11 USD" || v.SwbsStatus != "waitingForApproval" || len(v.Spread.Months) != 3 ||
 		v.Owner == nil || v.Version != 1 || v.CreatedBy.Name != "Priya Raman" {
 		t.Errorf("created = %+v", v)
 	}
@@ -191,7 +191,7 @@ func TestGetLineItem_Contract(t *testing.T) {
 	response.Decode(t, &details)
 	if details.LineItem.Name != "Agency fee" || details.LineItem.PlannedCost.Format() != "50,000.00 USD" ||
 		details.LineItem.FinanceBudgetItem == nil || details.Activity.Name != "Launch film" || len(details.Activity.Path) != 3 ||
-		details.Balance.Balance.Format() != "20,000.00 USD" {
+		details.Balance.Balance.Format() != "18,888.89 USD" {
 		t.Errorf("details = %+v", details)
 	}
 	assertAnswer(t, gone, http.StatusNotFound, lineItemGoneBody)
@@ -219,7 +219,7 @@ func TestUpdateLineItem_Contract(t *testing.T) {
 	assertAnswer(t, saved, http.StatusOK, "")
 	var v lineitem.View
 	saved.Decode(t, &v)
-	if v.Version != 2 || v.PlannedCost.Format() != "46,500.00 EUR" || v.PlannedCostUSD.Format() != "50,543.48 USD" {
+	if v.Version != 2 || v.PlannedCost.Format() != "46,500.00 EUR" || v.PlannedCostUSD.Format() != "51,666.67 USD" {
 		t.Errorf("saved = version %d, %s = %s", v.Version, v.PlannedCost.Format(), v.PlannedCostUSD.Format())
 	}
 	assertAnswer(t, stale, http.StatusConflict, "")
@@ -265,7 +265,7 @@ func TestDeleteLineItem_Contract(t *testing.T) {
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/line-items/L-1001", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/line-items/L-1001")
 	gone := priya.Do(t, http.MethodGet, "/api/v1/line-items/L-1001", nil)
 	var result struct {
 		RecycleBinEntry struct {
@@ -274,9 +274,9 @@ func TestDeleteLineItem_Contract(t *testing.T) {
 	}
 	deleted.Decode(t, &result)
 	undone := priya.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+result.RecycleBinEntry.ID+"/undo", nil)
-	onApproved := priya.Do(t, http.MethodDelete, "/api/v1/line-items/L-1003", nil)
-	withOldFlag := priya.Do(t, http.MethodDelete, "/api/v1/line-items/L-1004?restartApproval=true", nil)
-	unknown := priya.Do(t, http.MethodDelete, "/api/v1/line-items/L-9999", nil)
+	onApproved := priya.DeleteSeen(t, "/api/v1/line-items/L-1003")
+	withOldFlag := priya.DeleteSeen(t, "/api/v1/line-items/L-1004?restartApproval=true")
+	unknown := priya.DeleteSeen(t, "/api/v1/line-items/L-9999")
 
 	assertAnswer(t, deleted, http.StatusOK, "")
 	if result.RecycleBinEntry.RecordType != "lineItem" || result.RecycleBinEntry.RecordID != "L-1001" {

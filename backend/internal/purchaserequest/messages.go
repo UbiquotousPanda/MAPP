@@ -10,6 +10,7 @@ const (
 	msgAlreadyOnPR         = "Already on this purchase request"
 	msgNothingLeft         = "Nothing left to request"
 	msgActivityNotApproved = "Activity '%s' must be approved before this purchase request can be submitted."
+	msgApproveAgain        = "Activity '%s' is no longer approved. The activity must be approved again."
 	msgNoSwbs              = "Line item %s '%s' has no SWBS code yet (%s)."
 	msgLineItemsOverCost   = "Activity '%s': line items exceed its planned cost by %s — lower them, or raise the " +
 		"activity's planned cost and get it approved again."
@@ -62,7 +63,6 @@ const (
 	msgReload             = "Reload the purchase request and try again."
 	msgUnknownLine        = "This line is no longer on the purchase request — reload it."
 	msgSortUnknown        = "Choose one of the sort orders offered."
-	msgPageSize           = "Choose 50, 100 or 200 per page."
 	msgPageNumber         = "Enter a page of 1 or more."
 	msgDate               = "Enter a date as YYYY-MM-DD."
 	msgLinesOnApproved    = "Choose one of the options for lines on approved purchase requests."

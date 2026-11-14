@@ -11,7 +11,8 @@ import {
   PLANNER,
   VIEWER,
 } from '@/testing/fixtures/access';
-import { reply } from '@/testing/replies';
+import { apiError, reply } from '@/testing/replies';
+import { ROLES_KEY } from './api';
 import { RoleFormPage } from './RoleFormPage';
 import { RolePage } from './RolePage';
 
@@ -173,6 +174,42 @@ describe('RoleFormPage (feature 014, US4)', () => {
         permissions: PLANNER.permissions.filter((key) => key !== 'plans.publish'),
         version: 1,
       },
+    ]);
+  });
+});
+
+describe('a role saved after a conflict', () => {
+  it('sends the version it was told about, not one a later refetch brought', async () => {
+    let current = 1;
+    let patches = 0;
+    const { api, user, queryClient } = renderForm(`/settings/access/roles/${PLANNER.id}/edit`, [
+      reply('GET /api/v1/roles/{roleId}', () => ({ body: { ...PLANNER, version: current } }), {
+        roleId: PLANNER.id,
+      }),
+      reply('PATCH /api/v1/roles/{roleId}', () =>
+        ++patches === 1
+          ? {
+              status: 409,
+              body: apiError('version_conflict', 'Changed.', {
+                conflict: { changedBy: 'Daniel Okoro', changedAt: '2026-10-27T09:45:00Z' },
+              }),
+            }
+          : { body: { ...PLANNER, version: 9 } },
+      ),
+    ]);
+    await user.click(await screen.findByRole('checkbox', { name: /^Publish and unpublish plans/ }));
+    current = 2;
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await screen.findByText(/Not saved — Daniel Okoro changed this role/);
+    current = 3;
+    await queryClient.refetchQueries({ queryKey: [...ROLES_KEY, PLANNER.id] });
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(patches).toBe(2));
+    expect(api.bodiesOf(`PATCH /api/v1/roles/${PLANNER.id}`)).toEqual([
+      expect.objectContaining({ version: 1 }),
+      expect.objectContaining({ version: 2 }),
     ]);
   });
 });

@@ -111,7 +111,7 @@ func TestCanonicalQuery_FR024(t *testing.T) {
 
 func TestParseFilter_KeepsTheReportsOwnParameters_039_B4(t *testing.T) {
 	t.Parallel()
-	values, _ := url.ParseQuery("year=2026&report=gsapLink&tab=waiting&sort=-age&owner=U-1002")
+	values, _ := url.ParseQuery("year=2026&report=purchasing&tab=waiting&sort=-age&owner=U-1002")
 	f, err := measure.ParseFilter(values)
 	if err != nil {
 		t.Fatalf("ParseFilter() error = %v", err)

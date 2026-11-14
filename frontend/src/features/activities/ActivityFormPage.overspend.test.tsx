@@ -44,7 +44,7 @@ describe('ActivityFormPage — overspend limits (037 FR-014)', () => {
     await user.type(await screen.findByLabelText('Activity name'), 'Launch video');
     expect(
       screen.getByText(
-        "5,000.00 USD left to plan in campaign 'Helix launch', which refuses overspending.",
+        "$5,000.00 left to plan in campaign 'Helix launch', which refuses overspending.",
       ),
     ).toBeVisible();
 
@@ -53,7 +53,7 @@ describe('ActivityFormPage — overspend limits (037 FR-014)', () => {
     await user.type(cost, '6000');
     await user.tab();
     const over =
-      "This is 1,000.00 USD over the budget of campaign 'Helix launch', which refuses overspending.";
+      "This is $1,000.00 over the budget of campaign 'Helix launch', which refuses overspending.";
 
     expect(screen.getAllByText(over)[0]).toBeVisible();
     await expectNoAxeViolations();

@@ -5,13 +5,14 @@ import { FieldHelpTip, useAttributeForm } from '@/features/settings';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { ShellAttributeValues } from '@/ui/ShellAttributeFields/ShellAttributeValues';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import { formatAmount, formatPercent } from '@/format/decimal';
 import { localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
-import { AmountPair } from './AmountPair';
+import { ConvertedAmount } from '@/features/line-items';
 import { PLAN_TYPE_LABELS } from './plan-currency';
 import styles from './PlanDetails.module.css';
 import type { Plan } from './api';
@@ -54,10 +55,10 @@ export function PlanDetails({ plan, basicsExtra, budgetExtra, budgetValue }: Pla
   return (
     <Card title="Details" subtitle={`Amounts in ${plan.currency ?? plan.figures.currency}`}>
       <div className={styles.groups}>
-        <section aria-labelledby="details-basics">
-          <h3 id="details-basics" className={styles.groupTitle}>
+        <section aria-labelledby="details-basics" className={styles.group}>
+          <SectionHeading level={3} rank="sub" id="details-basics">
             Basics
-          </h3>
+          </SectionHeading>
           <dl className={styles.fields}>
             <Field label="Plan name" helpKey="plan.name">
               {plan.name}
@@ -94,10 +95,10 @@ export function PlanDetails({ plan, basicsExtra, budgetExtra, budgetValue }: Pla
             </Field>
           </dl>
         </section>
-        <section aria-labelledby="details-budget">
-          <h3 id="details-budget" className={styles.groupTitle}>
+        <section aria-labelledby="details-budget" className={styles.group}>
+          <SectionHeading level={3} rank="sub" id="details-budget">
             Budget
-          </h3>
+          </SectionHeading>
           <dl className={styles.fields}>
             {plan.currency && (
               <Field label="Plan currency" helpKey="plan.currency">
@@ -108,7 +109,7 @@ export function PlanDetails({ plan, basicsExtra, budgetExtra, budgetValue }: Pla
             {budgetExtra}
             <Field label="Plan budget" helpKey="plan.budget">
               {budgetValue ?? (
-                <AmountPair
+                <ConvertedAmount
                   primary={plan.budget ?? plan.figures.budget}
                   secondary={plan.figures.budget}
                   inline
@@ -143,10 +144,10 @@ export function PlanDetails({ plan, basicsExtra, budgetExtra, budgetValue }: Pla
             </Field>
           </dl>
         </section>
-        <section aria-labelledby="details-attributes">
-          <h3 id="details-attributes" className={styles.groupTitle}>
+        <section aria-labelledby="details-attributes" className={styles.group}>
+          <SectionHeading level={3} rank="sub" id="details-attributes">
             Shell attributes
-          </h3>
+          </SectionHeading>
           {attributeForm.isSuccess ? (
             <ShellAttributeValues
               form={attributeForm.data}

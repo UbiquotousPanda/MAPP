@@ -8,12 +8,13 @@ import {
   defaultGrouping,
   GroupingPickers,
   NO_PLANNED_COST,
-  PLANNED_COST_BY,
   useAllWorkBreakdown,
   useAllWorkOptions,
 } from '@/features/all-work';
 import type { BreakdownChoice } from '@/features/all-work';
 import type { Plan } from './api';
+
+const TITLE = 'Planned cost breakdown';
 
 /** The plan's planned cost in its own currency by Spend type, or by another grouping chosen here. */
 export function PlannedCostByCard({ plan }: { plan: Pick<Plan, 'id' | 'name' | 'year'> }) {
@@ -43,12 +44,12 @@ export function PlannedCostByCard({ plan }: { plan: Pick<Plan, 'id' | 'name' | '
     if (query.data.groups.length === 0) {
       return <EmptyState title={NO_PLANNED_COST} />;
     }
-    return <BreakdownTable breakdown={query.data} caption={`${PLANNED_COST_BY} – ${plan.name}`} />;
+    return <BreakdownTable breakdown={query.data} caption={`${TITLE} – ${plan.name}`} />;
   }
 
   return (
     <Card
-      title={PLANNED_COST_BY}
+      title={TITLE}
       actions={
         choice &&
         query.data && (

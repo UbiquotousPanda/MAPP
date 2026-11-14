@@ -1,0 +1,90 @@
+/* Every menu and popover (design system §3.5 level 1): Raised, a hairline edge, radius 8. */
+.surface {
+  z-index: 50;
+  max-width: calc(100vw - 32px);
+  max-height: min(480px, calc(var(--radix-popper-available-height, 100dvh) - var(--space-2)));
+  overflow-y: auto;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-control);
+  background: var(--raised);
+  box-shadow: var(--shadow-md);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  transform-origin: var(--radix-popper-transform-origin);
+  animation: pop-in var(--dur-fast) var(--ease-out);
+}
+
+.surface[data-side='top'] {
+  --pop-from: translateY(4px);
+}
+
+.surface[data-side='left'] {
+  --pop-from: translateX(4px);
+}
+
+.surface[data-side='right'] {
+  --pop-from: translateX(-4px);
+}
+
+.surface[data-state='closed'] {
+  animation: pop-out 0.1s var(--ease-in) forwards;
+}
+
+/* Dark Raised is 3.9:1 for Text Subtle, so secondary text there is Text Strong (constitution X). */
+:global(:root[data-theme='dark']) .surface {
+  --ink-2: var(--ink);
+}
+
+.auto {
+  min-width: 220px;
+  max-width: min(340px, calc(100vw - 32px));
+}
+
+.sm {
+  width: min(260px, calc(100vw - 32px));
+}
+
+.md {
+  width: min(300px, calc(100vw - 32px));
+}
+
+.lg {
+  width: min(360px, calc(100vw - 32px));
+}
+
+/* As wide as the control it belongs to, such as a Combobox's list. */
+.anchor {
+  width: var(--radix-popover-trigger-width);
+  min-width: 240px;
+}
+
+.padNone {
+  padding: 0;
+}
+
+.padSm {
+  padding: var(--space-1);
+}
+
+.padMd {
+  padding: var(--space-2);
+}
+
+.padLg {
+  padding: var(--space-4);
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: var(--pop-from, translateY(-4px)) scale(0.98);
+  }
+}
+
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}

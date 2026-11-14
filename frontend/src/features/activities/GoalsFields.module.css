@@ -6,7 +6,6 @@
   align-items: start;
 }
 
-/* The calculated stages take the two columns after INQ. */
 .stages {
   display: grid;
   grid-column: span 2;
@@ -25,7 +24,7 @@
 .stage dt {
   color: var(--ink);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   line-height: var(--leading-sm);
 }
 

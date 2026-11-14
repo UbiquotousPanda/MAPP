@@ -35,7 +35,9 @@ describe('ColumnChooser (US3)', () => {
     renderWithProviders(<Harness />);
 
     const panel = screen.getByRole('dialog', { name: 'Columns' });
-    expect(panel).toHaveAccessibleDescription('Choose and order the columns of the grid.');
+    expect(panel).toHaveAccessibleDescription(
+      'Put the shown columns in order, then tick the ones to show.',
+    );
     expect(
       within(panel)
         .getAllByRole('group')

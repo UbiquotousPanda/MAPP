@@ -8,9 +8,7 @@ import { ROLES_KEY, useDeleteRole } from './api';
 import type { Role } from './api';
 
 export interface RoleDelete {
-  /** Delete: a role people hold says why it can't go; another asks first. */
   remove: (role: Role) => void;
-  /** The question; render it once on the page. */
   dialog: ReactElement | null;
 }
 
@@ -19,11 +17,6 @@ export function deleteLock(role: Role): string {
   return role.locks.find((lock) => lock.field === 'delete')?.reason ?? '';
 }
 
-/**
- * Delete a role (US4 scenarios 4–5, FR-018): a role somebody holds, or the Administrator role,
- * can't be deleted and the message says why (the API's reason); an unused one asks "Delete role
- * 'Finance reviewer'?", goes to the recycle bin and offers Undo.
- */
 export function useRoleDelete(onDeleted?: (role: Role) => void): RoleDelete {
   const { show } = useToast();
   const deleteRole = useDeleteRole();
@@ -35,7 +28,7 @@ export function useRoleDelete(onDeleted?: (role: Role) => void): RoleDelete {
       return;
     }
     try {
-      afterDelete(await deleteRole.mutateAsync(role.id));
+      afterDelete(await deleteRole.mutateAsync(role));
       onDeleted?.(role);
     } catch (error) {
       const failure = error instanceof ApiError ? error : new ApiError('other');

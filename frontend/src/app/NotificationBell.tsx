@@ -1,17 +1,12 @@
 import { Bell } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useId, useState } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { CountBadge } from '@/ui/CountBadge/CountBadge';
+import { Popover } from '@/ui/Popover/Popover';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import { NotificationList, useUnreadNotificationCount } from '@/features/notifications';
 import styles from './NotificationBell.module.css';
 
-/**
- * The bell of the top bar (FR-013). Feature 008 fills it from its own folder
- * (features/notifications): the unread count on the bell and in its name ("Notifications, 3
- * unread"), and the list in the popover.
- */
 export function NotificationBell() {
   const titleId = useId();
   const [open, setOpen] = useState(false);
@@ -33,16 +28,15 @@ export function NotificationBell() {
           </span>
         )}
       </span>
-      <Popover.Portal>
-        <Popover.Content
-          className={styles.popover}
-          aria-labelledby={titleId}
-          align="end"
-          sideOffset={8}
-        >
-          <NotificationList titleId={titleId} onClose={() => setOpen(false)} />
-        </Popover.Content>
-      </Popover.Portal>
+      <Popover.Content
+        width="lg"
+        padding="none"
+        aria-labelledby={titleId}
+        align="end"
+        sideOffset={8}
+      >
+        <NotificationList titleId={titleId} onClose={() => setOpen(false)} />
+      </Popover.Content>
     </Popover.Root>
   );
 }

@@ -2,19 +2,17 @@ import { expect, test } from '@playwright/test';
 import {
   action,
   callApi,
-  chooseOption,
+  choose,
   escapeRegExp,
   expectToast,
   signInAs,
   uniqueName,
 } from './fixtures';
-import { createPlanningRecords, planTree, treeRow } from './planning';
 
 // The core flow of the Plan module (features 002–008), against the real API with the demo data.
 // Tests create their own records (names from uniqueName) and never assert global counts.
 
 const ALEX = 'alex.morgan@shell.com';
-const MEI = 'mei.lin@shell.com';
 
 test('C: Settings — an administrator edits a model, a Shell attribute and a currency', async ({
   page,
@@ -43,7 +41,7 @@ test('C: Settings — an administrator edits a model, a Shell attribute and a cu
   const editModel = page.getByRole('dialog', { name: 'Edit model' });
   await editModel.getByRole('textbox', { name: /^INQ→MQL rate/ }).fill('3');
   await expect(
-    editModel.getByText('250,000 INQ → 7,500 MQL → 375 deals → 3,750,000.00 USD revenue'),
+    editModel.getByText('250,000 INQ → 7,500 MQL → 375 deals → $3,750,000.00 revenue'),
   ).toBeVisible();
   // An unused model has no impact to confirm, so it saves straight away.
   await editModel.getByRole('button', { name: 'Save', exact: true }).click();
@@ -69,18 +67,19 @@ test('C: Settings — an administrator edits a model, a Shell attribute and a cu
   await expect(page.getByRole('heading', { name: 'Contracted spend', level: 1 })).toBeVisible();
   await expect(page.getByText(helpText).first()).toBeVisible();
 
-  // Currencies (002 US4): INR, which no demo line item uses; put back to 83.50 for the tests that follow.
+  // Currencies (002 US4): INR, which no demo line item uses; put back to 93.70 for the tests that follow.
   await page.goto('/settings');
   await page.getByRole('link', { name: 'Currencies', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Currencies', level: 1 })).toBeVisible();
   const inrRow = page.getByRole('row').filter({ hasText: 'INR' });
-  await expect(inrRow).toContainText('1 USD = 83.50 INR');
+  await expect(inrRow).toContainText('1 USD = 93.70 INR');
   await inrRow.getByRole('button', { name: 'Actions for INR' }).click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
   const editCurrency = page.getByRole('dialog', { name: 'Edit currency' });
-  await expect(
-    editCurrency.getByText("The code can't change once the currency is saved."),
-  ).toBeVisible();
+  await editCurrency.getByRole('button', { name: "Why Code can't change" }).click();
+  await expect(page.getByRole('dialog', { name: "Why Code can't change" })).toContainText(
+    "The code can't change once the currency is saved.",
+  );
   await editCurrency.getByRole('textbox', { name: /^Rate/ }).fill('84');
   await expect(editCurrency.getByText('1 USD = 84.00 INR')).toBeVisible();
   await expect(editCurrency.getByText('1 INR = 0.011905 USD')).toBeVisible();
@@ -89,7 +88,7 @@ test('C: Settings — an administrator edits a model, a Shell attribute and a cu
   await expect(inrRow).toContainText('1 USD = 84.00 INR');
 
   const inr = await callApi<{ version: number }>(page, 'GET', '/api/v1/currencies/INR');
-  await callApi(page, 'PATCH', '/api/v1/currencies/INR', { rate: '83.5', version: inr.version });
+  await callApi(page, 'PATCH', '/api/v1/currencies/INR', { rate: '93.7', version: inr.version });
 });
 
 test('D: the plan form offers only members of the chosen teams as owner and refuses an owner outside them', async ({
@@ -102,8 +101,6 @@ test('D: the plan form offers only members of the chosen teams as owner and refu
   const teams = page.getByRole('combobox', { name: /^Teams/ });
   const owner = page.getByRole('combobox', { name: /^Owner/ });
 
-  await expect(page.getByText('Default: your teams')).toBeVisible();
-  await expect(page.getByText('Default: you', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Remove Global Marketing Ops' })).toBeVisible();
 
   const owners = page.getByRole('listbox', { name: 'Owner' });
@@ -134,7 +131,7 @@ test('D: the plan form offers only members of the chosen teams as owner and refu
   // Saving anyway is refused by the API with the same rule, listed in the error summary.
   const planName = uniqueName('Owner rules plan');
   await page.getByRole('textbox', { name: /^Plan name/ }).fill(planName);
-  await chooseOption(page.getByLabel(/^Model/), 'Mobility 1.0');
+  await choose(page, page.getByLabel(/^Model/), /^Mobility 1\.0/);
   await page.getByRole('checkbox', { name: 'Mobility', exact: true }).check();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(
@@ -167,44 +164,4 @@ test('D: the plan form offers only members of the chosen teams as owner and refu
     page.getByRole('group', { name: 'Plan facts' }).getByText('Mei Lin', { exact: true }),
   ).toBeVisible();
   await expect(page.getByText('Mobility China').first()).toBeVisible();
-});
-
-test('E: deleting an activity moves it to the recycle bin with its cost, and Undo brings it back', async ({
-  page,
-}) => {
-  await signInAs(page, MEI);
-  const records = await createPlanningRecords(page, 'Delete', {
-    withWorkflow: false,
-    leaveEmpty: [],
-  });
-  const name = records.activityName;
-
-  await page.goto(records.activityPath);
-  await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: `Actions for ${name}` }).click();
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
-  const dialog = page.getByRole('alertdialog', { name: `Delete activity '${name}'?` });
-  await expect(
-    dialog.getByText('The initiative, campaign and plan planned costs go down by 20,000.00 USD.'),
-  ).toBeVisible();
-  await expect(dialog.getByText('It moves to the recycle bin; you can restore it.')).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused();
-  await dialog.getByRole('button', { name: 'Delete activity' }).click();
-
-  await expect(page).toHaveURL(new RegExp(`/plans/${records.planId}$`));
-  await expectToast(page, `Activity '${name}' deleted`);
-  await page.getByRole('button', { name: 'Expand all' }).click();
-  await expect(treeRow(page, records.initiativeName)).toBeVisible();
-  await expect(treeRow(page, name)).toHaveCount(0);
-  await expect(treeRow(page, records.initiativeName)).not.toContainText('$20,000.00');
-
-  // Undo within the toast's 10 seconds brings it back with the same ID (001 FR-026).
-  await page.getByRole('button', { name: 'Undo' }).click();
-  await expectToast(page, `Activity '${name}' restored`);
-  await page.getByRole('button', { name: 'Expand all' }).click();
-  await expect(planTree(page).getByRole('link', { name, exact: true })).toHaveAttribute(
-    'href',
-    new RegExp(`/activities/${records.activityId}$`),
-  );
-  await expect(treeRow(page, records.initiativeName)).toContainText('$20,000.00');
 });

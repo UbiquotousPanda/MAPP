@@ -5,12 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"mapp/internal/history"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/web"
 )
 
-// listAttributes answers GET /api/v1/shell-attributes?level=: the attributes of the level, or of every level,
-// in display order.
 func (h *Handler) listAttributes(c *gin.Context) {
 	var level *Level
 	if text := c.Request.URL.Query().Get("level"); text != "" {
@@ -53,12 +52,15 @@ func (h *Handler) updateAttribute(c *gin.Context) {
 
 // deleteAttribute answers DELETE /api/v1/shell-attributes/{attributeId} with the recycle-bin entry.
 func (h *Handler) deleteAttribute(c *gin.Context) {
-	entry, err := h.service.DeleteAttribute(c.Request.Context(), actorOf(c), c.Param("attributeId"))
+	ctx, err := history.SeenVersion(c, c.Param("attributeId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	entry, err := h.service.DeleteAttribute(ctx, actorOf(c), c.Param("attributeId"))
 	respondDeleted(c, entry, err)
 }
 
-// attributeImpact answers POST /api/v1/shell-attributes/{attributeId}/impact with the warnings to confirm
-// before saving.
 func (h *Handler) attributeImpact(c *gin.Context) {
 	var update ShellAttributeUpdate
 	if !readBody(c, &update) {
@@ -68,8 +70,6 @@ func (h *Handler) attributeImpact(c *gin.Context) {
 	respond(c, http.StatusOK, impact, err)
 }
 
-// setAttributeStatus answers POST /api/v1/shell-attributes/{attributeId}/status with the attribute in its new
-// status.
 func (h *Handler) setAttributeStatus(c *gin.Context) {
 	var update StatusUpdate
 	if !readBody(c, &update) {
@@ -79,8 +79,6 @@ func (h *Handler) setAttributeStatus(c *gin.Context) {
 	respond(c, http.StatusOK, attribute, err)
 }
 
-// moveAttribute answers POST /api/v1/shell-attributes/{attributeId}/move with the level's attributes in their
-// new order.
 func (h *Handler) moveAttribute(c *gin.Context) {
 	var in MoveInput
 	if !readBody(c, &in) {

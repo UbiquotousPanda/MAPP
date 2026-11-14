@@ -1,0 +1,60 @@
+/* 24 px so the dot is a large enough target for its tooltip (WCAG 2.2 target size). */
+.target {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: none;
+  cursor: help;
+}
+
+.target:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.line {
+  display: block;
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.neutral {
+  background: var(--status-neutral);
+}
+
+.review {
+  background: var(--status-review);
+}
+
+.positive {
+  background: var(--status-positive);
+}
+
+.active {
+  background: var(--status-active);
+}
+
+.done {
+  background: var(--status-done);
+}
+
+.problem {
+  background: var(--status-problem);
+}

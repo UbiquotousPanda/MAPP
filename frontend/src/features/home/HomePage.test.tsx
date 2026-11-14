@@ -6,6 +6,7 @@ import { mockApi } from '@/testing/mock-api';
 import { findMessages, renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { EMPTY_SUMMARY, HOME_ANSWERS, overviewOf, summaryOf } from '@/testing/fixtures/home';
+import { summaryReport } from '@/testing/fixtures/summary';
 import { reply } from '@/testing/replies';
 import { HomePage } from './HomePage';
 
@@ -13,7 +14,11 @@ const NO_TEAM_SENTENCE =
   "You're not in a team yet. Plans belong to teams — add yourself to one on the Teams page.";
 
 function renderHome(answers: HttpHandler[] = [], user: CurrentUser = testUser()) {
-  const api = mockApi([...HOME_ANSWERS, ...answers]);
+  const api = mockApi([
+    ...HOME_ANSWERS,
+    ...answers,
+    reply('GET /api/v1/reports/summary', { body: summaryReport() }),
+  ]);
   const rendered = renderWithProviders(<HomePage />, { user, path: '/' });
   return { ...rendered, api };
 }
@@ -23,15 +28,15 @@ function requestsTo(api: ReturnType<typeof mockApi>, path: string) {
 }
 
 describe('HomePage', () => {
-  it('greets the person, with the scope switch and the Currency picker in the header (FR-001, US1 scenario 1, design system §2.4 E)', async () => {
+  it('greets the person, with the scope switch in the header and the currency left to the top bar (FR-001, US1 scenario 1, D-413)', async () => {
     renderHome();
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Welcome back, Priya.' }),
     ).toBeInTheDocument();
-    const header = screen.getByRole('banner');
+    const header = screen.getByRole('banner').parentElement ?? document.body;
     expect(within(header).getByRole('group', { name: 'Scope' })).toBeInTheDocument();
-    expect(within(header).getByRole('combobox', { name: 'Currency' })).toHaveValue('USD');
+    expect(within(header).queryByRole('combobox')).toBeNull();
     // Home has no create action: no primary button (design system §2.4 E).
     expect(header.querySelector('[class*="primary"]')).toBeNull();
     expect(
@@ -133,7 +138,7 @@ describe('HomePage', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Welcome back, Priya.' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Currency' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Scope' })).toBeInTheDocument();
     // The other cards still show (FR-022).
     expect(await screen.findByText('None of your teams has a plan yet.')).toBeInTheDocument();
   });
@@ -151,9 +156,7 @@ describe('HomePage', () => {
       'false',
     );
     expect(
-      screen.getByText(
-        'Your own activities, what needs your attention and your approvals always cover all plans.',
-      ),
+      screen.getByText('My activities, attention and approvals always cover all plans.'),
     ).toBeInTheDocument();
     expect(await screen.findByRole('region', { name: 'Plans at a glance' })).toBeInTheDocument();
   });
@@ -171,7 +174,6 @@ describe('HomePage', () => {
     expect(
       await screen.findByRole('link', { name: 'All plans: 0 — open the Plans list' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Live roll-up across all plans')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Everything' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -201,7 +203,8 @@ describe('HomePage', () => {
 
     const financials = await screen.findByRole('region', { name: 'Financials · 2026' });
     const summary = screen.getByRole('region', { name: 'Summary' });
-    expect(summary.nextElementSibling).toBe(financials);
+    // The strip's frame holds the Summary region.
+    expect(summary.parentElement?.nextElementSibling).toBe(financials);
     expect(requestsTo(api, '/api/v1/financials/overview')[0]?.search).toBe('?scope=myTeams');
   });
 

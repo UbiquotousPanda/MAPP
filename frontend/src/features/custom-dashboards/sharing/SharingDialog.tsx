@@ -1,6 +1,6 @@
-import { CircleAlert } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactElement } from 'react';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import type { TeamRef } from '../model';
@@ -71,12 +71,7 @@ function SharingForm({
         People in these teams can view this {recordLabel}. Each of them sees only the data they may
         see.
       </p>
-      {error && (
-        <p role="alert" className={styles.error}>
-          <CircleAlert aria-hidden="true" />
-          {error}
-        </p>
-      )}
+      {error && <InlineError>{error}</InlineError>}
     </FormDialog>
   );
 }

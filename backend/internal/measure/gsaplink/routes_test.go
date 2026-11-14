@@ -21,13 +21,13 @@ func serve(t *testing.T, w *world, method, target string) *httptest.ResponseReco
 
 func TestHandler_TabSortPage_FR015(t *testing.T) {
 	t.Parallel()
-	recorder := serve(t, twoPlans(t), http.MethodGet, "/reports/gsap-link?year=2026&tab=swbs&sort=-lineItem&page=1&pageSize=5")
+	recorder := serve(t, twoPlans(t), http.MethodGet, "/reports/gsap-link?year=2026&tab=swbs&sort=-lineItem&page=1&pageSize=25")
 
 	var r Report
 	if err := json.Unmarshal(recorder.Body.Bytes(), &r); err != nil || recorder.Code != http.StatusOK {
 		t.Fatalf("answer %d %s, %v", recorder.Code, recorder.Body, err)
 	}
-	if r.Tab != TabSwbs || r.Sort != "-lineItem" || r.PageSize != 5 || r.Total != 3 {
+	if r.Tab != TabSwbs || r.Sort != "-lineItem" || r.PageSize != 25 || r.Total != 3 {
 		t.Errorf("report = tab %s, sort %s, page size %d, total %d", r.Tab, r.Sort, r.PageSize, r.Total)
 	}
 }
@@ -35,7 +35,7 @@ func TestHandler_TabSortPage_FR015(t *testing.T) {
 func TestHandler_RejectsUnknownTabSortPageSize_FR015(t *testing.T) {
 	t.Parallel()
 	for _, query := range []string{"tab=all", "sort=vendor", "tab=orders&sort=-waiting", "page=0", "pageSize=4",
-		"pageSize=501", "pageSize=ten", "show=lineItem"} {
+		"pageSize=20", "pageSize=500", "pageSize=ten", "show=lineItem"} {
 		if recorder := serve(t, twoPlans(t), http.MethodGet, "/reports/gsap-link?"+query); recorder.Code != http.StatusBadRequest {
 			t.Errorf("%s: answer %d %s, want 400", query, recorder.Code, recorder.Body)
 		}

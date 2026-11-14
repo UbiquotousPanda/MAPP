@@ -1,16 +1,19 @@
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
+import { SortHeader } from '@/ui/SortHeader/SortHeader';
+import dataTable from '@/ui/Table/Table.module.css';
+import { TotalLabel } from '@/ui/Table/TotalLabel';
 import { cx } from '@/ui/cx';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import styles from './AllWorkGrid.module.css';
-import { COLUMN_TIPS, totalText } from './all-work-text';
+import { COLUMN_TIPS } from './all-work-text';
 import type { AllWorkColumn, AllWorkResult, AllWorkRow, Sort } from './all-work-types';
 import { CellValue } from './CellValue';
 import { isNumeric } from './cell-text';
 import { GridRow } from './GridRow';
-import { ScrollBox } from './ScrollBox';
 import { PageSelectBox } from './SelectBox';
 import type { GridSelection } from './SelectBox';
 import type { VisibleRow } from './view-rows';
+import selectStyles from './SelectBox.module.css';
 
 export interface AllWorkGridProps {
   result: AllWorkResult;
@@ -46,13 +49,15 @@ export function AllWorkGrid({
     <div className={styles.grid}>
       {continued && <p className={styles.continued}>Continued: {continued}</p>}
       <ScrollBox label="All work grid">
-        <table className={styles.table}>
+        <table className={cx(dataTable.table, styles.table)}>
           <caption className="visually-hidden">All work grid</caption>
           <thead>
             <tr>
               <th scope="col" className={styles.nameHead}>
-                {selection && <PageSelectBox selection={selection} />}
-                Name
+                <span className={selectStyles.headSelect}>
+                  {selection && <PageSelectBox selection={selection} />}
+                  Name
+                </span>
               </th>
               {columns.map((column) => (
                 <ColumnHeading key={column.key} column={column} sort={sort} onSort={onSort} />
@@ -74,12 +79,12 @@ export function AllWorkGrid({
             ))}
           </tbody>
           <tfoot>
-            <tr className={styles.totals}>
+            <tr className={dataTable.total}>
               <th scope="row" className={styles.nameCell}>
-                {totalText(totals.activities)}
+                <TotalLabel />
               </th>
               {columns.map((column, index) => (
-                <td key={column.key} className={cx(isNumeric(column) && styles.end)}>
+                <td key={column.key} className={cx(isNumeric(column) && dataTable.numeric)}>
                   <CellValue cell={totals.cells[index]} />
                 </td>
               ))}
@@ -99,36 +104,30 @@ interface ColumnHeadingProps {
 
 /** A sortable heading sorts ascending, descending, then back to the plan-tree order (FR-015). */
 function ColumnHeading({ column, sort, onSort }: ColumnHeadingProps) {
-  const direction = sort?.column === column.key ? sort.direction : null;
-  const Icon = direction === 'asc' ? ArrowUp : direction === 'desc' ? ArrowDown : ArrowUpDown;
+  const direction = sort?.column === column.key ? sort.direction : undefined;
   const tip = COLUMN_TIPS[column.key];
-  const label = column.sortable ? (
-    <button
-      type="button"
-      className={cx(styles.sort, direction && styles.sorted)}
-      onClick={() => onSort(column.key)}
-    >
-      {column.label}
-      <Icon aria-hidden="true" />
-    </button>
-  ) : (
-    column.label
-  );
+  const info = tip && <InfoTip label={column.label} text={tip} />;
+  const className = cx(isNumeric(column) && dataTable.numeric);
+  if (column.sortable) {
+    return (
+      <SortHeader
+        label={column.label}
+        direction={direction}
+        onSort={() => onSort(column.key)}
+        className={className}
+        after={info}
+      />
+    );
+  }
   return (
-    <th
-      scope="col"
-      className={cx(isNumeric(column) && styles.end)}
-      aria-sort={
-        direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : undefined
-      }
-    >
-      {tip ? (
+    <th scope="col" className={className}>
+      {info ? (
         <span className={styles.headWithTip}>
-          {label}
-          <InfoTip label={column.label} text={tip} />
+          {column.label}
+          {info}
         </span>
       ) : (
-        label
+        column.label
       )}
     </th>
   );

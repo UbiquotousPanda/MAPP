@@ -6,6 +6,7 @@ import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useCanChange } from '@/ui/useCanChange';
 import { plural } from '@/format/text';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { FinanceBudget, FinanceBudgetItem } from './api';
 import { moreActions } from './finance-item-actions';
 import type { FinanceItemActions } from './finance-item-actions';
@@ -39,9 +40,9 @@ export function BudgetCard({ budget, items, actions, onRename }: BudgetCardProps
         ) : undefined
       }
     >
-      <div className={styles.tableScroll}>
+      <div className={dataTable.scroll}>
         {/* Fixed column widths, so the columns of every budget's table line up (UI audit ST-04). */}
-        <table className={`${styles.table} ${styles.fixed}`}>
+        <table className={`${dataTable.table} ${dataTable.fixed}`}>
           <colgroup>
             <col className={page.itemColumn} />
             <col className={page.codeColumn} />
@@ -79,7 +80,7 @@ export function BudgetCard({ budget, items, actions, onRename }: BudgetCardProps
                     {item.active ? 'Active' : 'Inactive'}
                   </StatusChip>
                 </td>
-                <td className={styles.actionsCell}>
+                <td className={dataTable.actions}>
                   <ActionsMenu
                     label={item.name}
                     items={[

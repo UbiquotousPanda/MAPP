@@ -3,9 +3,12 @@ import { useCurrencies, useFieldHelp } from '@/features/settings';
 import type { useFinanceBudgets } from '@/features/settings';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
+import { FieldRow } from '@/ui/FieldRow/FieldRow';
 import { FormField } from '@/ui/FormField/FormField';
+import { FormCard } from '@/ui/FormRail/FormRail';
 import type { FieldBinding } from '@/ui/FormField/FormField';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { formatMoneyText } from '@/format/decimal';
 import type { Plan } from './api';
 import type { SectionProps } from './plan-form-sections';
@@ -16,8 +19,6 @@ import {
   SPREAD_LABELS,
   SPREAD_METHODS,
 } from './plan-text';
-import { PlanFormCard } from './PlanFormCard';
-import { ReadOnlyField } from './ReadOnlyField';
 import type { PlanFormValues } from './schemas';
 
 const NO_DEFAULT = 'none';
@@ -35,7 +36,6 @@ export function PlanBudgetSection({
   mode,
   plan,
   with016,
-  hint,
   initial,
   financeBudgets,
   budgetNote,
@@ -61,130 +61,136 @@ export function PlanBudgetSection({
     : null;
 
   return (
-    <PlanFormCard id="plan-budget" title="Budget">
-      {with016 && (
-        <FormField
-          control={control}
-          name="currency"
-          render={(field) => (
-            <CurrencyField
-              initial={initial.currency}
-              tip={help('plan.currency')}
-              hint={hint('currency', 'Default: USD')}
-              lock={plan?.currencyLock ?? undefined}
-              {...field}
-              onChange={(currency) => field.onChange(currency || field.value)}
-            />
-          )}
-        />
-      )}
-      {allocationLock ? (
-        <ReadOnlyField
-          label="Plan budget"
-          tip={help('plan.budget')}
-          value={values.budget ? `${values.budget} ${values.currency}` : '—'}
-        >
-          {allocationLock}
-        </ReadOnlyField>
-      ) : (
-        <FormField
-          control={control}
-          name="budget"
-          render={(field) => (
-            <MoneyField
-              label="Plan budget"
-              tip={help('plan.budget')}
-              currency={values.currency}
-              note={budgetFieldNote(values, initial, plan) ?? undefined}
-              {...field}
-            />
-          )}
-        />
-      )}
-      <FormField
-        control={control}
-        name="overspend"
-        render={(field) => (
-          <OverspendField
-            name="overspend"
-            value={field.value}
-            onChange={field.onChange}
-            lockedReason={
-              plan?.overspend.canChange.available ? '' : plan?.overspend.canChange.reason
-            }
-            check={budgetCheck({
-              mode: field.value,
-              typed: values.budget,
-              stored: plan?.budget?.amount ?? null,
-              planned: plan?.planFigures?.plannedCost ?? null,
-            })}
+    <FormCard id="plan-budget" title="Budget">
+      <FieldRow>
+        {with016 && (
+          <FormField
+            control={control}
+            name="currency"
+            render={(field) => (
+              <CurrencyField
+                initial={initial.currency}
+                tip={help('plan.currency')}
+                lock={plan?.currencyLock ?? undefined}
+                {...field}
+                onChange={(currency) => field.onChange(currency || field.value)}
+              />
+            )}
           />
         )}
-      />
-      <FormField
-        control={control}
-        name="defaultFinanceBudgetId"
-        render={(field) => (
-          <ChoiceField
-            label="Default finance budget"
-            tip={help('plan.defaultFinanceBudget')}
-            options={budgetOptions}
-            note={
-              [
-                budgetNote,
-                noBudgetsYet,
-                mode === 'edit' && field.value !== initial.defaultFinanceBudgetId
+        {allocationLock ? (
+          <ReadOnlyField
+            label="Plan budget"
+            tip={help('plan.budget')}
+            value={
+              values.budget
+                ? formatMoneyText({ amount: values.budget, currency: values.currency })
+                : '—'
+            }
+            lock={allocationLock}
+          />
+        ) : (
+          <FormField
+            control={control}
+            name="budget"
+            render={(field) => (
+              <MoneyField
+                label="Plan budget"
+                tip={help('plan.budget')}
+                currency={values.currency}
+                note={budgetFieldNote(values, initial, plan) ?? undefined}
+                {...field}
+              />
+            )}
+          />
+        )}
+      </FieldRow>
+      <FieldRow>
+        <FormField
+          control={control}
+          name="overspend"
+          render={(field) => (
+            <OverspendField
+              name="overspend"
+              value={field.value}
+              onChange={field.onChange}
+              lockedReason={
+                plan?.overspend.canChange.available ? '' : plan?.overspend.canChange.reason
+              }
+              check={budgetCheck({
+                mode: field.value,
+                typed: values.budget,
+                stored: plan?.budget?.amount ?? null,
+                planned: plan?.planFigures?.plannedCost ?? null,
+              })}
+            />
+          )}
+        />
+        <FormField
+          control={control}
+          name="bcpir"
+          render={({ name, value, onChange }) => (
+            <CheckboxField
+              label="BCPIR plan"
+              name={name}
+              tip={help('plan.bcpir')}
+              checked={value}
+              onChange={onChange}
+            />
+          )}
+        />
+      </FieldRow>
+      <FieldRow>
+        <FormField
+          control={control}
+          name="defaultFinanceBudgetId"
+          render={(field) => (
+            <ChoiceField
+              label="Default finance budget"
+              tip={help('plan.defaultFinanceBudget')}
+              options={budgetOptions}
+              note={
+                [
+                  budgetNote,
+                  noBudgetsYet,
+                  mode === 'edit' && field.value !== initial.defaultFinanceBudgetId
+                    ? APPLIES_FROM_NOW
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(' ') || undefined
+              }
+              {...field}
+              value={field.value || NO_DEFAULT}
+              onChange={(id) => {
+                onFinanceBudgetChange();
+                field.onChange(id === NO_DEFAULT ? '' : id);
+              }}
+            />
+          )}
+        />
+        <FormField
+          control={control}
+          name="defaultSpread"
+          render={(field) => (
+            <ChoiceField
+              label="Default line-item spread"
+              tip={help('plan.defaultSpread')}
+              options={SPREAD_METHODS.map((id) => ({ id, label: SPREAD_LABELS[id], active: true }))}
+              note={
+                mode === 'edit' && field.value !== initial.defaultSpread
                   ? APPLIES_FROM_NOW
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(' ') || undefined
-            }
-            {...field}
-            value={field.value || NO_DEFAULT}
-            onChange={(id) => {
-              onFinanceBudgetChange();
-              field.onChange(id === NO_DEFAULT ? '' : id);
-            }}
-          />
-        )}
-      />
-      <FormField
-        control={control}
-        name="defaultSpread"
-        render={(field) => (
-          <ChoiceField
-            label="Default line-item spread"
-            tip={help('plan.defaultSpread')}
-            hint={hint('defaultSpread', 'Default: Evenly')}
-            options={SPREAD_METHODS.map((id) => ({ id, label: SPREAD_LABELS[id], active: true }))}
-            note={
-              mode === 'edit' && field.value !== initial.defaultSpread
-                ? APPLIES_FROM_NOW
-                : undefined
-            }
-            {...field}
-            onChange={(spread) =>
-              field.onChange(SPREAD_METHODS.find((method) => method === spread) ?? field.value)
-            }
-          />
-        )}
-      />
-      <FormField
-        control={control}
-        name="bcpir"
-        render={({ name, value, onChange }) => (
-          <CheckboxField
-            label="BCPIR plan"
-            name={name}
-            tip={help('plan.bcpir')}
-            hint={hint('bcpir', 'Default: No')}
-            checked={value}
-            onChange={onChange}
-          />
-        )}
-      />
-    </PlanFormCard>
+                  : undefined
+              }
+              {...field}
+              onChange={(spread) =>
+                field.onChange(SPREAD_METHODS.find((method) => method === spread) ?? field.value)
+              }
+            />
+          )}
+        />
+      </FieldRow>
+    </FormCard>
   );
 }
 
@@ -219,7 +225,6 @@ function CurrencyField(props: CurrencyFieldProps) {
       value={value}
       onChange={onChange}
       disabledReason={lock}
-      note="The plan budget and every amount in this plan are kept in this currency."
       error={error}
     />
   );

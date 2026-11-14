@@ -172,8 +172,8 @@ columns and order, and none of the rows belongs to a plan outside Alex's scope.
 2. **Given** the grid, **When** the person types in the search box, **Then** it narrows to rows whose text
    columns contain the words, and the total count updates.
 3. **Given** the grid, **When** the person sorts by a column, **Then** all rows (not only the page) are ordered
-   by it, with the same order on every page; **When** they choose a page size of 5, 10, 25, 50 or 100 (default
-   50), **Then** the page and the total change accordingly.
+   by it, with the same order on every page; **When** they choose a page size of 25, 50, 100 or 200 (default
+   50; D-432), **Then** the page and the total change accordingly.
 4. **Given** the filters **Approver**, **Status** (the outcome of the step) and **Record type**, **When** any is
    applied, **Then** the grid shows only matching rows; the Status choices are the six outcome words of 041-C1
    plus **Not needed** (041-C2), whatever record type is chosen; the Approver filter narrows the grid only
@@ -291,7 +291,7 @@ These scenarios cover each state a widget or the grid can render; each has its o
 - **FR-014**: The grid MUST filter by **Approver** and **Status**, where Status is the step's outcome and offers
   the six words of 041-C1 plus **Not needed** (041-C2) (client 018 FR-014; FR-015 is replaced by 041-C1).
 - **FR-015**: The grid MUST offer free-text search over its text columns, sorting by any column across all
-  rows, page sizes 5, 10, 25, 50 and 100 (default 50) and the total count (client 018 FR-021).
+  rows, page sizes 25, 50, 100 and 200 (default 50; D-432) and the total count (client 018 FR-021).
 - **FR-016**: A long comment MUST be readable in full without leaving the report (client 018 FR-022).
 - **FR-017**: Each row's record name MUST link to the record when the person may open it and MUST be plain text
   when not (041-C5); the report offers no action on a round (client 018 FR-023).

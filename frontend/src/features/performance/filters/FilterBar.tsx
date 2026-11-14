@@ -1,4 +1,10 @@
+import { DateRangeMenu } from '@/ui/DateRangeMenu/DateRangeMenu';
+import { FilterBar as ListFilterBar } from '@/ui/FilterBar/FilterBar';
+import type { FilterChip } from '@/ui/FilterChips/FilterChips';
+import { FilterMenu } from '@/ui/FilterMenu/FilterMenu';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
 import { SearchField } from '@/ui/SearchField/SearchField';
+import { useFormatters } from '@/format/useFormatters';
 import styles from './filter-bar.module.css';
 import type { UrlFilters } from './useUrlFilters';
 
@@ -10,6 +16,7 @@ export interface FilterOption {
 export interface FilterSelect {
   name: string;
   label: string;
+  /** The first, '', is the default ("Any status"). */
   options: FilterOption[];
 }
 
@@ -20,59 +27,61 @@ export interface FilterBarProps {
   count: string;
 }
 
-/** Search, the list's selects, a date range and the count, in one row that wraps. */
+/** Search, Filters (n) with the list's filters and a date range, and the count (design system §5.2). */
 export function FilterBar({ search, selects, filters, count }: FilterBarProps) {
-  const { values, set } = filters;
+  const { values, set, setEach } = filters;
+  const { date } = useFormatters();
+  const since = values.since ?? '';
+  const until = values.until ?? '';
+  const chosen = selects.filter((select) => values[select.name]);
+  const labelOf = (select: FilterSelect) =>
+    select.options.find((option) => option.value === values[select.name])?.label ??
+    values[select.name];
+  const chips: FilterChip[] = [
+    ...chosen.map((select) => ({ key: select.name, label: `${select.label}: ${labelOf(select)}` })),
+    ...(since ? [{ key: 'since', label: `From: ${date(since)}` }] : []),
+    ...(until ? [{ key: 'until', label: `To: ${date(until)}` }] : []),
+  ];
+
   return (
-    <div className={styles.bar} role="search" aria-label="Filters">
-      <div className={styles.search}>
+    <ListFilterBar
+      className={styles.bar}
+      search={
         <SearchField
+          size="sm"
           label={search.label}
           placeholder={search.placeholder}
           value={values[search.name] ?? ''}
           onChange={(value) => set(search.name, value)}
         />
-      </div>
-      {selects.map((select) => (
-        <label key={select.name} className={styles.field}>
-          {select.label}
-          <select
-            name={select.name}
-            className={`${styles.control} ${styles.select}`}
-            value={values[select.name] ?? ''}
-            onChange={(event) => set(select.name, event.target.value)}
-          >
-            {select.options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      ))}
-      <label className={styles.field}>
-        From
-        <input
-          type="date"
-          name="since"
-          className={styles.control}
-          value={values.since ?? ''}
-          onChange={(event) => set('since', event.target.value)}
-        />
-      </label>
-      <label className={styles.field}>
-        To
-        <input
-          type="date"
-          name="until"
-          className={styles.control}
-          value={values.until ?? ''}
-          onChange={(event) => set('until', event.target.value)}
-        />
-      </label>
-      <p className={styles.count} role="status">
-        {count}
-      </p>
-    </div>
+      }
+      inUse={chosen.length + (since || until ? 1 : 0)}
+      menus={
+        <>
+          {selects.map((select) => (
+            <FilterMenu
+              key={select.name}
+              label={select.label}
+              multiple={false}
+              choices={select.options}
+              selected={[values[select.name] ?? '']}
+              summary={values[select.name] ? labelOf(select) : undefined}
+              onChange={([value = '']) => set(select.name, value)}
+            />
+          ))}
+          <DateRangeMenu
+            label="Dates"
+            legend="Between"
+            from={since}
+            to={until}
+            onChange={(from, to) => setEach({ since: from, until: to })}
+          />
+        </>
+      }
+      end={<ResultCount>{count}</ResultCount>}
+      chips={chips}
+      onRemoveChip={(key) => set(key, '')}
+      onClearFilters={() => setEach(Object.fromEntries(chips.map((chip) => [chip.key, ''])))}
+    />
   );
 }

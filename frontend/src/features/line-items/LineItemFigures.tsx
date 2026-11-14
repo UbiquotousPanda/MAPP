@@ -1,11 +1,11 @@
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { useFieldHelp } from '@/features/settings';
 import { formatRate, toCents } from '@/format/decimal';
-import { centsInput, formatMonth, moneyText } from './line-item-math';
+import { formatMonth, moneyText } from './line-item-math';
 import type { LineItem, UnassignedBalance } from './api';
 import { conversionText, LABEL, NOT_SPREAD_YET, SPREAD_LABELS } from './line-item-text';
 import styles from './LineItemPage.module.css';
-import { RateTip } from './MoneyPair';
+import { RateTip } from './ConvertedAmount';
 
 const UNASSIGNED_LABEL = "Activity's unassigned planned cost";
 
@@ -54,7 +54,7 @@ export function LineItemFigures({
   );
 }
 
-/** "= 46,000.00 GBP · ≈ 50,000.00 USD"; without a plan amount "= 50,000.00 USD at 0.92 EUR per USD". */
+/** "= £46,000.00 · ≈ $50,000.00"; without a plan amount "= $50,000.00 at 0.92 EUR per USD". */
 function CostBeside({ lineItem }: { lineItem: LineItem }) {
   const local = lineItem.plannedCost;
   const plan = lineItem.plannedCostPlan;
@@ -70,7 +70,7 @@ function CostBeside({ lineItem }: { lineItem: LineItem }) {
     lines.push(
       plan
         ? `≈ ${moneyText(usd)}`
-        : conversionText(centsInput(toCents(usd.amount)), 'USD', [
+        : conversionText(moneyText(usd), [
             { rate: formatRate(lineItem.currency.ratePerUsd), code: lineItem.currency.code },
           ]),
     );

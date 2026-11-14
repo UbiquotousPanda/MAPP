@@ -22,6 +22,7 @@ import type {
   ClearedValue,
   FormAttribute,
 } from './rules';
+import { isWide } from './layout';
 import styles from './ShellAttributeFields.module.css';
 import {
   chooseParentFirst,
@@ -196,7 +197,10 @@ export function AttributeField({
   }
 
   return (
-    <div className={cx(styles.attribute, highlighted && styles.highlighted)}>
+    <div
+      className={cx(styles.attribute, highlighted && styles.highlighted)}
+      data-wide={isWide(attribute) || undefined}
+    >
       {control}
       {notes.map((note) => (
         <p key={note} className={styles.note}>

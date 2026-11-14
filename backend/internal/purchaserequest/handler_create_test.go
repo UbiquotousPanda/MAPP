@@ -57,10 +57,10 @@ func TestCreate_ReservesAtOnce_Contract_032_FR017(t *testing.T) {
 		activity.Requested.Format(), len(activity.LineItems)}
 	same(t, "created, line item and activity sections", []any{purchaserequest.StatusCreated, []string{"HX1005"},
 		"Northlight Events GmbH", "NL02", true, "", "26,000.00 USD", "4,000.00 USD", 1, true, "26,000.00 USD", 1}, got)
-	t.Run("032 FR-012 3,700.00 EUR is 4,021.74 USD at today's rate, above the 4,000.00 USD left", func(t *testing.T) {
+	t.Run("032 FR-012 3,700.00 EUR is 4,111.11 USD at today's rate, above the 4,000.00 USD left", func(t *testing.T) {
 		t.Parallel()
 		refused := decoded[apiError](t, priya.Do(t, http.MethodPost, prs, body(mediaBooking, "EUR", "3700.00")), http.StatusBadRequest)
-		want := "Only 4,000.00 USD of line item L-1005 is not yet requested. 3,700.00 EUR is 4,021.74 USD at today's rate."
+		want := "Only 4,000.00 USD of line item L-1005 is not yet requested. 3,700.00 EUR is 4,111.11 USD at today's rate."
 		if len(refused.Error.Fields) != 1 || refused.Error.Fields[0].Message != want {
 			t.Errorf("answer = %+v", refused)
 		}

@@ -1,6 +1,7 @@
 import { Pencil } from 'lucide-react';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { Button } from '@/ui/Button/Button';
+import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { LockedNote } from '@/ui/LockedNote/LockedNote';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
@@ -16,7 +17,6 @@ import type { CurrencyActions } from './currency-actions';
 import { RateHistorySection } from './RateHistorySection';
 import { rateSourceLine } from './rate-words';
 
-/** MAPP's base currency: always 1, without a rate history. */
 const BASE_CURRENCY = 'USD';
 
 export interface CurrencyDetailsProps {
@@ -26,11 +26,6 @@ export interface CurrencyDetailsProps {
   onClose: () => void;
 }
 
-/**
- * A currency's details in a side panel (US4 scenarios 2 and 4): its current rate both ways with
- * its date and source ("Rate of 19 Oct 2026 · GSAP import", 016 FR-003), where it is used, its
- * locks and its rate history; **Edit** and ⋯ (Set inactive or Reactivate, Delete).
- */
 export function CurrencyDetails({ currency, actions, onClose }: CurrencyDetailsProps) {
   const { date } = useFormatters();
 
@@ -95,11 +90,11 @@ export function CurrencyDetails({ currency, actions, onClose }: CurrencyDetailsP
             <dt>Rate (units per 1 USD)</dt>
             <dd>
               {rateLine(currency.code, currency.rate)}
+              {rateLock && <InfoTip kind="locked" label="Rate (units per 1 USD)" text={rateLock} />}
               <span className={styles.secondLine}>
                 {inverseLine(currency.code, currency.inverseRate)}
               </span>
               <span className={styles.secondLine}>{rateSourceLine(currency, date)}</span>
-              {rateLock && <LockedNote>{rateLock}</LockedNote>}
             </dd>
           </div>
           <div>
@@ -110,7 +105,7 @@ export function CurrencyDetails({ currency, actions, onClose }: CurrencyDetailsP
           </div>
         </dl>
         <MetaLine record={currency} />
-        {/* USD is always 1 and has no rate history (016 FR-001). */}
+        {/* USD is always 1 and has no rate history. */}
         {currency.code !== BASE_CURRENCY && <RateHistorySection code={currency.code} />}
       </div>
     </SidePanel>

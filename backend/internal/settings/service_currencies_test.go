@@ -9,6 +9,7 @@ import (
 
 	"mapp/internal/history"
 	"mapp/internal/platform/errs"
+	"mapp/internal/platform/fake"
 	"mapp/internal/platform/money"
 )
 
@@ -222,6 +223,41 @@ func TestDeleteCurrency_InUseRefused_FR004(t *testing.T) {
 	assertError(t, lineItem, errs.InUse("'EUR' is in use (used by 1 line item) — set it inactive instead."))
 	assertError(t, person, errs.InUse("'GBP' is in use (display currency of 1 person) — set it inactive instead."))
 	assertError(t, gone, errs.NotFound("This currency no longer exists — someone may have deleted it."))
+}
+
+type rowWithCurrency struct {
+	ID       string       `json:"id"`
+	Currency string       `json:"currency,omitempty"`
+	Amount   *money.Money `json:"amount,omitempty"`
+}
+
+func TestDeleteCurrency_UsedByPurchaseRequestLinesFactsAndTransactions_FR004(t *testing.T) {
+	t.Parallel()
+	f := newTestService(t)
+	for _, code := range []string{"EUR", "GBP", "CHF"} {
+		f.addCurrency(t, code, "0.9", true)
+	}
+	prLine := Reference{Record: history.RecordRef{Type: "purchaseRequestLine", ID: "PRL-1"}, InBin: true,
+		Level: LevelPurchaseRequestLine, Currency: "EUR"}
+	f.refs = []Reference{prLine}
+	rows := func(name string) *fake.Table[rowWithCurrency] {
+		return fake.TableOf(f.db, name, func(r rowWithCurrency) string { return r.ID })
+	}
+	fact := rowWithCurrency{ID: "PF-1", Amount: &money.Money{Amount: money.Amount{}, Currency: "GBP"}}
+	if err := rows("performance_facts").Put(t.Context(), fact); err != nil {
+		t.Fatal(err)
+	}
+	if err := rows("financial_transactions").Put(t.Context(), rowWithCurrency{ID: "FT-1", Currency: "CHF"}); err != nil {
+		t.Fatal(err)
+	}
+
+	_, line := f.service.DeleteCurrency(t.Context(), alex, "EUR")
+	_, facts := f.service.DeleteCurrency(t.Context(), alex, "GBP")
+	_, transactions := f.service.DeleteCurrency(t.Context(), alex, "CHF")
+
+	assertError(t, line, errs.InUse("'EUR' is in use (used by 1 purchase request line (1 in the recycle bin)) — set it inactive instead."))
+	assertError(t, facts, errs.InUse("'GBP' is in use (used by 1 performance fact) — set it inactive instead."))
+	assertError(t, transactions, errs.InUse("'CHF' is in use (used by 1 GSAP transaction) — set it inactive instead."))
 }
 
 // Undo brings a deleted currency back exactly; Set inactive and Reactivate are logged.

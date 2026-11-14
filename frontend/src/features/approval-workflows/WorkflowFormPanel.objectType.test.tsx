@@ -4,6 +4,7 @@ import type { HttpHandler } from 'msw';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { PEOPLE, workflowOf } from '@/testing/fixtures/approval-workflows';
 import { reply } from '@/testing/replies';
@@ -38,9 +39,9 @@ describe('WorkflowFormPanel object type (feature 031, US2)', () => {
     ]);
     const panel = screen.getByRole('dialog', { name: 'New approval workflow' });
 
-    expect(approves()).toHaveValue('activity');
+    expect(approves()).toHaveTextContent('Activities');
     expect(panel).toHaveTextContent('Nobody approves an activity they own or submitted.');
-    await user.selectOptions(approves(), 'Purchase requests');
+    await choose(user, approves(), 'Purchase requests');
     expect(panel).not.toHaveTextContent('Nobody approves an activity they own or submitted.');
     await user.click(within(panel).getByRole('textbox', { name: /^Name/ }));
     await user.paste('PR approval');
@@ -62,7 +63,7 @@ describe('WorkflowFormPanel object type (feature 031, US2)', () => {
       ),
     ]);
 
-    await user.selectOptions(approves(), 'Modified purchase requests');
+    await choose(user, approves(), 'Modified purchase requests');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     expect(await screen.findByText(/saved$/)).toBeInTheDocument();

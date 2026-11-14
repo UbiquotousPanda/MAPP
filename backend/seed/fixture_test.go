@@ -23,12 +23,8 @@ import (
 	"mapp/internal/people/peopletest"
 	"mapp/internal/plan"
 	"mapp/internal/plan/plantest"
-	"mapp/internal/platform/actor"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/platform/date"
 	"mapp/internal/platform/fake"
-	"mapp/internal/platform/money"
-	"mapp/internal/platform/record"
 	"mapp/internal/purchaserequest"
 	"mapp/internal/purchaserequest/purchaserequesttest"
 	"mapp/internal/settings"
@@ -182,18 +178,6 @@ func read(t *testing.T, db *fake.DB, fn func(ctx context.Context) error) {
 	}
 }
 
-// demoPerson is a seeded person: active, created by MAPP itself at loadedAt.
-func demoPerson(id, name, email, jobTitle string) people.Person {
-	return people.Person{
-		ID:       id,
-		Name:     name,
-		Email:    email,
-		JobTitle: jobTitle,
-		Active:   true,
-		Meta:     record.NewMeta(actor.System, loadedAt),
-	}
-}
-
 // storedPeople returns every stored person, ordered by id.
 func storedPeople(t *testing.T, db *fake.DB) []people.Person {
 	t.Helper()
@@ -204,19 +188,6 @@ func storedPeople(t *testing.T, db *fake.DB) []people.Person {
 		return err
 	})
 	return list
-}
-
-// currentRates returns each currency's latest dated rate on or before the seed day; USD is 1.
-func (d demoData) currentRates() money.Rates {
-	rates := money.Rates{money.BaseCurrency: money.One}
-	latest := map[string]date.Date{}
-	today := date.Today(loadedAt)
-	for _, r := range d.rates {
-		if !r.Date.After(today) && (latest[r.Currency].IsZero() || r.Date.After(latest[r.Currency])) {
-			rates[r.Currency], latest[r.Currency] = r.Rate, r.Date
-		}
-	}
-	return rates
 }
 
 // demoLog reads the activity log and the recycle bin the seed wrote.

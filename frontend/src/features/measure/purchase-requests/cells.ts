@@ -1,4 +1,4 @@
-import type { LineData, RequestData, VendorData } from './api';
+import type { LineData, RequestData, RequestsGridData, VendorData } from './api';
 import type { ColumnKey } from './schemas';
 import { NOTHING, statusWord } from './words';
 
@@ -27,6 +27,19 @@ export function vendorText(v: VendorData, column: ColumnKey, f: Format): string 
       return f.money(v.invoiced);
     default:
       return NOTHING;
+  }
+}
+
+export function totalText(t: RequestsGridData['totals'], column: ColumnKey, f: Format): string {
+  switch (column) {
+    case 'name':
+      return `${t.purchaseRequests} requests, ${t.lines} lines`;
+    case 'amount':
+      return f.money(t.committed);
+    case 'invoiced':
+      return f.money(t.invoiced);
+    default:
+      return '';
   }
 }
 

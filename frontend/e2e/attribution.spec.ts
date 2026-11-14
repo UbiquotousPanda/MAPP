@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { escapeRegExp, expectNoAxeViolations, signInAs } from './fixtures';
 
-// 050 on the Measure demo's seeded facts (#136): 24,000.00 USD through journey JRN-2C71, 18,500.00 EUR
-// (20,108.70 USD) through JRN-8E05, and 42,000.00 USD on Helix with no journey. Equally distributed shares a
+// 050 on the Measure demo's seeded facts (#136): $24,000.00 through journey JRN-2C71, €18,500.00
+// ($20,555.56) through JRN-8E05, and $42,000.00 on Helix with no journey. Equally distributed shares a
 // journey between its touches; Last touch gives both journeys to Tellus webinar series, their last touch.
 
 const ALEX = 'alex.morgan@shell.com';
@@ -13,17 +13,17 @@ const WEBINARS = 'Tellus webinar series';
 
 const EQUALLY: Record<string, string> = {
   [HELIX]: '$54,000.00',
-  [CASE_STUDIES]: '$13,405.80',
-  [WEBINARS]: '$18,702.90',
+  [CASE_STUDIES]: '$13,703.70',
+  [WEBINARS]: '$18,851.86',
 };
 const LAST_TOUCH: Record<string, string> = {
   [HELIX]: '$42,000.00',
   [CASE_STUDIES]: '$0.00',
-  [WEBINARS]: '$44,108.70',
+  [WEBINARS]: '$44,555.56',
 };
 
 async function openRevenue(page: Page, activity: string): Promise<Locator> {
-  await page.goto(`/reports/revenue?year=2026&show=activity&q=${encodeURIComponent(activity)}`);
+  await page.goto(`/reports/performance?year=2026&show=activity&q=${encodeURIComponent(activity)}`);
   const ranked = page.getByRole('region', { name: 'Ranked list' });
   await expect(
     ranked.getByRole('rowheader', { name: new RegExp(`^${escapeRegExp(activity)}`) }),
@@ -69,9 +69,9 @@ test('050 US1–US3: Revenue credits the seeded journeys and names the model and
 
   const ranked = await openRevenue(page, CASE_STUDIES);
   await expect(
-    ranked.getByRole('columnheader', { name: /^ROI \(Equally distributed, on actual cost\)/ }),
+    ranked.getByText('Revenue credit: split equally across the steps · ROI on actual cost'),
   ).toBeVisible();
-  await expect(await figure(ranked, CASE_STUDIES, /^Actual cost/)).toHaveText('$32,608.70');
+  await expect(await figure(ranked, CASE_STUDIES, /^Actual cost/)).toHaveText('$33,333.33');
   await expect(await figure(ranked, CASE_STUDIES, /^ROI/)).toHaveText('-59%');
 });
 
@@ -90,7 +90,7 @@ test('050 US1, US4: a model chosen in Settings restates Revenue, its export and 
     await expectCredits(page, LAST_TOUCH);
     const ranked = await openRevenue(page, CASE_STUDIES);
     await expect(
-      ranked.getByRole('columnheader', { name: /^ROI \(Last touch, on actual cost\)/ }),
+      ranked.getByText('Revenue credit: all to the last step · ROI on actual cost'),
     ).toBeVisible();
     await expect(await figure(ranked, CASE_STUDIES, /^ROI/)).toHaveText('-100%');
 
@@ -102,11 +102,14 @@ test('050 US1, US4: a model chosen in Settings restates Revenue, its export and 
     expect(csv).toContain('Attributed revenue (Last touch)');
     expect(csv).toContain('"ROI (%, Last touch, on actual cost)"');
     const row = csv.split('\n').find((line) => line.split(',')[2] === WEBINARS);
-    expect(row).toContain('44108.70');
+    expect(row).toContain('44555.56');
 
-    await page.goto('/reports/summary?year=2026');
-    await expect(page.getByText(/^Last touch, on actual cost/)).toBeVisible();
-    await expect(page.getByText(/Equally distributed/)).toHaveCount(0);
+    await page.goto('/reports/performance?year=2026');
+    const list = page.getByRole('region', { name: 'Ranked list' });
+    await expect(
+      list.getByText('Revenue credit: all to the last step · ROI on actual cost'),
+    ).toBeVisible();
+    await expect(page.getByText(/split equally across the steps/)).toHaveCount(0);
   } finally {
     await designate(page, 'Equally distributed');
   }

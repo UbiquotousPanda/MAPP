@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"mapp/internal/platform/errs"
+	"mapp/internal/platform/paging"
 )
 
 // The report's own address parameters (contract: UserAccessSearch, UserAccessTeam, UserAccessStatus, UserAccessSort).
@@ -19,15 +20,11 @@ const (
 	paramSort   = "sort"
 )
 
-// Paging.
 const (
-	DefaultPageSize = 20
-	MinPageSize     = 5
-	MaxPageSize     = 500
-	maxSearch       = 100
-	maxTeams        = 200
-	descending      = "-"
-	sortName        = "name"
+	maxSearch  = 100
+	maxTeams   = 200
+	descending = "-"
+	sortName   = "name"
 )
 
 func sortKeys() []string {
@@ -55,9 +52,9 @@ func ParseQuery(values url.Values) (Query, error) {
 		problems.Add(paramSort, "Sort by one of: "+strings.Join(sortKeys(), ", ")+"; a minus sign first for descending.")
 	}
 	q.Page = whole(values, "page", 1, &problems)
-	q.PageSize = whole(values, "pageSize", MinPageSize, &problems)
-	if q.PageSize > MaxPageSize {
-		problems.Add("pageSize", "Show at most 500 rows on a page.")
+	q.PageSize = whole(values, "pageSize", 1, &problems)
+	if q.PageSize != 0 && !paging.Valid(q.PageSize) {
+		problems.Add("pageSize", paging.Message)
 	}
 	return withDefaults(q), problems.Err()
 }
@@ -74,7 +71,7 @@ func withDefaults(q Query) Query {
 	}
 	q.Page, q.PageSize = max(q.Page, 1), max(q.PageSize, 0)
 	if q.PageSize == 0 {
-		q.PageSize = DefaultPageSize
+		q.PageSize = paging.Default
 	}
 	return q
 }

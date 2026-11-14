@@ -26,7 +26,7 @@ export function DeleteBudgetDialog({
       return;
     }
     try {
-      afterDelete(await remove.mutateAsync(budget.id));
+      afterDelete(await remove.mutateAsync(budget));
       onClose();
       void navigate('/budgets');
     } catch (error) {

@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
 import { Card } from '@/ui/Card/Card';
@@ -28,17 +28,11 @@ import { budgetYearOf } from './schemas';
 /** The side-panel form that is open: a new item, or one being changed. */
 type OpenForm = { kind: 'new' } | { kind: 'edit'; item: FinanceBudgetItem };
 
-/**
- * Finance budget items (feature 002, US5, FR-014, FR-015): the items line items link to, a simple
- * list until the Finance module arrives. A budget year filter (the current year first), search and
- * status in the address, one card per finance budget with its items, Rename budget, details in a
- * side panel (`?id=`), New and Edit in a side-panel form, Set inactive / Reactivate and Delete
- * (unused items only, with Undo).
- */
+/** The items line items link to: a simple list, one card per finance budget, until the Finance module. */
 export function FinanceBudgetItemsPage() {
   usePageTitle('Finance budget items');
   const filters = useListFilters();
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const requestedYear = budgetYearOf(params);
   const budgets = useFinanceBudgetPage(requestedYear);
   const deleteItem = useDeleteFinanceBudgetItem();
@@ -89,7 +83,7 @@ export function FinanceBudgetItemsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Finance budget items' }]}
         title="Finance budget items"
-        description="The finance budget items line items link to. A simple list until the Finance module arrives."
+        description="The finance budget items line items link to."
         actions={
           <CanChange>
             <Button variant="primary" icon={<Plus />} onClick={newItem}>
@@ -143,7 +137,7 @@ export function FinanceBudgetItemsPage() {
           name={deleting.name}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteItem.mutateAsync(deleting.id)}
+          remove={() => deleteItem.mutateAsync(deleting)}
           setInactive={() => status.applyInactive(deleting)}
           invalidate={FINANCE_LISTS}
           onDeleted={() => {

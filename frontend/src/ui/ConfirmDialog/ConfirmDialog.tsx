@@ -3,6 +3,7 @@ import { AlertDialog } from 'radix-ui';
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '../Button/Button';
+import { cx } from '../cx';
 import { RequiredLegend } from '../RequiredLegend/RequiredLegend';
 import styles from './ConfirmDialog.module.css';
 
@@ -13,6 +14,7 @@ interface DialogBase {
   children: ReactNode;
   /** Names the safe choice, which has the focus: "Cancel", or "Keep editing" for unsaved changes. */
   cancelLabel?: string;
+  size?: 'md' | 'lg';
 }
 
 interface Asking extends DialogBase {
@@ -36,7 +38,7 @@ export type ConfirmDialogProps = Asking | Informing;
 
 /** The safe choice, Cancel, has the focus, so Enter never deletes anything by accident. */
 export function ConfirmDialog(props: ConfirmDialogProps) {
-  const { open, onOpenChange, title, children, acknowledgeOnly = false } = props;
+  const { open, onOpenChange, title, children, acknowledgeOnly = false, size = 'md' } = props;
   const cancelLabel = props.cancelLabel ?? (acknowledgeOnly ? 'Close' : 'Cancel');
   // Radix returns the focus only to its own trigger; this dialog is opened by other code.
   const focusBeforeOpen = useRef<HTMLElement | null>(null);
@@ -46,7 +48,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       <AlertDialog.Portal>
         <AlertDialog.Overlay className={styles.overlay} />
         <AlertDialog.Content
-          className={styles.dialog}
+          className={cx(styles.dialog, size === 'lg' && styles.lg)}
           onOpenAutoFocus={() => {
             focusBeforeOpen.current = focusedElement();
           }}

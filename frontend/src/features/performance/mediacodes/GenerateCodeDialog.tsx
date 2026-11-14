@@ -71,7 +71,7 @@ export function GenerateCodeDialog({
         <TextField
           label="Landing page"
           name="landingPage"
-          hint="The code is appended to this address as the tagged link."
+          tip="The code is appended to this address as the tagged link."
           value={landingPage}
           onChange={setLandingPage}
         />

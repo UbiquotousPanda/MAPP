@@ -1,4 +1,4 @@
-/* The move and copy dialogs: the initiatives grouped by campaign, as radios. */
+/* The move and copy dialogs. */
 .stack {
   display: flex;
   flex-direction: column;
@@ -11,119 +11,7 @@
   font-size: var(--text-sm);
 }
 
-.group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.legend {
-  margin-bottom: 2px;
-  padding: 0;
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
-.campaign {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.campaignName {
-  padding: 0;
-  color: var(--ink-2);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  overflow-wrap: break-word;
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-control);
-  list-style: none;
-}
-
-.option {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-}
-
-.option + .option {
-  border-top: 1px solid var(--hairline);
-}
-
-.option input {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  margin: 2px 0 0;
-  accent-color: var(--blue);
-  cursor: pointer;
-}
-
-.option input:disabled {
-  cursor: not-allowed;
-}
-
-.text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-
-.name {
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  overflow-wrap: break-word;
-  cursor: pointer;
-}
-
-/* Unavailable: still readable, with its reason and what to do under it. */
-.option:has(input:disabled) .name {
-  color: var(--ink-2);
-  cursor: not-allowed;
-}
-
 .current {
   color: var(--ink-2);
-  font-weight: 400;
-}
-
-.dates {
-  color: var(--ink-2);
-  font-size: var(--text-xs);
-}
-
-.error {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  margin: 0;
-  color: var(--status-problem-text);
-  font-size: var(--text-xs);
-}
-
-.error svg {
-  flex: none;
-  width: 14px;
-  height: 14px;
-  margin-top: 2px;
+  font-weight: var(--weight-regular);
 }

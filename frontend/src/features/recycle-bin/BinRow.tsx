@@ -4,12 +4,12 @@ import { Avatar } from '@/ui/Avatar/Avatar';
 import { Button } from '@/ui/Button/Button';
 import { LevelTag } from '@/ui/LevelTag/LevelTag';
 import type { LevelTagProps } from '@/ui/LevelTag/LevelTag';
-import { Tooltip } from '@/ui/Tooltip/Tooltip';
+import { RelativeTime } from '@/ui/RelativeTime/RelativeTime';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { isPlanningType } from '@/ui/record-links';
 import { availabilityProps, isShown } from '@/session/access';
 import { initialsOf } from '@/features/activity-log';
-import { useFormatters } from '@/format/useFormatters';
 import {
   capitalise,
   insideRecords,
@@ -41,7 +41,6 @@ export function BinRow({
   onRestore,
   onPurge,
 }: BinRowProps) {
-  const { dateTime, relativeTime } = useFormatters();
   // An action the roles forbid moves into the menu with the server's reason, or is left out.
   const restoreOk = !item.access || item.access.restore.available;
   const menu: ActionsMenuItem[] = [
@@ -66,8 +65,6 @@ export function BinRow({
   const stateLine = restoreStateLine(item);
   const inside = insideRecords(item);
   const record = `${item.recordTypeLabel} '${item.recordName}'`;
-  const deletedAt = dateTime(item.deletedAt);
-  const deletedAgo = relativeTime(item.deletedAt);
 
   useEffect(() => {
     if (highlighted) {
@@ -82,14 +79,10 @@ export function BinRow({
     <li className={styles.row} data-highlighted={highlighted || undefined}>
       <div className={styles.main}>
         <div className={styles.title}>
-          {level ? (
-            <LevelTag level={level} />
-          ) : (
-            <span className={styles.tag}>{item.recordTypeLabel.toUpperCase()}</span>
-          )}
-          <h2 ref={heading} tabIndex={-1} className={styles.name}>
+          {level ? <LevelTag level={level} /> : <LevelTag other={item.recordTypeLabel} />}
+          <SectionHeading level={2} rank="label" ref={heading} tabIndex={-1}>
             {item.recordName}
-          </h2>
+          </SectionHeading>
           <span className={styles.id}>{item.recordId}</span>
         </div>
         {wasIn && <p className={styles.meta}>{wasIn}</p>}
@@ -98,15 +91,7 @@ export function BinRow({
           <Avatar initials={initialsOf(item.deletedBy.name)} size="sm" />
           <span>Deleted by {item.deletedBy.name}</span>
           <span aria-hidden="true">·</span>
-          <Tooltip content={deletedAt}>
-            <button
-              type="button"
-              className={styles.time}
-              aria-label={`${deletedAgo}, ${deletedAt}`}
-            >
-              <time dateTime={item.deletedAt}>{deletedAgo}</time>
-            </button>
-          </Tooltip>
+          <RelativeTime at={item.deletedAt} />
         </p>
         {stateLine && <p className={styles.state}>{stateLine}</p>}
         {containsText && <p className={styles.contains}>{containsText}</p>}

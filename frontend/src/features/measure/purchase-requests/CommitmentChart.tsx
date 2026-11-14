@@ -1,4 +1,5 @@
 import { useFormatters } from '@/format/useFormatters';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ReportWidget } from '../shared';
 import type { ReportTableData } from '../shared';
 import type { ChartData } from './api';
@@ -12,7 +13,7 @@ const TOKENS = [
 ];
 
 const TIP =
-  'Committed value of the Approved and Closed lines in the calendar month of their delivery date, from the ' +
+  'Committed by approved purchase requests: the Approved and Closed lines in the calendar month of their delivery date, from the ' +
   'first to the last month; a line without a delivery date is under No delivery date. The ten largest are ' +
   'named and the rest are Other; the table view lists all.';
 
@@ -54,6 +55,7 @@ function Bars({ data, label }: { data: ChartData; label: (key: string) => string
                 <span
                   key={s.key}
                   className={styles.fill}
+                  // eslint-disable-next-line no-restricted-syntax -- a hidden bar segment; its figure is in the table
                   title={`${s.name}: ${money(s.values[mi])}`}
                   style={{
                     width: `${(amountOf(s.values[mi]) / peak) * 100}%`,
@@ -90,12 +92,12 @@ export function CommitmentChart({
       key: s.key,
       cells: [s.name, ...s.values.map((v) => money(v)), money(s.total)],
     })),
-    total: data && ['Total', ...data.totals.map((t) => money(t)), money(data.committed)],
+    total: data && [...data.totals.map((t) => money(t)), money(data.committed)],
   };
   return (
     <ReportWidget
       wide
-      report="purchaseRequests"
+      report="purchasing"
       widget={widget}
       title={title}
       tip={TIP}
@@ -106,7 +108,7 @@ export function CommitmentChart({
       chart={
         data &&
         (data.months.length === 0 ? (
-          <p className={styles.empty}>{NOTHING_COMMITTED}</p>
+          <EmptyState compact title={NOTHING_COMMITTED} />
         ) : (
           <Bars data={data} label={label} />
         ))

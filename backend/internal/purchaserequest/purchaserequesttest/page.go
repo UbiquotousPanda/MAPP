@@ -117,11 +117,7 @@ func waitingOK(pr purchaserequest.PurchaseRequest, q purchaserequest.ListQuery) 
 	if !q.WaitingForGSAP {
 		return true
 	}
-	routed := slices.ContainsFunc(pr.Lines, func(l purchaserequest.Line) bool { return l.SentOn != nil })
-	pending := slices.ContainsFunc(pr.Lines, func(l purchaserequest.Line) bool {
-		return l.PO.Value == nil || l.PO.Value.Currency != l.Currency || l.PO.Value.Amount.Cmp(l.Amount) != 0
-	})
-	return pr.Status == purchaserequest.StatusApproved && routed && pending
+	return purchaserequest.WaitingForGSAP(pr)
 }
 
 func usdOf(pr purchaserequest.PurchaseRequest, rates money.Rates) money.Amount {

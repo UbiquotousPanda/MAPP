@@ -178,3 +178,11 @@ describe('032 FR-044/FR-049: Purchase requests in the sidebar only with purchase
     expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument();
   });
 });
+
+describe('014 US6#4: Global budgets in the sidebar only with globalBudgets.view', () => {
+  it('leaves it out for a planner', () => {
+    renderWithProviders(<Sidebar />, { user: withPermissions(['plans.view']) });
+
+    expect(screen.queryByRole('link', { name: 'Global budgets' })).not.toBeInTheDocument();
+  });
+});

@@ -1,8 +1,4 @@
-/**
- * Split activity (feature 016, US4, FR-026 – FR-031): the dialog's data, the preview of both
- * activities and the split itself. The API works out every amount in the plan currency; the web
- * app adds up the ticked line items only to pre-fill the amount, as feedback (D-061).
- */
+// The API works out every amount; the web app adds up the ticked line items only to pre-fill one.
 import {
   keepPreviousData,
   skipToken,
@@ -11,8 +7,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
+import { invalidateAllButSession } from '@/api/invalidate';
 import type { components } from '@/api/generated/schema';
-import { ACTIVITY_PLANNING_KEYS } from './api';
 
 export type ActivitySplitOptions = components['schemas']['ActivitySplitOptions'];
 export type ActivitySplitRequest = components['schemas']['ActivitySplitRequest'];
@@ -21,7 +17,6 @@ export type ActivitySplitSide = components['schemas']['ActivitySplitSide'];
 export type ActivitySplitResult = components['schemas']['ActivitySplitResult'];
 export type SplitLink = components['schemas']['SplitLink'];
 
-/** The dialog's data: the line items with their plan-currency amounts and the initiatives. */
 export function useSplitOptions(activityId: string) {
   return useQuery({
     queryKey: ['activity', activityId, 'split-options'],
@@ -55,7 +50,6 @@ export function useSplitPreview(activityId: string, request: ActivitySplitReques
   });
 }
 
-/** Splits the activity, all or nothing, then refreshes everything that shows either activity. */
 export function useSplitActivity() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -66,11 +60,6 @@ export function useSplitActivity() {
           body,
         }),
       ),
-    onSettled: () =>
-      Promise.all(
-        [...ACTIVITY_PLANNING_KEYS, ['financials']].map((queryKey) =>
-          queryClient.invalidateQueries({ queryKey }),
-        ),
-      ),
+    onSettled: () => invalidateAllButSession(queryClient),
   });
 }

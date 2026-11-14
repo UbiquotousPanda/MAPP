@@ -251,8 +251,10 @@ of the report and that *Uncategorised* is selectable and loses nothing.
 - **FR-005**: Each report MUST carry 040's ranked list with the same rules — two levels at once, drill with
   a trail and Back, grouping with group totals, paging across groups, name search, and a link that opens
   the record in the Plan workspace (049-C18).
-- **FR-006**: The ranked list MUST be sortable by the report's own figures: actual and projected revenue on
-  Revenue, the selected stage's actual and projected volume on Funnel stages.
+- **FR-006**: The ranked list MUST be sortable by the report's own figures: goal, actual and projected revenue
+  and performance on Revenue, the selected stage's goal, actual and projected volume and performance on Funnel
+  stages; entries without the figure come last in either order. Revenue opens on performance, lowest first,
+  so the most behind is on top (D-410).
 - **FR-007**: Every widget MUST offer a table view and an export, per the module's report pattern.
 - **FR-008**: An empty report MUST state **why** it is empty, from the causes in 049-C20, and MUST NOT show
   a grid of zeros.
@@ -263,7 +265,9 @@ of the report and that *Uncategorised* is selectable and loses nothing.
 
 - **FR-010**: The Revenue report MUST show cards for revenue goal, actual, projected and performance
   (049-C9).
-- **FR-011**: It MUST show revenue by period — actual, projected and goal — with a table view of the same.
+- **FR-011**: It MUST show revenue by period — actual, projected and goal — with a table view of the same, ending
+  with 039 FR-035's Total row: each column over the year, from the API, and the goal after December when there is
+  one (039 FR-035).
 - **FR-012**: Each ranked entry MUST show its name, level, owner, revenue goal, actual, projected,
   performance, actual cost and ROI.
 - **FR-013**: Actual cost and ROI MUST show "—" with the reason "Attribution is not configured yet" until
@@ -275,7 +279,9 @@ of the report and that *Uncategorised* is selectable and loses nothing.
 
 - **FR-015**: The report MUST offer a stage selector listing every stage the models in view allow, in
   funnel order, defaulting to the first (049-C11, 049-C12).
-- **FR-016**: It MUST show the selected stage's goal, actual and projected by period, named from the stage.
+- **FR-016**: It MUST show the selected stage's goal, actual and projected by period, named from the stage; its table
+  view ends with 039 FR-035's Total row, each column over the year, from the API, and the goal after December when
+  there is one (039 FR-035).
 - **FR-017**: Each ranked entry MUST show the stage's goal, actual, projected, performance and its
   **conversion from the previous stage**; conversion MUST show "—" when the previous stage has no actual
   (049-C13).

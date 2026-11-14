@@ -77,7 +77,7 @@ func TestExecutive_EqualsTheRecordPages_SC001(t *testing.T) {
 	var overview financials.Overview
 	get(t, c, "/api/v1/financials/overview?scope=everything", http.StatusOK).Decode(t, &overview)
 	same(t, "totals", texts(2, "2,000,000.00 USD", overview.Figures.PlannedCost.Format(), overview.Figures.Committed.Format(),
-		33, "1,969,347.83 USD", 2), texts(v.PlanCount, amount(v.Totals.Budget), amount(v.Totals.PlannedCost),
+		33, "1,968,044.44 USD", 2), texts(v.PlanCount, amount(v.Totals.Budget), amount(v.Totals.PlannedCost),
 		amount(v.Totals.Committed), *v.Totals.BudgetUsedPercent, amount(v.Totals.UnspentBudget), v.Finance.PlanCount))
 	same(t, "panels", texts("Lubricants Europe", "1,200,000.00 USD", 2, 5, 1, true, true, true, 3, 12),
 		texts(v.Markets[0].Team.Name, amount(v.Markets[0].Figures.Budget), v.Approvals.Waiting, len(v.Completeness),
@@ -123,7 +123,7 @@ func TestExecutive_Filters_FR006(t *testing.T) {
 	empty := view(t, c, executive+"?year=2030")
 	purchases := view(t, c, executive+"?year=2027").PurchaseRequests
 
-	same(t, "filters", texts("1,840,000.00 EUR", "EUR", 0, 0, "—", "[2030 2027 2026]", 1, 1, "25,000.00 USD"),
+	same(t, "filters", texts("1,800,000.00 EUR", "EUR", 0, 0, "—", "[2030 2027 2026]", 1, 1, "25,555.56 USD"),
 		texts(amount(euros.Totals.Budget), euros.Filters.Currency, strategic.PlanCount, empty.PlanCount,
 			amount(empty.Totals.PlannedCost), empty.Choices.Years, purchases.Count, purchases.ByStatus[0].Count,
 			purchases.Amount.Format()))
@@ -190,7 +190,7 @@ func TestPlanExport_FR023_FR025(t *testing.T) {
 	disposition := pptx.Header.Get("Content-Disposition")
 	same(t, "files", texts(true, true, true, true, true), texts(bytes.HasPrefix(pptx.Body, []byte("PK\x03\x04")),
 		strings.Contains(disposition, "FY2026%20Lubricants%20Europe"), strings.HasSuffix(disposition, ".pptx"),
-		bytes.HasPrefix(pdf.Body, []byte(pdfPrefix)), bytes.Contains(pdf.Body, []byte("1,104,000.00 EUR"))))
+		bytes.HasPrefix(pdf.Body, []byte(pdfPrefix)), bytes.Contains(pdf.Body, []byte("1,080,000.00 EUR"))))
 	get(t, p, "/api/v1/plans/P-1002/export?format=pdf", http.StatusNotFound)
 	get(t, server.SignIn(t, lea), "/api/v1/plans/P-1001/export?format=pdf", http.StatusForbidden)
 	get(t, p, "/api/v1/plans/P-1001/export?format=docx", http.StatusBadRequest)

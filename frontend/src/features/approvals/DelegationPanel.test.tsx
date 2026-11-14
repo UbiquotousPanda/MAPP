@@ -14,6 +14,7 @@ import {
   PRIYA,
 } from '@/testing/fixtures/approvals';
 import { reply } from '@/testing/replies';
+import { expectNoAxeViolations } from '@/testing/axe';
 import { DelegationPanel } from './DelegationPanel';
 
 const CREATE = 'POST /api/v1/approval-delegations';
@@ -65,7 +66,10 @@ describe('DelegationPanel (feature 017, US4)', () => {
     expect(ended).toHaveTextContent('Priya Raman → Alex Morgan');
     expect(within(ended).queryByRole('button')).not.toBeInTheDocument();
     // Only someone who may manage everyone's delegations sees the switch.
-    expect(within(panel).queryByRole('checkbox', { name: 'Everyone' })).not.toBeInTheDocument();
+    expect(
+      within(panel).queryByRole('checkbox', { name: "Show everyone's delegations" }),
+    ).not.toBeInTheDocument();
+    await expectNoAxeViolations();
   });
 
   it('says what to do when there is no delegation yet', async () => {
@@ -91,6 +95,7 @@ describe('DelegationPanel (feature 017, US4)', () => {
     await user.click(screen.getByRole('button', { name: 'Add delegation' }));
     const form = await screen.findByRole('dialog', { name: 'Add delegation' });
     expect(within(form).queryByRole('combobox', { name: /Delegating person/ })).toBeNull();
+    await expectNoAxeViolations();
     await user.click(await within(form).findByRole('combobox', { name: /^Delegate/ }));
     await user.click(screen.getByRole('option', { name: /Daniel Okoro/ }));
     await user.type(within(form).getByLabelText('Start date'), '2026-11-03');
@@ -156,7 +161,7 @@ describe('DelegationPanel (feature 017, US4)', () => {
       ),
     ]);
 
-    const everyone = await screen.findByRole('checkbox', { name: 'Everyone' });
+    const everyone = await screen.findByRole('checkbox', { name: "Show everyone's delegations" });
     await user.click(everyone);
     expect(await screen.findByText('Carlos Mendes → Alex Morgan')).toBeInTheDocument();
     expect(api.requests.some((r) => r.search === '?scope=all')).toBe(true);

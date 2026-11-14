@@ -1,6 +1,10 @@
 -- name: AddPlanImport :exec
-INSERT INTO plan_imports (id, plan_id, file_name, imported_at, imported_by_id, imported_by_name, rows_read, rows_left_out)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+INSERT INTO plan_imports (id, plan_id, file_name, imported_at, imported_by_id, imported_by_name, rows_read, rows_left_out,
+    check_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+
+-- name: PlanImportCheckUsed :one
+SELECT EXISTS (SELECT 1 FROM plan_imports WHERE check_id = sqlc.arg(check_id)::text);
 
 -- name: AddPlanImportRecords :copyfrom
 INSERT INTO plan_import_records (import_id, position, level, record_id, record_name, parent_id, action)
@@ -28,6 +32,11 @@ ORDER BY import_id, position;
 SELECT * FROM plan_import_problems
 WHERE import_id = sqlc.arg(import_id)
 ORDER BY position;
+
+-- name: MarkPlanImportRecordKept :exec
+UPDATE plan_import_records
+SET kept_reason = sqlc.arg(kept_reason)::text
+WHERE import_id = sqlc.arg(import_id) AND record_id = sqlc.arg(record_id);
 
 -- name: MarkPlanImportUndone :exec
 UPDATE plan_imports

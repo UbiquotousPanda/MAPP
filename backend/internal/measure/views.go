@@ -31,7 +31,7 @@ const (
 )
 
 func (s *Service) ListViews(ctx context.Context, a actor.Actor, report string) (ReportViewPage, error) {
-	if err := knownReport(report); err != nil {
+	if err := openable(report); err != nil {
 		return ReportViewPage{}, err
 	}
 	page := ReportViewPage{Items: []ReportView{}}
@@ -53,7 +53,7 @@ func (s *Service) ListViews(ctx context.Context, a actor.Actor, report string) (
 }
 
 func (s *Service) CreateView(ctx context.Context, a actor.Actor, report string, in ViewCreate) (ReportView, error) {
-	if err := knownReport(report); err != nil {
+	if err := openable(report); err != nil {
 		return ReportView{}, err
 	}
 	var created ReportView
@@ -137,7 +137,7 @@ type ViewRef struct {
 }
 
 func (s *Service) ownView(ctx context.Context, a actor.Actor, ref ViewRef) (StoredView, error) {
-	if err := knownReport(ref.Report); err != nil {
+	if err := openable(ref.Report); err != nil {
 		return StoredView{}, err
 	}
 	v, found, err := s.deps.Views.GetView(ctx, ref.ID)
@@ -152,10 +152,10 @@ func (s *Service) ownView(ctx context.Context, a actor.Actor, ref ViewRef) (Stor
 
 // saveView keeps one default view per person and report: starring v unstars the other one first.
 func (s *Service) saveView(ctx context.Context, a actor.Actor, v StoredView, own []StoredView) error {
-	for _, other := range own {
-		if !v.IsDefault || other.ID == v.ID || !other.IsDefault {
-			continue
-		}
+	if !v.IsDefault {
+		return s.deps.Views.PutView(ctx, v)
+	}
+	for _, other := range record.OtherDefaults(own, v.ID, StoredView.id, StoredView.isDefault) {
 		unstarred := other
 		unstarred.IsDefault = false
 		unstarred.Touch(a, s.now())
@@ -237,13 +237,6 @@ func (s *Service) paramsOf(report string) []string {
 	r, found := s.registry.Get(report)
 	if p, parameterised := r.(Parameterised); found && parameterised {
 		return p.Params()
-	}
-	return nil
-}
-
-func knownReport(report string) error {
-	if !slices.Contains(Keys(), report) {
-		return errs.NotFound(msgNoReport)
 	}
 	return nil
 }

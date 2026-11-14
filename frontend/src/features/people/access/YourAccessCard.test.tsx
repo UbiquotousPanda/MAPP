@@ -8,7 +8,6 @@ import {
   EUROPE,
   MY_TEAMS_EUROPE,
   PLANNER,
-  PRIYA,
   SARA,
 } from '@/testing/fixtures/access';
 import { YourAccessCard } from './YourAccessCard';
@@ -69,11 +68,5 @@ describe('YourAccessCard (feature 014, FR-024)', () => {
       '/settings/access',
     );
     expect(screen.queryByText(/ask Alex Morgan/)).not.toBeInTheDocument();
-  });
-
-  it('is left out while the session has no access (older answers)', () => {
-    renderWithProviders(<YourAccessCard />, { user: testUser({ id: PRIYA.id }) });
-
-    expect(screen.queryByRole('region', { name: 'Your access' })).not.toBeInTheDocument();
   });
 });

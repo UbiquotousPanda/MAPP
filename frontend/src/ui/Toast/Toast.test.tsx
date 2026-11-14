@@ -189,4 +189,22 @@ describe('ToastProvider and useToast', () => {
       'useToast needs the ToastProvider around the app (App.tsx).',
     );
   });
+
+  it('offers one Undo at a time: a new Undo replaces the earlier one, other messages stay', () => {
+    const { result } = renderHook(() => useToast(), { wrapper: ToastProvider });
+    const undo = (message: string) => ({
+      message,
+      action: { label: 'Undo', altText: 'Restore it from the recycle bin', onClick: () => {} },
+    });
+
+    act(() => {
+      result.current.show(undo(DELETED));
+      result.current.show({ message: 'Plan saved' });
+      result.current.show(undo('3 records moved to the recycle bin'));
+    });
+
+    expect(messages()).not.toHaveTextContent(DELETED);
+    expect(messages()).toHaveTextContent('Plan saved');
+    expect(screen.getAllByRole('button', { name: 'Undo' })).toHaveLength(1);
+  });
 });

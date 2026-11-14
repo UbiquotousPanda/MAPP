@@ -1,8 +1,6 @@
+import { NOT_FILLED_IN, NOT_FILLED_IN_LABEL } from '@/ui/AttributeFilterMenu/attribute-filter';
 import { FILTER_LABELS } from './all-work-text';
 import type { AttributeFilter, FilterableAttribute } from './all-work-types';
-
-export const NOT_FILLED_IN = 'none';
-export const NOT_FILLED_IN_LABEL = 'Not filled in';
 
 const BUILT_IN_VALUES = new Set(['yes', 'no', NOT_FILLED_IN]);
 
@@ -12,13 +10,11 @@ export function attrParams(filters: AttributeFilter[] | undefined): string[] {
     .map((filter) => `${filter.attributeId}:${filter.values.join(',')}`);
 }
 
-export function withAttributeValues(
-  filters: AttributeFilter[] | undefined,
-  attributeId: string,
-  values: string[],
-): AttributeFilter[] {
-  const others = (filters ?? []).filter((filter) => filter.attributeId !== attributeId);
-  return values.length > 0 ? [...others, { attributeId, values }] : others;
+/** Reads one `attr` parameter as written by attrParams; anything else reads as no filter. */
+export function attributeFilterOf(param: string): AttributeFilter[] {
+  const [attributeId = '', list = ''] = param.split(':');
+  const values = list.split(',').filter((value) => value !== '');
+  return attributeId !== '' && values.length > 0 ? [{ attributeId, values }] : [];
 }
 
 export function orderedValues(

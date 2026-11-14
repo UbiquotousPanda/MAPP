@@ -3,22 +3,22 @@ package purchaserequest
 import (
 	"context"
 
+	"mapp/internal/approval"
 	"mapp/internal/platform/authz"
 )
 
 const msgRecallToRemove = "Lines can be removed while the purchase request is Created or Declined — recall it first."
 
-// accessFacts are what the actions of a purchase request depend on.
 type accessFacts struct {
-	pr     PurchaseRequest
-	config Configuration
-	routed bool
-	plan   authz.PlanFacts
+	pr         PurchaseRequest
+	config     Configuration
+	routed     bool
+	plan       authz.PlanFacts
+	unapproved string // why an activity of it stops an approval or a GSAP order, "" when none does
 }
 
 var hidden = authz.Availability{} //nolint:gochecknoglobals // the zero availability: not offered, nothing to explain
 
-// access says what the person acting may do with the purchase request now, and why not.
 func (s *Service) access(ctx context.Context, f accessFacts) AccessView {
 	if !f.config.PurchaseSupport {
 		off := authz.Unavailable(msgSwitchedOff)
@@ -44,43 +44,34 @@ func (f accessFacts) delete(ctx context.Context) authz.Availability {
 	if permission := authz.Available(ctx, authz.PurchaseRequestsDelete, f.plan); !permission.Available {
 		return permission
 	}
-	switch f.pr.Status {
-	case StatusApproved:
-		return authz.Unavailable(msgApprovedNoDelete)
-	case StatusSubmitted, StatusInReview:
-		return authz.Unavailable(msgAwaitingNoDelete)
-	case StatusClosed:
-		return authz.Unavailable(msgClosedNoChange)
-	case StatusCreated, StatusDeclined:
+	if reason := deleteRefusal(f.pr.Status); reason != "" {
+		return authz.Unavailable(reason)
 	}
 	return authz.Allowed
 }
 
 func (f accessFacts) submit(ctx context.Context) authz.Availability {
-	switch f.pr.Status {
-	case StatusCreated:
+	switch {
+	case submissionOf(f.pr, KindPurchaseRequest) == approval.SubmissionSubmit:
 		return authz.Available(ctx, authz.PurchaseRequestsSubmit, f.plan)
-	case StatusApproved:
+	case submissionOf(f.pr, KindModification) == approval.SubmissionSubmit:
 		if changes := f.submitChanges(ctx); !changes.Available {
 			return changes
 		}
 		return authz.Unavailable(msgEditToChange)
-	case StatusSubmitted, StatusInReview, StatusDeclined, StatusClosed:
 	}
 	return hidden
 }
 
 func (f accessFacts) resubmit(ctx context.Context) authz.Availability {
-	switch f.pr.Status {
-	case StatusSubmitted, StatusInReview, StatusDeclined:
-		return authz.Available(ctx, authz.PurchaseRequestsSubmit, f.plan)
-	case StatusCreated, StatusApproved, StatusClosed:
+	if submissionOf(f.pr, openKind(f.pr)) != approval.SubmissionResubmit {
+		return hidden
 	}
-	return hidden
+	return authz.Available(ctx, authz.PurchaseRequestsSubmit, f.plan)
 }
 
 func (f accessFacts) submitChanges(ctx context.Context) authz.Availability {
-	if f.pr.Status != StatusApproved {
+	if submissionOf(f.pr, KindModification) != approval.SubmissionSubmit {
 		return hidden
 	}
 	if edit := authz.Available(ctx, authz.PurchaseRequestsEdit, f.plan); !edit.Available {
@@ -97,14 +88,16 @@ func (f accessFacts) recall(ctx context.Context) authz.Availability {
 	return authz.Available(ctx, authz.PurchaseRequestsSubmit, f.plan)
 }
 
+// close hides Close on a purchase request that was never approved; it explains a change in review.
 func (f accessFacts) close(ctx context.Context) authz.Availability {
-	switch {
-	case f.pr.Status == StatusInReview && f.pr.ChangePending:
-		return authz.Unavailable(msgChangeInReview)
-	case f.pr.Status != StatusApproved:
+	switch reason := closeRefusal(f.pr, f.config); reason {
+	case "":
+		return authz.Available(ctx, authz.PurchaseRequestsEdit, f.plan)
+	case msgOnlyApprovedClose:
 		return hidden
+	default:
+		return authz.Unavailable(reason)
 	}
-	return authz.Available(ctx, authz.PurchaseRequestsEdit, f.plan)
 }
 
 func (f accessFacts) resend(ctx context.Context) authz.Availability {
@@ -118,10 +111,10 @@ func (f accessFacts) resend(ctx context.Context) authz.Availability {
 }
 
 func (f accessFacts) addLine(ctx context.Context) authz.Availability {
-	switch {
+	switch _, adding := saveSteps(f.pr, f.config); {
 	case f.pr.Status == StatusClosed:
 		return authz.Unavailable(msgClosedNoChange)
-	case f.pr.Status == StatusApproved && f.config.LinesOnApproved == NotAllowed:
+	case adding == "":
 		return authz.Unavailable(msgNoLinesOnApproved)
 	}
 	return authz.Available(ctx, authz.PurchaseRequestsEdit, f.plan)

@@ -52,11 +52,11 @@ describe('033 FR-001/FR-006/FR-010: Create GSAP PR and PO (simulated)', () => {
       name: 'Create GSAP PR and PO (simulated)?',
     });
     expect(dialog).toHaveTextContent(
-      'The simulated GSAP will create a GSAP PR and a purchase order with 1 line (10,000.00 USD) for PR-1002.',
+      'The simulated GSAP will create a GSAP PR and a purchase order with 1 line ($10,000.00) for PR-1002.',
     );
     expect(
       within(dialog).getByRole('list', { name: 'Lines sent to the simulated GSAP' }),
-    ).toHaveTextContent('Gift boxes (L-1011) · HX1011 · 10,000.00 USD');
+    ).toHaveTextContent('Gift boxes (L-1011) · HX1011 · $10,000.00');
     await expectNoAxeViolations();
     await user.click(within(dialog).getByRole('button', { name: 'Create' }));
 

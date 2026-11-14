@@ -6,7 +6,7 @@ import type { CurrentUser } from '@/session/useSession';
 import { Avatar } from '@/ui/Avatar/Avatar';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import type { TeamRef } from '@/ui/TeamPill/TeamPill';
@@ -20,6 +20,8 @@ import { EditPreferencesPanel } from './EditPreferencesPanel';
 import { currencyLabel, DISPLAY_CURRENCY_NOTE } from './texts';
 import styles from './ProfilePage.module.css';
 
+const EMAIL_LOCKED = 'Your e-mail is your sign-in name; it is changed in Settings › People.';
+
 type OpenPanel = 'details' | 'preferences' | null;
 
 /** Everything comes from the session, so the page shows at once. */
@@ -30,10 +32,7 @@ export function ProfilePage() {
 
   return (
     <>
-      <PageHeader
-        title="My profile"
-        description="Your details, teams and access, and how SP&A One shows dates and money to you."
-      />
+      <PageHeader title="My profile" />
       <div className={styles.cards}>
         <DetailsCard user={user} onEdit={() => setOpen('details')} />
         <PreferencesCard onEdit={() => setOpen('preferences')} />
@@ -74,9 +73,7 @@ function DetailsCard({ user, onEdit }: { user: CurrentUser; onEdit: () => void }
             <dt>E-mail</dt>
             <dd className={styles.email}>
               {user.email}
-              <LockedNote>
-                Your e-mail is your sign-in name; it is changed in Settings › People.
-              </LockedNote>
+              <InfoTip kind="locked" label="E-mail" text={EMAIL_LOCKED} />
             </dd>
           </div>
         </dl>

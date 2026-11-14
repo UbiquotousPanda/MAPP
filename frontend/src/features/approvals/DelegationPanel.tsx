@@ -11,6 +11,7 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useToast } from '@/ui/Toast/useToast';
 import type { StatusTone } from '@/ui/StatusChip/StatusChip';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
 import { asApiError, isSessionLost } from '@/api/errors';
 import { DelegationForm } from './DelegationForm';
@@ -35,13 +36,6 @@ export interface DelegationPanelProps {
 
 type Open = { kind: 'list' } | { kind: 'form'; delegation?: ApprovalDelegation };
 
-/**
- * "Approval delegation" (017 US4, FR-022 – FR-024), opened by **Delegate my approvals** on the
- * approvals page: the delegations in three groups — Current, Planned, Ended and cancelled (the last
- * 10, then Show all) — each "<person> → <delegate>", its days, its state and note, with **Edit** and
- * **Cancel delegation** while it may still change. **Add delegation** opens the form in the panel's
- * place. Someone who may manage everyone's delegations sees the Everyone switch.
- */
 export function DelegationPanel({ onClose }: DelegationPanelProps) {
   const [everyone, setEveryone] = useState(false);
   const [open, setOpen] = useState<Open>({ kind: 'list' });
@@ -73,7 +67,6 @@ export function DelegationPanel({ onClose }: DelegationPanelProps) {
           }
         }}
         title="Approval delegation"
-        description="Who approves for whom while someone is away."
         footer={
           <>
             <Button variant="primary" icon={<Plus />} onClick={() => setOpen({ kind: 'form' })}>
@@ -86,9 +79,8 @@ export function DelegationPanel({ onClose }: DelegationPanelProps) {
         <div className={styles.body}>
           {canManageOthers && (
             <CheckboxField
-              label="Everyone"
+              label="Show everyone's delegations"
               name="everyone"
-              hint="Show everyone's delegations, not only yours."
               checked={everyone}
               onChange={setEveryone}
             />
@@ -123,7 +115,6 @@ interface GroupsProps {
   onCancel: (delegation: ApprovalDelegation) => void;
 }
 
-/** Current, Planned, then Ended and cancelled; a group without delegations is left out. */
 function Groups({ items, onEdit, onCancel }: GroupsProps) {
   const [showAll, setShowAll] = useState(false);
   const ended = items.filter((item) => item.state === 'ended' || item.state === 'cancelled');
@@ -162,9 +153,9 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   const id = useId();
   return (
     <section aria-labelledby={id} className={styles.group}>
-      <h3 id={id} className={styles.heading}>
+      <SectionHeading level={3} rank="sub" id={id}>
         {title}
-      </h3>
+      </SectionHeading>
       <ul role="list" className={styles.items}>
         {children}
       </ul>

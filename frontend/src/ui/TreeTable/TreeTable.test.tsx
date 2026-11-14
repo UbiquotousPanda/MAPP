@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
 import { closestTo } from '@/testing/dom';
+import { TotalLabel } from '../Table/TotalLabel';
 import { TreeTable } from './TreeTable';
 import type { TreeNode } from './TreeTable';
 
@@ -72,7 +73,7 @@ function Example({ nodes = tree(), start = ['P-1001'] }: { nodes?: TreeNode[]; s
         })
       }
       emptyText="No campaigns yet — a campaign is a theme that runs for most of the year."
-      footer={{ name: 'Total · 2 campaigns', budget: '$500,000.00' }}
+      footer={{ name: <TotalLabel count="2 campaigns" />, budget: '$500,000.00' }}
     />
   );
 }
@@ -104,7 +105,7 @@ describe('TreeTable', () => {
       'href',
       '/plans/P-1001/campaigns/C-1001',
     );
-    expect(screen.getByText('Total · 2 campaigns')).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'Total 2 campaigns' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Actions for Helix launch' })).toBeInTheDocument();
   });
 

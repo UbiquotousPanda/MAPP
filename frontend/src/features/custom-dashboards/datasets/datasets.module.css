@@ -17,34 +17,10 @@
   line-height: var(--leading-sm);
 }
 
-.stepTitle {
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-md);
-}
-
 .fileField {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-}
-
-.problem {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  color: var(--danger-text);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-}
-
-.problem svg {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
 }
 
 .notes {
@@ -93,43 +69,13 @@
   outline-offset: 2px;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--ink);
-  font-size: var(--text-sm);
-  line-height: var(--leading-sm);
-}
-
 .table th,
 .table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  text-align: left;
   white-space: nowrap;
-}
-
-.table th {
-  font-weight: var(--weight-bold);
-}
-
-.table th.number,
-.table td.number {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
 }
 
 .table a {
   color: var(--link);
-}
-
-.pager {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
 }
 
 .usedBy {

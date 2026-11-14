@@ -34,6 +34,8 @@ export interface Formatters {
   moneyCompact: (value: MoneyValue | null | undefined) => string;
 }
 
+const ALSO_TYPED: DateFormat[] = ['DD MMM YYYY', 'YYYY-MM-DD', 'DD/MM/YYYY'];
+
 /** Dates and money for the signed-in person: every page shows and reads dates only through it. */
 export function useFormatters(): Formatters {
   const { user } = useSession();
@@ -49,7 +51,11 @@ export function useFormatters(): Formatters {
     dateTime: (timestamp) => formatDateTime(timestamp, dateFormat),
     dateRange: (start, end) => formatDateRange(start, end, dateFormat),
     relativeTime: (timestamp) => formatRelativeTime(timestamp, new Date(), dateFormat),
-    parseDate: (text) => parseDate(text, dateFormat),
+    parseDate: (text) =>
+      [dateFormat, ...ALSO_TYPED].reduce<string | null>(
+        (found, format) => found ?? parseDate(text, format),
+        null,
+      ),
     money: (value) =>
       value ? formatMoney(value.amount, value.currency) : formatMoney(null, 'USD'),
     moneyCompact: (value) =>

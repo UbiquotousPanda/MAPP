@@ -18,7 +18,7 @@ import (
 
 const (
 	lea      = "lea.santos@shell.com"
-	exported = "/api/v1/reports/user-access/export?format="
+	exported = "/api/v1/reports/plan-data/export?tab=people&format="
 )
 
 // exportFile is a CSV export read back: the notes before the table, by label, and the table's rows.
@@ -132,20 +132,32 @@ func alexAfterPriya(t *testing.T) *apitest.Client {
 	return server.SignIn(t, alex)
 }
 
-// TestOwnPass_ExportEqualsScreen_FR013_SC005: both widgets' files hold the screen's every row in its sort.
+// Both widgets' files hold the screen's every row in its sort, and the workbook holds the same rows: the people
+// and Last sign-in sheets first, About this export last.
 func TestOwnPass_ExportEqualsScreen_FR013_SC005(t *testing.T) {
 	t.Parallel()
 	alexSees := alexAfterPriya(t)
 
-	screen := reportOf(t, alexSees, report+"?pageSize=500"+own)
-	if diff := cmp.Diff(peopleRows(screen), csvOf(t, alexSees, own+"&widget=people").rows); screen.Total < 2 || diff != "" {
+	screen := reportOf(t, alexSees, report+"?pageSize=200"+own)
+	files := [][][]string{csvOf(t, alexSees, own+"&widget=people").rows, csvOf(t, alexSees, own+"&widget=signInBands").rows}
+	if diff := cmp.Diff(peopleRows(screen), files[0]); screen.Total < 2 || diff != "" {
 		t.Errorf("people, %d on screen (-screen +file):\n%s", screen.Total, diff)
 	}
-	if diff := cmp.Diff(bandRows(screen), csvOf(t, alexSees, own+"&widget=signInBands").rows); diff != "" {
+	if diff := cmp.Diff(bandRows(screen), files[1]); diff != "" {
 		t.Errorf("Last sign-in bands (-screen +file):\n%s", diff)
 	}
 	if total := bandRows(screen)[len(screen.Bands)+1][1]; total != strconv.Itoa(screen.Cards.People) {
 		t.Errorf("bands add up to %s, the People card says %d (FR-007)", total, screen.Cards.People)
+	}
+	tables, err := sheet.ReadXLSX(get(t, alexSees, exported+"xlsx"+own, http.StatusOK).Body, 10000)
+	if err != nil || len(tables) < 3 || tables[0].Name != "People" || tables[1].Name != "Last sign-in" ||
+		tables[len(tables)-1].Name != "About this export" {
+		t.Fatalf("workbook = %d sheets (%v), want People, Last sign-in, …, About this export", len(tables), err)
+	}
+	for i, file := range files {
+		if diff := cmp.Diff(asRead(file), textOf(tables[i].Rows)); diff != "" {
+			t.Errorf("sheet %s against its file (-file +sheet):\n%s", tables[i].Name, diff)
+		}
 	}
 }
 
@@ -155,7 +167,7 @@ func TestOwnPass_ExportKeepsTeam_US2_1(t *testing.T) {
 	alexSees := alexAfterPriya(t)
 	team := "&status=all&team=T-1001"
 
-	screen, everyone := reportOf(t, alexSees, report+"?pageSize=500"+team), reportOf(t, alexSees, report+"?status=all")
+	screen, everyone := reportOf(t, alexSees, report+"?pageSize=200"+team), reportOf(t, alexSees, report+"?status=all")
 	people := csvOf(t, alexSees, team+"&widget=people")
 	if diff := cmp.Diff(peopleRows(screen), people.rows); screen.Total == 0 || screen.Total == everyone.Total || diff != "" {
 		t.Errorf("people of T-1001, %d of %d on screen (-screen +file):\n%s", screen.Total, everyone.Total, diff)
@@ -172,23 +184,6 @@ func TestOwnPass_ExportKeepsTeam_US2_1(t *testing.T) {
 	}
 	if diff := cmp.Diff(asRead(people.rows), textOf(tables[0].Rows)); diff != "" {
 		t.Errorf("People sheet of T-1001 against the file (-file +sheet):\n%s", diff)
-	}
-}
-
-// TestOwnPass_WorkbookEqualsFiles_US2_2: the people and Last sign-in sheets first, About this export last.
-func TestOwnPass_WorkbookEqualsFiles_US2_2(t *testing.T) {
-	t.Parallel()
-	alexSees := alexAfterPriya(t)
-
-	tables, err := sheet.ReadXLSX(get(t, alexSees, exported+"xlsx"+own, http.StatusOK).Body, 10000)
-	if err != nil || len(tables) < 3 || tables[0].Name != "People" || tables[1].Name != "Last sign-in" ||
-		tables[len(tables)-1].Name != "About this export" {
-		t.Fatalf("workbook = %d sheets (%v), want People, Last sign-in, …, About this export", len(tables), err)
-	}
-	for i, widget := range []string{"people", "signInBands"} {
-		if diff := cmp.Diff(asRead(csvOf(t, alexSees, own+"&widget="+widget).rows), textOf(tables[i].Rows)); diff != "" {
-			t.Errorf("sheet %s against the %s file (-file +sheet):\n%s", tables[i].Name, widget, diff)
-		}
 	}
 }
 
@@ -212,24 +207,9 @@ func TestOwnPass_NoFinanceView_ShownInFull_US1_13(t *testing.T) {
 	server := apitest.New(t, apitest.WithMeasureDemo())
 	giveMeiAccessManage(t, server)
 	meiSees, alexSees := server.SignIn(t, mei), server.SignIn(t, alex)
-	path := report + "?status=all&pageSize=500"
+	path := report + "?status=all&pageSize=200"
 
 	if mine, theirs := get(t, meiSees, path, http.StatusOK).Body, get(t, alexSees, path, http.StatusOK).Body; !bytes.Equal(mine, theirs) {
 		t.Errorf("Mei (access.manage alone) sees\n%s\nAlex\n%s", mine, theirs)
-	}
-}
-
-// TestOwnPass_ExportRights_039_FR022: without data.export every export answers 403, access.manage or not.
-func TestOwnPass_ExportRights_039_FR022(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t, apitest.WithMeasureDemo())
-	giveMeiAccessManage(t, server)
-	meiSees, leaSees := server.SignIn(t, mei), server.SignIn(t, lea)
-
-	get(t, meiSees, report, http.StatusOK)
-	get(t, leaSees, report, http.StatusForbidden)
-	for _, query := range []string{"xlsx", "xlsx&status=all", "csv&widget=people", "csv&widget=signInBands&q=lea"} {
-		get(t, meiSees, exported+query, http.StatusForbidden)
-		get(t, leaSees, exported+query, http.StatusForbidden)
 	}
 }

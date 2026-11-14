@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { callApi, expectNoAxeViolations, signInAs } from './fixtures';
+import { callApi, choose, expectNoAxeViolations, signInAs } from './fixtures';
 
 const PRIYA = 'priya.raman@shell.com';
 const PLAN = 'FY2026 Lubricants Europe';
@@ -21,7 +21,8 @@ test('SP&A view of a plan: figures traced to activities, periods, dimension, cam
   const committed = usd(card.figures.committed.amount);
 
   await page.goto('/plans/P-1001');
-  await page.getByRole('link', { name: 'SP&A view' }).click();
+  await page.getByRole('button', { name: 'More', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'SP&A view' }).click();
   await expect(page.getByRole('heading', { name: 'SP&A view', level: 1 })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Plan facts' })).toContainText('BCPIR');
   const headline = page.getByRole('region', { name: 'Headline figures' });
@@ -39,18 +40,18 @@ test('SP&A view of a plan: figures traced to activities, periods, dimension, cam
 
   await page.getByRole('button', { name: 'Months' }).click();
   await expect(page.getByRole('rowheader', { name: 'Mar 2026' })).toBeVisible();
-  await page.getByRole('combobox', { name: 'Group by' }).selectOption({ label: 'Activity type' });
+  await choose(page, page.getByRole('combobox', { name: 'Group by' }), 'Activity type');
   await expect(page).toHaveURL(/dimension=activityType/);
   await expect(
     page.getByRole('columnheader', { name: 'Activity type', exact: true }).first(),
   ).toBeVisible();
 
-  await page.getByRole('combobox', { name: 'Scope' }).selectOption({ label: 'Helix launch' });
+  await choose(page, page.getByRole('combobox', { name: 'Scope' }), 'Helix launch');
   await expect(page).toHaveURL(/campaign=C-1001/);
   const activities = page.getByRole('table', { name: 'Activities' });
   await expect(activities.getByRole('link', { name: 'Fleet roadshow' })).toHaveCount(0);
   await page.goBack();
-  await expect(page.getByRole('combobox', { name: 'Scope' })).toHaveValue('');
+  await expect(page.getByRole('combobox', { name: 'Scope' })).toHaveText('Whole plan');
   await expect(activities.getByRole('link', { name: 'Fleet roadshow' })).toBeVisible();
 
   await activities.getByRole('button', { name: 'Actual spend' }).click();

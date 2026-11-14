@@ -1,6 +1,6 @@
 # CLAUDE.md — guidance for AI agents working on MAPP
 
-Read this with `.specify/memory/constitution.md` (the rules, version 4.10) before doing anything. Where
+Read this with `.specify/memory/constitution.md` (the rules, version 4.11) before doing anything. Where
 this file and the constitution disagree, the constitution wins and this file is corrected. Working in
 `backend/`? `backend/CLAUDE.md` loads the Go standards (`backend/docs/GO_STANDARDS.md`). Working on the
 **Measure module** (features 039–050)? Read `docs/sdd/measure-module-build.md` first — it names your lane, the
@@ -99,6 +99,13 @@ Software Design & Construction Policy and SEMS, which are mandatory.
 17. **Release age** (constitution VII): pnpm installs only versions published at least a day ago
     (`minimumReleaseAge` in `frontend/pnpm-workspace.yaml`, pnpm pinned by `packageManager`). Before adding or upgrading a Go module, check its version was
     published more than 24 hours ago (`https://proxy.golang.org/<module>/@v/<version>.info`).
+18. **One component per element, from `frontend/src/ui/`** (constitution F6, 4.11.0; D-415, D-416): never create a copy of a
+    component, style or helper that already exists. Before writing any UI element, search `ui/` (and the feature's
+    `index.ts` exports). Anything without domain knowledge — buttons, tables and their Total row, pagers, sort
+    headers, selects, menus, popovers, filters, chips, alerts, dialogs, empty, loading and error states — comes from
+    `ui/`. A feature composes `ui/` pieces and never restyles one; a needed variant is added to the `ui/` component
+    (a prop), not built beside it. A pattern a second feature needs moves into `ui/` first. The same holds for Go:
+    export the rule from its package and call it.
 
 ## Key documents
 
@@ -155,8 +162,9 @@ What reviews keep sending back. Check each before asking for review and before r
   integrator first. The month in progress counts once, and cards, chart, ranked list and export agree (test it
   with facts in that month, in month and quarter view). Test money in a non-USD currency and convert parts with
   `money.ConvertParts`; no data is "—", never 0.00.
-- **Reuse, don't copy.** Export a rule from its package and call it; never re-implement it in `app/` wiring. A
-  shared file that needs a change is asked for in the pull request.
+- **Reuse, don't copy** (non-negotiable 18). Export a rule from its package and call it; never re-implement it in
+  `app/` wiring. No new table, pager, sort header, select, menu, popover, alert or dialog in a feature: use or
+  extend the `ui/` one. A shared file that needs a change is asked for in the pull request.
 - **Required tests ship with the code** (non-negotiable 8): a contract test per endpoint, a scope-isolation
   test per scoped read, every state a view renders, a test that each control changes the request and survives
   the address and the export, and an end-to-end test per P1 story that asserts a figure.

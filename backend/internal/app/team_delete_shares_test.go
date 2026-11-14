@@ -63,7 +63,7 @@ func TestDeleteTeam_SharesLeaveWithTheTeam_D379(t *testing.T) {
 	shareOverview(t, priya, []string{lubricantsEurope, agencies})
 	shareLeads(t, priya, []string{agencies})
 
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/teams/"+agencies, nil)
+	deleted := alex.DeleteSeen(t, "/api/v1/teams/"+agencies)
 	if deleted.Status != http.StatusOK {
 		t.Fatalf("deleting the shared team = %d %s, want 200", deleted.Status, deleted.Body)
 	}
@@ -89,8 +89,8 @@ func TestRestoreDashboard_AfterItsTeamWasDeleted_D379(t *testing.T) {
 	agencies := newTeamWithPriya(t, alex)
 	shareOverview(t, priya, []string{lubricantsEurope, agencies})
 	var bin struct{ RecycleBinEntry struct{ ID string } }
-	priya.Do(t, http.MethodDelete, "/api/v1/custom-dashboards/"+overviewDashboard, nil).Decode(t, &bin)
-	if answer := alex.Do(t, http.MethodDelete, "/api/v1/teams/"+agencies, nil); answer.Status != http.StatusOK {
+	priya.DeleteSeen(t, "/api/v1/custom-dashboards/"+overviewDashboard).Decode(t, &bin)
+	if answer := alex.DeleteSeen(t, "/api/v1/teams/"+agencies); answer.Status != http.StatusOK {
 		t.Fatalf("deleting the shared team = %d %s, want 200", answer.Status, answer.Body)
 	}
 

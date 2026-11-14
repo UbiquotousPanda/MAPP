@@ -43,7 +43,7 @@ func (r *ReportEntry) sheets(ctx context.Context, a actor.Actor, f measure.Filte
 	}
 	out := []measure.WidgetSheet{
 		{Key: "revenue", Sheet: revenueSheet(view.Revenue, view.currency)},
-		{Key: "trend", Sheet: trendSheet(view.Revenue.Trend, view.currency)},
+		{Key: "trend", Sheet: trendSheet(view.Revenue, view.currency)},
 		{Key: "funnel", Sheet: funnelSheet(view.Funnel, view.currency)},
 		{Key: "conversion", Sheet: conversionSheet(view.Funnel)},
 	}

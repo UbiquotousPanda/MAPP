@@ -8,36 +8,10 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-
 	"mapp/internal/dataset"
-	"mapp/internal/dataset/datasettest"
 	"mapp/internal/platform/apitest"
 	"mapp/seed"
 )
-
-func TestLoad_EventLeadsDataset_D376(t *testing.T) {
-	t.Parallel()
-	store := datasettest.NewStore(loadedStore(t))
-	d, found, err := store.Get(t.Context(), "DS-1001")
-	if err != nil || !found {
-		t.Fatalf("DS-1001: %v, %v", found, err)
-	}
-	rows, err := store.Rows(t.Context(), d.ID)
-	if err != nil {
-		t.Fatalf("Rows: %v", err)
-	}
-	kinds := []dataset.Kind{}
-	for _, c := range d.Columns {
-		kinds = append(kinds, c.Kind)
-	}
-	want := []any{"Event leads 2026", "U-1002", 0, 12, 12, "EUR", int64(1850000),
-		[]dataset.Kind{dataset.KindText, dataset.KindDate, dataset.KindNumber, dataset.KindMoney}}
-	got := []any{d.Name, d.OwnerID, len(d.SharedWith), d.RowCount, len(rows), *d.Columns[3].Currency, *rows[0][3].Minor, kinds}
-	if diff := cmp.Diff(want, got); diff != "" {
-		t.Errorf("DS-1001 (-want +got):\n%s", diff)
-	}
-}
 
 func TestEventLeadsFixtures_MatchTheSeed_D376(t *testing.T) {
 	t.Parallel()

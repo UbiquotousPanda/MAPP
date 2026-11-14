@@ -164,6 +164,7 @@ export function row(spec: RowSpec, columns: string[] = DEFAULT_COLUMNS): AllWork
     ...(spec.activityId && { activityId: spec.activityId }),
     depth: spec.depth,
     name: spec.name,
+    ...(spec.level !== 'unassigned' && { version: 1 }),
     role: 'match',
     status: spec.level === 'unassigned' ? null : status,
     ...(spec.strategic !== undefined && { strategic: spec.strategic }),

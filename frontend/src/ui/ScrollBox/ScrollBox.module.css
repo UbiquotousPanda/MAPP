@@ -1,0 +1,45 @@
+/* The right edge fades out while columns hide there, so the cut text reads as "more this way". */
+.frame {
+  position: relative;
+  min-width: 0;
+}
+
+.scroll {
+  position: relative;
+  overflow-x: auto;
+}
+
+.scroll:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 48px;
+  background:
+    linear-gradient(to left, var(--scroll-shadow), transparent 12px),
+    linear-gradient(to left, var(--surface), transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease-out);
+}
+
+.cueEnd::after {
+  opacity: 1;
+}
+
+/* Scrolled: a sticky first column casts its shadow over the columns that slid under it. */
+.cueStart tr > :first-child {
+  box-shadow: 8px 0 8px -8px var(--scroll-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame::after {
+    transition: none;
+  }
+}

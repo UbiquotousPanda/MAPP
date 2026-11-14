@@ -22,7 +22,7 @@ func (q *Queries) DeletePerformanceImportBreakdown(ctx context.Context, importID
 const latestImportStatuses = `-- name: LatestImportStatuses :many
 SELECT DISTINCT ON (source_id) source_id, status
 FROM performance_imports
-WHERE source_id = ANY($1::text[])
+WHERE source_id = ANY($1::text[]) AND status <> 'undone'
 ORDER BY source_id, created_at DESC, id COLLATE "C" DESC
 `
 
@@ -203,8 +203,10 @@ WHERE ($1::text IS NULL OR performance_review_rows.status = $1)
                     WHERE kv.value ILIKE '%' || $7 || '%'))
     AND ($8::timestamptz IS NULL OR performance_review_rows.created_at >= $8)
     AND ($9::timestamptz IS NULL OR performance_review_rows.created_at <= $9)
-ORDER BY performance_review_rows.created_at DESC, performance_review_rows.id COLLATE "C"
-LIMIT $10
+    AND ($10::text IS NULL OR performance_review_rows.id COLLATE "C" > $10)
+ORDER BY CASE WHEN $11::boolean THEN NULL ELSE performance_review_rows.created_at END DESC,
+    performance_review_rows.id COLLATE "C"
+LIMIT $12
 `
 
 type ListPerformanceReviewRowsParams struct {
@@ -217,6 +219,8 @@ type ListPerformanceReviewRowsParams struct {
 	KeyText   *string
 	Since     *time.Time
 	Until     *time.Time
+	AfterID   *string
+	ByID      bool
 	MaxRows   int32
 }
 
@@ -236,6 +240,8 @@ func (q *Queries) ListPerformanceReviewRows(ctx context.Context, arg ListPerform
 		arg.KeyText,
 		arg.Since,
 		arg.Until,
+		arg.AfterID,
+		arg.ByID,
 		arg.MaxRows,
 	)
 	if err != nil {

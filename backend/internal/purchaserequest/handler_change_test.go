@@ -104,9 +104,9 @@ func TestDelete_ByStatus_AndRestore_Contract_032_FR042(t *testing.T) {
 	approvedPR := approved(t, s)
 	priya := s.SignIn(t, priyasEmail)
 
-	refused := decoded[apiError](t, priya.Do(t, http.MethodDelete, prs+"/"+approvedPR.ID, nil), http.StatusConflict)
+	refused := decoded[apiError](t, priya.DeleteSeen(t, prs+"/"+approvedPR.ID), http.StatusConflict)
 	created := create(t, priya, body(mediaBooking, "USD", "30000.00"))
-	deleted := decoded[history.DeleteResult](t, priya.Do(t, http.MethodDelete, prs+"/"+created.ID, nil), http.StatusOK)
+	deleted := decoded[history.DeleteResult](t, priya.DeleteSeen(t, prs+"/"+created.ID), http.StatusOK)
 	taken := create(t, priya, body(mediaBooking, "USD", "1.00"))
 	restore := decoded[apiError](t, priya.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+deleted.RecycleBinEntry.ID+"/undo", nil),
 		http.StatusConflict)
@@ -129,8 +129,8 @@ func TestGuards_KeepWhatAPurchaseRequestDrawsOn_Contract_032_FR019(t *testing.T)
 	priya := s.SignIn(t, priyasEmail)
 	pr := create(t, priya, body(standBuild, "EUR", "5000.00"))
 
-	item := priya.Do(t, http.MethodDelete, "/api/v1/line-items/"+standBuild, nil)
-	act := priya.Do(t, http.MethodDelete, "/api/v1/activities/A-1003", nil)
+	item := priya.DeleteSeen(t, "/api/v1/line-items/"+standBuild)
+	act := priya.DeleteSeen(t, "/api/v1/activities/A-1003")
 	lower := decoded[apiError](t, priya.Do(t, http.MethodPatch, "/api/v1/line-items/"+standBuild,
 		lineItemForm(t, priya, "4000.00")), http.StatusBadRequest)
 

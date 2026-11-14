@@ -78,6 +78,10 @@ func (t totals) actual() int64 {
 	return sum
 }
 
+func (t totals) anyActual() bool {
+	return slices.ContainsFunc(t.months, func(m monthTotal) bool { return m.counted })
+}
+
 func valueOf(v *int64) int64 {
 	if v == nil {
 		return 0

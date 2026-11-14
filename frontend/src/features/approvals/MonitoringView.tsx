@@ -4,9 +4,12 @@ import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { subjectKindLabel } from '@/ui/subject-links';
 import { formatWaitingTime, localDate } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { AgeingBars } from './AgeingBars';
 import { useApprovalMonitoring } from './api';
 import type { ApprovalMonitoring } from './api';
@@ -145,42 +148,39 @@ function WaitingByLevel({ data }: { data: ApprovalMonitoring }) {
     );
   }
   return (
-    <div
-      className={styles.scroll}
-      role="region"
-      aria-label="Waiting by level, scrolls sideways"
-      tabIndex={0}
-    >
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th scope="col" className={styles.workflowCol}>
-              Workflow
-            </th>
-            <th scope="col">Approves</th>
-            <th scope="col">Level</th>
-            <th scope="col" className={styles.number}>
-              Waiting
-            </th>
-            <th scope="col" className={styles.number}>
-              Overdue
-            </th>
-            <th scope="col">Oldest waiting</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.byLevel.map((row) => (
-            <tr key={`${row.workflow.id}-${row.level}`}>
-              <th scope="row">{row.workflow.name}</th>
-              <td className={styles.nowrap}>{subjectKindLabel(row.kind)}</td>
-              <td className={styles.nowrap}>{row.levelLabel}</td>
-              <td className={styles.number}>{row.waiting}</td>
-              <td className={styles.number}>{row.overdue}</td>
-              <td className={styles.nowrap}>{oldest(row.oldestWaitingSince)}</td>
+    <div className={styles.bleed}>
+      <ScrollBox label="Waiting by level">
+        <table className={cx(dataTable.table, styles.table)}>
+          <thead>
+            <tr>
+              <th scope="col" className={styles.workflowCol}>
+                Workflow
+              </th>
+              <th scope="col">Approves</th>
+              <th scope="col">Level</th>
+              <th scope="col" className={dataTable.numeric}>
+                Waiting
+              </th>
+              <th scope="col" className={dataTable.numeric}>
+                Overdue
+              </th>
+              <th scope="col">Oldest waiting</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.byLevel.map((row) => (
+              <tr key={`${row.workflow.id}-${row.level}`}>
+                <th scope="row">{row.workflow.name}</th>
+                <td className={styles.nowrap}>{subjectKindLabel(row.kind)}</td>
+                <td className={styles.nowrap}>{row.levelLabel}</td>
+                <td className={dataTable.numeric}>{row.waiting}</td>
+                <td className={dataTable.numeric}>{row.overdue}</td>
+                <td className={styles.nowrap}>{oldest(row.oldestWaitingSince)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ScrollBox>
     </div>
   );
 }

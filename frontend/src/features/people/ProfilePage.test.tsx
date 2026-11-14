@@ -2,11 +2,12 @@ import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { card, EUR, renderProfile, USD } from '@/testing/fixtures/profile';
 import { testUser } from '@/testing/fixtures/users';
+import { expectNoAxeViolations } from '@/testing/axe';
 import { reply } from '@/testing/replies';
 
 describe('ProfilePage (feature 003, US4)', () => {
   it('shows the details with the e-mail lock, the preferences and My teams (US4-1, FR-021)', async () => {
-    renderProfile();
+    const { user } = renderProfile();
 
     expect(screen.getByRole('heading', { level: 1, name: 'My profile' })).toBeInTheDocument();
     expect(document.title).toBe('My profile · SP&A One');
@@ -15,11 +16,10 @@ describe('ProfilePage (feature 003, US4)', () => {
     expect(details).toHaveTextContent('Priya Raman');
     expect(details).toHaveTextContent('Marketer');
     expect(details).toHaveTextContent('priya.raman@shell.com');
-    expect(
-      within(details).getByText(
-        'Your e-mail is your sign-in name; it is changed in Settings › People.',
-      ),
-    ).toBeInTheDocument();
+    await user.click(within(details).getByRole('button', { name: "Why E-mail can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why E-mail can't change" })).toHaveTextContent(
+      'Your e-mail is your sign-in name; it is changed in Settings › People.',
+    );
     expect(within(details).getByRole('button', { name: 'Edit details' })).toBeInTheDocument();
 
     const preferences = card('Display preferences');
@@ -42,6 +42,7 @@ describe('ProfilePage (feature 003, US4)', () => {
     expect(
       within(teams).getByRole('link', { name: 'Manage teams in Settings › Teams' }),
     ).toHaveAttribute('href', '/settings/teams');
+    await expectNoAxeViolations();
   });
 
   it('keeps a display currency that was set inactive, labelled "(inactive)" (edge case, D-063)', async () => {

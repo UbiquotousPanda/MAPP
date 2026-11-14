@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { api } from '@/api/client';
 import { downloadFromApi } from '@/api/download';
 import { ApiError } from '@/api/errors';
-import { useAccess } from '@/session/access';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { useToast } from '@/ui/Toast/useToast';
 
@@ -10,9 +9,8 @@ type Format = 'pptx' | 'pdf';
 
 const PREPARING = 'Preparing the file…';
 
-/** The plan page's Export to PowerPoint and Export to PDF, for people who hold data.export (036 FR-023). */
-export function usePlanExport(planId: string): ActionsMenuItem[] {
-  const canExport = useAccess().has('data.export');
+/** The plan page's Export to PowerPoint and Export to PDF, where the plan's access allows exporting. */
+export function usePlanExport(planId: string, canExport: boolean): ActionsMenuItem[] {
   const { show } = useToast();
   const [preparing, setPreparing] = useState(false);
 

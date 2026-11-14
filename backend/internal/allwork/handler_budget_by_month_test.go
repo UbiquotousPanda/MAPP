@@ -29,7 +29,7 @@ func TestGetBudgetByMonth_Contract_FR024(t *testing.T) {
 	}
 	// The plan tree's order: the plan, the campaign, then its initiatives by start date and name — Ireland, UK.
 	plan, campaign, ireland, uk := result.Rows[0], result.Rows[1], result.Rows[2], result.Rows[3]
-	wantPlanned := []string{"0.00", "0.00", "13,333.33", "13,333.33", "13,333.34", "0.00", "0.00", "0.00", "25,000.00", "0.00", "0.00", "0.00"}
+	wantPlanned := []string{"0.00", "0.00", "13,333.32", "13,333.32", "13,333.36", "0.00", "0.00", "0.00", "25,000.00", "0.00", "0.00", "0.00"}
 	var planned []string
 	for _, m := range plan.Months.PlannedCost {
 		planned = append(planned, m.Amount.Format())
@@ -42,11 +42,11 @@ func TestGetBudgetByMonth_Contract_FR024(t *testing.T) {
 		t.Errorf("plan allocated %v, over %v; want 100,000.00 GBP allocated over 50,000.00 in Mar, Jun, Sep, Nov", plan.Months.Allocated, plan.Months.Over)
 	}
 	if campaign.Method != "custom" || campaign.ChildrenNotPhased != 2 || !campaign.Months.Over[3] || campaign.Months.Over[2] ||
-		campaign.Months.Difference[2].Format() != "86,666.67 GBP" {
+		campaign.Months.Difference[2].Format() != "86,666.68 GBP" {
 		t.Errorf("campaign = %+v", campaign)
 	}
 	if uk.RecordID != "I-1009" || uk.Method != "none" || uk.Months.Allocated != nil || uk.Months.Budget[2] != nil ||
-		uk.Months.PlannedCost[4].Amount.Format() != "13,333.34" {
+		uk.Months.PlannedCost[4].Amount.Format() != "13,333.36" {
 		t.Errorf("UK = %+v", uk)
 	}
 	if ireland.RecordID != "I-1010" || ireland.Months.PlannedCost[8].Amount.Format() != "25,000.00" {

@@ -567,8 +567,10 @@ Each requirement names the QA finding(s) it closes and the earlier requirement i
 - **FR-014**: Sign-in MUST refuse further attempts for 15 minutes when one e-mail (compared ignoring case and
   surrounding spaces) has 5 failed attempts within 15 minutes, or one client has 20; the refusal reads "Too many
   sign-in attempts. Try again in 15 minutes." with the remaining wait, also for the right password; attempts
-  refused during the lock do not extend it; a successful sign-in clears the failures of that e-mail and that
-  client; choosing a demo person counts as signing in with its e-mail; unknown e-mails count like known ones.
+  refused during the lock do not extend it; a successful sign-in clears the failures of that e-mail and, on the
+  client's count, only that e-mail's failures (guesses at other e-mails stay counted); the lock is checked and a
+  failure counted in one step, so parallel attempts cannot pass the limit; choosing a demo person counts as
+  signing in with its e-mail; unknown e-mails count like known ones.
   [Security check "Sign-in brute force"; D-361]
 - **FR-015**: Every web page and every server answer MUST forbid being framed by any site, send no referring
   address beyond the own origin, and forbid content sniffing; every web page MUST run under a content security

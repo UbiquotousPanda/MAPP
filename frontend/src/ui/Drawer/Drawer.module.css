@@ -1,0 +1,64 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--overlay);
+  animation: fade-in var(--dur) var(--ease-out);
+}
+
+.overlay[data-state='closed'] {
+  animation: fade-out var(--dur-fast) var(--ease-in) forwards;
+}
+
+/* The drawer slides in from the left. */
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  width: min(280px, 85vw);
+  border-right: 1px solid var(--card-border);
+  box-shadow: var(--shadow-lg);
+  animation: slide-in var(--dur) var(--ease-out);
+}
+
+.drawer[data-state='closed'] {
+  animation: slide-out var(--dur-fast) var(--ease-in) forwards;
+}
+
+.drawer:focus {
+  outline: none;
+}
+
+/* The close button sits in the top right corner, on the content's first row. */
+.close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-out {
+  to {
+    transform: translateX(-100%);
+  }
+}

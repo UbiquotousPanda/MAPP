@@ -1,5 +1,7 @@
 import { useFormatters } from '@/format/useFormatters';
 import { Card } from '@/ui/Card/Card';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
 import type { DashboardApprovals } from './api';
 import { NOTHING, word } from './dashboard-text';
 import styles from './Dashboards.module.css';
@@ -27,7 +29,7 @@ export function ApprovalsPanel({ approvals }: ApprovalsPanelProps) {
     },
   ];
   return (
-    <Card title="Approvals" subtitle="Activities and purchase requests of these plans">
+    <Card title="Approvals">
       {none && <p className={styles.note}>No approvals yet.</p>}
       <dl className={styles.stats}>
         {stats.map((stat) => (
@@ -37,25 +39,27 @@ export function ApprovalsPanel({ approvals }: ApprovalsPanelProps) {
           </div>
         ))}
       </dl>
-      <table className={styles.table}>
-        <caption>Activities by approval status</caption>
-        <thead>
-          <tr>
-            <th scope="col">Status</th>
-            <th scope="col" className={styles.number}>
-              Activities
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {approvals.activitiesByStatus.map((row) => (
-            <tr key={row.status}>
-              <th scope="row">{word(row.status)}</th>
-              <td className={styles.number}>{row.count}</td>
+      <div className={dataTable.scroll}>
+        <table className={cx(dataTable.table, styles.table)}>
+          <caption className="visually-hidden">Activities by approval status</caption>
+          <thead>
+            <tr>
+              <th scope="col">Status</th>
+              <th scope="col" className={dataTable.numeric}>
+                Activities
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {approvals.activitiesByStatus.map((row) => (
+              <tr key={row.status}>
+                <th scope="row">{word(row.status)}</th>
+                <td className={dataTable.numeric}>{row.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 }

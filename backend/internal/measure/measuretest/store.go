@@ -3,6 +3,8 @@ package measuretest
 
 import (
 	"context"
+	"fmt"
+	"slices"
 
 	"mapp/internal/measure"
 	"mapp/internal/platform/fake"
@@ -13,7 +15,17 @@ type Store struct {
 }
 
 func NewStore(db *fake.DB) Store {
-	return Store{views: fake.TableOf(db, "report_views", func(v measure.StoredView) string { return v.ID })}
+	views := fake.TableOf(db, "report_views", func(v measure.StoredView) string { return v.ID }).
+		Unique("report_views_name_key", func(v measure.StoredView) string {
+			return v.PersonID + "/" + v.Report + "/" + fake.LowerC(v.Name)
+		}).
+		Unique("report_views_default_key", func(v measure.StoredView) string {
+			if !v.IsDefault {
+				return ""
+			}
+			return v.PersonID + "/" + v.Report
+		})
+	return Store{views: views}
 }
 
 func (s Store) ListViews(_ context.Context, personID, report string) ([]measure.StoredView, error) {
@@ -24,7 +36,13 @@ func (s Store) GetView(_ context.Context, id string) (measure.StoredView, bool, 
 	return s.views.Get(id)
 }
 
+// PutView refuses a report outside the five, as the report_views CHECK does.
 func (s Store) PutView(ctx context.Context, v measure.StoredView) error {
+	reports := []string{measure.KeyPerformance, measure.KeyBudget, measure.KeyPurchasing, measure.KeyApprovals,
+		measure.KeyPlanData}
+	if !slices.Contains(reports, v.Report) {
+		return fmt.Errorf("measuretest: report_views_report_check refuses %q", v.Report)
+	}
 	return s.views.Put(ctx, v)
 }
 

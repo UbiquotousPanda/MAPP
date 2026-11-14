@@ -12,15 +12,14 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// The Allocate dialog offers the plans of 2026 without an allocation: none while both are allocated, Mobility
-// China once its allocation is removed (FR-030).
+// The Allocate dialog offers no plan while both are allocated, and Mobility China once its allocation is removed.
 func TestListAllocationOptions_200_404_FR030(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	carlos := server.SignIn(t, carlosEmail)
 
 	none := carlos.Do(t, http.MethodGet, "/api/v1/global-budgets/GB-1001/allocation-options", nil)
-	carlos.Do(t, http.MethodDelete, "/api/v1/budget-allocations/BA-1002", nil)
+	carlos.DeleteSeen(t, "/api/v1/budget-allocations/BA-1002")
 	one := carlos.Do(t, http.MethodGet, "/api/v1/global-budgets/GB-1001/allocation-options", nil)
 	gone := carlos.Do(t, http.MethodGet, "/api/v1/global-budgets/GB-9999/allocation-options", nil)
 
@@ -34,14 +33,11 @@ func TestListAllocationOptions_200_404_FR030(t *testing.T) {
 	assertAnswer(t, gone, http.StatusNotFound, budgetGoneBody)
 }
 
-// Allocating answers 201 with the global budget after the allocation and sets the plan's budget; the form's
-// problems are answered at once; an out-of-date plan version is refused naming who changed the plan
-// (FR-030, messages 28 and 29).
 func TestCreateBudgetAllocation_201_400_409_FR030(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	carlos := server.SignIn(t, carlosEmail)
-	carlos.Do(t, http.MethodDelete, "/api/v1/budget-allocations/BA-1002", nil)
+	carlos.DeleteSeen(t, "/api/v1/budget-allocations/BA-1002")
 
 	stale := carlos.Do(t, http.MethodPost, "/api/v1/global-budgets/GB-1001/allocations", map[string]any{
 		"planId": "P-1002", "amount": usd("900000.00"), "planVersion": 9,
@@ -81,10 +77,7 @@ func TestCreateBudgetAllocation_201_400_409_FR030(t *testing.T) {
 	assertAnswer(t, gone, http.StatusNotFound, budgetGoneBody)
 }
 
-// US6 scenario 2: Carlos changes the Lubricants allocation to 1,300,000.00; the plan's budget becomes
-// 1,300,000.00 at once, and the log shows the change on the global budget and on the plan, with the
-// comment. A change from an out-of-date allocation version is refused; an unknown allocation is not found
-// (FR-030, FR-037).
+// Carlos changes the Lubricants allocation to 1,300,000.00 and the plan's budget follows at once.
 func TestUpdateBudgetAllocation_200_409_404_FR030_FR037(t *testing.T) { //nolint:gocyclo // 10: one change and three refusals, then the plan and both logs
 	t.Parallel()
 	server := apitest.New(t)
@@ -120,7 +113,7 @@ func TestUpdateBudgetAllocation_200_409_404_FR030_FR037(t *testing.T) { //nolint
 	var planLog, budgetLog history.LogPage
 	decode(t, carlos.Do(t, http.MethodGet, "/api/v1/activity-log?recordType=plan&recordId=P-1001", nil), http.StatusOK, &planLog)
 	decode(t, carlos.Do(t, http.MethodGet, "/api/v1/activity-log?recordType=globalBudget&recordId=GB-1001", nil), http.StatusOK, &budgetLog)
-	if planLog.Total < 1 || changesText(planLog.Items[0].Changes) != "Plan budget: 1,200,000.00 USD → 1,300,000.00 USD" || // newest first, after the seeded log (011)
+	if planLog.Total < 1 || changesText(planLog.Items[0].Changes) != "Plan budget: 1,200,000.00 USD → 1,300,000.00 USD" || // newest first, after the seeded log
 		planLog.Items[0].Comment != "Allocated from 'FY2026 Global marketing budget'" || planLog.Items[0].Actor.Name != "Carlos Mendes" {
 		t.Errorf("plan log = %+v", planLog.Items)
 	}
@@ -129,9 +122,8 @@ func TestUpdateBudgetAllocation_200_409_404_FR030_FR037(t *testing.T) { //nolint
 	}
 }
 
-// US6 scenarios 3 and 6: Priya's plan budget is set by the global budget, so a save that changes it is
-// refused with 409 not_allowed and the plan form's sentence; once Carlos removes the Mobility allocation,
-// Mei can change her plan's budget, which kept 800,000.00 (FR-031, FR-034).
+// Priya's plan budget is set by the global budget, so a save that changes it is refused; once the Mobility
+// allocation is removed, Mei can change her plan's budget, which kept 800,000.00.
 func TestRemoveBudgetAllocation_200_404_AndThePlanBudgetLock_FR031_FR034(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -142,8 +134,8 @@ func TestRemoveBudgetAllocation_200_404_AndThePlanBudgetLock_FR031_FR034(t *test
 	europe["budget"] = usd("1300000.00")
 
 	locked := priya.Do(t, http.MethodPatch, "/api/v1/plans/P-1001", europe)
-	removed := carlos.Do(t, http.MethodDelete, "/api/v1/budget-allocations/BA-1002", nil)
-	gone := carlos.Do(t, http.MethodDelete, "/api/v1/budget-allocations/BA-1002", nil)
+	removed := carlos.DeleteSeen(t, "/api/v1/budget-allocations/BA-1002")
+	gone := carlos.DeleteSeen(t, "/api/v1/budget-allocations/BA-1002")
 	china := planForm(t, mei, "P-1002")
 	kept := china["budget"]
 	china["budget"] = usd("850000.00")
@@ -167,18 +159,17 @@ func TestRemoveBudgetAllocation_200_404_AndThePlanBudgetLock_FR031_FR034(t *test
 	}
 }
 
-// Deleting a plan takes its allocation to the recycle bin; once the global budget is deleted too, restoring
-// the plan brings it back without the allocation, with note 31 (FR-035).
+// Restoring the plan after its global budget is deleted brings it back without the allocation, with note 31.
 func TestPlanDeleteAndRestore_TheAllocation_FR035(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	carlos := server.SignIn(t, carlosEmail)
-	carlos.Do(t, http.MethodDelete, "/api/v1/budget-allocations/BA-1001", nil) // GB-1001 keeps one allocation only
+	carlos.DeleteSeen(t, "/api/v1/budget-allocations/BA-1001") // GB-1001 keeps one allocation only
 
-	deleted := carlos.Do(t, http.MethodDelete, "/api/v1/plans/P-1002", nil)
+	deleted := carlos.DeleteSeen(t, "/api/v1/plans/P-1002")
 	var result history.DeleteResult
 	decode(t, deleted, http.StatusOK, &result)
-	emptied := carlos.Do(t, http.MethodDelete, "/api/v1/global-budgets/GB-1001", nil)
+	emptied := carlos.DeleteSeen(t, "/api/v1/global-budgets/GB-1001")
 	restored := carlos.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+result.RecycleBinEntry.ID+"/restore", nil)
 
 	if emptied.Status != http.StatusOK {

@@ -4,6 +4,7 @@ import { formatWhole } from '@/format/decimal';
 import { plural } from '@/format/text';
 import { formatMonth } from '@/format/intl';
 import type { DateFormat } from '@/format/intl';
+import type { ListNoun } from '@/ui/ResultCount/count-text';
 import type {
   FinancialImportCounts,
   FinancialImportNotLinkedRow,
@@ -41,7 +42,6 @@ export const NOTHING_TO_IMPORT = 'Nothing to import — fix the rows and choose 
 // Short enough for the 320 px search field (design system §5.2); the API also searches the description and the
 // linked line item's and activity's name.
 export const SEARCH_PLACEHOLDER = 'Search number, vendor, code or ID';
-export const PAGE_SUBTITLE = 'Purchase orders, invoices, payments and accruals from GSAP';
 export const TRANSACTION_GONE = "This GSAP transaction doesn't exist.";
 
 export const TILE_TIPS = {
@@ -66,12 +66,12 @@ export function accruedLabel(month: string | null, format?: DateFormat): string 
 
 export function tabLabel(tab: FinancialTab, counts: FinancialTypeCounts | undefined): string {
   const count = counts?.[tab];
-  return count === undefined ? TAB_LABELS[tab] : `${TAB_LABELS[tab]} (${formatWhole(count)})`;
+  return count === undefined || tab === 'all'
+    ? TAB_LABELS[tab]
+    : `${TAB_LABELS[tab]} (${formatWhole(count)})`;
 }
 
-export function countLine(shown: number, all: number): string {
-  return `${formatWhole(shown)} of ${formatWhole(all)} ${all === 1 ? 'transaction' : 'transactions'}`;
-}
+export const TRANSACTIONS: ListNoun = { one: 'transaction', many: 'transactions' };
 
 export function sourceLine(
   source: FinancialSource,

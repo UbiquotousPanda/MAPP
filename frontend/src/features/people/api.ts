@@ -8,6 +8,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import { SESSION_KEY } from '@/session/useSession';
@@ -28,13 +29,10 @@ export type ImpactWarning = components['schemas']['ImpactWarning'];
 export type ProfileUpdate = components['schemas']['ProfileUpdate'];
 export type DisplayCurrencyOption = components['schemas']['DisplayCurrencyOption'];
 
-/** The query keys of people and teams; every change invalidates both (FR-012). */
 export const PEOPLE_KEY = ['people'] as const;
 export const TEAMS_KEY = ['teams'] as const;
-/** The currencies the signed-in person can choose as display currency. */
 export const DISPLAY_CURRENCIES_KEY = ['display-currencies'] as const;
 
-/** What every change refreshes (plan "Data hooks"). */
 const CHANGED_BY_EVERY_CHANGE: QueryKey[] = [
   PEOPLE_KEY,
   TEAMS_KEY,
@@ -43,7 +41,6 @@ const CHANGED_BY_EVERY_CHANGE: QueryKey[] = [
   ['recycle-bin'],
 ];
 
-/** Everyone, active or not, with their teams, sorted by name (GET /api/v1/people). */
 export function usePeople() {
   return useQuery({
     queryKey: PEOPLE_KEY,
@@ -51,7 +48,6 @@ export function usePeople() {
   });
 }
 
-/** Every team, active or not, with members and plans, sorted by name (GET /api/v1/teams). */
 export function useTeams() {
   return useQuery({
     queryKey: TEAMS_KEY,
@@ -59,20 +55,14 @@ export function useTeams() {
   });
 }
 
-/** One person with their teams and what they own or approve (GET /api/v1/people/{personId}). */
 export function usePerson(id: string) {
   return useQuery({ queryKey: [...PEOPLE_KEY, id], queryFn: () => fetchPerson(id) });
 }
 
-/** One team with its members and the plans using it (GET /api/v1/teams/{teamId}). */
 export function useTeam(id: string) {
   return useQuery({ queryKey: [...TEAMS_KEY, id], queryFn: () => fetchTeam(id) });
 }
 
-/**
- * The person as stored now, asked again (never from the cache); after a conflict the edit form
- * takes its version. Undefined when it cannot be read.
- */
 export function fetchLatestPerson(
   queryClient: QueryClient,
   id: string,
@@ -82,14 +72,12 @@ export function fetchLatestPerson(
     .catch(() => undefined);
 }
 
-/** The team as stored now, asked again (never from the cache); undefined when it cannot be read. */
 export function fetchLatestTeam(queryClient: QueryClient, id: string): Promise<Team | undefined> {
   return queryClient
     .fetchQuery({ queryKey: [...TEAMS_KEY, id], queryFn: () => fetchTeam(id), staleTime: 0 })
     .catch(() => undefined);
 }
 
-/** Adds a person; they can sign in straight away with the demo password. */
 export function useCreatePerson() {
   const refresh = useRefreshAfterChange();
   return useMutation({
@@ -98,13 +86,11 @@ export function useCreatePerson() {
   });
 }
 
-/** A person's id and the whole form, with the version the form started from. */
 export interface PersonChange {
   id: string;
   body: PersonUpdate;
 }
 
-/** Saves a person's name, e-mail, job title and teams (the version comes from the form). */
 export function useUpdatePerson() {
   const refresh = useRefreshAfterChange();
   return useMutation({
@@ -114,7 +100,6 @@ export function useUpdatePerson() {
   });
 }
 
-/** What saving the person's form would affect (FR-013); saves and refreshes nothing. */
 export function useCheckPersonImpact() {
   return useMutation({
     mutationFn: ({ id, body }: PersonChange) =>
@@ -124,14 +109,12 @@ export function useCheckPersonImpact() {
   });
 }
 
-/** Deactivate (active false) or reactivate (active true) a record, from the version shown. */
 export interface StatusChange {
   id: string;
   active: boolean;
   version: number;
 }
 
-/** Deactivates or reactivates a person (people are never deleted, FR-008). */
 export function useSetPersonStatus() {
   const refresh = useRefreshAfterChange();
   return useMutation({
@@ -146,7 +129,6 @@ export function useSetPersonStatus() {
   });
 }
 
-/** Creates a team with its members. */
 export function useCreateTeam() {
   const refresh = useRefreshAfterChange();
   return useMutation({
@@ -155,13 +137,11 @@ export function useCreateTeam() {
   });
 }
 
-/** A team's id and the whole form, with the version the form started from. */
 export interface TeamChange {
   id: string;
   body: TeamUpdate;
 }
 
-/** Saves a team's name, description, colour and members. */
 export function useUpdateTeam() {
   const refresh = useRefreshAfterChange();
   return useMutation({
@@ -198,16 +178,16 @@ export function useSetTeamStatus() {
 export function useDeleteTeam() {
   const refresh = useRefreshAfterChange();
   return useMutation({
-    mutationFn: (id: string) =>
-      call(api.DELETE('/api/v1/teams/{teamId}', { params: { path: { teamId: id } } })),
+    mutationFn: ({ id, version }: Seen) =>
+      call(
+        api.DELETE('/api/v1/teams/{teamId}', {
+          params: { path: { teamId: id }, query: { version } },
+        }),
+      ),
     onSettled: refresh,
   });
 }
 
-/**
- * The display currencies the signed-in person can choose (FR-023): every active currency, plus
- * their current one when it has been set inactive (it then has active false).
- */
 export function useDisplayCurrencies() {
   return useQuery({
     queryKey: DISPLAY_CURRENCIES_KEY,
@@ -215,11 +195,6 @@ export function useDisplayCurrencies() {
   });
 }
 
-/**
- * Saves the signed-in person's name and job title (My profile, FR-022). The answer is the person
- * as now stored: it goes into the session at once, so the account button and the avatar show the
- * new name straight away (US4-2); then everything that names people is refreshed.
- */
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
   const refresh = useRefreshAfterChange();
@@ -230,11 +205,6 @@ export function useUpdateProfile() {
   });
 }
 
-/**
- * Saves the display currency and the date format together (FR-023, FR-024). Dates follow the new
- * format at once (from the session); then every query is asked again, so amounts arrive converted
- * by the API to the new display currency (D-061, SC-006). Preferences are not logged (D-062).
- */
 export function useUpdateDisplayPreferences() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -256,10 +226,6 @@ function fetchTeam(id: string) {
   return call(api.GET('/api/v1/teams/{teamId}', { params: { path: { teamId: id } } }));
 }
 
-/**
- * Refreshes what a change can show in. A change waits for this, so the lists already show the new
- * state when its message appears.
- */
 function useRefreshAfterChange() {
   const queryClient = useQueryClient();
   return () =>

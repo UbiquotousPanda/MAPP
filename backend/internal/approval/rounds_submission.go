@@ -55,7 +55,7 @@ func (s *Service) submission(ctx context.Context, a actor.Actor, sub subject) (S
 		Levels: []LevelView{}, Outcomes: []SubmissionLevel{}, Replaces: replaced(sub, open),
 		UnassignedPlannedCost: shown.optional(check.UnassignedPlannedCost),
 	}
-	if kind := submissionKind(sub, open); kind != "" {
+	if kind := submissionKind(sub); kind != "" {
 		submission.Kind, submission.Available = kind, true
 	} else {
 		submission.Reason = notSubmittableMessage(sub.Kind)

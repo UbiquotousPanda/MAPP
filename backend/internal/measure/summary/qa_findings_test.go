@@ -77,7 +77,7 @@ func TestConversion_NoRateIsNotNoGoal_048_C1(t *testing.T) {
 	t.Parallel()
 	totals := map[Stage]Figures{StageINQ: {Actual: 0, Goal: 100}, StageMQL: {Actual: 0, Goal: 3}}
 
-	got := conversions([]Stage{StageINQ, StageMQL}, totals)
+	got := conversions([]Stage{StageINQ, StageMQL}, totals, ptr[int64](30))
 
 	if len(got) != 1 || got[0].Rate != nil || got[0].Goal == nil || got[0].Variance != nil {
 		t.Errorf("conversions() = %+v, want no rate, the goal 3.0 and no word: the rate is missing, not the goal", got)
@@ -174,4 +174,40 @@ func deref(s *string) string {
 		return "<nil>"
 	}
 	return *s
+}
+
+func withoutMQLFacts(s revenue.ActivitySeries, months int) revenue.ActivitySeries {
+	for i := range months {
+		s.Months[i].MQL.Actual = nil
+	}
+	return s
+}
+
+func TestConversionTrend_APeriodWithoutAnMQLFactHasNoRate_048_FR010_D426(t *testing.T) {
+	t.Parallel()
+	f := newFakes()
+	f.series = []revenue.ActivitySeries{withoutMQLFacts(projected("A-1", planOne), 3)}
+
+	months := report(t, f, measure.Filter{}).Funnel.Trend.Periods
+	quarters := report(t, f, measure.Filter{Period: measure.PeriodQuarter}).Funnel.Trend.Periods
+
+	if months[0].Rate != nil || months[3].Rate == nil || *months[3].Rate != "20.0" {
+		t.Errorf("January rate %v, April rate %v; want \"—\" without an MQL fact, then 20.0", months[0].Rate, months[3].Rate)
+	}
+	if quarters[0].Rate != nil || quarters[1].Rate == nil {
+		t.Errorf("Q1 rate %v, Q2 rate %v; want \"—\" for a quarter without an MQL fact, then a rate", quarters[0].Rate,
+			quarters[1].Rate)
+	}
+}
+
+func TestConversion_AYearWithoutAnMQLFactHasNoRate_048_FR010_D426(t *testing.T) {
+	t.Parallel()
+	f := newFakes()
+	f.series = []revenue.ActivitySeries{withoutMQLFacts(projected("A-1", planOne), monthsInAll)}
+
+	got := report(t, f, measure.Filter{}).Funnel.Conversions
+
+	if len(got) != 1 || got[0].Rate != nil || got[0].Variance != nil {
+		t.Errorf("conversions = %+v, want no rate and no word: INQ was counted, MQL never was", got)
+	}
 }

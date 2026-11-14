@@ -1,4 +1,3 @@
-/* Home's cards, one under the other; the cards inside lay themselves out by Home's width. */
 .page {
   display: flex;
   flex-direction: column;
@@ -6,18 +5,29 @@
   container: home / inline-size;
 }
 
-/* The header's controls: the My teams / Everything switch, then the Currency picker. */
+/* The header shrinks first, so its subtitle wraps under the title before the controls drop. */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  column-gap: var(--space-6);
+}
+
+.head > :first-child {
+  flex: 1 1 360px;
+  min-width: 0;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
-/*
- * Needs your attention and Waiting for my approval: two equal columns (6 + 6) when Home is wide,
- * stretched to one height (UI audit H-02, X-12); one under the other below.
- */
+/* Needs your attention and Waiting for my approval: two columns of one height when Home is wide. */
 .pair {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

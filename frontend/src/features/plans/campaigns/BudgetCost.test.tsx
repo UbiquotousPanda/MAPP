@@ -17,10 +17,10 @@ describe('budget arithmetic (feature 005, FR-010)', () => {
   });
 
   it('sends the budget rounded to the cent, as typed when it is not an amount, null when empty', () => {
-    expect(budgetInput('12,500.505')).toEqual({ amount: '12500.51', currency: 'USD' });
-    expect(budgetInput('12.5k')).toEqual({ amount: '12500.00', currency: 'USD' });
-    expect(budgetInput(' abc ')).toEqual({ amount: 'abc', currency: 'USD' });
-    expect(budgetInput('  ')).toBeNull();
+    expect(budgetInput('12,500.505', 'USD')).toEqual({ amount: '12500.51', currency: 'USD' });
+    expect(budgetInput('12.5k', 'EUR')).toEqual({ amount: '12500.00', currency: 'EUR' });
+    expect(budgetInput(' abc ', 'USD')).toEqual({ amount: 'abc', currency: 'USD' });
+    expect(budgetInput('  ', 'USD')).toBeNull();
   });
 });
 

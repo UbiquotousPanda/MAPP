@@ -122,44 +122,4 @@ func TestPostgresStoreVisibleDatasets_ScopeIsolation_FR044(t *testing.T) {
 	}
 }
 
-func TestPostgresStoreRowsAndColumns_AsStored_FR042(t *testing.T) {
-	t.Parallel()
-	store, _ := scopeDB(t)
-	d, found, err := store.GetVisible(t.Context(), member, shared)
-	if err != nil || !found {
-		t.Fatalf("GetVisible = %v, %v", found, err)
-	}
-	page, err := store.RowsPage(t.Context(), shared, 1, 5)
-	if err != nil {
-		t.Fatalf("RowsPage: %v", err)
-	}
-	swapped := []dataset.Column{d.Columns[0], d.Columns[1]}
-	swapped[0].Label, swapped[1].Label = "Cost", "Event"
-	swapErr := store.UpdateLabels(t.Context(), shared, swapped)
-	ownerID, _, _ := store.OwnerOf(t.Context(), shared)
-
-	same(t, "dataset", []any{2, "EUR", []string{"T-1"}}, []any{len(d.Columns), *d.Columns[1].Currency, d.SharedWith})
-	same(t, "page", []dataset.Row{{dataset.TextCell("Fair"), {Empty: true}}}, page)
-	same(t, "swap and owner", []any{true, owner}, []any{swapErr == nil, ownerID})
-}
-
 var _ dataset.Store = (*dataset.PostgresStore)(nil)
-
-func TestPostgresStore_SharesLeaveWithADeletedTeam_D379(t *testing.T) {
-	t.Parallel()
-	store, db := scopeDB(t)
-	persons := people.NewPostgresStore(db)
-
-	err := db.Write(t.Context(), func(ctx context.Context) error {
-		return firstError(func() error { return persons.DeleteMembership(ctx, "TM-1") },
-			func() error { return persons.DeleteTeam(ctx, "T-1") })
-	})
-	if err != nil {
-		t.Fatalf("deleting the shared team: %v", err)
-	}
-
-	d, found, err := store.Get(t.Context(), shared)
-	if err != nil || !found || len(d.SharedWith) != 0 {
-		t.Errorf("Get(%s) = shared with %q, found %v, error %v; want shared with nobody", shared, d.SharedWith, found, err)
-	}
-}

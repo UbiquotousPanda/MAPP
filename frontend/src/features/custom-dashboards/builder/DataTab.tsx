@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
+import { NumberField } from '@/ui/NumberField/NumberField';
 import type { DataField, DataSource, Widget, WidgetQuery } from '../model';
 import { widgetTypeInfo } from '../widget-types';
 import type { Need } from '../widget-types';
 import { FiltersEditor } from './FiltersEditor';
 import { MeasuresEditor } from './MeasuresEditor';
-import { NumberInput } from './NumberInput';
 import { changeSource, groupOf, withDimension, withoutMeasure } from './query-edits';
-import { Select } from './Select';
+import { choices } from './choices';
 import styles from './Inspector.module.css';
 
 type GroupBy = NonNullable<WidgetQuery['dimension']>;
@@ -50,15 +51,15 @@ export function DataTab({ widget, query, sources, sourcesFailed, errorAt, onQuer
 
   return (
     <div className={styles.tab}>
-      <Select
+      <ChoiceField
         label="Source"
         name={`${prefix}-source`}
         marking="Required"
         value={source ? query.source : ''}
         placeholder={sources ? 'Choose a source' : 'Loading the sources…'}
-        groups={[
-          { label: 'SP&A One data', options: optionsOf(sources, 'builtIn') },
-          { label: 'Uploaded data', options: optionsOf(sources, 'dataset') },
+        options={[
+          ...choices(optionsOf(sources, 'builtIn'), 'SP&A One data'),
+          ...choices(optionsOf(sources, 'dataset'), 'Uploaded data'),
         ]}
         onChange={chooseSource}
         error={errorAt('query.source')}
@@ -67,9 +68,7 @@ export function DataTab({ widget, query, sources, sourcesFailed, errorAt, onQuer
         Upload data
       </Link>
       {sourcesFailed && (
-        <p className={styles.error} role="alert">
-          The sources could not be loaded. Reload the page to try again.
-        </p>
+        <InlineError>The sources could not be loaded. Reload the page to try again.</InlineError>
       )}
       {cleared && (
         <p className={styles.note} role="status">
@@ -162,12 +161,11 @@ function GroupPicker({ label, name, need, group, source, errorAt, onChange }: Gr
         error={errorAt('')}
       />
       {group && field?.kind === 'date' && (
-        <Select
+        <ChoiceField
           label={`Group dates by (${label.toLowerCase()})`}
           name={`${name}-dates`}
           value={group.dateGroup ?? ''}
-          placeholder="Choose…"
-          options={DATE_GROUPS}
+          options={choices(DATE_GROUPS)}
           onChange={(value) => {
             const dateGroup = DATE_GROUPS.find((each) => each.value === value)?.value ?? null;
             onChange({ ...group, dateGroup }, field);
@@ -196,11 +194,11 @@ function SortAndLimit({ prefix, query, errorAt, onQuery }: SortAndLimitProps) {
   return (
     <>
       <div className={styles.pair}>
-        <Select
+        <ChoiceField
           label="Sort by"
           name={`${prefix}-sort`}
           value={sortValue}
-          options={[{ value: 'dimension', label: 'The group' }, ...measureOptions]}
+          options={choices([{ value: 'dimension', label: 'The group' }, ...measureOptions])}
           onChange={(value) =>
             onQuery({
               ...query,
@@ -211,21 +209,23 @@ function SortAndLimit({ prefix, query, errorAt, onQuery }: SortAndLimitProps) {
             })
           }
           error={errorAt('query.sort')}
+          placeholder={null}
         />
-        <Select
+        <ChoiceField
           label="Order"
           name={`${prefix}-direction`}
           value={sort.direction}
-          options={[
+          options={choices([
             { value: 'asc', label: 'Ascending' },
             { value: 'desc', label: 'Descending' },
-          ]}
+          ])}
           onChange={(value) =>
             onQuery({ ...query, sort: { ...sort, direction: value === 'asc' ? 'asc' : 'desc' } })
           }
+          placeholder={null}
         />
       </div>
-      <NumberInput
+      <NumberField
         label="Show top"
         name={`${prefix}-limit`}
         value={query.limit}

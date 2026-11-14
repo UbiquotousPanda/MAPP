@@ -52,3 +52,13 @@ export function chipReset(key: string): Partial<PlanListFilters> {
       return {};
   }
 }
+
+/** How many of the filters behind Filters (n) are in use. */
+export function filtersInUse(filters: PlanListFilters): number {
+  return (
+    (filters.yearFrom !== null ? 1 : 0) +
+    (filters.types.length > 0 ? 1 : 0) +
+    (filters.scope !== 'all' ? 1 : 0) +
+    (filters.bcpir !== 'include' ? 1 : 0)
+  );
+}

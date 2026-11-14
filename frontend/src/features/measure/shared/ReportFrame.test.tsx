@@ -6,11 +6,18 @@ import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
+import { PeriodSwitch } from './ReportControls';
 import { ReportFrame } from './ReportFrame';
+import type { ReportFrameProps } from './ReportFrame';
 
 type Frame = ReturnType<typeof reportFrame>;
 
-function renderFrame(frame: Frame | 'forbidden', route = '/reports/plan-budget') {
+function renderFrame(
+  frame: Frame | 'forbidden',
+  route = '/reports/budget',
+  filters?: ReportFrameProps['filters'],
+) {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
@@ -22,10 +29,15 @@ function renderFrame(frame: Frame | 'forbidden', route = '/reports/plan-budget')
     ),
   ]);
   const rendered = renderWithProviders(
-    <ReportFrame report="planBudget" period show="activity">
-      {() => <p>The widgets</p>}
+    <ReportFrame report="budget" filters={filters}>
+      {() => (
+        <>
+          <PeriodSwitch />
+          <p>The widgets</p>
+        </>
+      )}
     </ReportFrame>,
-    { route, user: testUser(), path: '/reports/plan-budget' },
+    { route, user: testUser(), path: '/reports/budget' },
   );
   return { ...rendered, api };
 }
@@ -42,41 +54,52 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
         'In view: 2 plans · 6 campaigns · 2 initiatives · 14 activities · 30 line items',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Plan budget' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Budget and spend' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
     expect(screen.getByText(/2026 · Figures as of/)).toBeInTheDocument();
     expect(screen.getByText('The widgets')).toBeInTheDocument();
     await expectNoAxeViolations();
   });
 
-  it('names each restricted filter as a chip; removing one or Reset filters applies at once (FR-014)', async () => {
+  it('names each restricted filter as a chip; removing one or Clear filters applies at once (FR-014)', async () => {
     const frame = reportFrame({ filter: { ...reportFrame().filter, plans: ['P-1001'] } });
-    const { user, router } = renderFrame(
-      frame,
-      '/reports/plan-budget?plan=P-1001&planType=operational',
-    );
+    const { user, router } = renderFrame(frame, '/reports/budget?plan=P-1001&planType=operational');
 
     await user.click(
       await screen.findByRole('button', { name: 'Remove filter: Plans: FY2026 Lubricants' }),
     );
     await waitFor(() => expect(search(router).getAll('plan')).toEqual([]));
     expect(search(router).get('planType')).toBe('operational');
-    await user.click(screen.getByRole('button', { name: 'Reset filters' }));
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     await waitFor(() => expect(search(router).toString()).toBe(''));
   });
 
-  it('applies Period, Show and Currency at once (FR-016 – FR-018)', async () => {
-    const { user, router } = renderFrame(reportFrame());
+  it('changes the year at once, saying first that it clears the chosen plans (FR-011, FR-013)', async () => {
+    const { user, router } = renderFrame(
+      reportFrame({ filter: { ...reportFrame().filter, plans: ['P-1001'] } }),
+      '/reports/budget?plan=P-1001',
+    );
+    const year = await screen.findByRole('combobox', { name: /Year/ });
+    expect(year).toHaveAccessibleDescription('Another year clears the plan you chose.');
+
+    await choose(user, year, '2025');
+
+    await waitFor(() => expect(search(router).get('year')).toBe('2025'));
+    expect(search(router).getAll('plan')).toEqual([]);
+  });
+
+  it("applies a widget's Period at once, and has no currency of its own (FR-016, FR-018, 039-C10)", async () => {
+    const { user, router } = renderFrame(reportFrame(), '/reports/budget?currency=EUR');
 
     await user.click(await screen.findByRole('button', { name: 'Quarters' }));
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Currency' }), 'USD');
 
     await waitFor(() => expect(search(router).get('period')).toBe('quarter'));
-    expect(search(router).get('currency')).toBe('USD');
+    expect(search(router).get('currency')).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Currency' })).not.toBeInTheDocument();
   });
 
   it('says how many values were left out, never naming them (FR-015)', async () => {
-    renderFrame(reportFrame({ leftOut: 2 }), '/reports/plan-budget?plan=P-9999');
+    renderFrame(reportFrame({ leftOut: 2 }), '/reports/budget?plan=P-9999');
 
     expect(
       await screen.findByText('2 filter values are no longer available and were left out'),
@@ -94,17 +117,31 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
   });
 
   it('says the filters exclude everything, with Reset filters (FR-031)', async () => {
-    renderFrame(reportFrame({ inView: empty }), '/reports/plan-budget?planType=crossMarket');
+    renderFrame(reportFrame({ inView: empty }), '/reports/budget?planType=crossMarket');
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Reset filters' }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Reset filters' })).toBeInTheDocument();
+  });
+
+  it('counts a report filter of its own in Filters (n), and Clear filters clears it too (059-P1)', async () => {
+    const own = { menus: <p>Category menu</p>, chips: [{ key: 'category', label: 'Events' }] };
+    const { user, router } = renderFrame(
+      reportFrame(),
+      '/reports/budget?planType=operational&category=AC-1',
+      own,
+    );
+
+    expect(await screen.findByRole('button', { name: /Filters \(2\)/ })).toBeInTheDocument();
+    expect(screen.getByText('Category menu')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    await waitFor(() => expect(search(router).toString()).toBe(''));
   });
 
   it('says there are no plans for the year before blaming the filters (FR-031)', async () => {
     const frame = reportFrame({ inView: empty });
     renderFrame(
       { ...frame, choices: { ...frame.choices, plans: [] } },
-      '/reports/plan-budget?planType=crossMarket',
+      '/reports/budget?planType=crossMarket',
     );
 
     expect(await screen.findByText('No plans you may see for 2026')).toBeInTheDocument();
@@ -120,10 +157,7 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
   });
 
   it("keeps the report's own parameters when a control changes (039 B4)", async () => {
-    const { user, router } = renderFrame(
-      reportFrame(),
-      '/reports/plan-budget?tab=waiting&sort=age',
-    );
+    const { user, router } = renderFrame(reportFrame(), '/reports/budget?tab=waiting&sort=age');
 
     await user.click(await screen.findByRole('button', { name: 'Quarters' }));
 

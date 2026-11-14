@@ -29,13 +29,14 @@ const (
 )
 
 type Service struct {
-	tx     Transactor
-	repo   Store
-	ids    *ids.Generator
-	now    clock.Clock
-	kinds  []Kind // parents before children
-	access Access // nil: no restriction
-	guards []DeleteGuard
+	tx         Transactor
+	repo       Store
+	ids        *ids.Generator
+	now        clock.Clock
+	kinds      []Kind // parents before children
+	access     Access // nil: no restriction
+	guards     []DeleteGuard
+	purgeHooks []PurgeHook
 }
 
 func NewService(tx Transactor, repo Store, generator *ids.Generator, now clock.Clock) *Service {
@@ -209,7 +210,17 @@ func (s *Service) putSnapshots(ctx context.Context, rc RestoreContext, snapshots
 			return nil, nil, err
 		}
 	}
-	return r.snapshots, slices.Concat(r.notes...), nil
+	return r.snapshots, distinct(slices.Concat(r.notes...)), nil
+}
+
+func distinct(notes []string) []string {
+	var kept []string
+	for _, note := range notes {
+		if !slices.Contains(kept, note) {
+			kept = append(kept, note)
+		}
+	}
+	return kept
 }
 
 func restoreDetails(how string, contents []ContentCount, notes []string) string {

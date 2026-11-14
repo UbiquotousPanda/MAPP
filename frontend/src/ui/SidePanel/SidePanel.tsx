@@ -8,24 +8,13 @@ import styles from './SidePanel.module.css';
 export interface SidePanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Names the panel: "New sample folder", "Edit sample folder". */
   title: string;
   description?: string;
-  /** The form or details. It scrolls when it is long. */
   children: ReactNode;
-  /**
-   * The buttons that stay at the bottom, in order of importance: the primary first (Save, Edit),
-   * then Cancel or other secondary buttons, then the More menu. They line up from the right, so the
-   * primary ends up rightmost, the same in every panel (design system §6.2).
-   */
+  // In order of importance, primary first; they line up from the right, so the primary sits rightmost.
   footer: ReactNode;
 }
 
-/**
- * A panel that slides in from the right to create, view or edit a short record (design system
- * §5). The keyboard stays inside it while it is open; Escape, the Close button and a click
- * beside it close it.
- */
 export function SidePanel({
   open,
   onOpenChange,
@@ -44,7 +33,6 @@ export function SidePanel({
         <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content
           className={styles.panel}
-          // Without a description, tell Radix there is none, so nothing points to a missing text.
           {...(description ? {} : { 'aria-describedby': undefined })}
           onOpenAutoFocus={() => {
             focusBeforeOpen.current = focusedElement();
@@ -68,7 +56,9 @@ export function SidePanel({
               <Button variant="tertiary" icon={<X />} aria-label="Close" />
             </Dialog.Close>
           </div>
-          <div className={styles.body}>{children}</div>
+          <div className={styles.body} role="region" aria-label={title} tabIndex={0}>
+            {children}
+          </div>
           <div className={styles.footer}>{footer}</div>
         </Dialog.Content>
       </Dialog.Portal>

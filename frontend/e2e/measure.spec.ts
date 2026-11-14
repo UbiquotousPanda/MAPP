@@ -1,16 +1,23 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
-import { callApi, expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
+import {
+  callApi,
+  expectNoAxeViolations,
+  expectToast,
+  signInAs,
+  uniqueName,
+  choose,
+} from './fixtures';
 import { sheetNames } from './xlsx-read';
 
 // The Reports area's shared frame (039): the Reports page and a report's filters (US1), saved views (US2) and the
-// export (US3), on Plan budget's page, which shows the frame until feature 040 fills it.
+// export (US3), on Budget and spend's page.
 
 const CARLOS = 'carlos.mendes@shell.com';
 const PRIYA = 'priya.raman@shell.com';
 const DANIEL = 'daniel.okoro@shell.com';
 const LEA = 'lea.santos@shell.com';
-const REPORT = '/reports/plan-budget?year=2026';
+const REPORT = '/reports/budget?year=2026';
 
 const inView = (page: Page) => page.getByText(/^In view: /);
 
@@ -26,7 +33,7 @@ async function mobilityPlanId(page: Page): Promise<string> {
   return mobility.id;
 }
 
-test('039 US1: a report opens on the defaults, filters on Apply and keeps everything in its address (FR-001 – FR-019)', async ({
+test('039 US1: a report opens on the defaults, applies each filter at once and keeps everything in its address (FR-001 – FR-019)', async ({
   page,
 }) => {
   const outOfScope = await mobilityPlanId(page);
@@ -46,17 +53,20 @@ test('039 US1: a report opens on the defaults, filters on Apply and keeps everyt
   await page.goto(REPORT);
   await expect(inView(page)).toContainText(` ${allWork.count.total} activit`);
   await expectNoAxeViolations(page);
-  const levels = page.getByRole('tablist', { name: 'Shell attributes by level' });
-  await levels.scrollIntoViewIfNeeded();
-  for (const level of ['Plan', 'Campaign', 'Initiative', 'Activity', 'Line item']) {
-    await expect(levels.getByRole('tab', { name: level })).toBeInViewport({ ratio: 1 });
-  }
-
   const unfiltered = await inView(page).innerText();
-  const status = page.getByRole('group', { name: /^Activity status/ });
-  await status.getByRole('checkbox', { name: 'Created' }).uncheck();
-  await expect(page.getByText('Changes not applied yet')).toBeVisible();
-  await page.getByRole('button', { name: 'Apply' }).click();
+  await page.getByRole('button', { name: /^Filters/ }).click();
+  const filters = page.getByRole('group', { name: 'Filters' });
+  await filters.getByRole('button', { name: 'More filters' }).click();
+  await expect(page.getByRole('dialog', { name: 'More filters' })).toContainText('Activity');
+  await page.keyboard.press('Escape');
+  await filters.getByRole('button', { name: 'Activity status' }).click();
+  // The box follows the address, which updates a moment after the click; check() wants it at once.
+  const approved = page
+    .getByRole('dialog', { name: 'Activity status' })
+    .getByRole('checkbox', { name: 'Approved' });
+  await approved.click();
+  await expect(approved).toBeChecked();
+  await page.keyboard.press('Escape');
   await expect(page).toHaveURL(/activityStatus=/);
   // The line changes once the frame has read the filtered year; read it only then.
   await expect(inView(page)).not.toHaveText(unfiltered);
@@ -68,11 +78,16 @@ test('039 US1: a report opens on the defaults, filters on Apply and keeps everyt
   await expect(inView(copy)).toHaveText(filtered);
   await copy.close();
 
-  await page.getByRole('combobox', { name: 'Currency' }).selectOption('EUR');
-  await expect(page).toHaveURL(/currency=EUR/);
-  await page.getByRole('button', { name: 'Reset filters' }).first().click();
+  // 039-C10: the report follows the top bar's display currency and keeps none in its address.
+  await expect(page.getByRole('main').getByRole('combobox', { name: /Currency/ })).toHaveCount(0);
+  const currency = page.getByRole('combobox', { name: 'Display currency' });
+  await choose(page, currency, /^EUR/);
+  await expect(currency).toHaveText('EUR');
+  await expect(page).not.toHaveURL(/currency=/);
+  await page.getByRole('button', { name: 'Clear filters' }).first().click();
   await expect(page).not.toHaveURL(/activityStatus=/);
-  await expect(page).toHaveURL(/currency=EUR/);
+  await choose(page, currency, /^USD/);
+  await expect(currency).toHaveText('USD');
 
   await page.goto(`${REPORT}&plan=${outOfScope}`);
   await expect(
@@ -94,12 +109,12 @@ test('039 US2: saved views are personal, open on the default, and come back with
   await page.getByRole('button', { name: 'Save view' }).click();
   await expectToast(page, `View '${name}' saved`);
 
-  await page.goto('/reports/plan-budget');
+  await page.goto('/reports/budget');
   await expect(page).toHaveURL(/activityStatus=approved/);
   const button = page.getByRole('button', { name: `View: ${name}` });
   await expect(button).toBeVisible();
 
-  await page.getByRole('combobox', { name: 'Currency' }).selectOption('EUR');
+  await page.getByRole('button', { name: /^Remove filter: Activity status/ }).click();
   await page.getByRole('button', { name: `View: ${name} Modified` }).click();
   await page.getByRole('menuitem', { name: 'Update view…' }).click();
   await page.getByRole('button', { name: 'Update view' }).click();
@@ -126,9 +141,8 @@ test('039 US3: Export downloads the report with In view and About this export (F
   await page.goto(REPORT);
   await expect(inView(page)).toBeVisible();
 
-  await page.getByRole('button', { name: 'Export', exact: true }).first().click();
   const downloading = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'Excel (.xlsx)' }).click();
+  await page.getByRole('button', { name: 'Export', exact: true }).first().click();
   const download = await downloading;
 
   expect(download.suggestedFilename()).toMatch(/\.xlsx$/);
@@ -140,7 +154,7 @@ test('039 SC-007: the financial notice on the grey page passes text contrast (#1
   page,
 }) => {
   await signInAs(page, LEA);
-  await page.goto('/reports/revenue?year=2026');
+  await page.goto('/reports/performance?year=2026');
   await expect(page.getByText("You can't see the financial data of these plans")).toBeVisible();
 
   await expectNoAxeViolations(page);

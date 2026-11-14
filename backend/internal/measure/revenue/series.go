@@ -25,6 +25,7 @@ type ActivitySeries struct {
 	Stages         []string
 	ModelName      string
 	ModelChangedAt time.Time
+	InqToMqlRate   *money.Percent
 	FactsHeld      bool
 	AllowedStages  []string
 	Sourced        []string
@@ -37,16 +38,17 @@ type Goal struct {
 	RevenueUSD *money.Amount
 }
 
+// Month is one month of an activity; DaysLeft (today included) and Days are set only for the month in progress.
 type Month struct {
-	Key        string
-	State      string
-	INQ, MQL   Figure[int64]
-	RevenueUSD Figure[money.Amount]
+	Key            string
+	State          string
+	DaysLeft, Days int
+	INQ, MQL       Figure[int64]
+	RevenueUSD     Figure[money.Amount]
 }
 
-// Figure is one measure in one month. Actual is set up to the month in progress once the activity has a counted fact
-// of the measure; Projected from the month in progress on. Goal places the goal in time with the plan's model and
-// drops what lands after the plan year. Projected and Goal are nil when the model projects no such measure.
+// Figure is one measure in one month: Actual where a fact was counted that month up to today, Projected from the month in
+// progress on, Goal across the plan year; Projected and Goal are nil when the model projects no such measure.
 type Figure[T int64 | money.Amount] struct {
 	Actual, Projected, Goal *T
 }
@@ -98,7 +100,7 @@ func seriesOf(v activityView, byID map[string]allwork.Node, w window) ActivitySe
 		TeamIDs: slices.Clone(byID[n.PlanID].TeamIDs), Attributes: attributesOf(byID, n.ID),
 		Goal:          Goal{INQ: cloned(n.INQ), MQL: cloned(n.MQL), RevenueUSD: cloned(n.Revenue)},
 		HasProjection: p.Present, Stages: stagesOf(v), ModelName: p.Stamp.ModelName,
-		ModelChangedAt: p.Stamp.ModelChangedAt, Months: monthsOf(v, w),
+		ModelChangedAt: p.Stamp.ModelChangedAt, InqToMqlRate: rateOf(v), Months: monthsOf(v, w),
 		FactsHeld: factsHeld(n.Status), AllowedStages: slices.Clone(v.goals.AllowedStages),
 		Sourced: slices.Clone(v.goals.Sourced), ExcludedFacts: v.facts.excluded,
 	}
@@ -124,6 +126,14 @@ func stagesOf(v activityView) []string {
 		}
 	}
 	return stages
+}
+
+func rateOf(v activityView) *money.Percent {
+	if !v.projection.Present {
+		return nil
+	}
+	rate := v.goals.Model.InqToMqlRate
+	return &rate
 }
 
 func cloned[T any](p *T) *T {

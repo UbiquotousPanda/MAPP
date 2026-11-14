@@ -1,6 +1,8 @@
 import { useFormatters } from '@/format/useFormatters';
+import { cx } from '@/ui/cx';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { downloadReport, ExportMenu, RankedList, ReportFrame, useRankedState } from '../shared';
 import type { RankedColumn, ReportAddress, ReportFrameData } from '../shared';
 import { usePlanBudget, usePlanBudgetRanked } from './api';
@@ -15,7 +17,7 @@ const DEFAULT_SORT = 'planned';
 /** Plan budget (feature 040): spend pacing by period and the ranked list, in 039's frame. */
 export function PlanBudgetReport() {
   return (
-    <ReportFrame report="planBudget" period show="campaign">
+    <ReportFrame report="budget">
       {(frame, address) => <PlanBudgetBody frame={frame} address={address} />}
     </ReportFrame>
   );
@@ -33,7 +35,16 @@ function PlanBudgetBody({ frame, address }: { frame: ReportFrameData; address: R
     { key: 'planned', label: 'Planned cost', value: (f) => shown(f.planned) },
     { key: 'committed', label: 'Committed', value: (f) => shown(f.committed) },
     { key: 'actual', label: 'Actual', value: (f) => shown(f.actual) },
-    { key: 'leftToPlan', label: 'Left to plan', value: (f) => shown(f.leftToPlan) },
+    {
+      key: 'leftToPlan',
+      label: 'Left to plan',
+      value: (f) => shown(f.leftToPlan),
+      render: (f) => (
+        <span className={cx(f.leftToPlan?.amount.startsWith('-') && styles.danger)}>
+          {shown(f.leftToPlan)}
+        </span>
+      ),
+    },
     { key: 'unspent', label: 'Unspent budget', value: (f) => shown(f.unspent) },
   ];
   const groups = [
@@ -48,16 +59,22 @@ function PlanBudgetBody({ frame, address }: { frame: ReportFrameData; address: R
     <div className={styles.body}>
       {report.data ? (
         <>
-          <div className={styles.summaryActions}>
-            <ExportMenu
-              label="Export summary"
-              formats={['xlsx', 'csv']}
-              download={(format) =>
-                downloadReport('planBudget', address, format, { widget: 'cards' })
-              }
-            />
+          <div className={styles.summary}>
+            <div className={styles.summaryHead}>
+              <SectionHeading level={2} rank="label">
+                Summary
+              </SectionHeading>
+              <ExportMenu
+                label="Export summary"
+                iconOnly
+                formats={['xlsx', 'csv']}
+                download={(format) =>
+                  downloadReport('budget', address, format, { widget: 'cards' })
+                }
+              />
+            </div>
+            <BudgetCards cards={report.data.cards} />
           </div>
-          <BudgetCards cards={report.data.cards} />
           <PacingChart report={report.data} />
         </>
       ) : report.isError ? (
@@ -68,7 +85,8 @@ function PlanBudgetBody({ frame, address }: { frame: ReportFrameData; address: R
         </div>
       )}
       <RankedList
-        report="planBudget"
+        levelFallback="campaign"
+        report="budget"
         data={ranked.data}
         error={ranked.isError ? ranked.error : null}
         onRetry={() => void ranked.refetch()}

@@ -13,12 +13,6 @@
   gap: var(--space-3);
 }
 
-.heading {
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-md);
-}
-
 /* The one key–value layout (design system §5.4): a 200 px label column, the value after it. */
 .list {
   display: flex;
@@ -94,8 +88,8 @@
 
 .note svg {
   flex: none;
-  width: 16px;
-  height: 16px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
   margin-top: 2px;
   color: var(--info-text);
 }

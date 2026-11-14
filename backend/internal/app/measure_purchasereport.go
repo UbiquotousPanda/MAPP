@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"slices"
 
 	"mapp/internal/measure"
 	"mapp/internal/measure/purchasereport"
@@ -93,7 +92,7 @@ func requestOf(pr purchaserequest.PurchaseRequest, workflow string, rates money.
 	invoiced map[purchaserequest.POLineRef]money.Amount) purchasereport.Request {
 	r := purchasereport.Request{ID: pr.ID, Name: pr.Name, Vendor: pr.Vendor, Status: purchasereport.Status(pr.Status),
 		PlanID: pr.PlanID, OwnerID: pr.OwnerID, Workflow: workflow, GSAPNumber: pr.GSAP.PRNumber, CreatedAt: pr.CreatedAt,
-		WaitingForGSAP: waitingForGSAP(pr), Lines: make([]purchasereport.Line, 0, len(pr.Lines))}
+		WaitingForGSAP: purchaserequest.WaitingForGSAP(pr), Lines: make([]purchasereport.Line, 0, len(pr.Lines))}
 	for _, l := range pr.Lines {
 		line := purchasereport.Line{ID: l.ID, LineItemID: l.LineItemID, Amount: lineUSD(rates, l), DeliveryDate: l.DeliveryDate,
 			SentOn: l.SentOn, PONumber: l.PO.Number, POLine: l.PO.Line, POLineStatus: l.PO.Status}
@@ -113,14 +112,4 @@ func lineUSD(rates money.Rates, l purchaserequest.Line) money.Amount {
 		return l.Amount
 	}
 	return converted.Amount
-}
-
-// waitingForGSAP is 036's rule: an approved request sent to GSAP with a line GSAP has not answered yet (032).
-func waitingForGSAP(pr purchaserequest.PurchaseRequest) bool {
-	if pr.Status != purchaserequest.StatusApproved || !slices.ContainsFunc(pr.Lines, func(l purchaserequest.Line) bool { return l.SentOn != nil }) {
-		return false
-	}
-	return slices.ContainsFunc(pr.Lines, func(l purchaserequest.Line) bool {
-		return l.PO.Line == "" || l.PO.Value == nil || l.PO.Value.Currency != l.Currency || l.PO.Value.Amount.Cmp(l.Amount) != 0
-	})
 }

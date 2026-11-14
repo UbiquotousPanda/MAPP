@@ -96,5 +96,5 @@ func prReferences(pr purchaserequest.PurchaseRequest, inBin bool) []settings.Ref
 
 func lineReference(l purchaserequest.Line, inBin bool) settings.Reference {
 	return settings.Reference{Record: history.RecordRef{Type: kindPurchaseRequestLine, ID: l.ID, Name: l.ID},
-		InBin: inBin, Level: settings.LevelPurchaseRequestLine, Attributes: l.Attributes}
+		InBin: inBin, Level: settings.LevelPurchaseRequestLine, Attributes: l.Attributes, Currency: l.Currency}
 }

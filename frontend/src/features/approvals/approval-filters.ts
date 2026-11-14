@@ -30,6 +30,34 @@ export function isFilterKey(key: string): key is ApprovalFilterKey {
   return Object.hasOwn(NO_FILTERS, key);
 }
 
+// `kind` already names the kind of record the preview shows.
+const PARAMS: Record<ApprovalFilterKey, string> = {
+  kind: 'type',
+  planId: 'plan',
+  workflowId: 'workflow',
+  ownerId: 'owner',
+  from: 'from',
+  to: 'to',
+};
+
+/** The filters in the page address, so Back, a reload and a shared link keep them. */
+export function filtersOf(params: URLSearchParams): ApprovalFilterValues {
+  const values = { ...NO_FILTERS };
+  for (const key of Object.keys(PARAMS).filter(isFilterKey)) {
+    values[key] = params.get(PARAMS[key]) ?? '';
+  }
+  return values;
+}
+
+/** The address parameters of the filters; those not in use are removed. */
+export function filterParams(filters: ApprovalFilterValues): Record<string, string | null> {
+  return Object.fromEntries(
+    Object.keys(PARAMS)
+      .filter(isFilterKey)
+      .map((key) => [PARAMS[key], filters[key] || null]),
+  );
+}
+
 export interface ApprovalFilterOptions {
   kinds: ChoiceOption[];
   plans: ChoiceOption[];

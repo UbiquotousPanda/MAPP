@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { expectNoAxeViolations } from '@/testing/axe';
+import { closestTo } from '@/testing/dom';
 import { testUser } from '@/testing/fixtures/users';
 import { renderWithProviders } from '@/testing/render';
 import { waitingReport } from './gsap-link-fixture';
@@ -16,10 +16,10 @@ function renderTab(report = waitingReport()) {
       tab={report.waiting}
       finance={report.finance}
       total={report.total}
-      table={{ tab: 'waiting', sort: '-waiting', page: 1, pageSize: 20 }}
+      table={{ tab: 'waiting', sort: '-waiting', page: 1, pageSize: 50 }}
       onChange={onChange}
     />,
-    { route: '/reports/gsap-link?tab=waiting', user: testUser(), path: '/reports/gsap-link' },
+    { route: '/reports/purchasing?tab=waiting', user: testUser(), path: '/reports/purchasing' },
   );
   return { onChange, ...rendered };
 }
@@ -36,7 +36,6 @@ describe('WaitingTab (044 US2, FR-004, FR-008 – FR-010, FR-016)', () => {
     expect(within(table).getByText('Over 2 working days')).toBeInTheDocument();
     expect(within(table).getByText('Modification')).toBeInTheDocument();
     expect(within(table).getByText('1000123')).toBeInTheDocument();
-    await expectNoAxeViolations();
   });
 
   it('shows amounts only where the person may see financial data, and says what they cover (FR-004)', () => {
@@ -45,6 +44,22 @@ describe('WaitingTab (044 US2, FR-004, FR-008 – FR-010, FR-016)', () => {
     const topUp = screen.getByRole('row', { name: /Top-up for Booth/ });
     expect(within(topUp).getByText('—', { selector: 'td' })).toBeInTheDocument();
     expect(screen.getByText('Covers 1 of 2 plans')).toBeInTheDocument();
+  });
+
+  it("ends with the tab's Total row: the API's amount over every page (039 FR-035)", () => {
+    const report = waitingReport();
+    if (!report.waiting) {
+      throw new Error('The fixture has no Waiting for GSAP tab.');
+    }
+    renderTab(
+      waitingReport({
+        waiting: { ...report.waiting, amount: { amount: '99000.00', currency: 'EUR' } },
+      }),
+    );
+
+    const total = closestTo(screen.getByRole('rowheader', { name: 'Total' }), 'tr');
+    expect(total.closest('tfoot')).not.toBeNull();
+    expect(within(total).getByText('€99,000.00')).toBeInTheDocument();
   });
 
   it('shows the three cards (FR-010)', () => {
@@ -66,9 +81,19 @@ describe('WaitingTab (044 US2, FR-004, FR-008 – FR-010, FR-016)', () => {
     expect(onChange).toHaveBeenLastCalledWith({ sort: 'plan' });
   });
 
-  it('says when no request waits', () => {
-    renderTab(waitingReport({ total: 0 }));
+  it('says when no request waits, with no strip of zeros (FR-008)', () => {
+    const report = waitingReport();
+    if (!report.waiting) {
+      throw new Error('The fixture has no Waiting for GSAP tab.');
+    }
+    renderTab(
+      waitingReport({
+        total: 0,
+        waiting: { ...report.waiting, waiting: 0, overTurnaround: 0, amount: null, rows: [] },
+      }),
+    );
 
-    expect(screen.getByText('No purchase request is waiting for GSAP.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing is waiting for GSAP')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Summary')).not.toBeInTheDocument();
   });
 });

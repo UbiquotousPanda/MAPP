@@ -17,7 +17,7 @@ import (
 
 const (
 	lea      = "lea.santos@shell.com"
-	exported = "/api/v1/reports/plan-details/export?year=2026"
+	exported = "/api/v1/reports/plan-data/export?year=2026&tab=completeness"
 )
 
 func levels() []plandetails.Level {
@@ -228,27 +228,13 @@ func TestOwnPass_ExportWithoutFinanceView_FR004(t *testing.T) {
 	}
 }
 
-// TestOwnPass_ExportRights_039_FR022: without data.export every export of every level answers 403.
-func TestOwnPass_ExportRights_039_FR022(t *testing.T) {
-	t.Parallel()
-	leaSees := apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, lea)
-
-	for _, level := range levels() {
-		own := "&show=" + string(level)
-		get(t, leaSees, exported+own+"&format=xlsx", http.StatusForbidden)
-		for _, w := range widgetsOf(reportOf(t, leaSees, report+own)) {
-			get(t, leaSees, exported+own+"&format=csv&widget="+w.Key, http.StatusForbidden)
-		}
-	}
-}
-
 // TestOwnPass_AboutStatesControls_039_FR022: About this export names the plans chosen, the period and the currency.
 func TestOwnPass_AboutStatesControls_039_FR022(t *testing.T) {
 	t.Parallel()
 	carlosSees := apitest.New(t, apitest.WithMeasureDemo()).SignIn(t, carlos)
 
 	file := csvOf(t, carlosSees, "&plan=P-1001&period=quarter&currency=EUR&show=campaign&widget=progressCount")
-	want := map[string]string{"Report": "Plan details", "Year": "2026", "Filters": "Plans: FY2026 Lubricants Europe",
+	want := map[string]string{"Report": "Plan data and access", "Section": "Data completeness", "Year": "2026", "Filters": "Plans: FY2026 Lubricants Europe",
 		"Period": "Quarters", "Currency": "EUR"}
 	for label, value := range want {
 		if file.notes[label] != value {

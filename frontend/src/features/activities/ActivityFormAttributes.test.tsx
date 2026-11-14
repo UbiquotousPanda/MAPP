@@ -4,6 +4,7 @@ import type { HttpHandler } from 'msw';
 import { launchFilmSection } from '@/testing/fixtures/line-items';
 import { nth } from '@/testing/dom';
 import { mockApi } from '@/testing/mock-api';
+import { choose } from '@/testing/select';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { launchFilm, PEOPLE } from '@/testing/fixtures/activities';
@@ -134,7 +135,7 @@ describe('ActivityFormPage, Shell attributes and goals (feature 006, US3)', () =
     expect(within(split).getByText('116.67 % — 16.67 % too much')).toBeVisible();
 
     await user.type(screen.getByLabelText('Activity name'), 'Trade show');
-    await user.selectOptions(screen.getByLabelText('Activity type'), 'AT-1003');
+    await choose(user, screen.getByLabelText('Activity type'), 'Sponsorship');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     expect(await screen.findByText("Activity 'Launch film' created")).toBeVisible();
@@ -156,7 +157,7 @@ describe('ActivityFormPage, Shell attributes and goals (feature 006, US3)', () =
       launchFilm({ attributes: { 'SA-CLUSTER': 'SO-RETAIL', 'SA-REGION': 'SO-CHINA' } }),
     );
 
-    await user.selectOptions(await screen.findByLabelText('Cluster'), 'B2B');
+    await choose(user, await screen.findByLabelText('Cluster'), 'B2B');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     const question = await screen.findByRole('alertdialog', {
@@ -191,7 +192,7 @@ describe('ActivityFormPage, Shell attributes and goals (feature 006, US3)', () =
     const { user, api } = openNewForm();
 
     await user.type(await screen.findByLabelText('Activity name'), 'Trade show');
-    await user.selectOptions(screen.getByLabelText('Activity type'), 'AT-1003');
+    await choose(user, screen.getByLabelText('Activity type'), 'Sponsorship');
     await user.type(screen.getByLabelText('INQ'), '250,000');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 

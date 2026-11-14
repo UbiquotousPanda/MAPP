@@ -15,6 +15,7 @@ import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useToast } from '@/ui/Toast/useToast';
 import { usePageTitle } from '@/ui/usePageTitle';
 import tableStyles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { usePerformanceSources } from '../api';
 import type { PerformanceSource } from '../api';
 import { FilterBar } from '../filters/FilterBar';
@@ -27,7 +28,6 @@ import {
   EMPTY_TEXT,
   EMPTY_TITLE,
   IMPORTS,
-  IMPORTS_DESCRIPTION,
   importPath,
   NO_MATCH,
   ORIGIN_WORDS,
@@ -81,7 +81,6 @@ export function ImportsPage() {
           { label: IMPORTS },
         ]}
         title={IMPORTS}
-        description={IMPORTS_DESCRIPTION}
         actions={
           <>
             <Button icon={<RefreshCw aria-hidden />} onClick={() => setDialog('pull')}>
@@ -169,8 +168,8 @@ function ImportTable({ items, sources, filters }: ImportTableProps) {
   }
   const nameOf = (id: string) => sources.find((s) => s.id === id)?.name ?? id;
   return (
-    <div className={tableStyles.tableScroll}>
-      <table className={tableStyles.table}>
+    <div className={dataTable.scroll}>
+      <table className={dataTable.table}>
         <thead>
           <tr>
             <th scope="col">File</th>
@@ -178,7 +177,7 @@ function ImportTable({ items, sources, filters }: ImportTableProps) {
             <th scope="col">Arrived by</th>
             <th scope="col">Loaded by</th>
             <th scope="col">Loaded on</th>
-            <th scope="col" className={tableStyles.number}>
+            <th scope="col" className={dataTable.numeric}>
               Rows read
             </th>
             <th scope="col">Status</th>
@@ -187,14 +186,14 @@ function ImportTable({ items, sources, filters }: ImportTableProps) {
         <tbody>
           {items.map((load) => (
             <tr key={load.id}>
-              <td className={tableStyles.nameCell}>
+              <td className={dataTable.nameCell}>
                 <Link to={importPath(load.id)}>{load.fileName}</Link>
               </td>
               <td>{nameOf(load.sourceId)}</td>
               <td>{ORIGIN_WORDS[load.origin]}</td>
               <td>{load.createdBy.name}</td>
               <td className={tableStyles.nowrap}>{dateTime(load.createdAt)}</td>
-              <td className={tableStyles.number}>{formatWhole(load.counts.read)}</td>
+              <td className={dataTable.numeric}>{formatWhole(load.counts.read)}</td>
               <td>
                 <StatusChip tone={STATUS_TONES[load.status]}>
                   {STATUS_WORDS[load.status]}

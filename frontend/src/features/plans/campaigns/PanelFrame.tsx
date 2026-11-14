@@ -1,7 +1,7 @@
-import { CircleAlert } from 'lucide-react';
 import { useId } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { useNavigate } from 'react-router';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { Button } from '@/ui/Button/Button';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
@@ -18,31 +18,23 @@ import { BACK_TO_PLAN, CANCEL, SAVE, SAVE_AND_ADD_ANOTHER } from './texts';
 export interface RecordFormPanelProps {
   title: string;
   description?: string;
-  /** Something was typed that is not saved yet. */
   isDirty: boolean;
   /** A save is on its way; another Save is ignored meanwhile (nothing is greyed out). */
   saving: boolean;
   problems: FieldProblem[];
   failure: SaveFailure | null;
-  /** The input id of a field the API names, for the error summary's links. */
   fieldId: (field: string) => string;
   onSave: () => void;
-  /** Create panels of children: **Save and add another** (FR-001). */
   onSaveAndAddAnother?: () => void;
   /** Cancel: after "Discard changes?" when something was typed. */
   onCancel: () => void;
   /** Close, Escape or a click beside the panel: after the same question. */
   onClose: () => void;
   children: ReactNode;
-  /** Dialogs that belong to the form (ClearValuesDialog). */
   dialogs?: ReactNode;
 }
 
-/**
- * A campaign or initiative form in a side panel (design system §6.2, §6.4): a failure and the
- * error summary above the fields, Save · Save and add another · Cancel at the bottom, and the
- * "Discard changes?" question before typed values are lost. Save is never disabled.
- */
+/** Asks "Discard changes?" before typed values are lost; Save is never disabled. */
 export function RecordFormPanel({
   title,
   description,
@@ -107,7 +99,6 @@ export function RecordFormPanel({
 
 export interface StatePanelProps {
   title: string;
-  /** Where Close and **Back to the plan** lead. */
   closeTo: string;
   children: ReactNode;
 }
@@ -128,7 +119,6 @@ export function StatePanel({ title, closeTo, children }: StatePanelProps) {
   );
 }
 
-/** The panel's body while its data loads. */
 export function PanelLoading() {
   return (
     <div className={styles.loading} aria-busy="true">
@@ -139,10 +129,7 @@ export function PanelLoading() {
   );
 }
 
-/**
- * The panel's body when its data could not be read: "no longer exists" with the API's message
- * for a record that is gone (404), otherwise the failure with **Try again**.
- */
+/** A record that is gone (404) says so with the API's message; other failures offer Try again. */
 export function PanelFailure({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   if (error instanceof ApiError && error.kind === 'notFound') {
     return <GoneMessage message={error.message} />;
@@ -150,12 +137,10 @@ export function PanelFailure({ error, onRetry }: { error: unknown; onRetry: () =
   return <ErrorState error={error} onRetry={onRetry} />;
 }
 
-/** "This campaign no longer exists — someone may have deleted it." */
 export function GoneMessage({ message }: { message: string }) {
   return (
-    <div role="alert" className={styles.gone}>
-      <CircleAlert aria-hidden="true" />
-      <p>{message}</p>
-    </div>
+    <InlineAlert tone="danger" role="alert">
+      {message}
+    </InlineAlert>
   );
 }
