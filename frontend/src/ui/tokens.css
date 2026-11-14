@@ -187,7 +187,9 @@
   --sidebar-collapsed: 64px;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --dur: 0.25s;
+  --dur-fast: 0.15s;
 }
 
 /* TODO(DARK_TOKENS): Shell has not given dark --link-hover, --disabled-text, --danger or --danger-text. */

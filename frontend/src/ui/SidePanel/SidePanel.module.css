@@ -6,6 +6,10 @@
   animation: fade-in var(--dur) var(--ease-out);
 }
 
+.overlay[data-state='closed'] {
+  animation: fade-out var(--dur-fast) var(--ease-in) forwards;
+}
+
 .panel {
   position: fixed;
   top: 0;
@@ -20,6 +24,10 @@
   background: var(--surface);
   box-shadow: var(--shadow-lg);
   animation: slide-in var(--dur) var(--ease-out);
+}
+
+.panel[data-state='closed'] {
+  animation: slide-out var(--dur-fast) var(--ease-in) forwards;
 }
 
 .panel:focus {
@@ -98,6 +106,18 @@
 
 @keyframes slide-in {
   from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-out {
+  to {
     transform: translateX(100%);
   }
 }

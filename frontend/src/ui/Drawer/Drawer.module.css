@@ -6,6 +6,10 @@
   animation: fade-in var(--dur) var(--ease-out);
 }
 
+.overlay[data-state='closed'] {
+  animation: fade-out var(--dur-fast) var(--ease-in) forwards;
+}
+
 /* The drawer slides in from the left. */
 .drawer {
   position: fixed;
@@ -17,6 +21,10 @@
   border-right: 1px solid var(--card-border);
   box-shadow: var(--shadow-lg);
   animation: slide-in var(--dur) var(--ease-out);
+}
+
+.drawer[data-state='closed'] {
+  animation: slide-out var(--dur-fast) var(--ease-in) forwards;
 }
 
 .drawer:focus {
@@ -39,6 +47,18 @@
 
 @keyframes slide-in {
   from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-out {
+  to {
     transform: translateX(-100%);
   }
 }
