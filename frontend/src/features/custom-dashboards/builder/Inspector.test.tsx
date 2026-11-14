@@ -27,6 +27,7 @@ function Harness({ start }: { start: CustomDashboard }) {
       selected={selectedWidget(state)}
       problems={[]}
       onAction={dispatch}
+      onHide={() => {}}
     />
   );
 }

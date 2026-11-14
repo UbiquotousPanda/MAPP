@@ -31,6 +31,15 @@ type approvalsActivities struct {
 	rates      func(context.Context) (money.Rates, error)
 	check      submitCheck
 	now        clock.Clock
+	// moved follows every status change inside the same transaction; nil before feature 046.
+	moved heldHook
+}
+
+type heldHook func(ctx context.Context, a actor.Actor, m statusMove) error
+
+type statusMove struct {
+	id       string
+	from, to activity.Status
 }
 
 var _ approval.Activities = (*approvalsActivities)(nil)
@@ -87,10 +96,18 @@ func (p *approvalsActivities) SetStatus(ctx context.Context, a actor.Actor, id, 
 	if !found {
 		return approval.ActivityFacts{}, fmt.Errorf("app: activity %s is not stored", id)
 	}
-	act.Status = activity.Status(status)
+	from := act.Status
+	if err := act.MoveTo(activity.Status(status)); err != nil {
+		return approval.ActivityFacts{}, err
+	}
 	act.Touch(a, p.now())
 	if err := p.activities.Put(ctx, act); err != nil {
 		return approval.ActivityFacts{}, err
+	}
+	if p.moved != nil {
+		if err := p.moved(ctx, a, statusMove{id: act.ID, from: from, to: act.Status}); err != nil {
+			return approval.ActivityFacts{}, err
+		}
 	}
 	return p.facts(ctx, act)
 }
@@ -98,8 +115,7 @@ func (p *approvalsActivities) SetStatus(ctx context.Context, a actor.Actor, id, 
 // neededToSubmit ends the message of an empty needed-to-submit field: "Owner — needed to submit".
 const neededToSubmit = " — needed to submit"
 
-// ReadyCheck adds a positive unassigned planned cost as the confirmation's note; a line item's problem is
-// keyed lineItems.<id>.<field>.
+// ReadyCheck adds a positive unassigned planned cost as the confirmation's note, keyed lineItems.<id>.<field>.
 func (p *approvalsActivities) ReadyCheck(ctx context.Context, a actor.Actor, id string) (approval.ReadyCheck, error) {
 	check, err := p.check(ctx, a, id)
 	if err != nil {
@@ -191,8 +207,7 @@ func (p *approvalsActivities) facts(ctx context.Context, act activity.Activity) 
 	return facts, nil
 }
 
-// displayStatus is the status shown (006 FR-021): an approved activity is Complete after its end date (never
-// when ongoing), In progress from its start date, otherwise its stored status.
+// displayStatus is the status shown: Complete past its end date, In progress from its start.
 func displayStatus(act activity.Activity, today date.Date) string {
 	switch {
 	case act.Status != activity.StatusApproved || act.StartDate == nil:
@@ -239,12 +254,20 @@ func (p *approvalsActivities) path(ctx context.Context, initiativeID string) ([]
 // at the delete, inside the activities Write that caused it.
 type activityApprovalHooks struct {
 	svc *approval.Service
+	// moved follows the status change of a re-approval edit or a split.
+	moved heldHook
 }
 
 var _ activity.ApprovalHooks = activityApprovalHooks{}
 
 func (h activityApprovalHooks) ApprovalRestarted(ctx context.Context, a actor.Actor, before, after activity.Activity, changes []history.Change) error { //nolint:revive // argument-limit 5: the signature of activity.ApprovalHooks
-	return h.svc.ApprovalRestarted(ctx, a, after.ID, string(before.Status), changes)
+	if err := h.svc.ApprovalRestarted(ctx, a, after.ID, string(before.Status), changes); err != nil {
+		return err
+	}
+	if h.moved == nil {
+		return nil
+	}
+	return h.moved(ctx, a, statusMove{id: after.ID, from: before.Status, to: after.Status})
 }
 
 // ActivityDeleting changes nothing: the open round stays stored so that Undo brings the activity back exactly,

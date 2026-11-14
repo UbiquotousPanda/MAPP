@@ -190,3 +190,15 @@ func rateImportFromRow(row sqlcdb.RateImport) RateImport {
 		},
 	}
 }
+
+func (s *PostgresStore) CurrencyUses(ctx context.Context) ([]CurrencyUse, error) {
+	rows, err := s.db.Queries(ctx).CurrencyUses(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("count currency uses: %w", err)
+	}
+	uses := make([]CurrencyUse, 0, len(rows))
+	for _, row := range rows {
+		uses = append(uses, CurrencyUse{Kind: row.Kind, Currency: row.Currency, Count: row.Records})
+	}
+	return uses, nil
+}

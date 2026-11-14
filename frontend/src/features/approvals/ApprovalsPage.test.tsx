@@ -83,11 +83,11 @@ describe('ApprovalsPage (feature 008, US3)', () => {
     ]) {
       expect(screen.getByRole('button', { name: `About ${label}` })).toBeInTheDocument();
     }
-    expect(screen.getByRole('tab', { name: 'Waiting for me 3 activities' })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: 'Waiting for me' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
-    expect(screen.getByRole('tab', { name: 'All open (5)' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'All open' })).toBeInTheDocument();
   });
 
   it('lists the rows of the tab with a count (FR-029, FR-030)', async () => {
@@ -113,7 +113,7 @@ describe('ApprovalsPage (feature 008, US3)', () => {
 
     await user.click(screen.getByRole('tab', { name: /^All open/ }));
 
-    await waitFor(() => expect(router.state.location.search).toBe('?tab=open'));
+    await waitFor(() => expect(router.state.location.search).toBe('?q=radio&tab=open'));
     expect(await screen.findByRole('button', { name: 'Spring radio' })).toBeInTheDocument();
     expect(screen.getByText('1 of 3 activities')).toBeInTheDocument();
     expect(api.requests.some((request) => request.search === '?tab=open')).toBe(true);
@@ -135,33 +135,33 @@ describe('ApprovalsPage (feature 008, US3)', () => {
     await screen.findByRole('button', { name: 'Launch film' });
 
     await user.type(search, 'a-1044');
-    expect(screen.getByText('1 of 3 activities')).toBeInTheDocument();
+    expect(await screen.findByText('1 of 3 activities')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Trade show' })).toBeInTheDocument();
 
     await user.clear(search);
     await user.type(search, 'LAUNCH');
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Trade show' })).not.toBeInTheDocument(),
+    );
     expect(screen.getByRole('button', { name: 'Launch film' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Trade show' })).not.toBeInTheDocument();
   });
 
-  it('filters by plan and owner with chips, and clears them (FR-031)', async () => {
-    const { user } = renderPage();
+  it('filters by plan and owner with chips kept in the address, and clears them (FR-031, D-421)', async () => {
+    const { user, router } = renderPage();
     await screen.findByRole('button', { name: 'Launch film' });
 
     await user.click(screen.getByRole('button', { name: 'Filters' }));
-    const filters = await screen.findByRole('dialog', { name: 'Filters' });
-    await user.selectOptions(within(filters).getByRole('combobox', { name: 'Owner' }), 'U-1003');
+    await user.click(screen.getByRole('button', { name: 'Owner' }));
+    const owner = await screen.findByRole('dialog', { name: 'Owner' });
+    await user.click(within(owner).getByRole('radio', { name: 'Daniel Okoro' }));
     await user.keyboard('{Escape}');
 
     expect(screen.getByText('2 of 3 activities')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Filters (1)' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Filters (1)' }));
-    await user.selectOptions(
-      within(await screen.findByRole('dialog', { name: 'Filters' })).getByRole('combobox', {
-        name: 'Plan',
-      }),
-      'P-1002',
-    );
+    expect(router.state.location.search).toBe('?owner=U-1003');
+    expect(router.state.historyAction).toBe('REPLACE');
+    await user.click(screen.getByRole('button', { name: 'Plan' }));
+    const plan = await screen.findByRole('dialog', { name: 'Plan' });
+    await user.click(within(plan).getByRole('radio', { name: 'FY2026 Mobility China' }));
     await user.keyboard('{Escape}');
 
     expect(screen.getByText('1 of 3 activities')).toBeInTheDocument();
@@ -260,9 +260,11 @@ describe('ApprovalsPage (feature 008, US3)', () => {
       }),
     ]);
 
-    expect(await screen.findByRole('tab', { name: 'All open (3)' })).toHaveAttribute(
-      'aria-selected',
-      'true',
+    await waitFor(() =>
+      expect(screen.getByRole('tab', { name: 'All open' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      ),
     );
     await screen.findByRole('button', { name: 'Launch film' });
     expect(api.requests.filter((request) => request.path === '/api/v1/approvals')).toEqual([

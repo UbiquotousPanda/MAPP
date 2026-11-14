@@ -274,6 +274,8 @@ global budgets panels — the same figures as on screen. **Export › PDF** give
   years with plans the person may see, plus the current and the chosen year), **Plan type** (All, Operational, Strategic,
   Cross-market) and **Currency** (the active currencies; default the person's display currency). The Regional
   dashboard also offers **Market** (every team; default the person's first team by name, else the first team).
+  *Changed by D-413 (2026-11-12): Currency left the filter bar; the dashboards follow the display currency chosen
+  in the top bar, and a `currency` in an old link is ignored.*
 - **FR-007**: The filters MUST live in the page address, so Back, a bookmark and a shared link show the same
   dashboard; an unknown value falls back to its default and never breaks the page.
   *Restored by [038 FR-012](../038-qa-findings/spec.md) (QA H-1): an unknown, inactive or out-of-scope currency or

@@ -1,20 +1,20 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert, RotateCw } from 'lucide-react';
+import { Clock, RotateCw } from 'lucide-react';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { ApprovalAlert } from '@/features/approvals';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import type { BreadcrumbItem } from '@/ui/Breadcrumb/Breadcrumb';
 import { Button } from '@/ui/Button/Button';
 import type { ChoiceOption } from '@/ui/ChoiceField/ChoiceField';
 import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FormFooter } from '@/ui/FormFooter/FormFooter';
-import { FormCard, FormLayout } from '@/ui/FormRail/FormRail';
+import { FormCard, FormLayout, FormPage } from '@/ui/FormRail/FormRail';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { useUnsavedChanges } from '@/ui/useUnsavedChanges';
-import type { LinesOnApproved, PurchaseRequest, PurchaseRequestInput } from './api';
+import type { PurchaseRequest, PurchaseRequestInput } from './api';
 import { clientProblems } from './form-problems';
 import { purchaseRequestFormSchema } from './form-schema';
 import type { PurchaseRequestFormValues } from './form-schema';
@@ -42,7 +42,6 @@ export interface PurchaseRequestFormOptions {
   workflows: ChoiceOption[];
   modificationWorkflows: ChoiceOption[];
   currencies: ChoiceOption[];
-  linesOnApproved?: LinesOnApproved;
 }
 
 export interface PurchaseRequestFormProps {
@@ -78,7 +77,7 @@ export function PurchaseRequestForm(props: PurchaseRequestFormProps) {
   const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [change, setChange] = useState<PurchaseRequestInput | null>(null);
   const values = useWatch({ control: form.control, compute: (all) => all });
-  const mode = saveModeOf(stored, onlyAddsLines(start, values), options.linesOnApproved);
+  const mode = saveModeOf(stored, onlyAddsLines(start, values));
   const save = usePurchaseRequestSave({ onSave: props.onSave, setProblems });
   const isDirty =
     JSON.stringify(toInput(values, 'save')) !== JSON.stringify(toInput(start, 'save'));
@@ -114,16 +113,16 @@ export function PurchaseRequestForm(props: PurchaseRequestFormProps) {
   );
 
   return (
-    <div className={styles.page}>
+    <FormPage>
       <PageHeader breadcrumb={props.breadcrumb} title={props.title} />
       <form noValidate aria-busy={save.saving} onSubmit={(event) => void submit(event)}>
         <FormLayout
           sections={railSections(values, options.attributeForm, options.lineAttributeForm)}
         >
           {stored?.notice && (
-            <ApprovalAlert tone="warning">
+            <InlineAlert tone="warning" icon={Clock}>
               <p>{stored.notice}</p>
-            </ApprovalAlert>
+            </InlineAlert>
           )}
           {save.failure && <Failure failure={save.failure} onReload={props.onReload} />}
           <FormErrorSummary errors={problems} />
@@ -169,32 +168,28 @@ export function PurchaseRequestForm(props: PurchaseRequestFormProps) {
         />
       )}
       {dialog}
-    </div>
+    </FormPage>
   );
 }
 
 function Failure({ failure, onReload }: { failure: SaveFailure; onReload?: () => void }) {
   return (
-    <div role="alert" className={styles.failure}>
-      <CircleAlert aria-hidden="true" />
-      <div className={styles.failureText}>
-        <p className={styles.failureMessage}>{failure.message}</p>
-        {failure.details.length > 0 && (
-          <ul className={styles.details}>
-            {failure.details.map((detail) => (
-              <li key={detail}>{detail}</li>
-            ))}
-          </ul>
-        )}
-        {failure.nextStep && <p>{failure.nextStep}</p>}
-        {failure.conflict && onReload && (
-          <div>
-            <Button size="sm" icon={<RotateCw />} onClick={onReload}>
-              {RELOAD}
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+    <InlineAlert tone="danger" role="alert" title={failure.message}>
+      {failure.details.length > 0 && (
+        <ul className={styles.details}>
+          {failure.details.map((detail) => (
+            <li key={detail}>{detail}</li>
+          ))}
+        </ul>
+      )}
+      {failure.nextStep && <p>{failure.nextStep}</p>}
+      {failure.conflict && onReload && (
+        <div>
+          <Button size="sm" icon={<RotateCw />} onClick={onReload}>
+            {RELOAD}
+          </Button>
+        </div>
+      )}
+    </InlineAlert>
   );
 }

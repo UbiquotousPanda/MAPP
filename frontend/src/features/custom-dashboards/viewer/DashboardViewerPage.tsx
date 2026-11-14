@@ -1,6 +1,7 @@
 import { Copy, LayoutDashboard, Pencil, RotateCw } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { isShown, useAccess } from '@/session/access';
 import { Button, LinkButton } from '@/ui/Button/Button';
@@ -59,7 +60,7 @@ export function DashboardViewerPage() {
 }
 
 function Viewer({ dashboard }: { dashboard: CustomDashboard }) {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const navigate = useNavigate();
   const { has } = useAccess();
   const refresh = useRefreshWidgets();

@@ -5,6 +5,7 @@ import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormCard, FormCardFrame } from '@/ui/FormRail/FormRail';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFields';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
@@ -95,7 +96,6 @@ export function ActivityForm({
       <ActivityBasicsCard
         control={form.control}
         form={data}
-        value={value}
         stored={stored}
         onChooseType={chooseType}
       />
@@ -123,6 +123,7 @@ export function ActivityForm({
             render={(field) => (
               <ShellAttributeFields
                 sectionHeading="h2"
+                sectionRank="panel"
                 form={attributes}
                 values={field.value}
                 onChange={field.onChange}
@@ -137,7 +138,9 @@ export function ActivityForm({
           <ErrorState error={attributeForm.error} onRetry={attributeForm.refetch} />
         ) : (
           <>
-            <h2>Shell attributes</h2>
+            <SectionHeading level={2} rank="panel">
+              Shell attributes
+            </SectionHeading>
             <Skeleton lines={4} height="36px" />
           </>
         )}
@@ -212,7 +215,7 @@ function attributeErrors(problems: FieldProblem[]): Record<string, string> {
   return errors;
 }
 
-/** "From the activity type", or "Default 5,000.00 USD = 3,950.00 GBP at today's rate" (016 FR-016). */
+/** "From the activity type", or "Default $5,000.00 = £3,950.00 at today's rate". */
 function typeDefaultNote(form: ActivityFormData, typeId: string): string {
   const type = form.activityTypes.find((option) => option.id === typeId);
   const usd = type?.defaultPlannedCostUsd;

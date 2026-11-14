@@ -21,7 +21,7 @@ import { RefusedPanel } from './RefusedPanel';
 import { bodyOf, defaultAttributes, fieldId, RECORD_FIELDS } from './form-values';
 import { recordFormSchema } from './schemas';
 import type { RecordFormValues } from './schemas';
-import { createdToast, insidePlan, NEW_CAMPAIGN, openName, VIEW } from './texts';
+import { createdToast, NEW_CAMPAIGN, openName, VIEW } from './texts';
 import { failureOf, useLeaveAfterSave } from './useLeaveAfterSave';
 
 /**
@@ -142,7 +142,6 @@ function NewCampaignForm({
   return (
     <RecordFormPanel
       title={NEW_CAMPAIGN}
-      description={insidePlan(data.plan.name)}
       isDirty={!leaving && form.formState.isDirty}
       saving={saving}
       problems={problems}
@@ -163,7 +162,6 @@ function NewCampaignForm({
         businessUnit={businessUnit}
         planId={planId}
         planYear={year}
-        defaults={defaults}
         parentRemaining={data.totals.remainingPlanBudget}
         savedBudget={null}
         currency={currency}

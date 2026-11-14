@@ -4,7 +4,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--grid-gap);
-  scroll-margin-top: 80px;
+  scroll-margin-top: calc(var(--topbar) + var(--space-6));
 }
 
 @media (min-width: 960px) {
@@ -21,11 +21,6 @@
 
 .problem {
   color: var(--status-problem-text);
-}
-
-.beside {
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
 }
 
 .allocation {

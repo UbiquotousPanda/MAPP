@@ -5,4 +5,3 @@ export { ActivityShortLink } from './ActivityShortLink';
 export { InitiativeActivities } from './InitiativeActivities';
 export type { Activity, ActivityDestination, ActivityFormData, ActivitySummary } from './api';
 export { activityActionsForInitiative, useActivityRows } from './activity-tree-rows';
-export { useDebounced } from './useDebounced';

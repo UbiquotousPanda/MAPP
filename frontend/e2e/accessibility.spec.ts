@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { DEMO_PASSWORD, expectNoAxeViolations, signInAs, uniqueName } from './fixtures';
+import { axeInBothThemes, DEMO_PASSWORD, signInAs, uniqueName } from './fixtures';
 import { chooseMenuItem, tabTo } from './keyboard';
 
 // Feature 001 SC-006 against the real API: axe (WCAG 2.2 A/AA) on every state of the app shell in light
@@ -13,141 +13,133 @@ async function openSignIn(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Sign in to SP&A One' })).toBeVisible();
 }
 
-for (const colorScheme of ['light', 'dark'] as const) {
-  test.describe(`${colorScheme} mode`, () => {
-    test.use({ colorScheme });
+test('T080 SC-006: every state of the sign-in page and Not found signed out pass axe in both themes', async ({
+  page,
+}) => {
+  await openSignIn(page);
+  await expect(page.getByRole('button', { name: /^Sign in as Priya Raman/ })).toBeVisible();
+  await axeInBothThemes(page);
 
-    test(`T080 SC-006: every state of the sign-in page and Not found signed out pass axe (${colorScheme})`, async ({
-      page,
-    }) => {
-      await openSignIn(page);
-      await expect(page.locator('html')).toHaveAttribute('data-theme', colorScheme);
-      await expect(page.getByRole('button', { name: /^Sign in as Priya Raman/ })).toBeVisible();
-      await expectNoAxeViolations(page);
+  // Both fields empty: the error summary lists every problem at once.
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByText('2 problems need your attention')).toBeVisible();
+  await axeInBothThemes(page);
 
-      // Both fields empty: the error summary lists every problem at once.
-      await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-      await expect(page.getByText('2 problems need your attention')).toBeVisible();
-      await expectNoAxeViolations(page);
+  await page.getByLabel('E-mail').fill(PRIYA);
+  await page.getByLabel('Password', { exact: true }).fill('wrong');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByText('Incorrect e-mail or password.')).toBeVisible();
+  await axeInBothThemes(page);
 
-      await page.getByLabel('E-mail').fill(PRIYA);
-      await page.getByLabel('Password', { exact: true }).fill('wrong');
-      await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-      await expect(page.getByText('Incorrect e-mail or password.')).toBeVisible();
-      await expectNoAxeViolations(page);
+  // The API's other answers to the demo-people question, given in the browser (FR-009, FR-028).
+  await page.route(DEMO_PEOPLE, (route) =>
+    route.fulfill({ json: { people: [], password: DEMO_PASSWORD } }),
+  );
+  await openSignIn(page);
+  await expect(page.getByText('No demo users found — load the demo data first')).toBeVisible();
+  await axeInBothThemes(page);
 
-      // The API's other answers to the demo-people question, given in the browser (FR-009, FR-028).
-      await page.route(DEMO_PEOPLE, (route) =>
-        route.fulfill({ json: { people: [], password: DEMO_PASSWORD } }),
-      );
-      await openSignIn(page);
-      await expect(page.getByText('No demo users found — load the demo data first')).toBeVisible();
-      await expectNoAxeViolations(page);
+  await page.unroute(DEMO_PEOPLE);
+  await page.route(DEMO_PEOPLE, (route) =>
+    route.fulfill({
+      status: 404,
+      json: { error: { code: 'not_found', message: 'Demo sign-in is off.' } },
+    }),
+  );
+  await openSignIn(page);
+  await expect(
+    page.getByText('Demo sign-in is turned off in this environment.', { exact: false }),
+  ).toBeVisible();
+  await axeInBothThemes(page);
 
-      await page.unroute(DEMO_PEOPLE);
-      await page.route(DEMO_PEOPLE, (route) =>
-        route.fulfill({
-          status: 404,
-          json: { error: { code: 'not_found', message: 'Demo sign-in is off.' } },
-        }),
-      );
-      await openSignIn(page);
-      await expect(
-        page.getByText('Demo sign-in is turned off in this environment.', { exact: false }),
-      ).toBeVisible();
-      await expectNoAxeViolations(page);
+  await page.unroute(DEMO_PEOPLE);
+  await page.route(DEMO_PEOPLE, (route) => route.abort());
+  await openSignIn(page);
+  await expect(page.getByText(/can't reach its server right now/).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+  await axeInBothThemes(page);
+  await page.unroute(DEMO_PEOPLE);
 
-      await page.unroute(DEMO_PEOPLE);
-      await page.route(DEMO_PEOPLE, (route) => route.abort());
-      await openSignIn(page);
-      await expect(page.getByText(/can't reach its server right now/).first()).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
-      await expectNoAxeViolations(page);
-      await page.unroute(DEMO_PEOPLE);
+  await page.goto('/nowhere');
+  await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
+  await axeInBothThemes(page);
+});
 
-      await page.goto('/nowhere');
-      await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
-      await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
-      await expectNoAxeViolations(page);
-    });
+test('T080 SC-006: Home, Not found, the menus, the collapsed sidebar and the phone drawer pass axe in both themes', async ({
+  page,
+}) => {
+  await signInAs(page, PRIYA);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Welcome back, Priya.' })).toBeVisible();
+  await axeInBothThemes(page);
 
-    test(`T080 SC-006: Home, Not found, the menus, the collapsed sidebar and the phone drawer pass axe (${colorScheme})`, async ({
-      page,
-    }) => {
-      await signInAs(page, PRIYA);
-      await page.goto('/');
-      await expect(page.getByRole('heading', { name: 'Welcome back, Priya.' })).toBeVisible();
-      await expect(page.locator('html')).toHaveAttribute('data-theme', colorScheme);
-      await expectNoAxeViolations(page);
+  await page.getByRole('button', { name: 'Priya — account menu' }).click();
+  await expect(page.getByRole('menuitem', { name: 'Sign out' })).toBeVisible();
+  await axeInBothThemes(page);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menu')).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'Priya — account menu' }).click();
-      await expect(page.getByRole('menuitem', { name: 'Sign out' })).toBeVisible();
-      await expectNoAxeViolations(page);
-      await page.keyboard.press('Escape');
-      await expect(page.getByRole('menu')).toHaveCount(0);
+  await page.getByRole('button', { name: /^Notifications/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Notifications' })).toBeVisible();
+  await axeInBothThemes(page);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Notifications' })).toHaveCount(0);
 
-      await page.getByRole('button', { name: /^Notifications/ }).click();
-      await expect(page.getByRole('dialog', { name: 'Notifications' })).toBeVisible();
-      await expectNoAxeViolations(page);
-      await page.keyboard.press('Escape');
-      await expect(page.getByRole('dialog', { name: 'Notifications' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Collapse', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Expand sidebar' })).toBeVisible();
+  await axeInBothThemes(page);
+  await page.getByRole('button', { name: 'Expand sidebar' }).click();
+  await expect(page.getByRole('button', { name: 'Collapse', exact: true })).toBeVisible();
 
-      await page.getByRole('button', { name: 'Collapse', exact: true }).click();
-      await expect(page.getByRole('button', { name: 'Expand sidebar' })).toBeVisible();
-      await expectNoAxeViolations(page);
-      await page.getByRole('button', { name: 'Expand sidebar' }).click();
-      await expect(page.getByRole('button', { name: 'Collapse', exact: true })).toBeVisible();
+  await page.goto('/nowhere');
+  await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+  await axeInBothThemes(page);
 
-      await page.goto('/nowhere');
-      await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
-      await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
-      await expectNoAxeViolations(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Open menu' }).click();
+  const drawer = page.getByRole('dialog');
+  await expect(drawer.getByRole('link', { name: 'Plans' })).toBeVisible();
+  await axeInBothThemes(page);
+});
 
-      await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto('/');
-      await page.getByRole('button', { name: 'Open menu' }).click();
-      const drawer = page.getByRole('dialog');
-      await expect(drawer.getByRole('link', { name: 'Plans' })).toBeVisible();
-      await expectNoAxeViolations(page);
-    });
+test('T080 SC-006: the sample page’s panel and its errors, the confirm dialog, the Undo message and the gallery pass axe in both themes', async ({
+  page,
+}) => {
+  await signInAs(page, PRIYA);
+  await page.goto('/dev/sample-records');
+  await expect(page.getByRole('heading', { name: 'Sample records', level: 1 })).toBeVisible();
+  await axeInBothThemes(page);
 
-    test(`T080 SC-006: the sample page's panel and its errors, the confirm dialog, the Undo message and the gallery pass axe (${colorScheme})`, async ({
-      page,
-    }) => {
-      await signInAs(page, PRIYA);
-      await page.goto('/dev/sample-records');
-      await expect(page.getByRole('heading', { name: 'Sample records', level: 1 })).toBeVisible();
-      await expectNoAxeViolations(page);
+  const name = uniqueName('Axe folder');
+  await page.getByRole('button', { name: 'New sample folder' }).first().click();
+  const panel = page.getByRole('dialog', { name: 'New sample folder' });
+  await panel.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(panel.getByText('1 problem needs your attention')).toBeVisible();
+  await axeInBothThemes(page);
+  await panel.getByLabel('Name').fill(name);
+  await panel.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByText(`Sample folder '${name}' created`).first()).toBeVisible();
 
-      const name = uniqueName('Axe folder');
-      await page.getByRole('button', { name: 'New sample folder' }).first().click();
-      const panel = page.getByRole('dialog', { name: 'New sample folder' });
-      await panel.getByRole('button', { name: 'Save', exact: true }).click();
-      await expect(panel.getByText('1 problem needs your attention')).toBeVisible();
-      await expectNoAxeViolations(page);
-      await panel.getByLabel('Name').fill(name);
-      await panel.getByRole('button', { name: 'Save', exact: true }).click();
-      await expect(page.getByText(`Sample folder '${name}' created`).first()).toBeVisible();
+  await page.getByRole('button', { name: `Actions for ${name}` }).click();
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  const confirm = page.getByRole('alertdialog');
+  await expect(confirm.getByRole('button', { name: 'Delete sample folder' })).toBeVisible();
+  await axeInBothThemes(page);
+  await confirm.getByRole('button', { name: 'Delete sample folder' }).click();
+  await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
+  await axeInBothThemes(page);
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByText(`Sample folder '${name}' restored`).first()).toBeVisible();
 
-      await page.getByRole('button', { name: `Actions for ${name}` }).click();
-      await page.getByRole('menuitem', { name: 'Delete' }).click();
-      const confirm = page.getByRole('alertdialog');
-      await expect(confirm.getByRole('button', { name: 'Delete sample folder' })).toBeVisible();
-      await expectNoAxeViolations(page);
-      await confirm.getByRole('button', { name: 'Delete sample folder' }).click();
-      await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
-      await expectNoAxeViolations(page);
-      await page.getByRole('button', { name: 'Undo' }).click();
-      await expect(page.getByText(`Sample folder '${name}' restored`).first()).toBeVisible();
-
-      await page.goto('/dev/components');
-      await expect(
-        page.getByRole('heading', { name: 'Shared building blocks', level: 1 }),
-      ).toBeVisible();
-      await expectNoAxeViolations(page);
-    });
-  });
-}
+  await page.goto('/dev/components');
+  await expect(
+    page.getByRole('heading', { name: 'Shared building blocks', level: 1 }),
+  ).toBeVisible();
+  await axeInBothThemes(page);
+});
 
 test('T080 SC-006: keyboard only — sign in, every sidebar item, collapse and expand, theme, bell, account menu and Sign out', async ({
   page,

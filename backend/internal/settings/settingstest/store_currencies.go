@@ -2,8 +2,12 @@ package settingstest
 
 import (
 	"context"
+	"encoding/json"
+	"maps"
 	"slices"
+	"strings"
 
+	"mapp/internal/platform/fake"
 	"mapp/internal/settings"
 )
 
@@ -60,4 +64,39 @@ func (s Store) GetRateImport(_ context.Context, id string) (settings.RateImport,
 
 func (s Store) ListRateImports(context.Context) ([]settings.RateImport, error) {
 	return s.imports.List()
+}
+
+func (s Store) CurrencyUses(context.Context) ([]settings.CurrencyUse, error) {
+	return currencyUses(s.db)
+}
+
+// currencyUses counts amounts per currency in the performance facts and GSAP transactions of the DB, as the query does.
+func currencyUses(db *fake.DB) ([]settings.CurrencyUse, error) {
+	var uses []settings.CurrencyUse
+	for _, table := range []struct{ name, kind string }{
+		{"performance_facts", settings.UseOfPerformanceFact}, {"financial_transactions", settings.UseOfFinancialTransaction},
+	} {
+		counts := map[string]int{}
+		for _, data := range db.Encoded(table.name) {
+			var row struct {
+				Currency string          `json:"currency"`
+				Amount   json.RawMessage `json:"amount"`
+			}
+			if err := json.Unmarshal(data, &row); err != nil {
+				return nil, err
+			}
+			if strings.HasPrefix(string(row.Amount), "{") { // a performance fact's amount is money with its currency
+				if err := json.Unmarshal(row.Amount, &row); err != nil {
+					return nil, err
+				}
+			}
+			if row.Currency != "" {
+				counts[row.Currency]++
+			}
+		}
+		for _, currency := range slices.Sorted(maps.Keys(counts)) {
+			uses = append(uses, settings.CurrencyUse{Kind: table.kind, Currency: currency, Count: counts[currency]})
+		}
+	}
+	return uses, nil
 }

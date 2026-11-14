@@ -8,21 +8,14 @@ import { CHANGED_BY_ANY_CHANGE, useDeleteAttribute, useSetAttributeStatus } from
 import type { ShellAttribute } from './api';
 import { useStatusChange } from './useStatusChange';
 
-/** What the list and the attribute page can do with an attribute besides opening it. */
 export interface AttributeActions {
   /** Set inactive (false) or Reactivate (true); answers whether it worked. */
   setActive: (attribute: ShellAttribute, active: boolean) => Promise<boolean>;
-  /** Delete: asks first, or says why it can't be deleted. */
   askDelete: (attribute: ShellAttribute) => void;
-  /** The delete question; render it once on the page. */
   dialog: ReactElement | null;
 }
 
-/**
- * Set inactive, Reactivate and Delete of a Shell attribute (FR-004, FR-023). A locked action
- * stays offered and says why when chosen (design system §6.6): "Business unit can't be deleted,
- * set inactive, …". The delete question is the Settings one (shared/SettingDeleteDialog).
- */
+// A locked action stays offered and says why when chosen (design system §6.6).
 export function useAttributeActions(
   onDeleted?: (attribute: ShellAttribute) => void,
 ): AttributeActions {
@@ -65,7 +58,7 @@ export function useAttributeActions(
           ? `It moves to the recycle bin together with its ${plural(deleting.optionCount, 'option')}; you can restore it.`
           : undefined
       }
-      remove={() => deleteAttribute.mutateAsync(deleting.id)}
+      remove={() => deleteAttribute.mutateAsync(deleting)}
       setInactive={() => setActive(deleting, false)}
       invalidate={CHANGED_BY_ANY_CHANGE}
       onDeleted={() => onDeleted?.(deleting)}

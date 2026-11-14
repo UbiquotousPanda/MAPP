@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -28,8 +29,13 @@ type attempts struct {
 }
 
 type attemptLog struct {
-	failures    []time.Time
+	failures    []failure
 	lockedUntil time.Time
+}
+
+type failure struct {
+	at    time.Time
+	email string
 }
 
 func newAttempts(now clock.Clock) *attempts {
@@ -67,35 +73,40 @@ func (a *attempts) failed(email, client string) []string {
 	now := a.now()
 	a.forget(now)
 	var locked []string
-	if a.fail(emailKey(email), emailLimit, now) {
+	if a.fail(emailKey(email), failure{at: now, email: emailKey(email)}, emailLimit) {
 		locked = append(locked, keyEmail)
 	}
-	if a.fail(clientKey(client), clientLimit, now) {
+	if a.fail(clientKey(client), failure{at: now, email: emailKey(email)}, clientLimit) {
 		locked = append(locked, keyClient)
 	}
 	return locked
 }
 
-func (a *attempts) fail(key string, limit int, now time.Time) bool {
+func (a *attempts) fail(key string, f failure, limit int) bool {
 	entry, found := a.keys[key]
 	if !found {
 		entry = &attemptLog{}
 		a.keys[key] = entry
 	}
-	entry.failures = append(recent(entry.failures, now), now)
+	entry.failures = append(recent(entry.failures, f.at), f)
 	if len(entry.failures) < limit {
 		return false
 	}
 	entry.failures = nil
-	entry.lockedUntil = now.Add(lockFor)
+	entry.lockedUntil = f.at.Add(lockFor)
 	return true
 }
 
+// succeeded clears the e-mail and the client's failures with that e-mail: a success with one account must
+// not wipe the client's guesses at others.
 func (a *attempts) succeeded(email, client string) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	delete(a.keys, emailKey(email))
-	delete(a.keys, clientKey(client))
+	key := emailKey(email)
+	delete(a.keys, key)
+	if entry, found := a.keys[clientKey(client)]; found {
+		entry.failures = slices.DeleteFunc(entry.failures, func(f failure) bool { return f.email == key })
+	}
 }
 
 // forget drops keys with no failure in the window and no lock, so the map cannot grow without end.
@@ -108,11 +119,11 @@ func (a *attempts) forget(now time.Time) {
 	}
 }
 
-func recent(failures []time.Time, now time.Time) []time.Time {
+func recent(failures []failure, now time.Time) []failure {
 	kept := failures[:0]
-	for _, at := range failures {
-		if now.Sub(at) < window {
-			kept = append(kept, at)
+	for _, f := range failures {
+		if now.Sub(f.at) < window {
+			kept = append(kept, f)
 		}
 	}
 	return kept

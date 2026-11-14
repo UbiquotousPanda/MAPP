@@ -74,15 +74,15 @@ func TestRefuse_RestoreAndUndoAddBackCost_DeleteAlwaysPasses_Contract_037_US2(t 
 	priya := server.SignIn(t, priyasEmail)
 	first := created(t, createActivity(t, priya, digital, newActivity("Deleted first", "500.00")))
 	second := created(t, createActivity(t, priya, digital, newActivity("Deleted second", "500.00")))
-	undoEntry := decoded[history.DeleteResult](t, priya.Do(t, http.MethodDelete, "/api/v1/activities/"+first.ID, nil),
+	undoEntry := decoded[history.DeleteResult](t, priya.DeleteSeen(t, "/api/v1/activities/"+first.ID),
 		http.StatusOK).RecycleBinEntry
-	restoreEntry := decoded[history.DeleteResult](t, priya.Do(t, http.MethodDelete, "/api/v1/activities/"+second.ID, nil),
+	restoreEntry := decoded[history.DeleteResult](t, priya.DeleteSeen(t, "/api/v1/activities/"+second.ID),
 		http.StatusOK).RecycleBinEntry
 	refuseHelix(t, priya, "0.00")
 
 	undone := priya.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+undoEntry.ID+"/undo", nil)
 	restored := priya.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+restoreEntry.ID+"/restore", nil)
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/activities/A-1001", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/activities/A-1001")
 
 	refusedNaming(t, undone, helixRefused)
 	refusedNaming(t, restored, helixRefused)

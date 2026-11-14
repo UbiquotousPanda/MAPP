@@ -8,10 +8,8 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// The demo data holds the facts Home's story is told with (009 plan "Demo data"), read through the Home
-// endpoints: each person's teams and their plans; FY2026 Lubricants Europe Published with a 1,200,000.00 USD
-// budget; Priya's activity declined by Daniel Okoro with a comment; Alex Morgan's FY2027 campaign whose
-// initiatives' budgets exceed its own; an activity waiting for Daniel Okoro at level 1 of 1.
+// Home's story (009 plan "Demo data"): teams and plans, the 1,200,000.00 USD budget, the declined activity, the
+// campaign whose initiatives exceed its budget and an activity waiting for Daniel Okoro at level 1 of 1.
 func TestSeed_HomeStory_009(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -44,9 +42,9 @@ func TestSeed_HomeStory_009(t *testing.T) {
 	}
 
 	priya, priyasAttention := summaries["priya.raman@shell.com"], attention["priya.raman@shell.com"]
-	// 1,200,000.00 USD and 600,000.00 GBP = 759,493.67 USD at 0.79, each plan converted to USD before adding (016 FR-014).
-	if cost := priya.PlannedCost; priya.Plans.Published != 1 || cost.PlanBudget == nil || cost.PlanBudget.Format() != "1,959,493.67 USD" {
-		t.Errorf("Priya's plans: %+v, budget %v; want FY2026 Lubricants Europe Published, 1,959,493.67 USD with the GBP plan", priya.Plans, cost.PlanBudget)
+	// 1,200,000.00 USD and 600,000.00 GBP = 800,000.00 USD at 0.75, each plan converted to USD before adding.
+	if cost := priya.PlannedCost; priya.Plans.Published != 1 || cost.PlanBudget == nil || cost.PlanBudget.Format() != "2,000,000.00 USD" {
+		t.Errorf("Priya's plans: %+v, budget %v; want FY2026 Lubricants Europe Published, 2,000,000.00 USD with the GBP plan", priya.Plans, cost.PlanBudget)
 	}
 	if len(priyasAttention.Items) == 0 || priyasAttention.Items[0].Reasons[0].Kind != "declined" ||
 		priyasAttention.Items[0].Reasons[0].DeclinedBy.Name != "Daniel Okoro" || *priyasAttention.Items[0].Reasons[0].Comment == "" {

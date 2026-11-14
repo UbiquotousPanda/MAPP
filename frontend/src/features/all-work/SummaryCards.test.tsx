@@ -103,7 +103,7 @@ describe('SummaryCards (FR-003)', () => {
     renderWithProviders(<SummaryCards summary={summary} />, { user: testUser() });
 
     expect(
-      within(card('Planned cost')).getByRole('button', { name: '15.64K EUR (15,640.00 EUR)' }),
+      within(card('Planned cost')).getByRole('button', { name: '€15.64K (€15,640.00)' }),
     ).toBeInTheDocument();
   });
 

@@ -9,12 +9,9 @@ import (
 	"mapp/internal/platform/actor"
 )
 
-// SplitOptions returns what the Split dialog of the activity id offers (FR-026): its line items with their
-// amounts in the plan currency, the suggested name "<name> (split)" free in its initiative, whether the split
-// restarts its approval, and the initiatives of the plan — its own first — with Move's date rule as the
-// reason an initiative can't take the new activity.
+// SplitOptions suggests "<name> (split)" free in its initiative; Move's date rule says which initiatives can take it.
 func (s *Service) SplitOptions(ctx context.Context, a actor.Actor, id string) (SplitOptions, error) {
-	destinations, destinationsErr := s.Destinations(ctx, a, id) // its own Read
+	destinations, destinationsErr := s.Destinations(ctx, a, id)
 	if destinationsErr != nil {
 		return SplitOptions{}, destinationsErr
 	}
@@ -35,7 +32,7 @@ func (s *Service) SplitOptions(ctx context.Context, a actor.Actor, id string) (S
 		options = SplitOptions{
 			ActivityID: activity.ID, Version: activity.Version, Status: activity.Status, PlannedCost: activity.PlannedCost,
 			PlanCurrency: pc.plan.Currency, SuggestedName: suffixedName(siblings, activity.Name, splitSuffix),
-			NeedsRestart: inApproval(activity), LineItems: make([]SplitLineItem, 0, len(items)),
+			NeedsRestart: InApproval(activity.Status), LineItems: make([]SplitLineItem, 0, len(items)),
 			Destinations: splitDestinations(destinations),
 		}
 		for _, li := range items {
@@ -49,12 +46,11 @@ func (s *Service) SplitOptions(ctx context.Context, a actor.Actor, id string) (S
 	return options, nil
 }
 
-// splitDestinations turns Move's destinations into the Split dialog's: the activity's own initiative first
-// and available; elsewhere only the date rule applies, because the new activity has a name of its own.
+// Copy's problem is Move's date rule, because the new activity has a name of its own; its own initiative comes first.
 func splitDestinations(all []Destination) []Destination {
 	list := make([]Destination, 0, len(all))
 	for _, d := range all {
-		d.MoveProblem = d.CopyProblem // the dates; nil for its own initiative
+		d.MoveProblem = d.CopyProblem
 		if d.Current {
 			list = append([]Destination{d}, list...)
 			continue
@@ -64,8 +60,7 @@ func splitDestinations(all []Destination) []Destination {
 	return list
 }
 
-// suffixedName returns the first of "<name><suffix>", "<name><suffix without its parenthesis> 2)", … that no
-// activity among siblings has, shortened to fit 120 characters.
+// suffixedName tries "<name> (split)", "<name> (split 2)", … shortened to fit 120 characters.
 func suffixedName(siblings []Activity, name, suffix string) string {
 	for n := 1; ; n++ {
 		end := suffix

@@ -120,7 +120,7 @@ func (v *volume) recycleBin() {
 	for n := globalPlansPerYear; deleted < binnedActivities; n-- {
 		planID := v.planNamed(fmt.Sprintf("Volume Global %d %03d", lastGlobalYear, n))
 		for _, a := range v.activitiesOf(planID)[:activitiesPerTarget] {
-			v.alex.Do(v.tb, http.MethodDelete, "/api/v1/activities/"+a.ID, nil)
+			v.alex.DeleteSeen(v.tb, "/api/v1/activities/"+a.ID)
 			deleted++
 		}
 	}

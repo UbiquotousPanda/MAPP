@@ -16,18 +16,21 @@ const LAUNCH: SelectedRecord = {
   level: 'activity',
   name: 'Launch film',
   planId: 'P-1001',
+  version: 1,
 };
 const PODCAST: SelectedRecord = {
   id: 'A-1002',
   level: 'activity',
   name: 'Podcast',
   planId: 'P-1001',
+  version: 1,
 };
 const HELIX: SelectedRecord = {
   id: 'C-1001',
   level: 'campaign',
   name: 'Helix launch',
   planId: 'P-1001',
+  version: 1,
 };
 
 function Harness({ records }: { records: SelectedRecord[] }) {
@@ -91,7 +94,13 @@ describe('012 FR-012, FR-013, FR-021: Submit for approval and the results', () =
     const panel = await screen.findByRole('dialog', { name: 'Results' });
     expect(within(panel).getByText('1 submitted · 1 skipped')).toBeInTheDocument();
     expect(api.bodiesOf('POST /api/v1/bulk-actions')).toEqual([
-      { action: 'submit', recordIds: ['A-1001', 'A-1002'], comment: '', restartApproval: false },
+      {
+        action: 'submit',
+        recordIds: ['A-1001', 'A-1002'],
+        versions: { 'A-1001': 1, 'A-1002': 1 },
+        comment: '',
+        restartApproval: false,
+      },
     ]);
     await user.click(within(panel).getByRole('button', { name: 'Select failed items' }));
     expect(within(bar()).getByText('1 selected · 1 activity')).toBeInTheDocument();
@@ -180,7 +189,13 @@ describe('012 FR-007, FR-014, FR-016: one level for Copy to…', () => {
 
     expect(await screen.findByText('1 copied')).toBeInTheDocument();
     expect(api.bodiesOf('POST /api/v1/bulk-actions')).toEqual([
-      { action: 'copy', recordIds: ['A-1001'], targetId: 'I-1003', restartApproval: false },
+      {
+        action: 'copy',
+        recordIds: ['A-1001'],
+        versions: { 'A-1001': 1 },
+        targetId: 'I-1003',
+        restartApproval: false,
+      },
     ]);
   });
 });
@@ -207,7 +222,7 @@ describe('012 FR-019, FR-020: Delete and Undo', () => {
           body: { ...preview, id: 'BLK-1003', preview: false },
         }),
         reply('POST /api/v1/bulk-actions/{bulkActionId}/undo', {
-          body: { bulkActionId: 'BLK-1003', restored: [] },
+          body: { bulkActionId: 'BLK-1003', restored: [], alreadyBack: [] },
         }),
       ],
     );

@@ -20,7 +20,7 @@ export function orderedPO(pr: PurchaseRequest): string {
   return pr.lines.find((line) => line.poNumber !== '')?.poNumber ?? '';
 }
 
-/** "10,000.00 USD", or "9,200.00 EUR and 1,000.00 USD" for lines in several currencies. */
+/** "$10,000.00", or "€9,200.00 and $1,000.00" for lines in several currencies. */
 export function totalText(pending: PurchaseRequestLine[]): string {
   const byCurrency = new Map<string, bigint>();
   for (const line of pending) {

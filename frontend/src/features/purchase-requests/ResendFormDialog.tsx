@@ -1,10 +1,10 @@
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { asApiError } from '@/api/errors';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { useToast } from '@/ui/Toast/useToast';
 import { useResendPurchaseRequestForm } from './api';
 import type { PurchaseRequest } from './api';
 import { RESEND_FORM, RESEND_TEXT, resendTitle, resentToast } from './page-text';
-import styles from './PurchaseRequestPage.module.css';
 
 export interface ResendFormDialogProps {
   purchaseRequest: PurchaseRequest;
@@ -36,11 +36,7 @@ export function ResendFormDialog({ purchaseRequest, open, onOpenChange }: Resend
       busy={resend.isPending}
     >
       <p>{RESEND_TEXT}</p>
-      {resend.error && (
-        <p role="alert" className={styles.problem}>
-          {asApiError(resend.error).message}
-        </p>
-      )}
+      {resend.error && <InlineError>{asApiError(resend.error).message}</InlineError>}
     </ConfirmDialog>
   );
 }

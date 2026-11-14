@@ -2,9 +2,9 @@ import { CircleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useFormatters } from '@/format/useFormatters';
-import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
-import { cx } from '@/ui/cx';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { recordHref } from '@/ui/record-links';
 import {
   aboveByText,
@@ -34,7 +34,7 @@ export function GsapFigures({ figures, accrualMonth }: GsapFiguresProps) {
 
   return (
     <div className={styles.figures}>
-      <ul className={styles.tiles} aria-label="Financial figures">
+      <StatStrip label="Financial figures">
         <Tile label={FIGURE_LABEL.committed} tip={FIGURE_TIP.committed} value={figures.committed}>
           {figures.committedPercent === null ? (
             <span>{NO_PLANNED_COST}</span>
@@ -64,7 +64,7 @@ export function GsapFigures({ figures, accrualMonth }: GsapFiguresProps) {
         >
           {notYet === null && <span>{NO_PLANNED_COST}</span>}
         </Tile>
-      </ul>
+      </StatStrip>
       {over && notYet && (
         <p className={styles.problem}>
           <CircleAlert aria-hidden="true" />
@@ -93,15 +93,12 @@ interface TileProps {
 
 function Tile({ label, tip, value, problem = false, children }: TileProps) {
   return (
-    <li className={styles.tile}>
-      <span className={styles.label}>
-        {label}
-        <InfoTip label={label} text={tip} />
-      </span>
-      <span className={cx(styles.value, problem && styles.negative)}>
-        {value ? moneyText(value) : '—'}
-      </span>
-      {children && <span className={styles.detail}>{children}</span>}
-    </li>
+    <SummaryCard
+      label={label}
+      tip={tip}
+      value={value ? moneyText(value) : '—'}
+      tone={problem ? 'problem' : undefined}
+      detail={children}
+    />
   );
 }

@@ -30,11 +30,9 @@ describe('032 FR-015/FR-055: remove line', () => {
     await user.click(screen.getByRole('button', { name: 'Remove line' }));
 
     const dialog = await screen.findByRole('alertdialog', {
-      name: 'Remove the line for line item L-1006 (3,200.00 EUR) from this purchase request?',
+      name: 'Remove the line for line item L-1006 (€3,200.00) from this purchase request?',
     });
-    expect(dialog).toHaveTextContent(
-      'The 3,200.00 EUR reserved on the line item will be released.',
-    );
+    expect(dialog).toHaveTextContent('The €3,200.00 reserved on the line item will be released.');
     await expectNoAxeViolations();
     await user.click(within(dialog).getByRole('button', { name: 'Remove line' }));
     expect(onRemove).toHaveBeenCalledOnce();
@@ -64,7 +62,7 @@ describe('032 FR-015/FR-055: remove line', () => {
     renderButton({ availability: no(reason) });
 
     const remove = screen.getByRole('button', { name: 'Remove line' });
-    expect(remove).toBeDisabled();
+    expect(remove).toHaveAttribute('aria-disabled', 'true');
     expect(remove).toHaveAccessibleDescription(reason);
   });
 

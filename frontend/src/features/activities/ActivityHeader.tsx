@@ -10,7 +10,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import type { ActivityApproval, ShowSubmitProblems } from '@/features/approvals';
-import { DecisionButton, DecisionDialog, SubmitButton } from '@/features/approvals';
+import { DecisionButton, DecisionDialog, SubmitButton, submitOffer } from '@/features/approvals';
 import { FieldHelpTip } from '@/features/settings';
 import { allows, gateItem, moreItemFor } from '@/session/gate-action';
 import { recordHref } from '@/ui/record-links';
@@ -60,16 +60,11 @@ export function ActivityHeader({
     version: activity.version,
   };
 
-  const canDecide =
-    activity.status === 'submitted' &&
-    approval !== undefined &&
-    approval.actions.approve.available &&
-    !approval.viewer.isOwner;
-  const ownerMayApprove =
-    activity.status === 'submitted' &&
-    approval !== undefined &&
-    approval.actions.approve.available &&
-    approval.viewer.isOwner;
+  // The approval answer alone decides, so a refresh of only the activity cannot show the wrong buttons.
+  const mayApprove = approval?.status === 'submitted' && approval.actions.approve.available;
+  const canDecide = mayApprove && !approval.viewer.isOwner;
+  const ownerMayApprove = mayApprove && approval.viewer.isOwner;
+  const offer = submitOffer(approval);
 
   // 014 FR-011: Edit and Submit only for a person who may do them; the server's reason in the menu.
   const access = activity.access;
@@ -92,18 +87,15 @@ export function ActivityHeader({
       ...gateItem({ label: 'Edit', onSelect: () => void navigate(editHref) }, access?.edit),
       ...moreActions,
     ];
-  } else if (activity.status === 'created' || activity.status === 'declined') {
+  } else if (offer) {
     more = [
       ...moreItemFor({ label: 'Edit', onSelect: () => void navigate(editHref) }, access?.edit),
-      ...moreItemFor(
-        { label: submitLabel(activity.status), onSelect: onOpenReady },
-        access?.submit,
-      ),
+      ...moreItemFor({ label: submitLabel(activity.status), onSelect: onOpenReady }, offer),
       ...moreActions,
     ];
     actions = (
       <>
-        {allows(access?.submit) && (
+        {offer.available && (
           <SubmitButton
             activity={approvalActivity}
             onShowProblems={onShowProblems}

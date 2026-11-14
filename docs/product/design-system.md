@@ -80,7 +80,7 @@ Section numbers §1–§10 are kept from version 1, so references in specs and c
 |---|---|
 | **Skip link** | First focusable element: "Skip to main content". Hidden until focused, then shown top-left: `--brand-yellow` fill, `--on-brand-yellow` text, 14 px bold, padding 16, radius 8. |
 | **Environment banner** | `DemoBanner`. 32 px, full width, Text Strong `--banner-bg` with `--banner-text` (Surface) 12 px text, one line, centred. Below 600 px the shorter text "Demo environment — demonstration data only". Not sticky. |
-| **Top bar** | 56 px, `--surface`, 1 px `--hairline` bottom border, full width, sticky at the top. **Left:** at ≥ 960 px the logo zone is 240 px wide, aligned with the sidebar (`Logo`, the name "SP&A One"); below 960 px a 40 px **Open menu** icon button, then `LogoTile`. The home link is named "SP&A One home". **Centre-left:** the global search slot (360–480 px), empty until a search feature is specified; never a fake control. **Right**, 8 px apart: notifications bell (40 px icon button with `CountBadge`), the account button (32 px avatar + first name at ≥ 960 px; avatar only below). The account menu holds the name and role, **My profile**, **Appearance** (Follow the computer · Light · Dark; D-038) and **Sign out**. A help button joins the right group, always in the same place (WCAG 3.2.6), when a help feature exists. |
+| **Top bar** | 56 px, `--surface`, 1 px `--hairline` bottom border, full width, sticky at the top. **Left:** at ≥ 960 px the logo zone is 240 px wide, aligned with the sidebar (`Logo`, the name "SP&A One"); below 960 px a 40 px **Open menu** icon button, then `LogoTile`. The home link is named "SP&A One home". **Centre-left:** the global search slot (360–480 px), empty until a search feature is specified; never a fake control. **Right**, 8 px apart: the **Display currency** select (32 px, shows the code "USD"; its menu lists "USD – US dollar" and the other active currencies under the note that every page shows its amounts in it; the choice is saved for the person and applies to every page, reports and shared report links included; D-413), the light/dark theme switch, notifications bell (40 px icon button with `CountBadge`), the account button (32 px avatar + first name at ≥ 960 px; avatar only below). The account menu holds the name and role, **My profile**, **Appearance** (Follow the computer · Light · Dark; D-038) and **Sign out**. A help button joins the right group, always in the same place (WCAG 3.2.6), when a help feature exists. |
 | **Sidebar** | 240 px, `--surface`, 1 px `--hairline` right border, sticky under the top bar, scrolls on its own. Items 40 px high, padding 0 16 0 20, 20 px icon + 12 px gap + 14 px label in `--ink`. Hover `--hover`, no movement. **Current section: a 4 px `--brand-yellow` bar on the start edge (full item height), `--hover` fill, bold label, `aria-current="page"`.** Group label "More" 12 px bold `--ink-2`, sentence case, 24 px above and 8 px below. Count badges sit at the end of the item. At the bottom: **Collapse sidebar** (40 px, ghost). |
 | **Collapsed rail** | 64 px; icons centred; tooltips on the right; the yellow bar stays on the current item; badges become a small count at the icon's top end. Chosen by the person (saved, D-038) at ≥ 960 px; automatic between 600 and 959 px. |
 | **Drawer** | Below 600 px the sidebar is hidden. **Open menu** opens a 280 px drawer from the left with `--overlay`, focus kept inside, Escape and the close button close it and return the focus. It shows the same items with labels, no tooltips. Bell and account stay in the top bar. |
@@ -101,8 +101,8 @@ overlay 200 · side panel and dialog 210 · menus and popovers 300 · toasts 400
 | Content column | Fluid up to `--content-max` 1300 px, centred; side padding 24 px (16 px below 600 px) |
 | Grid | 12 columns, `--grid-gap` 20 px between columns and between cards |
 | Common spans | Summary cards: 4 per row (3 columns each), or 3 per row (4 each); details: 8 + 4 at ≥ 1280 px; two lists side by side: 6 + 6 |
-| Forms and reading text | One column of at most `--form-max` 720 px, aligned to the **left edge** of the content column (never centred), with an optional right rail (300 px) at ≥ 1280 px |
-| Breakpoints | **< 600** phone · **600–959** tablet · **≥ 960** desktop · one extra **≥ 1280** for the 8 + 4 split and the form rail. No other widths may appear in a media query (§3.12). |
+| Forms and reading text | A form page is one column of at most `--form-page` 960 px, **centred** in the content column: breadcrumb, title, section bar, cards and sticky footer share it (§2.4 C). Reading text (descriptions, notes) stays at most `--form-max` 720 px wide |
+| Breakpoints | **< 600** phone · **600–959** tablet · **≥ 960** desktop · one extra **≥ 1280** for the 8 + 4 split. No other widths may appear in a media query (§3.12). |
 | Alignment | Logo zone, breadcrumb, title, toolbars, cards, tables and footer start on one left edge; page actions, toolbar ends and footer buttons end on one right edge. Every control in a row has the same height, so text baselines line up. |
 | Equal heights | Cards in one grid row stretch to the same height. A list inside a card shows at most 5 rows and a **View all (n)** link, so neighbouring cards stay even. |
 
@@ -135,19 +135,20 @@ Every page is one of these five templates.
 ```
  (breadcrumb row)
  Plans                                                                    [+ New plan]
- Every plan of the year in one place.
  ┌ summary card ┐ ┌ summary card ┐ ┌ summary card ┐ ┌ summary card ┐       ← optional, ≤ 4
  ┌───────────────────────────────────────────────────────────────────────────────────┐
- │ [🔍 Search name or ID ] [All (6)|Draft (2)|Published (4)] [Filters (1)]  4 of 6 plans │ ← toolbar 40 px
+ │ [🔍 Search name or ID ] [All|Draft|Published] [Filters (1)]        4 of 6 plans │ ← toolbar 32 px
+ │ [Years · 2026 ▾] [Plan type ▾] [Show ▾] [BCPIR plans ▾]                          │ ← Filters folded out
  │ (Year: 2026 ×) Clear filters                                                        │ ← filter chips
  │ Name ▲            Owner          Teams              Status      Planned cost    ⋯   │ ← table, §5.4
  └───────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 - The toolbar sits **inside** the table card (16 px 24 px padding) and spans its full width: search,
-  segmented filter, **Filters** button, then — pushed to the right end — the result count ("4 of 6
-  plans"), view switch and **Export** where the page has them. Filter chips go on a second row only while
-  filters are in use.
+  segmented filter, **Filters (n)** button, then — pushed to the right end — the result count ("4 of 6
+  plans"), view switch and **Export** where the page has them: the `FilterBar` of §5.2 (D-421). The filter
+  menus fold out on the second row (by themselves when a filter is in use); filter chips go below only while
+  filters are in use. Lists whose toolbar sits on the grey page (Plans, All work, reports) use the same bar.
 - Empty list: `EmptyState` inside the card; filters hiding everything: "Nothing matches these filters" with
   **Clear filters**.
 - Below 600 px: search takes the first toolbar row; inbox-type lists (Approvals, Home lists) become stacked
@@ -165,27 +166,43 @@ Every page is one of these five templates.
 - At ≥ 1280 px a details area may split 8 + 4 (main content + a summary card); cards in the split stretch
   to equal height.
 
-**C. Form page** (new and edit plan, activity, line item)
+**C. Form page** (new and edit plan, activity, line item, purchase request)
 
 ```
- Plans › FY2026 Lubricants Europe › Edit
- Edit plan
- ┌ 2 problems need your attention ┐                            ┌ On this page ───────┐
- ┌ Basics ────────────────────────┐  (form column ≤ 720 px)    │ Basics          ✓   │ ← rail 300 px,
- │ fields …                       │                            │ Dates & cost   2 ▸  │   sticky, ≥ 1280
- └────────────────────────────────┘                            │ Shell attributes 6 ▸│
- ┌ Dates & cost ──────────────────┐                            │ 9 of 15 needed      │
- …                                                             └─────────────────────┘
- ────────────────────────────────────────────────── [Cancel] [Save and add another] [Save]  ← sticky footer
+            Plans › FY2026 Lubricants Europe › Edit
+            Edit plan
+            ┌ Basics ✓  Budget ✓  Shell attributes 3 needed  Goals │ 8 of 11 needed fields filled ┐ ← sticky
+            └━━━━━━━━──────────────────────────────────────────────────────────────────────────────┘   section bar
+            * Required
+            ┌ Basics ──────────────────────────────────────────────────────────────────────────────┐
+            │ Plan name                                                                            │
+            │ Year                                      Plan type                                  │ ← a deliberate pair
+            └──────────────────────────────────────────────────────────────────────────────────────┘
+            ─────────────────────────────────────────────── [Cancel] [Save and add another] [Save]  ← sticky footer
+            |←──────────────────────────── column ≤ 960 px, centred ─────────────────────────────→|
 ```
 
-- One `FormSection` card per section, 20 px apart, in the order of §7.
-- The right rail (≥ 1280 px) lists the sections as links with how many needed fields each still lacks, and
-  the overall count ("9 of 15 needed fields filled"); the line item form shows its summary strip there
-  (planned cost · unassigned now · after saving). Below 1280 px the overall count shows as one line under
-  the header.
-- `FormFooter` is sticky at the bottom of the window across the full content column; buttons are
-  right-aligned on the same right edge as the page actions.
+- `FormPage`: one column of at most `--form-page` 960 px, centred in the content column. The page header,
+  the section bar, the cards and the sticky `FormFooter` all share it, so the title, the cards' left edge
+  and Save line up; nothing sits beside the column.
+- The **section bar** ("On this page", `SectionBar`) sits at the top of the column and sticks under the top
+  bar while the form scrolls: a white bar of section links, each with how many needed fields it still lacks
+  ("2 needed", in the problem text colour) or a green check when all are filled, and on its right, after a
+  divider, the overall count ("9 of 15 needed fields filled", shown only here). A link scrolls to its
+  section and puts the focus on its first field. The section being read is bold with a 3 px yellow bar
+  under it ("you are here"). Links that do not fit scroll sideways and fade out under the count, which
+  stays in view; the bar never wraps. Whatever must stay in view with it goes right under it inside the
+  sticky area (the line item's summary strip: planned cost · unassigned now · after saving). Focused
+  fields and jumped-to sections land below the bar, never under it.
+- One `FormSection` card per section, 20 px apart, in the order of §7; fields one per row.
+- **Deliberate field pairs** (`FieldRow`): only related short fields sit side by side, and only where the
+  column is at least 640 px wide (a container query, so they stack on narrow screens). Plan: Year + Plan type,
+  Teams + Owner, Plan currency + Plan budget, Default finance budget + Default line-item spread, Goal stage +
+  Goal amount. Names, models, descriptions, radio groups and check boxes stay full width. Paired labels align
+  at the top, and when only one of the pair has a "Default: …" hint the other keeps the hint's line, so the
+  two controls line up. Never pair fields just to fill the width.
+- `FormFooter` is sticky at the bottom of the window across the column; buttons are right-aligned on the
+  column's right edge.
 
 **D. Settings section** (Settings hub and its sections)
 
@@ -252,6 +269,42 @@ for each line item or its reason); *Budget* beside *Purchase requests*. Every un
 panel "What makes up …" with the activities and their total. Scope, dimension, period and sort are in the
 address, so Back keeps them. The BCPIR tag (outlined, like the plan type) also marks BCPIR plans on the Plans
 list, the plan header and All work's plan rows.
+
+### 2.8 Report pages (the Measure module, features 039–050)
+
+`/reports` lists the reports the person may open in three groups (Performance, Budget and spend, Process and
+governance), as tiles: a 96 px illustration in the group's chart colour, the report's name, the question it
+answers in bold and the audience; the whole tile is one link and the ⓘ holds the longer purpose. `/reports/<report>`
+is one report, in the **report frame** (039):
+
+- **Header**: breadcrumb Reports › report, the title, the meta line "2026 · Figures as of … · In view: 2 plans ·
+  …", and on the right **Copy link**, **Saved views** and **Export** (all secondary, 32 px; Export downloads at once
+  when the report has one format and opens a menu when it has several). No primary button — a report acts on
+  nothing.
+- **Toolbar**, the list `FilterBar` (§5.2, D-421) on the grey page: **Year**, **Filters (n)**, the report's own choices
+  (Activity category, Funnel stage); no Currency — reports follow the top bar's display currency (D-413). **Filters** folds out All work's filter buttons (§5.2) —
+  Plans, Plan type, Team, Owner, Activity type, Activity status and **More filters** for the Shell attributes by
+  level; each change applies at once, and the filters in use show as removable chips with **Clear filters**.
+  Changing the year says first, at the top of the Year menu, that it clears the chosen plans.
+- **Widgets** sit on a grid whose empty tracks collapse: the KPI **StatStrip** first, then charts, then tables.
+  A widget's header holds its title with the ⓘ, then on the right only the controls that change that widget —
+  **Months · Quarters** on time charts, **Plan · Campaign · Initiative · Activity** on the ranked list — the
+  icon-only **Chart · Table** switch and an icon-only download named "Export <widget>". Headers never wrap; a
+  long title ends in an ellipsis.
+- **Charts** use ECharts (ADR-0020) at a fixed 260 px height: compact y-axis labels, hairline gridlines, an axis
+  tooltip with exact values, a legend of the series that have data, and **Today** as a dashed `--ink-2` line that
+  keeps its period's label. Goals are outline bars behind the filled actual or projected bars.
+- **Ranked list**: the name column stays put while the table scrolls sideways (a fade at the right edge says
+  there is more); a parent's name drills in (chevron), the ↗ icon opens the record; an empty figure is "—" with
+  its reason as a tooltip, and a reason true of every row is said once above the table; performance is the % with
+  a status chip (Above plan · On plan · Below plan); the shared **Pager** below.
+- **Total row** (D-414): every report table whose figures add up — ranked lists, widget table views, the Purchase
+  requests grid, the GSAP link tables — ends with a `<tfoot>` row headed "Total" (a row header) in the §5.4 totals
+  style (`ui/Table`'s `total`: 700 weight, `--gray-bg`, no extra border, Text Strong on the grey).
+  Its figures come from the API over every page; it never moves with the sort and is absent when there are no rows.
+- Empty states say why — "No plans you may see for 2027", "Your filters exclude everything" with **Reset
+  filters**, "No purchase requests in 2026" with where to look instead. Financial figures the person may not see
+  show "—" and the count of plans the figure covers. Reports are read-only for everyone.
 
 ---
 
@@ -381,6 +434,13 @@ Rules:
   700 depending on the browser); Jost 600 and 700 only.
 - **Sentence case everywhere**; no upper-case labels, eyebrows or tags; `letter-spacing: normal`.
 - Headings and body share `--ink`; hierarchy comes from size, weight and family, not colour.
+- **Every heading below the page title is `SectionHeading`** (`ui/SectionHeading`, D-418), one look per rank:
+  `section` 20/28 Jost 600 (between cards), `panel` 18/24 Jost 600 (dialog, side-panel, form-section and
+  page-section titles), `card` 16/24 Jost 600 (card, report-widget and builder-panel titles; `Card` uses it),
+  `sub` 16/24 Arial 700 (a sub-section inside a card or panel), `label` 14/20 Arial 700 (a small group: a list,
+  a legend, a preview). The level (`h2`–`h4`) follows the outline, never the look; a feature never styles a
+  heading of its own. A sub-section inside a form card (`sub` or `label`) takes `divided`: a hairline under it, the
+  content's width; a card's own header has the full-width hairline instead. Weights are always the `--weight-*` tokens, never a number.
 - Numbers in tables, totals, money and summary values use `font-variant-numeric: tabular-nums`.
 - Text is never smaller than 12 px; long reading text (help, descriptions) is 14 px or more.
 
@@ -434,9 +494,11 @@ Sticky bars (top bar, table header, form footer) use a 1 px `--hairline` border,
 
 | Token | Value | Used for |
 |---|---|---|
-| `--control-sm` | 32 px | Controls inside tables and card headers, segmented filters, filter chips, the ⋯ of a table row |
-| `--control-md` | **40 px** | **Default** for buttons, inputs, selects, search, page-header actions, menu items, sidebar items, table rows |
+| `--control-sm` | 32 px | Every control of a list toolbar (search, segmented filters, selects, filter buttons, Filters (n), chips — D-421), controls inside tables and card headers, the ⋯ of a table row |
+| `--control-md` | **40 px** | **Default** for buttons, form inputs and selects, page-header actions, menu items, sidebar items, table rows |
 | `--control-lg` | 48 px | Sign-in, form inputs and form-footer buttons below 600 px, tabs |
+| `--icon-sm` | 16 px | Icons in `sm` controls, chips, rows and chevrons (D-418) |
+| `--icon-md` | 20 px | Icons in `md` controls, the sidebar and the top bar (D-418) |
 
 Icons are 16 px in `sm` controls and chips, 20 px in `md` controls, the sidebar and the top bar, and 48 px
 in empty and error states. Controls next to each other always use the same size. Every clickable target is
@@ -449,10 +511,11 @@ icon.
 |---|---|---|---|
 | `--content-max` | 1300 px | `--topbar` | 56 px |
 | `--form-max` | 720 px | `--sidebar` / `--sidebar-collapsed` | 240 / 64 px |
+| `--form-page` | 960 px | | |
 | `--gutter` / `--gutter-sm` | 24 / 16 px | `--grid-gap` | 20 px |
 
 Component sizes (written in the component's CSS until a second component needs them as a token): banner
-32 px; form rail 300 px; drawer 280 px; side panel 480 px (560 px wide variant); dialog 512 px (720 px wide
+32 px; drawer 280 px; side panel 480 px (560 px wide variant); dialog 512 px (720 px wide
 variant); menus 220–288 px; tooltip max 280 px; popover max 320 px; toast 360–480 px.
 
 Breakpoints (§2.2) are 600, 960 and 1280 px; CSS cannot read tokens inside media queries, so the lint rule
@@ -568,19 +631,21 @@ next to the written name, it has no contrast requirement.
 
 - **Right-aligned with tabular figures** in tables, totals and editable amount cells; the column header is
   right-aligned too, with the same padding, so values sit exactly under it (§11, rule 2).
-- **One money format per screen.** By default the symbol form of the person's display currency
-  ("$12,500.00"; compact "$1.25M" in summary cards with the full value on hover and focus). When one screen
-  shows amounts in more than one currency, every amount on that screen uses the code form ("12,500.00
-  USD"). This replaces mixed forms on one page (UI audit AC-04, functional review P-07); it refines
-  decision 007-P4 and needs the product owner's confirmation (implementation plan).
+- **Symbol form for every currency** (en-US symbols: $, €, £, CA$, CN¥…), always two decimals ("$12,500.00",
+  "€12,500.00", "£50,000.00"; compact "$1.25M", "€1.25M" in summary cards with the full value on hover and
+  focus); the code form is no longer used for amounts (D-413). Rates keep codes ("1 USD = 0.75 GBP").
 - Negative values in `--danger-text` with a minus sign ("−$500.00"); never only red.
 - **Nothing is "—"**: an empty amount, a missing value and "no activities yet" show "—", never 0 or
   "$0.00"; a short reason may follow in `--ink-2` ("— · Nothing planned yet").
 - Percentages without a space: "38%" (UK style); shares in the split editor "33.33%".
 - Whole numbers grouped: "1,250".
-- **An amount in another currency than the reader's** (feature 016) shows as an `AmountPair`: the amount in
-  its own currency in full, then a muted "≈ 6,645.57 USD" in the display currency with a `RateTip` ⓘ ("1 USD =
-  0.79 GBP · rate of 19 Oct 2026 · GSAP import"); one amount only when both currencies are the same.
+- **An amount in another currency than the reader's** (feature 016, D-418) shows as one `ConvertedAmount`
+  (`features/line-items`, exported for every feature): the amount in its own currency in full, then a muted
+  12 px "≈ $7,000.00" in the display currency, stacked or `inline`, both red with `problem`. The converted
+  amount is a `Tooltip` reachable by pointer, keyboard and touch that names the rate the API reports and its
+  date ("In USD at today's rate (1 USD = 0.75 GBP · rate of 12 Nov 2026 · GSAP import)"); screen readers hear
+  "about $7,000.00". One amount only, and no tooltip, when both currencies are the same. `Converted` is the
+  "≈" part alone, under a summary-card value or in a row.
 - **Grids add up in every display currency** (feature 038 FR-022): a row total is converted once and its
   months share it, the last month with an amount taking the rounding difference; column and grand totals are
   sums of the converted cells. A separately converted summary figure may differ by a cent (D-061).
@@ -588,16 +653,27 @@ next to the written name, it has no contrast requirement.
 ### 4.5 Dates and times
 
 - **One date format: the person's choice** (default `DD MMM YYYY`, "12 Mar 2026"), in text **and in date
-  inputs** (§5.5 `DateRangeField`). Ranges follow D-216 ("01 Mar – 31 May 2026"; "Ongoing from 01 Mar
+  fields** (§5.5 `DateField`, `DateRangeField`). Ranges follow D-216 ("01 Mar – 31 May 2026"; "Ongoing from 01 Mar
   2026").
 - Times are 24-hour: "14:05"; date and time: "12 Mar 2026, 14:05".
 - All dates go through `lib/format.ts` (`useFormatters()`); no component formats a date itself.
 
-### 4.6 Progress bars
+### 4.6 Progress bars and bar lists
 
-8 px high, radius pill, track `--chip`, fill `--info`; fill `--danger` above 100 % (the fill stops at the
-end, the real percentage is written and announced). The value is always written next to the bar
-("38% used").
+`ProgressBar`: 8 px high, radius 4, track `--ink` at 14 % over `--surface`, fill `--info`; fill `--danger`
+above 100 % (the fill stops at the end, the real percentage is written and announced). The value is always
+written next to the bar ("38% used"). `busy` (D-418): work with no known end, the fill travels along the
+track (still under reduced motion), no value announced; the words beside it say what is happening.
+
+`BarList` (`ui/BarList`, D-418) — the one horizontal bar list (report status mixes, sign-in bands, waiting
+bands, attribute values, how long approvals have waited): one row per item, 32 px high — the label (wraps,
+never truncated), the bar on `ProgressBar`'s track, then the figures in words, right-aligned and tabular
+("4 · 25 % · $12,000.00"); the bar alone never carries a value. Bars are measured against the largest item,
+or against `max` (100 for shares). Fills are chart tokens only (§4.7; `--chart-planned` by default,
+`--chart-budget` for "Not filled in", "Never" and other quiet values), never yellow or red. A row with an
+address is one link (the label's link covers the row, hover `--hover-on-card`, a 16 px chevron); the list is
+named ("People by last sign-in"). The stacked bars of the purchase-request commitment chart use the same
+track.
 
 ### 4.7 Charts (feature 036)
 
@@ -674,6 +750,48 @@ in version 2.
   1 px `--hairline` separator and **Delete** last in `--danger-text`; highlighted, it becomes a `--danger-bg` fill with white text.
 - Not modal; arrow keys move, Enter chooses, Escape closes and returns the focus to ⋯; the chosen action
   runs after the menu has closed. No tooltips inside a menu (research R14).
+- Built on `Menu` (below), like every dropdown menu.
+
+**`Menu`** (`ui/Menu`, D-416) — the one dropdown menu: Saved views, Export, the account menu, ⋯.
+
+- Radix DropdownMenu, never modal. `Menu.Content` portals onto the **floating surface** shared with
+  `Popover`: `--raised`, 1 px `--card-border`, radius 8, `--shadow-md`, padding 4, 220–340 wide, at most
+  480 px (or the window less 120 px) high, then it scrolls; in the dark theme Text Subtle inside it is Text
+  Strong (Raised is 3.9:1). Defined once in `ui/Popover/floating.module.css`.
+- `Menu.Item` as in **ActionsMenu** (40 high, radius 4, optional 16 px icon, `hint`, `tone="danger"`,
+  disabled with its reason); `onChoose` runs once the menu has closed and the focus is back on the trigger,
+  so a dialog it opens returns the focus there. `Menu.Choice` ticks the current one of several (a saved
+  view, `menuitemcheckbox`). `Menu.Separator` (1 px `--row-divider`), `Menu.Note` (12 px `--ink-2`: "No
+  saved views yet", a reason) and `Menu.Label` (who is signed in) complete it.
+- Features never style a menu surface or item; a needed variant is added to `Menu`.
+
+**`SavedViewsMenu`** (`ui/SavedViewsMenu`, D-418) — the **Saved views** menu of All work and of every report:
+the views first (the active one ticked, a `Tag` "Default" on the default view, "Modified" on the button while
+the address differs from the view), then a separator and the actions (Save view, Manage views…). Features
+pass their views and actions; they never build the menu.
+
+**`SaveViewDialog`** (`ui/SaveViewDialog`, D-423) — Save current view or filters: **Name** (required, at most 60
+characters, checked on Save) and a default check box whose words the page gives. A name the person already uses
+(any letter case) asks "Replace your view '<name>'?" first. Features pass `create` and `replace`, which call
+their API; the dialog shows the API's field problems at the name, and "View '<name>' saved" or "updated".
+
+**`ManageViewsPanel`** (`ui/ManageViewsPanel`, D-423) — the `SidePanel` "Your saved views": per view the name
+with a "Default" `Tag`, then the default action, **Rename** (a **Rename view** dialog with the same name rules,
+refusing another view's name) and **Delete**, each named with the view. The default action is **Set as
+default** / **Remove default**, or with `star` one **Default** toggle (`aria-pressed`, star icon) on reports.
+With `deleteQuestion` a delete asks first ("Delete view '<name>'?", red **Delete view**); without it the view
+goes at once and the panel closes. Either way the message offers **Undo**, which saves the view again with its
+default. A view deleted in another tab says so. Features pass `changes` (change, remove, restore).
+
+**`ExportMenu`** (`ui/ExportMenu`, D-416) — **Export** everywhere (All work, reports, report widgets,
+planning dashboards). Props: `formats` (Excel, CSV, PowerPoint, PDF, in the order given), `download`,
+`label`, `size` (`md`, reports `sm`), `iconOnly` (a widget's download icon, named by `label`).
+
+- One format downloads at once; several open a `Menu` of formats.
+- While the file is made the button reads "Preparing your file…" with a spinning icon and `aria-busy`; a
+  message then names the saved file ("Exported '…'") or gives the API's reason.
+- `refusal`: without the export permission the button stays visible but disabled, its reason as its
+  description and tooltip (014 FR-011). `emptyText`: with nothing to export, choosing a format says so.
 
 ### 5.2 Navigation and filtering
 
@@ -706,16 +824,36 @@ accepts at most one primary action (a second one is a development-time error).
 
 - Joined buttons 32 high, text 14, padding 0 12; one 1 px `--control-border` around the group, radius 8 on
   the outer corners, 1 px dividers between buttons; no pill shape.
-- Chosen: `--ink` fill, `--surface` text (10.37 light, 12.00 dark), bold; `aria-pressed="true"`. Others:
-  `--surface`, `--ink`; hover `--hover`.
-- Counts in brackets: "Active (5)". Order and default for record states: **Active · Inactive · All**,
-  default Active; for workflow states: **All · Draft · Published**, default All.
+- Chosen: a quiet ink tint (`--ink` at 14 % over `--surface`) and bold `--ink` text; `aria-pressed="true"`.
+  Its borders stay the group's (a strong border overlapped its neighbours and drew a bright seam in the dark
+  theme, D-421). Others: `--surface`, `--ink`; hover `--hover-on-card`. A chosen choice never outweighs the
+  title it sits under.
+- No counts in a list's status filter (the result count says how many, D-421); a `count` stays for a choice
+  that names something to act on ("Edited 3"). Order and default for record states: **Active · Inactive ·
+  All**, default Active; for workflow states: **All · Draft · Published**, default All.
 - Below 600 px the group scrolls sideways; it never wraps.
+- An option with an `icon` shows the 16 px icon alone in a 32 × 32 button named by its label, with the label
+  in a `Tooltip` (D-418).
+
+**`ViewSwitch`** (`ui/ViewSwitch`, D-418) — **Chart · Table** on every chart's card (report widgets, the
+planning dashboards' monthly chart): a `SegmentedFilter` of two icon options named "Chart" and "Table", the
+group named "Show <title> as", the chosen one `aria-pressed`. Custom-dashboard widgets keep **Show as table**
+in their ⋯ menu.
+
+**`Pager`** (one for every paged table, D-415) — "1–50 of 120" (or "No rows") on the left; **Rows per page** (`Select`)
+and icon-only **Previous page** / **Next page** on the right; the buttons are left out when everything fits on
+one page, and Rows per page where the page size is fixed. Placement: `below` a table (16 above) or `cardFooter`
+(padding 12 and the card's side padding, a hairline above); with neither it sits in its parent's gap. Every pager
+where people choose the page size offers one set, `PAGE_SIZES` in `ui/Pager`: 25 · 50 · 100 · 200, opening at
+50 (`DEFAULT_PAGE_SIZE`), lists and reports alike (D-432).
 
 **`SearchField`**
 
-- 40 high, radius 8 (never a pill), 1 px `--control-border`, `--surface`; 16 px magnifier at 12 from the
-  start; text 14 (16 below 600 px) from 36; width 280–360 in toolbars, full width below 600 px.
+- 40 high in forms and panels, **32 (`size="sm"`) in every list toolbar** (D-421); radius 8 (never a pill),
+  1 px `--control-border`, `--surface`; 16 px magnifier at 12 from the start; text 14 (16 below 960 px) from
+  36; width 280–360 in toolbars.
+- `delay` (ms): a list that asks the server reports the text after a pause (Plans 250, others 300), or at once
+  when the box loses the focus, and shows a search set elsewhere (Clear filters, Back) over what was typed.
 - The placeholder says what it searches ("Search name or ID"), `--muted`; the accessible name is a
   hidden label ("Search plans").
 - **Clear search**: 16 px ✕ in a 24 × 24 target at the end, once something is typed; focus returns to the
@@ -726,13 +864,77 @@ accepts at most one primary action (a second one is a development-time error).
 
 - A chip per filter in use: 32 high, padding 0 8 0 12, `--chip` fill, `--ink` 12/18 bold, radius 4,
   16 px ✕ in a 24 × 24 target; the whole chip is the button "Remove filter: Status: Draft".
-- **Clear filters**: ghost `sm` button after the chips. Nothing shows while no filter is in use.
+- **Clear filters**: ghost `sm` button after the chips, the one wording on every list (no "Clear all", no
+  "Reset filters", D-421); it clears what the chips show and keeps the quick control. Nothing shows while no
+  filter is in use.
+
+**`FilterMenuButton`** (`ui/FilterMenuButton`, D-416) — the button of one filter in a filter bar: 32 high,
+padding 0 8 0 12, radius 8 (like `Select` and `SegmentedFilter`), 1 px `--control-border`, `--surface`, 14 px
+`--ink`, a 16 px chevron that turns while open. While the filter is in use: a `--control-border-hover`
+edge and its summary after a middle dot in bold — how many values are chosen ("Owner · 2") or the one
+chosen ("Years · 2026"); the summary is part of the button's name. Hover `--hover`.
+
+**`FilterMenu`** (`ui/FilterMenu`, D-416) — one filter of a filter bar: a `FilterMenuButton` opening a
+`Popover` (300 wide) of check boxes, or radio buttons for one value; a change applies at once. Inactive
+values say "(inactive)"; a chosen value no longer offered stays listed so it can be removed; above 10
+choices a search box; group headings; an optional first choice that ticks several (Team's "My teams").
+Used in every `FilterBar`'s menus (D-421). A filter bar holds **only** `SearchField`, `SegmentedFilter`, `Select` (one value from a
+short list: Year, Plan, Person, Sort), `FilterMenu` or `FilterMenuButton` + `Popover` (several values, or
+a few fields: Years, More filters), `DateField compact` and the result count — never a native `<select>`.
+
+**`FiltersButton`** (`ui/FilterMenuButton`, D-417) — the **Filters (n)** button that folds the filter menus out
+or away: a secondary `sm` (32) `Button` with a sliders icon, "Filters" or "Filters (2)", `aria-expanded` and
+`aria-controls` naming the row; below 600 px a square icon button with the number in use on an ink badge, the
+words staying its name.
+
+**`YearRangeMenu`** (`ui/YearRangeMenu`, moved from All work, D-421) — the **Years** filter: a
+`FilterMenuButton` ("Years · 2026–2027") opening From and To `Select`s; choosing a From moves To along; an
+optional first From choice clears the range ("All years", Plans) and an optional most-years limit with its note
+(All work, 5).
+
+**`DateRangeMenu`** (`ui/DateRangeMenu`, D-421) — a date-range filter ("Submitted", "Created", "Dates"): a
+`FilterMenuButton` ("Created · 01 Oct 2026 – 12 Oct 2026") opening From and To `DateField compact`, each applied
+at once and linked: From's calendar takes no day after To, To's none before From (D-424); a range error shows
+under To and leaves the button without a summary.
+
+**`FilterBar`** (`ui/FilterBar`, D-421) — **the one list toolbar**, composed by every list (Plans, Approvals, All
+work, the reports, Purchase requests, the activity log, Financials, the recycle bin, the performance lists and,
+through `ListToolbar`, Settings, People and Teams). Left to right: `search` (`SearchField size="sm"`) · `quick`
+— the page's one always-shown control, if it has one (a status `SegmentedFilter`, the reports' Year, Purchase
+requests' view; Financials' Year and Plan) · **Filters (n)** · then `end`, pushed to the right: the
+`ResultCount` and the page's view switches (Plans' Cards · Table, Purchase requests' Sort). Every other filter
+is in `menus`, the row Filters (n) folds out (`role="group"` named "Filters"): one `FilterMenu` per filter
+(check boxes for several values; radio buttons for one, with an "Any …" first choice), `YearRangeMenu`,
+`DateRangeMenu`, and **More filters** (`ui/AttributeFilterMenu`, D-424: every Shell attribute by level, its values
+and Not filled in as check boxes, searchable) for the Shell attributes; each change applies at once, no Apply button. The
+row folds out by itself when the page opens with a filter in use, or when one comes into use from elsewhere (a
+summary card's link); (n) counts the filters behind the button, not the search or the quick control. A list
+with no filter behind the button has no Filters (n). Below the row: the `FilterChips` with Clear filters, and
+an optional note ("You can still open every plan."). Every control is 32 px. Below 600 px the row wraps and
+Filters (n) is the icon with its badge. **State:** every filter, the search and the quick control live in the
+page address and are written in place (`replace`), so Back leaves the list instead of undoing the filters one
+by one, and a reload or a link keeps them (constitution IX, D-421). Pages read and write the address only through
+`ui/useAddressParams` (lint-enforced): each change applies to the latest address, so two quick changes both
+survive (D-424).
+
+**`Popover`** (`ui/Popover`, D-416) — every panel that floats from a button and is not a menu: filter
+menus (each `FilterMenu`, `YearRangeMenu`, `DateRangeMenu`), a date field's calendar, a busy day's activities, the completeness problems, the
+notifications, a `Combobox`'s list. Radix Popover; `Popover.Content` on the floating surface (see `Menu`) with
+`width` `auto` (220–340), `sm` 260, `md` 300, `lg` 360 or `anchor` (its control's width, at least 240) and `padding` `none`, `sm` 4, `md` 8 or `lg` 16 (fields). The
+focus moves into it, Escape or a click outside closes it and the focus returns to its button. Features
+style only what is inside it.
+
+**`ResultCount`** (`ui/ResultCount`, D-416) — the result count at the end of a list toolbar: 14 px
+`--ink-2` (Text Strong on the grey page), tabular figures, pushed to the end of the row, a row of its own
+below 600 px, read out politely when it changes. Its words come from `countText(shown, total, noun)`:
+"4 of 6 plans", "1 of 1 team", also when nothing is filtered out; a list that counts without "of" (Global
+budgets, Purchase requests) keeps its own words in the same element.
 
 **List toolbar** (layout rule, new)
 
-One 40 px row inside the table card: `SearchField` · `SegmentedFilter` · **Filters (n)** (secondary) ·
-spacer · result count "4 of 6 plans" (14 `--ink-2`) · view switch · **Export** (secondary). Filter chips
-on a second row. Every list writes its count the same way: "*n* of *m* <things>". A toolbar that sits on
+One 32 px row, the `FilterBar` above: `SearchField` · `SegmentedFilter` · **Filters (n)** (secondary) · spacer ·
+result count "4 of 6 plans" (14 `--ink-2`) · view switch · **Export** (secondary). The filter menus fold out on
+the second row; filter chips below them. Every list writes its count the same way: "*n* of *m* <things>". A toolbar that sits on
 the grey page instead (All work, Financials) writes its count, notes and links in Text Strong (§3.1).
 
 ### 5.3 Containers, panels and dialogs
@@ -741,7 +943,7 @@ the grey page instead (All work, Financials) writes its count, notes and links i
 
 - `--surface`, 1 px `--card-border`, radius 8, padding 24 (16 below 600 px), no shadow.
 - Header: at least 40 high, items **centred vertically** (title and header buttons on one centre line);
-  title `<h2>` Jost 600 16/24; optional subtitle 14 `--ink-2` under it; actions at the end (secondary or
+  title `<h2>` Jost 600 16/24 (`SectionHeading rank="card"`); optional subtitle 14 `--ink-2` under it; actions at the end (secondary or
   ghost `sm`/`md`). No divider line under the header; 16 px to the body.
 - Cards in one row of the grid stretch to the same height. In a row, either every card has a subtitle or
   none does.
@@ -749,7 +951,7 @@ the grey page instead (All work, Financials) writes its count, notes and links i
   first and last cells keep 24 px); **link card** (the whole card is one link; hover `--shadow-lift`, no
   movement; a 16 px chevron at the top end).
 
-**`SummaryCard` and `LinkSummaryCard`**
+**`SummaryCard`**
 
 - `--surface`, 1 px `--card-border`, radius 8, padding 20, min height 104, no shadow.
 - Three rows: label (14/20 `--ink-2`, ⓘ right after the label), value (Jost 700 28/36, tabular, `--ink`),
@@ -758,11 +960,19 @@ the grey page instead (All work, Financials) writes its count, notes and links i
   label wraps (UI audit H-03, AW-02); labels are written to fit one line at the 4-up width.
 - The value is coloured only when the colour means something: `--danger-text` for over-budget or negative,
   `--warning-text` for "waiting". Shortened values ("$1.25M") show the full value on hover and focus.
-- `LinkSummaryCard`: the whole card is one link named "<label>: <value> — <where it goes>"; hover
-  `--shadow-lift`; a 16 px chevron at the top end. **No tinted icon tiles** (version 1 style; hard to see
-  in dark mode, UI audit D-01).
+- With `to` and `linkLabel` (D-418; `LinkSummaryCard` retired) the whole card is one link named "<label>:
+  <value> — <where it goes>"; hover `--hover-on-card`; a 16 px chevron at the top end; the ⓘ and a shortened
+  value's button stay above the link. **No tinted icon tiles** (UI audit D-01). `tip` may be a field's own
+  help tip instead of text.
 - Rows: 4 per row at ≥ 960 px; pages with 5 or 6 values use 3 per row; 2 per row below 960 px; an odd
   last card spans the full row below 600 px.
+
+**`StatStrip`** — a row of `SummaryCard`s joined into one card split by hairlines: up to five in a row, six to
+ten in two even rows, two per row when its container is under 760 px (an odd last card spans the row). Values are
+compact ("$650K") with the full amount on hover and focus. **Every row of figures is one `StatStrip` of
+`SummaryCard`s** (D-418): every report, All work, Plans, the plan page, Home (whose four cards are one strip of
+links), the Executive and Regional dashboards, the line-item form's activity summary and the line item's
+Financials figures.
 
 **`SidePanel`** (one panel layout)
 
@@ -782,6 +992,12 @@ the grey page instead (All work, Financials) writes its count, notes and links i
 - Focus moves into the panel and stays there; Escape, Close and a click on the overlay close it (asking
   first when there are unsaved changes); the focus returns to what opened it.
 
+**`Drawer`** (`ui/Drawer`, D-423) — a modal panel that slides in from the left (280 wide, at most 85% of the
+window; `--overlay` behind it; `--shadow-lg`), named by a visually hidden title, with a 40 px close icon button
+in its top right corner (named by `closeLabel`, no tooltip, R14). Focus moves in and stays inside; Escape, the
+close button and a click on the overlay close it; the focus returns to what opened it. The navigation drawer
+uses it.
+
 **`FormPanel`** — a `SidePanel` with a form: footer **Cancel · Save and add another** (when creating
 children) **· Save** (primary); the failure message and `FormErrorSummary` at the top of the body; "Discard
 changes?" before typed values are lost. Save is never disabled.
@@ -798,12 +1014,18 @@ changes?" before typed values are lost. Save is never disabled.
   and save" (primary).
 - `ConfirmDialog acknowledgeOnly` (feature 038 FR-044): a dialog that only informs ("Can't delete 'Q4'") has
   one **Close** button (secondary, focused) and no confirm button; it never asks a question it cannot act on.
-- `FormDialog`: the first field has the focus; Enter submits; a second submit while busy is ignored.
+- `FormDialog`: the first field (an input, a `Select` or a text area) has the focus; Enter submits; a second
+  submit while busy is ignored. Without `submitLabel` it only shows (a picker that acts on a click): one
+  Close button.
+- `size="lg"` (both): 640 wide, for a preview or a list (Close purchase request, Submit changes, Import
+  options, Add line items). No feature draws its own dialog frame (D-417).
 - `role="alertdialog"` for questions, `dialog` for forms; the focus returns where it was.
 
 ### 5.4 Data display
 
-**Data table standard** (new: one shared table style, `components/DataTable/`)
+**Data table standard** (D-415: one shared table style, `ui/Table/Table.module.css`; a feature table takes its
+`table`, `scroll`, `numeric`, `nameCell`, `actions`, `sticky`, `total` and `empty` classes and keeps only rules for
+its own columns — it never restyles the header band, rows, numbers, totals or empty row)
 
 | Part | Spec |
 |---|---|
@@ -816,7 +1038,10 @@ changes?" before typed values are lost. Save is never disabled.
 | Number, money, percent | **Right-aligned header and values, tabular figures, no wrapping**, one money format (§4.4) |
 | Dates | Left-aligned, no wrapping, the person's format |
 | Actions | Last column, 48 wide, the row's ⋯ (`sm`); its header is a visually hidden "Actions" |
-| Totals row | 700 weight, `--gray-bg`, 2 px `--ink` top border; numbers aligned as above |
+| Totals row | The last row, in `<tfoot>`: a `--gray-bg` band (a sticky cell keeps the grey), 700 weight, no border above or below; on the grey, secondary text and links are Text Strong; numbers aligned as above. Its first cell is a row header (`<th scope="row">`) reading **Total**, optionally with a count on a second line, 12 regular (`TotalLabel`: "Total" / "12 activities") |
+| Sortable header | **`SortHeader`**: the heading is a button with the label and a 12 px arrow (↕ in `--ink-2` while unsorted, ↑ or ↓ in `--ink` when sorted); hover `--hover` with an underline; `aria-sort` ascending, descending or none |
+| Expandable rows | **`DisclosureButton`** before the name: 24 × 24 target, 16 px chevron (right closed, down open) in `--ink-2`, hover `--hover`; `aria-expanded`, and a name saying what it opens ("Expand Spring campaign", "Show the line items of Launch film"); rows without children keep the space (`DisclosureSpace`) |
+| Empty | One row across all columns, padding 24 12, 14 `--ink-2`, centred (`empty`); a whole widget or card with nothing to show uses `EmptyState compact` instead |
 | Never | Repeat the column's label inside the cell ("Owner: Alex Morgan", UI audit P-02); upper-case headers |
 | Below 600 px | Scrolls inside its card; inbox-type lists (Approvals, Home lists) switch to stacked cards: name link, status, key facts as a 2-column `DescriptionList`, ⋯ |
 
@@ -843,7 +1068,20 @@ to each field; "n items below need attention" is a second chip only where no sta
 rows it folds into the first chip's popover (at most two chips per row).
 
 **`LevelTag`** — 20 high, padding 0 6, radius 4, 12/18 Arial 700 `--ink` on `--surface`, 1 px border in the
-level colour; **sentence case** ("Campaign", "Line item"), never smaller than 12 px (UI audit AX-01).
+level colour; **sentence case** ("Campaign", "Line item"), never smaller than 12 px (UI audit AX-01). A record
+type with no level of its own (a currency, a global budget in the recycle bin) is `LevelTag other` in the
+same shape with the neutral status colour (D-418).
+
+**`Tag`** (`ui/Tag`, D-418) — a fact about a record, not a status: plan type, BCPIR, "Default", "This
+activity", an approval level's "L1", the activity types of a model. 20 high, padding 0 8, radius 4, 1 px
+`--hairline` border on `--surface`, 12/18 Arial 700 `--ink`, sentence case, never wraps; never counts as one
+of a row's two status chips.
+
+**`RelativeTime`** (`ui/RelativeTime`, D-418) — when something happened: "3 days ago" (or the clock time
+"14:05" in a list grouped by day) in 12/18 `--ink-2`, tabular, with the full date and time in a `Tooltip`.
+A `TooltipText`, so keyboard and touch users reach the full time; its name is "3 days ago, 12 Mar 2026,
+14:05" (the clock time's name is the full date and time). Used by Home's recent changes, the activity log
+and the recycle bin.
 
 **`CountBadge`** — min 20 × 20, padding 0 6, radius pill, the waiting family: `--status-review` at 16 %
 with `--status-review-text`, 12/18 bold (5.11 light, 5.84 dark) — something waits for you; "99+" above 99;
@@ -873,7 +1111,7 @@ out; the notes of the form.
 | Part | Spec |
 |---|---|
 | Label | Above the control, 14/20 Arial 700 `--ink`. A field required to save: then 2 px and a `*` in `--danger` (Secondary Red), Arial 700 19/20, `aria-hidden`, the control `aria-required` (D-364). A field needed to publish or submit: then 8 px and the **marking** as a small tag ("Needed to publish", "Needed to submit": 20 high, padding 0 6, radius 4, `--chip`, 12/18 bold `--ink`). Then an optional ⓘ |
-| Hint | **Always under the label, above the control** (one rule, UI audit F-02), 14/20 `--ink-2` |
+| Hint | **Always under the label, above the control** (one rule, UI audit F-02), 14/20 `--ink-2`; only for what people need while filling the field in (format, limit, example), a consequence, a lock's reason or text that changes with the data. What the field is for goes in the ⓘ tip beside the label (D-434). |
 | Control | 40 high (48 below 600 px), padding 0 12, radius 8, 1 px `--control-border`, `--surface`, text 14 `--ink` (16 below 600 px), placeholder `--muted` |
 | States | Hover: border `--control-border-hover`. Focus: the focus ring. Invalid: 1 px `--danger` border plus the message. Locked: the Disabled tokens (`--disabled-bg`, `--disabled-text`, `--disabled-border`) and a `LockedNote`. Read-only values are shown as text, not as inputs. |
 | Note and error | Under the control, 4 px gap, 14/20: note `--ink-2`; error `--danger-text` with a 16 px alert icon. Screen readers hear marking, hint, note and error with the control (`aria-describedby`). |
@@ -888,11 +1126,15 @@ left"; past the limit "3 characters too many"; typing is never cut off).
 figures**; the unit ("USD", "%") inside the end in 14 `--ink-2`; written out on leaving the field
 ("12,500.00"; "Rounded to 1,234.57" as a note); accepts "12500", "12,500.00" and "12.5k".
 
+**`NumberField`** (`ui/NumberField`, D-423) — a whole number between `min` and `max` (a grid size, a row
+count; never money): the field frame above with a native number control, right-aligned tabular figures; the
+up and down arrow keys step by `step` (1) and stop at the bounds; an empty field is no value.
+
 **Choices: one select style** (`ChoiceField`, `Combobox`; UI audit X-15)
 
 | Situation | Control |
 |---|---|
-| One of up to 10 options | A native `<select>` drawn exactly like an input (same height, border, radius, padding), `appearance: none`, a 16 px chevron at the end. Used by forms, the Plans year filter and the Home currency picker alike. |
+| One of up to 10 options | **`Select`** (Radix) everywhere — one control, one menu on `--raised` with the chosen option ticked; arrow keys, Space and type-ahead work, Escape closes the menu without choosing (D-416, D-417). In toolbars, filter bars and pagers: the label beside it, 32 px. In forms and the dashboard builder's inspector: `ChoiceField` frames it like an input (label above, 40 px, the column's width, the hidden native select sends its value with the form), starting "Choose…" (`placeholder` changes the words; `null` leaves the empty choice out for a setting that always has a value); options with a `group` are listed under their headings (bold 12 `--ink-2`, a hairline between groups) and stay a select at any length; **Enter on the closed control saves the form**, as from a text field. No feature draws its own select or chevron, and no native `<select>` is shown. |
 | One of more than 10 options | `Combobox` (searchable) |
 | Several of up to 6 options | Checkboxes in columns (auto-fill, min 200 wide) — not a long vertical list (UI audit AF-01) |
 | Several of more than 6 options | `Combobox` with `multiple`; chosen values as removable chips under the input |
@@ -905,18 +1147,69 @@ options ticked (16 px) and `aria-selected`; "No one matches 'xyz'." when empty; 
 Inactive values that are kept carry an ⓘ explaining why.
 
 **`CheckboxField`** — a 20 × 20 box, radius 4, 1.5 px `--control-border`; checked: `--blue` (Link) fill with a
-tick the browser keeps legible (`accent-color: var(--blue)`); the label (14 `--ink`, regular) is part of the click target; the
+tick the browser keeps legible (`accent-color: var(--blue)`, set once in `global.css` for every check box and radio
+button, D-417); the bare box is `Checkbox` (same file; `indeterminate` for "Select all rows on this page"),
+for a list row or a table's select column, named by its label or `aria-label`; the label (14 `--ink`, regular) is part of the click target; the
 row is at least 24 high; ⓘ, hint, `LockedNote` and error as in `FieldShell`. A group of checkboxes is a
 `fieldset` whose legend uses the label style. Switches (All work) are 40 × 24, radius pill, `--control-border`
 when off and `--blue` when on, with the label on the right.
 
-**`DateRangeField`** — two date inputs (start, end) side by side, each `sm` 240 wide, as text inputs that
-**show and accept the person's date format** ("01 Mar 2026"; typing "1/3/26" or "2026-03-01" also works and is
-rewritten on leaving the field), each with a 32 px **Choose date** button that opens a calendar popover
-(month grid, ← → ↑ ↓ move by day, Page Up/Down by month, Enter picks, Escape closes). The allowed range
-limits the choice and is written under both inputs ("Must be inside the campaign's dates (01 Feb – 30 Nov
+**`RadioGroup`** (`ui/RadioGroup`, D-417) — a few choices shown at once: a `fieldset` whose legend has the label
+style (or is hidden, `labelHidden`), the `FieldShell` ⓘ, hint, note, `LockedNote` and error; each option a 20 px
+radio (`--blue` when chosen) and its label 14 `--ink` in a row at least 24 high, with an optional second line
+(`hint`, 12 `--ink-2`, may hold chips) and its own `LockedNote` when it can't be chosen (`disabledReason`).
+`layout`: `column` (default), `row` (side by side, wrapping: Warn · Refuse, the spread methods) or `list`
+(bordered rows split by hairlines: the move and copy destinations); options with a `group` sit under small
+headings (12 bold `--ink-2`). Arrow keys move the choice; the group's id is its `name`, so the error summary can
+focus it. Every radio button of the app is one.
+
+**`DateField`** (`ui/DateField`, D-417, D-424) — one calendar date, never the browser's date input: in forms, the
+`FieldShell` frame (label, marking, hint, note, error; `min`/`max`); in filter bars (`compact`, 168 wide), the label
+beside a 32 px control like `Select`, its problem under it, announced. The text input **shows the person's date
+format** ("12 Nov 2026") and **accepts typing** in that format, "12 Nov 2026", dd/mm/yyyy or yyyy-mm-dd: a date
+counts as soon as it reads as one and is rewritten in the person's format when the field is left; text that is
+not a date shows "Enter a date like 12 Mar 2026." as the field's problem and leaves the field empty. The value
+stays a calendar date ("YYYY-MM-DD"); a hidden input carries it under the field's `name`. Inside the input on the
+right, a `tertiary` icon button **Choose date** (named "Choose start date", "Choose to date") opens the
+**date picker** in a `Popover` (`md`). Used by the rate dialog, the bulk Change field value, purchase-request
+lines and every `DateRangeMenu`; `DateRangeField` uses the same control.
+
+**Date picker** (`ui/DatePicker`, D-424) — our own calendar, following the WAI-ARIA date picker dialog: a header
+with **Previous month** and **Next month** (`tertiary` icon buttons) and Month and Year `Select`s to jump; the
+month and year announced (`aria-live`) and naming the grid; a `role="grid"` of the month, **weeks from Monday**,
+weekday headers (Mo … Su, full names as `abbr`), days 32 × 32 (above the 24 px target), each named in full
+("Thursday 12 November 2026"); **today** outlined in `--ink` and `aria-current="date"`; the **chosen day** filled
+Primary Yellow with `--on-brand-yellow` text (yellow as "you are here", never yellow text); days outside
+`min`/`max` in `--disabled-text`, `aria-disabled` and named "…, not available", with the reason under the grid
+("Choose a date from 01 Mar 2026 to 31 May 2026.", the grid's description); a footer with **Clear** and
+**Today** (disabled when today is outside the range, the reason above it). It opens on the chosen day, else
+today kept inside the range, with the focus on that day. Light and dark from the tokens.
+
+| Key (in the grid) | Does |
+|---|---|
+| ← / → | Previous / next day |
+| ↑ / ↓ | Same day of the previous / next week |
+| Home / End | First (Monday) / last (Sunday) day of the week |
+| Page Up / Page Down | Same day of the previous / next month (the last day of a shorter month) |
+| Shift + Page Up / Page Down | Same day of the previous / next year |
+| Enter / Space | Choose the day, close, focus back on the Choose date button |
+| Escape | Close without choosing, focus back on the Choose date button |
+| Tab | Moves between the header, the grid and the footer |
+
+All work's Month calendar (`features/all-work/MonthCalendar`) lays out its weeks with the same calendar core
+(`ui/DatePicker/calendar.ts`: month days, Monday-first week rows, month and weekday names).
+
+**`InlineError`** (`ui/InlineError`, D-417) — one problem in one line: a 16 px alert icon and 14/20 `--danger-text`.
+`FieldShell`, `CheckboxField`, `DateRangeField`, `RadioGroup` and `TextField` show a field's problem with it
+(`quiet`: heard with the field through `aria-describedby`); on its own (a dialog's failed action, a gone record)
+it is `role="alert"`. A failure with several lines or a next step is a danger `InlineAlert` instead.
+
+**`DateRangeField`** — two dates (start, end) side by side, each the `DateField` control (typed in the person's
+format or chosen on the date picker, D-424), each with its own problem under it. The allowed range
+limits the choice (start no later than end, both inside the parent's dates) and is written under both inputs ("Must be inside the campaign's dates (01 Feb – 30 Nov
 2026)"); a non-blocking warning shows in `--warning-text` with a warning icon. This replaces the browser's
-date input, which shows "12/31/2026" in US-English browsers (UI audit X-15, C-04; functional review P-03).
+date input, which shows "12/31/2026" in US-English browsers and its own calendar (UI audit X-15, C-04; functional
+review P-03; D-424).
 
 **`SplitEditor`** — the chosen values in a small table: value · share (a `DecimalField`, `xs`, right-aligned,
 "%" unit); under it the running total in 14 bold: "100.00% — complete" (`--success-text`), "90.00% — 10.00%
@@ -933,7 +1226,10 @@ a block.
 **`ShellAttributeFields`** — the attribute sections in the order of the form definition, each field by the
 choice rules above; dependent fields stay visible but locked with a reason until their parent is set; the
 Settings preview highlights one attribute with `--hover`, its secondary text in Text Strong (was a
-blue tint); never a heading equal to its parent's (X-09).
+blue tint); never a heading equal to its parent's (X-09). Fields fill one grid, three columns from 900 px wide and two
+from 600 px, so every row lines up; check boxes and drop-downs take one column, the boxes listed down it; a long text
+or split takes the row and waits until the row before it is full, in the page order too, so Tab follows the screen
+(D-433).
 
 **`FormSection`** — one white card per section on form pages: title `<h2>` Jost 600 18/24, optional
 description 14 `--ink-2`, fields 20 apart. Inside a side panel, sections are separated by 32 px and an
@@ -947,6 +1243,8 @@ stack full width in the same order.
 **`FormErrorSummary`** — an `InlineAlert` of the danger family at the top of the form: title `<h2>` 16/24
 Arial 700 "2 problems need your attention", then each problem as an underlined `--link` link to its field;
 it takes the focus when it appears, so it is read out (FR-020).
+`onGo` takes the person to a problem the page shows itself (a dashboard widget), and `describe` words a
+problem with its place ("<widget>: <problem>").
 
 **`LockedNote`** — a 16 px lock icon and one sentence, 14/20 `--ink-2`, 4 px under the locked control.
 
@@ -965,10 +1263,12 @@ always above a sticky form or panel footer, never covering it** (functional revi
 most 3 at once, newest at the bottom. 4 s, or 10 s with an action (FR-026); paused while hovered or
 focused; F8 moves the focus to it; announced at once.
 
-**`InlineAlert`** (new) — a message inside the page: padding 12 16, radius 8, the feedback colour at 8 %
+**`InlineAlert`** (`ui/InlineAlert`, D-417) — a message inside the page: padding 12 16, radius 8, the feedback colour at 8 %
 (12 % in dark mode), a 4 px start bar and a 20 px icon in the feedback colour, optional title 14 bold, text
-14 `--ink`, optional action link. Families: info, warning (waiting), success, danger. `role="status"`, or
-`role="alert"` for failures. Used for: waiting and declined notices on record pages (with the decline
+14 `--ink`, optional action link. Families: info, warning (waiting), success, danger; `icon` replaces the
+family's icon where the words need another (a clock for a purchase request waiting for approval). Red is never
+tinted: a danger alert is `--surface` with a hairline frame and its red bar. `role="status"`, or
+`role="alert"` for failures (`FailureMessage` of `FormPanel` is one: the message bold, the next step under it). Used for: waiting and declined notices on record pages (with the decline
 reason), failed saves, "view only" notices, "Shown because the plan's business unit includes Lubricants".
 
 **Approve warning** (feature 038, D-360) — when an activity's line items exceed its planned cost, the approval
@@ -977,7 +1277,7 @@ line per activity: "Line items of activity 'Launch film' are 25,000.00 USD above
 approver). With Refuse approval, **Approve** stays visible but disabled, described by that reason; Decline and
 Recall stay enabled.
 
-**`EmptyState`** — centred in its card, padding 48 24; a 48 px outline icon in `--ink-2`; title Jost 600
+**`EmptyState`** — `compact` inside a card among others (Home): icon, words and action on one 32 px row. Otherwise centred in its card, padding 48 24; a 48 px outline icon in `--ink-2`; title Jost 600
 20/28; one sentence 14 `--ink-2` (max 480 wide; Text Strong in a not-found or no-access message, which
 sits on the grey page without a card, §3.1); the action. **The action is a secondary button when the
 page header already holds the same primary action** ("New plan"), and the primary only when the page has
@@ -1003,8 +1303,16 @@ nothing jumps when data arrives; a slow shimmer that stops with reduced motion; 
 
 **`Tooltip`** — `--tooltip-bg` / `--tooltip-text`, 12/18, padding 4 8, radius 4, max 280 wide,
 `--shadow-md`, an arrow; opens after 300 ms on hover and on keyboard focus, stays while hovered, Escape
-hides it. It only describes: the control has its own name. Never inside menus, never on the close button
-of a dialog, panel or drawer (R14).
+hides it. On a touch screen a tap on a control that only shows something (no action of its own, not a link)
+opens it and a tap elsewhere closes it (D-418). It only describes: the control has its own name. Never inside
+menus, never on the close button of a dialog, panel or drawer (R14). **No native `title` tooltips**: they
+reach neither the keyboard nor touch; the exceptions are a truncated text whose full text is in the page (the
+purchase-order path in the GSAP link report) and the decorative segments of a stacked bar, whose figures
+the Table view lists.
+
+**`TooltipText`** (`ui/Tooltip/TooltipText`, D-418) — text that looks plain but shows more in a `Tooltip`:
+a shortened summary value ("$1.25M" → "$1,250,000.00"), a time, a "—" with its reason. A button without a
+frame, so the keyboard and touch reach it; only its focus ring shows it is a control.
 
 **`DemoBanner`** — §2.1 (Text Strong, 32 high, one line, 12 px in `--banner-text`).
 
@@ -1020,7 +1328,7 @@ around it is named "SP&A One home".
 |---|---|
 | `TopBar` (new) | §2.1; replaces `MobileTopBar` at every width |
 | `Sidebar` | §2.1: white, 240 / 64, items 40, the yellow bar with the hover-grey fill, "More" group label, Collapse at the bottom. Account, bell and theme move to the top bar. |
-| `NavDrawer` | §2.1: below 600 px, 280 wide, from the left |
+| `NavDrawer` | §2.1: below 600 px, 280 wide, from the left; a `ui/Drawer` |
 | `AccountMenu` | Opened from the top bar's avatar button; a menu (§5.1 look) with name and role (not a link), My profile, Appearance (three choices, the current one ticked), a separator, Sign out |
 | `NotificationBell` | 40 px ghost icon button with `CountBadge`; opens a 360 wide popover (radius 8, `--shadow-md`) with the notices, **Mark all as read** (ghost) and links |
 | `ThemeToggle` | Becomes the Appearance choice inside `AccountMenu` |
@@ -1034,16 +1342,16 @@ Every user-managed record follows this pattern. Specs refer to it as "the standa
 
 ### 6.1 List
 
-1. Page header with the plural name, a one-line description and **New <thing>** (primary, at the end of
-   the actions).
-2. The list toolbar of §5.2: a search box that says what it searches ("Search name or ID"), a segmented
-   filter for status, a **Filters** button for the rest, removable filter chips, and a result count ("12 of
-   40 plans").
+1. Page header with the plural name and **New <thing>** (primary, at the end of the actions); no description
+   that says what the page is (D-421, D-422).
+2. The list toolbar of §5.2 (`FilterBar`): a search box that says what it searches ("Search name or ID"), a
+   segmented filter for status, a **Filters (n)** button for the rest, removable filter chips with **Clear
+   filters**, and a result count ("12 of 40 plans"); all of it kept in the address, written in place.
 3. Table (or cards for plans) by the data table standard (§5.4): name as a link, status chip, key facts,
    money with currency, a row **⋯ Actions** menu (View · Edit · Duplicate · record-specific actions ·
    Delete last, separated).
 4. Selecting a row opens the record's **details view** — never straight into edit.
-5. Empty state: "No plans yet — create your first plan" with the create button (secondary, because the
+5. Empty state: "No plans yet" with the create button (secondary, because the
    header holds the primary); when filters hide everything: "Nothing matches these filters" with **Clear
    filters**.
 
@@ -1053,7 +1361,8 @@ Every user-managed record follows this pattern. Specs refer to it as "the standa
 - Short records (campaign, initiative, Settings items, person, team, approval workflow) open in a **side
   panel**; long records (plan, activity, line item, Shell attribute) open on a **full page** with sections
   (§2.5).
-- One column; sections in a logical order; defaults pre-filled and labelled ("From the campaign");
+- One column; sections in a logical order; defaults pre-filled without a label naming where they came from,
+  except a pre-filled amount (D-422);
   a field required to save shows a red **\*** after its label, with the legend "\* Required" once before the
   first field (D-364); **Needed to publish** and **Needed to submit** stay words.
 - Footer: **Cancel** · **Save and add another** (for children) · **Save** (primary, last), right-aligned
@@ -1103,7 +1412,7 @@ Nothing is greyed out without a reason next to it:
 |---|---|
 | Calculated | Small "Calculated" label and ⓘ with the formula |
 | From finance/GSAP later | "Filled by GSAP later" / "From finance (coming later)" |
-| Fixed after save | Lock icon + "Year can't change once the plan is saved — create a new plan for another year." |
+| Fixed after save | `ReadOnlyField`: the value as text and a lock beside it whose tip says why ("Year can't change once the plan is saved — create a new plan for another year."); no marking word, the form's legend covers it (D-434) |
 | Irreversible choice | Warning when ticked: "Ongoing can't be undone after saving." |
 | Waiting for approval | `InlineAlert` (warning): "Submitted for approval — changing planned cost or dates will restart approval." |
 | Action not yet possible | The button stays visible; clicking it explains: "Publish needs 4 fields — view list". |
@@ -1120,9 +1429,9 @@ proposal awaiting the product owner, see the implementation plan.)
 
 ## 7. Forms
 
-- One column, max 720 px wide, left-aligned in the content column, section headings in the order users
-  think: *Basics → Dates & cost → Shell attributes → Goals → More details*; each section a card on form
-  pages (§5.5 `FormSection`) and the right rail at ≥ 1280 px (§2.4 C).
+- One centred column, max 960 px wide (§2.4 C), section headings in the order users think: *Basics →
+  Dates & cost → Shell attributes → Goals → More details*; each section a card on form pages (§5.5
+  `FormSection`) under the sticky section bar. Fields one per row, except the deliberate pairs of §2.4 C.
 - Labels above fields; the hint between label and field; the note and the problem under it (§5.5).
 - Dependent fields stay visible but locked with a hint until their parent is set ("Choose teams first —
   the owner must belong to one of the plan's teams"). When only one option fits, it is filled in and
@@ -1133,8 +1442,8 @@ proposal awaiting the product owner, see the implementation plan.)
 - Validation messages say what is wrong and how to fix it: "End date must be on or after the start date
   (12 Mar 2026)." — never codes or technical text.
 - Choices follow the one-select rule (§5.5); date fields show the person's date format.
-- The form says how far it is: the rail (or the line under the header) counts the needed fields filled
-  ("9 of 15 needed fields filled").
+- The form says how far it is: the section bar counts the needed fields filled ("9 of 15 needed fields
+  filled").
 
 ---
 
@@ -1148,7 +1457,7 @@ SP&A, AOP, SMP, INQ, MQL. Hive9 interface terms are replaced:
 | Inspection Window | Details (side panel or page) |
 | Honeycomb | Select (checkboxes and a bulk-action bar) |
 | HUD / heads-up display | Summary cards |
-| Sys_Gen_Balance | Unassigned planned cost (Sys_Gen_Balance) |
+| Sys_Gen_Balance | Unassigned planned cost |
 | Create SWBS Code | Request SWBS code from GSAP |
 | Override Model | Set later stages myself |
 | Evergreen | Ongoing (no end date) |
@@ -1194,7 +1503,7 @@ decision 4, D-313). Automated checks run axe with the tags `wcag2a`, `wcag2aa`, 
   menu alternative.
 - **Consistent help (3.2.6):** help, when it exists, is always in the top bar at the same place.
 - **Redundant entry (3.3.7):** values already given are offered again instead of typed twice (defaults from
-  the parent, "From the campaign").
+  the parent).
 - **Accessible authentication (3.3.8):** sign-in allows paste and password managers; no puzzles.
 - **Errors:** announced and linked from the summary; the focus moves to the summary on a failed save.
 - **Motion and zoom:** respect reduced motion; usable at 200 % zoom and reflowing without sideways scrolling
@@ -1251,11 +1560,17 @@ listed in the implementation plan.
 | 10 | **Names never break inside a word** in tables, trees and tags (`overflow-wrap: anywhere` is not allowed). | stylelint rule; e2e: no table row taller than 64 px on the captured states |
 | 11 | **One money format per screen** (§4.4); empty values "—". | Formatter unit tests; e2e text checks on the activity page and Home |
 | 12 | **Sentence case**, no upper-case text, normal letter spacing, text ≥ 12 px. | stylelint (`text-transform: uppercase`, `letter-spacing`, font sizes); e2e: no rendered text under 12 px |
-| 13 | **One select style** (§5.5) and one date input. | Code review; e2e screenshot review |
-| 14 | **Lists say their count the same way** ("4 of 6 plans") and record-state filters read "Active (n) · Inactive (n) · All (n)". | e2e text checks on each list page |
+| 13 | **One select style** (§5.5), one date input, one radio group, one check box and one inline error and alert; filters, dropdowns, popovers, menus and Export only from `src/ui` (`Select`, `ChoiceField`, `DateField`, `RadioGroup`, `Checkbox`, `InlineError`, `InlineAlert`, `FilterMenu`, `FilterMenuButton`, `FiltersButton`, `Popover`, `Menu`, `ExportMenu`; D-416, D-417). | Code review: no `radix-ui` Popover or DropdownMenu, no `<select>` and no `type="radio"`, `"checkbox"` or `"date"` input outside `src/ui`; e2e screenshot review |
+| 14 | **Lists say their count the same way** ("4 of 6 plans", `ResultCount` and `countText`) and record-state filters read "Active (n) · Inactive (n) · All (n)". | e2e text checks on each list page |
 | 15 | **Nothing covers the focus or the next action:** toasts sit above sticky footers; sticky bars set `scroll-padding`. | e2e: the Save button is not covered after a create; axe |
 | 16 | **A heading never repeats its parent's heading.** | e2e: no two consecutive headings with the same text |
 | 17 | **No page scrolls sideways** at 390, 600, 960, 1280 and 1440 px wide. | e2e: `scrollWidth ≤ innerWidth` on every captured state |
+
+**Enforced by lint (D-420).** `pnpm run lint` refuses, in features and app, a raw `select`, `textarea`,
+`dialog`, `progress`, `hr`, text, number, search, date, radio or checkbox `input`, a `title` attribute and
+any `radix-ui` import outside `src/ui`, naming the `ui/` component to use. `pnpm run lint:css` refuses
+literal colours, font weights, font sizes and radii (tokens only), and `:global(`, `thead th` and `tfoot`
+in feature CSS. A justified exception carries `eslint-disable-next-line … -- reason`.
 
 ---
 
@@ -1285,4 +1600,14 @@ or one component (see the recommendations report for the questions to Shell).
 | 2.2 | 28 Oct 2026 | Features 032 and 033: the purchase-request screens, their words and confirmations (§2.6); level tags PURCHASE REQUEST and PR LINE in the line items' grey (§4.2). |
 | 2.3 | 28 Oct 2026 | Feature 035, constitution 4.5.0: the product is shown as SP&A One; the name is the logo with "&" Shell dark blue and "One" Shell yellow (`#AD8700` on light surfaces); `LogoTile` with a yellow "1" below 960 px and as the favicon; tokens `--brand-name-amp`, `--brand-name-one`, `--brand-tile`, `--on-brand-tile`; `--brand-mark` and the star retired (§1, §2, §3.1, §3.10, §5.7, §6, §12). |
 | 2.4 | 29 Oct 2026 | Feature 038: grids add up in every display currency (§4.4); `ConfirmDialog acknowledgeOnly` (§5.3); the approve warning and disabled Approve for approval over planned cost (§5.6). |
-| 2.5 | 1 Nov 2026 | Feature 051, constitution 4.9.0: custom-dashboard charts with Apache ECharts (ADR-0020); chart palettes Categorical, Planning, Levels and Sequential with tokens `--chart-cat-1`…`-8` and `--chart-seq-1`…`-5`; the Dashboards list, the custom-dashboard viewer and the builder layout (§4.7). |
+| 2.5 | 30 Oct 2026 | Measure module kick-off (constitution 4.8.0): report pages — the report frame, filter panel, saved views, today marker, ranked list and the empty states that say why (§2.8). |
+| 2.6 | 1 Nov 2026 | Feature 051, constitution 4.9.0: custom-dashboard charts with Apache ECharts (ADR-0020); chart palettes Categorical, Planning, Levels and Sequential with tokens `--chart-cat-1`…`-8` and `--chart-seq-1`…`-5`; the Dashboards list, the custom-dashboard viewer and the builder layout (§4.7). |
+| 2.7 | 12 Nov 2026 | UI review of the Measure module and Home (D-411, D-412): report toolbar with All work's filter buttons, Period and Show on their widgets, ECharts time charts, ranked-list behaviour (§2.8); `StatStrip`, `Select`, `Pager`, compact `EmptyState` (§5); a quieter chosen `SegmentedFilter`; `--hover-on-card` for hovers inside cards. |
+| 2.8 | 12 Nov 2026 | Form pages redesigned: one centred column of at most `--form-page` 960 px for header, form and footer; the right rail and the count line under the header replaced by a sticky section bar at the top of the column with a yellow "you are here" marker; deliberate field pairs (`FieldRow`) instead of one field per row everywhere (§2.2, §2.4 C, §3, §7). |
+| 2.9 | 12 Nov 2026 | Filters, dropdowns, popovers and menus only from `src/ui` (D-416): `Menu` and `Popover` on one floating surface, `ExportMenu`, `FilterMenuButton`, `FilterMenu` moved from All work, `ResultCount` with `countText`; toolbar selects become `Select`; `ChoiceField` gains `placeholder` and option groups (§5.1, §5.2, §5.5, §11). |
+| 2.10 | 12 Nov 2026 | D-415: generic elements come only from `ui/`; the data table standard is `ui/Table` (header band, rows, numbers, sticky name, Total row with `TotalLabel`, empty row), with `SortHeader`, `DisclosureButton` and one `Pager` with placements and named page-size sets (§2.8, §5.2, §5.4). |
+| 2.11 | 12 Nov 2026 | D-417, form controls only from `ui/`: `ChoiceField` renders `Select` (form size 40 px, option groups, Enter saves, no native select); `RadioGroup` (column, row, list; hints, groups, locked options) for every radio button; `Checkbox` for bare check boxes; `accent-color` once in `global.css`; `DateField` (form and `compact`); `InlineError` and `InlineAlert` (moved from line items and approvals); `FiltersButton`; `ConfirmDialog`/`FormDialog` `size="lg"` and a show-only `FormDialog`; `Popover` width `anchor`, used by `Combobox` (§5.2, §5.3, §5.5, §5.6, §11 rule 13). |
+| 2.12 | 12 Nov 2026 | D-418, display pieces only from `ui/`: `SectionHeading` with five ranks (section 20, panel 18, card 16 Jost 600; sub 16 and label 14 Arial 700), used by `Card` (titles 16/24 as §5.3 says); weights as tokens; `--icon-sm` and `--icon-md`; `ProgressBar busy` and `BarList` (§4.6); `ViewSwitch` and the icon option of `SegmentedFilter`; `SavedViewsMenu`; `SummaryCard to` (LinkSummaryCard retired) and every row of figures a `StatStrip`; `Tag` and `LevelTag other`; `RelativeTime`, `TooltipText` and a `Tooltip` that opens on a tap, no native `title` tooltips; one `ConvertedAmount` naming its rate (§3.2, §3.6, §4.4, §4.6, §5.2, §5.3, §5.4, §5.6). |
+| 2.13 | 12 Nov 2026 | D-423, the last copies move into `ui/`: one `SaveViewDialog` and one `ManageViewsPanel` (with its Rename view dialog) for All work and the reports, their differences as props; `FormErrorSummary` `onGo` and `describe` for the dashboard builder; `NumberField` for bounded whole numbers; `Drawer` for the navigation drawer (§5.1, §5.3, §5.5, §5.8). |
+| 2.14 | 12 Nov 2026 | D-421, one filter pattern: `FilterBar` (search · quick control · Filters (n) · count and view switches; the folding row of filter menus, opening by itself when a filter is in use; chips with Clear filters; state in the address, written in place), `YearRangeMenu` (moved from All work) and `DateRangeMenu`; every toolbar control 32 px (`SearchField size="sm"` and `delay`, `FiltersButton` `sm` by default); no counts in a list's status filter; the chosen segment keeps the group's borders (§3.6, §5.2). |
+| 2.15 | 12 Nov 2026 | D-424, our own date picker: `DateField` and `DateRangeField` are a text input in the person's format (typed dates read in that format, dd/mm/yyyy or yyyy-mm-dd) with a **Choose date** button opening `ui/DatePicker` — month grid from Monday, Month and Year jump, today outlined, the chosen day yellow-filled, days outside the range refused with the reason, Today and Clear, the WAI-ARIA date picker keyboard; no native date input remains; `DateRangeMenu` links From and To in the calendar; All work's Month calendar shares the calendar core; **More filters** is `ui/AttributeFilterMenu`; the address is written through `ui/useAddressParams` (§4.5, §5.2, §5.5). |

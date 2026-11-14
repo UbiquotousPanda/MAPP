@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import type { ApiError } from '@/api/errors';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { useToast } from '@/ui/Toast/useToast';
@@ -68,11 +69,7 @@ export function PurgeDialog({ item, onClose }: PurgeDialogProps) {
         {contents && <p>{contents}</p>}
         <p>This can&apos;t be undone.</p>
         {warning && <p>{warning}</p>}
-        {failure && (
-          <p role="alert" className={styles.failure}>
-            {failure.message}
-          </p>
-        )}
+        {failure && <InlineError>{failure.message}</InlineError>}
       </div>
     </ConfirmDialog>
   );

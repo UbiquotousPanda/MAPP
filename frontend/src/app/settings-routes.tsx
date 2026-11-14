@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router';
 import {
   AccessPage,
+  ActivityCategoriesPage,
   ActivityTypesPage,
   ApprovalWorkflowsPage,
   CurrenciesPage,
@@ -9,7 +10,12 @@ import {
   ImportRatesPage,
   ModelsPage,
   OverspendSettingsPage,
+  AttributionSettingsPage,
   PeoplePage,
+  PerformanceDataPage,
+  PerformanceImportPage,
+  PerformanceImportsPage,
+  PerformanceReviewPage,
   PurchaseRequestSettingsPage,
   RoleFormPage,
   RolePage,
@@ -26,6 +32,31 @@ export const SETTINGS_ROUTES: RouteObject[] = [
   { path: '/settings', element: <SettingsPage />, ...titled('Settings') },
   { path: '/settings/models', element: <ModelsPage />, ...titled('Models') },
   { path: '/settings/activity-types', element: <ActivityTypesPage />, ...titled('Activity types') },
+  {
+    path: '/settings/activity-categories',
+    element: <ActivityCategoriesPage />,
+    ...titled('Activity categories'),
+  },
+  {
+    path: '/settings/performance-data',
+    element: <PerformanceDataPage />,
+    ...titled('Performance data'),
+  },
+  {
+    path: '/settings/performance-data/imports',
+    element: gated('performance.import', <PerformanceImportsPage />),
+    ...titled('Imports'),
+  },
+  {
+    path: '/settings/performance-data/imports/:importId',
+    element: gated('performance.import', <PerformanceImportPage />),
+    ...titled('Import'),
+  },
+  {
+    path: '/settings/performance-data/review',
+    element: gated('performance.import', <PerformanceReviewPage />),
+    ...titled('Rows to review'),
+  },
   {
     path: '/settings/shell-attributes',
     element: <ShellAttributesPage />,
@@ -68,6 +99,11 @@ export const SETTINGS_ROUTES: RouteObject[] = [
     path: '/settings/overspend-control',
     element: <OverspendSettingsPage />,
     ...titled('Overspend control'),
+  },
+  {
+    path: '/settings/attribution',
+    element: <AttributionSettingsPage />,
+    ...titled('Attribution'),
   },
   {
     path: '/settings/currencies/import',

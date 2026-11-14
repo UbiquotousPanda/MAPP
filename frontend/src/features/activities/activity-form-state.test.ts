@@ -86,7 +86,7 @@ describe('activityForm (feature 006)', () => {
       description: 'Not a reason',
     };
     expect(reapprovalChanges(original, state, formatDate)).toEqual([
-      { label: 'Planned cost', old: '120,000.00 USD', new: '150,000.00 USD' },
+      { label: 'Planned cost', old: '$120,000.00', new: '$150,000.00' },
       { label: 'End date', old: '31 May 2026', new: '30 Jun 2026' },
     ]);
     expect(reapprovalChanges(original, { ...original, plannedCost: '120000' }, formatDate)).toEqual(

@@ -12,6 +12,7 @@ import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import list from '@/ui/settings-table.module.css';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useTeam } from './api';
 import type { Team } from './api';
 import styles from './panels.module.css';
@@ -115,9 +116,9 @@ function TeamDetails({ team }: { team: Team }) {
       </dl>
 
       <section className={styles.section} aria-labelledby="team-members">
-        <h3 id="team-members" className={list.sectionTitle}>
+        <SectionHeading level={3} rank="sub" id="team-members">
           {`Members (${team.members.length})`}
-        </h3>
+        </SectionHeading>
         {team.members.length > SEARCH_ABOVE && (
           <SearchField
             label="Search members"
@@ -142,9 +143,9 @@ function TeamDetails({ team }: { team: Team }) {
       </section>
 
       <section className={styles.section} aria-labelledby="team-plans">
-        <h3 id="team-plans" className={list.sectionTitle}>
+        <SectionHeading level={3} rank="sub" id="team-plans">
           Used by
-        </h3>
+        </SectionHeading>
         {team.plans.length === 0 ? (
           <p className={list.muted}>Not used by any plan yet.</p>
         ) : (

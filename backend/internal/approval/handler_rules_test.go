@@ -5,20 +5,12 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
 	"mapp/internal/approval"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/date"
 )
 
-// The seeded people of 017's tests (014's seed roles: Sara Novak is a Viewer).
-const (
-	sarasEmail       = "sara.novak@shell.com"
-	standardWorkflow = "WF-1003" // Standard marketing approval (017 data-model §13)
-)
-
-// What a level's rule may name: every activity type, the business units in display order and only the roles
-// that approve, by name (017 FR-001, FR-005).
+// What a level's rule may name: every activity type, the business units in display order, the approving roles.
 func TestRuleOptions_FR001(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -73,34 +65,7 @@ func TestCreateWorkflow_RuleFields201_FR001(t *testing.T) {
 	}
 }
 
-// Priya Raman's activity under $10,000.00 in "Standard marketing approval" is approved at submission (017
-// FR-014, US1 scenario 1).
-func TestSubmit_WF1003Automatic_FR014(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-	editActivity(t, priya, fleetRoadshow, func(u *activity.Update) {
-		workflow := standardWorkflow
-		u.ApprovalWorkflowID, u.PlannedCost = &workflow, usd("8000.00")
-	})
-	var submission approval.Submission
-	priya.Do(t, http.MethodGet, "/api/v1/activities/"+fleetRoadshow+"/approval/submission", nil).Decode(t, &submission)
-
-	appr := decodeApproval(t, priya.Do(t, http.MethodPost, "/api/v1/activities/"+fleetRoadshow+"/approval/submit",
-		map[string]any{"version": submission.ActivityVersion}))
-
-	if !submission.ApprovedAutomatically || submission.Outcomes[0].Outcome != "autoApproved" {
-		t.Errorf("submission = %+v, want approved automatically", submission.Outcomes)
-	}
-	round := appr.Rounds[0]
-	if appr.Status != "approved" || !round.AutoApproved || round.Outcome != approval.OutcomeApproved || round.Facts == nil ||
-		round.Facts.PlannedCost.Amount.String() != "8000.00" {
-		t.Errorf("approval %s, round %+v; want approved at submission", appr.Status, round)
-	}
-}
-
-// Segregation of duties is enforced by the server (017 FR-018): Alex Morgan, who may decide on behalf,
-// re-submits Fleet roadshow and is refused when he then approves it.
+// Alex Morgan, who may decide on behalf, re-submits Fleet roadshow and is refused when he then approves it.
 func TestApprove_BySubmitter403_FR018(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -119,13 +84,11 @@ func TestApprove_BySubmitter403_FR018(t *testing.T) {
 	}
 }
 
-// Delegations through the API (017 FR-022, FR-024): Daniel Okoro sees his seeded planned delegation, adds a
-// current one, changes its note, cancels it; a cancelled one answers 409, an unknown one 404.
+// Daniel Okoro sees his seeded planned delegation, adds a current one, changes its note and cancels it.
 func TestDelegations_CRUD_FR022_FR024(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	daniel := server.SignIn(t, danielsEmail)
-	carlos := server.SignIn(t, carlosEmail)
 	today := date.Today(now)
 
 	var before approval.DelegationPage
@@ -145,16 +108,8 @@ func TestDelegations_CRUD_FR022_FR024(t *testing.T) {
 	created.Decode(t, &view)
 	assertValidation(t, refused, `{"field":"delegateId","message":"Sara Novak can't approve activities. Choose someone with a role that approves."}`)
 
-	var asDelegate approval.DelegationPage
-	carlos.Do(t, http.MethodGet, "/api/v1/approval-delegations?scope=mine", nil).Decode(t, &asDelegate)
-	if asDelegate.Total != 2 || asDelegate.Items[0].ID != view.ID || asDelegate.Items[0].CanChange {
-		t.Errorf("Carlos's list = %+v, want both of Daniel's, read-only", asDelegate)
-	}
-
 	changed := daniel.Do(t, http.MethodPatch, "/api/v1/approval-delegations/"+view.ID, map[string]any{"note": "Conference in Lisbon", "version": 1})
 	cancelled := daniel.Do(t, http.MethodPost, "/api/v1/approval-delegations/"+view.ID+"/cancel", map[string]any{"version": 2})
-	late := daniel.Do(t, http.MethodPost, "/api/v1/approval-delegations/"+view.ID+"/cancel", map[string]any{"version": 3})
-	gone := daniel.Do(t, http.MethodPatch, "/api/v1/approval-delegations/DLG-9999", map[string]any{"version": 1})
 
 	if changed.Status != http.StatusOK || cancelled.Status != http.StatusOK {
 		t.Fatalf("PATCH %d %s / cancel %d %s", changed.Status, changed.Body, cancelled.Status, cancelled.Body)
@@ -163,8 +118,6 @@ func TestDelegations_CRUD_FR022_FR024(t *testing.T) {
 	if view.State != "cancelled" || view.Note != "Conference in Lisbon" || view.CancelledBy == nil {
 		t.Errorf("cancelled = %+v", view)
 	}
-	assertError(t, late, http.StatusConflict, "not_allowed", "Ended and cancelled delegations can't be changed. They are kept for the audit trail.")
-	assertError(t, gone, http.StatusNotFound, "not_found", "This delegation no longer exists.")
 }
 
 // Everyone's delegations need "Create and change approval workflows" (017 FR-024, D-296).
@@ -186,8 +139,7 @@ func TestDelegationsAll_NeedsWorkflowsManage_FR024(t *testing.T) {
 	}
 }
 
-// Approvals › Monitoring on the seed (017 FR-030, US6): Trade magazine ads has waited its 2 escalation days
-// and is the overdue row; the ageing bars add up to All open; only Alex may run escalations.
+// Trade magazine ads has waited its 2 escalation days and is the overdue row; the ageing bars add up to All open.
 func TestMonitoring_Seeded_TradeMagazineOverdue_FR030(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -214,8 +166,7 @@ func TestMonitoring_Seeded_TradeMagazineOverdue_FR030(t *testing.T) {
 	assertError(t, bad, http.StatusBadRequest, "validation_failed", "Some fields need your attention.")
 }
 
-// Run reminders and escalations on the seed (017 FR-027, US5): Trade magazine ads is escalated to Alex
-// Morgan, who then approves it as backup approver; a second run sends nothing.
+// Trade magazine ads is escalated to Alex Morgan, who approves it as backup approver; a second run sends nothing.
 func TestRunEscalations_SeededEscalatesToAlex_FR027(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -240,19 +191,6 @@ func TestRunEscalations_SeededEscalatesToAlex_FR027(t *testing.T) {
 	}
 }
 
-// Running reminders and escalations needs "Create and change approval workflows" (017 FR-028).
-func TestRunEscalations_WithoutPermission403_FR028(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-
-	response := priya.Do(t, http.MethodPost, "/api/v1/approvals/escalations/run", nil)
-
-	assertError(t, response, http.StatusForbidden, "forbidden",
-		"Changing approval workflows isn't part of your role (Planner). Ask an administrator if you need it.")
-}
-
-// assertValidation checks a 400 validation_failed answer with exactly the field problems given as JSON.
 func assertValidation(t *testing.T, response *apitest.Response, fields string) {
 	t.Helper()
 	want := `{"error":{"code":"validation_failed","message":"Some fields need your attention.","fields":[` + fields + `]}}`

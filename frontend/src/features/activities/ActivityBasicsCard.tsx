@@ -1,29 +1,28 @@
 import type { Control } from 'react-hook-form';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
+import { FieldRow } from '@/ui/FieldRow/FieldRow';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormCard } from '@/ui/FormRail/FormRail';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { TextField } from '@/ui/TextField/TextField';
 import { PersonField } from '@/features/people';
-import { FieldHelpTip, useFieldHelp } from '@/features/settings';
+import { useFieldHelp } from '@/features/settings';
 import { formatMoneyText } from '@/format/decimal';
 import type { ActivityFormData, ActivityTypeOption } from './api';
 import { fieldId } from './activity-form-state';
 import type { FormState, StoredActivity } from './activity-form-state';
-import styles from './ActivityForm.module.css';
 import { ACTIVITY_SECTION } from './activity-form-progress';
 import { NoTypesText } from './NoTypesNotice';
 
-const FROM_INITIATIVE = 'From the initiative';
 const WORKFLOW_LOCKED = "It can't change while the activity is submitted or approved.";
 /** While a round is open the person can recall the submission first (008 FR-013). */
 const WORKFLOW_RECALL = 'Recall the activity to choose another workflow.';
+const CHANGE_WITH_MOVE = 'Change it later with Move';
 const NO_WORKFLOW = 'No approval workflow is active — an administrator sets them up in Settings.';
 
 export interface ActivityBasicsCardProps {
   control: Control<FormState>;
   form: ActivityFormData;
-  value: FormState;
   stored?: StoredActivity;
   onChooseType: (typeId: string) => void;
 }
@@ -32,15 +31,10 @@ export interface ActivityBasicsCardProps {
 export function ActivityBasicsCard({
   control,
   form,
-  value,
   stored,
   onChooseType,
 }: ActivityBasicsCardProps) {
-  const { context, defaults } = form;
-  const ownerFromInitiative = Boolean(defaults?.owner && value.ownerId === defaults.owner.id);
-  const onlyWorkflow = Boolean(
-    defaults?.approvalWorkflowId && value.approvalWorkflowId === defaults.approvalWorkflowId,
-  );
+  const { context } = form;
   const noTypes = form.activityTypes.length === 0;
   const { help } = useFieldHelp();
 
@@ -72,21 +66,15 @@ export function ActivityBasicsCard({
           />
         )}
       />
-      <div className={styles.readOnly}>
-        <dl className={styles.pairs}>
-          <div className={styles.pair}>
-            <dt>
-              Campaign <FieldHelpTip helpKey="activity.initiative" label="Campaign, Initiative" />
-            </dt>
-            <dd>{context.campaign.name}</dd>
-          </div>
-          <div className={styles.pair}>
-            <dt>Initiative</dt>
-            <dd>{context.initiative.name}</dd>
-          </div>
-        </dl>
-        <LockedNote>Change it later with Move</LockedNote>
-      </div>
+      <FieldRow>
+        <ReadOnlyField
+          label="Campaign"
+          value={context.campaign.name}
+          tip={help('activity.initiative')}
+          lock={CHANGE_WITH_MOVE}
+        />
+        <ReadOnlyField label="Initiative" value={context.initiative.name} lock={CHANGE_WITH_MOVE} />
+      </FieldRow>
       <FormField
         control={control}
         name="activityTypeId"
@@ -115,7 +103,6 @@ export function ActivityBasicsCard({
             label="Owner"
             marking="Needed to submit"
             tip={help('activity.owner')}
-            hint={ownerFromInitiative ? FROM_INITIATIVE : undefined}
             {...field}
             name={fieldId('ownerId')}
           />
@@ -129,7 +116,6 @@ export function ActivityBasicsCard({
             label="Approval workflow"
             marking="Needed to submit"
             tip={help('activity.approvalWorkflow')}
-            hint={onlyWorkflow ? 'The only active approval workflow' : undefined}
             options={form.approvalWorkflows.map((workflow) => ({
               id: workflow.id,
               label: workflow.name,
@@ -153,7 +139,7 @@ function workflowLock(stored: StoredActivity | undefined): string | undefined {
   return stored?.status === 'approved' ? WORKFLOW_LOCKED : undefined;
 }
 
-/** "Event · default 25,000.00 USD"; "Event — not allowed by the plan's model". */
+/** "Event · default $25,000.00"; "Event — not allowed by the plan's model". */
 function typeLabel(type: ActivityTypeOption): string {
   const withDefault = type.defaultPlannedCost
     ? `${type.name} · default ${formatMoneyText(type.defaultPlannedCost)}`

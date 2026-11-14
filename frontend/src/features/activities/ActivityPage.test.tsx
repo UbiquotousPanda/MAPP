@@ -53,6 +53,43 @@ function openPage(
 ) {
   const api = mockApi([
     ...HISTORY_ANSWERS,
+    reply(
+      'GET /api/v1/activities/{activityId}/media-codes',
+      { body: { requiresCodes: false, items: [] } },
+      { activityId: 'A-1042' },
+    ),
+    reply(
+      'GET /api/v1/activities/{activityId}/performance',
+      {
+        body: {
+          state: 'notApproved',
+          stages: [],
+          revenue: {
+            goal: null,
+            actual: null,
+            excludedCount: 0,
+            reason: 'notApproved',
+            projected: null,
+            projectedReason: '',
+            months: [],
+          },
+          webMetrics: [],
+          sources: [],
+          projection: null,
+        },
+      },
+      { activityId: 'A-1042' },
+    ),
+    reply('GET /api/v1/activities/{activityId}/performance/sources', {
+      body: {
+        externalName: '',
+        aliases: [],
+        mediaCodeCount: 0,
+        integrated: false,
+        goalEntered: false,
+        sources: [],
+      },
+    }),
     reply('GET /api/v1/activities/{activityId}', answer, { activityId: 'A-1042' }),
     reply('GET /api/v1/activities/{activityId}/approval', approval, { activityId: 'A-1042' }),
     reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
@@ -111,8 +148,8 @@ describe('ActivityPage (feature 006, US2)', () => {
     expect(within(header).getByText('Priya Raman')).toBeVisible();
     expect(within(header).getByText('01 Mar – 31 May 2026')).toBeVisible();
     const summary = screen.getByRole('region', { name: 'Summary' });
-    expect(within(summary).getByText('120,000.00 USD')).toBeVisible();
-    expect(within(summary).getByText('20,000.00 USD')).toBeVisible();
+    expect(within(summary).getByText('$120,000.00')).toBeVisible();
+    expect(within(summary).getByText('$20,000.00')).toBeVisible();
     expect(screen.getByRole('link', { name: 'Edit' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
       'href',
@@ -135,9 +172,9 @@ describe('ActivityPage (feature 006, US2)', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Launch film' })).toBeVisible();
     // The plan currency first, the reader's currency beside it (016 FR-013).
     const summary = screen.getByRole('region', { name: 'Summary' });
-    expect(within(summary).getByText('120,000.00 USD')).toBeVisible();
-    expect(within(summary).getByText(/≈ 110,400.00 EUR/)).toBeVisible();
-    expect(within(summary).getByText(/≈ 18,400.00 EUR/)).toBeVisible();
+    expect(within(summary).getByText('$120,000.00')).toBeVisible();
+    expect(within(summary).getByRole('button', { name: 'about €110,400.00' })).toBeVisible();
+    expect(within(summary).getByRole('button', { name: 'about €18,400.00' })).toBeVisible();
   });
 
   it('marks an unassigned planned cost below zero in red words', async () => {
@@ -145,9 +182,7 @@ describe('ActivityPage (feature 006, US2)', () => {
       body: launchFilm({ unassignedPlannedCost: { amount: '-500.00', currency: 'USD' } }),
     });
 
-    expect(
-      await screen.findByText('Line items exceed the planned cost by 500.00 USD'),
-    ).toBeVisible();
+    expect(await screen.findByText('Line items exceed the planned cost by $500.00')).toBeVisible();
   });
 
   it('says that a cost or date change restarts the approval of an approved activity (FR-027)', async () => {
@@ -178,58 +213,6 @@ describe('ActivityPage (feature 006, US2)', () => {
     await waitFor(() => expect(panel).toHaveFocus());
   });
 
-  it('shows the summary, then the tabs Overview · Details · Approval · History (design system §2.4 B, FR-020)', async () => {
-    const { user, router } = openPage({ body: launchFilm({ externalName: '' }) });
-
-    await screen.findByRole('heading', { level: 1, name: 'Launch film' });
-    const tabs = screen.getByRole('tablist', { name: 'Activity' });
-    expect(
-      within(tabs)
-        .getAllByRole('tab')
-        .map((tab) => tab.textContent),
-    ).toEqual(['Overview', 'Details', 'Approval', 'History']);
-    // Overview: Ready to submit, GSAP's Financials (open, 015 FR-015), then the line items.
-    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
-    const ready = screen.getByRole('region', { name: 'Ready to submit' });
-    const financials = screen.getByRole('region', { name: 'Financials' });
-    const lineItems = screen.getByRole('region', { name: 'Line items' });
-    expect(
-      screen.getByRole('region', { name: 'Summary' }).compareDocumentPosition(ready) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(
-      ready.compareDocumentPosition(financials) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(
-      financials.compareDocumentPosition(lineItems) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(financials.id).toBe('financials');
-    expect(await within(financials).findByText('82,000.00 USD')).toBeVisible();
-    expect(screen.queryByText('From finance (coming later)')).not.toBeInTheDocument();
-    expect(lineItems.closest('#line-items')).not.toBeNull();
-    expect(screen.queryByRole('region', { name: 'Details' })).not.toBeInTheDocument();
-
-    // Details: details, Shell attributes and goals; the tab is kept in the address.
-    await user.click(screen.getByRole('tab', { name: 'Details' }));
-    expect(await screen.findByRole('region', { name: 'Details' })).toBeVisible();
-    expect(screen.getByRole('region', { name: 'Shell attributes' })).toBeVisible();
-    expect(screen.getByRole('region', { name: 'Goals' })).toBeVisible();
-    expect(router.state.location.search).toBe('?tab=details');
-
-    await user.click(screen.getByRole('tab', { name: 'Approval' }));
-    expect(
-      (await screen.findByRole('region', { name: 'Approval' })).closest('#approval'),
-    ).not.toBeNull();
-
-    await user.click(screen.getByRole('tab', { name: 'History' }));
-    const history = await screen.findByRole('region', { name: 'History' });
-    expect(history.closest('#history')).not.toBeNull();
-    expect(screen.getByRole('checkbox', { name: 'Include line items' })).not.toBeChecked();
-
-    await user.click(screen.getByRole('tab', { name: 'Overview' }));
-    await waitFor(() => expect(router.state.location.search).toBe(''));
-  });
-
   it('links the activities of a split, "(deleted)" without a link (016 FR-031)', async () => {
     openPage({
       body: launchFilm({
@@ -245,41 +228,6 @@ describe('ActivityPage (feature 006, US2)', () => {
     expect(
       screen.queryByRole('link', { name: /Split into 'Ireland roadshow'/ }),
     ).not.toBeInTheDocument();
-  });
-
-  it('opens the tab of a #part: #approval from Home and the notifications', async () => {
-    openPage({ body: launchFilm() }, '/plans/P-1001/activities/A-1042#approval');
-
-    expect(await screen.findByRole('region', { name: 'Approval' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Approval' })).toHaveAttribute('aria-selected', 'true');
-  });
-
-  it('opens the History tab and focuses its heading for View history', async () => {
-    const { user, router } = openPage({ body: launchFilm() });
-
-    await user.click(await screen.findByRole('button', { name: 'Actions for Launch film' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'View history' }));
-
-    await waitFor(() => expect(router.state.location.search).toBe('?tab=history'));
-    await waitFor(() =>
-      expect(screen.getByRole('heading', { level: 2, name: 'History' })).toHaveFocus(),
-    );
-  });
-
-  it('replaces an address with another plan by the right one', async () => {
-    const { router } = openPage({ body: launchFilm() }, '/plans/P-9999/activities/A-1042#ready');
-
-    await waitFor(() =>
-      expect(router.state.location.pathname).toBe('/plans/P-1001/activities/A-1042'),
-    );
-    expect(router.state.location.hash).toBe('#ready');
-  });
-
-  it('opens Ready to submit for the Show fields link of Home (#completeness, feature 009)', async () => {
-    openPage({ body: launchFilm() }, '/plans/P-1001/activities/A-1042#completeness');
-
-    const panel = await screen.findByRole('region', { name: 'Ready to submit' });
-    await waitFor(() => expect(panel).toHaveFocus());
   });
 
   it('shows grey shapes while loading', async () => {

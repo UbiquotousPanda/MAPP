@@ -253,7 +253,7 @@ cost exceeds the budget).
   1 USD" (Settings), rounded half-up to 2 decimals.
 - **Unassigned planned cost (Sys_Gen_Balance)** = activity planned cost − sum of its line items'
   planned cost (USD). It appears as a system row under the line items. The target is **0.00**.
-  - Positive: "X not yet assigned to a line item".
+  - Positive: the amount alone, with the meter (D-422).
   - Negative: shown in red, "Line items exceed the activity's planned cost by X". It warns but does not
     block saving; it **does** block submitting (decision D-016) and submitting a purchase request that draws
     on the activity's line items (decision D-349).

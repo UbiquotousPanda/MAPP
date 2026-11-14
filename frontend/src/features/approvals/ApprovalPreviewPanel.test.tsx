@@ -55,7 +55,7 @@ describe('ApprovalPreviewPanel (feature 008, US3)', () => {
       within(lineItems).getByRole('columnheader', { name: 'Planned cost (USD)' }),
     ).toBeInTheDocument();
     const row = within(lineItems).getByRole('row', { name: /Agency fee/ });
-    expect(row).toHaveTextContent('40,000.00 EUR');
+    expect(row).toHaveTextContent('€40,000.00');
     expect(row).toHaveTextContent('$43,200.00');
     expect(row).toHaveTextContent('—');
     expect(lineItems).toHaveTextContent('Unassigned planned cost$6,800.00');
@@ -99,7 +99,7 @@ describe('ApprovalPreviewPanel (feature 008, US3)', () => {
       .getAllByRole('term')
       .map((term) => `${term.textContent}: ${term.nextElementSibling?.textContent}`);
     expect(facts).toEqual([
-      'Planned cost: 40,000.00 EUR',
+      'Planned cost: €40,000.00',
       'Planned cost (USD): $43,200.00',
       expect.stringMatching(/^Spend type: /),
       expect.stringMatching(/^GL code: /),

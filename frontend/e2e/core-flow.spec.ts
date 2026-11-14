@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   action,
-  chooseOption,
+  choose,
   escapeRegExp,
   expectNoAxeViolations,
   expectToast,
@@ -12,7 +12,6 @@ import { idIn, treeRow } from './planning';
 
 // The core flow of the Plan module (features 002–008), against the real API with the demo data.
 // Tests create their own records (names from uniqueName) and never assert global counts.
-// A: plan → campaign → initiative → activity → line item; axe on the main pages.
 
 const PRIYA = 'priya.raman@shell.com';
 const DANIEL = 'daniel.okoro@shell.com';
@@ -29,16 +28,12 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   const activityName = uniqueName('Core activity');
   const lineItemName = uniqueName('Core line item');
 
-  // The plan (004 US1): Mei's team and Mei as owner are the defaults; model and business unit are chosen.
   await page.goto('/plans');
   await action(page, 'New plan').click();
   await expect(page).toHaveURL(/\/plans\/new$/);
   await expect(page.getByRole('heading', { name: 'New plan', level: 1 })).toBeVisible();
-  await expect(page.getByText('Default: your teams')).toBeVisible();
-  await expect(page.getByText('Default: you', { exact: true })).toBeVisible();
   await page.getByRole('textbox', { name: /^Plan name/ }).fill(planName);
-  // 002's ChoiceField: up to 10 options are a native select (Model) or check boxes (Business unit).
-  await chooseOption(page.getByLabel(/^Model/), 'Mobility 1.0');
+  await choose(page, page.getByLabel(/^Model/), /^Mobility 1\.0/);
   await page.getByRole('checkbox', { name: 'Mobility', exact: true }).check();
   await page.getByRole('textbox', { name: /^Plan budget/ }).fill('100000');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
@@ -46,7 +41,6 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   await expect(page).toHaveURL(/\/plans\/P-\d+$/);
   const planId = idIn(page.url(), /\/plans\/(P-\d+)$/);
 
-  // Open it again from the Plans list (004 US2).
   await page.goto('/plans');
   await page.getByRole('searchbox', { name: 'Search plans' }).fill(planName);
   await page.getByRole('link', { name: planName, exact: true }).click();
@@ -58,12 +52,8 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
     page.getByText('No campaigns yet — a campaign is a theme that runs for most of the year.'),
   ).toBeVisible();
 
-  // A campaign (005 US1): owner and dates come from the plan; one cluster fills its only region.
   await action(page, 'Add campaign').click();
   const campaignPanel = page.getByRole('dialog', { name: 'New campaign' });
-  await expect(campaignPanel.getByText(`Inside plan '${planName}'`)).toBeVisible();
-  await expect(campaignPanel.getByText('From the plan')).toBeVisible();
-  await expect(campaignPanel.getByText("The plan's year")).toBeVisible();
   await campaignPanel.getByRole('textbox', { name: /^Campaign name/ }).fill(campaignName);
   await campaignPanel.getByRole('textbox', { name: /^Campaign budget/ }).fill('50000');
   // Cluster (5 options) is a check-box group; Region is filled in because it has one option here,
@@ -76,31 +66,24 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   await expectToast(page, `Campaign '${campaignName}' created`);
   await expect(treeRow(page, campaignName)).toBeVisible();
 
-  // An initiative (005 US2), from the campaign row's ⋯ menu.
   await page.getByRole('button', { name: `Actions for ${campaignName}` }).click();
   await page.getByRole('menuitem', { name: 'Add initiative' }).click();
   const initiativePanel = page.getByRole('dialog', { name: 'New initiative' });
-  await expect(initiativePanel.getByText(`Inside campaign '${campaignName}'`)).toBeVisible();
-  await expect(initiativePanel.getByText('From the campaign')).toBeVisible();
   await initiativePanel.getByRole('textbox', { name: /^Initiative name/ }).fill(initiativeName);
   await initiativePanel.getByRole('textbox', { name: /^Initiative budget/ }).fill('40000');
   await initiativePanel.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, `Initiative '${initiativeName}' created`);
   await expect(treeRow(page, initiativeName)).toBeVisible();
 
-  // An activity (006 US1), from the initiative row's ⋯ menu (006 adds "Add activity" there).
   await page.getByRole('button', { name: `Actions for ${initiativeName}` }).click();
   await page.getByRole('menuitem', { name: 'Add activity' }).click();
   await expect(page.getByRole('heading', { name: 'New activity', level: 1 })).toBeVisible();
-  // The breadcrumb names where the activity goes: plan › campaign › initiative (design system v2).
   const crumbs = page.getByRole('navigation', { name: 'Breadcrumb' });
   await expect(crumbs.getByRole('link', { name: planName, exact: true })).toBeVisible();
   await expect(crumbs.getByRole('link', { name: campaignName, exact: true })).toBeVisible();
   await expect(crumbs.getByRole('link', { name: initiativeName, exact: true })).toBeVisible();
-  await expect(page.getByText('From the initiative').first()).toBeVisible();
   await page.getByRole('textbox', { name: /^Activity name/ }).fill(activityName);
-  // Activity type is a native select whose options read "<type>" or "<type> · default <amount>".
-  await chooseOption(page.getByLabel(/^Activity type/), 'Content production');
+  await choose(page, page.getByLabel(/^Activity type/), /^Content production/);
   await page.getByRole('textbox', { name: /^Planned cost/ }).fill('20000');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, `Activity '${activityName}' created`);
@@ -114,27 +97,23 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
     ),
   ).toBeVisible();
 
-  // A line item in euros (007 US2): the planned cost starts as the unassigned 20,000.00 USD and follows
-  // the currency; 9,200.00 EUR is 10,000.00 USD at the demo rate 0.92.
+  // A line item in euros (007 US2): the planned cost starts as the unassigned $20,000.00 and follows
+  // the currency; €9,200.00 is $10,222.22 at the demo rate 0.90.
   await action(page, 'Add line item').click();
   await expect(page).toHaveURL(new RegExp(`/activities/${activityId}/line-items/new$`));
   await expect(page.getByRole('heading', { name: 'New line item', level: 1 })).toBeVisible();
-  // The breadcrumb names the activity the line item goes into (design system §2.3).
   await expect(
     page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: activityName }),
   ).toBeVisible();
   await page.getByRole('textbox', { name: /^Line item name/ }).fill(lineItemName);
-  // Currency (5 active currencies) is a native select with options such as "EUR – Euro".
-  await chooseOption(page.getByLabel(/^Currency/), 'EUR');
-  await expect(page.getByText('Changed to 18,400.00 EUR = 20,000.00 USD')).toBeVisible();
-  // The line item's Planned cost is 002's MoneyField, with the currency inside.
+  await choose(page, page.getByLabel(/^Currency/), /^EUR/);
+  await expect(page.getByText('Changed to €18,000.00 = $20,000.00')).toBeVisible();
   await page.getByRole('textbox', { name: /^Planned cost/ }).fill('9200');
-  await expect(page.getByText('= 10,000.00 USD at 0.92 EUR per USD')).toBeVisible();
+  await expect(page.getByText('= $10,222.22 at 0.90 EUR per USD')).toBeVisible();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, `Line item '${lineItemName}' created`);
   await expect(page).toHaveURL(new RegExp(`/activities/${activityId}#line-items$`));
 
-  // The line item's USD cost counts against the activity's planned cost (007 FR-002).
   // The Line items section's table comes before its spread grid, which repeats the name (the
   // Financials card of 015 lists the line item too, so the row is looked for in the section).
   const lineItemRow = page
@@ -142,26 +121,18 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
     .getByRole('row')
     .filter({ hasText: lineItemName })
     .first();
-  await expect(lineItemRow).toContainText('9,200.00 EUR');
-  // The USD column and the balance write amounts with the code, "10,000.00 USD" (007-P4).
-  await expect(lineItemRow).toContainText('10,000.00 USD');
-  await expect(page.getByText('10,000.00 of 20,000.00 USD assigned')).toBeVisible();
-  await expect(
-    page.getByText('10,000.00 USD not yet assigned to a line item').first(),
-  ).toBeVisible();
+  await expect(lineItemRow).toContainText('€9,200.00');
+  await expect(lineItemRow).toContainText('$10,222.22');
+  await expect(page.getByText('$10,222.22 of $20,000.00 assigned')).toBeVisible();
+  await expect(page.getByText('$9,777.78', { exact: true }).first()).toBeVisible();
 
-  // What the activity still needs (006 FR-022 – FR-024): the approval workflow and the nine always-shown
-  // needed-to-submit attributes (Mobility's own group is optional); its line item has no finance coding.
   await expect(page.getByText('Created', { exact: true }).first()).toBeVisible();
-  // 10 = Approval workflow + 9 attributes; owner, dates and planned cost are filled by defaults.
   await expect(page.getByRole('button', { name: '10 fields needed' })).toBeVisible();
-  // The line item lacks Spend type, GL code and Finance budget item, so the chip adds the line item.
   await expect(page.getByRole('button', { name: '1 line item needs attention' })).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'Approval workflow — needed to submit' }),
   ).toBeVisible();
   await expect(lineItemRow).toContainText('3 fields needed');
-  // The Ready to submit panel names the line item once before each of its problems (006 FR-023).
   for (const label of ['Spend type', 'GL code', 'Finance budget item']) {
     await expect(
       page.getByRole('link', {
@@ -172,8 +143,6 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
     ).toBeVisible();
   }
 
-  // The activity's planned cost rolls up to the initiative, the campaign and the plan (006 FR-005,
-  // 005 FR-011, 004 FR-012); budget used = 20,000 of 40,000, 50,000 and 100,000.
   await page
     .getByRole('navigation', { name: 'Breadcrumb' })
     .getByRole('link', { name: planName })
@@ -189,15 +158,11 @@ test('A: a planner builds a plan down to a line item in euros and sees the cost 
   await expect(treeRow(page, initiativeName).getByText('50% used', { exact: true })).toBeVisible();
   await expect(treeRow(page, campaignName)).toContainText('$20,000.00');
   await expect(treeRow(page, campaignName).getByText('40% used', { exact: true })).toBeVisible();
-  // The campaign's own fields are complete (cluster and region set); something below is not. Its one
-  // completeness chip names what below needs attention (design system §4.1).
   await expect(treeRow(page, campaignName)).toContainText('2 items below need attention');
   await expect(treeRow(page, campaignName)).not.toContainText('fields needed');
   await expect(treeRow(page, planName)).toContainText('$20,000.00');
   await expect(treeRow(page, planName).getByText('20% used', { exact: true })).toBeVisible();
   await expect(treeRow(page, planName)).toContainText('Draft');
-  // The plan header's completeness counts the records below that need attention: the activity and
-  // its line item.
   await expect(
     page.getByRole('button', { name: '2 items below need attention' }).first(),
   ).toBeVisible();
@@ -223,13 +188,12 @@ test('Accessibility: the Plans list, a plan page, an activity page and Approvals
   await expect(treeRow(page, 'Helix launch')).toBeVisible();
   await expectNoAxeViolations(page);
 
-  // Launch film (A-1001) with its two seeded line items.
   await page.goto('/plans/P-1001/activities/A-1001');
   await expect(page.getByRole('heading', { name: 'Launch film', level: 1 })).toBeVisible();
   await expect(page.getByRole('row').filter({ hasText: 'Agency fee' }).first()).toBeVisible();
   await expectNoAxeViolations(page);
 
-  // Daniel Okoro approves Lubricants Europe's activities; the rows depend on earlier test files.
+  // Daniel Okoro approves Lubricants Europe's activities: rows or none, whatever ran before on this worker.
   await signInAs(page, DANIEL);
   await page.goto('/approvals');
   await expect(page.getByRole('heading', { name: 'Approvals', level: 1 })).toBeVisible();

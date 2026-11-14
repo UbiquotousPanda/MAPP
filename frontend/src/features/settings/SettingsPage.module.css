@@ -1,8 +1,4 @@
-/*
- * The Settings hub (design system §2.4 D): link cards, 4 per row from 1280 px, 2 from 600 px, 1 on
- * a phone. The cards of the last row grow to fill it, so a row never ends in a hole (UI audit
- * ST-01), and every card in a row has the same height.
- */
+/* 4 cards per row from 1280 px, 2 from 600 px; the last row's cards grow, so a row never ends in a hole. */
 .grid {
   display: flex;
   flex-wrap: wrap;
@@ -65,7 +61,6 @@
   outline: none;
 }
 
-/* Icon, title and the chevron on one line. */
 .head {
   display: flex;
   align-items: center;
@@ -95,23 +90,11 @@
 
 .title {
   min-width: 0;
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-md);
-  font-weight: var(--weight-heading);
 }
 
 .title a {
   color: inherit;
   text-decoration: none;
-}
-
-/* The title's link covers the whole card, so any click on it opens the section. */
-.title a::after {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-card);
-  content: '';
 }
 
 .description {

@@ -120,7 +120,7 @@ export function LineItemPage() {
           <LineItemDetailsCard lineItem={lineItem} />
           <LineItemFinanceCard lineItem={lineItem} activity={activity} />
         </div>
-        <SwbsCard lineItem={lineItem} />
+        <SwbsCard lineItem={lineItem} canSend={allows(access?.sendSwbs)} />
         <LineItemFinancials lineItemId={lineItem.id} />
         <LineItemPurchaseRequests lineItemId={lineItem.id} />
         <LineItemSpreadCard lineItem={lineItem} />

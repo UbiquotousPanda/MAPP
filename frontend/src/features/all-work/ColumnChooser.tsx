@@ -5,6 +5,7 @@ import { useFieldHelp } from '@/features/settings';
 import { Button } from '@/ui/Button/Button';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { SearchField } from '@/ui/SearchField/SearchField';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import type { AllWorkColumnGroup } from './all-work-types';
 import styles from './ColumnChooser.module.css';
@@ -14,7 +15,7 @@ import { dropColumn, moveColumn } from './view-columns';
 export interface ColumnChooserProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The column catalogue: Standard, then one group per level (FR-018). */
+  /** The column catalogue: Standard, then one group per level. */
   groups: AllWorkColumnGroup[];
   /** The chosen columns, in order (Name is always first and not among them). */
   columns: string[];
@@ -25,10 +26,6 @@ export interface ColumnChooserProps {
 
 const NAME_LOCKED = 'The name column is always shown so you can tell rows apart';
 
-/**
- * Searchable groups of columns to tick, each with its Field help ⓘ, Name locked with its reason, the
- * chosen columns in order (dragged or moved up and down) and Reset to default columns.
- */
 export function ColumnChooser({
   open,
   onOpenChange,
@@ -66,55 +63,16 @@ export function ColumnChooser({
       open={open}
       onOpenChange={onOpenChange}
       title="Columns"
-      description="Choose and order the columns of the grid."
+      description="Put the shown columns in order, then tick the ones to show."
       footer={
         <Button onClick={() => onChange([...defaultColumns])}>Reset to default columns</Button>
       }
     >
       <div className={styles.chooser}>
-        <SearchField
-          label="Search columns"
-          placeholder="Search columns"
-          value={search}
-          onChange={setSearch}
-        />
-        {groups.map((group) => {
-          const shown = group.columns.filter((column) =>
-            column.label.toLowerCase().includes(needle),
-          );
-          const showName = group.group === 'standard' && 'name'.includes(needle);
-          if (shown.length === 0 && !showName) {
-            return null;
-          }
-          return (
-            <fieldset key={group.group} className={styles.group}>
-              <legend className={styles.legend}>{group.label}</legend>
-              {showName && (
-                <CheckboxField
-                  label="Name"
-                  name={`${id}-name`}
-                  checked
-                  onChange={() => {}}
-                  disabledReason={NAME_LOCKED}
-                />
-              )}
-              {shown.map((column) => (
-                <CheckboxField
-                  key={column.key}
-                  label={column.inactive ? `${column.label} (inactive)` : column.label}
-                  tip={tipOf(column.key)}
-                  name={`${id}-${column.key}`}
-                  checked={columns.includes(column.key)}
-                  onChange={(ticked) => tick(column.key, ticked)}
-                />
-              ))}
-            </fieldset>
-          );
-        })}
         <section className={styles.order} aria-labelledby={`${id}-order`}>
-          <h3 id={`${id}-order`} className={styles.legend}>
+          <SectionHeading level={3} rank="label" id={`${id}-order`}>
             Shown columns, in order
-          </h3>
+          </SectionHeading>
           <ol className={styles.list}>
             {columns.map((key, index) => {
               const label = labelOf(key);
@@ -157,6 +115,45 @@ export function ColumnChooser({
             })}
           </ol>
         </section>
+        <SearchField
+          label="Search columns"
+          placeholder="Search columns"
+          value={search}
+          onChange={setSearch}
+        />
+        {groups.map((group) => {
+          const shown = group.columns.filter((column) =>
+            column.label.toLowerCase().includes(needle),
+          );
+          const showName = group.group === 'standard' && 'name'.includes(needle);
+          if (shown.length === 0 && !showName) {
+            return null;
+          }
+          return (
+            <fieldset key={group.group} className={styles.group}>
+              <legend className={styles.legend}>{group.label}</legend>
+              {showName && (
+                <CheckboxField
+                  label="Name"
+                  name={`${id}-name`}
+                  checked
+                  onChange={() => {}}
+                  disabledReason={NAME_LOCKED}
+                />
+              )}
+              {shown.map((column) => (
+                <CheckboxField
+                  key={column.key}
+                  label={column.inactive ? `${column.label} (inactive)` : column.label}
+                  tip={tipOf(column.key)}
+                  name={`${id}-${column.key}`}
+                  checked={columns.includes(column.key)}
+                  onChange={(ticked) => tick(column.key, ticked)}
+                />
+              ))}
+            </fieldset>
+          );
+        })}
       </div>
     </SidePanel>
   );

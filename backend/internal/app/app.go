@@ -20,6 +20,7 @@ import (
 	"mapp/internal/financials"
 	"mapp/internal/history"
 	"mapp/internal/lineitem"
+	"mapp/internal/measure"
 	"mapp/internal/overspend"
 	"mapp/internal/people"
 	"mapp/internal/plan"
@@ -64,6 +65,7 @@ type wiring struct {
 	purchases        *purchaserequest.Service
 	guard            *overspend.Guard
 	overspend        *overspend.Service
+	reports          *measure.Service
 	customDashboards *customdashboard.Service
 	datasets         *dataset.Service
 }

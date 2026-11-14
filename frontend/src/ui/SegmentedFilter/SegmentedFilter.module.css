@@ -1,8 +1,27 @@
-/* Joined buttons, 32 px high like the toolbar buttons: the chosen one is filled in ink. */
+/* Joined buttons, 32 px high; wider than their row they scroll sideways, never wrap (design system §5.2). */
 .group {
   display: inline-flex;
-  flex-wrap: wrap;
   max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.fadeStart {
+  mask-image: linear-gradient(to right, transparent, var(--ink) var(--space-8));
+}
+
+.fadeEnd {
+  mask-image: linear-gradient(to left, transparent, var(--ink) var(--space-8));
+}
+
+.fadeStart.fadeEnd {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    var(--ink) var(--space-8),
+    var(--ink) calc(100% - var(--space-8)),
+    transparent
+  );
 }
 
 .pill {
@@ -34,23 +53,33 @@
 }
 
 .pill:hover {
-  background: var(--hover);
+  background: var(--hover-on-card);
 }
 
-/* The focus ring sits above the neighbouring buttons. */
+/* The focus ring sits above the neighbouring buttons, inside the scrolling row so it is not cut off. */
 .pill:focus-visible {
   position: relative;
   z-index: 1;
+  outline-offset: -2px;
 }
 
-/* The chosen choice: ink fill and white text, also told by aria-pressed (never colour alone). */
+/* Chosen: tint and bold only; a strong border would overlap its neighbours' as a bright seam in dark mode. */
 .pressed,
 .pressed:hover {
-  position: relative;
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--surface);
+  background: color-mix(in srgb, var(--ink) 14%, var(--surface));
+  color: var(--ink);
   font-weight: var(--weight-bold);
+}
+
+.icon {
+  justify-content: center;
+  width: var(--control-sm);
+  padding: 0;
+}
+
+.icon svg {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
 }
 
 .count {

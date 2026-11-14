@@ -18,6 +18,7 @@ import {
 import { reply } from '../replies';
 
 type LineItemFormOptions = components['schemas']['LineItemFormOptions'];
+type LineItemPreview = components['schemas']['LineItemPreview'];
 type AttributeForm = components['schemas']['AttributeForm'];
 type Person = components['schemas']['Person'];
 type ErrorBody = components['schemas']['Error'];
@@ -103,7 +104,21 @@ export function formAnswers(): HttpHandler[] {
       { level: 'lineItem' },
     ),
     reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
+    reply('POST /api/v1/activities/{activityId}/line-items/preview', { body: preview() }),
   ];
+}
+
+/** The API's preview of the form; nothing worked out unless a test says what. */
+export function preview(overrides: Partial<LineItemPreview> = {}): LineItemPreview {
+  return {
+    plannedCostUsd: null,
+    plannedCostPlan: null,
+    afterSaving: null,
+    balanceIn: null,
+    balanceInPlan: null,
+    spread: null,
+    ...overrides,
+  };
 }
 
 export function validationError(fields: { field: string; message: string }[]): {

@@ -1,11 +1,14 @@
 import { History, Lock, ReceiptText, SearchX, Upload } from 'lucide-react';
 import { useState } from 'react';
-import { Outlet, useLocation, useSearchParams } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { Pager } from '@/ui/Pager/Pager';
+import { PAGE_SIZES } from '@/ui/Pager/page-sizes';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { Tabs } from '@/ui/Tabs/Tabs';
 import type { TabItem } from '@/ui/Tabs/Tabs';
@@ -17,20 +20,11 @@ import { useFinancialTransactions } from './api';
 import type { FinancialTransactionPage } from './api';
 import { clearedFilters, filtersInUse, TABS, writeFilters } from './financials-links';
 import type { FinancialFilters, FinancialTab } from './financials-links';
-import {
-  NO_ACCESS,
-  NO_DATA,
-  NO_MATCH,
-  PAGE_SUBTITLE,
-  sourceLine,
-  TAB_LABELS,
-  tabLabel,
-} from './financials-text';
+import { NO_ACCESS, NO_DATA, NO_MATCH, sourceLine, TAB_LABELS, tabLabel } from './financials-text';
 import { FinancialsToolbar } from './FinancialsToolbar';
 import { FinancialTotals } from './FinancialTotals';
 import { ImportDialog } from './ImportDialog';
 import { ImportHistoryPanel } from './ImportHistoryPanel';
-import { Pager } from './Pager';
 import { readFilters } from './schemas';
 import { TransactionsTable } from './TransactionsTable';
 import { useNarrow } from './useNarrow';
@@ -39,7 +33,7 @@ import styles from './FinancialsPage.module.css';
 /** Financials (015 US3): filters and paging live in the address; importers also see SWBS runs. */
 export function FinancialsPage() {
   usePageTitle('Financials');
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const location = useLocation();
   const filters = readFilters(params);
   const transactions = useFinancialTransactions(filters);
@@ -56,16 +50,17 @@ export function FinancialsPage() {
   const forbidden =
     transactions.error instanceof ApiError && transactions.error.kind === 'forbidden';
 
-  /** New filters: back to page 1 unless the page itself changes; typing replaces the address. */
-  function change(patch: Partial<FinancialFilters>, replace = false) {
-    setParams(writeFilters({ ...filters, page: 1, ...patch }), { replace });
+  /** New filters: back to page 1 unless the page itself changes; Back leaves the page. */
+  function change(patch: Partial<FinancialFilters>) {
+    setParams((latest) => writeFilters({ ...readFilters(latest), page: 1, ...patch }), {
+      replace: true,
+    });
   }
 
   return (
     <>
       <PageHeader
         title="Financials"
-        description={PAGE_SUBTITLE}
         actions={
           <>
             <Button variant="tertiary" icon={<History />} onClick={() => setOpen('history')}>
@@ -127,8 +122,10 @@ export function FinancialsPage() {
                       page={data.page}
                       pageSize={filters.pageSize}
                       total={data.total}
+                      sizes={PAGE_SIZES}
                       onPage={(page) => change({ page })}
                       onPageSize={(pageSize) => change({ pageSize })}
+                      placement="cardFooter"
                     />
                   </>
                 )

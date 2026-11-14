@@ -4,11 +4,10 @@ import type { Money } from './api';
 export const EDIT = 'Edit';
 export const DETAILS_TITLE = 'Details';
 export const GSAP_TITLE = 'GSAP data';
-export const GSAP_SUBTITLE = 'Read-only: filled by GSAP once it answers this purchase request.';
 export const GSAP_EMPTY = 'Empty until GSAP answers this purchase request.';
 export const LINES_TITLE = 'Lines';
 export const ROUTING_TITLE = 'Routing history';
-export const ROUTING_SUBTITLE = 'Each hand-off of the PR form to the requisitioner, newest first';
+export const ROUTING_SUBTITLE = 'Newest first';
 export const APPROVED_VERSION_TITLE = 'Approved version';
 export const CHANGED = 'Changed';
 export const NEW_LINE = 'New';
@@ -103,7 +102,7 @@ export function approvedOnText(when: string): string {
 }
 
 export function poSourceText(source: string): string {
-  return `PO number, line, status, date and value: filled by ${source}`;
+  return `PO fields filled by ${source}`;
 }
 
 export function inactive(name: string, active: boolean): string {

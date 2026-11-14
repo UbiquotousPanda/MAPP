@@ -1,9 +1,3 @@
-/* The form page (design system §2.4 C): the form column of section cards with the rail from
-   1280 px; the sticky footer spans the content column under both. */
-.page {
-  min-width: 0;
-}
-
 .form {
   display: flex;
   flex-direction: column;
@@ -21,77 +15,10 @@
   gap: var(--space-5);
 }
 
-.codingCard h2 {
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-lg);
-}
-
 .codingCard {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-}
-
-/* The activity's context in the rail (from 1280 px): one fact per row, amounts right-aligned. */
-.summaryRail {
-  padding: var(--space-5);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: var(--text-sm);
-}
-
-.summaryRail .summaryList {
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.summaryRail .summaryList div {
-  justify-content: space-between;
-}
-
-/* The activity's context stays in view while the form scrolls (FR-006). */
-.summaryBar {
-  position: sticky;
-  top: 0;
-  z-index: 4;
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  color: var(--ink);
-  font-size: var(--text-sm);
-}
-
-.summaryList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-5);
-  margin: 0;
-}
-
-.summaryList div {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.summaryList dt {
-  color: var(--ink-2);
-}
-
-.summaryList dd {
-  margin: 0;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.negative {
-  color: var(--status-problem-text);
 }
 
 .note {
@@ -117,7 +44,7 @@
   background: var(--chip);
   color: var(--ink);
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .readOnlyField {
@@ -129,12 +56,12 @@
 
 .readOnlyLabel {
   color: var(--ink);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .facts {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
   gap: var(--space-3) var(--space-5);
   margin: var(--space-3) 0 0;
   font-size: var(--text-sm);

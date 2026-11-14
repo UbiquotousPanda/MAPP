@@ -40,7 +40,7 @@ func (s *Service) Summaries(ctx context.Context, lineItemIDs []string) (Summarie
 		}
 		for _, pr := range prs {
 			out.Items = append(out.Items, Summary{ID: pr.ID, PlanID: pr.PlanID, Status: pr.Status,
-				AmountUSD: r.usd(pr.Lines), WaitingForGSAP: waiting(pr)})
+				AmountUSD: r.usd(pr.Lines), WaitingForGSAP: WaitingForGSAP(pr)})
 		}
 		return nil
 	})

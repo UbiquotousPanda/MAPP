@@ -1,8 +1,6 @@
 import { formatWhole } from '@/format/decimal';
 import type { ListSort } from './schemas';
 
-export const LIST_DESCRIPTION =
-  'Purchase requests of your plans, grouped by vendor. The requisitioner works from Waiting for GSAP.';
 export const SEARCH_LABEL = 'Search purchase requests';
 export const SEARCH_PLACEHOLDER = 'Search ID, name, vendor, HX key, GSAP PR or PO number';
 export const VIEW_ALL = 'All';
@@ -23,6 +21,8 @@ export const FILTER_LABELS = {
   owner: 'Owner',
   from: 'Created from',
   to: 'Created to',
+  created: 'Created',
+  createdBetween: 'Created between',
 } as const;
 
 export const SORT_WORDS: Record<ListSort, string> = {
@@ -41,9 +41,4 @@ export const SORT_WORDS: Record<ListSort, string> = {
 /** "1 purchase request", "12 purchase requests": the matching ones, or a vendor's. */
 export function countText(count: number): string {
   return count === 1 ? '1 purchase request' : `${formatWhole(count)} purchase requests`;
-}
-
-/** "Page 2 of 3". */
-export function pageText(page: number, pages: number): string {
-  return `Page ${formatWhole(page)} of ${formatWhole(pages)}`;
 }

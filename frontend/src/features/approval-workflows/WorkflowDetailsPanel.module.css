@@ -29,13 +29,6 @@
   gap: var(--space-3);
 }
 
-/* Sections inside a side panel: an h3, 16/24 bold (design system §5.5). */
-.heading {
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-md);
-}
-
 .activities {
   display: flex;
   flex-direction: column;

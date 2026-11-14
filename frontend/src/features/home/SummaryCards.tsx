@@ -1,6 +1,8 @@
 import { useCurrentUser } from '@/session/useSession';
 import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { cx } from '@/ui/cx';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
@@ -21,7 +23,6 @@ import {
 import { myActivitiesHref, plansListHref, waitingForMeHref } from './home-links';
 import { SectionError } from './SectionError';
 import styles from './SummaryCards.module.css';
-import { SummaryLinkCard } from './SummaryLinkCard';
 
 export function SummaryCards({ scope }: { scope: HomeScope }) {
   const person = useCurrentUser();
@@ -30,20 +31,22 @@ export function SummaryCards({ scope }: { scope: HomeScope }) {
 
   if (summary.isPending) {
     return (
-      <section aria-label="Summary" className={styles.cards}>
+      <StatStrip label="Summary">
         {[1, 2, 3, 4].map((card) => (
-          <div key={card} className={styles.placeholder}>
+          <div key={card}>
             <Skeleton lines={3} />
           </div>
         ))}
-      </section>
+      </StatStrip>
     );
   }
   if (summary.isError) {
     return (
-      <section aria-label="Summary" className={styles.failed}>
-        <SectionError onRetry={() => void summary.refetch()} />
-      </section>
+      <StatStrip label="Summary">
+        <div>
+          <SectionError onRetry={() => void summary.refetch()} />
+        </div>
+      </StatStrip>
     );
   }
 
@@ -53,8 +56,8 @@ export function SummaryCards({ scope }: { scope: HomeScope }) {
   const nothingPlanned = plannedCost.planCount === 0 || isZero(plannedCost.plannedCost);
 
   return (
-    <section aria-label="Summary" className={styles.cards}>
-      <SummaryLinkCard
+    <StatStrip label="Summary">
+      <SummaryCard
         label={plansCard.label}
         tip={plansCard.tip}
         value={formatWhole(plans.count)}
@@ -62,7 +65,7 @@ export function SummaryCards({ scope }: { scope: HomeScope }) {
         to={plansListHref(scope)}
         linkLabel="open the Plans list"
       />
-      <SummaryLinkCard
+      <SummaryCard
         label="Activities I own"
         tip="Activities you own, in the plans of these years."
         value={formatWhole(activitiesOwned.count)}
@@ -79,7 +82,7 @@ export function SummaryCards({ scope }: { scope: HomeScope }) {
         to={myActivitiesHref(person.id, activitiesOwned.yearFrom, activitiesOwned.yearTo)}
         linkLabel="open your activities"
       />
-      <SummaryLinkCard
+      <SummaryCard
         label="Waiting for my approval"
         tip="Submitted activities waiting at a level where you are an approver."
         value={formatWhole(waitingForMe.count)}
@@ -88,7 +91,7 @@ export function SummaryCards({ scope }: { scope: HomeScope }) {
         to={waitingForMeHref()}
         linkLabel="open Approvals"
       />
-      <SummaryLinkCard
+      <SummaryCard
         label="Planned cost vs plan budget"
         tip="Planned cost of the plans in scope compared with their plan budgets."
         value={nothingPlanned ? '—' : moneyCompact(plannedCost.plannedCost)}
@@ -107,7 +110,7 @@ export function SummaryCards({ scope }: { scope: HomeScope }) {
         to={plansListHref(scope)}
         linkLabel="open the Plans list"
       />
-    </section>
+    </StatStrip>
   );
 }
 

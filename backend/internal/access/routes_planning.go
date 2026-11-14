@@ -59,6 +59,7 @@ func lineItemRoutes() map[string]Rule {
 		"GET /api/v1/activities/{activityId}/line-items":              view(),
 		"POST /api/v1/activities/{activityId}/line-items":             inPlan(authz.ActivitiesEdit),
 		"GET /api/v1/activities/{activityId}/line-items/form-options": inPlan(authz.ActivitiesEdit),
+		"POST /api/v1/activities/{activityId}/line-items/preview":     inPlan(authz.ActivitiesEdit),
 		"GET /api/v1/line-items/{lineItemId}":                         view(),
 		"PATCH /api/v1/line-items/{lineItemId}":                       inPlan(authz.ActivitiesEdit),
 		"DELETE /api/v1/line-items/{lineItemId}":                      inPlan(authz.ActivitiesDelete),

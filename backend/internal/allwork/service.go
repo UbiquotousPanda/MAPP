@@ -43,6 +43,7 @@ func (s *Service) Query(ctx context.Context, a actor.Actor, q Query) (Result, er
 			return err
 		}
 		result = build(in).result
+		result.CanExport = len(exportable(ctx, in.data)) > 0
 		return nil
 	})
 	if err != nil {

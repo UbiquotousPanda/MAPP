@@ -1,9 +1,9 @@
 import { LoaderCircle } from 'lucide-react';
-import { Dialog } from 'radix-ui';
-import { useId, useRef, useState } from 'react';
+import { useId, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { ApiError } from '@/api/errors';
-import { Button } from '@/ui/Button/Button';
+import { FormDialog } from '@/ui/FormDialog/FormDialog';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { useToast } from '@/ui/Toast/useToast';
 import { formatWhole } from '@/format/decimal';
 import { midSentence, plural } from '@/format/text';
@@ -14,7 +14,6 @@ import styles from './ImportOptionsDialog.module.css';
 
 /** The largest file the API takes: 700 KB, which is about 950 KB once encoded (plan, D-051). */
 const MAX_FILE_BYTES = 700 * 1024;
-/** Each list of the review shows this many rows, then "and <n> more". */
 const ROWS_SHOWN = 100;
 
 const WRONG_TYPE =
@@ -28,20 +27,12 @@ export interface ImportOptionsDialogProps {
   onClose: () => void;
 }
 
-/**
- * Import options into <label> (feature 002, US6, FR-031): the person chooses a .csv or .xlsx file
- * made from the template; the API checks every row and the dialog lists the outcome — the options
- * to add, the rows already present (skipped) and the rows with problems, each with its row number
- * — before anything is added. **Add <n> options** adds only the new valid ones; Cancel adds
- * nothing. Nothing is ever removed, renamed or reactivated.
- */
+/** The API checks every row before anything is added; nothing is ever removed, renamed or reactivated. */
 export function ImportOptionsDialog({ attribute, onClose }: ImportOptionsDialogProps) {
   const { show } = useToast();
   const importOptions = useImportOptions();
   const fileFieldId = useId();
   const fileProblemId = useId();
-  const focusBeforeOpen = useRef<HTMLElement | null>(null);
-  // The file as the API takes it, kept for Add once it is checked.
   const [file, setFile] = useState<OptionImportRequest | null>(null);
   const [check, setCheck] = useState<OptionImportCheck | null>(null);
   const [checking, setChecking] = useState(false);
@@ -114,84 +105,48 @@ export function ImportOptionsDialog({ attribute, onClose }: ImportOptionsDialogP
   }
 
   return (
-    <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay className={styles.overlay} />
-        <Dialog.Content
-          className={styles.dialog}
-          onOpenAutoFocus={() => {
-            focusBeforeOpen.current =
-              document.activeElement instanceof HTMLElement ? document.activeElement : null;
-          }}
-          onCloseAutoFocus={(event) => {
-            event.preventDefault();
-            focusBeforeOpen.current?.focus();
-          }}
-        >
-          <Dialog.Title className={styles.title}>
-            {`Import options into ${attribute.label}`}
-          </Dialog.Title>
-          <Dialog.Description className={styles.text}>
-            {`Download the template, fill one row per option${
-              parent ? `, with its ${midSentence(parent.name)} option in the second column` : ''
-            }, then upload it. Nothing is added until you confirm.`}
-          </Dialog.Description>
-
-          <div className={styles.body}>
-            <div className={styles.fileField}>
-              <label htmlFor={fileFieldId} className={styles.label}>
-                Choose a file
-              </label>
-              <input
-                id={fileFieldId}
-                type="file"
-                accept=".csv,.xlsx"
-                className={styles.file}
-                aria-invalid={fileProblem ? true : undefined}
-                aria-describedby={fileProblem ? fileProblemId : undefined}
-                onChange={(event) => void chooseFile(event)}
-              />
-              {fileProblem && (
-                <p id={fileProblemId} className={styles.problem}>
-                  {fileProblem}
-                </p>
-              )}
-            </div>
-
-            {checking && (
-              <p role="status" className={styles.checking}>
-                <LoaderCircle aria-hidden="true" className={styles.spinner} />
-                <span className="visually-hidden">Loading…</span>
-              </p>
-            )}
-            {check && <Review check={check} dependent={parent !== null} />}
-            {failure && (
-              <p role="alert" className={styles.problem}>
-                {failure}
-              </p>
-            )}
-          </div>
-
-          <div className={styles.actions}>
-            <Dialog.Close asChild>
-              <Button>Cancel</Button>
-            </Dialog.Close>
-            {check && check.toAdd.length > 0 && (
-              <Button
-                variant="primary"
-                icon={
-                  importOptions.isPending ? <LoaderCircle className={styles.spinner} /> : undefined
-                }
-                aria-busy={importOptions.isPending || undefined}
-                onClick={() => void add()}
-              >
-                {`Add ${plural(check.toAdd.length, 'option')}`}
-              </Button>
-            )}
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <FormDialog
+      open
+      onOpenChange={(open) => !open && onClose()}
+      title={`Import options into ${attribute.label}`}
+      description={`Download the template, fill one row per option${
+        parent ? `, with its ${midSentence(parent.name)} option in the second column` : ''
+      }, then upload it. Nothing is added until you confirm.`}
+      size="lg"
+      submitLabel={
+        check && check.toAdd.length > 0 ? `Add ${plural(check.toAdd.length, 'option')}` : undefined
+      }
+      onSubmit={() => void add()}
+      busy={importOptions.isPending}
+    >
+      <div className={styles.fileField}>
+        <label htmlFor={fileFieldId} className={styles.label}>
+          Choose a file
+        </label>
+        <input
+          id={fileFieldId}
+          type="file"
+          accept=".csv,.xlsx"
+          className={styles.file}
+          aria-invalid={fileProblem ? true : undefined}
+          aria-describedby={fileProblem ? fileProblemId : undefined}
+          onChange={(event) => void chooseFile(event)}
+        />
+        {fileProblem && (
+          <InlineError id={fileProblemId} quiet>
+            {fileProblem}
+          </InlineError>
+        )}
+      </div>
+      {checking && (
+        <p role="status" className={styles.checking}>
+          <LoaderCircle aria-hidden="true" className={styles.spinner} />
+          <span className="visually-hidden">Loading…</span>
+        </p>
+      )}
+      {check && <Review check={check} dependent={parent !== null} />}
+      {failure && <InlineError>{failure}</InlineError>}
+    </FormDialog>
   );
 }
 
@@ -201,7 +156,6 @@ interface ReviewProps {
   dependent: boolean;
 }
 
-/** Every row's outcome at once, in three lists with their row numbers (US6 scenario 1). */
 function Review({ check, dependent }: ReviewProps) {
   const toAdd = `${plural(check.toAdd.length, 'option')} to add`;
   const present = `${formatWhole(check.alreadyPresent.length)} already present (skipped)`;
@@ -225,9 +179,7 @@ interface RowListProps {
   summary: string;
   rows: ImportRow[];
   dependent: boolean;
-  /** Shown unfolded at first. */
   open?: boolean;
-  /** Its messages are problems. */
   problem?: boolean;
 }
 
@@ -261,7 +213,6 @@ function RowList({ summary, rows, dependent, open = false, problem = false }: Ro
   );
 }
 
-/** The file's bytes as base64, as the API takes them. */
 function readAsBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

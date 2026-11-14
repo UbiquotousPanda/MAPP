@@ -1,7 +1,7 @@
 import type { UseQueryResult } from '@tanstack/react-query';
-import { CircleAlert, Info } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
-import { Navigate, useLocation, useSearchParams } from 'react-router';
+import { Navigate, useLocation } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import type { components } from '@/api/generated/schema';
 import { PublicLayout } from '@/ui/PublicLayout/PublicLayout';
@@ -10,10 +10,12 @@ import { useSession } from '@/session/useSession';
 import type { SessionEnd } from '@/session/useSession';
 import { Avatar } from '@/ui/Avatar/Avatar';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { safeNext } from '@/session/safe-next';
 import { ProductName } from '@/ui/Logo/Logo';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useDemoPeople } from './api';
 import { lostChangesOf, noticeOf } from './schemas';
 import { SignInForm } from './SignInForm';
@@ -30,7 +32,7 @@ const NOTICES: Record<SessionEnd, string> = {
 export function SignInPage() {
   usePageTitle('Sign in');
   const { status } = useSession();
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useAddressParams();
 
   if (status === 'loading' || status === 'unreachable') {
     return <SessionCheckPage title="Sign in" />;
@@ -126,22 +128,17 @@ function SignInChoices() {
 
   return (
     <>
-      <div className={styles.demoNotice} role="note">
-        <Info aria-hidden="true" />
-        <div>
-          <p className={styles.strong}>Demo sign-in — Shell single sign-on comes later</p>
-          {demoPeople.data && (
-            <p>
-              All demo people share the password <code>{demoPeople.data.password}</code>.
-            </p>
-          )}
-        </div>
-      </div>
+      <InlineAlert tone="info" title="Demo sign-in">
+        {demoPeople.data && (
+          <p>
+            All demo people share the password <code>{demoPeople.data.password}</code>.
+          </p>
+        )}
+      </InlineAlert>
       {failure && (
-        <p role="alert" className={styles.failure}>
-          <CircleAlert />
+        <InlineAlert tone="danger" role="alert">
           {failure}
-        </p>
+        </InlineAlert>
       )}
       <SignInForm signingIn={signingIn} onSignIn={attemptSignIn} />
       <DemoPeopleSection query={demoPeople} onChoose={signInAs} />
@@ -159,10 +156,9 @@ function DemoPeopleSection({ query, onChoose }: DemoPeopleSectionProps) {
 
   return (
     <section aria-labelledby={headingId} className={styles.demoPeople}>
-      <h2 id={headingId} className={styles.sectionTitle}>
+      <SectionHeading level={2} rank="sub" id={headingId}>
         Explore as a demo person
-      </h2>
-      <p className={styles.hint}>Choose a person to sign in as them — no typing needed.</p>
+      </SectionHeading>
       <DemoPeopleContent query={query} onChoose={onChoose} />
     </section>
   );

@@ -18,13 +18,6 @@ export const SECTIONS = [
 
 export type SectionId = (typeof SECTIONS)[number]['id'];
 
-/** "Default: …" while the field still holds the value the defaults gave it (FR-006). */
-export type DefaultHint = (
-  key: keyof PlanFormValues,
-  text: string,
-  given?: boolean,
-) => string | undefined;
-
 export interface SectionProps {
   control: Control<PlanFormValues>;
   values: PlanFormValues;
@@ -32,7 +25,6 @@ export interface SectionProps {
   /** Edit: the plan as it was when the form opened. */
   plan?: Plan;
   with016: boolean;
-  hint: DefaultHint;
 }
 
 interface NeededCount {
@@ -81,9 +73,4 @@ export function neededFields(
   const total = sections.reduce((sum, section) => sum + section.total, 0);
   const missing = sections.reduce((sum, section) => sum + section.missing, 0);
   return { filled: total - missing, total, bySection };
-}
-
-/** "9 of 15 needed fields filled". */
-export function progressText({ filled, total }: { filled: number; total: number }): string {
-  return `${filled} of ${total} needed fields filled`;
 }

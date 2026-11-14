@@ -1,0 +1,129 @@
+import type { ReactNode } from 'react';
+import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { RankedList, useRankedState } from '../shared';
+import type { RankedColumn, ReportAddress, ReportFrameData } from '../shared';
+import { useFunnelReport, useFunnelRanked } from '../revenue/api';
+import type { FunnelFigures, FunnelRankedParams } from '../revenue/api';
+import { useOwnParam } from '../shared/useOwnParam';
+import { performanceText } from '../revenue/variance';
+import { PerformanceCell } from '../revenue/PerformanceCell';
+import { FunnelCards } from './FunnelCards';
+import { FunnelChart } from './FunnelChart';
+import { stageName } from './stage-words';
+import styles from './Funnel.module.css';
+
+const LEVELS = ['plan', 'campaign', 'initiative', 'activity'];
+const DEFAULT_SORT = 'projected';
+
+interface FunnelBodyProps {
+  frame: ReportFrameData;
+  address: ReportAddress;
+  stage: 'inq' | 'mql';
+  /** The conversion trend, shown after the stage's own series. */
+  trend?: ReactNode;
+}
+
+/** One funnel stage against goal (049 US2): cards, series, the conversion trend and the ranked list. */
+export function FunnelBody({ frame, address, stage, trend }: FunnelBodyProps) {
+  const [category] = useOwnParam('category');
+  const report = useFunnelReport(address, {
+    category: category || undefined,
+    stage,
+  });
+  const { state } = useRankedState(DEFAULT_SORT);
+  const ranked = useFunnelRanked(address, rankedParams(state, category, stage));
+  const show = address.show ?? 'campaign';
+  const whole = (value: number | null) => (value === null ? '—' : value.toLocaleString());
+  const columns: RankedColumn<FunnelFigures>[] = [
+    { key: 'goal', label: 'Goal', value: (f) => whole(f.goal) },
+    { key: 'actual', label: 'Actual', value: (f) => whole(f.actual) },
+    { key: 'projected', label: 'Projected', value: (f) => whole(f.projected) },
+    {
+      key: 'performance',
+      label: 'Performance',
+      value: (f) => performanceText(f.performance, f.variance),
+      render: (f) => <PerformanceCell figures={f} />,
+    },
+    {
+      key: 'conversion',
+      label: 'Conversion',
+      value: (f) => (f.conversion !== null ? `${f.conversion}%` : '—'),
+      sortable: false,
+    },
+    {
+      key: 'model',
+      label: 'Projection model',
+      value: (f) => f.projection?.modelName ?? '—',
+      sortable: false,
+    },
+  ];
+  const groups = [
+    { value: 'none', label: 'None' },
+    { value: 'plan', label: 'Plan' },
+    { value: 'owner', label: 'Owner' },
+    ...frame.choices.attributeGroups
+      .filter((g) => LEVELS.includes(g.level) && LEVELS.indexOf(g.level) <= LEVELS.indexOf(show))
+      .map((g) => ({ value: `attr:${g.attributeId}`, label: g.label })),
+  ];
+  return (
+    <div className={styles.body}>
+      {report.data ? (
+        <>
+          <FunnelCards
+            stage={report.data.stage}
+            cards={report.data.cards}
+            projections={report.data.projections}
+          />
+          <FunnelChart report={report.data} />
+          {trend}
+          {report.data.uncoveredCount > 0 && (
+            <p>
+              {report.data.uncoveredCount === 1
+                ? '1 plan uses'
+                : `${report.data.uncoveredCount} plans use`}{' '}
+              a model that does not allow this stage.
+            </p>
+          )}
+        </>
+      ) : report.isError ? (
+        <ErrorState error={report.error} onRetry={() => void report.refetch()} />
+      ) : (
+        <div aria-label="Loading the figures">
+          <Skeleton lines={4} height="24px" />
+        </div>
+      )}
+      <RankedList
+        levelFallback="campaign"
+        report="performance"
+        owner
+        data={ranked.data}
+        error={ranked.isError ? ranked.error : null}
+        onRetry={() => void ranked.refetch()}
+        columns={columns}
+        groups={groups}
+        defaultSort={DEFAULT_SORT}
+        caption={`Stage: ${stageName(stage)}`}
+      />
+    </div>
+  );
+}
+
+function rankedParams(
+  state: ReturnType<typeof useRankedState>['state'],
+  category: string,
+  stage: 'inq' | 'mql',
+): FunnelRankedParams {
+  const sorts = ['actual', 'projected', 'goal', 'performance'] as const;
+  return {
+    sort: sorts.find((s) => s === state.sort) ?? 'projected',
+    order: state.order,
+    size: state.size,
+    page: state.page,
+    ...(state.group !== 'none' && { group: state.group }),
+    ...(state.q && { q: state.q }),
+    ...(state.drill && { drill: state.drill }),
+    ...(category && { category }),
+    stage,
+  };
+}

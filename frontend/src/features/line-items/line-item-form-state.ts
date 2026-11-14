@@ -1,20 +1,7 @@
-/**
- * The line-item form's state and its rules (007 plan, "Line-item form"): the defaults with their
- * sources (FR-008), the currency change that keeps the pre-filled balance (FR-012), the custom
- * grid's start (D-152) and the finance budget item a year change clears (FR-015, D-151).
- */
 import type { components } from '@/api/generated/schema';
-import { toCents } from '@/format/decimal';
+import { formatAmount, toCents } from '@/format/decimal';
 import type { LineItem, LineItemFormOptions } from './api';
-import {
-  amountText,
-  centsInput,
-  convert,
-  customGridMonths,
-  parseAmount,
-  splitEvenly,
-  spreadMonths,
-} from './line-item-math';
+import { centsInput, customGridMonths, moneyText } from './line-item-math';
 import type { ActivityDates, SpreadMethod } from './line-item-math';
 import {
   changedToText,
@@ -22,89 +9,62 @@ import {
   NOTHING_LEFT,
   preselectedText,
   ROUNDING_HINT,
-  SOURCE,
+  PLANNED_COST_SOURCE,
 } from './line-item-text';
 
 type AttributeValues = components['schemas']['AttributeValues'];
 type FinanceBudgetItemRef = components['schemas']['FinanceBudgetItemRef'];
 type LineItemCurrency = components['schemas']['LineItemCurrency'];
+type Money = components['schemas']['Money'];
+type SpreadMonthInput = components['schemas']['SpreadMonthInput'];
 
-/** One month of the custom grid, as typed. */
 export interface CustomMonth {
-  /** "2026-02". */
   month: string;
-  /** What is typed; "" for nothing. */
   amount: string;
 }
 
-/** The fields that show where their pre-filled value came from. */
-export const SOURCE_FIELDS = [
-  'name',
-  'ownerId',
-  'currency',
-  'plannedCost',
-  'spread',
-  'financeBudgetYear',
-  'financeBudgetItemId',
-  'requestSwbs',
-] as const;
+export const SOURCE_FIELDS = ['plannedCost', 'financeBudgetItemId'] as const;
 
 export type SourceField = (typeof SOURCE_FIELDS)[number];
 
 export interface LineItemFormState {
   name: string;
-  /** A person id; "" for nobody. */
   ownerId: string;
   description: string;
   currency: string;
-  /** The planned cost as typed ("20,000.00"). */
   plannedCost: string;
-  /**
-   * The pre-filled unassigned balance in the plan currency ("20000.00"; USD before 016) while the
-   * planned cost still holds it (FR-012, 016 FR-015); null once the person types an amount.
-   */
+  /** The pre-filled balance in the plan currency while the planned cost still holds it; null once typed. */
   prefilled: string | null;
-  /** "Changed to 18,400.00 EUR = 20,000.00 USD", and the rounding hint when needed (FR-012). */
+  /** "Changed to 18,400.00 EUR = 20,000.00 USD", and the rounding hint when needed. */
   costNotes: string[];
   spreadMethod: SpreadMethod;
   /** The custom grid; kept when another method is chosen, so choosing Custom again restores it. */
   customMonths: CustomMonth[];
-  /** The custom amounts were typed (or saved): leaving Custom replaces them (FR-018, D-151). */
+  /** The custom amounts were typed (or saved): leaving Custom replaces them. */
   customTyped: boolean;
   attributes: AttributeValues;
   contractedAmount: string;
   requestSwbs: boolean;
   financeBudgetYear: number | null;
-  /** "" for none. */
   financeBudgetItemId: string;
-  /** The item a year change will clear on save, with the note at the field (FR-015, D-151). */
+  /** The item a year change will clear on save, with the note at the field. */
   clearedItem: FinanceBudgetItemRef | null;
-  /** Where pre-filled values came from, shown until the person changes them (FR-008). */
   sources: Partial<Record<SourceField, string>>;
 }
 
-/** A new line item's form, filled in with the defaults and their sources (FR-008). */
 export function newFormState(options: LineItemFormOptions): LineItemFormState {
   const { defaults } = options;
   const preselected = defaults.financeBudgetItemPreselected
     ? options.financeBudgetItems.find((item) => item.id === defaults.financeBudgetItemId)
     : undefined;
   const sources: LineItemFormState['sources'] = {
-    name: SOURCE.name,
-    currency: SOURCE.currency,
     plannedCost:
       defaults.plannedCostSource === 'unassignedBalance'
-        ? SOURCE.plannedCost
+        ? PLANNED_COST_SOURCE
         : defaults.plannedCostSource === 'nothingLeftToAssign'
           ? NOTHING_LEFT
           : NO_COST_TO_PREFILL,
-    spread: SOURCE.spread,
-    financeBudgetYear: SOURCE.year,
-    requestSwbs: SOURCE.requestSwbs,
   };
-  if (defaults.owner) {
-    sources.ownerId = SOURCE.owner;
-  }
   if (preselected) {
     sources.financeBudgetItemId = preselectedText(preselected.budgetName);
   }
@@ -129,7 +89,6 @@ export function newFormState(options: LineItemFormOptions): LineItemFormState {
   };
 }
 
-/** A stored line item's form (FR-027). */
 export function editFormState(lineItem: LineItem): LineItemFormState {
   const custom = lineItem.spread.method === 'custom';
   return {
@@ -160,7 +119,6 @@ export function editFormState(lineItem: LineItem): LineItemFormState {
   };
 }
 
-/** The state with one field changed by the person: its source note goes. */
 export function withField<K extends keyof LineItemFormState>(
   state: LineItemFormState,
   field: K,
@@ -174,40 +132,38 @@ export function withField<K extends keyof LineItemFormState>(
   return { ...state, [field]: value, sources };
 }
 
-/** A typed planned cost: no longer the pre-filled balance (FR-012). */
 export function changePlannedCost(state: LineItemFormState, text: string): LineItemFormState {
   return { ...withField(state, 'plannedCost', text), prefilled: null, costNotes: [] };
 }
 
-/**
- * Another currency. While the planned cost still holds the pre-filled balance, it is converted so
- * that its value in the plan currency stays the balance, and the form says so (FR-012; 016 FR-015:
- * "the pre-filled balance keeps its plan-currency value"). The plan currency is USD before 016.
- */
-export function changeCurrency(
-  state: LineItemFormState,
-  code: string,
-  currencies: LineItemCurrency[],
-  planCode = 'USD',
-): LineItemFormState {
-  const next = withField(state, 'currency', code);
-  const currency = currencies.find((candidate) => candidate.code === code);
-  const planRate = rateOf(currencies, planCode);
-  if (state.prefilled === null || !currency || planRate === null) {
-    return next;
-  }
-  const balance = toCents(state.prefilled);
-  const local = convert(balance, planRate, currency.ratePerUsd);
-  const back = convert(local, currency.ratePerUsd, planRate);
-  const notes =
-    code === planCode ? [] : [changedToText(amountText(local, code), amountText(back, planCode))];
-  if (code !== planCode && back !== balance) {
-    notes.push(ROUNDING_HINT);
-  }
-  return { ...next, plannedCost: centsInput(local), costNotes: notes };
+/** Choosing a currency keeps a pre-filled balance pre-filled: withBalance converts it once the API answers. */
+export function changeCurrency(state: LineItemFormState, code: string): LineItemFormState {
+  return withField(state, 'currency', code);
 }
 
-/** A currency's rate per 1 USD from the form's currencies; USD is 1; null when it is not there. */
+/** The API's balance in the chosen currency, with its note; unchanged once typed over or already shown. */
+export function withBalance(
+  state: LineItemFormState,
+  balanceIn: Money | null | undefined,
+  balanceInPlan: Money | null | undefined,
+): LineItemFormState {
+  if (state.prefilled === null || !balanceIn || !balanceInPlan) {
+    return state;
+  }
+  const cost = formatAmount(balanceIn.amount);
+  if (balanceIn.currency !== state.currency || cost === state.plannedCost) {
+    return state;
+  }
+  const notes =
+    balanceIn.currency === balanceInPlan.currency
+      ? []
+      : [changedToText(moneyText(balanceIn), moneyText(balanceInPlan))];
+  if (notes.length > 0 && balanceInPlan.amount !== state.prefilled) {
+    notes.push(ROUNDING_HINT);
+  }
+  return { ...state, plannedCost: cost, costNotes: notes };
+}
+
 export function rateOf(currencies: LineItemCurrency[], code: string): string | null {
   if (code === 'USD') {
     return '1';
@@ -215,36 +171,27 @@ export function rateOf(currencies: LineItemCurrency[], code: string): string | n
   return currencies.find((candidate) => candidate.code === code)?.ratePerUsd ?? null;
 }
 
-/**
- * Another spread method. Custom starts from the current spread over the grid's months (an even
- * spread when nothing is spread yet), unless the grid already has amounts (D-152).
- */
+/** Custom starts from the API's seed of the current spread, unless the grid already has amounts. */
 export function changeSpreadMethod(
   state: LineItemFormState,
   method: SpreadMethod,
   dates: ActivityDates,
   planYear: number,
+  seed: SpreadMonthInput[] = [],
 ): LineItemFormState {
   const next = withField(state, 'spreadMethod', method);
   if (method !== 'custom' || state.customMonths.length > 0) {
     return next;
   }
-  const months = customGridMonths(dates, planYear);
-  const cents = parseAmount(state.plannedCost) ?? 0n;
-  const current =
-    state.spreadMethod === 'custom' ? null : spreadMonths(state.spreadMethod, cents, dates);
-  const amounts =
-    current && current.state === 'spread' ? current.months : splitEvenly(cents, months);
   return {
     ...next,
-    customMonths: months.map((month) => {
-      const amount = amounts.find((candidate) => candidate.month === month);
-      return { month, amount: amount ? centsInput(amount.cents) : '' };
+    customMonths: customGridMonths(dates, planYear).map((month) => {
+      const amount = seed.find((candidate) => candidate.month === month);
+      return { month, amount: amount ? formatAmount(amount.amount) : '' };
     }),
   };
 }
 
-/** A typed custom month amount. */
 export function changeCustomMonth(
   state: LineItemFormState,
   month: string,
@@ -259,7 +206,6 @@ export function changeCustomMonth(
   };
 }
 
-/** A month added before or after the custom grid (FR-018). */
 export function addCustomMonth(state: LineItemFormState, month: string): LineItemFormState {
   const months = [...state.customMonths, { month, amount: '' }].sort((a, b) =>
     a.month.localeCompare(b.month),
@@ -267,10 +213,7 @@ export function addCustomMonth(state: LineItemFormState, month: string): LineIte
   return { ...state, customTyped: true, customMonths: months };
 }
 
-/**
- * Another finance budget year: an item of another year is cleared on save and the field says so;
- * going back to its year brings it back (FR-015, D-151).
- */
+/** An item of another year is cleared on save and the field says so; its own year brings it back. */
 export function changeBudgetYear(
   state: LineItemFormState,
   year: number | null,
@@ -288,7 +231,6 @@ export function changeBudgetYear(
   return next;
 }
 
-/** The input id of a custom month: "spread.month.2026-02". */
 export function monthFieldId(month: string): string {
   return `spread.month.${month}`;
 }

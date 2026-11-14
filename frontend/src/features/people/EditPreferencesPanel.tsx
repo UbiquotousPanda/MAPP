@@ -26,18 +26,13 @@ function currencyChoice(currency: DisplayCurrencyOption): ChoiceOption {
   return { id: currency.code, label: currencyLabel(currency), active: currency.active };
 }
 
-/** The four date formats, each with 12 March 2026 written in it (FR-024). */
 const DATE_FORMAT_CHOICES: ChoiceOption[] = DATE_FORMATS.map((format) => ({
   id: format.value,
   label: format.label,
   active: true,
 }));
 
-/**
- * "Edit display preferences" (US4-3, US4-4, FR-023, FR-024): the display currency and the date
- * format, saved together with PATCH /api/v1/me/preferences. Afterwards dates use the new format at
- * once and every list is asked again, so amounts come converted by the API (SC-006).
- */
+/** After saving, every list is asked again so amounts come converted by the API. */
 export function EditPreferencesPanel({ onClose }: { onClose: () => void }) {
   const format = useFormatters();
   const { show } = useToast();
@@ -56,7 +51,7 @@ export function EditPreferencesPanel({ onClose }: { onClose: () => void }) {
   async function save({ displayCurrency, dateFormat }: PreferencesValues) {
     setSaving(true);
     try {
-      // Both preferences in one request: one save, one meaning (D-068).
+      // Both preferences in one request: one save, one meaning.
       await updatePreferences.mutateAsync({ displayCurrency, dateFormat });
       show({ message: 'Your preferences saved' });
       onClose();
@@ -90,7 +85,7 @@ export function EditPreferencesPanel({ onClose }: { onClose: () => void }) {
           render={(field) => (
             <ChoiceField
               label="Display currency"
-              hint={DISPLAY_CURRENCY_NOTE}
+              tip={DISPLAY_CURRENCY_NOTE}
               options={currencies.data.items.map(currencyChoice)}
               {...field}
             />

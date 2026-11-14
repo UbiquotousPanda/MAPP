@@ -1,6 +1,8 @@
 import { Card } from '@/ui/Card/Card';
 import { formatMoneyText } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import dataTable from '@/ui/Table/Table.module.css';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { PurchaseRequest, PurchaseRequestVersion } from './api';
 import { Detail, DetailsList } from './Details';
 import { APPROVED_VERSION_TITLE, approvedOnText, inactive } from './page-text';
@@ -38,17 +40,17 @@ function VersionCard({ version }: { version: PurchaseRequestVersion }) {
             {formatMoneyText(version.amountDisplay)}
           </Detail>
         </DetailsList>
-        <div className={styles.scroll}>
-          <table className={styles.table}>
+        <ScrollBox label={`${APPROVED_VERSION_TITLE}: lines`}>
+          <table className={dataTable.table}>
             <caption className="visually-hidden">{`${APPROVED_VERSION_TITLE}: lines`}</caption>
             <thead>
               <tr>
                 <th scope="col">{FIELD_LABELS.lineItem}</th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   {FIELD_LABELS.lineAmount}
                 </th>
                 <th scope="col">{FIELD_LABELS.deliveryDate}</th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   {FIELD_LABELS.overallLimit}
                 </th>
               </tr>
@@ -57,16 +59,16 @@ function VersionCard({ version }: { version: PurchaseRequestVersion }) {
               {version.lines.map((line) => (
                 <tr key={line.id}>
                   <th scope="row">{`${line.lineItemId} · ${line.hxKey}`}</th>
-                  <td className={styles.number}>{formatMoneyText(line.amount)}</td>
+                  <td className={dataTable.numeric}>{formatMoneyText(line.amount)}</td>
                   <td>{date(line.deliveryDate)}</td>
-                  <td className={styles.number}>
+                  <td className={dataTable.numeric}>
                     {line.overallLimit ? formatMoneyText(line.overallLimit) : '—'}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollBox>
       </div>
     </Card>
   );

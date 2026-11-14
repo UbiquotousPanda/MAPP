@@ -3,11 +3,9 @@ import {
   deactivateSentences,
   deleteTeamText,
   membersText,
-  peopleCountText,
   plansText,
   reportsText,
   teamInUseText,
-  teamsCountText,
   usageText,
   usedByText,
 } from './texts';
@@ -21,15 +19,6 @@ const use = (role: UsageCount['role'], count: number, label: string): UsageCount
 });
 
 describe('feature 003 texts', () => {
-  it('counts people and teams, with "of" while some are hidden', () => {
-    expect(peopleCountText(1, 1)).toBe('1 person');
-    expect(peopleCountText(6, 6)).toBe('6 people');
-    expect(peopleCountText(2, 6)).toBe('2 of 6 people');
-    expect(teamsCountText(1, 1)).toBe('1 team');
-    expect(teamsCountText(3, 3)).toBe('3 teams');
-    expect(teamsCountText(0, 3)).toBe('0 of 3 teams');
-  });
-
   it('says how many members and plans a team has', () => {
     expect(membersText(0)).toBe('No members');
     expect(membersText(1)).toBe('1 member');

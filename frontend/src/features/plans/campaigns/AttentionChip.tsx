@@ -1,53 +1,42 @@
 import { ChevronDown } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import type { ItemBelow, MissingField } from '@/ui/CompletenessChip/CompletenessChip';
+import { Popover } from '@/ui/Popover/Popover';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import styles from './AttentionChip.module.css';
 
 export interface AttentionChipProps {
-  /** The record's own empty needed fields. */
   missing: MissingField[];
-  /** Takes the person to the chosen field (its edit form). */
   onSelectField?: (id: string) => void;
-  /** Records below that need attention: a list with links (a plan's) or a count. */
   itemsBelow?: number | ItemBelow[];
-  /** With a count: opens the place that lists them. */
+  /** With a count of records below: opens the place that lists them. */
   onItemsBelowSelect?: () => void;
-  /**
-   * Tree rows: "2 items below" on the chip (the popover and screen readers keep the whole
-   * sentence), so the Status column stays narrow.
-   */
+  /** Rows: "2 problems", the whole sentence in the tooltip, so the Status column stays narrow. */
   compact?: boolean;
+  /** Under a row that already shows the chip: a dot only, so one problem is not on every row. */
+  quiet?: boolean;
 }
 
-/** "1 field needed" / "3 fields needed". */
 function fieldsNeeded(count: number): string {
   return count === 1 ? '1 field needed' : `${count} fields needed`;
 }
 
-/** "1 item below needs attention" / "5 items below need attention". */
 function itemsBelowNeedAttention(count: number): string {
   return count === 1 ? '1 item below needs attention' : `${count} items below need attention`;
 }
 
-/**
- * The one completeness chip of a tree row, a panel or a page header (design system §4.1: at most
- * two chips per row, the status and one problem chip). "All filled in" when nothing is missing;
- * otherwise one red chip — the record's own missing fields first, else the records below — whose
- * popover lists everything: each missing field (it opens the form on that field) and the records
- * below that need attention.
- */
+/** One completeness chip (design system §4.1: at most two chips per row); its popover lists every problem. */
 export function AttentionChip({
   missing,
   onSelectField,
   itemsBelow = 0,
   onItemsBelowSelect,
   compact = false,
+  quiet = false,
 }: AttentionChipProps) {
   const [open, setOpen] = useState(false);
-  // The field or action chosen in the list; it runs once the list has closed, so the focus can
-  // move to the field instead of coming back to the chip.
+  // Runs once the list has closed, so the focus moves to the field instead of back to the chip.
   const chosen = useRef<(() => void) | null>(null);
   const below = typeof itemsBelow === 'number' ? itemsBelow : itemsBelow.length;
 
@@ -65,88 +54,106 @@ export function AttentionChip({
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger className={`${styles.chip} ${styles.problem}`}>
-        {compact && missing.length === 0 ? (
-          <>
-            <span aria-hidden="true">{below === 1 ? '1 item below' : `${below} items below`}</span>
-            <span className="visually-hidden">{summary}</span>
-          </>
-        ) : (
-          summary
+      <Trigger
+        summary={summary}
+        below={missing.length === 0 ? below : 0}
+        compact={compact}
+        quiet={quiet}
+      />
+      <Popover.Content
+        className={styles.list}
+        aria-label={summary}
+        onCloseAutoFocus={(event) => {
+          const action = chosen.current;
+          chosen.current = null;
+          if (action) {
+            event.preventDefault();
+            action();
+          }
+        }}
+      >
+        {missing.length > 0 && (
+          <div className={styles.group}>
+            <p className={styles.groupTitle}>{fieldsNeeded(missing.length)}</p>
+            <ul>
+              {missing.map((field) => (
+                <li key={field.id}>
+                  {onSelectField ? (
+                    <button
+                      type="button"
+                      className={styles.item}
+                      onClick={() => choose(() => onSelectField(field.id))}
+                    >
+                      {field.label}
+                    </button>
+                  ) : (
+                    <span className={styles.text}>{field.label}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
-        {/* Tree and table rows leave the chevron out, so the Status column stays narrow enough
-            for the whole tree to fit a 1,440 px screen; the red chip is still the button. */}
-        {!compact && <ChevronDown aria-hidden="true" />}
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          className={styles.list}
-          align="start"
-          sideOffset={6}
-          aria-label={summary}
-          onCloseAutoFocus={(event) => {
-            const action = chosen.current;
-            chosen.current = null;
-            if (action) {
-              event.preventDefault();
-              action();
-            }
-          }}
-        >
-          {missing.length > 0 && (
-            <div className={styles.group}>
-              <p className={styles.groupTitle}>{fieldsNeeded(missing.length)}</p>
+        {below > 0 && (
+          <div className={styles.group}>
+            <p className={styles.groupTitle}>{itemsBelowNeedAttention(below)}</p>
+            {typeof itemsBelow === 'number' ? (
+              onItemsBelowSelect && (
+                <ul>
+                  <li>
+                    <button
+                      type="button"
+                      className={styles.item}
+                      onClick={() => choose(onItemsBelowSelect)}
+                    >
+                      Show them
+                    </button>
+                  </li>
+                </ul>
+              )
+            ) : (
               <ul>
-                {missing.map((field) => (
-                  <li key={field.id}>
-                    {onSelectField ? (
-                      <button
-                        type="button"
-                        className={styles.item}
-                        onClick={() => choose(() => onSelectField(field.id))}
-                      >
-                        {field.label}
-                      </button>
-                    ) : (
-                      <span className={styles.text}>{field.label}</span>
-                    )}
+                {itemsBelow.map((item) => (
+                  <li key={item.id}>
+                    <Link to={item.href} className={styles.item} onClick={() => setOpen(false)}>
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
-          {below > 0 && (
-            <div className={styles.group}>
-              <p className={styles.groupTitle}>{itemsBelowNeedAttention(below)}</p>
-              {typeof itemsBelow === 'number' ? (
-                onItemsBelowSelect && (
-                  <ul>
-                    <li>
-                      <button
-                        type="button"
-                        className={styles.item}
-                        onClick={() => choose(onItemsBelowSelect)}
-                      >
-                        Show them
-                      </button>
-                    </li>
-                  </ul>
-                )
-              ) : (
-                <ul>
-                  {itemsBelow.map((item) => (
-                    <li key={item.id}>
-                      <Link to={item.href} className={styles.item} onClick={() => setOpen(false)}>
-                        {item.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </Popover.Content>
-      </Popover.Portal>
+            )}
+          </div>
+        )}
+      </Popover.Content>
     </Popover.Root>
+  );
+}
+
+function Trigger({
+  summary,
+  below,
+  compact,
+  quiet,
+}: {
+  summary: string;
+  below: number;
+  compact: boolean;
+  quiet: boolean;
+}) {
+  if (!compact || below === 0) {
+    return (
+      <Popover.Trigger className={`${styles.chip} ${styles.problem}`}>
+        {summary}
+        {!compact && <ChevronDown aria-hidden="true" />}
+      </Popover.Trigger>
+    );
+  }
+  return (
+    <Tooltip content={summary}>
+      <Popover.Trigger className={quiet ? styles.dot : `${styles.chip} ${styles.problem}`}>
+        {!quiet && (below === 1 ? '1 problem' : `${below} problems`)}
+        <span className="visually-hidden">{quiet ? summary : ` — ${summary}`}</span>
+      </Popover.Trigger>
+    </Tooltip>
   );
 }

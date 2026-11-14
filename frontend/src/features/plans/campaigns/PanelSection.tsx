@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import type { ReactNode } from 'react';
 import { FieldHelpTip } from '@/features/settings';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import styles from './PanelSection.module.css';
 
 export interface PanelSectionProps {
@@ -15,9 +16,9 @@ export function PanelSection({ title, children, id }: PanelSectionProps) {
   const headingId = useId();
   return (
     <section id={id} aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.title}>
-        {title}
-      </h3>
+      <SectionHeading level={3} rank="sub" id={headingId}>
+        <span className={styles.title}>{title}</span>
+      </SectionHeading>
       {children}
     </section>
   );

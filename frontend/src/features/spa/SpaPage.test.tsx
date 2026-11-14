@@ -8,6 +8,7 @@ import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, pending, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { SpaPage } from './SpaPage';
 
 const VIEW = 'GET /api/v1/plans/{planId}/spa';
@@ -146,7 +147,11 @@ describe('SpaPage choices (013 FR-005, FR-017 – FR-019, FR-022)', () => {
   it('asks for the chosen campaign and keeps it in the address', async () => {
     const { api, router } = renderPage();
     await screen.findByRole('region', { name: 'Headline figures' });
-    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Scope' }), 'C-1001');
+    await choose(
+      userEvent.setup(),
+      screen.getByRole('combobox', { name: 'Scope' }),
+      'Helix launch',
+    );
     await waitFor(() => expect(api.requests.at(-1)?.search).toBe('?campaignId=C-1001'));
     expect(router.state.location.search).toBe('?campaign=C-1001');
   });
@@ -156,9 +161,10 @@ describe('SpaPage choices (013 FR-005, FR-017 – FR-019, FR-022)', () => {
     await screen.findByRole('region', { name: 'Headline figures' });
     await userEvent.click(screen.getByRole('button', { name: 'Months' }));
     expect(screen.getByRole('rowheader', { name: 'Aug 2026' })).toBeInTheDocument();
-    await userEvent.selectOptions(
+    await choose(
+      userEvent.setup(),
       screen.getByRole('combobox', { name: 'Group by' }),
-      'activityType',
+      'Activity type',
     );
     await waitFor(() => expect(api.requests.at(-1)?.search).toBe('?dimension=activityType'));
   });

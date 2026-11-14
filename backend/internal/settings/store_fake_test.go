@@ -2,15 +2,20 @@ package settings
 
 import (
 	"context"
+	"encoding/json"
+	"maps"
 	"slices"
+	"strings"
 
 	"mapp/internal/platform/fake"
 )
 
 // fakeStore is settingstest.Store for this package's own tests, which cannot import settingstest.
 type fakeStore struct {
+	db            *fake.DB
 	models        *fake.Table[Model]
 	activityTypes *fake.Table[ActivityType]
+	categories    *fake.Table[ActivityCategory]
 	attributes    *fake.Table[Attribute]
 	options       *fake.Table[Option]
 	currencies    *fake.Table[Currency]
@@ -23,8 +28,10 @@ type fakeStore struct {
 
 func newFakeStore(db *fake.DB) fakeStore {
 	return fakeStore{
+		db:            db,
 		models:        fake.TableOf(db, "models", func(m Model) string { return m.ID }),
 		activityTypes: fake.TableOf(db, "activity_types", func(t ActivityType) string { return t.ID }),
+		categories:    fake.TableOf(db, "activity_categories", func(c ActivityCategory) string { return c.ID }),
 		attributes:    fake.TableOf(db, "shell_attributes", func(a Attribute) string { return a.ID }),
 		options:       fake.TableOf(db, "shell_attribute_options", func(o Option) string { return o.ID }),
 		currencies:    fake.TableOf(db, "currencies", func(c Currency) string { return c.Code }),
@@ -67,6 +74,47 @@ func (s fakeStore) PutActivityType(ctx context.Context, t ActivityType) error {
 
 func (s fakeStore) DeleteActivityType(ctx context.Context, id string) error {
 	return s.activityTypes.Delete(ctx, id)
+}
+
+func (s fakeStore) GetActivityCategory(_ context.Context, id string) (ActivityCategory, bool, error) {
+	return s.categories.Get(id)
+}
+
+func (s fakeStore) ListActivityCategories(context.Context) ([]ActivityCategory, error) {
+	return s.categories.List()
+}
+
+func (s fakeStore) PutActivityCategory(ctx context.Context, c ActivityCategory) error {
+	c.ActivityTypeIDs = nonNil(c.ActivityTypeIDs)
+	if err := s.releaseCategoryTypes(ctx, c); err != nil {
+		return err
+	}
+	return s.categories.Put(ctx, c)
+}
+
+func (s fakeStore) DeleteActivityCategory(ctx context.Context, id string) error {
+	return s.categories.Delete(ctx, id)
+}
+
+// releaseCategoryTypes mirrors the assignment table's primary key: a type assigned to c leaves every other
+// category.
+func (s fakeStore) releaseCategoryTypes(ctx context.Context, c ActivityCategory) error {
+	others, err := s.categories.Where(func(o ActivityCategory) bool { return o.ID != c.ID })
+	if err != nil {
+		return err
+	}
+	for _, other := range others {
+		kept := slices.DeleteFunc(slices.Clone(other.ActivityTypeIDs),
+			func(id string) bool { return slices.Contains(c.ActivityTypeIDs, id) })
+		if len(kept) == len(other.ActivityTypeIDs) {
+			continue
+		}
+		other.ActivityTypeIDs = kept
+		if err := s.categories.Put(ctx, other); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s fakeStore) GetAttribute(_ context.Context, id string) (Attribute, bool, error) {
@@ -224,4 +272,39 @@ func (s fakeStore) PutFieldHelp(ctx context.Context, h FieldHelpText) error {
 
 func (s fakeStore) DeleteFieldHelp(ctx context.Context, key string) error {
 	return s.help.Delete(ctx, key)
+}
+
+func (s fakeStore) CurrencyUses(context.Context) ([]CurrencyUse, error) {
+	return currencyUses(s.db)
+}
+
+// currencyUses counts amounts per currency in the performance facts and GSAP transactions of the DB, as the query does.
+func currencyUses(db *fake.DB) ([]CurrencyUse, error) {
+	var uses []CurrencyUse
+	for _, table := range []struct{ name, kind string }{
+		{"performance_facts", UseOfPerformanceFact}, {"financial_transactions", UseOfFinancialTransaction},
+	} {
+		counts := map[string]int{}
+		for _, data := range db.Encoded(table.name) {
+			var row struct {
+				Currency string          `json:"currency"`
+				Amount   json.RawMessage `json:"amount"`
+			}
+			if err := json.Unmarshal(data, &row); err != nil {
+				return nil, err
+			}
+			if strings.HasPrefix(string(row.Amount), "{") { // a performance fact's amount is money with its currency
+				if err := json.Unmarshal(row.Amount, &row); err != nil {
+					return nil, err
+				}
+			}
+			if row.Currency != "" {
+				counts[row.Currency]++
+			}
+		}
+		for _, currency := range slices.Sorted(maps.Keys(counts)) {
+			uses = append(uses, CurrencyUse{Kind: table.kind, Currency: currency, Count: counts[currency]})
+		}
+	}
+	return uses, nil
 }

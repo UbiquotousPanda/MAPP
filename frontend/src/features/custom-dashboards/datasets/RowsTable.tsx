@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { exact, formatWhole } from '@/format/decimal';
+import { exact } from '@/format/decimal';
 import { formatMoney } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
 import { cx } from '@/ui/cx';
-import { Button } from '@/ui/Button/Button';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { Pager } from '@/ui/Pager/Pager';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { DatasetColumn } from '../model';
 import { ROWS_PER_PAGE, useDatasetRows } from './api';
 import styles from './datasets.module.css';
@@ -28,7 +29,6 @@ export function RowsTable({ datasetId }: { datasetId: string }) {
   if (total === 0) {
     return <p className={styles.facts}>This dataset has no rows.</p>;
   }
-  const last = Math.min(page.data.offset + rows.length, total);
 
   return (
     <>
@@ -39,12 +39,16 @@ export function RowsTable({ datasetId }: { datasetId: string }) {
         className={styles.scroller}
         aria-busy={page.isFetching || undefined}
       >
-        <table className={styles.table}>
+        <table className={cx(dataTable.table, styles.table)}>
           <caption className="visually-hidden">Rows of the dataset</caption>
           <thead>
             <tr>
               {columns.map((column) => (
-                <th key={column.key} scope="col" className={cx(isFigure(column) && styles.number)}>
+                <th
+                  key={column.key}
+                  scope="col"
+                  className={cx(isFigure(column) && dataTable.numeric)}
+                >
                   {column.label}
                 </th>
               ))}
@@ -54,7 +58,7 @@ export function RowsTable({ datasetId }: { datasetId: string }) {
             {rows.map((row, rowIndex) => (
               <tr key={page.data.offset + rowIndex}>
                 {columns.map((column, index) => (
-                  <td key={column.key} className={cx(isFigure(column) && styles.number)}>
+                  <td key={column.key} className={cx(isFigure(column) && dataTable.numeric)}>
                     {cellText(row[index] ?? null, column, date)}
                   </td>
                 ))}
@@ -63,21 +67,13 @@ export function RowsTable({ datasetId }: { datasetId: string }) {
           </tbody>
         </table>
       </div>
-      <div className={styles.pager}>
-        <p className={styles.facts} aria-live="polite">
-          Rows {formatWhole(page.data.offset + 1)}–{formatWhole(last)} of {formatWhole(total)}
-        </p>
-        {offset > 0 && (
-          <Button size="sm" onClick={() => setOffset(Math.max(0, offset - ROWS_PER_PAGE))}>
-            Previous
-          </Button>
-        )}
-        {last < total && (
-          <Button size="sm" onClick={() => setOffset(offset + ROWS_PER_PAGE)}>
-            Next
-          </Button>
-        )}
-      </div>
+      <Pager
+        page={Math.floor(page.data.offset / ROWS_PER_PAGE) + 1}
+        pageSize={ROWS_PER_PAGE}
+        total={total}
+        placement="below"
+        onPage={(next) => setOffset((next - 1) * ROWS_PER_PAGE)}
+      />
     </>
   );
 }

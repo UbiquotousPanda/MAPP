@@ -49,9 +49,8 @@ func unzip(t *testing.T, wb Workbook) map[string]string {
 	return parts
 }
 
-// An .xlsx file is a zip archive with the content types, the package and workbook relationships, the
-// workbook naming its sheets in order, the styles and one worksheet per sheet holding its text as inline
-// strings (D-120).
+// An .xlsx file is a zip of the content types, relationships, the workbook naming its sheets in order, the styles
+// and one worksheet per sheet with its text as inline strings (D-120).
 func TestXLSX_OpensAsZipWithWorkbookSheetsStrings(t *testing.T) {
 	t.Parallel()
 	parts := unzip(t, Workbook{Sheets: []Sheet{
@@ -100,9 +99,9 @@ func TestXLSX_NumbersDatesBoldHeadings(t *testing.T) {
 	for _, want := range []string{
 		`<c r="A1" s="1" t="inlineStr"><is><t xml:space="preserve">Planned cost (USD)</t></is></c>`,
 		`<c r="A2" s="2"><v>12500.50</v></c>`,
-		`<c r="B2" s="3"><v>46082</v></c>`, // 1 Mar 2026
+		`<c r="B2" s="3"><v>46082</v></c>`,
 		`<c r="C2"><v>250000</v></c>`,
-		`<c r="E2" s="4"><v>46093.25000000</v></c>`, // 12 Mar 2026 06:00
+		`<c r="E2" s="4"><v>46093.25000000</v></c>`,
 		`<row r="3"><c r="A3"><v>80</v></c><c r="C3" s="2"><v>-12500.50</v></c></row>`,
 	} {
 		if !strings.Contains(sheet, want) {
@@ -142,5 +141,16 @@ func TestXLSX_EscapesTextAndSheetNames(t *testing.T) {
 		if !strings.Contains(workbook, want) {
 			t.Errorf("workbook lacks %s\n%s", want, workbook)
 		}
+	}
+}
+
+func TestXLSX_SheetNamesUnique_039_FR022(t *testing.T) {
+	t.Parallel()
+	long := "Activities by Company code and region"
+	got := sheetNames([]Sheet{{Name: long + " A"}, {Name: long + " B"}, {Name: "summary"}, {Name: "Summary"}})
+
+	want := []string{"Activities by Company code and ", "Activities by Company code (2)", "summary", "Summary (2)"}
+	if !slices.Equal(got, want) {
+		t.Errorf("sheetNames = %q, want %q: Excel refuses two sheets of the same name, ignoring case", got, want)
 	}
 }

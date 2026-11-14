@@ -6,7 +6,7 @@ import { globalBudget } from '@/testing/fixtures/global-budgets';
 import { budgetRow, renderBudgetPage } from '@/testing/fixtures/global-budget-page';
 import { reply } from '@/testing/replies';
 
-const OVERSPEND = 'When planned cost goes over this budget';
+const OVERSPEND = 'If planned cost exceeds the budget';
 
 describe('GlobalBudgetPage — overspend control (037 US3)', () => {
   it('chooses Refuse for the plan budget in Change allocation, refusing a cut below its planned cost (FR-004, FR-015)', async () => {
@@ -35,7 +35,7 @@ describe('GlobalBudgetPage — overspend control (037 US3)', () => {
     await user.clear(amount);
     await user.type(amount, '400000');
     const refused =
-      "The planned cost is 460,000.00 USD; this budget refuses overspending, so it can't be lower than that.";
+      "The planned cost is $460,000.00; this budget refuses overspending, so it can't be lower than that.";
     expect(within(dialog).getByText(refused)).toBeVisible();
     await expectNoAxeViolations(dialog);
     await user.click(within(dialog).getByRole('button', { name: 'Save allocation' }));
@@ -63,7 +63,7 @@ describe('GlobalBudgetPage — overspend control (037 US3)', () => {
 
     expect(
       within(panel).getByText(
-        "The planned cost is 670,000.00 USD; this budget refuses overspending, so it can't be lower than that.",
+        "The planned cost is $670,000.00; this budget refuses overspending, so it can't be lower than that.",
       ),
     ).toBeVisible();
     await user.click(within(panel).getByRole('button', { name: 'Save' }));

@@ -1,0 +1,42 @@
+.head {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 24px;
+  margin: 0 calc(-1 * var(--space-1));
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--radius-2);
+  background: none;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sort:hover {
+  background: var(--hover);
+  text-decoration: underline;
+}
+
+.sort:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.icon {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  color: var(--ink-2);
+}
+
+.sorted .icon {
+  color: var(--ink);
+}

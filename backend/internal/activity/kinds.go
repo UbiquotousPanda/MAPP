@@ -12,21 +12,16 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// kindName is the history kind of activities (data model §5); feature 007's lineItem kind names it as its
-// parent.
 const kindName = "activity"
 
-// parentKind is the kind of an activity's parent, registered by feature 005 before activities.
 const parentKind = "initiative"
 
-// Messages of the plan's "Undo refused / restore notes (API)" row.
 const (
 	undoNameTakenFormat = "Can't undo — there is now another activity called '%s'. Restore it from the recycle bin instead."
 	renamedFormat       = "Renamed to '%s' because the name was taken."
 	statusResetNote     = "Status reset to Created because it was restored from the recycle bin."
 )
 
-// labels are the activity-log labels of the activity's fields (data model §5).
 var labels = map[string]string{
 	"name": "Activity name", "externalName": "External name", "description": "Description",
 	"activityTypeId": "Activity type", "ownerId": "Owner", "startDate": "Start date", "endDate": "End date",
@@ -35,9 +30,7 @@ var labels = map[string]string{
 	"inq": "INQ", "mql": "MQL", "status": "Status", "initiativeId": "Initiative", "parent": "Initiative",
 }
 
-// Kinds returns the history kind of activities, for internal/app to register after feature 005's
-// initiative kind (FR-031). With it, history deletes an activity with everything under it (feature 007's
-// line items), brings it back, and logs its changes with readable labels and texts.
+// Kinds is registered after the initiative kind; history bins an activity with its line items.
 func (s *Service) Kinds() []history.Kind {
 	return []history.Kind{{
 		Name:           kindName,
@@ -57,8 +50,6 @@ func (s *Service) Kinds() []history.Kind {
 	}}
 }
 
-// snapshot reads the activity id as history keeps it: the stored activity, its name, and its initiative as
-// its parent.
 func (s *Service) snapshot(ctx context.Context, id string) (history.Snapshot, bool, error) {
 	activity, found, err := s.repo.Get(ctx, id)
 	if err != nil || !found {
@@ -71,7 +62,6 @@ func (s *Service) snapshot(ctx context.Context, id string) (history.Snapshot, bo
 	return history.Snapshot{ID: activity.ID, Name: activity.Name, ParentID: activity.InitiativeID, Data: data}, true, nil
 }
 
-// childIDs lists the ids of the activities of the initiative initiativeID.
 func (s *Service) childIDs(ctx context.Context, initiativeID string) ([]string, error) {
 	list, err := s.repo.ListByInitiative(ctx, initiativeID)
 	if err != nil {
@@ -84,7 +74,6 @@ func (s *Service) childIDs(ctx context.Context, initiativeID string) ([]string, 
 	return ids, nil
 }
 
-// putSnapshot stores the activity of a snapshot again, exactly as the snapshot holds it.
 func (s *Service) putSnapshot(ctx context.Context, snapshot history.Snapshot) error {
 	var activity Activity
 	if err := json.Unmarshal(snapshot.Data, &activity); err != nil {
@@ -93,14 +82,14 @@ func (s *Service) putSnapshot(ctx context.Context, snapshot history.Snapshot) er
 	return s.repo.Put(ctx, activity)
 }
 
-// prepareRestore applies the rules of activities just before one comes back (FR-031, data model §5). The
-// name must still be free in its initiative: an Undo, which puts the activity back exactly, is refused
-// with name_taken when it is not; a restore from the recycle bin renames it "<name> (restored)" instead. A
-// restore from the recycle bin also returns it to Created (R14) and tells feature 008; an Undo keeps its
-// status.
+// prepareRestore refuses an Undo whose name is now taken, where a Restore renames it "<name> (restored)"; a
+// Restore also returns the activity to Created and tells approvals, while an Undo keeps its status.
 func (s *Service) prepareRestore(ctx context.Context, rc history.RestoreContext, snapshot *history.Snapshot) ([]string, error) {
 	var activity Activity
 	if err := json.Unmarshal(snapshot.Data, &activity); err != nil {
+		return nil, err
+	}
+	if err := s.checkRestoreFits(ctx, activity); err != nil {
 		return nil, err
 	}
 	siblings, err := s.repo.ListByInitiative(ctx, activity.InitiativeID)
@@ -118,8 +107,10 @@ func (s *Service) prepareRestore(ctx context.Context, rc history.RestoreContext,
 		changed = true
 	}
 	if !rc.Undo {
-		if activity.Status != StatusCreated {
-			activity.Status = StatusCreated
+		if status, reset := history.StatusAfterRestore(rc, activity.Status, StatusCreated); reset {
+			if err = activity.MoveTo(status); err != nil {
+				return nil, err
+			}
 			notes = append(notes, statusResetNote)
 			changed = true
 		}
@@ -141,10 +132,7 @@ func (s *Service) prepareRestore(ctx context.Context, rc history.RestoreContext,
 	return notes, nil
 }
 
-// describe gives the activity log's label of field and the text of value (data model §5): type, owner and
-// workflow names, dates as "01 Mar 2026", amounts as "120,000.00 USD", numbers with thousands separators,
-// status words, and Shell attribute labels and option texts from Settings. An empty text means "use the
-// default" ("Not filled in" for empty values).
+// describe gives a field's log label and a value's text; an empty text means "use the default".
 func (s *Service) describe(ctx context.Context, field string, value any) (string, string, error) {
 	label := labels[field]
 	if label == "" {
@@ -204,8 +192,7 @@ func (s *Service) describe(ctx context.Context, field string, value any) (string
 	return label, "", nil
 }
 
-// initiativePath names the initiative id with its campaign, as a move's log entry shows it: "Helix launch ›
-// Digital & social"; name alone when the initiative or its campaign is gone.
+// initiativePath is "Helix launch › Digital & social"; the name alone when the initiative or campaign is gone.
 func (s *Service) initiativePath(ctx context.Context, id, name string) (string, error) {
 	initiative, found, err := s.hierarchy.GetInitiative(ctx, id)
 	if err != nil || !found {

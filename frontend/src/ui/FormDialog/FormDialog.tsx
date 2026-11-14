@@ -3,6 +3,7 @@ import { Dialog } from 'radix-ui';
 import { useRef } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { Button } from '../Button/Button';
+import { cx } from '../cx';
 import { RequiredLegend } from '../RequiredLegend/RequiredLegend';
 import styles from './FormDialog.module.css';
 
@@ -12,13 +13,15 @@ export interface FormDialogProps {
   title: string;
   description?: string;
   children: ReactNode;
-  submitLabel: string;
+  /** Without one there is no submit button: a picker that acts from its list has only Close. */
+  submitLabel?: string;
   /** Runs the action; the dialog stays open until you close it, so it can show `busy`. */
-  onSubmit: () => void;
+  onSubmit?: () => void;
   busy?: boolean;
   cancelLabel?: string;
   /** Only the submit button: a dialog that only tells something ("Close"). */
   hideCancel?: boolean;
+  size?: 'md' | 'lg';
 }
 
 // The first field has the focus, Enter submits and the focus goes back where it was on close.
@@ -34,13 +37,14 @@ export function FormDialog({
   busy = false,
   cancelLabel = 'Cancel',
   hideCancel = false,
+  size = 'md',
 }: FormDialogProps) {
   const focusBeforeOpen = useRef<HTMLElement | null>(null);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!busy) {
-      onSubmit();
+      onSubmit?.();
     }
   }
 
@@ -49,7 +53,7 @@ export function FormDialog({
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content
-          className={styles.dialog}
+          className={cx(styles.dialog, size === 'lg' && styles.lg)}
           {...(description ? {} : { 'aria-describedby': undefined })}
           onOpenAutoFocus={(event) => {
             focusBeforeOpen.current =
@@ -60,7 +64,7 @@ export function FormDialog({
               return;
             }
             const first = content.querySelector<HTMLElement>(
-              'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])',
+              'input:not([disabled]):not([type="hidden"]), [role="combobox"]:not([disabled]), textarea:not([disabled])',
             );
             const target = first ?? content.querySelector<HTMLElement>('button[type="submit"]');
             if (target) {
@@ -88,14 +92,16 @@ export function FormDialog({
                   <Button>{cancelLabel}</Button>
                 </Dialog.Close>
               )}
-              <Button
-                type="submit"
-                variant="primary"
-                icon={busy ? <LoaderCircle className={styles.spinner} /> : undefined}
-                aria-busy={busy || undefined}
-              >
-                {submitLabel}
-              </Button>
+              {submitLabel && (
+                <Button
+                  type="submit"
+                  variant="primary"
+                  icon={busy ? <LoaderCircle className={styles.spinner} /> : undefined}
+                  aria-busy={busy || undefined}
+                >
+                  {submitLabel}
+                </Button>
+              )}
             </div>
           </form>
         </Dialog.Content>

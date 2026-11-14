@@ -29,35 +29,22 @@ import {
 } from './texts';
 import type { RecordLevel } from './texts';
 
-/**
- * The plan tree's cells, by column key (feature 004's PlanTree columns Name, Owner, Dates, Status,
- * Budget, Planned cost): `name` (shown after the name: ID, child count and the quick action),
- * `owner`, `dates`, `status`, `budget` (with what remains beneath) and `plannedCost` (with the
- * share of the budget it uses beneath).
- */
+/** The plan tree's cells by column key; `name` is what follows the name (ID, count, quick action). */
 export const CELL_KEYS = ['name', 'owner', 'dates', 'status', 'budget', 'plannedCost'] as const;
 
 export interface RowOptions {
   planId: string;
   formatters: Formatters;
   navigate: NavigateFunction;
-  /** The record just created, moved or copied (location state `highlight`, FR-004). */
   highlightId?: string;
-  /** Feature 006's activity rows under each initiative (extensions.ts). */
   rowsBelow?: Map<string, TreeNode[]>;
-  /** **Delete** (US5): opens the delete dialog; the item is listed only with it. */
   onDelete?: (target: RecordTarget) => void;
-  /** **Copy** (US6): opens the copy dialog; the item is listed only with it. */
   onCopy?: (target: RecordTarget) => void;
-  /** **Move to…** (US6): opens the move dialog; the item is listed only with it. */
+  /** Delete, Copy and Move to… are listed only when their handler is given. */
   onMove?: (target: RecordTarget) => void;
 }
 
-/**
- * The plan tree's rows of a plan's campaigns (FR-019 – FR-021): one node per campaign in the
- * API's order (FR-020) with its initiatives as children, each with its level, link, ID, child
- * count, owner, dates, chips, money, budget used and ⋯ actions.
- */
+/** One node per campaign in the API's order, its initiatives as children. */
 export function campaignRows(data: PlanCampaigns, options: RowOptions): TreeNode[] {
   return data.items.map((item) => ({
     id: item.id,
@@ -124,7 +111,11 @@ function initiativeNode(initiative: Initiative, options: RowOptions): TreeNode {
     highlighted: initiative.id === options.highlightId,
     cells: {
       ...commonCells(initiative, options),
-      name: `${initiative.id} · ${activitiesCount(initiative.counts.activities)}`,
+      name: (
+        <span className={styles.nowrap}>
+          {initiative.id} · {activitiesCount(initiative.counts.activities)}
+        </span>
+      ),
       dates: (
         <span className={styles.dates}>
           <span className={styles.nowrap}>
@@ -159,14 +150,10 @@ function initiativeNode(initiative: Initiative, options: RowOptions): TreeNode {
   };
 }
 
-/**
- * The cells both levels show the same way. The Status column holds at most two chips (design
- * system §4.1): the approval roll-up and one completeness chip whose list holds the rest.
- */
+/** Status holds at most two chips (design system §4.1): approvals and one completeness chip. */
 function commonCells(record: Campaign | Initiative, options: RowOptions) {
   const level = 'initiatives' in record ? 'campaign' : 'initiative';
-  // Amounts in the plan currency, the reader's display currency beneath when it differs (016
-  // FR-013; before 016 both are the same).
+  // Amounts in the plan currency, the reader's display currency beneath when it differs.
   const { budgetAndCost } = record;
   return {
     owner: record.owner ? (
@@ -192,6 +179,7 @@ function commonCells(record: Campaign | Initiative, options: RowOptions) {
             void options.navigate(recordHref(level, record.id, options.planId))
           }
           compact
+          quiet
         />
       </span>
     ),
@@ -221,7 +209,7 @@ function viewAndEdit(
   ];
 }
 
-/** Copy and Move to… (US6), each listed only when the caller handles it. */
+/** Copy and Move to…, each listed only when the caller handles it. */
 function copyAndMove(record: Campaign | Initiative, options: RowOptions): ActionsMenuItem[] {
   const { onCopy, onMove } = options;
   return [

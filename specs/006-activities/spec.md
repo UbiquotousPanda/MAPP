@@ -30,7 +30,7 @@ initiative's, campaign's and plan's planned costs went up by its planned cost.
 
 1. **Given** the initiative "Digital & social" (owner Priya Raman, 1 Jan – 30 Jun 2026), **When** the user
    chooses **Add activity** on its row, **Then** the page opens with Campaign and Initiative filled in,
-   Owner "Priya Raman" and dates 1 Jan – 30 Jun 2026 labelled "From the initiative", and each field's
+   Owner "Priya Raman" and dates 1 Jan – 30 Jun 2026 (no source label, D-422), and each field's
    marking shown as a word (**Required**, **Needed to submit**).
 2. **Given** the new-activity page, **When** the user opens **Activity type**, **Then** only the active
    types the plan's model allows are offered, each with its default planned cost, and choosing "Event"
@@ -202,8 +202,8 @@ undo the delete; check totals, statuses and the activity log at each step.
 - **FR-001**: Users MUST be able to start a new activity from **Add activity** on an initiative's row in
   the plan tree and on the initiative's details (feature 005), with campaign and initiative pre-filled.
 - **FR-002**: The new-activity form MUST open on a full page (design system §6.2) with the fields of field
-  catalogue §4.1–4.5 in the section order of design system §7, defaults pre-filled and labelled with their
-  source, markings shown as words, and "Save the activity to add its line items" in place of line items.
+  catalogue §4.1–4.5 in the section order of design system §7, defaults pre-filled (only a pre-filled planned cost
+  names its source, D-422), markings shown as words, and "Save the activity to add its line items" in place of line items.
 - **FR-003**: Saving MUST require only the fields marked **Required** in field catalogue §4 (name, type,
   initiative); "needed to submit" fields MAY stay empty (decision D-009).
 - **FR-004**: On save, the activity MUST be created as *Created* with a permanent readable ID (A-…, D-019),

@@ -9,6 +9,7 @@ export function outcome(overrides: Partial<BulkOutcome> = {}): BulkOutcome {
     level: 'activity',
     name: 'Launch film',
     planId: 'P-1001',
+    version: 1,
     outcome: 'done',
     reasons: [],
     ...overrides,

@@ -28,6 +28,8 @@ type Facts struct {
 	Path                               []errs.RecordRef
 	Plan                               authz.PlanFacts
 	Overages                           []approval.Overage
+	Unapproved                         string
+	Submissions                        map[approval.SubjectKind]string
 	record.Meta
 }
 
@@ -72,7 +74,11 @@ func (s *Service) factsFrom(ctx context.Context, pr PurchaseRequest) (Facts, err
 	f := Facts{ID: pr.ID, Name: pr.Name, Status: pr.Status, OwnerID: pr.OwnerID, MoAApproverID: pr.MoAApproverID,
 		WorkflowID: pr.WorkflowID, ModificationWorkflowID: pr.ModificationWorkflowID, Plan: pr.planFacts(facts), Meta: pr.Meta}
 	_, f.Path = r.plan(pr)
-	f.Overages = overagesOf(pr, facts)
+	f.Overages, f.Unapproved = overagesOf(pr, facts), unapprovedActivity(pr, facts)
+	f.Submissions = map[approval.SubjectKind]string{
+		approval.KindPurchaseRequest:         submissionOf(pr, KindPurchaseRequest),
+		approval.KindModifiedPurchaseRequest: submissionOf(pr, KindModification),
+	}
 	if len(pr.Lines) > 0 {
 		total := r.usd(pr.Lines)
 		f.Amount = &total
@@ -104,6 +110,9 @@ func (s *Service) roundChanged(ctx context.Context, a actor.Actor, id string, e 
 	if err != nil {
 		return Facts{}, err
 	}
+	if err = s.refuseUnapproved(ctx, pr, event); err != nil {
+		return Facts{}, err
+	}
 	if kind == KindModification {
 		pr, err = s.modificationEvent(ctx, a, pr, event)
 	} else {
@@ -117,6 +126,21 @@ func (s *Service) roundChanged(ctx context.Context, a actor.Actor, id string, e 
 		return Facts{}, err
 	}
 	return s.factsFrom(ctx, pr)
+}
+
+// refuseUnapproved stops a submission or an approval while an activity of the purchase request is not Approved.
+func (s *Service) refuseUnapproved(ctx context.Context, pr PurchaseRequest, event RoundEvent) error {
+	if event != EventOpen && event != EventApproved {
+		return nil
+	}
+	facts, err := s.factsOf(ctx, pr)
+	if err != nil {
+		return err
+	}
+	if reason := unapprovedActivity(pr, facts); reason != "" {
+		return errs.NotAllowed(reason)
+	}
+	return nil
 }
 
 func (s *Service) firstRoundEvent(ctx context.Context, a actor.Actor, pr PurchaseRequest, event RoundEvent) (PurchaseRequest, error) {

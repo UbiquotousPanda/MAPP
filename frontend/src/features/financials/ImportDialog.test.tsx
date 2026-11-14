@@ -6,6 +6,7 @@ import { mockApi } from '@/testing/mock-api';
 import { testUser } from '@/testing/fixtures/users';
 import { checkResult } from '@/testing/fixtures/financial-imports';
 import { reply } from '@/testing/replies';
+import { expectNoAxeViolations } from '@/testing/axe';
 import { ImportDialog } from './ImportDialog';
 
 const CHECK = 'POST /api/v1/financials/imports/check';
@@ -147,6 +148,7 @@ describe('ImportDialog (015 US4, FR-004 – FR-009)', () => {
     ]);
     expect(within(dialog).getByText('Columns not used: cost_centre')).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Import 2 rows' })).toBeInTheDocument();
+    await expectNoAxeViolations();
   });
 
   it('offers nothing to import when every row is refused', async () => {

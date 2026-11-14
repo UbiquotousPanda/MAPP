@@ -1,0 +1,68 @@
+.frame {
+  container-type: inline-size;
+}
+
+.strip {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Each card loses its own box; a hairline on its left and top splits it from its neighbours, and the
+   strip clips the lines on its outer edge, so a wrapped row is split the same way. */
+.strip > * {
+  min-height: 0;
+  padding: var(--space-4) var(--space-5);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow:
+    -1px 0 0 var(--row-divider),
+    0 -1px 0 var(--row-divider);
+}
+
+.strip > * > :first-child {
+  min-height: 0;
+}
+
+.strip:has(> :nth-child(6)) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: row;
+}
+
+.strip:has(> :nth-child(7)) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.strip:has(> :nth-child(9)) {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@container (width < 760px) {
+  .strip,
+  .strip:has(> :nth-child(6)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row;
+  }
+
+  .strip > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* On a narrow strip a full-precision figure takes a whole row; short ones still pair up. */
+@container (width < 480px) {
+  .strip,
+  .strip:has(> :nth-child(6)) {
+    grid-auto-flow: row dense;
+  }
+
+  .strip > [data-long] {
+    grid-column: 1 / -1;
+  }
+}

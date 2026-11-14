@@ -5,6 +5,7 @@
  */
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryKey } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import { SETTINGS_KEYS } from '../api';
@@ -15,7 +16,6 @@ export type FinanceBudgetItem = components['schemas']['FinanceBudgetItem'];
 export type FinanceBudgetItemCreate = components['schemas']['FinanceBudgetItemCreate'];
 export type FinanceBudgetItemUpdate = components['schemas']['FinanceBudgetItemUpdate'];
 
-/** The lists a change to an item or a budget shows in. */
 export const FINANCE_LISTS: QueryKey[] = [
   ['finance-budgets'],
   SETTINGS_KEYS.overview,
@@ -23,11 +23,6 @@ export const FINANCE_LISTS: QueryKey[] = [
   ['recycle-bin'],
 ];
 
-/**
- * The finance budgets of a year with their items, and the years to choose from (the current year
- * when `year` is left out). The same query as useFinanceBudgets; while another year is on its way
- * the last one stays on screen, so the year filter keeps its place and its focus.
- */
 export function useFinanceBudgetPage(year?: number) {
   return useQuery({
     queryKey: SETTINGS_KEYS.financeBudgets(year),
@@ -37,10 +32,6 @@ export function useFinanceBudgetPage(year?: number) {
   });
 }
 
-/**
- * A finance budget as it is stored now (from its year's list: budgets have no address of their
- * own); after a conflict the rename takes its version from it. Undefined when it is gone.
- */
 export async function fetchFinanceBudget(
   year: number,
   id: string,
@@ -49,14 +40,12 @@ export async function fetchFinanceBudget(
   return page.items.find((budget) => budget.id === id);
 }
 
-/** One item as it is stored now; after a conflict the form takes its version from it. */
 export function fetchFinanceBudgetItem(id: string): Promise<FinanceBudgetItem> {
   return call(
     api.GET('/api/v1/finance-budget-items/{itemId}', { params: { path: { itemId: id } } }),
   );
 }
 
-/** POST …/status: sets an item inactive or reactivates it (FR-004). */
 export function setFinanceBudgetItemStatus(id: string, body: { active: boolean; version: number }) {
   return call(
     api.POST('/api/v1/finance-budget-items/{itemId}/status', {
@@ -75,7 +64,6 @@ export function useCreateFinanceBudgetItem() {
   });
 }
 
-/** Changes an item: only the fields sent, with the version the form started from (D-203). */
 export function useUpdateFinanceBudgetItem() {
   const refresh = useRefreshFinanceLists();
   return useMutation({
@@ -90,13 +78,14 @@ export function useUpdateFinanceBudgetItem() {
   });
 }
 
-/** Deletes an unused item (to the recycle bin). */
 export function useDeleteFinanceBudgetItem() {
   const refresh = useRefreshFinanceLists();
   return useMutation({
-    mutationFn: (id: string) =>
+    mutationFn: ({ id, version }: Seen) =>
       call(
-        api.DELETE('/api/v1/finance-budget-items/{itemId}', { params: { path: { itemId: id } } }),
+        api.DELETE('/api/v1/finance-budget-items/{itemId}', {
+          params: { path: { itemId: id }, query: { version } },
+        }),
       ),
     onSettled: refresh,
   });

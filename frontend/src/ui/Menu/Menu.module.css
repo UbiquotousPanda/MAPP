@@ -1,0 +1,95 @@
+/* Items 40 px high, radius 4, an optional 16 px icon before the words (design system §5.1). */
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-md);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-chip);
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.item:hover {
+  text-decoration: none;
+}
+
+.item > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-2);
+}
+
+/* Radix marks the item under the pointer or the arrow keys; on the hover grey Text Subtle turns
+   Text Strong (constitution X). */
+.item[data-highlighted] {
+  --ink-2: var(--ink);
+  background: var(--hover);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+/* An action that is not possible now: its words fade, its reason stays readable (feature 014). */
+.item[data-disabled] {
+  color: var(--disabled-text);
+  cursor: not-allowed;
+}
+
+.hint {
+  flex-basis: 100%;
+  max-width: 260px;
+  margin-top: calc(-1 * var(--space-1));
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+.danger {
+  color: var(--danger-text);
+}
+
+/* Red is never text on the hover grey: the highlighted destructive item is a red fill instead. */
+.danger[data-highlighted] {
+  --ink-2: var(--on-accent);
+  background: var(--danger-bg);
+  color: var(--on-accent);
+}
+
+.tick {
+  display: inline-grid;
+  flex: none;
+  width: 16px;
+  place-items: center;
+}
+
+.tick svg {
+  width: 14px;
+  height: 14px;
+  color: var(--blue);
+}
+
+.separator {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--row-divider);
+}
+
+.note {
+  max-width: 300px;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+.label {
+  padding: var(--space-3);
+}

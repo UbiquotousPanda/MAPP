@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { withChoice } from '../search-params';
 import type { AttributeLevel } from './attribute-words';
 import { attributeChoicesOf } from './schemas';
@@ -7,7 +7,7 @@ import type { HelpFilter, StatusFilter } from './schemas';
 export type AttributeFilters = ReturnType<typeof useAttributeFilters>;
 
 export function useAttributeFilters() {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const choices = attributeChoicesOf(params);
 
   function change(name: string, value: string, defaultValue: string) {

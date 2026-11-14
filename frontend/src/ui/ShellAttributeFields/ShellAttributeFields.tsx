@@ -12,6 +12,9 @@ import {
 } from './rules';
 import type { AttributeForm, AttributeValue, AttributeValues, FormAttribute } from './rules';
 import { AttributeField } from './AttributeField';
+import { filledOrder, HEADING_LEVELS, useColumns } from './layout';
+import { SectionHeading } from '../SectionHeading/SectionHeading';
+import type { HeadingRank } from '../SectionHeading/SectionHeading';
 import styles from './ShellAttributeFields.module.css';
 import {
   autoFilledText,
@@ -31,7 +34,9 @@ export interface ShellAttributeFieldsProps {
   errors?: Record<string, string>;
   highlightAttributeId?: string;
   planLink?: string;
-  sectionHeading?: 'h2' | 'h3' | 'none';
+  sectionHeading?: 'h2' | 'h3' | 'h4' | 'none';
+  /** 'panel' where the section's name is the card's own title. */
+  sectionRank?: HeadingRank;
   /** Put before every input id, for a record inside a form: "lines[0]." (032 PR lines). */
   fieldPrefix?: string;
 }
@@ -50,12 +55,14 @@ export function ShellAttributeFields({
   highlightAttributeId,
   planLink,
   sectionHeading = 'h3',
+  sectionRank = 'sub',
   fieldPrefix = '',
 }: ShellAttributeFieldsProps) {
   const [autoFilled, setAutoFilled] = useState<Record<string, string>>({});
   const units = businessUnitOf(form, values, businessUnit);
   const cleared = valuesToClear(form, values, previousValues);
-  const Heading = sectionHeading === 'none' ? null : sectionHeading;
+  const level = HEADING_LEVELS[sectionHeading];
+  const { ref, columns } = useColumns<HTMLDivElement>();
 
   function change(attribute: FormAttribute, value: AttributeValue | undefined) {
     const next: AttributeValues = { ...values };
@@ -79,7 +86,7 @@ export function ShellAttributeFields({
   }
 
   return (
-    <div className={styles.fields}>
+    <div ref={ref} className={styles.fields}>
       {units.length === 0 && hasConditions(form) && (
         <p className={styles.note}>
           {NO_BUSINESS_UNIT_NOTE}
@@ -102,29 +109,37 @@ export function ShellAttributeFields({
         }
         return (
           <div key={section.name} className={styles.section}>
-            {Heading && <Heading className={styles.heading}>{section.name}</Heading>}
+            {level && (
+              <div className={sectionRank === 'panel' ? styles.cardHeader : undefined}>
+                <SectionHeading level={level} rank={sectionRank} divided={sectionRank === 'sub'}>
+                  {section.name}
+                </SectionHeading>
+              </div>
+            )}
             {section.conditional && (
               <p className={styles.note}>{shownBecauseText(conditionUnits(form, shown, units))}</p>
             )}
-            {shown.map((attribute) => (
-              <AttributeField
-                key={attribute.id}
-                form={form}
-                attribute={attribute}
-                values={values}
-                fieldPrefix={fieldPrefix}
-                error={errors[fieldPrefix + attributeField(attribute.id)]}
-                cleared={cleared.find((item) => item.attributeId === attribute.id)}
-                autoFilled={autoFilled[attribute.id]}
-                conditionNote={
-                  !section.conditional && attribute.conditionOptionIds.length > 0
-                    ? shownBecauseText(conditionUnits(form, [attribute], units))
-                    : undefined
-                }
-                highlighted={attribute.id === highlightAttributeId}
-                onChange={(value) => change(attribute, value)}
-              />
-            ))}
+            <div className={styles.grid} data-columns={columns}>
+              {filledOrder(shown, columns).map((attribute) => (
+                <AttributeField
+                  key={attribute.id}
+                  form={form}
+                  attribute={attribute}
+                  values={values}
+                  fieldPrefix={fieldPrefix}
+                  error={errors[fieldPrefix + attributeField(attribute.id)]}
+                  cleared={cleared.find((item) => item.attributeId === attribute.id)}
+                  autoFilled={autoFilled[attribute.id]}
+                  conditionNote={
+                    !section.conditional && attribute.conditionOptionIds.length > 0
+                      ? shownBecauseText(conditionUnits(form, [attribute], units))
+                      : undefined
+                  }
+                  highlighted={attribute.id === highlightAttributeId}
+                  onChange={(value) => change(attribute, value)}
+                />
+              ))}
+            </div>
           </div>
         );
       })}

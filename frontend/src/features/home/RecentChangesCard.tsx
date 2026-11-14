@@ -5,26 +5,21 @@ import { LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { Tooltip } from '@/ui/Tooltip/Tooltip';
+import { RelativeTime } from '@/ui/RelativeTime/RelativeTime';
 import { isPlanningType, recordHref } from '@/ui/record-links';
-import { useFormatters } from '@/format/useFormatters';
 import { useHomeRecentChanges } from './api';
 import type { ActivityLogEntry, HomeScope } from './api';
-import { RECENT_CHANGES, initialsOf, recentSentence } from './home-text';
+import { NO_RECENT_CHANGES, initialsOf, recentSentence } from './home-text';
 import styles from './RecentChangesCard.module.css';
 import { SectionError } from './SectionError';
 
-/**
- * Recent changes (FR-015, FR-016): the 10 newest activity-log entries (feature 011) about the plans
- * in scope — who changed what, and when — each naming its record with a link while it exists.
- */
+/** The 10 newest activity-log entries about the plans in scope, each linking its record while it exists. */
 export function RecentChangesCard({ scope }: { scope: HomeScope }) {
   const changes = useHomeRecentChanges(scope);
 
   return (
     <Card
       title="Recent changes"
-      subtitle={RECENT_CHANGES.subtitle[scope]}
       actions={
         <LinkButton size="sm" to="/activity-log">
           View activity log
@@ -36,7 +31,7 @@ export function RecentChangesCard({ scope }: { scope: HomeScope }) {
       ) : changes.isError ? (
         <SectionError onRetry={() => void changes.refetch()} />
       ) : changes.data.items.length === 0 ? (
-        <EmptyState icon={<History />} title={RECENT_CHANGES.empty} />
+        <EmptyState compact icon={<History />} title={NO_RECENT_CHANGES} />
       ) : (
         <ul className={styles.entries}>
           {changes.data.items.map((entry) => (
@@ -48,7 +43,6 @@ export function RecentChangesCard({ scope }: { scope: HomeScope }) {
   );
 }
 
-/** Where an entry's record is now: its page while it exists (D-194), otherwise no address. */
 function hrefOf(entry: ActivityLogEntry): string | null {
   const now = entry.recordNow;
   if (now && now.state !== 'exists') {
@@ -72,27 +66,26 @@ const GONE: Partial<Record<string, string>> = {
 };
 
 function RecentChange({ entry }: { entry: ActivityLogEntry }) {
-  const { dateTime, relativeTime } = useFormatters();
   const sentence = recentSentence(entry);
   const href = hrefOf(entry);
-  const fullTime = dateTime(entry.at);
 
   return (
     <li className={styles.entry}>
       <Avatar initials={initialsOf(entry.actor.name)} size="sm" />
       <div className={styles.body}>
         <p className={styles.sentence}>
-          {`${sentence.lead} '`}
-          {href ? <Link to={href}>{sentence.name}</Link> : sentence.name}
-          {`' (${sentence.id})${GONE[entry.recordNow?.state ?? 'exists'] ?? ''}`}
+          {`${sentence.lead} `}
+          {href ? (
+            <Link to={href} className={styles.name}>
+              {sentence.name}
+            </Link>
+          ) : (
+            sentence.name
+          )}{' '}
+          <span className={styles.id}>· {sentence.id}</span>
+          {GONE[entry.recordNow?.state ?? 'exists']}
         </p>
-        {/* A button, so keyboard and screen-reader users reach the full date too. */}
-        <Tooltip content={fullTime}>
-          <button type="button" className={styles.time}>
-            <time dateTime={entry.at}>{relativeTime(entry.at)}</time>{' '}
-            <span className="visually-hidden">({fullTime})</span>
-          </button>
-        </Tooltip>
+        <RelativeTime at={entry.at} />
       </div>
     </li>
   );

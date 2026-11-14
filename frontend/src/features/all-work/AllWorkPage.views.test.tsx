@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { closestTo } from '@/testing/dom';
+import { openFilters } from '@/testing/filters';
 import { defaultPreferences, gridResult } from '@/testing/fixtures/all-work';
 import { budgetResult, calendarResult } from '@/testing/fixtures/all-work-budget';
 import {
@@ -69,6 +70,7 @@ describe('AllWorkPage Budget & cost (US4)', () => {
   it('switches views keeping the filters, the search and the expansion (FR-001)', async () => {
     const { api, user } = renderAllWorkPage([reply('GET /api/v1/all-work', byView)]);
     await user.click(await screen.findByRole('button', { name: 'Expand Helix launch event' }));
+    await openFilters(user);
     await user.click(screen.getByRole('button', { name: 'Plan status' }));
     await user.click(
       within(await screen.findByRole('dialog', { name: 'Plan status' })).getByRole('checkbox', {
@@ -111,7 +113,7 @@ describe('AllWorkPage Budget & cost (US4)', () => {
 
     expect(await screen.findByRole('columnheader', { name: 'Q2' })).toBeInTheDocument();
     expect(viewQueries(api).at(-1)?.get('period')).toBe('quarter');
-    const footer = closestTo(screen.getByRole('rowheader', { name: 'Total · 3 activities' }), 'tr');
+    const footer = closestTo(screen.getByRole('rowheader', { name: 'Total' }), 'tr');
     expect(within(footer).getByText('$14,000.00')).toBeInTheDocument();
     expect(within(footer).getByText('$18,000.00')).toBeInTheDocument();
   });

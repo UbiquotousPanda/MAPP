@@ -20,6 +20,11 @@ type Store interface {
 	PutActivityType(ctx context.Context, t ActivityType) error
 	DeleteActivityType(ctx context.Context, id string) error
 
+	GetActivityCategory(ctx context.Context, id string) (ActivityCategory, bool, error)
+	ListActivityCategories(ctx context.Context) ([]ActivityCategory, error)
+	PutActivityCategory(ctx context.Context, c ActivityCategory) error
+	DeleteActivityCategory(ctx context.Context, id string) error
+
 	GetAttribute(ctx context.Context, id string) (Attribute, bool, error)
 	ListAttributes(ctx context.Context) ([]Attribute, error)
 	PutAttribute(ctx context.Context, a Attribute) error
@@ -37,6 +42,7 @@ type Store interface {
 	ListCurrencies(ctx context.Context) ([]Currency, error)
 	PutCurrency(ctx context.Context, c Currency) error
 	DeleteCurrency(ctx context.Context, code string) error
+	CurrencyUses(ctx context.Context) ([]CurrencyUse, error)
 
 	GetFinanceBudget(ctx context.Context, id string) (FinanceBudget, bool, error)
 	ListFinanceBudgets(ctx context.Context) ([]FinanceBudget, error)

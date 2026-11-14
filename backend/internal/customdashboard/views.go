@@ -10,6 +10,7 @@ import (
 	"mapp/internal/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
+	"mapp/internal/sharing"
 )
 
 func (s *Service) view(ctx context.Context, a actor.Actor, d Dashboard) (View, error) {
@@ -43,11 +44,11 @@ func (s *Service) summaries(ctx context.Context, a actor.Actor, list []Dashboard
 		ownerIDs = append(ownerIDs, d.OwnerID)
 		teamIDs = append(teamIDs, d.SharedWith...)
 	}
-	owners, err := s.directory.PersonRefs(ctx, sortedIDs(ownerIDs))
+	owners, err := s.directory.PersonRefs(ctx, sharing.TeamIDs(ownerIDs))
 	if err != nil {
 		return List{}, err
 	}
-	teams, err := s.directory.TeamRefs(ctx, sortedIDs(teamIDs))
+	teams, err := s.directory.TeamRefs(ctx, sharing.TeamIDs(teamIDs))
 	if err != nil {
 		return List{}, err
 	}
@@ -55,7 +56,7 @@ func (s *Service) summaries(ctx context.Context, a actor.Actor, list []Dashboard
 	for _, d := range slices.SortedFunc(slices.Values(list), byName) {
 		owner := personRef(owners, d.OwnerID)
 		summary := Summary{ID: d.ID, Name: d.Name, Description: d.Description, Owner: owner,
-			SharedWith: teamList(teams, d.SharedWith), WidgetCount: len(d.Widgets), UpdatedAt: d.UpdatedAt,
+			SharedWith: teamList(teams, d.SharedWith), WidgetCount: len(d.Widgets), UpdatedAt: d.UpdatedAt, Version: d.Version,
 			Access: accessOf(ctx, d.OwnerID == a.ID, owner.Name)}
 		if d.OwnerID == a.ID {
 			answer.Mine = append(answer.Mine, summary)

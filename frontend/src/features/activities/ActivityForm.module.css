@@ -1,9 +1,7 @@
-/* One column of section cards, 20 px apart, at most 720 px wide (design system §2.4 C, §7). */
 .form {
   display: flex;
   flex-direction: column;
   gap: var(--grid-gap);
-  max-width: var(--form-max);
   min-width: 0;
 }
 
@@ -12,48 +10,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-}
-
-.attributes h2 {
-  color: var(--ink);
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-heading);
-  line-height: var(--leading-lg);
-}
-
-/* Where the activity sits, on one line: "Campaign Helix launch · Initiative Digital & social",
-   and the lock that says how to change it (UI audit AF-01: a shorter form). */
-.readOnly {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-1) var(--space-6);
-}
-
-.pairs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-6);
-  margin: 0;
-}
-
-.pair {
-  display: flex;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.pair dt {
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
-.pair dd {
-  margin: 0;
-  color: var(--ink-2);
-  overflow-wrap: break-word;
 }
 
 /* A warning that does not block saving: amber icon, the text in ink. */

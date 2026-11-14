@@ -20,15 +20,8 @@ import (
 	"mapp/internal/stores"
 )
 
-// The wiring of feature 010, All work (D-196): allWorkSource implements allwork.Source over plans (004),
-// campaigns and initiatives (005), activities (006), line items (007), people (003), Settings (002) and the
-// recycle bin (001). Every value comes from the owning feature's own calculation: a plan's completeness from
-// 004's Plans list; Approval progress, Timing and completeness from 005's plan tree; display status,
-// completeness and goals from 006; USD amounts, spreads, SWBS status and completeness from 007's functions
-// (010 plan, consolidation: "007's month amounts come through an internal/app adapter over 007's spread
-// functions"). It reads inside the caller's transaction and never writes.
-
-// allWorkSource is allwork.Source over the planning features.
+// allWorkSource is allwork.Source over the planning features: every value comes from the owning feature's own
+// calculation, read inside the caller's transaction, and nothing is written.
 type allWorkSource struct {
 	plans          *plan.Service
 	plansRepo      stores.PlanStore
@@ -39,25 +32,24 @@ type allWorkSource struct {
 	lineItems      *lineitem.Service
 	lineItemsRepo  stores.LineItemStore
 	settings       *settings.Service
-	budgetItems    lineitem.FinanceBudgets // 002's finance budget items, as line items read them
-	workflows      activity.Workflows      // 008's approval workflows, as activities read them
+	budgetItems    lineitem.FinanceBudgets
+	workflows      activity.Workflows
 	people         *people.Service
 	peopleRepo     stores.PeopleStore
 	history        *history.Service
-	financials     *financials.Service // 015's GSAP figures of line items (financials.go)
-	financeAccess  financials.Access   // who may see them (015 FR-028)
+	financials     *financials.Service
+	financeAccess  financials.Access
+
+	planningCampaigns *campaign.Service
+	lean              bool
 }
 
-// The compiler checks here that allWorkSource implements allwork.Source.
 var _ allwork.Source = allWorkSource{}
 
-// Year returns every plan of year with its campaigns, initiatives, activities and line items, each with its
-// position in the plan tree (allwork data model §2). Records in the recycle bin are not stored, so they are
-// never among them. The values that only some columns show — a plan's completeness, the plan goals, the
-// activities' goals — are read only when columns names one of those columns, because the owning features
-// work them out record by record.
+// Year returns every plan of year the person may see, with everything below it in plan-tree order. The values
+// only some columns show (a plan's completeness, goals) are read only when columns names them: costly per record.
 func (s allWorkSource) Year(ctx context.Context, year int, today date.Date, columns []string) (allwork.YearData, error) {
-	yearPlans, err := plansOfYear(ctx, s.plansRepo, year) // rows, totals, calendar and export: what the person may see
+	yearPlans, err := plansOfYear(ctx, s.plansRepo, year)
 	if err != nil {
 		return allwork.YearData{Nodes: []allwork.Node{}}, err
 	}
@@ -65,14 +57,12 @@ func (s allWorkSource) Year(ctx context.Context, year int, today date.Date, colu
 	if err != nil || len(data.Nodes) == 0 {
 		return data, err
 	}
-	if err := s.addFinance(ctx, &data); err != nil { // feature 015 (financials.go)
+	if err := s.addFinance(ctx, &data); err != nil {
 		return allwork.YearData{}, err
 	}
 	return data, nil
 }
 
-// nodesOf returns the nodes of the plans yearPlans of year and of everything below them, without the GSAP
-// figures.
 func (s allWorkSource) nodesOf(ctx context.Context, yearPlans []plan.Plan, year int, columns []string) (allwork.YearData, error) {
 	data := allwork.YearData{Nodes: []allwork.Node{}}
 	if len(yearPlans) == 0 {
@@ -83,7 +73,7 @@ func (s allWorkSource) nodesOf(ctx context.Context, yearPlans []plan.Plan, year 
 	if err := y.loadAttributes(ctx); err != nil {
 		return allwork.YearData{}, err
 	}
-	if y.rates, err = s.settings.Rates(ctx); err != nil { // 016: each plan currency's amounts converted to USD once
+	if y.rates, err = s.settings.Rates(ctx); err != nil {
 		return allwork.YearData{}, err
 	}
 	missing := map[string]int{}
@@ -99,9 +89,10 @@ func (s allWorkSource) nodesOf(ctx context.Context, yearPlans []plan.Plan, year 
 	return data, nil
 }
 
-// addPlans adds the plans with their own missing fields and everything below them.
+// addPlans adds the plans and everything below them, decoding each stored activity and line item only once.
 func (y *yearReader) addPlans(ctx context.Context, yearPlans []plan.Plan, missing map[string]int) error {
-	if err := y.s.readTrees(ctx, yearPlans); err != nil {
+	tree, err := y.s.readTrees(ctx, yearPlans)
+	if err != nil {
 		return err
 	}
 	for _, p := range yearPlans {
@@ -109,24 +100,15 @@ func (y *yearReader) addPlans(ctx context.Context, yearPlans []plan.Plan, missin
 			return err
 		}
 	}
-	if err := y.addActivityDetails(ctx); err != nil {
+	if err := y.addActivityDetails(ctx, tree.activities); err != nil {
 		return err
 	}
-	return y.addLineItems(ctx)
+	return y.addLineItems(ctx, tree.lineItems)
 }
 
-// planMissing returns the number of each plan's own needed-to-publish fields still empty, from 004's Plans
-// list: one call for every plan of the year.
+// planMissing counts each plan's own needed-to-publish fields still empty, without the roll-ups the Plans list builds.
 func (s allWorkSource) planMissing(ctx context.Context, year int) (map[string]int, error) {
-	list, err := s.plans.List(ctx, actor.System, plan.ListFilter{Scope: plan.ScopeAll, Year: &year})
-	if err != nil {
-		return nil, err
-	}
-	missing := make(map[string]int, len(list.Items))
-	for _, p := range list.Items {
-		missing[p.ID] = len(p.Completeness.Missing)
-	}
-	return missing, nil
+	return s.plans.OwnMissing(ctx, actor.System, year)
 }
 
 // addPlan adds the plan p with its own missing fields, its campaigns and initiatives as 005's plan tree
@@ -148,8 +130,8 @@ func (y *yearReader) addPlan(ctx context.Context, p plan.Plan, missing int) erro
 	planNode := allwork.Node{
 		Level: allwork.LevelPlan, ID: p.ID, PlanID: p.ID, Name: p.Name, Description: p.Description, Owner: owner,
 		Status: string(p.Status), Missing: missing, Budget: y.usd(p.ID, p.Budget), BudgetPlan: y.inPlan(p.ID, p.Budget),
-		CreatedAt: p.CreatedAt, UpdatedAt: p.UpdatedAt, Strategic: p.AOP, TeamIDs: append([]string{}, p.TeamIDs...),
-		BusinessUnitIDs: units, Fields: fields,
+		CreatedAt: p.CreatedAt, UpdatedAt: p.UpdatedAt, Version: p.Version, Strategic: p.AOP, TeamIDs: append([]string{}, p.TeamIDs...),
+		BusinessUnitIDs: units, Fields: fields, PlanAccess: plan.AccessFacts(p),
 	}
 	y.planFacts(&planNode)
 	planNode.Attrs = y.attrValues(settings.LevelPlan, p.Attributes)
@@ -194,7 +176,11 @@ func (y *yearReader) addCampaigns(ctx context.Context, planID string) error {
 }
 
 func (y *yearReader) addActivities(ctx context.Context, planID string) error {
-	summaries, err := y.s.activities.ListForPlan(ctx, actor.System, planID)
+	rows := y.s.activities.ListForPlan
+	if y.s.lean {
+		rows = y.s.activities.PlanningRows
+	}
+	summaries, err := rows(ctx, actor.System, planID)
 	if err != nil {
 		return err
 	}
@@ -210,7 +196,8 @@ func (y *yearReader) addActivities(ctx context.Context, planID string) error {
 		y.activities[a.ID] = len(y.nodes)
 		y.nodes = append(y.nodes, allwork.Node{
 			Level: allwork.LevelActivity, ID: a.ID, ParentID: a.InitiativeID, PlanID: planID, Order: order, Name: a.Name,
-			Owner: ownerOf(a.Owner), StartDate: a.StartDate, EndDate: a.EndDate, Ongoing: a.Ongoing, Months: months,
+			Version: a.Version,
+			Owner:   ownerOf(a.Owner), StartDate: a.StartDate, EndDate: a.EndDate, Ongoing: a.Ongoing, Months: months,
 			Status: string(a.DisplayStatus), Missing: a.Completeness.MissingFields, PlannedCost: y.usd(planID, planned),
 			PlannedCostPlan: y.inPlan(planID, planned), ActivityTypeID: a.ActivityType.ID,
 			Fields: map[string]allwork.Value{

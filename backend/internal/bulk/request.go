@@ -83,6 +83,9 @@ func checkRequest(req Request, ids []string) error {
 	case slices.ContainsFunc(ids, func(id string) bool { _, ok := levelOf(id); return !ok }):
 		p.Add(fieldRecordIDs, msgNotSelectable)
 	}
+	if slices.ContainsFunc(ids, func(id string) bool { _, seen := req.Versions[id]; return !seen }) {
+		p.Add("versions", msgSelectAgain)
+	}
 	if _, known := verbs[req.Action]; !known {
 		p.Add("action", msgChooseAction)
 	}

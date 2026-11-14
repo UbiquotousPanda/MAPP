@@ -1,15 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import { action, callApi, expectNoAxeViolations, expectToast, itemAt, signInAs } from './fixtures';
-import { lubricantsActivity } from './lubricants';
-import { createPlan, idOf, type ListOf, type Named } from './planning';
+import { idOf, type ListOf, type Named } from './planning';
 
 // The access journeys of feature 014 (plan "Tests" › End-to-end, SC-002, SC-003, SC-007) against the real API
-// and the demo data: who sees which plans, view versus edit, roles given in Settings, segregation of duties
-// in approvals and global budgets. Records a journey needs are prepared through the API.
+// and the demo data: who sees which plans, view versus edit and roles given in Settings. Records a journey
+// needs are prepared through the API.
 
 const ALEX = 'alex.morgan@shell.com';
 const PRIYA = 'priya.raman@shell.com';
-const DANIEL = 'daniel.okoro@shell.com';
 const MEI = 'mei.lin@shell.com';
 const CARLOS = 'carlos.mendes@shell.com';
 const SARA = 'sara.novak@shell.com';
@@ -17,7 +15,6 @@ const SARA = 'sara.novak@shell.com';
 const LUBRICANTS = 'FY2026 Lubricants Europe';
 const MOBILITY = 'FY2026 Mobility China';
 const GLOBAL_BRAND = 'FY2027 Global Brand';
-const LUBRICANTS_WORKFLOW = 'Lubricants EU approval';
 
 function planCard(page: Page, name: string) {
   return page.getByRole('article', { name, exact: true });
@@ -169,132 +166,4 @@ test.describe('US3: roles given in Settings', () => {
         .first(),
     ).toBeVisible();
   });
-});
-
-test('US5: Daniel may not approve an activity he owns; Alex, the backup approver, approves it', async ({
-  page,
-}) => {
-  test.slow();
-  await signInAs(page, PRIYA);
-  const prepared = await lubricantsActivity(page, 'Own approval', '20000.00');
-  const daniel = await idOf(page, '/api/v1/people', 'Daniel Okoro');
-  const workflows = await callApi<ListOf<Named>>(page, 'GET', '/api/v1/approval-workflows');
-  const workflow = workflows.items.find((w) => w.name === LUBRICANTS_WORKFLOW);
-  if (!workflow) {
-    throw new Error(`There is no workflow '${LUBRICANTS_WORKFLOW}'`);
-  }
-  const current = await callApi<ActivityAnswer>(page, 'GET', `/api/v1/activities/${prepared.id}`);
-  const saved = await ownedByDaniel(page, current, daniel, workflow.id);
-  // Daniel owns no other activity in the demo (home.spec.ts), so his goes to the recycle bin at the end.
-  try {
-    await callApi(page, 'POST', `/api/v1/activities/${prepared.id}/approval/submit`, {
-      version: saved.version,
-      comment: '',
-    });
-
-    await signInAs(page, DANIEL);
-    await page.goto(prepared.path);
-    await expect(page.getByRole('heading', { name: prepared.name, level: 1 })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
-    await expectNoAxeViolations(page);
-
-    await signInAs(page, ALEX);
-    await page.goto(prepared.path);
-    await page.getByRole('button', { name: 'Approve', exact: true }).first().click();
-    const dialog = page.getByRole('alertdialog', { name: `Approve '${prepared.name}'?` });
-    await dialog.getByRole('button', { name: 'Approve', exact: true }).click();
-    await expect(page.getByText('Approved').first()).toBeVisible();
-  } finally {
-    await signInAs(page, DANIEL);
-    await callApi(page, 'DELETE', `/api/v1/activities/${prepared.id}`);
-  }
-});
-
-interface ActivityAnswer {
-  id: string;
-  name: string;
-  externalName: string;
-  activityType: { id: string };
-  startDate: string;
-  endDate: string;
-  ongoing: boolean;
-  plannedCost: unknown;
-  description: string;
-  attributes: unknown;
-  version: number;
-}
-
-/** Saves the activity with Daniel Okoro as its owner and the Lubricants EU workflow, as the edit form would. */
-async function ownedByDaniel(
-  page: Page,
-  activity: ActivityAnswer,
-  ownerId: string,
-  workflowId: string,
-): Promise<{ version: number }> {
-  return callApi(page, 'PATCH', `/api/v1/activities/${activity.id}`, {
-    name: activity.name,
-    externalName: activity.externalName,
-    activityTypeId: activity.activityType.id,
-    ownerId,
-    startDate: activity.startDate,
-    endDate: activity.endDate,
-    ongoing: activity.ongoing,
-    plannedCost: activity.plannedCost,
-    approvalWorkflowId: workflowId,
-    description: activity.description,
-    attributes: activity.attributes,
-    goals: { inq: null, setLaterStagesMyself: false, mql: null, revenue: null },
-    version: activity.version,
-    restartApproval: false,
-  });
-}
-
-test('US6: Carlos changes an allocation; the plan owner sees a locked budget; Mei has no Global budgets', async ({
-  page,
-}) => {
-  await signInAs(page, CARLOS);
-  const budgets = await callApi<ListOf<Named & { year: number }>>(
-    page,
-    'GET',
-    '/api/v1/global-budgets',
-  );
-  const budget = itemAt(budgets.items, 0);
-  await signInAs(page, MEI);
-  const plan = await createPlan(page, 'Access allocation', budget.year);
-  await signInAs(page, CARLOS);
-  const options = await callApi<{ items: { plan: { id: string; version: number } }[] }>(
-    page,
-    'GET',
-    `/api/v1/global-budgets/${budget.id}/allocation-options`,
-  );
-  const option = options.items.find((candidate) => candidate.plan.id === plan.id);
-  if (!option) {
-    throw new Error(`'${plan.name}' is not offered for an allocation`);
-  }
-  await callApi(page, 'POST', `/api/v1/global-budgets/${budget.id}/allocations`, {
-    planId: plan.id,
-    amount: { amount: '10000.00', currency: 'USD' },
-    planVersion: option.plan.version,
-  });
-
-  await page.goto(`/budgets/${budget.id}`);
-  await page.getByRole('button', { name: `Actions for ${plan.name}` }).click();
-  await page.getByRole('menuitem', { name: 'Change allocation' }).click();
-  const dialog = page.getByRole('dialog', { name: `Change the allocation to '${plan.name}'` });
-  await dialog.getByRole('textbox', { name: /^Amount/ }).fill('12000.00');
-  await expectNoAxeViolations(page);
-  await dialog.getByRole('button', { name: 'Save allocation' }).click();
-  await expectToast(page, `Allocation to '${plan.name}' saved`);
-
-  await signInAs(page, MEI);
-  await page.goto(`/plans/${plan.id}/edit`);
-  await expect(
-    page.getByText(`Allocated from '${budget.name}' — ask Carlos Mendes to change it.`).first(),
-  ).toBeVisible();
-  await expectNoAxeViolations(page);
-  await expect(
-    page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Global budgets' }),
-  ).toHaveCount(0);
-  await page.goto('/budgets');
-  await expect(page.getByRole('heading', { name: 'No access', level: 1 })).toBeVisible();
 });

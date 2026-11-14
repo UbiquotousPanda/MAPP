@@ -7,6 +7,7 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { LockedNote } from '@/ui/LockedNote/LockedNote';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import list from '@/ui/settings-table.module.css';
@@ -152,7 +153,9 @@ function RoleDetails({
             <div className={styles.groups}>
               {catalogue.groups.map((group) => (
                 <section key={group.name} className={styles.group} aria-label={group.name}>
-                  <h3 className={styles.groupTitle}>{group.name}</h3>
+                  <SectionHeading level={3} rank="sub">
+                    {group.name}
+                  </SectionHeading>
                   <ul className={styles.permissions}>
                     {group.permissions.map((permission) => {
                       const has = granted.has(permission.key);

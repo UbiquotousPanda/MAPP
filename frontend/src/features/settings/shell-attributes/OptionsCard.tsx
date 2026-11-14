@@ -12,6 +12,7 @@ import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useToast } from '@/ui/Toast/useToast';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import { formatWhole } from '@/format/decimal';
+import dataTable from '@/ui/Table/Table.module.css';
 import { SettingDeleteDialog } from '../SettingDeleteDialog';
 import { ImportOptionsDialog } from './ImportOptionsDialog';
 import { downloadOptionsTemplate } from './import-template';
@@ -113,7 +114,7 @@ export function OptionsCard({ attribute }: { attribute: ShellAttribute }) {
     <Card
       title="Options"
       actions={
-        <div className={styles.cardButtons}>
+        <>
           <Button icon={<Plus />} onClick={() => setPanel({})}>
             Add option
           </Button>
@@ -123,7 +124,7 @@ export function OptionsCard({ attribute }: { attribute: ShellAttribute }) {
           <Button icon={<Download />} onClick={() => downloadOptionsTemplate(attribute)}>
             Download template
           </Button>
-        </div>
+        </>
       }
     >
       <div className={styles.optionsToolbar}>
@@ -154,8 +155,8 @@ export function OptionsCard({ attribute }: { attribute: ShellAttribute }) {
         />
       ) : (
         <>
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
+          <div className={dataTable.scroll}>
+            <table className={dataTable.table}>
               <thead>
                 <tr>
                   <th scope="col">Label</th>
@@ -188,7 +189,7 @@ export function OptionsCard({ attribute }: { attribute: ShellAttribute }) {
                         {option.active ? 'Active' : 'Inactive'}
                       </StatusChip>
                     </td>
-                    <td className={styles.actionsCell}>
+                    <td className={dataTable.actions}>
                       <ActionsMenu label={option.label} items={actionsOf(option, index)} />
                     </td>
                   </tr>
@@ -229,7 +230,7 @@ export function OptionsCard({ attribute }: { attribute: ShellAttribute }) {
           name={deleting.label}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteOption.mutateAsync(deleting.id)}
+          remove={() => deleteOption.mutateAsync(deleting)}
           setInactive={() => setActive(deleting, false)}
           invalidate={CHANGED_BY_ANY_CHANGE}
           onClose={() => setDeleting(null)}

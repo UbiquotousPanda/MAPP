@@ -17,6 +17,9 @@ import {
 import type { LineItemFormState } from './line-item-form-state';
 import type { ActivityDates } from './line-item-math';
 import { SpreadEditor } from './SpreadEditor';
+import type { SpreadEditorProps } from './SpreadEditor';
+
+type Spread = SpreadEditorProps['spread'];
 
 const MAR_MAY: ActivityDates = { startDate: '2026-03-01', endDate: '2026-05-31', ongoing: false };
 
@@ -24,7 +27,45 @@ function tenThousandEuros(): LineItemFormState {
   return { ...newFormState(formOptions()), currency: 'EUR', plannedCost: '10,000.00' };
 }
 
-function Harness({ start, dates = MAR_MAY }: { start: LineItemFormState; dates?: ActivityDates }) {
+const EVENLY_SEED = [
+  { month: '2026-03', amount: '3333.33' },
+  { month: '2026-04', amount: '3333.33' },
+  { month: '2026-05', amount: '3333.34' },
+];
+
+/** The API's answer for a spread: its months in euros, and what a switch to Custom starts from. */
+function answered(
+  months: [string, string][],
+  state: 'spread' | 'notSpread' = 'spread',
+): NonNullable<Spread> {
+  return {
+    state,
+    months: months.map(([month, amount]) => spreadMonth(month, eur(amount), usd(amount))),
+    customTotal: null,
+    difference: null,
+    addsUp: true,
+    seed: EVENLY_SEED,
+  };
+}
+
+function customAnswer(total: string, difference: string): Spread {
+  return {
+    ...answered([]),
+    customTotal: eur(total),
+    difference: eur(difference),
+    addsUp: difference === '0.00',
+  };
+}
+
+function Harness({
+  start,
+  dates = MAR_MAY,
+  spread,
+}: {
+  start: LineItemFormState;
+  dates?: ActivityDates;
+  spread?: Spread;
+}) {
   const [state, setState] = useState(start);
   return (
     <Tooltip.Provider>
@@ -34,10 +75,12 @@ function Harness({ start, dates = MAR_MAY }: { start: LineItemFormState; dates?:
         currency={state.currency}
         dates={dates}
         customMonths={state.customMonths}
+        spread={spread}
         customTyped={state.customTyped}
-        source={state.sources.spread}
         problems={[]}
-        onMethodChange={(method) => setState((s) => changeSpreadMethod(s, method, dates, 2026))}
+        onMethodChange={(method) =>
+          setState((s) => changeSpreadMethod(s, method, dates, 2026, spread?.seed))
+        }
         onMonthChange={(month, amount) => setState((s) => changeCustomMonth(s, month, amount))}
         onAddMonth={(month) => setState((s) => addCustomMonth(s, month))}
         onUseTotal={(amount) => setState((s) => changePlannedCost(s, amount))}
@@ -54,7 +97,7 @@ function preview() {
 describe('038 FR-042 (L-7): pasting a row of amounts', () => {
   it('fills the month and the ones after it, and says what did not fit', async () => {
     const user = userEvent.setup();
-    const start = changeSpreadMethod(tenThousandEuros(), 'custom', MAR_MAY, 2026);
+    const start = changeSpreadMethod(tenThousandEuros(), 'custom', MAR_MAY, 2026, EVENLY_SEED);
     renderWithProviders(<Harness start={start} />);
 
     await user.click(screen.getByRole('textbox', { name: /Mar 2026/ }));
@@ -70,63 +113,60 @@ describe('038 FR-042 (L-7): pasting a row of amounts', () => {
 });
 
 describe('SpreadEditor (US3, FR-017 – FR-021)', () => {
-  it('previews Evenly, All in first month and All in last month (scenario 1)', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<Harness start={tenThousandEuros()} />);
+  it('shows the months the API spread the cost over (scenario 1, D-061)', () => {
+    const spread = answered([
+      ['2026-03', '3333.33'],
+      ['2026-04', '3333.33'],
+      ['2026-05', '3333.34'],
+    ]);
+    renderWithProviders(<Harness start={tenThousandEuros()} spread={spread} />);
 
     expect(screen.getByRole('radio', { name: 'Evenly' })).toBeChecked();
-    expect(screen.getByText('Mar 2026 · 3,333.33 EUR')).toBeInTheDocument();
-    expect(screen.getByText('Apr 2026 · 3,333.33 EUR')).toBeInTheDocument();
-    expect(screen.getByText('May 2026 · 3,333.34 EUR')).toBeInTheDocument();
-
-    await user.click(screen.getByRole('radio', { name: 'All in first month' }));
-    expect(preview()).toBe('Mar 2026 · 10,000.00 EUR');
-    await user.click(screen.getByRole('radio', { name: 'All in last month' }));
-    expect(preview()).toBe('May 2026 · 10,000.00 EUR');
+    expect(preview()).toBe('Mar 2026 · €3,333.33Apr 2026 · €3,333.33May 2026 · €3,333.34');
   });
 
-  it('starts Custom from the spread, adds a month before and totals it (scenario 2, FR-018)', async () => {
+  it('starts Custom from the seed the API answers (scenario 2, D-152)', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<Harness start={tenThousandEuros()} />);
+    renderWithProviders(
+      <Harness start={tenThousandEuros()} spread={answered([['2026-03', '10000.00']])} />,
+    );
 
     await user.click(screen.getByRole('radio', { name: 'Custom' }));
     expect(screen.getByLabelText('Amount for Mar 2026')).toHaveValue('3,333.33');
     expect(screen.getByLabelText('Amount for May 2026')).toHaveValue('3,333.34');
-    expect(screen.getByText('10,000.00 of 10,000.00 EUR spread — adds up')).toBeInTheDocument();
+  });
 
-    await user.click(screen.getByRole('button', { name: 'Add month before' }));
-    const february = screen.getByLabelText('Amount for Feb 2026');
-    await user.type(february, '2000');
-    expect(
-      screen.getByText("Outside the activity's dates — allowed, e.g. a deposit"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('12,000.00 of 10,000.00 EUR spread — 2,000.00 EUR too much'),
-    ).toBeInTheDocument();
+  it('shows the custom total the API answers and uses it as the planned cost (FR-018)', async () => {
+    const user = userEvent.setup();
+    const start = changeSpreadMethod(tenThousandEuros(), 'custom', MAR_MAY, 2026, EVENLY_SEED);
+    renderWithProviders(<Harness start={start} spread={customAnswer('12000.00', '-2000.00')} />);
 
+    expect(
+      screen.getByText('€12,000.00 of €10,000.00 spread — €2,000.00 too much'),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Use month total as planned cost' }));
     expect(screen.getByLabelText('Planned cost now')).toHaveTextContent('12,000.00');
-    expect(screen.getByText('12,000.00 of 12,000.00 EUR spread — adds up')).toBeInTheDocument();
+  });
 
-    await user.click(screen.getByRole('button', { name: 'Add month after' }));
-    expect(screen.getByLabelText('Amount for Jun 2026')).toHaveValue('');
-    await user.clear(february);
-    expect(
-      screen.getByText('10,000.00 of 12,000.00 EUR spread — 2,000.00 EUR left'),
-    ).toBeInTheDocument();
+  it('says what is left to spread (FR-018)', () => {
+    const start = changeSpreadMethod(tenThousandEuros(), 'custom', MAR_MAY, 2026, EVENLY_SEED);
+    renderWithProviders(<Harness start={start} spread={customAnswer('8000.00', '2000.00')} />);
+
+    expect(screen.getByText('€8,000.00 of €10,000.00 spread — €2,000.00 left')).toBeInTheDocument();
   });
 
   it('says that an ongoing activity puts everything in its first month (scenario 4, FR-021)', async () => {
     const user = userEvent.setup();
     const ongoing = { startDate: '2026-03-15', endDate: null, ongoing: true };
-    renderWithProviders(<Harness start={tenThousandEuros()} dates={ongoing} />);
+    const spread = answered([['2026-03', '10000.00']]);
+    renderWithProviders(<Harness start={tenThousandEuros()} dates={ongoing} spread={spread} />);
 
     expect(
       screen.getByText(
         "This activity is ongoing (no end date), so 'Evenly' puts everything in the first month — choose Custom to spread it",
       ),
     ).toBeInTheDocument();
-    expect(preview()).toBe('Mar 2026 · 10,000.00 EUR');
+    expect(preview()).toBe('Mar 2026 · €10,000.00');
     await user.click(screen.getByRole('radio', { name: 'All in last month' }));
     expect(
       screen.getByText(
@@ -142,6 +182,7 @@ describe('SpreadEditor (US3, FR-017 – FR-021)', () => {
       <Harness
         start={tenThousandEuros()}
         dates={{ startDate: null, endDate: null, ongoing: false }}
+        spread={answered([], 'notSpread')}
       />,
     );
 

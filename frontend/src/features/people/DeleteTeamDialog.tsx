@@ -13,19 +13,12 @@ const UNDO_OPTIONS = { invalidate: [['teams'], ['people'], ['session']] };
 
 export interface DeleteTeamDialogProps {
   team: Team;
-  /** Sets the team inactive instead (a used team); resolves when done. */
   setInactive: (team: Team) => Promise<void>;
-  /** The team is in the recycle bin. */
   onDeleted: (team: Team) => void;
   onClose: () => void;
 }
 
-/**
- * Delete of a team (US2-6, US2-7): a team that plans use can't be deleted, so the dialog lists
- * them and offers Set team inactive; an unused team goes to the recycle bin with its memberships,
- * and the message offers Undo. When a plan started using the team meanwhile, the API refuses
- * (in_use) and the dialog shows the refreshed team's plans.
- */
+// When a plan started using the team meanwhile, the API refuses (in_use) and the dialog lists its plans.
 export function DeleteTeamDialog({ team, setInactive, onDeleted, onClose }: DeleteTeamDialogProps) {
   const queryClient = useQueryClient();
   const deleteTeam = useDeleteTeam();
@@ -38,7 +31,7 @@ export function DeleteTeamDialog({ team, setInactive, onDeleted, onClose }: Dele
   async function remove() {
     setBusy(true);
     try {
-      afterDelete(await deleteTeam.mutateAsync(shown.id));
+      afterDelete(await deleteTeam.mutateAsync(shown));
       onDeleted(shown);
       onClose();
     } catch (error) {

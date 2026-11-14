@@ -84,12 +84,6 @@ export const NEW_CAMPAIGN = 'New campaign';
 export const NEW_INITIATIVE = 'New initiative';
 export const EDIT_CAMPAIGN = 'Edit campaign';
 export const EDIT_INITIATIVE = 'Edit initiative';
-export function insidePlan(plan: string): string {
-  return `Inside plan '${plan}'`;
-}
-export function insideCampaign(campaign: string): string {
-  return `Inside campaign '${campaign}'`;
-}
 
 // Forms
 export const BASICS = 'Basics';
@@ -107,10 +101,6 @@ export const CAMPAIGN = 'Campaign';
 export const OWNER = 'Owner';
 export const DATES = 'Dates';
 export const DESCRIPTION = 'Description';
-export const FROM_THE_PLAN = 'From the plan';
-export const THE_PLANS_YEAR = "The plan's year";
-export const FROM_THE_CAMPAIGN = 'From the campaign';
-export const THE_CAMPAIGNS_DATES = "The campaign's dates";
 export const CHANGE_IT_WITH_MOVE = 'Change it with Move';
 export function allowedRange(range: string): string {
   return `Must be inside the campaign's dates (${range})`;
@@ -152,15 +142,9 @@ export const GOALS = 'Goals';
 export const INQ = 'INQ';
 export const MQL = 'MQL';
 export const REVENUE = 'Revenue';
-export function initiativesHeading(count: number): string {
-  return `Initiatives (${count})`;
-}
+export const INITIATIVES = 'Initiatives';
 export const NO_INITIATIVES =
   'No initiatives yet — an initiative groups similar work inside a campaign.';
-export function activitiesLine(activities: number, approved: number, lineItems: number): string {
-  return `Activities: ${activities} (${approved} approved) · Line items: ${lineItems}`;
-}
-export const NO_ACTIVITIES_YET = 'No activities yet.';
 export function notFound(level: RecordLevel): string {
   return `This ${level} no longer exists — someone may have deleted it.`;
 }

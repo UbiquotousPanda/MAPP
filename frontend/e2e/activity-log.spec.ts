@@ -1,5 +1,11 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { callApi, escapeRegExp, expectNoAxeViolations, signInAs } from './fixtures';
+import {
+  deleteSeen,
+  chooseFilter,
+  escapeRegExp,
+  expectNoAxeViolations,
+  signInAs,
+} from './fixtures';
 import {
   changeActivityPlannedCost,
   changeLineItemPlannedCost,
@@ -39,15 +45,12 @@ test('US2: the cards, filters, chips, details and record links of the activity l
     records.year,
     '1000.00',
   );
-  await callApi(page, 'DELETE', `/api/v1/initiatives/${binned.id}`);
+  await deleteSeen(page, `/api/v1/initiatives/${binned.id}`);
 
   await signInAs(page, ALEX);
   await page.goto('/activity-log');
   await expect(page.getByRole('heading', { level: 1, name: 'Activity log' })).toBeVisible();
   await expect(page).toHaveTitle('Activity log · SP&A One');
-  await expect(
-    page.getByText("See who changed what, and when. Entries can't be edited or removed."),
-  ).toBeVisible();
   await expect(page.getByRole('button', { name: /^(Edit|Delete)\b/ })).toHaveCount(0);
   await expectNoAxeViolations(page);
 
@@ -55,10 +58,10 @@ test('US2: the cards, filters, chips, details and record links of the activity l
   await expect(page).toHaveURL(/[?&]range=today\b/);
   await expect(chip(page, 'Date: Today')).toBeVisible();
 
-  await page.getByLabel('Person', { exact: true }).selectOption({ label: 'Mei Lin' });
+  await chooseFilter(page, 'Person', 'Mei Lin');
   await expect(chip(page, 'Person: Mei Lin')).toBeVisible();
-  await page.getByRole('button', { name: 'Action: Any action' }).click();
-  await page.getByRole('menuitemcheckbox', { name: 'Changed', exact: true }).click();
+  await page.getByRole('button', { name: 'Action', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Changed', exact: true }).click();
   await page.keyboard.press('Escape');
   await expect(chip(page, 'Action: Changed')).toBeVisible();
   await expect(page).toHaveURL(/[?&]person=U-\d+/);
@@ -83,8 +86,8 @@ test('US2: the cards, filters, chips, details and record links of the activity l
 
   // A record in the recycle bin links to its row there, which is highlighted.
   await chip(page, 'Action: Changed').click();
-  await page.getByRole('button', { name: 'Action: Any action' }).click();
-  await page.getByRole('menuitemcheckbox', { name: 'Deleted', exact: true }).click();
+  await page.getByRole('button', { name: 'Action', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Deleted', exact: true }).click();
   await page.keyboard.press('Escape');
   const deleted = entry(page, `Mei Lin deleted initiative '${binned.name}' (in the recycle bin)`);
   await expect(deleted).toBeVisible();

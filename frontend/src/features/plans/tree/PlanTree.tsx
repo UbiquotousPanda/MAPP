@@ -1,3 +1,4 @@
+import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '@/ui/Button/Button';
@@ -144,6 +145,8 @@ export function PlanTree({
     ),
   );
 
+  const everyOpen = everyRow === true && toggled.size === 0;
+
   function setOpen(ids: Iterable<string>, open: boolean) {
     setToggled((current) => {
       const next = new Map(current);
@@ -181,8 +184,12 @@ export function PlanTree({
           />
         </div>
         <div className={styles.buttons}>
-          <Button onClick={() => setAllOpen(true)}>Expand all</Button>
-          <Button onClick={() => setAllOpen(false)}>Collapse all</Button>
+          <Button
+            icon={everyOpen ? <ChevronsDownUp /> : <ChevronsUpDown />}
+            onClick={() => setAllOpen(!everyOpen)}
+          >
+            {everyOpen ? 'Collapse all' : 'Expand all'}
+          </Button>
           {toolbarActions}
         </div>
       </div>

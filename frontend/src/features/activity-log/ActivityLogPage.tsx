@@ -1,5 +1,6 @@
 import { History, SearchX } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router';
+import { Link } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -8,6 +9,8 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
 import { formatWhole } from '@/format/decimal';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import { LOG_PAGE_SIZE, logEntriesKey, useLogEntries, useLogSummary } from './api';
 import { LogEntryList } from './LogEntryList';
 import { LogFilterBar } from './LogFilterBar';
@@ -20,7 +23,7 @@ import {
   weekStart,
 } from './log-filters';
 import type { LogFilterState } from './log-filters';
-import { countLine } from './log-text';
+import { ENTRIES } from './log-text';
 import { filtersFromParams } from './schemas';
 import styles from './ActivityLogPage.module.css';
 
@@ -59,7 +62,7 @@ const CARDS = [
  */
 export function ActivityLogPage() {
   usePageTitle('Activity log');
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const filters = filtersFromParams(params);
   const now = new Date();
   const summary = useLogSummary(todayStart(now), weekStart(now));
@@ -67,15 +70,14 @@ export function ActivityLogPage() {
   const log = useLogEntries(logEntriesKey(query), query, LOG_PAGE_SIZE);
   const filtered = isFiltered(filters);
 
-  const changeFilters = (next: LogFilterState, typing = false) =>
-    setParams(filtersToParams(next), { replace: typing });
+  const changeFilters = (patch: Partial<LogFilterState>) =>
+    setParams((latest) => filtersToParams({ ...filtersFromParams(latest), ...patch }), {
+      replace: true,
+    });
 
   return (
     <>
-      <PageHeader
-        title="Activity log"
-        description="See who changed what, and when. Entries can't be edited or removed."
-      />
+      <PageHeader title="Activity log" />
       <div className={styles.sections}>
         {summary.error ? (
           <ErrorState error={summary.error} onRetry={() => void summary.refetch()} />
@@ -134,11 +136,7 @@ function LogCount({ log, filtered }: { log: ReturnType<typeof useLogEntries>; fi
   if (!page || log.error || unfiltered === 0 || (!filtered && page.total === 0)) {
     return null;
   }
-  return (
-    <p className={styles.count} aria-live="polite">
-      {countLine(page.total, unfiltered)}
-    </p>
-  );
+  return <ResultCount>{countText(page.total, unfiltered, ENTRIES)}</ResultCount>;
 }
 
 /** The list, or the state the list is in. */

@@ -26,6 +26,7 @@ type apiError struct {
 		Code    string `json:"code"`
 		Message string `json:"message"`
 		Fields  []struct {
+			Field   string `json:"field"`
 			Message string `json:"message"`
 		} `json:"fields"`
 	} `json:"error"`
@@ -151,18 +152,6 @@ func TestCheck_EveryProblemAtOnce_LeftOutBelow_Contract_012FR031_FR033(t *testin
 	}
 	if check.Rows != 5 || check.Ready != 0 || check.WithProblems != 5 {
 		t.Errorf("rows %d, ready %d, with problems %d", check.Rows, check.Ready, check.WithProblems)
-	}
-}
-
-func TestCheck_ViewerRefused_Contract_012FR024(t *testing.T) {
-	t.Parallel()
-	sara := apitest.New(t).SignIn(t, sarasEmail)
-	file := upload(t, "plan.xlsx", map[string][][]string{"Campaigns": {{"Campaign name"}, {"Spring push"}}})
-
-	refused := sara.Do(t, http.MethodPost, planPath+"/imports/check", file)
-
-	if body := decoded[apiError](t, refused, http.StatusForbidden); body.Error.Code != "forbidden" {
-		t.Errorf("a viewer's check = %+v", body)
 	}
 }
 

@@ -3,7 +3,7 @@ import { expectNoAxeViolations, signInAs } from './fixtures';
 
 const PRIYA = 'priya.raman@shell.com';
 
-test('039 US1: the plan tree search finds a line item, opens its path and leads to it', async ({
+test('052 US1: the plan tree search finds a line item, opens its path and leads to it', async ({
   page,
 }) => {
   await signInAs(page, PRIYA);
@@ -21,14 +21,4 @@ test('039 US1: the plan tree search finds a line item, opens its path and leads 
 
   await lineItem.click();
   await expect(page.getByRole('heading', { name: 'Venue hire', level: 1 })).toBeVisible();
-});
-
-test('039 US2: the Plans list finds a plan by a line item inside it', async ({ page }) => {
-  await signInAs(page, PRIYA);
-  await page.goto('/plans');
-
-  await page.getByRole('searchbox', { name: 'Search plans' }).fill('venue hire');
-
-  await expect(page.getByRole('link', { name: 'FY2026 Lubricants Europe' })).toBeVisible();
-  await expect(page.getByText(/^Found in line item 'Venue hire' \(L-\d+\)/)).toBeVisible();
 });

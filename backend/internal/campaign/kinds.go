@@ -13,14 +13,12 @@ import (
 	"mapp/internal/rollup"
 )
 
-// The history kinds of this package (data model §7), and the kind of their parent, feature 004's plan.
 const (
 	planKind       = "plan"
 	campaignKind   = "campaign"
 	initiativeKind = "initiative"
 )
 
-// The mid-sentence names of the records, as the log, the recycle bin and the messages show them.
 const (
 	campaignSingular   = "campaign"
 	initiativeSingular = "initiative"
@@ -29,16 +27,12 @@ const (
 	activityPlural     = "activities"
 )
 
-// Messages of the plan's "History kinds" about bringing a record back.
 const (
 	undoNameTakenMessage = "Can't undo — there is now another %s called '%s'. Restore it from the recycle bin instead."
 	renamedNote          = "Renamed to '%s' because the name was taken."
 )
 
-// Kinds returns the history kinds of campaigns and initiatives, the campaign first, for internal/app to
-// register right after feature 004's plan kind (data model §7). With them, history deletes a campaign with
-// its initiatives — and, once feature 006 registers its activity kind under the initiative, everything
-// below — in one recycle-bin entry, brings them back, and logs their changes with their path.
+// Kinds are registered right after the plan kind; a campaign goes to the bin with everything below it.
 func (s *Service) Kinds() []history.Kind {
 	return []history.Kind{
 		{
@@ -76,8 +70,6 @@ func (s *Service) Kinds() []history.Kind {
 	}
 }
 
-// campaignSnapshot reads the campaign id as history keeps it: the stored campaign, its name, and its plan
-// as its parent.
 func (s *Service) campaignSnapshot(ctx context.Context, id string) (history.Snapshot, bool, error) {
 	c, found, err := s.repo.GetCampaign(ctx, id)
 	if err != nil || !found {
@@ -90,7 +82,6 @@ func (s *Service) campaignSnapshot(ctx context.Context, id string) (history.Snap
 	return history.Snapshot{ID: c.ID, Name: c.Name, ParentID: c.PlanID, Data: data}, true, nil
 }
 
-// initiativeSnapshot reads the initiative id as history keeps it, with its campaign as its parent.
 func (s *Service) initiativeSnapshot(ctx context.Context, id string) (history.Snapshot, bool, error) {
 	i, found, err := s.repo.GetInitiative(ctx, id)
 	if err != nil || !found {
@@ -103,7 +94,6 @@ func (s *Service) initiativeSnapshot(ctx context.Context, id string) (history.Sn
 	return history.Snapshot{ID: i.ID, Name: i.Name, ParentID: i.CampaignID, Data: data}, true, nil
 }
 
-// campaignIDs lists the ids of the campaigns of the plan planID.
 func (s *Service) campaignIDs(ctx context.Context, planID string) ([]string, error) {
 	campaigns, err := s.repo.CampaignsOfPlan(ctx, planID)
 	if err != nil {
@@ -116,7 +106,6 @@ func (s *Service) campaignIDs(ctx context.Context, planID string) ([]string, err
 	return list, nil
 }
 
-// initiativeIDs lists the ids of the initiatives of the campaign campaignID.
 func (s *Service) initiativeIDs(ctx context.Context, campaignID string) ([]string, error) {
 	initiatives, err := s.repo.InitiativesOfCampaign(ctx, campaignID)
 	if err != nil {
@@ -129,7 +118,6 @@ func (s *Service) initiativeIDs(ctx context.Context, campaignID string) ([]strin
 	return list, nil
 }
 
-// putCampaign stores the campaign of a snapshot again, exactly as the snapshot holds it.
 func (s *Service) putCampaign(ctx context.Context, snapshot history.Snapshot) error {
 	var c Campaign
 	if err := json.Unmarshal(snapshot.Data, &c); err != nil {
@@ -138,7 +126,6 @@ func (s *Service) putCampaign(ctx context.Context, snapshot history.Snapshot) er
 	return s.repo.PutCampaign(ctx, c)
 }
 
-// putInitiative stores the initiative of a snapshot again, exactly as the snapshot holds it.
 func (s *Service) putInitiative(ctx context.Context, snapshot history.Snapshot) error {
 	var i Initiative
 	if err := json.Unmarshal(snapshot.Data, &i); err != nil {
@@ -147,13 +134,14 @@ func (s *Service) putInitiative(ctx context.Context, snapshot history.Snapshot) 
 	return s.repo.PutInitiative(ctx, i)
 }
 
-// prepareCampaignRestore applies the name rule of campaigns just before one comes back: no two campaigns of
-// a plan share a name. When another campaign of the plan has meanwhile taken the name, an Undo, which must
-// put the campaign back exactly, is refused with name_taken (FR-029); a Restore renames it to "<name>
-// (restored)", "<name> (restored 2)", … and says so in a note (feature 011).
+// prepareCampaignRestore refuses a budget in another currency than the plan's now, and an Undo whose name is
+// now taken; a Restore renames it "<name> (restored)", "<name> (restored 2)", … instead.
 func (s *Service) prepareCampaignRestore(ctx context.Context, rc history.RestoreContext, snapshot *history.Snapshot) ([]string, error) {
 	var c Campaign
 	if err := json.Unmarshal(snapshot.Data, &c); err != nil {
+		return nil, err
+	}
+	if err := s.checkBudgetCurrency(ctx, c.Name, c.PlanID, c.Budget); err != nil {
 		return nil, err
 	}
 	siblings, err := s.repo.CampaignsOfPlan(ctx, c.PlanID)
@@ -183,6 +171,9 @@ func (s *Service) prepareInitiativeRestore(ctx context.Context, rc history.Resto
 	if err := json.Unmarshal(snapshot.Data, &i); err != nil {
 		return nil, err
 	}
+	if err := s.checkInitiativeBudgetCurrency(ctx, i); err != nil {
+		return nil, err
+	}
 	siblings, err := s.repo.InitiativesOfCampaign(ctx, i.CampaignID)
 	if err != nil {
 		return nil, err
@@ -204,8 +195,7 @@ func (s *Service) prepareInitiativeRestore(ctx context.Context, rc history.Resto
 	return []string{fmt.Sprintf(renamedNote, i.Name)}, nil
 }
 
-// restoredName returns the first of "<name> (restored)", "<name> (restored 2)", … that is not taken. The
-// suffix may make the name longer than 120 characters: nothing but a missing parent may block a restore.
+// restoredName may make the name longer than 120 characters: a name never blocks a restore.
 func restoredName(name string, taken func(string) bool) string {
 	candidate := name + " (restored)"
 	for n := 2; taken(candidate); n++ {
@@ -214,9 +204,7 @@ func restoredName(name string, taken func(string) bool) string {
 	return candidate
 }
 
-// describer returns the Describe of a kind (data model §7): readable labels and values for the activity
-// log, fixed at the time of the change. parentLabel names the parent in a move's "parent" change: "Plan"
-// for campaigns, "Campaign" for initiatives.
+// describer's parentLabel names the parent in a move's "parent" change: "Plan" or "Campaign".
 func (s *Service) describer(parentLabel string) func(ctx context.Context, field string, value any) (string, string, error) {
 	return func(ctx context.Context, field string, value any) (string, string, error) {
 		text, _ := value.(string) // ids and dates are strings; other values are handled below
@@ -259,8 +247,6 @@ func (s *Service) describer(parentLabel string) func(ctx context.Context, field 
 	}
 }
 
-// parentName returns the name of the plan or campaign id, as a move's log entry shows it; "" when it is
-// gone (the log then shows the id's default text).
 func (s *Service) parentName(ctx context.Context, parentLabel, id string) (string, error) {
 	if id == "" {
 		return "", nil
@@ -279,8 +265,7 @@ func (s *Service) parentName(ctx context.Context, parentLabel, id string) (strin
 	return c.Name, nil
 }
 
-// moneyText writes a stored money value, decoded from JSON, as people read it: "400,000.00 USD"; "" when it
-// is empty or not money.
+// moneyText is "400,000.00 USD"; "" when the value is empty or not money.
 func moneyText(value any) string {
 	fields, ok := value.(map[string]any)
 	if !ok {

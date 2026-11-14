@@ -5,6 +5,8 @@ import { validation } from '@/testing/fixtures/people';
 import { card, CURRENCIES, renderProfile } from '@/testing/fixtures/profile';
 import { testUser } from '@/testing/fixtures/users';
 import { reply } from '@/testing/replies';
+import { choose, optionNames } from '@/testing/select';
+import { expectNoAxeViolations } from '@/testing/axe';
 
 describe('ProfilePage (feature 003, US4): Edit display preferences', () => {
   it('saves the display currency and date format together; dates follow at once and every query is asked again (US4-3, US4-4, FR-023, FR-024, SC-006)', async () => {
@@ -26,21 +28,18 @@ describe('ProfilePage (feature 003, US4): Edit display preferences', () => {
     await user.click(screen.getByRole('button', { name: 'Edit preferences' }));
     const panel = await screen.findByRole('dialog', { name: 'Edit display preferences' });
     const currency = await within(panel).findByRole('combobox', { name: 'Display currency' });
-    expect(currency).toHaveDisplayValue('USD — US dollar');
+    expect(currency).toHaveTextContent('USD — US dollar');
     const dateFormat = within(panel).getByRole('combobox', { name: 'Date format' });
-    expect(
-      within(dateFormat)
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual([
+    await expectNoAxeViolations();
+    expect(await optionNames(user, dateFormat)).toEqual([
       'Choose…',
       '12 Mar 2026 (DD MMM YYYY)',
       '12/03/2026 (DD/MM/YYYY)',
       '03/12/2026 (MM/DD/YYYY)',
       '2026-03-12 (YYYY-MM-DD)',
     ]);
-    await user.selectOptions(currency, 'EUR — Euro');
-    await user.selectOptions(dateFormat, '12/03/2026 (DD/MM/YYYY)');
+    await choose(user, currency, 'EUR — Euro');
+    await choose(user, dateFormat, '12/03/2026 (DD/MM/YYYY)');
     const currencyAsks = api.bodiesOf('GET /api/v1/me/display-currencies').length;
     await user.click(within(panel).getByRole('button', { name: 'Save' }));
 
@@ -72,7 +71,7 @@ describe('ProfilePage (feature 003, US4): Edit display preferences', () => {
     await user.click(screen.getByRole('button', { name: 'Edit preferences' }));
     const panel = await screen.findByRole('dialog', { name: 'Edit display preferences' });
     await within(panel).findByRole('combobox', { name: 'Display currency' });
-    await user.selectOptions(within(panel).getByRole('combobox', { name: 'Date format' }), '');
+    await choose(user, within(panel).getByRole('combobox', { name: 'Date format' }), 'Choose…');
     await user.click(within(panel).getByRole('button', { name: 'Save' }));
 
     expect(await within(panel).findAllByText('Choose one of the date formats.')).toHaveLength(2);
@@ -112,6 +111,6 @@ describe('ProfilePage (feature 003, US4): Edit display preferences', () => {
     await user.click(within(panel).getByRole('button', { name: 'Try again' }));
     expect(
       await within(panel).findByRole('combobox', { name: 'Display currency' }),
-    ).toHaveDisplayValue('USD — US dollar');
+    ).toHaveTextContent('USD — US dollar');
   });
 });

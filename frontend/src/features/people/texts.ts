@@ -3,14 +3,6 @@ import type { Team, UsageCount } from './api';
 
 const AND_LIST = new Intl.ListFormat('en-GB', { type: 'conjunction' });
 
-export function peopleCountText(shown: number, total: number): string {
-  return countText(shown, total, 'person', 'people');
-}
-
-export function teamsCountText(shown: number, total: number): string {
-  return countText(shown, total, 'team', 'teams');
-}
-
 export function membersText(count: number): string {
   if (count === 0) {
     return 'No members';
@@ -96,13 +88,6 @@ export function teamInUseText(team: Pick<Team, 'name' | 'plans'>): string {
 
 export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] ?? name;
-}
-
-function countText(shown: number, total: number, one: string, many: string): string {
-  if (shown < total) {
-    return `${shown} of ${total} ${total === 1 ? one : many}`;
-  }
-  return total === 1 ? `1 ${one}` : `${total} ${many}`;
 }
 
 function usageLists(usage: UsageCount[]): { owner: string; approver: string; manager: string } {

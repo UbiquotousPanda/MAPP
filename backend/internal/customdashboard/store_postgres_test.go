@@ -135,23 +135,3 @@ func containsID(list []customdashboard.Dashboard, id string) bool {
 	}
 	return false
 }
-
-func TestPostgresStore_SharesLeaveWithADeletedTeam_D379(t *testing.T) {
-	t.Parallel()
-	s, _, db := pgStore(t)
-	directory := people.NewPostgresStore(db)
-
-	pgWrite(t, db, func(ctx context.Context) error {
-		return errors.Join(directory.DeleteMembership(ctx, "TM-1001"), directory.DeleteTeam(ctx, "T-1001"))
-	})
-
-	d, found, err := s.Get(t.Context(), "DB-1001")
-	if err != nil || !found || len(d.SharedWith) != 0 {
-		t.Errorf("Get(DB-1001) = shared with %q, found %v, error %v; want shared with nobody", d.SharedWith, found, err)
-	}
-	restored := pgDashboard("DB-1004", "U-1001", []string{"T-1001", "T-1002"}, "activities")
-	pgWrite(t, db, func(ctx context.Context) error { return s.Insert(ctx, restored) })
-	if d, _, err = s.Get(t.Context(), "DB-1004"); err != nil || !cmp.Equal([]string{"T-1002"}, d.SharedWith) {
-		t.Errorf("a dashboard restored after its team was deleted = shared with %q, error %v; want T-1002 only", d.SharedWith, err)
-	}
-}

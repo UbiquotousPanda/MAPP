@@ -9,9 +9,13 @@ import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { ActivityStatusChip } from '@/ui/ActivityStatusChip/ActivityStatusChip';
 import { activityStatusWord } from '@/ui/ActivityStatusChip/activity-status';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import { formatDate } from '@/format/intl';
 import { recordHref } from '@/ui/record-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { ApprovalChain } from './ApprovalChain';
 import { ApprovalHistory } from './ApprovalHistory';
 import { useApprovalPreview } from './api';
@@ -145,9 +149,9 @@ function PreviewBody({ preview }: { preview: ApprovalPreview }) {
       {reason && <p className={styles.muted}>{reason}</p>}
 
       <section className={styles.section} aria-labelledby={`${id}-details`}>
-        <h3 id={`${id}-details`} className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id={`${id}-details`}>
           Details
-        </h3>
+        </SectionHeading>
         <dl className={styles.facts}>
           <dt>Plan › campaign › initiative</dt>
           <dd>{activity.path.map((record) => record.name).join(' › ') || '—'}</dd>
@@ -165,9 +169,9 @@ function PreviewBody({ preview }: { preview: ApprovalPreview }) {
       </section>
 
       <section className={styles.section} aria-labelledby={`${id}-line-items`}>
-        <h3 id={`${id}-line-items`} className={styles.heading}>
+        <SectionHeading level={3} rank="sub" id={`${id}-line-items`}>
           Line items
-        </h3>
+        </SectionHeading>
         {lineItems.length === 0 ? (
           <p className={styles.muted}>No line items yet.</p>
         ) : (
@@ -225,44 +229,44 @@ function LineItems({ items }: { items: PreviewLineItem[] }) {
   }
 
   return (
-    // Focusable, so the keyboard can scroll it sideways when it is wider than the panel.
-    <div
-      className={styles.scroll}
-      role="region"
-      aria-label="Line items, scrolls sideways"
-      tabIndex={0}
-    >
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th scope="col">Line item</th>
-            <th scope="col" className={styles.amount}>
-              Planned cost
-            </th>
-            <th scope="col" className={styles.amount}>
-              {converted}
-            </th>
-            <th scope="col">Spend type</th>
-            <th scope="col">GL code</th>
-            <th scope="col">Finance budget item</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.id}>
-              <th scope="row">
-                {item.name}
-                <span className={styles.id}>{item.id}</span>
+    <div className={styles.frame}>
+      <ScrollBox label="Line items">
+        <table className={cx(dataTable.table, styles.table)}>
+          <thead>
+            <tr>
+              <th scope="col">Line item</th>
+              <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
+                Planned cost
               </th>
-              <td className={styles.amount}>{format.money(item.plannedCost)}</td>
-              <td className={styles.amount}>{format.money(item.plannedCostDisplay)}</td>
-              <td>{item.spendType || '—'}</td>
-              <td>{item.glCode || '—'}</td>
-              <td>{item.financeBudgetItem || '—'}</td>
+              <th scope="col" className={cx(dataTable.numeric, styles.amount)}>
+                {converted}
+              </th>
+              <th scope="col">Spend type</th>
+              <th scope="col">GL code</th>
+              <th scope="col">Finance budget item</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.id}>
+                <th scope="row">
+                  {item.name}
+                  <span className={styles.id}>{item.id}</span>
+                </th>
+                <td className={cx(dataTable.numeric, styles.amount)}>
+                  {format.money(item.plannedCost)}
+                </td>
+                <td className={cx(dataTable.numeric, styles.amount)}>
+                  {format.money(item.plannedCostDisplay)}
+                </td>
+                <td>{item.spendType || '—'}</td>
+                <td>{item.glCode || '—'}</td>
+                <td>{item.financeBudgetItem || '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ScrollBox>
     </div>
   );
 }

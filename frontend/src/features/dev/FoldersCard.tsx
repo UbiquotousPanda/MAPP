@@ -2,6 +2,8 @@ import { FolderOpen, Plus } from 'lucide-react';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { SampleFolder, SampleNote } from './api';
 import { FolderRow } from './FolderRow';
 import styles from './SampleRecordsPage.module.css';
@@ -37,8 +39,8 @@ export function FoldersCard({ folders, actions }: FoldersCardProps) {
         />
       ) : (
         // On narrow screens the table may scroll sideways inside its card (design system §2).
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={cx(dataTable.table, styles.table)}>
             <thead>
               <tr>
                 <th scope="col">Name</th>

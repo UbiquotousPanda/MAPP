@@ -40,19 +40,6 @@ func (s *Service) Delete(ctx context.Context, a actor.Actor, id string) (history
 	return entry, err
 }
 
-func deleteRefusal(status Status) string {
-	switch status {
-	case StatusApproved:
-		return msgApprovedNoDelete
-	case StatusSubmitted, StatusInReview:
-		return msgAwaitingNoDelete
-	case StatusClosed:
-		return msgClosedNoChange
-	case StatusCreated, StatusDeclined:
-	}
-	return ""
-}
-
 // afterRestore lets a purchase request come back only when every line still fits what its line item has left;
 // a Restore brings it back Created, an Undo as it was.
 func (s *Service) afterRestore(ctx context.Context, rc history.RestoreContext, top history.Snapshot) ([]string, error) {
@@ -66,10 +53,11 @@ func (s *Service) afterRestore(ctx context.Context, rc history.RestoreContext, t
 	if err = s.fits(ctx, pr, pr.Lines); err != nil {
 		return nil, err
 	}
-	if rc.Undo || pr.Status == StatusCreated {
+	status, reset := history.StatusAfterRestore(rc, pr.Status, StatusCreated)
+	if !reset {
 		return nil, nil
 	}
-	pr.Status = StatusCreated
+	pr.Status = status
 	pr.Touch(rc.Actor, rc.Now)
 	return []string{"Restored as Created."}, s.repo.Put(ctx, pr)
 }

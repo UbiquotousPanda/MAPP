@@ -55,8 +55,7 @@ type SignInAttempt struct {
 	Email, Password, Client, OldToken string
 }
 
-// SignIn checks the lock before the credentials and outside the write lock (D-361); it ends OldToken's
-// session and every expired one of anyone, so old sessions do not pile up.
+// SignIn ends OldToken's session and every expired one of anyone, so old sessions do not pile up.
 func (s *Service) SignIn(ctx context.Context, in SignInAttempt) (string, people.Person, error) {
 	email := strings.ToLower(strings.TrimSpace(in.Email))
 	var problems errs.Problems
@@ -69,19 +68,25 @@ func (s *Service) SignIn(ctx context.Context, in SignInAttempt) (string, people.
 	if err := problems.Err(); err != nil {
 		return "", people.Person{}, err
 	}
-	if wait := s.attempts.wait(email, in.Client); wait > 0 {
-		return "", people.Person{}, errs.TooManyAttempts(retryMessage(wait), wait)
+	if err := s.refuseLocked(email, in.Client); err != nil {
+		return "", people.Person{}, err
 	}
-	token, person, err := s.startSession(ctx, email, in.Password, in.OldToken)
-	s.count(ctx, email, in.Client, err)
+	in.Email = email
+	token, person, err := s.startSession(ctx, in)
+	if err == nil {
+		s.attempts.succeeded(email, in.Client)
+	}
 	return token, person, err
 }
 
-func (s *Service) count(ctx context.Context, email, client string, err error) {
-	if err == nil {
-		s.attempts.succeeded(email, client)
-		return
+func (s *Service) refuseLocked(email, client string) error {
+	if wait := s.attempts.wait(email, client); wait > 0 {
+		return errs.TooManyAttempts(retryMessage(wait), wait)
 	}
+	return nil
+}
+
+func (s *Service) countFailure(ctx context.Context, email, client string, err error) {
 	if apiErr, ok := errors.AsType[*errs.Error](err); !ok || apiErr.Code != errs.CodeIncorrectCredentials {
 		return
 	}
@@ -90,17 +95,25 @@ func (s *Service) count(ctx context.Context, email, client string, err error) {
 	}
 }
 
-func (s *Service) startSession(ctx context.Context, email, password, oldToken string) (string, people.Person, error) {
+// startSession checks the lock and counts a failure inside the Write, which runs one at a time (no race).
+func (s *Service) startSession(ctx context.Context, in SignInAttempt) (string, people.Person, error) {
 	token := newToken()
 	var person people.Person
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
+		if err := s.refuseLocked(in.Email, in.Client); err != nil {
+			return err
+		}
 		var err error
-		person, err = s.checkCredentials(ctx, email, password)
+		person, err = s.checkCredentials(ctx, in.Email, in.Password)
 		if err != nil {
+			s.countFailure(ctx, in.Email, in.Client, err)
 			return err
 		}
 		now := s.now()
-		if err := s.removeOldSessions(ctx, oldToken, now); err != nil {
+		if err := s.removeOldSessions(ctx, in.OldToken, now); err != nil {
+			return err
+		}
+		if err := s.repo.RecordSignIn(ctx, person.ID, now.UTC()); err != nil { // in the session's step
 			return err
 		}
 		return s.repo.Put(ctx, Session{ID: hashToken(token), PersonID: person.ID, CreatedAt: now, LastUsedAt: now})

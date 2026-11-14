@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PersonField } from '@/features/people';
+import { selectionOf } from './api';
 import { BulkDialog } from './BulkDialog';
 import { recordsText } from './bulk-text';
 import type { BulkResult, SelectedRecord } from './bulk-types';
@@ -14,7 +15,7 @@ export interface BulkActionDialogProps {
 export function ChangeOwnerDialog({ records, onClose, onDone }: BulkActionDialogProps) {
   const [ownerId, setOwnerId] = useState('');
   const request = ownerId
-    ? { action: 'changeOwner' as const, recordIds: records.map((r) => r.id), ownerId }
+    ? { action: 'changeOwner' as const, ...selectionOf(records), ownerId }
     : null;
 
   return (

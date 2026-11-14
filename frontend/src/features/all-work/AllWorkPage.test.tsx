@@ -15,6 +15,7 @@ import {
   viewQueries,
 } from '@/testing/fixtures/all-work-page';
 import { reply } from '@/testing/replies';
+import { choose, optionNames } from '@/testing/select';
 import { resetAllWorkStore } from './all-work-store';
 
 afterEach(() => {
@@ -23,15 +24,23 @@ afterEach(() => {
 });
 
 describe('AllWorkPage (US1)', () => {
+  it('leaves Export out where the API allows exporting no plan in view', async () => {
+    renderAllWorkPage([reply('GET /api/v1/all-work', { body: gridResult({ canExport: false }) })]);
+
+    expect(
+      await screen.findByRole('link', { name: 'FY2026 Lubricants Europe' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Export' })).not.toBeInTheDocument();
+  });
+
   it('shows the header, the six cards and the Grid of the current year (FR-001, FR-003, FR-009)', async () => {
     const { api } = renderAllWorkPage();
 
     expect(screen.getByRole('heading', { level: 1, name: 'All work' })).toBeInTheDocument();
-    expect(screen.getByText('Filter, compare and export all planned work.')).toBeInTheDocument();
     expect(document.title).toBe('All work · SP&A One');
     // Nothing is created here: Views and Export are the page's only actions (FR-002).
     expect(await screen.findByRole('button', { name: 'Export' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Views' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Saved views' })).toBeInTheDocument();
 
     expect(
       await screen.findByRole('link', { name: 'FY2026 Lubricants Europe' }),
@@ -50,7 +59,7 @@ describe('AllWorkPage (US1)', () => {
       'Fleet roadshow',
       'FY2026 Mobility China',
       'Retail push',
-      'Total · 3 activities',
+      'Total',
     ]);
 
     const query = nth(viewQueries(api), 0);
@@ -120,9 +129,10 @@ describe('AllWorkPage (US1)', () => {
     expect(screen.getByText('Try removing a filter or changing the search.')).toBeInTheDocument();
     expect(nth(viewQueries(api), 0).getAll('activityStatus')).toEqual(['complete']);
     expect(nth(viewQueries(api), 0).getAll('owner')).toEqual(['U-1003']);
-    expect(router.state.location.search).toBe('');
+    expect(router.state.location.search).toBe('?year=2026&activityStatus=complete&owner=U-1003');
 
-    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    // The empty state's Clear filters, after the chips' own.
+    await user.click(nth(screen.getAllByRole('button', { name: 'Clear filters' }), -1));
 
     expect(await screen.findByRole('link', { name: 'Helix launch' })).toBeInTheDocument();
     const last = viewQueries(api).at(-1);
@@ -136,23 +146,17 @@ describe('AllWorkPage (US1)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Expand all' }));
     expect(rowNames()).toContain('Venue hire');
-    expect(
-      rowNames().filter((name) => name === 'Unassigned planned cost (Sys_Gen_Balance)'),
-    ).toHaveLength(2);
+    expect(rowNames().filter((name) => name === 'Unassigned planned cost')).toHaveLength(2);
 
     const unassigned = screen.getByRole('switch', { name: 'Unassigned planned cost' });
     expect(unassigned).toHaveAttribute('aria-checked', 'true');
     await user.click(unassigned);
     expect(unassigned).toHaveAttribute('aria-checked', 'false');
-    expect(rowNames()).not.toContain('Unassigned planned cost (Sys_Gen_Balance)');
+    expect(rowNames()).not.toContain('Unassigned planned cost');
     expect(rowNames()).toContain('Venue hire');
 
     await user.click(screen.getByRole('button', { name: 'Collapse all' }));
-    expect(rowNames()).toEqual([
-      'FY2026 Lubricants Europe',
-      'FY2026 Mobility China',
-      'Total · 3 activities',
-    ]);
+    expect(rowNames()).toEqual(['FY2026 Lubricants Europe', 'FY2026 Mobility China', 'Total']);
   });
 
   it('says when the data was read and asks again with Refresh', async () => {
@@ -249,23 +253,25 @@ describe('AllWorkPage (US1)', () => {
     Object.defineProperty(window, 'scrollY', { value: 0, configurable: true });
   });
 
-  it('shows the rows 50 to a page, with the totals row on every page (D-115)', async () => {
+  it('shows the rows 50 to a page, 25 to 200 on offer, with the totals row on every page (D-115, D-432)', async () => {
     const result = manyActivities(60);
     const { user } = renderAllWorkPage([reply('GET /api/v1/all-work', { body: result })]);
 
-    expect(await screen.findByText('Rows 1–50 of 63')).toBeInTheDocument();
+    expect(await screen.findByText('1–50 of 63')).toBeInTheDocument();
     expect(rowNames()).toHaveLength(51);
-    await user.click(screen.getByRole('button', { name: 'Next' }));
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
 
-    expect(screen.getByText('Rows 51–63 of 63')).toBeInTheDocument();
+    expect(screen.getByText('51–63 of 63')).toBeInTheDocument();
     expect(
       screen.getByText('Continued: FY2026 Lubricants Europe › Helix launch › Helix digital'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('rowheader', { name: 'Total · 60 activities' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    expect(screen.getByRole('rowheader', { name: 'Total' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Rows per page' }), '100');
-    expect(screen.getByText('Rows 1–63 of 63')).toBeInTheDocument();
+    const rowsPerPage = screen.getByRole('combobox', { name: 'Rows per page' });
+    expect(await optionNames(user, rowsPerPage)).toEqual(['25', '50', '100', '200']);
+    await choose(user, rowsPerPage, '100');
+    expect(screen.getByText('1–63 of 63')).toBeInTheDocument();
   });
 
   it('names a refused filter in a message and sets it back (plan "States")', async () => {

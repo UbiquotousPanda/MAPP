@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 
 	"mapp/internal/history"
+	"mapp/internal/measure"
 	"mapp/internal/plan"
+	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/memo"
@@ -31,7 +33,7 @@ var managedBy = map[string]authz.Permission{
 	"person": authz.PeopleManage, "team": authz.PeopleManage, "teamMembership": authz.PeopleManage,
 	"approvalWorkflow": authz.WorkflowsManage, "role": authz.AccessManage, "accessRules": authz.AccessManage,
 	"globalBudget": authz.GlobalBudgetsManage, "approvalDelegation": authz.WorkflowsManage,
-	"exchangeRate": authz.ExchangeRatesManage, "rateImport": authz.ExchangeRatesManage, "fieldHelp": authz.SettingsManage,
+	"exchangeRate": authz.ExchangeRatesManage, "rateImport": authz.ExchangeRatesManage, "fieldHelp": authz.SettingsManage, "attributionSettings": authz.SettingsManage,
 	kindFinancialImport: authz.FinanceImport, kindFinancialTransaction: authz.FinanceImport, kindSwbsRun: authz.FinanceImport,
 }
 
@@ -60,10 +62,20 @@ var openToAll = map[string]bool{"sampleFolder": true, "sampleNote": true}
 var _ history.Access = historyAccess{}
 
 func (h historyAccess) CanSeeEntry(ctx context.Context, e history.Entry) bool {
+	if e.RecordType == measure.KindReportView {
+		return ownOrWholeLog(ctx, e.Actor.ID)
+	}
 	if isOwnedKind(e.RecordType) {
 		return h.seesOwnedLog(ctx, entryRecord{kind: e.RecordType, id: e.RecordID})
 	}
 	return h.canSee(ctx, e.RecordType, e.RecordID, e.Path, nil)
+}
+
+// ownOrWholeLog: a saved report view is personal, so its entries are its owner's and the auditors'.
+func ownOrWholeLog(ctx context.Context, personID string) bool {
+	g, restricted := authz.From(ctx)
+	a, _ := actor.From(ctx)
+	return !restricted || g.Has(authz.ActivityLogViewAll) || (a.ID != "" && a.ID == personID)
 }
 
 func (h historyAccess) CanSeeBinEntry(ctx context.Context, e history.BinEntry) bool {

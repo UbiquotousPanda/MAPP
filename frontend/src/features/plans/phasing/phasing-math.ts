@@ -1,4 +1,10 @@
-import { formatAmount, formatCents, parseMoneyInput, toCents } from '@/format/decimal';
+import {
+  formatAmount,
+  formatCents,
+  formatMoneyText,
+  parseMoneyInput,
+  toCents,
+} from '@/format/decimal';
 import { formatMonth } from '@/format/intl';
 import type { DateFormat } from '@/format/intl';
 
@@ -91,32 +97,20 @@ export function balanceOf(months: bigint[], budget: bigint | null): PhasingBalan
     : { kind: 'tooMuch', phased, budget, difference: phased - budget };
 }
 
-export function balanceText(balance: PhasingBalance, currency: string): string {
-  const phased = amountText(balance.phased);
-  switch (balance.kind) {
-    case 'noBudget':
-      return `${phased} ${currency} phased`;
-    case 'exact':
-      return `${phased} of ${amountText(balance.budget)} ${currency} phased — all of it`;
-    case 'left':
-      return `${phased} of ${amountText(balance.budget)} ${currency} phased — ${amountText(balance.difference)} left`;
-    case 'tooMuch':
-      return `${phased} of ${amountText(balance.budget)} ${currency} phased — ${amountText(balance.difference)} too much`;
-  }
+export function moneyText(cents: bigint, currency: string): string {
+  return formatMoneyText({ amount: formatCents(cents), currency });
 }
 
-/** By how much a period is over (planned cost or the children's phased budgets above its budget). */
-export function overBy(
-  budget: string | null | undefined,
-  plannedCost: string | null | undefined,
-  allocated: string | null | undefined,
-): bigint {
-  if (!budget) {
-    return 0n;
+export function balanceText(balance: PhasingBalance, currency: string): string {
+  const phased = moneyText(balance.phased, currency);
+  switch (balance.kind) {
+    case 'noBudget':
+      return `${phased} phased`;
+    case 'exact':
+      return `${phased} of ${moneyText(balance.budget, currency)} phased — all of it`;
+    case 'left':
+      return `${phased} of ${moneyText(balance.budget, currency)} phased — ${moneyText(balance.difference, currency)} left`;
+    case 'tooMuch':
+      return `${phased} of ${moneyText(balance.budget, currency)} phased — ${moneyText(balance.difference, currency)} too much`;
   }
-  const limit = toCents(budget);
-  const planned = plannedCost ? toCents(plannedCost) - limit : 0n;
-  const given = allocated ? toCents(allocated) - limit : 0n;
-  const most = planned > given ? planned : given;
-  return most > 0n ? most : 0n;
 }

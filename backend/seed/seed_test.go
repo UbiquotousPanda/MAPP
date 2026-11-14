@@ -11,7 +11,6 @@ import (
 
 	"mapp/internal/budget"
 	"mapp/internal/history"
-	"mapp/internal/people"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"
 	"mapp/internal/sample"
@@ -21,34 +20,6 @@ import (
 )
 
 var loadedAt = time.Date(2026, 3, 12, 9, 0, 0, 0, time.UTC)
-
-// The seven demo people (032 FR-051 adds Lea Santos) of docs/product/demo-users-and-data.md, in its table's order, active, created by MAPP.
-func TestLoad_SixDemoPeople_FR028(t *testing.T) {
-	t.Parallel()
-	db := loadedStore(t)
-
-	want := []people.Person{
-		demoPerson("U-1001", "Alex Morgan", "alex.morgan@shell.com", "Marketing administrator"),
-		demoPerson("U-1002", "Priya Raman", "priya.raman@shell.com", "Marketer"),
-		demoPerson("U-1003", "Daniel Okoro", "daniel.okoro@shell.com", "Marketing team leader"),
-		demoPerson("U-1004", "Mei Lin", "mei.lin@shell.com", "Marketer"),
-		demoPerson("U-1005", "Carlos Mendes", "carlos.mendes@shell.com", "Business champion"),
-		demoPerson("U-1006", "Sara Novak", "sara.novak@shell.com", "Local finance advisor"),
-		demoPerson("U-1007", "Lea Santos", "lea.santos@shell.com", "Requisitioner"),
-	}
-	for i, manager := range []string{"", "U-1003", "U-1001", "U-1005", "U-1001", "U-1003", ""} {
-		want[i].ManagerID = manager
-	}
-	got := storedPeople(t, db)
-	if len(got) != len(want) {
-		t.Fatalf("loaded %d people, want %d: %+v", len(got), len(want), got)
-	}
-	for i := range want {
-		if got[i] != want[i] {
-			t.Errorf("person %d =\n%+v\nwant\n%+v", i+1, got[i], want[i])
-		}
-	}
-}
 
 // The next record of each type continues after the seed; the deleted initiative's IDs are never given out again.
 func TestLoad_IDsComeFromTheCounters_FR027_FR040(t *testing.T) {

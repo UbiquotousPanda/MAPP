@@ -19,12 +19,6 @@
   gap: var(--space-1) var(--space-2);
 }
 
-.title {
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
 .calculated {
   margin-left: auto;
   color: var(--ink-2);
@@ -35,7 +29,7 @@
   display: block;
   color: var(--ink);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums;
   overflow-wrap: break-word;
 }

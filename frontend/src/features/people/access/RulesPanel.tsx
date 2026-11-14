@@ -103,7 +103,7 @@ export function RulesPanel({ rules, roles, onClose }: RulesPanelProps) {
         render={({ value, ...field }) => (
           <CheckboxField
             label={NO_SELF_APPROVAL}
-            hint="Segregation of duties: an administrator decides on their behalf when they are a level's only approver."
+            tip="Segregation of duties: an administrator decides on their behalf when they are a level's only approver."
             checked={value}
             {...field}
           />
@@ -115,7 +115,7 @@ export function RulesPanel({ rules, roles, onClose }: RulesPanelProps) {
         render={(field) => (
           <ChoiceField
             label="Role for new people"
-            hint="Given with scope My teams to each person added in Settings › People."
+            tip="Given with scope My teams to each person added in Settings › People."
             options={options}
             {...field}
             onChange={(value) => field.onChange(value || NO_ROLE)}

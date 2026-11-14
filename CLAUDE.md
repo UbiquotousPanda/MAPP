@@ -1,8 +1,10 @@
 # CLAUDE.md — guidance for AI agents working on MAPP
 
-Read this with `.specify/memory/constitution.md` (the rules, version 4.9) before doing anything. Where
+Read this with `.specify/memory/constitution.md` (the rules, version 4.11) before doing anything. Where
 this file and the constitution disagree, the constitution wins and this file is corrected. Working in
-`backend/`? `backend/CLAUDE.md` loads the Go standards (`backend/docs/GO_STANDARDS.md`).
+`backend/`? `backend/CLAUDE.md` loads the Go standards (`backend/docs/GO_STANDARDS.md`). Working on the
+**Measure module** (features 039–050)? Read `docs/sdd/measure-module-build.md` first — it names your lane, the
+files you own and the files you never edit.
 
 ## Project
 
@@ -11,10 +13,11 @@ MAPP is Shell's marketing planning application replacing the Hive9 Plan module; 
 This phase covers only the **Plan module**: demo sign-in, application shell, home dashboard, settings, people and teams,
 plans, campaigns, initiatives, activities, line items, approvals, planning views, activity log and
 recycle bin, and Shell's purchase-request process on MAPP's side up to the purchase order, with SWBS codes,
-GSAP PRs and POs from a simulated GSAP (features 030–034). Since constitution 4.9.0 it also covers the
-**dashboard builder** (feature 051): people's own dashboards of Apache ECharts charts (ADR-0020) built from the
-Plan-module data they may see and from CSV or Excel datasets they upload, shared view-only with their teams.
-Spec-driven development with GitHub Spec Kit. The
+GSAP PRs and POs from a simulated GSAP (features 030–034). Since constitution 4.8.0 the **Measure module** —
+read-only reports, shown as Reports (features 039–050) — is in scope too, built on the `measure-module` branch
+by four lanes. Since constitution 4.9.0 it also covers the **dashboard builder** (feature 051): people's own
+dashboards of Apache ECharts charts (ADR-0020) built from the Plan-module data they may see and from CSV or
+Excel datasets they upload, shared view-only with their teams. Spec-driven development with GitHub Spec Kit. The
 constitution applies Shell's
 Software Design & Construction Policy and SEMS, which are mandatory.
 
@@ -72,17 +75,21 @@ Software Design & Construction Policy and SEMS, which are mandatory.
     `tokens.css` and `docs/product/design-system.md` §3.1 carry these values (feature 020); on a grey
     background secondary text, links and red text switch to Text Strong (`--ink-2: var(--ink)`).
 13. **Out of scope:** the Finance budgets module, accrual calculation, invoice approval, supporting
-    documents on purchase requests, Measure's performance reporting, live GSAP integration, e-mail and sharing
+    documents on purchase requests, live performance connectors, live GSAP integration, e-mail and sharing
     to Outlook or Teams, real sign-in (SSO), dashboards shared outside SP&A One's teams, scheduled or e-mailed
     dashboards, live data connectors for uploaded data, AI. Do not
     build them. GSAP rates and transactions come only from simulated feeds behind adapters (ADR-0009); SWBS
     codes, GSAP PR numbers and purchase orders come only from the simulated GSAP (ADR-0016). Purchase requests
     on MAPP's side are in scope since constitution 4.4.0 (features 030–034, D-320); planning dashboards from
-    plan and finance data, PowerPoint/PDF export and overspend control since 4.6.0 (features 036–037, D-333).
-    The self-service dashboard builder with uploaded datasets is in scope since 4.9.0 (feature 051, D-371).
+    plan and finance data, PowerPoint/PDF export and overspend control since 4.6.0 (features 036–037, D-333);
+    the Measure reports since 4.8.0 (features 039–050, D-366), with performance data only from a simulated feed
+    behind an adapter (D-370); the self-service dashboard builder with uploaded datasets since 4.9.0 (feature
+    051, D-371). The Finance budget report, AR invoice details, the China budget pack, vendor delivery
+    reliability and report sharing by e-mail stay out.
 14. **Local only:** servers listen on `127.0.0.1`; no cloud services at run time; Docker or Podman only
     optionally, for PostgreSQL or for reviewers running the whole app from `compose.yaml` (ADR-0012);
-    developing MAPP never needs them; no secrets in the repository.
+    developing MAPP never needs them; no secrets in the repository. The one exception is the hosted test VM
+    (constitution 4.10.0, ADR-0023, `deploy/test-vm/`), with the demo seed only.
 15. **Alignment** (constitution, Governance): code written before constitution 2.0.0 is aligned by
     dedicated features later. Until a package or screen is aligned, a change to it keeps its current
     stack and structure — don't migrate it as a side effect of another change. New packages, screens and
@@ -92,6 +99,13 @@ Software Design & Construction Policy and SEMS, which are mandatory.
 17. **Release age** (constitution VII): pnpm installs only versions published at least a day ago
     (`minimumReleaseAge` in `frontend/pnpm-workspace.yaml`, pnpm pinned by `packageManager`). Before adding or upgrading a Go module, check its version was
     published more than 24 hours ago (`https://proxy.golang.org/<module>/@v/<version>.info`).
+18. **One component per element, from `frontend/src/ui/`** (constitution F6, 4.11.0; D-415, D-416): never create a copy of a
+    component, style or helper that already exists. Before writing any UI element, search `ui/` (and the feature's
+    `index.ts` exports). Anything without domain knowledge — buttons, tables and their Total row, pagers, sort
+    headers, selects, menus, popovers, filters, chips, alerts, dialogs, empty, loading and error states — comes from
+    `ui/`. A feature composes `ui/` pieces and never restyles one; a needed variant is added to the `ui/` component
+    (a prop), not built beside it. A pattern a second feature needs moves into `ui/` first. The same holds for Go:
+    export the rule from its package and call it.
 
 ## Key documents
 
@@ -103,6 +117,8 @@ Software Design & Construction Policy and SEMS, which are mandatory.
 | Features, order, scope boundaries | `docs/sdd/feature-map.md` |
 | Decisions and open questions | `docs/sdd/decision-log.md` |
 | Process, branches, Definition of Done | `docs/sdd/sdd-process.md` |
+| Measure module: lanes, ownership, build order, report pattern (read first for 039–050) | `docs/sdd/measure-module-build.md` |
+| Every report figure, defined once | `docs/product/measure-metrics.md` |
 | Records, statuses, money rules | `docs/product/domain-model.md` |
 | Fields per level | `docs/product/field-catalogue.md` |
 | Screens and wording | `docs/product/design-system.md` |
@@ -114,7 +130,8 @@ Software Design & Construction Policy and SEMS, which are mandatory.
 ## Conventions
 
 - Branches: `main` (production), `release` (stabilisation), `develop` (integration). `plan-module` is
-  the Plan module's branch and merges into `develop` when the module is ready. Feature branches are
+  the Plan module's branch and `measure-module` the Measure module's; each merges into `develop` when its
+  module (or wave) is ready. Feature branches are
   `feature/NNN-short-name`, matching `specs/NNN-short-name/`, and start from the module branch.
 - Never push directly to `main`, `release` or `develop`. Every change reaches them through a reviewed
   pull request from a working branch (`feature/NNN-short-name`, or `docs/…` / `fix/…` for work without a
@@ -122,6 +139,37 @@ Software Design & Construction Policy and SEMS, which are mandatory.
 - Conventional Commits with the feature number and requirement IDs, e.g. `feat(004): copy plan (FR-012)`.
 - Test names mention the requirement ID they prove.
 - Shell environment: Windows; Spec Kit scripts are PowerShell (`.specify/scripts/powershell/`).
+
+## Before a pull request
+
+What reviews keep sending back. Check each before asking for review and before replying "fixed".
+
+- **Run `pwsh ./scripts/check-changed.ps1`** (comment budget of every touched file, file length, no
+  `-- +goose Down`, no requirement IDs in new comments, then format, lint and tests). CI runs the same rules. A
+  failure on a line this branch added is yours, whatever the file. Write "green" only when CI is green on that
+  commit; otherwise say what you ran.
+- **Fakes are not PostgreSQL.** pgx sends a nil slice as NULL (`= ANY(NULL)` matches nothing) and JSON gets
+  `null` (send `[]` where the contract says array). Every foreign key gets an `ON DELETE` decision and an
+  in-use check; every CHECK, length and unique constraint has a service validation that answers a field error,
+  never a 500; a `LIMIT` never decides correctness. Make the fakes refuse what PostgreSQL refuses.
+- **The record's whole life:** in-use check (counting binned records that point at it), what the bin snapshot
+  holds, restore and Undo when something it references is gone.
+- **Fix the class, not the example.** Reproduce through a path users take (a state change the app can make),
+  then fix every sibling: the other report, month and quarter view, every sort option, delete and restore,
+  every currency. Reply per finding with the commit, the test and the siblings checked; say plainly what is
+  not fixed.
+- **Figures** come from `docs/product/measure-metrics.md`; a spec that defines one differently goes to the
+  integrator first. The month in progress counts once, and cards, chart, ranked list and export agree (test it
+  with facts in that month, in month and quarter view). Test money in a non-USD currency and convert parts with
+  `money.ConvertParts`; no data is "—", never 0.00.
+- **Reuse, don't copy** (non-negotiable 18). Export a rule from its package and call it; never re-implement it in
+  `app/` wiring. No new table, pager, sort header, select, menu, popover, alert or dialog in a feature: use or
+  extend the `ui/` one. A shared file that needs a change is asked for in the pull request.
+- **Required tests ship with the code** (non-negotiable 8): a contract test per endpoint, a scope-isolation
+  test per scoped read, every state a view renders, a test that each control changes the request and survives
+  the address and the export, and an end-to-end test per P1 story that asserts a figure.
+- **The description says what is in it:** stories and tasks done, tasks left open, shared files touched and
+  why, a reason for each 301–400 line file, and what was not run.
 
 ## Active technologies
 

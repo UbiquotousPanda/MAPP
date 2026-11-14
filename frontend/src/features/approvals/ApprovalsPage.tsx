@@ -1,12 +1,11 @@
 import { CircleCheckBig, SearchX, UserRoundCog } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useRef } from 'react';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
-import { CountBadge } from '@/ui/CountBadge/CountBadge';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
-import { FilterChips } from '@/ui/FilterChips/FilterChips';
+import { FilterBar } from '@/ui/FilterBar/FilterBar';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { SearchField } from '@/ui/SearchField/SearchField';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -16,12 +15,16 @@ import type { TabItem } from '@/ui/Tabs/Tabs';
 import type { components } from '@/api/generated/schema';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { useFormatters } from '@/format/useFormatters';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import {
   NO_FILTERS,
   applyFilters,
   filterChips,
   filterOptions,
+  filterParams,
   filtersInUse,
+  filtersOf,
   isFilterKey,
 } from './approval-filters';
 import type { ApprovalFilterValues } from './approval-filters';
@@ -32,7 +35,6 @@ import { ApprovalsFilters } from './ApprovalsFilters';
 import { ApprovalsTable } from './ApprovalsTable';
 import { DelegationBanner } from './DelegationBanner';
 import { DelegationPanel } from './DelegationPanel';
-import { activitiesCount } from './messages';
 import { MonitoringView } from './MonitoringView';
 import { PurchaseRequestPreviewPanel } from './PurchaseRequestPreviewPanel';
 import { approvalsAddressOf, previewParams } from './schemas';
@@ -43,6 +45,9 @@ import styles from './ApprovalsPage.module.css';
 
 type ApprovalCounts = components['schemas']['ApprovalCounts'];
 
+// The address follows the typing a moment later, so a quick key never lands on an older address.
+const SEARCH_DELAY_MS = 200;
+
 const EMPTY_TAB: Record<ApprovalTab, string> = {
   waiting: "Nothing is waiting for you. You're all caught up.",
   open: 'No activities are waiting for approval.',
@@ -51,10 +56,11 @@ const EMPTY_TAB: Record<ApprovalTab, string> = {
 
 export function ApprovalsPage() {
   usePageTitle('Approvals');
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const { tab: chosenTab, previewId, previewKind, delegationsOpen } = approvalsAddressOf(params);
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<ApprovalFilterValues>(NO_FILTERS);
+  const search = params.get('q') ?? '';
+  const filters = filtersOf(params);
+  const { date } = useFormatters();
   const summary = useApprovalSummary();
   const landingTab = landingTabOf(summary.data, summary.isError);
   const tab: PageTab = chosenTab ?? landingTab ?? 'waiting';
@@ -69,16 +75,24 @@ export function ApprovalsPage() {
   useChosenTabInView(tabsArea, tab);
 
   function changeParams(change: Record<string, string | null>, replace = false) {
-    const next = new URLSearchParams(params);
-    for (const [key, value] of Object.entries(change)) {
-      if (value === null) {
-        next.delete(key);
-      } else {
-        next.set(key, value);
-      }
-    }
-    setParams(next, { replace });
+    setParams(
+      (latest) => {
+        for (const [key, value] of Object.entries(change)) {
+          if (value === null) {
+            latest.delete(key);
+          } else {
+            latest.set(key, value);
+          }
+        }
+        return latest;
+      },
+      { replace },
+    );
   }
+
+  const setSearch = (q: string) => changeParams({ q: q || null }, true);
+  const setFilters = (next: ApprovalFilterValues) => changeParams(filterParams(next), true);
+  const options = filterOptions(allRows);
 
   function moveOn(decidedId: string, before: ApprovalRow[]) {
     const subjects = before.map((row) => row.subject);
@@ -89,12 +103,8 @@ export function ApprovalsPage() {
 
   const counts = summary.data;
   const tabs: TabItem<PageTab>[] = [
-    {
-      value: 'waiting',
-      label: 'Waiting for me',
-      badge: counts && <CountBadge count={counts.waitingForMe} label="activities" />,
-    },
-    { value: 'open', label: counts ? `All open (${counts.allOpen})` : 'All open' },
+    { value: 'waiting', label: 'Waiting for me' },
+    { value: 'open', label: 'All open' },
     { value: 'decided', label: 'Decided by me' },
     { value: 'monitoring', label: 'Monitoring' },
   ];
@@ -104,7 +114,6 @@ export function ApprovalsPage() {
     <>
       <PageHeader
         title="Approvals"
-        description="Approve or decline the activities waiting for you, and follow the ones you sent."
         actions={
           <Button icon={<UserRoundCog />} onClick={() => changeParams({ panel: 'delegations' })}>
             Delegate my approvals
@@ -126,31 +135,39 @@ export function ApprovalsPage() {
               <MonitoringView onOpen={openPreview} />
             ) : (
               <Card>
-                <div className={styles.toolbar}>
-                  <div className={styles.search}>
+                <FilterBar
+                  className={styles.toolbar}
+                  search={
                     <SearchField
+                      size="sm"
+                      delay={SEARCH_DELAY_MS}
                       label="Search activity name or ID"
                       placeholder="Search activity name or ID"
                       value={search}
                       onChange={setSearch}
                     />
-                  </div>
-                  <ApprovalsFilters
-                    filters={filters}
-                    options={filterOptions(allRows)}
-                    onChange={setFilters}
-                  />
-                  {rows.data && (
-                    <p className={styles.count} aria-live="polite">
-                      {`${visible.length} of ${activitiesCount(allRows.length)}`}
-                    </p>
-                  )}
-                </div>
-                <Chips
-                  filters={filters}
-                  rows={allRows}
-                  onChange={setFilters}
-                  onClearAll={() => setFilters(NO_FILTERS)}
+                  }
+                  inUse={filtersInUse(filters)}
+                  menus={
+                    <ApprovalsFilters filters={filters} options={options} onChange={setFilters} />
+                  }
+                  end={
+                    rows.data && (
+                      <ResultCount>
+                        {countText(visible.length, allRows.length, {
+                          one: 'activity',
+                          many: 'activities',
+                        })}
+                      </ResultCount>
+                    )
+                  }
+                  chips={filterChips(filters, options, date)}
+                  onRemoveChip={(key) => {
+                    if (isFilterKey(key)) {
+                      setFilters({ ...filters, [key]: '' });
+                    }
+                  }}
+                  onClearFilters={() => setFilters(NO_FILTERS)}
                 />
                 {rows.data ? (
                   visible.length > 0 ? (
@@ -161,10 +178,9 @@ export function ApprovalsPage() {
                       title="Nothing matches these filters"
                       action={
                         <Button
-                          onClick={() => {
-                            setSearch('');
-                            setFilters(NO_FILTERS);
-                          }}
+                          onClick={() =>
+                            changeParams({ q: null, ...filterParams(NO_FILTERS) }, true)
+                          }
                         >
                           Clear filters
                         </Button>
@@ -248,34 +264,6 @@ function SummaryCards({ counts, failed }: SummaryCardsProps) {
         label="Declined this month"
         value={value(counts?.declinedThisMonth)}
         tip="Activities declined this calendar month."
-      />
-    </div>
-  );
-}
-
-interface ChipsProps {
-  filters: ApprovalFilterValues;
-  rows: ApprovalRow[];
-  onChange: (filters: ApprovalFilterValues) => void;
-  onClearAll: () => void;
-}
-
-function Chips({ filters, rows, onChange, onClearAll }: ChipsProps) {
-  const { date } = useFormatters();
-  if (filtersInUse(filters) === 0) {
-    return null;
-  }
-  const chips = filterChips(filters, filterOptions(rows), date);
-  return (
-    <div className={styles.chips}>
-      <FilterChips
-        chips={chips}
-        onRemove={(key) => {
-          if (isFilterKey(key)) {
-            onChange({ ...filters, [key]: '' });
-          }
-        }}
-        onClearAll={onClearAll}
       />
     </div>
   );

@@ -12,13 +12,14 @@ import { useFormatters } from '@/format/useFormatters';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { filterRecords, useListFilters } from '@/ui/useListFilters';
 import type { ListFilters } from '@/ui/useListFilters';
 import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
 import { useCanChange } from '@/ui/useCanChange';
 import { SettingDeleteDialog } from '../SettingDeleteDialog';
 import { useSettingStatus } from '../useSettingStatus';
-import { modelNames, moreActions } from './activity-type-actions';
+import { categoryName, modelNames, moreActions } from './activity-type-actions';
 import type { ActivityTypeActions } from './activity-type-actions';
 import { ActivityTypeDetails } from './ActivityTypeDetails';
 import { ActivityTypeForm } from './ActivityTypeForm';
@@ -68,7 +69,6 @@ export function ActivityTypesPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Activity types' }]}
         title="Activity types"
-        description="The kinds of work activities can be."
         actions={
           <CanChange>
             <Button variant="primary" icon={<Plus />} onClick={newType}>
@@ -99,7 +99,7 @@ export function ActivityTypesPage() {
           name={deleting.name}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteType.mutateAsync(deleting.id)}
+          remove={() => deleteType.mutateAsync(deleting)}
           setInactive={() => status.applyInactive(deleting)}
           invalidate={ACTIVITY_TYPE_LISTS}
           onDeleted={() => {
@@ -155,7 +155,7 @@ function ActivityTypesCard({ types, filters, actions, onNew }: ActivityTypesCard
     );
   }
 
-  const { shown, counts } = filterRecords(all, filters, (type) => type.name);
+  const { shown } = filterRecords(all, filters, (type) => type.name);
 
   return (
     <Card>
@@ -166,7 +166,7 @@ function ActivityTypesCard({ types, filters, actions, onNew }: ActivityTypesCard
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: TYPE_NOUN }}
       />
       {shown.length === 0 ? (
@@ -175,15 +175,16 @@ function ActivityTypesCard({ types, filters, actions, onNew }: ActivityTypesCard
           <Button onClick={filters.clear}>Clear filters</Button>
         </div>
       ) : (
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Name</th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Default planned cost
                 </th>
                 <th scope="col">Allowed in</th>
+                <th scope="col">Category</th>
                 <th scope="col">Used by</th>
                 <th scope="col">Status</th>
                 <th scope="col">
@@ -208,22 +209,23 @@ function ActivityTypeRow({ type, actions }: { type: ActivityType; actions: Activ
   const { money } = useFormatters();
   return (
     <tr>
-      <th scope="row" className={styles.nameCell}>
+      <th scope="row" className={dataTable.nameCell}>
         <button type="button" className={styles.nameButton} onClick={() => actions.view(type)}>
           {type.name}
         </button>
       </th>
-      <td className={styles.number}>
+      <td className={dataTable.numeric}>
         {type.defaultPlannedCost ? money(type.defaultPlannedCost) : '—'}
       </td>
       <td>{modelNames(type)}</td>
+      <td>{categoryName(type)}</td>
       <td>{type.usage.summary}</td>
       <td className={styles.nowrap}>
         <StatusChip tone={type.active ? 'positive' : 'neutral'}>
           {type.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={type.name}
           items={[

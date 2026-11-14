@@ -2,6 +2,7 @@ import { useId } from 'react';
 import type { components } from '@/api/generated/schema';
 import { useFormatters } from '@/format/useFormatters';
 import { subjectKindLabel } from '@/ui/subject-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { ApprovalRound } from './api';
 import {
   historyActorText,
@@ -29,9 +30,9 @@ export function ApprovalHistory({ rounds, compact = false }: ApprovalHistoryProp
 
   return (
     <section aria-labelledby={headingId} className={styles.history}>
-      <h3 id={headingId} className={styles.heading}>
+      <SectionHeading level={3} rank="sub" id={headingId}>
         Approval history
-      </h3>
+      </SectionHeading>
       {!hasEntries ? (
         <p className={styles.empty}>No approval history yet.</p>
       ) : compact ? (
@@ -46,8 +47,10 @@ export function ApprovalHistory({ rounds, compact = false }: ApprovalHistoryProp
       ) : (
         <ol role="list" className={styles.rounds}>
           {rounds.map((round) => (
-            <li key={round.id}>
-              <h4 className={styles.roundHeading}>{roundTitle(round)}</h4>
+            <li key={round.id} className={styles.round}>
+              <SectionHeading level={4} rank="label">
+                {roundTitle(round)}
+              </SectionHeading>
               {round.facts && (
                 <p className={styles.facts}>{rulesAppliedText(round.facts, money)}</p>
               )}

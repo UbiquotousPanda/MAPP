@@ -9,6 +9,7 @@ import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormFooter } from '@/ui/FormFooter/FormFooter';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
+import { FormCard, FormLayout } from '@/ui/FormRail/FormRail';
 import { ClearValuesDialog } from '@/ui/ShellAttributeFields/ClearValuesDialog';
 import { ShellAttributeFields } from '@/ui/ShellAttributeFields/ShellAttributeFields';
 import { valuesToClear } from '@/ui/ShellAttributeFields/rules';
@@ -20,14 +21,11 @@ import { useUnsavedChanges } from '@/ui/useUnsavedChanges';
 import { PlanBasicsSection } from './PlanBasicsSection';
 import { PlanBudgetSection } from './PlanBudgetSection';
 import styles from './PlanForm.module.css';
-import { PlanFormCard } from './PlanFormCard';
-import { PlanFormRail } from './PlanFormRail';
 import { PlanFormSkeleton } from './PlanFormSkeleton';
 import { PlanGoalsSection } from './PlanGoalsSection';
 import type { Plan, PlanDefaults } from './api';
-import { neededFields, progressText } from './plan-form-sections';
-import type { DefaultHint } from './plan-form-sections';
-import { answers016, sameValues } from './plan-form-values';
+import { neededFields, SECTIONS } from './plan-form-sections';
+import { answers016 } from './plan-form-values';
 import { PUBLISHED_BANNER } from './plan-text';
 import { planFormSchema } from './schemas';
 import type { PlanFormValues } from './schemas';
@@ -56,7 +54,7 @@ export interface PlanFormProps {
   mode: 'create' | 'edit';
   /** The values the form starts with; copied once (edit-form rule). */
   initial: PlanFormValues;
-  /** Create: the defaults, for the years to choose from and the "Default: …" hints (FR-006). */
+  /** Create: the defaults the form starts with and the years to choose from. */
   defaults?: PlanDefaults;
   /** Edit: the plan as it was when the form opened. */
   plan?: Plan;
@@ -69,15 +67,7 @@ export interface PlanFormProps {
   focusField?: string | null;
 }
 
-/**
- * The plan form of the create and edit pages (plan "Plan form", FR-005 – FR-010, FR-018 – FR-023)
- * on the form template (design system §2.4 C): one white card per section — Basics, Budget, Shell
- * attributes, Goals — in a column of at most 720 px, and from 1,280 px a rail that links the
- * sections and counts the needed fields still empty. Defaults are labelled, markings are words,
- * every problem shows at once, Save and Cancel stay at the bottom of the window, and "Discard
- * changes?" comes before typed values are lost. With 016 the plan type and the plan currency
- * join Basics and Budget; with 014 an allocated plan's budget is read-only with its reason.
- */
+/** The plan form of the create and edit pages on the form template (design system §2.4 C). */
 export function PlanForm({
   mode,
   initial,
@@ -148,11 +138,6 @@ export function PlanForm({
   const shellForm = attributeForm.data;
   const previousAttributes = plan?.attributes ?? {};
 
-  const hint: DefaultHint = (key, text, given = true) =>
-    mode === 'create' && given && sameValues({ ...values, [key]: initial[key] }, values)
-      ? text
-      : undefined;
-
   function changeYear(year: string) {
     const chosen = financeBudgets.data?.items.find(
       (budget) => budget.id === values.defaultFinanceBudgetId,
@@ -204,14 +189,14 @@ export function PlanForm({
     shellForm.sections.length === 1 && shellForm.sections[0]?.name === 'Shell attributes'
       ? 'none'
       : 'h3';
-  const section = { control: form.control, values, mode, plan, with016, hint };
+  const section = { control: form.control, values, mode, plan, with016 };
 
   return (
     <>
       <form
         noValidate
         aria-busy={saving}
-        className={styles.layout}
+        className={styles.form}
         onSubmit={(event) => {
           event.preventDefault();
           // A second Save while saving is ignored; Save is never greyed out.
@@ -220,8 +205,14 @@ export function PlanForm({
           }
         }}
       >
-        <div className={styles.main}>
-          <p className={styles.progressLine}>{progressText(needed)}</p>
+        <FormLayout
+          sections={SECTIONS.map(({ id, title }) => ({
+            id,
+            title,
+            needed: needed.bySection[id].total,
+            missing: needed.bySection[id].missing,
+          }))}
+        >
           {mode === 'edit' && plan?.status === 'published' && (
             <p role="note" className={styles.banner}>
               {PUBLISHED_BANNER}
@@ -244,26 +235,27 @@ export function PlanForm({
             budgetNote={budgetNote}
             onFinanceBudgetChange={() => setBudgetNote(null)}
           />
-          <PlanFormCard id="plan-attributes" title="Shell attributes">
-            <FormField
-              control={form.control}
-              name="attributes"
-              render={(field) => (
-                <ShellAttributeFields
-                  form={shellForm}
-                  values={field.value}
-                  onChange={field.onChange}
-                  businessUnit={null}
-                  previousValues={plan?.attributes}
-                  errors={attributeErrors}
-                  sectionHeading={attributeHeading}
-                />
-              )}
-            />
-          </PlanFormCard>
-          <PlanGoalsSection control={form.control} model={chosenModel ?? null} hint={hint} />
-        </div>
-        <PlanFormRail needed={needed} />
+          <div className={styles.cardPair}>
+            <FormCard id="plan-attributes" title="Shell attributes">
+              <FormField
+                control={form.control}
+                name="attributes"
+                render={(field) => (
+                  <ShellAttributeFields
+                    form={shellForm}
+                    values={field.value}
+                    onChange={field.onChange}
+                    businessUnit={null}
+                    previousValues={plan?.attributes}
+                    errors={attributeErrors}
+                    sectionHeading={attributeHeading}
+                  />
+                )}
+              />
+            </FormCard>
+            <PlanGoalsSection control={form.control} model={chosenModel ?? null} />
+          </div>
+        </FormLayout>
         <FormFooter>
           <Button type="submit" variant="primary">
             Save

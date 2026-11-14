@@ -1,3 +1,4 @@
+import { NOT_FILLED_IN, withAttributeValues } from '@/ui/AttributeFilterMenu/attribute-filter';
 import { isLabelled, PLAN_TYPE_LABELS } from './all-work-text';
 import type {
   BreakdownChoice,
@@ -6,7 +7,6 @@ import type {
   Filters,
   ViewState,
 } from './all-work-types';
-import { NOT_FILLED_IN, withAttributeValues } from './attribute-filters';
 import { toQueryParams, withYears } from './view-state';
 import type { IdFilter } from './view-state';
 

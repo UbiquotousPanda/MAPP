@@ -14,7 +14,7 @@ reasonable. Viewing at /dashboards, creating at /builder, a new sidebar item. En
 **References**: Constitution 4.9 — Current Phase & Scope (051 in scope), Principles IV (the server works out
 every figure), VII (scope isolation), IX (experience), X (palette), F1 and F6 (charts and their tables) ·
 ADR-0020 (Apache ECharts), ADR-0018 (content security policy), ADR-0007 (activity log and recycle bin) ·
-D-371–D-378, Q-028, Q-029 · features 014 (permissions, scopes, Table A), 036 (built-in dashboards, figures),
+D-371–D-378, Q-033, Q-034 · features 014 (permissions, scopes, Table A), 036 (built-in dashboards, figures),
 012 (checked file imports), 010 (All work's year data), 015 (financial transactions), 017 and 031 (approval
 rounds), 032 (purchase requests), 003 (teams) · `docs/product/domain-model.md` §1–§4, §7 ·
 `docs/product/design-system.md` §2.4, §4.7, §5, §6, §9.
@@ -39,8 +39,8 @@ as a decision.
   viewer may not see says so and shows nothing of it (D-375).
 - Q: Which permissions? → A: **See dashboards** (`dashboards.view`) and **Build dashboards** (`dashboards.build`),
   added to 014 Table A; who holds them by default is in D-374.
-- Q: Do dashboard filters apply to datasets? → A: no (Q-028); each widget can filter its own data.
-- Q: Can administrators see private dashboards? → A: no (Q-029); private means private.
+- Q: Do dashboard filters apply to datasets? → A: no (Q-033); each widget can filter its own data.
+- Q: Can administrators see private dashboards? → A: no (Q-034); private means private.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -266,7 +266,7 @@ the table view.
   the dashboard through that team; restoring the team does not restore the share, and a dashboard or dataset
   restored from the recycle bin keeps only the shares of teams that still exist (D-379).
 - A dashboard's owner made inactive: the dashboard stays visible to the teams it is shared with; nobody can edit it
-  (Q-029).
+  (Q-034).
 - Two people saving the same dashboard: the second save is refused as changed meanwhile; nothing is lost on screen.
 - The grid full at the bottom: new widgets go below the last row; the canvas grows (at most 200 rows, 30 widgets).
 - A very long title, label or category name: shortened with "…" on the chart, in full in the tooltip and table.
@@ -292,7 +292,9 @@ the table view.
 - **FR-003**: `/dashboards` MUST list **Built-in** (Executive and Regional, to holders of View plans), **My
   dashboards** and **Shared with me** (to holders of See dashboards), each by name; each card shows name,
   description, owner, last update, widget count and shared teams. **New dashboard** (to holders of Build
-  dashboards) is the page's one primary action, and **Datasets** a secondary link.
+  dashboards) is the page's one primary action, and **Datasets** a secondary link. Every dashboard is shown as the
+  same tile as the Reports page; an empty My dashboards shows a **New dashboard** tile to builders and one line to
+  others, and an empty Shared with me one line (D-430).
 - **FR-004**: `/dashboards/executive` and `/dashboards/regional` MUST keep working as feature 036 specifies.
 - **FR-005**: A custom dashboard MUST be visible only to its owner and to members of the teams it is shared with,
   each holding See dashboards; to anyone else it MUST answer exactly like a missing dashboard (404).
@@ -375,10 +377,12 @@ the table view.
 **Builder** (`/builder`, `/builder/:dashboardId`)
 
 - **FR-026**: The builder MUST show a header with the dashboard's name, **Undo**, **Redo**, **Sharing** (saved
-  dashboards), **View** and **Save** (the one yellow action); a left **palette** of widget types grouped Charts,
-  Figures and tables, Text; a centre **canvas** (the 12-column grid with each widget's live preview); a right
+  dashboards), **View** and **Save** (the one yellow action); a **palette** of widget types grouped Charts,
+  Figures and tables, Text, as a row of icon buttons above the canvas, each named in its tooltip; a centre **canvas** (the 12-column grid with each widget's live preview); a right
   **inspector**: the dashboard's details (name, description, default filters) when no widget is selected, otherwise
-  the widget's **Data**, **Style** and **Layout** tabs.
+  the widget's **Data**, **Style** and **Layout** tabs. The inspector can be hidden to a narrow rail and shown again,
+  to give the canvas room; going to a problem in a hidden inspector shows it. Undo and Redo are unavailable, with a
+  tip saying why, while there is nothing to undo or redo (D-429).
 - **FR-027**: A widget type MUST be added by clicking it (first free place, default size) or by dragging it onto the
   canvas (where dropped, if free), and selected.
 - **FR-028**: Widgets MUST be moved and resized with the pointer (drag the widget, drag the corner handle) and with

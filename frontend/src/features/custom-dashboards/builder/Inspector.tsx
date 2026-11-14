@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { Tabs } from '@/ui/Tabs/Tabs';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useDataSources } from '../charts';
 import type { Widget } from '../model';
 import type { BuilderAction, Draft } from './builder-reducer';
 import { DashboardDetails } from './DashboardDetails';
 import { DataTab } from './DataTab';
 import { LayoutTab } from './LayoutTab';
+import { PanelToggle } from './PanelToggle';
 import { StyleTab } from './StyleTab';
 import type { Problem } from './validate';
 import { problemAt } from './validate';
@@ -21,9 +24,11 @@ export interface InspectorProps {
   selected: Widget | null;
   problems: readonly Problem[];
   onAction: (action: BuilderAction) => void;
+  onHide: () => void;
 }
 
-export function Inspector({ draft, selected, problems, onAction }: InspectorProps) {
+export function Inspector({ draft, selected, problems, onAction, onHide }: InspectorProps) {
+  const hideButton = <PanelToggle name="settings" hidden={false} onToggle={onHide} />;
   return (
     <aside aria-label="Inspector" className={builder.panel}>
       {selected ? (
@@ -33,12 +38,14 @@ export function Inspector({ draft, selected, problems, onAction }: InspectorProp
           widget={selected}
           problems={problems}
           onAction={onAction}
+          hideButton={hideButton}
         />
       ) : (
         <DashboardDetails
           draft={draft}
           errorAt={(path) => problemAt(problems, path)}
           onAction={onAction}
+          hideButton={hideButton}
         />
       )}
     </aside>
@@ -50,9 +57,10 @@ interface WidgetInspectorProps {
   widget: Widget;
   problems: readonly Problem[];
   onAction: (action: BuilderAction) => void;
+  hideButton: ReactNode;
 }
 
-function WidgetInspector({ draft, widget, problems, onAction }: WidgetInspectorProps) {
+function WidgetInspector({ draft, widget, problems, onAction, hideButton }: WidgetInspectorProps) {
   const { id, query } = widget;
   const [tab, setTab] = useState<Tab>(query ? 'data' : 'style');
   const sources = useDataSources();
@@ -67,8 +75,18 @@ function WidgetInspector({ draft, widget, problems, onAction }: WidgetInspectorP
   return (
     <>
       <div className={styles.group}>
-        <h2 className={styles.widgetTitle}>{widgetName(widget)}</h2>
-        <Button size="sm" variant="tertiary" onClick={() => onAction({ type: 'select', id: null })}>
+        <div className={builder.panelHeader}>
+          <SectionHeading level={2} rank="card">
+            {widgetName(widget)}
+          </SectionHeading>
+          {hideButton}
+        </div>
+        <Button
+          size="sm"
+          variant="tertiary"
+          className={styles.back}
+          onClick={() => onAction({ type: 'select', id: null })}
+        >
           Dashboard details
         </Button>
       </div>

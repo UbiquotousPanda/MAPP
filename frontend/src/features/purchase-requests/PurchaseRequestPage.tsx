@@ -1,8 +1,8 @@
-import { CircleAlert } from 'lucide-react';
+import { CircleAlert, Clock } from 'lucide-react';
 import { useParams } from 'react-router';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { ApiError } from '@/api/errors';
 import { HistorySection } from '@/features/activity-log';
-import { ApprovalAlert } from '@/features/approvals';
 import { useAccess } from '@/session/access';
 import { LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
@@ -68,9 +68,12 @@ function Loaded({ purchaseRequest: pr }: { purchaseRequest: PurchaseRequest }) {
       <div className={styles.page}>
         {viewOnly && <ViewOnlyNote area="record" />}
         {pr.notice && (
-          <ApprovalAlert tone={pr.notice === AWAITING_NOTICE ? 'warning' : 'info'}>
+          <InlineAlert
+            tone={pr.notice === AWAITING_NOTICE ? 'warning' : 'info'}
+            icon={pr.notice === AWAITING_NOTICE ? Clock : undefined}
+          >
             <p>{pr.notice}</p>
-          </ApprovalAlert>
+          </InlineAlert>
         )}
         <div className={styles.columns}>
           <PurchaseRequestDetailsCard purchaseRequest={pr} />

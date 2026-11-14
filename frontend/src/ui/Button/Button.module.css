@@ -1,4 +1,5 @@
-/* Shell's button: 8 px corners, bold 14 px Arial, one fixed height per size (32 / 40 / 48 px). */
+/* Shell's button: 8 px corners, bold 14 px Arial, one fixed height per size (32 / 40 / 48 px); on a phone a
+   label too long for its row wraps, the height growing, rather than run off the screen. */
 .button {
   display: inline-flex;
   flex: none;
@@ -57,7 +58,6 @@
   height: 20px;
 }
 
-/* An icon without a label is a square of the same height. */
 .iconOnly.sm {
   width: var(--control-sm);
   padding: 0;
@@ -141,7 +141,10 @@
 
 .primary:disabled,
 .secondary:disabled,
-.danger:disabled {
+.danger:disabled,
+.primary[aria-disabled='true'],
+.secondary[aria-disabled='true'],
+.danger[aria-disabled='true'] {
   border-color: var(--disabled-border);
   background: var(--disabled-bg);
   text-decoration: none;
@@ -150,4 +153,31 @@
 .tertiary:disabled,
 .tertiary[aria-disabled='true'] {
   background: transparent;
+}
+
+@media (max-width: 599px) {
+  .button:not(.iconOnly) {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .sm:not(.iconOnly),
+  .md:not(.iconOnly),
+  .lg:not(.iconOnly) {
+    height: auto;
+    padding-block: var(--space-1);
+  }
+
+  .sm:not(.iconOnly) {
+    min-height: var(--control-sm);
+  }
+
+  .md:not(.iconOnly) {
+    min-height: var(--control-md);
+  }
+
+  .lg:not(.iconOnly) {
+    min-height: var(--control-lg);
+  }
 }

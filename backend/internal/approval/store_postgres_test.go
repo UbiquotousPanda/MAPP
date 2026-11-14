@@ -41,7 +41,8 @@ func pgPlanned(t *testing.T) (*database.DB, *approval.PostgresStore) {
 			catalogue.PutActivityType(ctx, settings.ActivityType{ID: "AT-1001", Name: "Webinar", Meta: pgMeta}),
 			catalogue.PutModel(ctx, settings.Model{ID: "MOD-1001", Name: "Leads", ActivityTypeIDs: []string{"AT-1001"},
 				InqToMqlRate: money.PercentFromHundredths(200), MqlToDealRate: money.PercentFromHundredths(1000),
-				AverageDealSize: money.USD(money.FromCents(100)), Meta: pgMeta}))
+				AverageDealSize: money.USD(money.FromCents(100)), Meta: pgMeta}),
+			s.PutWorkflow(ctx, approval.Workflow{ID: "WF-1001", Name: "Standard", Active: true, Meta: pgMeta}))
 		for _, n := range []string{"1", "2"} {
 			err = errors.Join(err,
 				directory.PutTeam(ctx, people.Team{ID: "T-100" + n, Name: "Team " + n, Colour: "blue", Meta: pgMeta}),

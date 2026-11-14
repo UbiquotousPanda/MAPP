@@ -37,16 +37,6 @@
   font-size: var(--text-sm);
 }
 
-.problem {
-  margin: var(--space-2) 0 0;
-  color: var(--danger-text);
-}
-
-.label {
-  color: var(--ink);
-  font-weight: var(--weight-bold);
-}
-
 .summary {
   margin: 0 0 var(--space-3);
   color: var(--ink);
@@ -63,29 +53,9 @@
   outline-offset: 2px;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--row-divider);
-  color: var(--ink);
-  text-align: left;
+.table tbody th,
+.table tbody td {
   vertical-align: top;
-}
-
-.table thead th {
-  background: var(--gray-bg);
-  font-size: var(--text-xs);
-}
-
-.table .number {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 
 .list {

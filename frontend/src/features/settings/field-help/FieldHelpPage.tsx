@@ -18,6 +18,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import settingsStyles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
 import { useFieldHelpEntries } from './api';
 import type { FieldHelpEntry } from './api';
@@ -64,7 +65,7 @@ export function FieldHelpPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Field help' }]}
         title="Field help"
-        description="What each built-in field means, shown in the ⓘ beside it. A change shows on the next page anyone opens."
+        description="A change shows on the next page anyone opens."
       />
       <SettingsViewOnlyNote />
       {!entries.data ? (
@@ -163,8 +164,8 @@ function HelpList({ items, withoutHelp, filters }: HelpListProps) {
             action={<Button onClick={filters.clear}>Clear filters</Button>}
           />
         ) : (
-          <div className={settingsStyles.tableScroll}>
-            <table className={settingsStyles.table}>
+          <div className={dataTable.scroll}>
+            <table className={dataTable.table}>
               <thead>
                 <tr>
                   <th scope="col">Field</th>
@@ -242,7 +243,7 @@ function HelpRow({ entry, onEdit, onReset }: HelpRowProps) {
           </>
         )}
       </td>
-      <td className={settingsStyles.actionsCell}>
+      <td className={dataTable.actions}>
         <CanChange>
           <ActionsMenu
             label={entry.label}

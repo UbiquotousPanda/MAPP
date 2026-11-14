@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { Pencil } from 'lucide-react';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { ApiError } from '@/api/errors';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { Button } from '@/ui/Button/Button';
@@ -7,13 +8,14 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { SidePanel } from '@/ui/SidePanel/SidePanel';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
-import { ApprovalAlert, ApprovalChain, timingsText } from '@/features/approvals';
+import { ApprovalChain, timingsText } from '@/features/approvals';
 import { SubjectStatusChip } from '@/ui/SubjectStatusChip/SubjectStatusChip';
 import { subjectHref } from '@/ui/subject-links';
 import { localDate } from '@/format/intl';
 import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
 import { CanChange } from '@/ui/CanChange/CanChange';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { workflowMoreItems } from './workflow-actions';
 import type { WorkflowActions } from './workflow-actions';
 import { recordsWord, usedByText, WORKFLOW_GONE } from './workflow-texts';
@@ -96,15 +98,17 @@ function DetailsBody({ details }: { details: ApprovalWorkflowDetails }) {
       {workflow.description && <p className={styles.description}>{workflow.description}</p>}
 
       {workflow.warnings.length > 0 && (
-        <ApprovalAlert tone="warning" title={workflow.warnings.join(' · ')}>
+        <InlineAlert tone="warning" title={workflow.warnings.join(' · ')}>
           <p>
             Anyone can still decide on their behalf. Edit the workflow to choose an active approver.
           </p>
-        </ApprovalAlert>
+        </InlineAlert>
       )}
 
       <section className={styles.section} aria-label="Levels">
-        <h3 className={styles.heading}>Levels</h3>
+        <SectionHeading level={3} rank="sub">
+          Levels
+        </SectionHeading>
         <ApprovalChain upcomingLevels={workflow.levels} />
         <p className={styles.muted}>
           {timingsText(workflow.reminderDays, workflow.escalationDays)}
@@ -112,7 +116,7 @@ function DetailsBody({ details }: { details: ApprovalWorkflowDetails }) {
       </section>
 
       <section className={styles.section} aria-label={`${recordsTitle} using it`}>
-        <h3 className={styles.heading}>{`${recordsTitle} using it`}</h3>
+        <SectionHeading level={3} rank="sub">{`${recordsTitle} using it`}</SectionHeading>
         {activities.length === 0 ? (
           <p className={styles.muted}>{`No ${records} use it yet.`}</p>
         ) : (

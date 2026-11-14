@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { ManageViewsPanel } from '@/ui/ManageViewsPanel/ManageViewsPanel';
+import type { SavedViewChanges } from '@/ui/ManageViewsPanel/ManageViewsPanel';
+import { useViewRefusal } from '@/ui/SavedViewsMenu/saved-views';
+import { SaveViewDialog } from '@/ui/SaveViewDialog/SaveViewDialog';
 import { useToast } from '@/ui/Toast/useToast';
-import { useSavedViews, useUpdateView } from './api';
+import { useCreateView, useDeleteView, useSavedViews, useUpdateView } from './api';
 import type { SavedView, ViewState } from './all-work-types';
-import { ManageViewsPanel } from './ManageViewsPanel';
-import { SaveViewDialog } from './SaveViewDialog';
-import { useViewRefusal } from './useViewRefusal';
 import { sameState, savedStateOf } from './view-state';
 import { ViewsMenu } from './ViewsMenu';
 
@@ -19,10 +20,7 @@ export interface ViewsControlProps {
   onStandard: () => void;
 }
 
-/**
- * Saved views on the page header (US6, FR-029 – FR-031): the Views menu with "Modified" when the
- * state differs from the active view, and its dialogs — Save current view and Your saved views.
- */
+/** The Views menu, "Modified" while the state differs from the active view, and its dialogs. */
 export function ViewsControl({
   state,
   appliedViewId,
@@ -31,7 +29,9 @@ export function ViewsControl({
   onStandard,
 }: ViewsControlProps) {
   const views = useSavedViews();
+  const create = useCreateView();
   const update = useUpdateView();
+  const remove = useDeleteView();
   const refused = useViewRefusal();
   const { show } = useToast();
   const [saving, setSaving] = useState(false);
@@ -40,6 +40,13 @@ export function ViewsControl({
   const active = items?.find((view) => view.id === appliedViewId) ?? null;
   const modified = Boolean(active && state && !sameState(state, active.state));
 
+  const changes: SavedViewChanges<SavedView> = {
+    change: (view, body) => update.mutateAsync({ viewId: view.id, body }),
+    remove: (view) => remove.mutateAsync(view.id),
+    restore: ({ name, state: saved, isDefault }) =>
+      create.mutateAsync({ name, state: saved, isDefault }),
+  };
+
   /** Update view: the active view keeps what is on screen now. */
   function updateActive() {
     if (!active || !state) return;
@@ -47,7 +54,7 @@ export function ViewsControl({
       { viewId: active.id, body: { state: savedStateOf(state) } },
       {
         onSuccess: (view) => show({ message: `View '${view.name}' updated` }),
-        onError: (error) => refused(error, 'name'),
+        onError: (error) => refused(error),
       },
     );
   }
@@ -67,13 +74,30 @@ export function ViewsControl({
       />
       {saving && state && (
         <SaveViewDialog
-          onOpenChange={setSaving}
+          title="Save current view"
+          defaultLabel="Use as my default view"
+          replaceText="It will show what you see now."
           views={items ?? []}
-          state={state}
+          create={(name, isDefault) =>
+            create.mutateAsync({ name, state: savedStateOf(state), isDefault })
+          }
+          replace={(view, isDefault) =>
+            update.mutateAsync({
+              viewId: view.id,
+              body: { state: savedStateOf(state), ...(isDefault && { isDefault: true }) },
+            })
+          }
           onSaved={onSaved}
+          onOpenChange={setSaving}
         />
       )}
-      <ManageViewsPanel open={managing} onOpenChange={setManaging} views={items ?? []} />
+      <ManageViewsPanel
+        open={managing}
+        onOpenChange={setManaging}
+        views={items ?? []}
+        changes={changes}
+        deleteQuestion="Only your saved view is deleted; no plans or records change."
+      />
     </>
   );
 }

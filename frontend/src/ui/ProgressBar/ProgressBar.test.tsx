@@ -28,4 +28,12 @@ describe('ProgressBar', () => {
       'aria-valuenow',
     );
   });
+
+  it('has no value while busy, whatever value it was given', () => {
+    render(<ProgressBar busy value={40} label="Sending to GSAP" />);
+
+    const bar = screen.getByRole('progressbar', { name: 'Sending to GSAP' });
+    expect(bar).not.toHaveAttribute('aria-valuenow');
+    expect(bar).not.toHaveAttribute('aria-valuetext');
+  });
 });

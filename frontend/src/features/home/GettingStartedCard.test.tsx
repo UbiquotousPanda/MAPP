@@ -16,7 +16,6 @@ describe('GettingStartedCard', () => {
   it("shows 001's five steps in order, each with its link and explanation (FR-020, 001 FR-018)", () => {
     renderWithProviders(<GettingStartedCard reason="noTeamPlans" />, { user: testUser() });
 
-    expect(within(card()).getByText('The Plan module in five steps')).toBeInTheDocument();
     const steps = within(card()).getAllByRole('listitem');
     expect(
       steps.map((step) => {
@@ -107,6 +106,5 @@ describe('GettingStartedCard', () => {
         .getAllByRole('link')
         .map((link) => link.textContent),
     ).toEqual(['Create a plan', 'Add campaigns and initiatives', 'Add activities and line items']);
-    expect(within(card()).getByText('The Plan module in three steps')).toBeInTheDocument();
   });
 });

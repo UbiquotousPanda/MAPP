@@ -111,3 +111,5 @@ any other page.
   BSD-3-Clause and tslib's 0BSD with it.
 - Two chart approaches live side by side (036's SVG, the builder's ECharts) until 036's charts are moved; the
   constitution's F1 row says so (4.9.0).
+- The Reports area's time charts (Revenue, Funnel, Plan and budget, Summary) also draw with ECharts, through
+  `measure/shared/ReportChart` and the same registered parts; no part was added for them.

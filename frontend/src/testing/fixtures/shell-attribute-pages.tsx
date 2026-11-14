@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react';
+import type { UserEvent } from '@testing-library/user-event';
 import type { HttpHandler } from 'msw';
 import { Outlet } from 'react-router';
 import { ShellAttributeEditorPage, ShellAttributesPage } from '@/features/settings';
@@ -8,6 +9,7 @@ import { mockApi } from '../mock-api';
 import type { MockedApi } from '../mock-api';
 import { renderRoutes, renderWithProviders } from '../render';
 import { reply } from '../replies';
+import { optionNames } from '../select';
 import {
   ACTIVITY_ATTRIBUTES,
   BUSINESS_UNIT,
@@ -80,11 +82,9 @@ export function renderAttributeEditor(route: string, answers: HttpHandler[] = []
 }
 
 /** The options a select offers, without "Choose…". */
-export function offered(name: RegExp): string[] {
-  return within(screen.getByRole('combobox', { name }))
-    .getAllByRole('option')
-    .map((option) => option.textContent ?? '')
-    .filter((text) => text !== 'Choose…');
+export async function offered(user: UserEvent, name: RegExp): Promise<string[]> {
+  const names = await optionNames(user, screen.getByRole('combobox', { name }));
+  return names.filter((text) => text !== 'Choose…');
 }
 
 export const TV = shellOption({

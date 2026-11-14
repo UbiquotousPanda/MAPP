@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  DIGITAL,
-  DIGITAL_2027,
-  EUR,
-  GBP,
-  lineItem,
-  PRIYA_REF,
-  USD,
-} from '@/testing/fixtures/line-items';
+import { DIGITAL, DIGITAL_2027, lineItem, PRIYA_REF } from '@/testing/fixtures/line-items';
 import { formOptions } from '@/testing/fixtures/line-item-forms';
 import {
   changeBudgetYear,
@@ -17,11 +9,11 @@ import {
   changeSpreadMethod,
   editFormState,
   newFormState,
+  withBalance,
   withField,
 } from './line-item-form-state';
 import { toCreateBody } from './line-item-requests';
 
-const CURRENCIES = [USD, EUR, GBP];
 const MAR_MAY = { startDate: '2026-03-01', endDate: '2026-05-31', ongoing: false };
 
 describe('newFormState (FR-008)', () => {
@@ -37,15 +29,7 @@ describe('newFormState (FR-008)', () => {
       financeBudgetItemId: '',
       requestSwbs: true,
     });
-    expect(state.sources).toEqual({
-      name: "From the activity's name",
-      ownerId: 'From the activity',
-      currency: 'Default',
-      plannedCost: "The activity's unassigned planned cost",
-      spread: "The plan's default",
-      financeBudgetYear: "The plan's year",
-      requestSwbs: 'On by default',
-    });
+    expect(state.sources).toEqual({ plannedCost: "The activity's unassigned planned cost" });
   });
 
   it('says why the planned cost is empty (edge cases, D-144)', () => {
@@ -83,39 +67,46 @@ describe('newFormState (FR-008)', () => {
   });
 });
 
-describe('changeCurrency (FR-012)', () => {
-  it('converts the pre-filled balance and says so', () => {
-    const state = changeCurrency(newFormState(formOptions()), 'EUR', CURRENCIES);
+describe('changeCurrency and withBalance (FR-012, D-061)', () => {
+  const eur = (amount: string) => ({ amount, currency: 'EUR' });
+  const usd = (amount: string) => ({ amount, currency: 'USD' });
+
+  it('pre-fills the balance the API answers in the chosen currency, and says so', () => {
+    const chosen = changeCurrency(newFormState(formOptions()), 'EUR');
+    const state = withBalance(chosen, eur('18400.00'), usd('20000.00'));
     expect(state.plannedCost).toBe('18,400.00');
-    expect(state.costNotes).toEqual(['Changed to 18,400.00 EUR = 20,000.00 USD']);
-    expect(state.sources.currency).toBeUndefined();
+    expect(state.costNotes).toEqual(['Changed to €18,400.00 = $20,000.00']);
+    expect(withBalance(state, eur('18400.00'), usd('20000.00'))).toBe(state);
   });
 
-  it('adds the rounding hint when the USD value cannot match to the cent', () => {
-    const options = formOptions();
-    options.defaults = { ...options.defaults, plannedCost: { amount: '100.02', currency: 'USD' } };
-    const state = changeCurrency(newFormState(options), 'GBP', CURRENCIES);
-    expect(state.plannedCost).toBe('79.02');
+  it('adds the rounding hint when the amount back in the plan currency is not the balance', () => {
+    const chosen = changeCurrency(newFormState(formOptions()), 'EUR');
+    const state = withBalance(chosen, eur('18400.01'), usd('20000.01'));
     expect(state.costNotes[1]).toBe(
       "If a currency rate leaves a few cents unassigned, adjust the activity's planned cost instead.",
     );
   });
 
-  it('does not convert an amount the person typed', () => {
-    const typed = changePlannedCost(newFormState(formOptions()), '10,000');
-    const state = changeCurrency(typed, 'EUR', CURRENCIES);
-    expect(state.plannedCost).toBe('10,000');
-    expect(state.costNotes).toEqual([]);
+  it('keeps an amount the person typed, and an answer for another currency', () => {
+    const typed = changeCurrency(changePlannedCost(newFormState(formOptions()), '10,000'), 'EUR');
+    expect(withBalance(typed, eur('18400.00'), usd('20000.00')).plannedCost).toBe('10,000');
+    const chosen = changeCurrency(newFormState(formOptions()), 'GBP');
+    expect(withBalance(chosen, eur('18400.00'), usd('20000.00'))).toBe(chosen);
   });
 });
 
 describe('spread and finance budget changes', () => {
-  it('starts Custom from the current spread (D-152)', () => {
+  it('starts Custom from the seed the API answers for the current spread (D-152)', () => {
     const state = changeSpreadMethod(
       changePlannedCost(newFormState(formOptions()), '10,000.00'),
       'custom',
       MAR_MAY,
       2026,
+      [
+        { month: '2026-03', amount: '3333.33' },
+        { month: '2026-04', amount: '3333.33' },
+        { month: '2026-05', amount: '3333.34' },
+      ],
     );
     expect(state.customMonths).toEqual([
       { month: '2026-03', amount: '3,333.33' },

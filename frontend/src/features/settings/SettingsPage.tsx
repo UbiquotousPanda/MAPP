@@ -4,26 +4,21 @@ import { itemsFor, useAccess } from '@/session/access';
 import type { components } from '@/api/generated/schema';
 import { Button } from '@/ui/Button/Button';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { SettingsCount } from '@/ui/SettingsCount/SettingsCount';
+import linkCard from '@/ui/LinkCard/LinkCard.module.css';
 import type { SettingsSection } from './sections';
 import styles from './SettingsPage.module.css';
 import { useSettingsOverview } from './api';
 
 type SettingsOverview = components['schemas']['SettingsOverview'];
 
-/** What the counts of feature 002's cards are doing. */
 type Counts =
   { state: 'loading' } | { state: 'failed' } | { state: 'loaded'; overview: SettingsOverview };
 
-/**
- * Settings (feature 002, FR-001): one card per section — its icon, name, one-line explanation and
- * the number of active records — each opening the section's own page. Sections still to come show
- * "Coming soon" and are not links. When the counts can't be loaded the cards stay usable. A card
- * whose section the person's roles do not open is left out (feature 014, FR-012). The sections
- * come from app/settings-sections.ts.
- */
+/** When the counts can't be loaded the cards stay usable; a card the person's roles do not open is left out. */
 export function SettingsPage({ sections }: { sections: SettingsSection[] }) {
   usePageTitle('Settings');
   const { has } = useAccess();
@@ -36,10 +31,7 @@ export function SettingsPage({ sections }: { sections: SettingsSection[] }) {
 
   return (
     <>
-      <PageHeader
-        title="Settings"
-        description="Set up the lists and rules every plan uses. Changes here apply to everyone straight away."
-      />
+      <PageHeader title="Settings" description="Changes apply to everyone straight away." />
       {counts.state === 'failed' && (
         <div role="alert" className={styles.countsFailed}>
           <CircleAlert aria-hidden="true" />
@@ -74,9 +66,17 @@ function SectionCard({ section, counts }: SectionCardProps) {
         <span className={styles.icon} aria-hidden="true">
           <Icon />
         </span>
-        <h2 className={styles.title}>
-          {comingSoon ? section.title : <Link to={section.path}>{section.title}</Link>}
-        </h2>
+        <div className={styles.title}>
+          <SectionHeading level={2} rank="card">
+            {comingSoon ? (
+              section.title
+            ) : (
+              <Link to={section.path} className={linkCard.link}>
+                {section.title}
+              </Link>
+            )}
+          </SectionHeading>
+        </div>
         {!comingSoon && (
           <span className={styles.chevron} aria-hidden="true">
             <ChevronRight />
@@ -95,10 +95,7 @@ function SectionCard({ section, counts }: SectionCardProps) {
   );
 }
 
-/**
- * "<n> active": from the overview for 002's sections, from the section's own component otherwise
- * (which shows it with the same SettingsCount).
- */
+/** Other features' sections show it from their own component, with the same SettingsCount. */
 function ActiveCount({ section, counts }: SectionCardProps) {
   if (!section.overviewKey) {
     return section.ActiveCount ? <section.ActiveCount /> : null;

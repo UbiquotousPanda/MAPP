@@ -195,7 +195,23 @@ func TestBudgetByMonth_EqualsBudgetAndCost_SC004(t *testing.T) {
 			total = total.Add(extra.Amount)
 		}
 	}
-	if total.Format() != "9,700.00" {
-		t.Errorf("months + other years + no dates = %s, want the planned cost 9,700.00", total.Format())
+	if total.Format() != "9,700.00" || plan.Months.Totals.PlannedCost.Amount.Format() != "9,700.00" ||
+		plan.Quarters.Totals.PlannedCost.Amount.Format() != "9,700.00" {
+		t.Errorf("months + other years + no dates = %s, totals %+v; want the planned cost 9,700.00", total.Format(), plan.Months.Totals)
+	}
+}
+
+// The API says how far a period is over, by the larger of planned cost and allocated, and adds up the row.
+func TestBudgetByMonth_OverByAndTotals_D061(t *testing.T) {
+	t.Parallel()
+	plan := phasedRowOf(t, budgetByMonth(buildTree(phasingNodes(activityNode("A-1", "15000.00", "2027-03"))), 2027), "P-1")
+
+	if got := texts(plan.Months.OverBy); got[0] != "—" || got[2] != "20,000.00" || got[5] != "20,000.00" {
+		t.Errorf("over by = %v, want — in January; March: allocated 20,000.00 above, more than planned 5,000.00", got)
+	}
+	totals := plan.Months.Totals
+	if totals.Budget == nil || totals.Difference == nil || totals.Allocated == nil ||
+		totals.Difference.Amount.Cmp(totals.Budget.Amount.Sub(totals.PlannedCost.Amount)) != 0 {
+		t.Errorf("totals = %+v", totals)
 	}
 }

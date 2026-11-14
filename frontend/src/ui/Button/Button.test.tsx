@@ -27,4 +27,22 @@ describe('Button', () => {
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
+
+  it('neither clicks nor submits again while its action is busy, so a double click saves once', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <Button type="submit" variant="primary" aria-busy onClick={onClick}>
+          Import 3 rows
+        </Button>
+      </form>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Import 3 rows' }));
+
+    expect(onClick).not.toHaveBeenCalled();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
 });

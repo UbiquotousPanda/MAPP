@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { asApiError } from '@/api/errors';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { useToast } from '@/ui/Toast/useToast';
@@ -65,11 +66,7 @@ export function GsapOrderDialog({ purchaseRequest, onClose }: GsapOrderDialogPro
             </li>
           ))}
         </ul>
-        {run.error && (
-          <p role="alert" className={styles.problem}>
-            {asApiError(run.error).message}
-          </p>
-        )}
+        {run.error && <InlineError>{asApiError(run.error).message}</InlineError>}
       </div>
     </ConfirmDialog>
   );

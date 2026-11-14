@@ -3,24 +3,19 @@ import { useId } from 'react';
 import type { Ref } from 'react';
 import { Link } from 'react-router';
 import { fieldHref } from '@/ui/record-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { Activity, ActivitySubmitProblem } from './api';
 import { activityEditHref, thingsText } from './activity-text';
 import styles from './ReadyToSubmitPanel.module.css';
 
 export interface ReadyToSubmitPanelProps {
   activity: Activity;
-  /** Whether the list is shown; open by default when there are problems. */
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The panel itself, focused when Submit for approval finds problems. */
+  /** Focused when Submit for approval finds problems. */
   ref?: Ref<HTMLElement>;
 }
 
-/**
- * Everything that stops the activity from being submitted, all at once (FR-022 – FR-024): grouped
- * "This activity", "Line items" and "Good to know", each a link to where it is fixed. With nothing
- * missing it says "Ready to submit".
- */
 export function ReadyToSubmitPanel({ activity, open, onOpenChange, ref }: ReadyToSubmitPanelProps) {
   const headingId = useId();
   const { readiness } = activity;
@@ -39,10 +34,12 @@ export function ReadyToSubmitPanel({ activity, open, onOpenChange, ref }: ReadyT
         aria-labelledby={headingId}
         className={styles.panel}
       >
-        <h2 id={headingId} className={styles.readyTitle}>
+        <div className={styles.ready}>
           <CircleCheck aria-hidden="true" />
-          Ready to submit
-        </h2>
+          <SectionHeading level={2} rank="card" id={headingId}>
+            Ready to submit
+          </SectionHeading>
+        </div>
         {advice}
       </section>
     );
@@ -58,9 +55,9 @@ export function ReadyToSubmitPanel({ activity, open, onOpenChange, ref }: ReadyT
     >
       <details open={open} onToggle={(event) => onOpenChange(event.currentTarget.open)}>
         <summary className={styles.summary}>
-          <h2 id={headingId} className={styles.title}>
+          <SectionHeading level={2} rank="card" id={headingId}>
             Ready to submit
-          </h2>
+          </SectionHeading>
           <span className={styles.count}>
             Submitting needs {thingsText(readiness.problemCount)}
           </span>
@@ -100,7 +97,9 @@ interface GroupProps {
 function Group({ title, problems, planId, id }: GroupProps) {
   return (
     <div className={styles.group}>
-      <h3 className={styles.groupTitle}>{title}</h3>
+      <SectionHeading level={3} rank="label">
+        {title}
+      </SectionHeading>
       <ul className={styles.list}>
         {problems.map((problem, index) => (
           <li key={`${problem.code}-${problem.field}-${index}`}>

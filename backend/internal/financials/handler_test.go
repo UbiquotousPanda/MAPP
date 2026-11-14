@@ -24,9 +24,9 @@ func TestRecord_Contract_FR015(t *testing.T) {
 
 	activity := get[financials.RecordView](t, alex, "/api/v1/financials/records/A-1002")
 	f := activity.Figures
-	if f.Committed != dollars(t, "25000.00") || f.PlannedCost == nil || *f.PlannedCost != dollars(t, "80000.00") ||
-		f.NotYetCommitted == nil || *f.NotYetCommitted != dollars(t, "55000.00") || f.CommittedPercent == nil ||
-		*f.CommittedPercent != 31 || f.TransactionCount != 7 {
+	if f.Committed != dollars(t, "26066.67") || f.PlannedCost == nil || *f.PlannedCost != dollars(t, "80000.00") ||
+		f.NotYetCommitted == nil || *f.NotYetCommitted != dollars(t, "53933.33") || f.CommittedPercent == nil ||
+		*f.CommittedPercent != 33 || f.TransactionCount != 7 {
 		t.Errorf("Social always-on = %+v", f)
 	}
 	if activity.Record.Name != "Social always-on" || len(activity.Breakdown) != 2 || len(activity.Latest) != 5 ||
@@ -59,8 +59,8 @@ func TestRecord_NotFoundAndDisplayCurrency_FR011(t *testing.T) {
 		t.Fatalf("preferences = %d %s", response.Status, response.Body)
 	}
 	got := get[financials.RecordView](t, priya, "/api/v1/financials/records/L-1003")
-	if eur := dollars(t, "18400.00").Amount; got.Figures.Committed != (money.Money{Amount: eur, Currency: "EUR"}) {
-		t.Errorf("Venue hire committed = %+v, want 18,400.00 EUR", got.Figures.Committed)
+	if eur := dollars(t, "18960.00").Amount; got.Figures.Committed != (money.Money{Amount: eur, Currency: "EUR"}) {
+		t.Errorf("Venue hire committed = %+v, want 18,960.00 EUR", got.Figures.Committed)
 	}
 }
 
@@ -79,7 +79,7 @@ func TestTransactions_Contract_FR021(t *testing.T) {
 			all.Page, all.PageSize)
 	}
 	pos := get[financials.TransactionPage](t, alex, "/api/v1/financials/transactions?type=purchaseOrder&sort=amount:desc")
-	if pos.Total != 4 || pos.Items[0].ID != "FT-1001" || !reflect.DeepEqual(pos.Counts, want) || pos.Totals.Invoiced != dollars(t, "33152.17") {
+	if pos.Total != 4 || pos.Items[0].ID != "FT-1001" || !reflect.DeepEqual(pos.Counts, want) || pos.Totals.Invoiced != dollars(t, "34455.56") {
 		t.Errorf("purchase orders: total %d, first %s, counts %+v", pos.Total, pos.Items[0].ID, pos.Counts)
 	}
 	speakerFees := get[financials.TransactionPage](t, alex, "/api/v1/financials/transactions?recordId=L-1004&pageSize=100")
@@ -120,7 +120,7 @@ func TestTransaction_Contract_FR022(t *testing.T) {
 
 	got := get[financials.TransactionView](t, alex, "/api/v1/financials/transactions/FT-1003")
 	if got.Name != "PO 4500001003 / 10" || got.TrackingKey != "HX1006" || got.Amount.Currency != "EUR" ||
-		got.AmountUSD == nil || *got.AmountUSD != dollars(t, "10652.17") || got.Link.State != financials.StateLinked ||
+		got.AmountUSD == nil || *got.AmountUSD != dollars(t, "10888.89") || got.Link.State != financials.StateLinked ||
 		*got.Link.MatchedBy != financials.MatchedByTrackingKey || len(got.Link.Path) != 5 || got.Link.Path[4].ID != "L-1006" {
 		t.Errorf("FT-1003 = %+v", got)
 	}
@@ -202,13 +202,13 @@ func TestOverview_Contract_FR025(t *testing.T) {
 
 	mine := get[financials.Overview](t, priya, "/api/v1/financials/overview?scope=myTeams")
 	f := mine.Figures
-	if mine.Year != 2026 || mine.Scope != financials.ScopeMyTeams || f.Committed != dollars(t, "35652.17") ||
+	if mine.Year != 2026 || mine.Scope != financials.ScopeMyTeams || f.Committed != dollars(t, "36955.56") ||
 		*f.PlannedCost != dollars(t, "460000.00") || *f.CommittedPercent != 8 || mine.ActivitiesAbovePlanned != 1 ||
 		mine.NotLinked != 0 { // not-linked transactions show only to people who may import (014: Priya may not)
 		t.Errorf("my teams = %+v", mine)
 	}
 	everything := get[financials.Overview](t, priya, "/api/v1/financials/overview?scope=everything")
-	if everything.Figures.Committed != dollars(t, "35652.17") || everything.Figures.PlannedCost.Amount.Cmp(f.PlannedCost.Amount) < 0 { // Priya sees her team's plans only (014)
+	if everything.Figures.Committed != dollars(t, "36955.56") || everything.Figures.PlannedCost.Amount.Cmp(f.PlannedCost.Amount) < 0 { // Priya sees her team's plans only (014)
 		t.Errorf("everything = %+v", everything.Figures)
 	}
 	fieldRefused(t, priya.Do(t, http.MethodGet, "/api/v1/financials/overview?scope=all", nil, apitest.SkipRequestValidation()), "scope",

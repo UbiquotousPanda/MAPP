@@ -31,7 +31,7 @@ describe('038 FR-045 (L-17): every permission in the words of 014 Table A', () =
     );
     expect(permissionLabel('purchaseRequests.list')).toBe('See the Purchase requests page');
     const keys = PERMISSIONS.map((permission) => permission.key);
-    expect(keys.slice(13, 18)).toEqual([
+    expect(keys.slice(14, 19)).toEqual([
       'finance.import',
       'purchaseRequests.edit',
       'purchaseRequests.delete',
@@ -44,7 +44,7 @@ describe('038 FR-045 (L-17): every permission in the words of 014 Table A', () =
     expect(permissionLabel('dashboards.view')).toBe('See custom dashboards shared with them');
     expect(permissionLabel('dashboards.build')).toBe('Build dashboards and upload data');
     const keys = PERMISSIONS.map((permission) => permission.key);
-    expect(keys.slice(21, 25)).toEqual([
+    expect(keys.slice(22, 26)).toEqual([
       'globalBudgets.manage',
       'dashboards.view',
       'dashboards.build',

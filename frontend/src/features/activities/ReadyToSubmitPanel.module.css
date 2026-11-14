@@ -25,21 +25,13 @@
   border-radius: var(--radius-1);
 }
 
-.title,
-.readyTitle {
-  display: inline;
-  color: var(--ink);
-  font-size: var(--text-lg);
-  font-weight: 600;
-}
-
-.readyTitle {
+.ready {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.readyTitle svg {
+.ready svg {
   width: 18px;
   height: 18px;
   color: var(--status-positive);
@@ -66,12 +58,6 @@
 
 .groups .group {
   margin-top: 0;
-}
-
-.groupTitle {
-  color: var(--ink-2);
-  font-size: var(--text-xs);
-  font-weight: 600;
 }
 
 .list {

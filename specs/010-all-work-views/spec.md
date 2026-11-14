@@ -32,10 +32,10 @@ model §4.2–4.3, and open one row of each level.
    "FY2026 Lubricants Europe" and "FY2026 Mobility China", with plans, campaigns and initiatives
    expanded and activities collapsed.
 2. **Given** any container row, **Then** its planned cost is the sum of the planned cost below it
-   (domain model §4.2). The totals row reads "Total · N activities", and its planned cost equals the
+   (domain model §4.2). The totals row reads "Total" (D-421), and its planned cost equals the
    **Planned cost** summary card.
 3. **Given** an expanded activity whose line items do not cover its planned cost, **Then** its last row
-   reads "Unassigned planned cost (Sys_Gen_Balance)" with the amount, shown in red with a minus sign
+   reads "Unassigned planned cost" with the amount, shown in red with a minus sign
    when it is negative. Switching **Unassigned planned cost** off hides only these rows.
 4. **Given** any row, **When** the user clicks it or presses Enter, **Then** the record's page opens, and
    coming back restores the filters, expansion and scroll position.
@@ -46,7 +46,7 @@ model §4.2–4.3, and open one row of each level.
 
 One filter bar serves all three views: year, plan, statuses, owner, team, business unit, activity type,
 Strategic / AOP plans, **Show levels**, and a search box ("Search name, ID, external name or
-description"). Active filters show as removable chips, with **Clear all** and a count ("Showing 12 of 40
+description"). Active filters show as removable chips, with **Clear filters** (D-421) and a count ("Showing 12 of 40
 activities"). The summary cards follow the filters.
 
 **Why this priority**: Plans hold hundreds of activities, and Hive9's hidden, remembered filters left
@@ -235,8 +235,9 @@ filtered, its totals, money in its currency, and a note of every filter used.
 - **FR-007**: **Complete branches only** MUST keep only branches that reach at least one activity.
   **Campaigns without initiatives** and **Initiatives without activities** MUST list only those
   records, under their parents.
-- **FR-008**: Every active filter except the year MUST appear as a removable chip. **Clear all** MUST
-  clear every filter but the year. The count MUST read "Showing N of M activities", where M is all
+- **FR-008**: Every active filter except the year MUST appear as a removable chip. **Clear filters** MUST
+  clear every filter but the year, keeping the search (D-421; was **Clear all**, which also cleared the search).
+  The filter buttons fold out under **Filters (n)**, by themselves when a filter is in use (design system §5.2). The count MUST read "Showing N of M activities", where M is all
   activities in the year's plans; under the last two Show levels choices it counts campaigns or
   initiatives instead.
 - **FR-009**: Filters MUST apply as soon as they change, without an Apply button, and are kept while
@@ -254,13 +255,13 @@ filtered, its totals, money in its currency, and a note of every filter used.
   time (keyboard included) and through **Expand all** and **Collapse all**. Plans, campaigns and
   initiatives start expanded, and activities collapsed.
 - **FR-012**: An **Unassigned planned cost** switch, on by default, MUST show the "Unassigned planned
-  cost (Sys_Gen_Balance)" row under each expanded activity whose balance is not zero (domain model
+  cost" row (D-422) under each expanded activity whose balance is not zero (domain model
   §4.3).
 - **FR-013**: Container rows MUST show these roll-ups, calculated as in domain model §4.2–4.5 from the
   matches shown under them: planned cost, line items, unassigned planned cost, activity count, INQ,
   MQL and revenue. When filters hide records below a container, its roll-up cells MUST carry a
   "Filtered" mark whose tip gives the unfiltered value.
-- **FR-014**: A totals row MUST read "Total · N activities". Its money sums the matching activities, and
+- **FR-014**: A totals row MUST read "Total" (D-421: the Activities card gives the count). Its money sums the matching activities, and
   its Plan budget sums plan rows only, so the totals equal the summary cards.
 - **FR-015**: Clicking a column heading MUST sort the children of every parent: ascending, then
   descending, then default. Empty values sort last, and statuses sort in lifecycle order.

@@ -71,8 +71,8 @@ func TestRecordOutsideAccess_AnswersLikeAMissingOne_022_FR005(t *testing.T) {
 		{http.MethodGet, "/api/v1/activities/A-1001/approval", "/api/v1/activities/A-9999/approval"},
 		{http.MethodGet, "/api/v1/line-items/L-1001", "/api/v1/line-items/L-9999"},
 		{http.MethodGet, "/api/v1/all-work/records/A-1001", "/api/v1/all-work/records/A-9999"},
-		{http.MethodDelete, "/api/v1/activities/A-1001", "/api/v1/activities/A-9999"},
-		{http.MethodDelete, "/api/v1/line-items/L-1001", "/api/v1/line-items/L-9999"},
+		{http.MethodDelete, "/api/v1/activities/A-1001?version=1", "/api/v1/activities/A-9999?version=1"},
+		{http.MethodDelete, "/api/v1/line-items/L-1001?version=1", "/api/v1/line-items/L-9999?version=1"},
 	} {
 		outside, missing := mei.Do(t, c.method, c.outside, nil), mei.Do(t, c.method, c.missing, nil)
 		if outside.Status != http.StatusNotFound || missing.Status != outside.Status || string(missing.Body) != string(outside.Body) {
@@ -95,9 +95,9 @@ func TestChanges_NeedThePermissionInThePlan_FR009_FR010(t *testing.T) {
 
 	refused(t, "Sara renaming a campaign", sara.Do(t, http.MethodPatch, "/api/v1/campaigns/C-1001", rename, apitest.SkipRequestValidation()),
 		"Changing campaigns and initiatives isn't part of your role (Viewer). Ask an administrator if you need it.")
-	refused(t, "Sara deleting an activity", sara.Do(t, http.MethodDelete, "/api/v1/activities/A-1001", nil),
+	refused(t, "Sara deleting an activity", sara.DeleteSeen(t, "/api/v1/activities/A-1001"),
 		"Deleting activities and line items isn't part of your role (Viewer). Ask an administrator if you need it.")
-	refused(t, "Priya deleting a plan", priya.Do(t, http.MethodDelete, "/api/v1/plans/P-1001", nil),
+	refused(t, "Priya deleting a plan", priya.DeleteSeen(t, "/api/v1/plans/P-1001"),
 		"Deleting plans isn't part of your role (Planner). Ask an administrator if you need it.")
 	hidden(t, "Priya adding a campaign to the Mobility plan",
 		priya.Do(t, http.MethodPost, "/api/v1/plans/P-1002/campaigns", map[string]any{"name": "Spring"}, apitest.SkipRequestValidation()),

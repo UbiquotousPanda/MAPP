@@ -1,0 +1,111 @@
+import { useFormatters } from '@/format/useFormatters';
+import { LinkButton } from '@/ui/Button/Button';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
+import { ErrorState } from '@/ui/ErrorState/ErrorState';
+import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
+import { LevelSwitch, useReportAddress } from '../shared';
+import { isRestricted, resetFilters } from '../shared/report-address';
+import type { ReportAddress } from '../shared';
+import { usePlanDetails } from './api';
+import type { PlanDetailsReport as Report } from './api';
+import { noAttributesText, RECORDS } from './plan-details-text';
+import { AttributeWidgets } from './AttributeWidgets';
+import { ValueWidget } from './ValueWidget';
+import styles from './PlanDetails.module.css';
+
+/** Data completeness (feature 043): how records and planned cost spread over each Shell attribute of a level. */
+export function PlanDetailsBody({ address }: { address: ReportAddress }) {
+  const report = usePlanDetails(address);
+  if (report.isError) {
+    return <ErrorState error={report.error} onRetry={() => void report.refetch()} />;
+  }
+  if (!report.data) {
+    return (
+      <div aria-label="Loading Plan details">
+        <Skeleton lines={6} height="24px" />
+      </div>
+    );
+  }
+  if (report.data.cards.records === 0) {
+    return <NoRecords show={report.data.show} address={address} />;
+  }
+  return <Widgets report={report.data} address={address} />;
+}
+
+/** Why no record of the level is shown: the filters exclude them all, or there are none yet. */
+function NoRecords({ show, address }: { show: Report['show']; address: ReportAddress }) {
+  const [, setAddress] = useReportAddress();
+  if (isRestricted(address)) {
+    return (
+      <EmptyState
+        title="Your filters exclude everything"
+        text="No record matches every filter."
+        onReset={() => setAddress(resetFilters)}
+      />
+    );
+  }
+  return (
+    <EmptyState
+      title="No data yet"
+      text={`${RECORDS[show].many} create this report's data; there are none in view.`}
+      action={
+        <LinkButton to="/plans" variant="secondary">
+          Open the plans
+        </LinkButton>
+      }
+    />
+  );
+}
+
+function Widgets({ report, address }: { report: Report; address: ReportAddress }) {
+  const { money } = useFormatters();
+  const level = report.show;
+  const records = RECORDS[level].many;
+  const { cards } = report;
+  const percent =
+    cards.allFilledInPercent === null ? '' : ` (${String(cards.allFilledInPercent)} %)`;
+  return (
+    <div className={styles.report}>
+      <div className={styles.levelBar}>
+        <span>Count</span>
+        <LevelSwitch fallback="activity" />
+      </div>
+      <StatStrip label="Summary">
+        <SummaryCard label={records} value={cards.records.toLocaleString('en-GB')} />
+        <SummaryCard
+          label="Planned cost"
+          value={money(cards.plannedCost)}
+          tip="Their planned cost, as every screen shows it, in the report's currency."
+        />
+        <SummaryCard
+          label="All filled in"
+          value={`${cards.allFilledIn.toLocaleString('en-GB')} of ${cards.records.toLocaleString('en-GB')}${percent}`}
+          tip="Records whose every needed field is filled in."
+        />
+      </StatStrip>
+      {report.builtIn.length > 0 && (
+        <section aria-label="Built-in fields" className={styles.widgets}>
+          {report.builtIn.map((widget) => (
+            <ValueWidget
+              key={widget.key}
+              widget={widget}
+              level={level}
+              address={address}
+              currency={report.currency}
+            />
+          ))}
+        </section>
+      )}
+      {report.attributesSetUp ? (
+        <AttributeWidgets report={report} address={address} />
+      ) : (
+        <EmptyState
+          title={noAttributesText(level)}
+          text="Shell attributes are set up in Settings › Shell attributes."
+        />
+      )}
+    </div>
+  );
+}

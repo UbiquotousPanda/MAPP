@@ -10,8 +10,10 @@ import (
 )
 
 type Store struct {
+	db            *fake.DB
 	models        *fake.Table[settings.Model]
 	activityTypes *fake.Table[settings.ActivityType]
+	categories    *fake.Table[settings.ActivityCategory]
 	attributes    *fake.Table[settings.Attribute]
 	options       *fake.Table[settings.Option]
 	currencies    *fake.Table[settings.Currency]
@@ -24,8 +26,10 @@ type Store struct {
 
 func NewStore(db *fake.DB) Store {
 	return Store{
+		db:            db,
 		models:        fake.TableOf(db, "models", func(m settings.Model) string { return m.ID }),
 		activityTypes: fake.TableOf(db, "activity_types", func(t settings.ActivityType) string { return t.ID }),
+		categories:    fake.TableOf(db, "activity_categories", func(c settings.ActivityCategory) string { return c.ID }),
 		attributes:    fake.TableOf(db, "shell_attributes", func(a settings.Attribute) string { return a.ID }),
 		options:       fake.TableOf(db, "shell_attribute_options", func(o settings.Option) string { return o.ID }),
 		currencies:    fake.TableOf(db, "currencies", func(c settings.Currency) string { return c.Code }),

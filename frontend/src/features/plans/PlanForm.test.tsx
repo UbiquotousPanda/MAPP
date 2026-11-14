@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { HttpHandler } from 'msw';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { FINANCE_BUDGETS, FORM_ANSWERS, planDefaults } from '@/testing/fixtures/plans';
 import { reply } from '@/testing/replies';
@@ -40,7 +41,7 @@ function sectionTitles() {
 }
 
 describe('PlanForm (US1, FR-005 – FR-010)', () => {
-  it('shows the sections in order with markings as words and the defaults labelled', async () => {
+  it('shows the sections in order with their markings and the defaults pre-filled', async () => {
     renderForm();
 
     expect(await screen.findByRole('textbox', { name: /Plan name/ })).toBeInTheDocument();
@@ -51,35 +52,23 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
       'true',
     );
     expect(screen.getByRole('button', { name: 'Remove 2026' })).toBeInTheDocument();
-    expect(screen.getByText('Default: the current year')).toBeInTheDocument();
-    expect(await screen.findByText('Default: your teams')).toBeInTheDocument();
-    expect(await screen.findByText('Default: you')).toBeInTheDocument();
-    expect(screen.getByText('Default: Evenly')).toBeInTheDocument();
-    expect(screen.getByText('Default: INQ')).toBeInTheDocument();
-    expect(screen.getAllByText('Default: No')).toHaveLength(2);
+    // A pre-filled default says so by showing it; no "Default: …" line repeats it.
+    expect(screen.queryByText(/^Default:/)).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /Strategic \/ AOP plan/ })).not.toBeChecked();
     expect(screen.getAllByText('Needed to publish').length).toBeGreaterThanOrEqual(3);
-    // A model is not defaulted when several are active.
-    expect(screen.queryByText('Default: the only active model')).not.toBeInTheDocument();
   });
 
-  it('drops a default hint once the person changes the field', async () => {
-    const { user } = renderForm();
-
-    await screen.findByRole('combobox', { name: /Year/ });
-    await chooseYear(user, '2027');
-
-    expect(screen.queryByText('Default: the current year')).not.toBeInTheDocument();
-  });
-
-  it('labels the only active model as the default and shows its rates', async () => {
+  it('pre-selects the only active model and shows its rates', async () => {
     renderForm({
       initial: valuesFromDefaults(planDefaults({ modelId: 'MOD-1001' })),
       defaults: planDefaults({ modelId: 'MOD-1001' }),
     });
 
-    expect(await screen.findByText('Default: the only active model')).toBeInTheDocument();
+    expect(await screen.findByRole('combobox', { name: /Model/ })).toHaveTextContent(
+      'Lubricants 1.0',
+    );
     expect(
-      screen.getByText('INQ→MQL 2.00 % · MQL→deal 5.00 % · average deal size 10,000.00 USD'),
+      screen.getByText('INQ→MQL 2.00 % · MQL→deal 5.00 % · average deal size $10,000.00'),
     ).toBeInTheDocument();
   });
 
@@ -104,11 +93,11 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
     const { user } = renderForm();
 
     expect(await screen.findAllByText('Choose a model to calculate')).toHaveLength(3);
-    await user.selectOptions(screen.getByRole('combobox', { name: /Model/ }), 'MOD-1001');
+    await choose(user, screen.getByRole('combobox', { name: /Model/ }), 'Lubricants 1.0');
     await user.type(screen.getByRole('textbox', { name: 'Goal amount (INQ)' }), '250000');
 
     expect(screen.getByText('5,000')).toBeInTheDocument();
-    expect(screen.getByText('2,500,000.00 USD')).toBeInTheDocument();
+    expect(screen.getByText('$2,500,000.00')).toBeInTheDocument();
     expect(screen.getAllByText('Calculated')).toHaveLength(3);
     expect(screen.getByText('MQL = INQ × 2.00 %')).toBeInTheDocument();
   });
@@ -130,7 +119,7 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
     });
 
     const budget = await screen.findByRole('combobox', { name: 'Default finance budget' });
-    await waitFor(() => expect(budget).toHaveValue('FB-1001'));
+    await waitFor(() => expect(budget).toHaveTextContent('2026 Lubricants Budget'));
     await chooseYear(user, '2027');
 
     expect(
@@ -138,7 +127,9 @@ describe('PlanForm (US1, FR-005 – FR-010)', () => {
         "Default finance budget cleared — '2026 Lubricants Budget' belongs to 2026.",
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Default finance budget' })).toHaveValue('none');
+    expect(screen.getByRole('combobox', { name: 'Default finance budget' })).toHaveTextContent(
+      'No default',
+    );
   });
 
   it('says when a year has no finance budgets yet', async () => {

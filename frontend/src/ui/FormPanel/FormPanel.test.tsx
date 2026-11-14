@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
@@ -111,7 +111,7 @@ describe('FormPanel', () => {
     }
     const { user } = renderWithProviders(<Preferences />);
 
-    await user.click(screen.getByRole('combobox', { name: 'Date format' }));
+    act(() => screen.getByRole('combobox', { name: 'Date format' }).focus());
     await user.keyboard('{Enter}');
 
     expect(onSave).toHaveBeenCalledTimes(1);

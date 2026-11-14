@@ -37,13 +37,13 @@ export function DeleteRecordDialog({ target, onClose, onDeleted }: DeleteRecordD
   if (!target) {
     return null;
   }
-  const { level, id, name, counts } = target;
+  const { level, id, version, name, counts } = target;
   const contents = contentsSentence(counts);
 
   async function confirm() {
     setBusy(true);
     try {
-      const result = await remove.mutateAsync({ level, id });
+      const result = await remove.mutateAsync({ level, id, version });
       onClose();
       onDeleted?.();
       afterDelete(result);

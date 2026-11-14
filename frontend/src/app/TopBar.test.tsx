@@ -3,6 +3,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
 import type { CurrentUser } from '@/session/useSession';
 import { testUser } from '@/testing/fixtures/users';
+import { DISPLAY_CURRENCIES } from '@/testing/fixtures/home';
+import { mockApi } from '@/testing/mock-api';
+import { reply } from '@/testing/replies';
 import { TopBar } from './TopBar';
 
 const PRIYA: CurrentUser = testUser();
@@ -29,5 +32,20 @@ describe('TopBar', () => {
     expect(within(bar).getByRole('button', { name: 'Priya — account menu' })).toHaveTextContent(
       'Priya',
     );
+  });
+
+  it('has the display currency just before the theme switch, showing its code (D-413)', async () => {
+    mockApi([
+      reply('GET /api/v1/me/display-currencies', {
+        body: { items: DISPLAY_CURRENCIES, total: DISPLAY_CURRENCIES.length },
+      }),
+    ]);
+    renderWithProviders(<TopBar />, { user: PRIYA });
+
+    const bar = screen.getByRole('banner');
+    const currency = await within(bar).findByRole('combobox', { name: 'Display currency' });
+    expect(currency).toHaveTextContent(/^USD$/);
+    const theme = within(bar).getByRole('button', { name: 'Switch to dark mode' });
+    expect(currency.compareDocumentPosition(theme) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

@@ -2,15 +2,15 @@ import { Suspense } from 'react';
 import { Outlet, ScrollRestoration } from 'react-router';
 import { SessionProvider } from '@/session/SessionProvider';
 import { PageLoading } from './PageLoading';
+import { isToTop } from './to-top';
 
-/**
- * The root of every page (plan "Router"): the session around the whole app, the scroll position
- * restored when people go Back or Forward, and the page of the current address.
- */
+/** Scroll is kept per page, so a query change stays put; a `TO_TOP` link (the logo) opens at the top. */
 export function RootLayout() {
   return (
     <SessionProvider>
-      <ScrollRestoration />
+      <ScrollRestoration
+        getKey={(location) => (isToTop(location.state) ? location.key : location.pathname)}
+      />
       <Suspense fallback={<PageLoading />}>
         <Outlet />
       </Suspense>

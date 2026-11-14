@@ -63,16 +63,22 @@ func TestUpdate_AllocatedBudgetIsReadOnly_FR031(t *testing.T) {
 	changedBudget.Budget = &money.Input{Amount: "1300000.00", Currency: "USD"}
 	noBudget := updateOf(f.stored(t, created.ID))
 	noBudget.Budget = nil
+	otherCurrency := updateOf(f.stored(t, created.ID))
+	eur := "EUR"
+	otherCurrency.Currency = &eur
+	otherCurrency.Budget = &money.Input{Amount: "1200000.00", Currency: "EUR"}
 	sameBudget := updateOf(f.stored(t, created.ID))
 	sameBudget.Description = "Spring campaign included."
 
 	_, errChanged := f.service.Update(t.Context(), priya, created.ID, changedBudget)
 	_, errCleared := f.service.Update(t.Context(), priya, created.ID, noBudget)
+	_, errCurrency := f.service.Update(t.Context(), priya, created.ID, otherCurrency)
 	saved, errSame := f.service.Update(t.Context(), priya, created.ID, sameBudget)
 
 	refusal := errs.NotAllowed("Allocated from 'FY2026 Global marketing budget' — ask Carlos Mendes to change it.")
 	assertError(t, errChanged, refusal)
 	assertError(t, errCleared, refusal)
+	assertError(t, errCurrency, refusal)
 	if errSame != nil || saved.Description != "Spring campaign included." || saved.Budget == nil ||
 		saved.Budget.Amount.String() != "1200000.00" || saved.Version != 2 {
 		t.Errorf("same budget: %+v, %v; want the description saved, budget 1,200,000.00, version 2", saved, errSame)

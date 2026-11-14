@@ -102,6 +102,7 @@ type Row struct {
 	ActivityID   string         `json:"activityId,omitempty"`
 	Depth        int            `json:"depth"`
 	Name         string         `json:"name"`
+	Version      int            `json:"version,omitempty"`
 	Role         string         `json:"role"`
 	SearchHit    *SearchHit     `json:"searchHit,omitempty"`
 	Strategic    *bool          `json:"strategic,omitempty"`
@@ -197,6 +198,7 @@ type Result struct {
 	Count           Count     `json:"count"`
 	Totals          Totals    `json:"totals"`
 	LeftOut         []LeftOut `json:"leftOut"`
+	CanExport       bool      `json:"canExport"`
 }
 
 type Option struct {

@@ -1,9 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert, Download, LoaderCircle } from 'lucide-react';
+import { Download, LoaderCircle } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
+import { FieldShell } from '@/ui/FieldShell/FieldShell';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
@@ -168,10 +170,9 @@ export function ImportDialog({ onClose }: ImportDialogProps) {
       onSubmit={submit}
     >
       {failure && (
-        <p className={styles.failure} role="alert">
-          <CircleAlert aria-hidden="true" />
+        <InlineAlert tone="danger" role="alert">
           {failure}
-        </p>
+        </InlineAlert>
       )}
       {step.kind === 'choose' ? (
         <div className={styles.step}>
@@ -199,34 +200,28 @@ export function ImportDialog({ onClose }: ImportDialogProps) {
               </Button>
             </div>
           </div>
-          <div className={styles.field}>
-            <label htmlFor={inputId} className={styles.fieldLabel}>
-              GSAP extract file <span className={styles.marking}>Required</span>
-            </label>
-            <input
-              ref={input}
-              id={inputId}
-              name="file"
-              type="file"
-              accept=".csv,text/csv"
-              className={styles.file}
-              aria-invalid={fileError ? true : undefined}
-              aria-describedby={fileError ? `${inputId}-error` : undefined}
-              onChange={(event) => {
-                const chosen = event.target.files?.[0] ?? null;
-                form.setValue('file', chosen);
-                if (chosen) {
-                  checkFile();
-                }
-              }}
-            />
-            {fileError && (
-              <p id={`${inputId}-error`} className={styles.error}>
-                <CircleAlert aria-hidden="true" />
-                {fileError}
-              </p>
+          <FieldShell id={inputId} label="GSAP extract file" marking="Required" error={fileError}>
+            {(describedBy, required) => (
+              <input
+                ref={input}
+                id={inputId}
+                name="file"
+                type="file"
+                accept=".csv,text/csv"
+                className={styles.file}
+                aria-required={required}
+                aria-invalid={fileError ? true : undefined}
+                aria-describedby={describedBy}
+                onChange={(event) => {
+                  const chosen = event.target.files?.[0] ?? null;
+                  form.setValue('file', chosen);
+                  if (chosen) {
+                    checkFile();
+                  }
+                }}
+              />
             )}
-          </div>
+          </FieldShell>
           {check.isPending && file && (
             <p className={styles.checking} role="status">
               <LoaderCircle aria-hidden="true" className={styles.spinner} />

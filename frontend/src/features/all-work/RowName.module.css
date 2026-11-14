@@ -1,46 +1,9 @@
-/*
- * A row's name on one line (UI audit AW-04): the expand button, the level tag, the name and its
- * chips never wrap under each other, so every row is 40 px high; a long name ends with an ellipsis
- * and shows in full in a tip. A search excerpt or a note adds a second, smaller line.
- */
+/* One line per row, so every row is 40 px high; a long name ends with an ellipsis (full in a tip). */
 .name {
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
   min-width: 0;
-}
-
-.toggle,
-.toggleSpace {
-  flex: none;
-  width: 24px;
-  height: 24px;
-}
-
-.toggle {
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-2);
-  background: transparent;
-  color: var(--ink-2);
-  cursor: pointer;
-}
-
-.toggle:hover {
-  background: var(--hover);
-  color: var(--ink);
-}
-
-.toggle:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-.toggle svg {
-  width: 16px;
-  height: 16px;
 }
 
 .text {
@@ -65,10 +28,6 @@
   flex: none;
 }
 
-/*
- * The name keeps its full width up to 320 px, so the column is as wide as the names need; longer
- * names end with an ellipsis (the full name is in the tip).
- */
 .line > .link {
   /* A 24 px target (WCAG 2.2 SC 2.5.8): the name sits next to its toggle and tags in a row. */
   display: inline-block;
@@ -77,7 +36,7 @@
   overflow: hidden;
   line-height: 24px;
   color: var(--link);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-regular);
   text-decoration: none;
   text-overflow: ellipsis;
 }
@@ -121,7 +80,11 @@
   white-space: nowrap;
 }
 
-/* A plan's year after its name (016 FR-034). */
+.line > .planLink {
+  font-weight: var(--weight-bold);
+}
+
+.level,
 .year {
   color: var(--ink-2);
   font-size: var(--text-xs);

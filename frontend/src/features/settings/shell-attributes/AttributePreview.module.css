@@ -35,15 +35,10 @@
 
 .works {
   color: var(--status-positive-text);
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .cleared {
   margin: var(--space-1) 0 0;
   padding-left: var(--space-5);
-}
-
-.failure {
-  color: var(--status-problem-text);
-  font-size: var(--text-sm);
 }

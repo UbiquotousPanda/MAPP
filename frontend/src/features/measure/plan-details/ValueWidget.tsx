@@ -1,0 +1,118 @@
+import { toCents } from '@/format/decimal';
+import { useFormatters } from '@/format/useFormatters';
+import { BarList } from '@/ui/BarList/BarList';
+import type { BarListItem } from '@/ui/BarList/BarList';
+import { PeriodSwitch, ReportWidget } from '../shared';
+import type { ReportAddress, ReportTableData } from '../shared';
+import { allWorkLink } from './allWorkLink';
+import type { PlanDetailsValue, PlanDetailsWidget } from './api';
+import {
+  countsInEachText,
+  doesNotApplyText,
+  RECORDS,
+  shortTitle,
+  tipOf,
+} from './plan-details-text';
+import type { Level } from './plan-details-text';
+import styles from './PlanDetails.module.css';
+
+const SPECIAL = ['none', 'doesNotApply', 'noDates', 'outsideYear'];
+const CHART_VALUES = 10;
+
+interface ValueWidgetProps {
+  widget: PlanDetailsWidget;
+  level: Level;
+  address: ReportAddress;
+  attributeId?: string;
+  currency: string;
+}
+
+type Money = (value: PlanDetailsValue['plannedCost']) => string;
+
+/** Records or planned cost per value: the ten largest drawn with Other, every value in the table. */
+export function ValueWidget({ widget, level, address, attributeId, currency }: ValueWidgetProps) {
+  const { money } = useFormatters();
+  const href = (v: PlanDetailsValue) =>
+    v.linkable && widget.filterParam
+      ? allWorkLink(address, widget.filterParam, v.key, attributeId)
+      : undefined;
+  const note = noteOf(widget, level);
+  const title = shortTitle(widget, level);
+  const periods = widget.key === 'startPeriodCount';
+  const card = (
+    <ReportWidget
+      report="planData"
+      widget={widget.key}
+      title={title}
+      tip={tipOf(widget, level)}
+      note={note === '' ? undefined : note}
+      chart={<BarList label={widget.title} items={barsOf(widget, money, href)} />}
+      table={tableOf(widget, RECORDS[level].many, currency, money)}
+      controls={periods ? <PeriodSwitch /> : undefined}
+    />
+  );
+  return periods ? <div className={styles.fullRow}>{card}</div> : card;
+}
+
+/** The ten largest values, Other, then Not filled in, Does not apply and the date values. */
+function barsOf(
+  widget: PlanDetailsWidget,
+  money: Money,
+  href: (v: PlanDetailsValue) => string | undefined,
+): BarListItem[] {
+  const cost = widget.measure === 'plannedCost';
+  const bar = (v: PlanDetailsValue): BarListItem => ({
+    key: v.key,
+    label: v.label,
+    size: cost ? Number(toCents(v.plannedCost?.amount ?? '0')) : v.count,
+    value: cost ? money(v.plannedCost) : v.count.toLocaleString('en-GB'),
+    href: href(v),
+    colour: SPECIAL.includes(v.key) ? 'var(--chart-budget)' : undefined,
+  });
+  const regular = widget.values.filter((v) => !SPECIAL.includes(v.key));
+  const drawn = widget.other ? regular.slice(0, CHART_VALUES) : regular;
+  return [
+    ...drawn.map(bar),
+    ...(widget.other ? [bar(widget.other)] : []),
+    ...widget.values.filter((v) => SPECIAL.includes(v.key)).map(bar),
+  ];
+}
+
+function tableOf(
+  widget: PlanDetailsWidget,
+  records: string,
+  currency: string,
+  money: Money,
+): ReportTableData {
+  const cost = widget.measure === 'plannedCost';
+  return {
+    columns: [
+      { label: 'Value' },
+      { label: records, numeric: true },
+      ...(cost ? [{ label: `Planned cost (${currency})`, numeric: true }] : []),
+    ],
+    rows: widget.values.map((v) => ({
+      key: v.key,
+      cells: [v.label, v.count.toLocaleString('en-GB'), ...(cost ? [money(v.plannedCost)] : [])],
+    })),
+    total: [
+      widget.total.count.toLocaleString('en-GB'),
+      ...(cost ? [money(widget.total.plannedCost)] : []),
+    ],
+  };
+}
+
+/** The per cent filled in and the records left out of it go on the filled-in widget; the others draw them as bars. */
+function noteOf(widget: PlanDetailsWidget, level: Level): string {
+  const filledIn = widget.measure === 'filledIn';
+  const doesNotApply = widget.values.find((v) => v.key === 'doesNotApply')?.count ?? 0;
+  const percent =
+    widget.filledInPercent === null ? undefined : `${String(widget.filledInPercent)} % filled in`;
+  return [
+    filledIn && percent,
+    widget.countsInEach && countsInEachText(level),
+    filledIn && doesNotApplyText(doesNotApply, level),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}

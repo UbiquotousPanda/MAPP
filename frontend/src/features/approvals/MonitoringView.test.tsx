@@ -6,6 +6,7 @@ import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { ALEX, monitoringOf } from '@/testing/fixtures/approvals';
 import { reply } from '@/testing/replies';
+import { expectNoAxeViolations } from '@/testing/axe';
 import { MonitoringView } from './MonitoringView';
 
 const RUN = 'POST /api/v1/approvals/escalations/run';
@@ -64,6 +65,7 @@ describe('MonitoringView (feature 017, US6)', () => {
 
     const overdue = screen.getByRole('region', { name: 'Overdue' });
     expect(within(overdue).getByRole('row', { name: /Launch film/ })).toHaveTextContent('Overdue');
+    await expectNoAxeViolations();
     await user.click(within(overdue).getByRole('button', { name: 'Launch film' }));
     expect(onOpen).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'A-1042', kind: 'activity' }),

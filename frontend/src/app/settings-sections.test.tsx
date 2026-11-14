@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ROLES } from '@/testing/fixtures/access';
 import { CHINA_WORKFLOW, workflowOf } from '@/testing/fixtures/approval-workflows';
 import { mockApi } from '@/testing/mock-api';
+import { CATEGORIES } from '@/testing/fixtures/activity-categories';
 import { FIELD_HELP_PAGE } from '@/testing/fixtures/field-help';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
@@ -88,6 +89,7 @@ describe('SettingsPage, the cards of other features (FR-001)', () => {
       }),
       reply('GET /api/v1/roles', { body: { items: ROLES, total: ROLES.length } }),
       reply('GET /api/v1/field-help', { body: FIELD_HELP_PAGE }),
+      reply('GET /api/v1/settings/activity-categories', { body: CATEGORIES }),
     ]);
     renderWithProviders(<SettingsPage sections={await loadSettingsSections()} />, {
       route: '/settings',
@@ -104,12 +106,15 @@ describe('SettingsPage, the cards of other features (FR-001)', () => {
       'Shell attributes',
       'Currencies',
       'Finance budget items',
+      'Activity categories',
       'Field help',
       'People',
       'Teams',
       'Approval workflows',
       'Purchase requests',
       'Overspend control',
+      'Performance data',
+      'Attribution',
       'Roles and access',
     ]);
     const people = card('People');

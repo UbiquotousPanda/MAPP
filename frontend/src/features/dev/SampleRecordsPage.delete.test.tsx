@@ -57,7 +57,7 @@ describe('SampleRecordsPage: delete, Undo and restore', () => {
     expect(api.requests).toContainEqual({
       method: 'DELETE',
       path: '/api/v1/sample-folders/SF-1001',
-      search: '',
+      search: expect.stringMatching(/^\?version=[1-9]\d*$/),
       body: undefined,
     });
   });

@@ -1,10 +1,11 @@
 import type { UseQueryResult } from '@tanstack/react-query';
-import { CircleAlert, TriangleAlert } from 'lucide-react';
 import { useId } from 'react';
 import type { ReactNode } from 'react';
 import { ApiError } from '@/api/errors';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
+import { InlineError } from '@/ui/InlineError/InlineError';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { useFormatters } from '@/format/useFormatters';
@@ -23,24 +24,17 @@ import {
 
 export interface DestinationsLoadProps {
   query: UseQueryResult<DestinationList>;
-  /** The dialog's content once the destinations are there. */
   children: (list: DestinationList) => ReactNode;
 }
 
-/**
- * The move and copy dialogs' states (plan "States"): grey lines while the destinations load, the
- * error with **Try again**, or — when the record is gone — the API's message alone (Cancel closes).
- */
+// When the record is gone, the API's message alone: Cancel closes the dialog.
 export function DestinationsLoad({ query, children }: DestinationsLoadProps) {
   if (query.data) {
     return children(query.data);
   }
   if (query.isError) {
     return query.error instanceof ApiError && query.error.kind === 'notFound' ? (
-      <p role="alert" className={styles.error}>
-        <CircleAlert aria-hidden="true" />
-        {query.error.message}
-      </p>
+      <InlineError>{query.error.message}</InlineError>
     ) : (
       <ErrorState error={query.error} onRetry={() => void query.refetch()} />
     );
@@ -49,21 +43,14 @@ export function DestinationsLoad({ query, children }: DestinationsLoadProps) {
 }
 
 export interface DestinationChoiceProps {
-  /** Names the group ("Copy into"); `legendHidden` keeps it for screen readers only. */
   legend: string;
   legendHidden?: boolean;
   items: Destination[];
-  /** The chosen destination's id; "" for none. */
   value: string;
   onChange: (id: string) => void;
   error?: string;
 }
 
-/**
- * The destinations as radios (FR-023, FR-026): each plan with its status, or each campaign with
- * its dates, "Current" on the record's own parent; one that can't be chosen stays listed with its
- * reason and the fix under it.
- */
 export function DestinationChoice({
   legend,
   legendHidden = false,
@@ -72,78 +59,53 @@ export function DestinationChoice({
   onChange,
   error,
 }: DestinationChoiceProps) {
-  const groupId = useId();
+  const name = useId();
   const { dateRange } = useFormatters();
-  const errorId = `${groupId}-error`;
-
   return (
-    <fieldset className={styles.group} aria-describedby={error ? errorId : undefined}>
-      <legend className={legendHidden ? 'visually-hidden' : styles.legend}>{legend}</legend>
-      <ul className={styles.list}>
-        {items.map((item, index) => {
-          const inputId = `${groupId}-${index}`;
-          const detailsId = `${inputId}-details`;
-          const reasonId = `${inputId}-reason`;
-          const status = item.planStatus ? STATUS[item.planStatus] : null;
-          return (
-            <li key={item.id} className={styles.option}>
-              <input
-                id={inputId}
-                type="radio"
-                name={groupId}
-                value={item.id}
-                checked={value === item.id}
-                disabled={!item.available}
-                aria-describedby={item.available ? detailsId : `${detailsId} ${reasonId}`}
-                onChange={() => onChange(item.id)}
-              />
-              <div className={styles.text}>
-                <label htmlFor={inputId} className={styles.name}>
-                  {item.name}
-                </label>
-                <span id={detailsId} className={styles.details}>
-                  {item.current && (
-                    <>
-                      <StatusChip tone="neutral">{CURRENT}</StatusChip>
-                      {/* Screen readers hear "Current Published", not "CurrentPublished". */}{' '}
-                    </>
-                  )}
-                  {status ? (
-                    <StatusChip tone={status.tone}>{status.word}</StatusChip>
-                  ) : (
-                    <span>{dateRange(item.startDate, item.endDate)}</span>
-                  )}
-                </span>
-                {!item.available && <LockedNote id={reasonId}>{item.unavailableReason}</LockedNote>}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-      {error && (
-        <p id={errorId} className={styles.error}>
-          <CircleAlert aria-hidden="true" />
-          {error}
-        </p>
-      )}
-    </fieldset>
+    <RadioGroup
+      label={legend}
+      labelHidden={legendHidden}
+      name={name}
+      layout="list"
+      options={items.map((item) => {
+        const status = item.planStatus ? STATUS[item.planStatus] : null;
+        return {
+          value: item.id,
+          label: item.name,
+          hint: (
+            <>
+              {item.current && (
+                <>
+                  <StatusChip tone="neutral">{CURRENT}</StatusChip>
+                  {/* Screen readers hear "Current Published", not "CurrentPublished". */}{' '}
+                </>
+              )}
+              {status ? (
+                <StatusChip tone={status.tone}>{status.word}</StatusChip>
+              ) : (
+                <span>{dateRange(item.startDate, item.endDate)}</span>
+              )}
+            </>
+          ),
+          disabledReason: item.available ? undefined : (item.unavailableReason ?? undefined),
+        };
+      })}
+      value={value}
+      onChange={onChange}
+      error={error}
+    />
   );
 }
 
-/**
- * What choosing a destination means (FR-024, FR-026): the budget it would over-allocate and, for a
- * campaign going to a plan with another model or business unit, the consequences. Announced when
- * the choice changes.
- */
+/** What choosing a destination means, announced when the choice changes. */
 export function DestinationNotes({ destination }: { destination: Destination | undefined }) {
   const { money } = useFormatters();
   return (
     <div aria-live="polite" className={styles.notes}>
       {destination?.overAllocatedBy && (
-        <p className={styles.warning}>
-          <TriangleAlert aria-hidden="true" />
+        <InlineAlert tone="warning">
           {overAllocateWarning(destination.name, money(destination.overAllocatedBy))}
-        </p>
+        </InlineAlert>
       )}
       {destination?.consequences && (
         <Consequences plan={destination.name} consequences={destination.consequences} />

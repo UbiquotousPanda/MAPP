@@ -4,6 +4,7 @@ import type { HttpHandler } from 'msw';
 import { mockApi } from '@/testing/mock-api';
 import { closestTo } from '@/testing/dom';
 import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import { FORM_ANSWERS, plan, planDefaults } from '@/testing/fixtures/plans';
 import { reply } from '@/testing/replies';
@@ -30,7 +31,9 @@ describe('PlanCreatePage (US1)', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'New plan' })).toBeInTheDocument();
     expect(document.title).toBe('New plan · SP&A One');
     expect(await screen.findByRole('button', { name: 'Remove 2026' })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /Goal stage/ })).toHaveValue('inq');
+    expect(screen.getByRole('combobox', { name: /Goal stage/ })).toHaveTextContent(
+      'INQ (inquiries)',
+    );
   });
 
   it('creates the plan, opens its page and says what to do next (US1#2)', async () => {
@@ -45,7 +48,7 @@ describe('PlanCreatePage (US1)', () => {
       await screen.findByRole('textbox', { name: /Plan name/ }),
       'FY2026 Lubricants Test',
     );
-    await user.selectOptions(screen.getByRole('combobox', { name: /Model/ }), 'MOD-1001');
+    await choose(user, screen.getByRole('combobox', { name: /Model/ }), 'Lubricants 1.0');
     await user.type(screen.getByRole('textbox', { name: /Plan budget/ }), '1,200,000');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 

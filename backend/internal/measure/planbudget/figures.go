@@ -1,0 +1,201 @@
+package planbudget
+
+import (
+	"slices"
+	"strconv"
+
+	"mapp/internal/allwork"
+	"mapp/internal/financials"
+	"mapp/internal/measure"
+	"mapp/internal/measure/ranking"
+	"mapp/internal/platform/money"
+	"mapp/internal/rollup"
+)
+
+// records indexes one year's records in view with what the report adds up (data-model).
+type records struct {
+	*ranking.Index
+	year     int
+	financed map[string]bool
+	spend    map[string]map[string]financials.Facts
+	planned  map[string]allwork.Months
+	display  money.Display
+	memo     map[string]sums
+}
+
+type sums struct {
+	budget                     *money.Amount
+	planned, committed, actual money.Amount
+	financed                   bool
+	finBudget                  *money.Amount // the budget and planned cost of plans whose finance the person sees
+	finPlanned                 money.Amount
+	id                         string   // the ranked entry these sums are of
+	kept                       []string // the ranked entries a group or list total adds up
+	split                      bool
+}
+
+func newRecords(sc measure.Scope) *records {
+	r := &records{Index: ranking.NewIndex(sc), year: sc.Year, financed: map[string]bool{}, memo: map[string]sums{}}
+	for _, id := range sc.Matched.Plans {
+		r.financed[id] = sc.Choices.SeesFinance && (sc.Choices.FinancePlans == nil || slices.Contains(sc.Choices.FinancePlans, id))
+	}
+	return r
+}
+
+func (r *records) financedLineItems() []string {
+	var ids []string
+	for _, id := range r.Matched().LineItems {
+		if r.financed[r.Node(id).PlanID] {
+			ids = append(ids, id)
+		}
+	}
+	return ids
+}
+
+// sumsOf adds up a record in view: its own budget, and the planned cost, committed and actual of what is in view below.
+func (r *records) sumsOf(id string) sums {
+	if s, done := r.memo[id]; done {
+		return s
+	}
+	s := r.addUp(id)
+	if r.financed[r.Node(id).PlanID] {
+		s.finBudget, s.finPlanned = s.budget, s.planned
+	}
+	r.memo[id] = s
+	return s
+}
+
+func (r *records) addUp(id string) sums {
+	n := r.Node(id)
+	var s sums
+	if n.Level == allwork.LevelLineItem {
+		s.planned = orZero(n.PlannedCost)
+		if r.financed[n.PlanID] {
+			s.committed, s.actual, _ = r.spendOf(id)
+			s.financed = true
+		}
+		return s
+	}
+	if n.Level == allwork.LevelActivity {
+		s.planned = orZero(n.PlannedCost)
+	} else {
+		s.budget = n.Budget
+	}
+	for _, child := range r.ChildrenInView(id) {
+		c := r.sumsOf(child)
+		if n.Level != allwork.LevelActivity {
+			s.planned = s.planned.Add(c.planned)
+		}
+		s.committed, s.actual = s.committed.Add(c.committed), s.actual.Add(c.actual)
+		s.financed = s.financed || c.financed
+	}
+	return s
+}
+
+// spendOf is a line item's committed and actual posted in the report's year, and its actual of other years.
+func (r *records) spendOf(lineItemID string) (committed, actual, otherYears money.Amount) {
+	prefix := strconv.Itoa(r.year) + "-"
+	for month, f := range r.spend[lineItemID] {
+		if len(month) >= len(prefix) && month[:len(prefix)] == prefix {
+			committed, actual = committed.Add(f.Committed), actual.Add(f.Paid)
+		} else {
+			otherYears = otherYears.Add(f.Paid)
+		}
+	}
+	return committed, actual, otherYears
+}
+
+// counted are the containers whose budget counts, once per branch (040-C2, research R3).
+func (r *records) counted() []allwork.Node {
+	var out []allwork.Node
+	for _, id := range r.Matched().Plans {
+		out = append(out, r.budgetBranch(id, r.InView)...)
+	}
+	return out
+}
+
+// budgetOf is the budget once per branch of the records in, and that of the plans whose finance the person sees.
+func (r *records) budgetOf(in func(string) bool) (budget, finBudget *money.Amount) {
+	for _, plan := range r.Matched().Plans {
+		for _, n := range r.budgetBranch(plan, in) {
+			budget = addAmount(budget, n.Budget)
+			if r.financed[plan] {
+				finBudget = addAmount(finBudget, n.Budget)
+			}
+		}
+	}
+	return budget, finBudget
+}
+
+func (r *records) budgetBranch(id string, in func(string) bool) []allwork.Node {
+	n := r.Node(id)
+	if n.Level == allwork.LevelInitiative || (n.Budget != nil && r.whole(id, in)) {
+		if n.Budget == nil {
+			return nil
+		}
+		return []allwork.Node{n}
+	}
+	var out []allwork.Node
+	for _, child := range r.containersBelow(id) {
+		if in(child) {
+			out = append(out, r.budgetBranch(child, in)...)
+		}
+	}
+	return out
+}
+
+// whole holds when a container and every container below it are in.
+func (r *records) whole(id string, in func(string) bool) bool {
+	if !in(id) {
+		return false
+	}
+	return !slices.ContainsFunc(r.containersBelow(id), func(child string) bool { return !r.whole(child, in) })
+}
+
+func (r *records) containersBelow(id string) []string {
+	return slices.DeleteFunc(r.Below(id), func(child string) bool {
+		level := r.Node(child).Level
+		return level != allwork.LevelCampaign && level != allwork.LevelInitiative
+	})
+}
+
+// figures converts sums once to the display currency, with 036's rules for left to plan and over budget.
+func (r *records) figures(s sums) Figures {
+	d := r.display
+	planned := money.USD(s.planned)
+	budget := usdOf(s.budget)
+	f := Figures{Budget: d.Optional(budget), Planned: d.Optional(&planned),
+		LeftToPlan: d.Optional(rollup.LeftToPlan(budget, &planned)), OverAllocated: rollup.OverBudget(&planned, budget)}
+	if s.financed {
+		committed, actual := money.USD(s.committed), money.USD(s.actual)
+		f.Committed, f.Actual = d.Optional(&committed), d.Optional(&actual)
+		if s.finBudget != nil {
+			unspent := money.USD(s.finBudget.Sub(s.actual))
+			f.Unspent = d.Optional(&unspent)
+		}
+	}
+	return f
+}
+
+func addAmount(a, b *money.Amount) *money.Amount {
+	if b == nil {
+		return a
+	}
+	sum := orZero(a).Add(*b)
+	return &sum
+}
+
+func usdOf(a *money.Amount) *money.Money {
+	if a == nil {
+		return nil
+	}
+	m := money.USD(*a)
+	return &m
+}
+
+func orZero(a *money.Amount) money.Amount {
+	if a == nil {
+		return money.Amount{}
+	}
+	return *a
+}

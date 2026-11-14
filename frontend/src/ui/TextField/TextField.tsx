@@ -1,9 +1,10 @@
-import { CircleAlert, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { cx } from '../cx';
 import { Marking } from '../FieldShell/FieldShell';
 import type { FieldMarking } from '../FieldShell/FieldShell';
 import { InfoTip } from '../InfoTip/InfoTip';
+import { InlineError } from '../InlineError/InlineError';
 import { Tooltip } from '../Tooltip/Tooltip';
 import styles from './TextField.module.css';
 
@@ -22,6 +23,8 @@ export interface TextFieldProps {
   tip?: string;
   /** Values the browser offers while typing, which can still be ignored (a <datalist>). */
   suggestions?: string[];
+  /** Shown, never typed: a value that changes elsewhere (an initiative's campaign). */
+  readOnly?: boolean;
 }
 
 // Screen readers hear the marking, the hint and the problem with the field. A password field also
@@ -39,6 +42,7 @@ export function TextField({
   autoComplete,
   tip,
   suggestions,
+  readOnly,
 }: TextFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
@@ -74,10 +78,16 @@ export function TextField({
           maxLength={maxLength}
           autoComplete={autoComplete}
           list={suggestions ? suggestionsId : undefined}
+          readOnly={readOnly}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy || undefined}
           aria-required={marking === 'Required' || undefined}
-          className={cx(styles.input, isPassword && styles.withEye, error && styles.invalid)}
+          className={cx(
+            styles.input,
+            isPassword && styles.withEye,
+            error && styles.invalid,
+            readOnly && styles.readOnly,
+          )}
         />
         {isPassword && (
           <ShowPasswordButton
@@ -94,10 +104,9 @@ export function TextField({
         )}
       </div>
       {error && (
-        <p id={errorId} className={styles.error}>
-          <CircleAlert />
+        <InlineError id={errorId} quiet>
           {error}
-        </p>
+        </InlineError>
       )}
     </div>
   );

@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useAttributeForm } from '@/features/settings';
 import type { AttributeForm } from '@/ui/ShellAttributeFields/rules';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import { recordHref } from '@/ui/record-links';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { LineItemForm } from './LineItemForm';
@@ -23,7 +25,7 @@ const LOADING_TITLE = 'Edit line item';
 /** Edits a line item (?field= focuses a field); no change restarts the activity's approval (D-322). */
 export function LineItemEditPage() {
   const { lineItemId = '' } = useParams();
-  const [search] = useSearchParams();
+  const [search] = useAddressParams();
   const details = useLineItem(lineItemId);
   const activityId = details.data?.activity.id ?? '';
   const options = useLineItemFormOptions(activityId, Boolean(activityId));
@@ -69,7 +71,7 @@ function EditForm({ details, options, attributeForm, focusField }: EditFormProps
   const update = useUpdateLineItem(lineItem.id);
   const [initial] = useState(() => editFormState(lineItem));
   // The edit-form rule: only a conflict replaces the version the person started from.
-  const [version, setVersion] = useState(lineItem.version);
+  const { version, loadLatest } = useEditedRecord({ version: lineItem.version });
   const href = recordHref('lineItem', lineItem.id);
 
   return (
@@ -90,8 +92,7 @@ function EditForm({ details, options, attributeForm, focusField }: EditFormProps
         return () => navigate(href);
       }}
       onConflict={async () => {
-        const latest = await fetchLatest(lineItem.id);
-        setVersion(latest.lineItem.version);
+        await loadLatest(() => fetchLatest(lineItem.id).then((latest) => latest.lineItem));
       }}
       onCancel={() => navigate(href)}
     />

@@ -4,13 +4,13 @@ import { useForm, useWatch } from 'react-hook-form';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormPanel } from '@/ui/FormPanel/FormPanel';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
 import { TextField } from '@/ui/TextField/TextField';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { useFormatters } from '@/format/useFormatters';
 import styles from '@/ui/settings-table.module.css';
-import { ReadOnlyField } from '../ReadOnlyField';
 import { saveFailureOf } from '../save-failure';
 import {
   fetchFinanceBudgetItem,
@@ -31,17 +31,11 @@ export interface FinanceBudgetItemFormProps {
   item?: FinanceBudgetItem;
   /** The budget year a new item starts with: the year shown on the page. */
   year: number;
-  /** The budget years that can be chosen. */
   years: number[];
   onClose: () => void;
 }
 
-/**
- * New finance budget item and Edit finance budget item (FR-014) in a side panel: the budget year
- * (locked once saved), the budget name with the year's budget names offered while typing, the
- * item name and the code. Items with the same year and budget name form one finance budget, so a
- * new budget name makes a new budget. Every problem shows at once; a conflict keeps what was typed.
- */
+/** Items with the same year and budget name form one finance budget; a new name makes a new one. */
 export function FinanceBudgetItemForm({ item, year, years, onClose }: FinanceBudgetItemFormProps) {
   const { show } = useToast();
   const { dateFormat } = useFormatters();
@@ -118,9 +112,7 @@ export function FinanceBudgetItemForm({ item, year, years, onClose }: FinanceBud
     >
       <div className={styles.formFields}>
         {item ? (
-          <ReadOnlyField label="Budget year" value={String(item.year)}>
-            {yearLock(item)}
-          </ReadOnlyField>
+          <ReadOnlyField label="Budget year" value={item.year} lock={yearLock(item)} />
         ) : (
           <FormField
             control={form.control}
@@ -146,7 +138,7 @@ export function FinanceBudgetItemForm({ item, year, years, onClose }: FinanceBud
             <TextField
               label="Budget name"
               marking="Required"
-              hint="Items with the same year and budget name form one finance budget."
+              tip="Items with the same year and budget name form one finance budget."
               maxLength={120}
               suggestions={budgetNames}
               {...field}

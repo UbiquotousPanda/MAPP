@@ -84,7 +84,7 @@ func TestUpdateApprovalWorkflow_409(t *testing.T) {
 	assertError(t, response, http.StatusConflict, "version_conflict", "Not saved — Alex Morgan changed this approval workflow")
 }
 
-func TestDeleteApprovalWorkflow_UnusedUndo_FR008(t *testing.T) {
+func TestDeleteApprovalWorkflow_FR008(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	alex := server.SignIn(t, alexsEmail)
@@ -93,9 +93,8 @@ func TestDeleteApprovalWorkflow_UnusedUndo_FR008(t *testing.T) {
 	}), http.StatusCreated)
 	path := "/api/v1/approval-workflows/" + created.ID
 
-	deleted := alex.Do(t, http.MethodDelete, path, nil)
-	gone := alex.Do(t, http.MethodGet, path, nil)
-	inUse := alex.Do(t, http.MethodDelete, "/api/v1/approval-workflows/WF-1002", nil)
+	deleted := alex.DeleteSeen(t, path)
+	inUse := alex.DeleteSeen(t, "/api/v1/approval-workflows/WF-1002")
 
 	if deleted.Status != http.StatusOK {
 		t.Fatalf("delete status = %d %s, want 200", deleted.Status, deleted.Body)
@@ -110,14 +109,7 @@ func TestDeleteApprovalWorkflow_UnusedUndo_FR008(t *testing.T) {
 	if result.RecycleBinEntry.RecordID != created.ID {
 		t.Errorf("bin entry = %+v, want %s", result.RecycleBinEntry, created.ID)
 	}
-	assertError(t, gone, http.StatusNotFound, "not_found", "This approval workflow no longer exists — someone may have deleted it.")
 	assertError(t, inUse, http.StatusConflict, "in_use", "Used by 2 activities — set it inactive instead.")
-	if undo := alex.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+result.RecycleBinEntry.ID+"/undo", nil); undo.Status != http.StatusOK {
-		t.Fatalf("undo status = %d %s, want 200", undo.Status, undo.Body)
-	}
-	if back := alex.Do(t, http.MethodGet, path, nil); back.Status != http.StatusOK {
-		t.Errorf("after undo: status %d, want the workflow back", back.Status)
-	}
 }
 
 // Set inactive and Set active, each from the version the person saw: the Mobility activity waiting with

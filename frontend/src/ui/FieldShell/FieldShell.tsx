@@ -1,10 +1,10 @@
-import { CircleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cx } from '../cx';
 import { InfoTip } from '../InfoTip/InfoTip';
+import { InlineError } from '../InlineError/InlineError';
 import styles from './FieldShell.module.css';
 
-/** "Required" (to save) is a red asterisk after the label; the others are words next to it. */
+/** "Required" (to save) is a red asterisk after the label; other markings are a ◆ the legend explains. */
 export type FieldMarking = 'Required' | 'Needed to publish' | 'Needed to submit';
 
 export interface FieldFrameProps {
@@ -77,10 +77,11 @@ export function FieldShell({
         </div>
       )}
       {error && (
-        <p id={errorId} className={cx(styles.error, styles.full)}>
-          <CircleAlert />
-          {error}
-        </p>
+        <div className={styles.full}>
+          <InlineError id={errorId} quiet>
+            {error}
+          </InlineError>
+        </div>
       )}
     </>
   );
@@ -128,8 +129,9 @@ export function Marking({ id, marking }: { id: string; marking: FieldMarking | u
     );
   }
   return marking ? (
-    <span id={id} className={styles.marking}>
-      {marking}
+    <span id={id} className={styles.marking} title={marking} data-marking={marking}>
+      <span aria-hidden="true">◆</span>
+      <span className="visually-hidden">{marking}</span>
     </span>
   ) : null;
 }

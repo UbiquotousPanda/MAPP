@@ -7,6 +7,7 @@ import { ApiError, conflictMessage } from '@/api/errors';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { FormField } from '@/ui/FormField/FormField';
+import { InlineAlert } from '@/ui/InlineAlert/InlineAlert';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -16,6 +17,7 @@ import { CHECK_ON_SAVE } from '@/ui/useFormProblems';
 import { centsInput, moneyText } from '@/features/line-items';
 import { parseMoneyInput, toCents } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
+import { useDebounced } from '@/ui/useDebounced';
 import type { Activity } from './api';
 import { activityHref } from './activity-text';
 import { DestinationList } from './DestinationList';
@@ -27,7 +29,6 @@ import styles from './SplitActivityDialog.module.css';
 import { goalsStayText, REAPPROVAL, splitToast, splitTitle } from './split-text';
 import { SplitLineItems } from './SplitLineItems';
 import { SplitPreview } from './SplitPreview';
-import { useDebounced } from './useDebounced';
 
 /** How long the dialog waits after the last change before it asks for the preview. */
 const PREVIEW_DELAY_MS = 300;
@@ -144,14 +145,11 @@ export function SplitActivityDialog({ activity, onClose }: SplitActivityDialogPr
         <div className={styles.stack}>
           {failure && <FailureMessage failure={{ message: failure }} />}
           {shownProblems.length > 0 && (
-            <div role="alert" className={styles.problems}>
+            <InlineAlert tone="danger" role="alert">
               {shownProblems.map((message) => (
-                <p key={message}>
-                  <CircleAlert aria-hidden="true" />
-                  {message}
-                </p>
+                <p key={message}>{message}</p>
               ))}
-            </div>
+            </InlineAlert>
           )}
           <FormField
             control={form.control}

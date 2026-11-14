@@ -1,7 +1,5 @@
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
-import { cx } from '@/ui/cx';
-import { FieldShell } from '@/ui/FieldShell/FieldShell';
-import inputs from '@/ui/FieldShell/inputs.module.css';
+import { DateField } from '@/ui/DateField/DateField';
 import type { BulkField } from './bulk-types';
 
 export interface ValueDraft {
@@ -27,18 +25,12 @@ export function FieldValueInput({ field, draft, onChange }: FieldValueInputProps
   switch (field.kind) {
     case 'date':
       return (
-        <FieldShell id="value" label="Value">
-          {(describedBy) => (
-            <input
-              id="value"
-              type="date"
-              value={draft.date}
-              aria-describedby={describedBy}
-              className={cx(inputs.input)}
-              onChange={(event) => onChange({ ...draft, date: event.target.value })}
-            />
-          )}
-        </FieldShell>
+        <DateField
+          name="value"
+          label="Value"
+          value={draft.date}
+          onChange={(date) => onChange({ ...draft, date })}
+        />
       );
     case 'yesNo':
       return (

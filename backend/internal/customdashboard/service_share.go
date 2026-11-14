@@ -12,6 +12,7 @@ import (
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
+	"mapp/internal/sharing"
 )
 
 // Share sets the teams a dashboard is shared with: each must be one the owner belongs to now or one already
@@ -23,7 +24,7 @@ func (s *Service) Share(ctx context.Context, a actor.Actor, id string, in Sharin
 		if err != nil {
 			return err
 		}
-		teams := sortedIDs(in.TeamIDs)
+		teams := sharing.TeamIDs(in.TeamIDs)
 		if err = s.checkSharing(ctx, stored, teams, in.Version); err != nil {
 			return err
 		}
@@ -31,7 +32,7 @@ func (s *Service) Share(ctx context.Context, a actor.Actor, id string, in Sharin
 			return err
 		}
 		changed := stored
-		if !slices.Equal(stored.SharedWith, teams) {
+		if sharing.Changed(stored.SharedWith, teams) {
 			if changed, err = s.reshare(ctx, a, stored, teams); err != nil {
 				return err
 			}
@@ -51,7 +52,7 @@ func (s *Service) checkSharing(ctx context.Context, d Dashboard, teams []string,
 	switch {
 	case len(teams) > maxSharedTeams:
 		problems.Add(teamIDsField, msgTooManyTeams)
-	case slices.ContainsFunc(teams, func(t string) bool { return !slices.Contains(allowed, t) }):
+	case !sharing.Allowed(teams, allowed):
 		problems.Add(teamIDsField, msgShareOwnTeams)
 	}
 	if version == nil {
@@ -66,7 +67,7 @@ func (s *Service) shareable(ctx context.Context, d Dashboard) ([]string, error) 
 	if err != nil {
 		return nil, err
 	}
-	return sortedIDs(append(slices.Clone(mine), d.SharedWith...)), nil
+	return sharing.TeamIDs(append(slices.Clone(mine), d.SharedWith...)), nil
 }
 
 func (s *Service) reshare(ctx context.Context, a actor.Actor, stored Dashboard, teams []string) (Dashboard, error) {
@@ -186,15 +187,4 @@ func (s *Service) UsingDataset(ctx context.Context, a actor.Actor, datasetID str
 		return err
 	})
 	return refs, err
-}
-
-func sortedIDs(list []string) []string {
-	sorted := slices.Clone(orEmpty(list))
-	slices.SortFunc(sorted, func(a, b string) int {
-		if len(a) != len(b) {
-			return len(a) - len(b)
-		}
-		return strings.Compare(a, b)
-	})
-	return slices.Compact(sorted)
 }

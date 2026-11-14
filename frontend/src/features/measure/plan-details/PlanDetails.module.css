@@ -1,0 +1,125 @@
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  grid-column: 1 / -1;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: var(--space-4);
+}
+
+.widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* Months · Quarters and the switches leave a third of the row no room for the title. */
+.fullRow {
+  grid-column: 1 / -1;
+}
+
+.levelBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+
+/* The attributes' list beside the chosen one's widgets: one attribute on screen, not thirty stacked. */
+.attributes {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.attrNav {
+  position: sticky;
+  top: var(--space-4);
+  max-height: calc(100dvh - 2 * var(--space-16));
+  overflow-y: auto;
+  padding: var(--space-2) 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.attrNav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attrNavHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+}
+
+.attrItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--control-md);
+  padding: var(--space-1) var(--space-4);
+  border: 0;
+  border-left: 3px solid transparent;
+  background: none;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.attrItem:hover {
+  --ink-2: var(--ink);
+
+  background: var(--hover-on-card);
+}
+
+.attrFilled {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+}
+
+/* The chosen attribute's charts stay in sight while a long list is scrolled. */
+.attrWidgets {
+  position: sticky;
+  top: var(--space-4);
+}
+
+.attrCurrent,
+.attrCurrent:hover {
+  --ink-2: var(--ink);
+
+  border-left-color: var(--brand-yellow);
+  background: var(--hover-on-card);
+  font-weight: var(--weight-bold);
+}
+
+@media (width < 900px) {
+  .attributes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .attrNav,
+  .attrWidgets {
+    position: static;
+  }
+
+  .attrNav {
+    max-height: 240px;
+  }
+}

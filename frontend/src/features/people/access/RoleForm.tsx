@@ -14,15 +14,18 @@ import { FormFooter } from '@/ui/FormFooter/FormFooter';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { FormSection } from '@/ui/FormSection/FormSection';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
 import { useUnsavedChanges } from '@/ui/useUnsavedChanges';
 import type { DateFormat } from '@/format/intl';
 import { useFormatters } from '@/format/useFormatters';
-import { useCreateRole, useUpdateRole } from './api';
+import { useCreateRole, useRole, useUpdateRole } from './api';
 import type { PermissionCatalogue, PermissionKey, Role } from './api';
 import { ADMINISTRATOR_LOCK, SCOPE_WORDS } from './access-words';
 import { rolePath, rolesTabPath } from './access-paths';
@@ -53,9 +56,8 @@ export function RoleForm({ role, start, catalogue }: RoleFormProps) {
   });
   const { problems, onInvalid, showServerProblems } = useFormProblems(form, FIELDS);
   // After a conflict, Save again sends the version with the other person's change (D-203).
-  const [followLatest, setFollowLatest] = useState(false);
-  const [startVersion] = useState(role?.version ?? 0);
-  const version = followLatest ? (role?.version ?? 0) : startVersion;
+  const { version, loadLatest } = useEditedRecord({ version: role?.version ?? 0 });
+  const latestRole = useRole(role?.id ?? '');
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   // Where to go once saved: the guard lets the page go without asking.
@@ -82,9 +84,11 @@ export function RoleForm({ role, start, catalogue }: RoleFormProps) {
       setLeaveTo(rolePath(result.id));
     } catch (error) {
       const result = roleFailure(error, dateFormat);
+      if (result.conflict) {
+        await loadLatest(() => latestRole.refetch().then((answer) => answer.data));
+      }
       showServerProblems(result.problems);
       setFailure(result.failure);
-      setFollowLatest((follow) => follow || result.conflict);
     } finally {
       setSaving(false);
     }
@@ -125,7 +129,7 @@ export function RoleForm({ role, start, catalogue }: RoleFormProps) {
               render={(field) => (
                 <TextAreaField
                   label="Description"
-                  hint="One sentence on who the role is for."
+                  tip="One sentence on who the role is for."
                   maxLength={300}
                   rows={2}
                   {...field}
@@ -136,25 +140,17 @@ export function RoleForm({ role, start, catalogue }: RoleFormProps) {
               control={form.control}
               name="defaultScope"
               render={(field) => (
-                <fieldset className={styles.group}>
-                  <legend className={styles.legend}>Default scope</legend>
-                  <p className={styles.note}>
-                    Where the role applies when it is given to someone; it can be changed for each
-                    person.
-                  </p>
-                  {DEFAULT_SCOPES.map((scope) => (
-                    <label key={scope} className={styles.radio}>
-                      <input
-                        type="radio"
-                        name="defaultScope"
-                        value={scope}
-                        checked={field.value === scope}
-                        onChange={() => field.onChange(scope)}
-                      />
-                      {SCOPE_WORDS[scope]}
-                    </label>
-                  ))}
-                </fieldset>
+                <RadioGroup
+                  label="Default scope"
+                  tip="Where the role applies when it is given to someone; it can be changed for each person."
+                  name="defaultScope"
+                  options={DEFAULT_SCOPES.map((scope) => ({
+                    value: scope,
+                    label: SCOPE_WORDS[scope],
+                  }))}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               )}
             />
           </FormSection>
@@ -216,9 +212,9 @@ function PermissionGroups({ catalogue, value, onChange, error }: PermissionGroup
       tabIndex={-1}
     >
       {error && (
-        <p className={styles.problem} id="permissions-problem">
+        <InlineError id="permissions-problem" quiet>
           {error}
-        </p>
+        </InlineError>
       )}
       {catalogue.groups.map((group) => (
         <fieldset key={group.name} className={styles.group}>

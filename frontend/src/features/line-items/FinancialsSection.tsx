@@ -4,6 +4,7 @@ import { ApiError } from '@/api/errors';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { useFormatters } from '@/format/useFormatters';
 import { Breakdown, LatestTransactions, LineItemTransactions } from './FinancialsTables';
 import {
@@ -28,9 +29,9 @@ function Frame({ level, children }: { level: FinancialLevel; children: ReactNode
   return (
     <section id="financials" className={styles.card} aria-labelledby={titleId}>
       <div className={styles.header}>
-        <h2 id={titleId} className={styles.title}>
+        <SectionHeading level={2} rank="panel" id={titleId}>
           {FINANCIALS_TITLE}
-        </h2>
+        </SectionHeading>
         <InfoTip label={FINANCIALS_TITLE} text={cardTip(level)} />
       </div>
       <div className={styles.body}>{children}</div>

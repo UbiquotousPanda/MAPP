@@ -3,12 +3,12 @@ import type { components } from '@/api/generated/schema';
 import { useFieldHelp } from '@/features/settings';
 import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { formatMoneyText } from '@/format/decimal';
+import { Converted } from '@/features/line-items';
 import { useFormatters } from '@/format/useFormatters';
+import { StatStrip } from '@/ui/StatStrip/StatStrip';
 import { differentCurrency } from './plan-currency';
 import type { Plan } from './api';
 import styles from './PlanSummaryCards.module.css';
-import { APPROVAL_PROGRESS } from './plan-text';
 
 type Money = components['schemas']['Money'];
 type PlanAllocation = components['schemas']['PlanAllocation'];
@@ -27,7 +27,7 @@ export function PlanSummaryCards({ plan }: PlanSummaryCardsProps) {
 
   return (
     // #budget: where Home's "Open budget" leads (feature 009).
-    <section id="budget" className={styles.summary} aria-label="Summary">
+    <StatStrip id="budget" label="Summary">
       <SummaryCard
         label="Plan budget"
         value={moneyCompact(own.budget)}
@@ -72,10 +72,8 @@ export function PlanSummaryCards({ plan }: PlanSummaryCardsProps) {
               label="Budget used"
               tone={figures.overBudget ? 'problem' : undefined}
             />
-          ) : figures.budget ? (
-            <span>Plan budget is 0</span>
           ) : (
-            noBudget
+            figures.budget && <span>Plan budget is 0</span>
           )
         }
       />
@@ -85,17 +83,17 @@ export function PlanSummaryCards({ plan }: PlanSummaryCardsProps) {
           figures.activities === 0 ? '—' : `${figures.activitiesApproved} of ${figures.activities}`
         }
         tip={help('plan.activitiesApproved')}
-        detail={<span>{APPROVAL_PROGRESS[figures.approvalProgress].word}</span>}
+        detail={figures.approvalProgress === 'noActivities' && <span>No activities yet</span>}
       />
-    </section>
+    </StatStrip>
   );
 }
 
 function Beside({ own, display }: { own: Money | null; display: Money | null }) {
-  if (!differentCurrency(own, display) || !display) {
+  if (!own || !display || !differentCurrency(own, display)) {
     return null;
   }
-  return <span className={styles.beside}>≈ {formatMoneyText(display)}</span>;
+  return <Converted from={own.currency} amount={display} />;
 }
 
 function AllocationNote({ allocation }: { allocation: PlanAllocation }) {

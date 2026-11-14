@@ -2,9 +2,10 @@ import { Plus, X } from 'lucide-react';
 import { Button } from '@/ui/Button/Button';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { TextField } from '@/ui/TextField/TextField';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { DataSource, WidgetQuery } from '../model';
 import { AGGREGATION_WORDS, aggregationsFor } from './query-edits';
-import { Select } from './Select';
+import { choices } from './choices';
 import styles from './Inspector.module.css';
 
 type Measure = WidgetQuery['measures'][number];
@@ -53,7 +54,11 @@ export function MeasuresEditor({
 
   return (
     <fieldset className={styles.group} id={`${idPrefix}-measures`} tabIndex={-1}>
-      <legend className={styles.legend}>Measures</legend>
+      <legend className={styles.legend}>
+        <SectionHeading level={3} rank="sub">
+          Measures
+        </SectionHeading>
+      </legend>
       {errorAt('query.measures') && <p className={styles.error}>{errorAt('query.measures')}</p>}
       {measures.map((measure, index) => {
         const field = source.fields.find((each) => each.key === measure.field);
@@ -70,26 +75,29 @@ export function MeasuresEditor({
               error={errorAt(`${at}.field`)}
             />
             {field && (
-              <Select
+              <ChoiceField
                 label="Aggregation"
                 name={`${idPrefix}-measure-${index}-aggregation`}
                 value={measure.aggregation}
-                options={aggregationsFor(field).map((value) => ({
-                  value,
-                  label: AGGREGATION_WORDS[value],
-                }))}
+                options={choices(
+                  aggregationsFor(field).map((value) => ({
+                    value,
+                    label: AGGREGATION_WORDS[value],
+                  })),
+                )}
                 onChange={(value) => {
                   const aggregation = aggregationsFor(field).find((each) => each === value);
                   if (aggregation) {
                     update(index, { ...measure, aggregation });
                   }
                 }}
+                placeholder={null}
               />
             )}
             <TextField
               label="Label"
               name={`${idPrefix}-measure-${index}-label`}
-              hint="Empty uses a name such as 'Sum of Planned cost'."
+              tip="Empty uses a name such as 'Sum of Planned cost'."
               maxLength={40}
               value={measure.label}
               onChange={(label) => update(index, { ...measure, label }, `${at}.label`)}

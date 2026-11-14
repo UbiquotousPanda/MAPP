@@ -1,0 +1,16 @@
+/* A card whose title link covers it, so a click anywhere opens the record; controls inside stay clickable above. */
+.card {
+  position: relative;
+}
+
+.link::after {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-card);
+  content: '';
+}
+
+.card :is(button, input, select, textarea, [role='button']) {
+  position: relative;
+  z-index: 1;
+}

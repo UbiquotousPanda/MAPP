@@ -8,13 +8,7 @@ import { recordHref } from '@/ui/record-links';
 import { useFormatters } from '@/format/useFormatters';
 import { useHomeWaiting } from './api';
 import { waitingForMeHref } from './home-links';
-import {
-  NOTHING_WAITING,
-  WAITING_SUBTITLE,
-  levelText,
-  viewAllText,
-  waitingText,
-} from './home-text';
+import { NOTHING_WAITING, levelText, viewAllText, waitingText } from './home-text';
 import { SectionError } from './SectionError';
 import styles from './WaitingCard.module.css';
 
@@ -27,13 +21,13 @@ export function WaitingCard() {
   const { money } = useFormatters();
 
   return (
-    <Card title="Waiting for my approval" subtitle={WAITING_SUBTITLE}>
+    <Card title="Waiting for my approval">
       {waiting.isPending ? (
         <Skeleton lines={4} height="18px" />
       ) : waiting.isError ? (
         <SectionError onRetry={() => void waiting.refetch()} />
       ) : waiting.data.items.length === 0 ? (
-        <EmptyState icon={<Hourglass />} title={NOTHING_WAITING} />
+        <EmptyState compact icon={<Hourglass />} title={NOTHING_WAITING} />
       ) : (
         <>
           <ul className={styles.rows}>

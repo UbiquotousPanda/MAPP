@@ -4,20 +4,18 @@ import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import settingsStyles from '@/ui/settings-table.module.css';
-import { RECENT_IMPORTS, useRateImports } from './rates-api';
+import dataTable from '@/ui/Table/Table.module.css';
+import { useRateImports } from './rates-api';
 import type { RateImport } from './rates-api';
 import styles from './rates.module.css';
 
-/**
- * **Recent imports** on the Currencies page (016 FR-007): the last 10 GSAP rate files with who
- * imported them and when, the dates of their rates and the row counts of their review.
- */
+/** The last 10 GSAP rate files: who imported them and when, their rate dates and review row counts. */
 export function RecentImports() {
   const imports = useRateImports();
   const { date, dateTime, dateRange } = useFormatters();
 
   return (
-    <Card title="Recent imports" subtitle={`The last ${RECENT_IMPORTS} GSAP rate files imported`}>
+    <Card title="Recent imports">
       {!imports.data ? (
         imports.isError ? (
           <ErrorState error={imports.error} onRetry={() => void imports.refetch()} />
@@ -28,31 +26,26 @@ export function RecentImports() {
         <p className={styles.cardNote}>No GSAP rate file has been imported yet.</p>
       ) : (
         // Nothing in the table takes the focus: the scrolling area does, for the keyboard.
-        <div
-          className={settingsStyles.tableScroll}
-          role="region"
-          aria-label="Recent imports"
-          tabIndex={0}
-        >
-          <table className={settingsStyles.table}>
+        <div className={dataTable.scroll} role="region" aria-label="Recent imports" tabIndex={0}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">File</th>
                 <th scope="col">Imported</th>
                 <th scope="col">Rates for</th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Added
                 </th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Replaced
                 </th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Already present
                 </th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Not used
                 </th>
-                <th scope="col" className={settingsStyles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Problems
                 </th>
               </tr>
@@ -96,11 +89,11 @@ function ImportRow({ item, when, range }: ImportRowProps) {
           ? range(item.firstDate, item.lastDate)
           : 'No rates changed'}
       </td>
-      <td className={settingsStyles.number}>{formatWhole(item.added)}</td>
-      <td className={settingsStyles.number}>{formatWhole(item.replaced)}</td>
-      <td className={settingsStyles.number}>{formatWhole(item.unchanged)}</td>
-      <td className={settingsStyles.number}>{formatWhole(item.notUsed)}</td>
-      <td className={settingsStyles.number}>{formatWhole(item.problems)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.added)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.replaced)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.unchanged)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.notUsed)}</td>
+      <td className={dataTable.numeric}>{formatWhole(item.problems)}</td>
     </tr>
   );
 }

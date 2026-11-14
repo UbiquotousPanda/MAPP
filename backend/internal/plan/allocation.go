@@ -163,9 +163,9 @@ func (s *Service) PlannedCosts(ctx context.Context, planIDs []string) (map[strin
 	return costs, nil
 }
 
-// refuseAllocatedBudget refuses with 409 not_allowed a save that changes an allocated plan's budget (FR-031).
+// refuseAllocatedBudget refuses with 409 not_allowed a save that changes an allocated plan's budget or its currency.
 func (s *Service) refuseAllocatedBudget(ctx context.Context, stored, changed Plan) error {
-	if sameBudget(stored.Budget, changed.Budget) {
+	if sameBudget(stored.Budget, changed.Budget) && stored.Currency == changed.Currency {
 		return nil
 	}
 	reason, err := s.budgetLock(ctx, stored)

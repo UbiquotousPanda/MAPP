@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { addressIdSchema } from '@/api/ids';
 import { DEFAULT_FILTERS, PAGE_SIZES } from './financials-links';
-import type { FinancialFilters, PageSize } from './financials-links';
+import type { FinancialFilters } from './financials-links';
 
-/** The largest file the API takes (FR-004): 700 KB. */
 const MAX_FILE_BYTES = 700 * 1024;
 
 const typeTabSchema = z.enum(['purchaseOrder', 'invoice', 'payment', 'accrual']);
@@ -18,8 +18,6 @@ const directionSchema = z.enum(['asc', 'desc']);
 const yearSchema = z.coerce.number().int().min(2000).max(2100);
 const pageSchema = z.coerce.number().int().min(1);
 const pageSizeSchema = z.coerce.number().pipe(z.literal([...PAGE_SIZES]));
-const planIdSchema = z.string().regex(/^P-[0-9]+$/);
-const recordIdSchema = z.string().regex(/^[PCIAL]-[0-9]+$/);
 
 /**
  * The filters an address holds. Anything the page cannot use (an unknown tab, a bad year, page 0)
@@ -33,8 +31,8 @@ export function readFilters(params: URLSearchParams): FinancialFilters {
     tab: params.get('link') === 'notLinked' ? 'notLinked' : typeTab.success ? typeTab.data : 'all',
     q: (params.get('q') ?? '').slice(0, 200),
     year: parsed(yearSchema, params.get('year'), null),
-    planId: parsed(planIdSchema, params.get('planId'), ''),
-    recordId: parsed(recordIdSchema, params.get('recordId'), ''),
+    planId: parsed(addressIdSchema, params.get('planId'), ''),
+    recordId: parsed(addressIdSchema, params.get('recordId'), ''),
     sort: sort.success ? sort.data : DEFAULT_FILTERS.sort,
     direction: parsed(
       directionSchema,
@@ -44,10 +42,6 @@ export function readFilters(params: URLSearchParams): FinancialFilters {
     page: parsed(pageSchema, params.get('page'), 1),
     pageSize: parsed(pageSizeSchema, params.get('pageSize'), DEFAULT_FILTERS.pageSize),
   };
-}
-
-export function pageSizeOf(text: string): PageSize | null {
-  return parsed(pageSizeSchema, text, null);
 }
 
 export const importFileSchema = z.object({

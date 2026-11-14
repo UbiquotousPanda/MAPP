@@ -33,11 +33,63 @@ const FORM_REFUSED = apiError(
   "Changing activities and line items isn't part of your role (Viewer). Ask an administrator if you need it.",
 );
 
+const NONE = { available: false, reason: '' };
+
 function openPage(access: Activity['access'], person: CurrentUser, formAllowed: boolean) {
   const section = launchFilmSection({ activity: activity({ id: 'A-1042' }) });
   mockApi([
+    reply(
+      'GET /api/v1/activities/{activityId}/media-codes',
+      { body: { requiresCodes: false, items: [] } },
+      { activityId: 'A-1042' },
+    ),
+    reply(
+      'GET /api/v1/activities/{activityId}/performance',
+      {
+        body: {
+          state: 'notApproved',
+          stages: [],
+          revenue: {
+            goal: null,
+            actual: null,
+            excludedCount: 0,
+            reason: 'notApproved',
+            projected: null,
+            projectedReason: '',
+            months: [],
+          },
+          webMetrics: [],
+          sources: [],
+          projection: null,
+        },
+      },
+      { activityId: 'A-1042' },
+    ),
+    reply('GET /api/v1/activities/{activityId}/performance/sources', {
+      body: {
+        externalName: '',
+        aliases: [],
+        mediaCodeCount: 0,
+        integrated: false,
+        goalEntered: false,
+        sources: [],
+      },
+    }),
     reply('GET /api/v1/activities/{activityId}', { body: launchFilm({ access }) }),
-    reply('GET /api/v1/activities/{activityId}/approval', { body: approvalOf() }),
+    reply('GET /api/v1/activities/{activityId}/approval', {
+      body: approvalOf({
+        status: 'created',
+        displayStatus: 'created',
+        rounds: [],
+        actions: {
+          submit: access?.submit ?? NONE,
+          resubmit: NONE,
+          approve: NONE,
+          decline: NONE,
+          recall: NONE,
+        },
+      }),
+    }),
     reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
     reply('GET /api/v1/activities/{activityId}/line-items', {
       body: formAllowed ? section : { ...section, access: VIEWER_LINE_ITEM_ACCESS },
@@ -112,6 +164,38 @@ describe('014 FR-011: the activity page follows the reader’s access', () => {
 
   it('shows the no-access page at the edit address when the API refuses the form (FR-008)', async () => {
     mockApi([
+      reply(
+        'GET /api/v1/activities/{activityId}/performance',
+        {
+          body: {
+            state: 'notApproved',
+            stages: [],
+            revenue: {
+              goal: null,
+              actual: null,
+              excludedCount: 0,
+              reason: 'notApproved',
+              projected: null,
+              projectedReason: '',
+              months: [],
+            },
+            webMetrics: [],
+            sources: [],
+            projection: null,
+          },
+        },
+        { activityId: 'A-1042' },
+      ),
+      reply('GET /api/v1/activities/{activityId}/performance/sources', {
+        body: {
+          externalName: '',
+          aliases: [],
+          mediaCodeCount: 0,
+          integrated: false,
+          goalEntered: false,
+          sources: [],
+        },
+      }),
       reply('GET /api/v1/activities/{activityId}', {
         body: launchFilm({ access: VIEWER_ACTIVITY_ACCESS }),
       }),

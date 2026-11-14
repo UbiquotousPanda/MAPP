@@ -1,0 +1,152 @@
+/* One row of 32 px controls, labels beside them, so the selects, the order pills and the search line up. */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.search {
+  flex: 1 1 220px;
+  max-width: 320px;
+  margin-left: auto;
+}
+
+.search input {
+  height: var(--control-sm);
+}
+
+.trail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.trail > :first-child {
+  margin-right: var(--space-2);
+}
+
+.trail > :nth-child(n + 3)::before {
+  margin-right: var(--space-1);
+  color: var(--ink-2);
+  content: '›';
+}
+
+.current {
+  font-weight: var(--weight-bold);
+}
+
+.current:focus-visible,
+.tableWrap:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.note {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+/* A shadow on the right edge while more columns sit off screen; a surface-coloured cover scrolls in
+   with the content and hides it at the end. */
+.tableWrap {
+  background:
+    linear-gradient(to left, var(--surface) 40%, transparent) right center / 32px 100% no-repeat
+      local,
+    linear-gradient(to left, color-mix(in srgb, var(--ink) 18%, transparent), transparent) right
+      center / 12px 100% no-repeat scroll;
+}
+
+.table td {
+  white-space: nowrap;
+}
+
+.groupRow > th.nameColumn,
+.groupRow > td {
+  background: var(--chip);
+  font-weight: var(--weight-bold);
+}
+
+.top > th.nameColumn {
+  font-weight: var(--weight-bold);
+}
+
+.nameColumn {
+  min-width: 220px;
+}
+
+.child > th.nameColumn {
+  padding-left: var(--space-8);
+  font-weight: var(--weight-regular);
+}
+
+/* The name, then its Open icon and any flag, on one line; a long name wraps before the icon. */
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.name {
+  min-width: 0;
+}
+
+.drill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.drill svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--ink-2);
+}
+
+.drill:hover {
+  text-decoration: underline;
+}
+
+.open {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-control);
+  color: var(--ink-2);
+}
+
+.open:hover {
+  background: var(--hover-on-card);
+  color: var(--ink);
+}
+
+.open svg {
+  width: 14px;
+  height: 14px;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  max-width: 100%;
+}

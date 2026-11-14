@@ -45,6 +45,7 @@ func (s *Service) Export(ctx context.Context, a actor.Actor, q Query, format str
 		if in, err = s.input(ctx, a, q); err != nil {
 			return err
 		}
+		in.data = onlyExportable(ctx, in.data)
 		if in.rateNotes, err = s.src.RatesUsed(ctx); err != nil {
 			return err
 		}

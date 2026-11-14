@@ -25,9 +25,9 @@ budget; check the region is filled in, the row appears and the plan's remaining 
 
 **Acceptance Scenarios**:
 
-1. **Given** the plan page, **When** the user chooses **Add campaign**, **Then** "New campaign — Inside
-   plan '<plan>'" opens with Owner = the plan's owner ("From the plan") and dates 1 Jan – 31 Dec of the
-   plan's year ("The plan's year").
+1. **Given** the plan page, **When** the user chooses **Add campaign**, **Then** "New campaign" opens
+   with Owner = the plan's owner and dates 1 Jan – 31 Dec of the plan's year, without a label naming where
+   each default came from (D-422).
 2. **Given** no cluster, **Then** Region is disabled with "Choose a cluster first"; **When** the user picks
    "Retail – China", which has one region, **Then** Region becomes "RETAIL – CHINA" with "Region set to
    'RETAIL – CHINA', the only region for this cluster" (R8).
@@ -197,7 +197,7 @@ campaigns' totals; copy "Helix launch" and compare the copy with the original.
   panel those of §3 (#1–#12), in the sections Basics, Budget and Shell attributes, with every other active
   attribute of that level from Settings (feature 002) in display order and markings shown as words; the
   initiative's campaign is read-only with "Change it with Move".
-- **FR-003**: The panels MUST pre-fill and label: owner = the parent's owner (R2); campaign dates = 1 Jan
+- **FR-003**: The panels MUST pre-fill (without a source label, D-422): owner = the parent's owner (R2); campaign dates = 1 Jan
   – 31 Dec of the plan's year; initiative dates = the campaign's dates (empty if it has none); yes/no
   attributes = No.
 - **FR-004**: A saved record MUST get a permanent ID (C-… or I-…), appear highlighted under its expanded

@@ -1,12 +1,11 @@
 import { expect, test } from './support/no-csp-violations';
-import { action, expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
+import { expectNoAxeViolations, expectToast, signInAs, uniqueName } from './fixtures';
 import {
   approvedActivity,
-  fillAndSavePurchaseRequest,
-  openLineItem,
   openPurchaseRequest,
   PRIYA,
   purchaseRequestsSection,
+  savedPurchaseRequest,
   swbsLineItem,
 } from './purchase-request-flow';
 
@@ -20,9 +19,7 @@ test('038 FR-013 (H-3): delete a purchase request from its page, then Undo', asy
   await signInAs(page, PRIYA);
   const lineItem = await swbsLineItem(page, activity.id, uniqueName('Stand build'), '5000.00');
   const prName = `PR for ${lineItem.name}`;
-  await openLineItem(page, lineItem);
-  await action(purchaseRequestsSection(page), 'New purchase request').click();
-  const prId = await fillAndSavePurchaseRequest(page, `${nextYear}-03-31`);
+  const { id: prId } = await savedPurchaseRequest(page, lineItem, '5000.00', `${nextYear}-03-31`);
   await openPurchaseRequest(page, prId, prName);
 
   const notFound: string[] = [];

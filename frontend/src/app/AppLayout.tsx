@@ -1,18 +1,21 @@
 import { Suspense } from 'react';
 import type { ReactNode } from 'react';
+import { useMatches } from 'react-router';
 import { DemoBanner } from '@/ui/DemoBanner/DemoBanner';
 import { cx } from '@/ui/cx';
-import { useCurrentUser } from '@/session/useSession';
+import { isWidePage } from '@/session/page-handle';
 import styles from './AppLayout.module.css';
 import { PageLoading } from './PageLoading';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { useSidebarCollapsed } from './useSidebarCollapsed';
 
 export function AppLayout({ children }: { children: ReactNode }) {
-  const person = useCurrentUser();
+  const { collapsed } = useSidebarCollapsed();
+  const wide = isWidePage(useMatches());
 
   return (
-    <div className={cx(styles.layout, person.preferences.sidebarCollapsed && styles.collapsed)}>
+    <div className={cx(styles.layout, collapsed && styles.collapsed)}>
       <a href="#main" className="skip-link">
         Skip to main content
       </a>
@@ -24,7 +27,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <DemoBanner />
         {/* tabIndex -1 lets the skip link move the keyboard focus here. */}
         <main id="main" tabIndex={-1} className={styles.main}>
-          <div className={styles.content}>
+          <div className={cx(styles.content, wide && styles.contentWide)}>
             <Suspense fallback={<PageLoading />}>{children}</Suspense>
           </div>
         </main>

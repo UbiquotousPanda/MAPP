@@ -1,6 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { allWorkOptions } from '@/testing/fixtures/all-work';
+import { openFilters } from '@/testing/filters';
+import { choose } from '@/testing/select';
 import {
   breakdown,
   BRANDS,
@@ -58,6 +60,8 @@ describe('016 FR-039: More filters', () => {
     const { api, user } = renderAllWorkPage([OPTIONS]);
     await screen.findByRole('link', { name: 'Helix launch' });
 
+    await openFilters(user);
+
     await user.click(screen.getByRole('button', { name: 'More filters' }));
     const menu = await screen.findByRole('dialog', { name: 'More filters' });
     const brands = within(menu).getByRole('group', { name: 'Brands' });
@@ -77,6 +81,7 @@ describe('016 FR-039: More filters', () => {
   it('finds attributes and values by search, under their level', async () => {
     const { user } = renderAllWorkPage([OPTIONS]);
     await screen.findByRole('link', { name: 'Helix launch' });
+    await openFilters(user);
     await user.click(screen.getByRole('button', { name: 'More filters' }));
     const menu = await screen.findByRole('dialog', { name: 'More filters' });
     expect(within(menu).getByText('Campaign')).toBeVisible();
@@ -106,7 +111,9 @@ describe('016 FR-040, FR-041: the Breakdown view', () => {
       'Total21$10,000.00100.00 %',
     ]);
     expect(breakdownQueries(api).at(-1)?.get('by')).toBe('attr:SA-1030');
-    expect(screen.getByRole('combobox', { name: 'Break down by' })).toHaveValue('attr:SA-1030');
+    expect(screen.getByRole('combobox', { name: 'Break down by' })).toHaveTextContent(
+      'Spend type (Line item)',
+    );
     await expectNoAxeViolations();
   });
 
@@ -114,7 +121,7 @@ describe('016 FR-040, FR-041: the Breakdown view', () => {
     const { api, user } = await openBreakdown({ body: BY_COUNTRY });
     await screen.findByRole('table', { name: 'Breakdown' });
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'then by' }), 'activityType');
+    await choose(user, screen.getByRole('combobox', { name: 'then by' }), 'Activity type');
     await waitFor(() => expect(breakdownQueries(api).at(-1)?.get('thenBy')).toBe('activityType'));
     await user.click(screen.getByRole('button', { name: "Show the groups of 'Germany'" }));
 

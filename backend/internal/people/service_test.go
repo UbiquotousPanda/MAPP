@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 )
 
-// The sign-in page lists only the people who can sign in, sorted by name (FR-001).
 func TestActivePeople_ExcludesInactive_FR001(t *testing.T) {
 	t.Parallel()
 	service, db := newTestService(t)
@@ -40,8 +40,7 @@ func TestActivePeople_ExcludesInactive_FR001(t *testing.T) {
 	}
 }
 
-// Without demo data the list is empty, never nil, so the API answers "people": [] and the sign-in page can
-// say what to do (FR-028).
+// Without demo data the list is empty, never nil, so the API answers "people": [] and the sign-in page can say what to do.
 func TestActivePeople_NoPeopleGivesAnEmptyList_FR028(t *testing.T) {
 	t.Parallel()
 	service, _ := newTestService(t)
@@ -53,8 +52,6 @@ func TestActivePeople_NoPeopleGivesAnEmptyList_FR028(t *testing.T) {
 	}
 }
 
-// The signed-in person comes with everything the sidebar and the account menu show (FR-012), and with
-// what My profile needs: their version and teams (003 FR-021, FR-026).
 func TestCurrentUser_PersonWithPreferences_FR012(t *testing.T) {
 	t.Parallel()
 	service, db := newTestService(t)
@@ -77,13 +74,13 @@ func TestCurrentUser_PersonWithPreferences_FR012(t *testing.T) {
 			HomeScope: "myTeams", PinnedPlanIDs: []string{}},
 		Version: 1,
 		Teams:   []TeamRef{},
+		Today:   date.Today(start),
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("CurrentUser = %+v, want %+v", got, want)
 	}
 }
 
-// A signed-in person who no longer exists must sign in again (FR-007).
 func TestCurrentUser_PersonGoneMustSignInAgain_FR007(t *testing.T) {
 	t.Parallel()
 	service, _ := newTestService(t)
@@ -93,8 +90,7 @@ func TestCurrentUser_PersonGoneMustSignInAgain_FR007(t *testing.T) {
 	assertError(t, err, errs.SignInRequired())
 }
 
-// The signed-in person comes with their version and their teams, active or not, by name: the "My teams"
-// of other features and My profile (003 FR-026, FR-021).
+// The teams come active or not, by name: the "My teams" of other features and My profile.
 func TestCurrentUser_VersionAndTeams_FR026(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -124,10 +120,7 @@ func TestCurrentUser_VersionAndTeams_FR026(t *testing.T) {
 	}
 }
 
-// My profile changes the signed-in person's name and job title with the People form's rules: trimmed,
-// saved with a new version and one "changed" entry in the log, shown at once in the answer (initials
-// included) and wherever the person is named. Saving the same values again writes nothing (003 FR-022,
-// FR-028).
+// The name is trimmed and shows at once wherever the person is named; saving the same values again writes nothing.
 func TestUpdateProfile_NameAndTitleLogged_FR022(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -166,8 +159,7 @@ func TestUpdateProfile_NameAndTitleLogged_FR022(t *testing.T) {
 	})
 }
 
-// An empty name, a job title over 120 characters and a missing version are reported together, and nothing
-// is saved (003 FR-022, SC-007); an out-of-date version is refused with version_conflict.
+// An empty name, a job title over 120 characters and a missing version are reported together, and nothing is saved.
 func TestUpdateProfile_EmptyName_FR022(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
@@ -194,8 +186,6 @@ func TestUpdateProfile_EmptyName_FR022(t *testing.T) {
 	}
 }
 
-// A signed-in person who no longer exists cannot change their profile: they must sign in again (003
-// FR-022, 001 FR-007).
 func TestUpdateProfile_PersonGoneMustSignInAgain_FR022(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)

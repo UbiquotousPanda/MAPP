@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import type { components } from '@/api/generated/schema';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
 import { fieldHref, isPlanningType } from '@/ui/record-links';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { groupLabel } from '../plan-text';
 import styles from './dialogs.module.css';
 
@@ -15,10 +16,7 @@ export interface PublishBlockedDialogProps {
   onClose: () => void;
 }
 
-/**
- * Why a plan can't be published yet (FR-024): "Publish needs <n> fields", grouped by record — the
- * plan, then each campaign or initiative — each field a link to fill it in. The plan stays Draft.
- */
+/** Grouped by record: the plan, then each campaign or initiative. The plan stays Draft. */
 export function PublishBlockedDialog({
   open,
   planId,
@@ -40,7 +38,9 @@ export function PublishBlockedDialog({
       <div className={styles.stack}>
         {groups.map(({ record, fields }) => (
           <section key={`${record.type}:${record.id}`} className={styles.group}>
-            <h3 className={styles.groupTitle}>{groupLabel(record)}</h3>
+            <SectionHeading level={3} rank="label">
+              {groupLabel(record)}
+            </SectionHeading>
             <ul className={styles.list}>
               {fields.map((field) => (
                 <li key={field.field}>

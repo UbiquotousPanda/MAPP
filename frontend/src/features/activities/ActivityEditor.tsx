@@ -1,13 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { useAttributeForm } from '@/features/settings';
 import { Button, LinkButton } from '@/ui/Button/Button';
 import { FormErrorSummary } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { FormFooter } from '@/ui/FormFooter/FormFooter';
 import { FailureMessage } from '@/ui/FormPanel/FormPanel';
-import { FormLayout } from '@/ui/FormRail/FormRail';
+import { FormLayout, FormPage } from '@/ui/FormRail/FormRail';
 import { ClearValuesDialog } from '@/ui/ShellAttributeFields/ClearValuesDialog';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
 import { useUnsavedChanges } from '@/ui/useUnsavedChanges';
@@ -48,7 +49,7 @@ export interface ActivityEditorProps {
 }
 
 export function ActivityEditor({ data, activity }: ActivityEditorProps) {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useAddressParams();
   const navigate = useNavigate();
   const { date } = useFormatters();
   const attributeForm = useAttributeForm('activity');
@@ -124,7 +125,7 @@ export function ActivityEditor({ data, activity }: ActivityEditorProps) {
     : `/plans/${encodeURIComponent(plan.id)}`;
 
   return (
-    <>
+    <FormPage>
       <ActivityFormHeader
         title={activity ? 'Edit activity' : 'New activity'}
         form={data}
@@ -184,6 +185,6 @@ export function ActivityEditor({ data, activity }: ActivityEditorProps) {
         />
       )}
       {dialog}
-    </>
+    </FormPage>
   );
 }

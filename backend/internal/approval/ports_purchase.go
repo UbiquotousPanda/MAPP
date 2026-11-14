@@ -10,12 +10,12 @@ import (
 	"mapp/internal/platform/record"
 )
 
-// PurchaseRequests is feature 032's side of approvals (spec 031 contracts/go-api.md), in the caller's transaction.
+// PurchaseRequests is the purchase-request side of approvals, called in the caller's transaction.
 type PurchaseRequests interface {
 	PurchaseRequest(ctx context.Context, id string) (PurchaseRequestFacts, bool, error)
 	ListInScope(ctx context.Context, scope authz.Scope, ids []string) ([]PurchaseRequestFacts, error)
 	ReadyCheck(ctx context.Context, a actor.Actor, id string, kind SubjectKind) (ReadyCheck, error)
-	// RoundChanged lets 032 set the PR status for a round event; approvals writes the log entry.
+	// RoundChanged sets the PR status for a round event; approvals writes the log entry.
 	RoundChanged(ctx context.Context, a actor.Actor, id string, kind SubjectKind, outcome Outcome) (PurchaseRequestFacts, error)
 }
 
@@ -27,10 +27,17 @@ type PurchaseRequestFacts struct {
 	ModificationWorkflowID string
 	Path                   []errs.RecordRef
 	record.Meta
-	Access   authz.PlanFacts
-	Plan     PlanFacts
-	Overages []Overage
+	Access      authz.PlanFacts
+	Plan        PlanFacts
+	Overages    []Overage
+	Blocked     string // why it can't be submitted or approved now, "" when nothing stops it
+	Submissions map[SubjectKind]string
 }
+
+const (
+	SubmissionSubmit   = "submit"
+	SubmissionResubmit = "resubmit"
+)
 
 const (
 	StatusInReview = "inReview"

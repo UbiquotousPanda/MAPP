@@ -97,7 +97,7 @@ func TestExport_GridHasEveryRowLevelPathColumnsTotals_FR032(t *testing.T) {
 	}
 	unassigned := table[slicesIndex(table, "Launch film")+3]
 	if !reflect.DeepEqual(unassigned, []string{"Unassigned planned cost", "FY2026 Lubricants Europe › Helix launch › Digital & social › Launch film",
-		"Unassigned planned cost (Sys_Gen_Balance)", "", "", "", "", "", "", "20000.00", "", "20000.00", "", ""}) {
+		"Unassigned planned cost", "", "", "", "", "", "", "20000.00", "", "20000.00", "", ""}) {
 		t.Errorf("unassigned row = %q", unassigned)
 	}
 	totals := table[len(table)-1]

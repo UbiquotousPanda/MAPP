@@ -25,7 +25,7 @@ func TestRequestLogs_CarryRequestTraceAndActor_024_FR006(t *testing.T) {
 	server := apitest.New(t)
 	sara := server.SignIn(t, sarasEmail)
 
-	refused := sara.Do(t, http.MethodDelete, "/api/v1/plans/P-1001", nil, apitest.SkipRequestValidation())
+	refused := sara.DeleteSeen(t, "/api/v1/plans/P-1001", apitest.SkipRequestValidation())
 	read := sara.Do(t, http.MethodGet, "/api/v1/me", nil)
 
 	records := recordsByRequest(t, out.String())

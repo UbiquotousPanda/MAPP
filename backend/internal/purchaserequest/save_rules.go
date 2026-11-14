@@ -13,15 +13,19 @@ var thenWords = map[string]string{ //nolint:gochecknoglobals // a fixed lookup o
 	ThenSave: "Save", ThenResubmit: "Save and re-submit", ThenSubmitChanges: "Submit changes",
 }
 
-// checkSave is check plus the rules a save of before must follow by its status (data-model §3.2); addsOnly
-// says the save only adds lines to an Approved purchase request without approval.
+// checkSave adds the rules of before's status to check; addsOnly says the save only adds lines to an Approved
+// purchase request without approval.
 func (s *Service) checkSave(ctx context.Context, in Input, before PurchaseRequest, config Configuration) (checked, bool, error) {
 	ck, err := s.check(ctx, in, before)
 	if err != nil {
 		return checked{}, false, err
 	}
 	addsOnly := before.Status == StatusApproved && config.LinesOnApproved == WithoutApproval && addsLinesOnly(before, ck.pr)
-	if err = ck.then(ctx, before, in.Then, addsOnly); err != nil {
+	want, adding := saveSteps(before, config)
+	if addsOnly && in.Then == adding {
+		want = in.Then
+	}
+	if err = ck.then(ctx, want, in.Then); err != nil {
 		return checked{}, false, err
 	}
 	ck.lineRules(before, config)
@@ -31,18 +35,7 @@ func (s *Service) checkSave(ctx context.Context, in Input, before PurchaseReques
 	return ck, addsOnly && in.Then == ThenSave, ck.problems.Err()
 }
 
-// then checks the save's next step fits the status: Save, Save and re-submit or Submit changes.
-func (ck *checked) then(ctx context.Context, before PurchaseRequest, then string, addsOnly bool) error {
-	want := ThenSave
-	switch before.Status {
-	case StatusSubmitted, StatusInReview:
-		want = ThenResubmit
-	case StatusApproved:
-		if !addsOnly || then != ThenSave {
-			want = ThenSubmitChanges
-		}
-	case StatusCreated, StatusDeclined, StatusClosed:
-	}
+func (ck *checked) then(ctx context.Context, want, then string) error {
 	if then != want {
 		ck.problems.Add("then", fmt.Sprintf(msgChooseThen, thenWords[want]))
 		return nil
@@ -53,16 +46,14 @@ func (ck *checked) then(ctx context.Context, before PurchaseRequest, then string
 	return authz.RequireIn(ctx, authz.PurchaseRequestsSubmit, ck.plan.Access)
 }
 
-// lineRules: lines leave only Created and Declined purchase requests; lines join Approved ones as the
-// setting says.
+// lineRules: lines leave only Created and Declined purchase requests and join Approved ones as the setting says.
 func (ck *checked) lineRules(before PurchaseRequest, config Configuration) {
 	removing := slices.ContainsFunc(before.Lines, func(l Line) bool { return ck.pr.line(l.ID) == nil })
 	if removing && before.Status != StatusCreated && before.Status != StatusDeclined {
 		ck.problems.Add(fieldLines, removeReason(before))
 	}
 	adding := slices.ContainsFunc(ck.pr.Lines, func(l Line) bool { return l.ID == "" })
-	approved := before.Status == StatusApproved || before.ChangePending
-	if adding && approved && config.LinesOnApproved == NotAllowed {
+	if _, step := saveSteps(before, config); adding && step == "" {
 		ck.problems.Add(fieldLines, msgNoLinesOnApproved)
 	}
 }

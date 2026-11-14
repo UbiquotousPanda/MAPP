@@ -6,13 +6,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"mapp/internal/history"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/web"
 )
 
 // The handlers of feature 016's exchange rates (FR-001 – FR-009) and Field help (FR-045, FR-046).
 
-// rateRoutes registers the rate history, current rates and GSAP rate import routes.
 func (h *Handler) rateRoutes(r gin.IRoutes) {
 	r.GET("/currencies/:code/rates", h.listRates)
 	r.POST("/currencies/:code/rates", h.addRate)
@@ -27,19 +27,16 @@ func (h *Handler) rateRoutes(r gin.IRoutes) {
 	r.GET("/exchange-rates/import-sample", h.rateImportSample)
 }
 
-// fieldHelpRoutes registers the Field help routes.
 func (h *Handler) fieldHelpRoutes(r gin.IRoutes) {
 	r.GET("/field-help", h.listFieldHelp)
 	r.PATCH("/field-help/:helpKey", h.updateFieldHelp)
 }
 
-// listRates answers GET /api/v1/currencies/{code}/rates: the rate history, newest first, and the current rate.
 func (h *Handler) listRates(c *gin.Context) {
 	page, err := h.service.ListRates(c.Request.Context(), actorOf(c), c.Param("code"))
 	respond(c, http.StatusOK, page, err)
 }
 
-// addRate answers POST /api/v1/currencies/{code}/rates with 201 and the new rate.
 func (h *Handler) addRate(c *gin.Context) {
 	var input RateInput
 	if !readBody(c, &input) {
@@ -49,7 +46,6 @@ func (h *Handler) addRate(c *gin.Context) {
 	respond(c, http.StatusCreated, rate, err)
 }
 
-// addRateImpact answers POST /api/v1/currencies/{code}/rates/impact with what the new rate would change.
 func (h *Handler) addRateImpact(c *gin.Context) {
 	var input RateInput
 	if !readBody(c, &input) {
@@ -59,7 +55,6 @@ func (h *Handler) addRateImpact(c *gin.Context) {
 	respond(c, http.StatusOK, impact, err)
 }
 
-// updateRate answers PATCH /api/v1/exchange-rates/{rateId} with the rate after the change.
 func (h *Handler) updateRate(c *gin.Context) {
 	var update RateUpdate
 	if !readBody(c, &update) {
@@ -69,9 +64,13 @@ func (h *Handler) updateRate(c *gin.Context) {
 	respond(c, http.StatusOK, rate, err)
 }
 
-// deleteRate answers DELETE /api/v1/exchange-rates/{rateId} with the recycle-bin entry.
 func (h *Handler) deleteRate(c *gin.Context) {
-	entry, err := h.service.DeleteRate(c.Request.Context(), actorOf(c), c.Param("rateId"))
+	ctx, err := history.SeenVersion(c, c.Param("rateId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	entry, err := h.service.DeleteRate(ctx, actorOf(c), c.Param("rateId"))
 	respondDeleted(c, entry, err)
 }
 
@@ -85,15 +84,11 @@ func (h *Handler) updateRateImpact(c *gin.Context) {
 	respond(c, http.StatusOK, impact, err)
 }
 
-// currentRates answers GET /api/v1/exchange-rates/current: every currency's current rate with its date and
-// source (FR-009).
 func (h *Handler) currentRates(c *gin.Context) {
 	page, err := h.service.ListCurrentRates(c.Request.Context(), actorOf(c))
 	respond(c, http.StatusOK, page, err)
 }
 
-// checkRateImport answers POST /api/v1/exchange-rates/import-check with every row's outcome. The body holds a
-// file of up to 2 MB, which is never logged.
 func (h *Handler) checkRateImport(c *gin.Context) {
 	var upload RateImportUpload
 	if !readBody(c, &upload) {

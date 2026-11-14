@@ -44,12 +44,6 @@ interface PendingImpact {
   warnings: ChangeImpact['warnings'];
 }
 
-/**
- * New activity type and Edit activity type (FR-012, FR-013) in a side panel: the name, the optional
- * default planned cost in USD and the models allowing it. Every problem shows at once; removing
- * models whose plans have activities of this type is confirmed first; a conflict keeps what was
- * typed and names who saved first.
- */
 export function ActivityTypeForm({ type, onClose }: ActivityTypeFormProps) {
   const { show } = useToast();
   const { dateFormat } = useFormatters();
@@ -85,7 +79,7 @@ export function ActivityTypeForm({ type, onClose }: ActivityTypeFormProps) {
         onClose();
         return;
       }
-      // Removing models limits what their plans' new activities can choose (FR-012).
+      // Removing models limits what their plans' new activities can choose.
       if (body.modelIds && removesModels(start.modelIds, body.modelIds)) {
         const impact = await checkActivityTypeImpact(type.id, body);
         if (impact.warnings.length > 0) {
@@ -163,7 +157,7 @@ export function ActivityTypeForm({ type, onClose }: ActivityTypeFormProps) {
               <MoneyField
                 label="Default planned cost"
                 currency="USD"
-                hint="Offered when someone picks this type for an activity."
+                tip="Offered when someone picks this type for an activity."
                 note={costChanged ? 'Applies when someone picks this type from now on.' : undefined}
                 {...field}
               />

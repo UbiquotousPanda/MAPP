@@ -53,6 +53,12 @@
   color: var(--muted);
 }
 
+.readOnly,
+.readOnly:hover {
+  border-color: var(--hairline);
+  background: var(--gray-bg);
+}
+
 /* Room for the eye button inside the field. */
 .withEye {
   padding-right: var(--space-11);
@@ -88,21 +94,6 @@
 .eye svg {
   width: 18px;
   height: 18px;
-}
-
-.error {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  color: var(--danger-text);
-  font-size: var(--text-xs);
-}
-
-.error svg {
-  flex: none;
-  width: 14px;
-  height: 14px;
-  margin-top: 2px;
 }
 
 /* Phones and tablets: 16 px text, so the browser does not zoom into the field (Shell). */

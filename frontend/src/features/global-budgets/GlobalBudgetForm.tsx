@@ -4,7 +4,8 @@ import { useForm, useWatch } from 'react-hook-form';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormPanel } from '@/ui/FormPanel/FormPanel';
-import { LockedNote } from '@/ui/LockedNote/LockedNote';
+import { ReadOnlyField } from '@/ui/ReadOnlyField/ReadOnlyField';
+import { FieldRow } from '@/ui/FieldRow/FieldRow';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
@@ -14,6 +15,7 @@ import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { budgetCheck, OverspendField, useOverspendConfiguration } from '@/features/overspend';
 import { PersonField } from '@/features/people';
 import { useFormatters } from '@/format/useFormatters';
+import { useCurrentYear } from '@/session/useToday';
 import { fetchGlobalBudget, useCreateGlobalBudget, useUpdateGlobalBudget } from './api';
 import type { GlobalBudget } from './api';
 import { toasts, yearChoices } from './global-budgets-text';
@@ -48,7 +50,7 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
   const { dateFormat } = useFormatters();
   const create = useCreateGlobalBudget();
   const update = useUpdateGlobalBudget();
-  const currentYear = new Date().getFullYear();
+  const currentYear = useCurrentYear();
   const form = useForm<GlobalBudgetValues>({
     resolver: zodResolver(globalBudgetSchema),
     defaultValues: globalBudgetValuesOf(budget, currentYear),
@@ -123,7 +125,7 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
   return (
     <FormPanel
       title={budget ? 'Edit global budget' : 'New global budget'}
-      description="Money for one year, shared out to market plans. Amounts are in USD."
+      description="Amounts are in USD."
       isDirty={form.formState.isDirty}
       saving={saving}
       problems={problems}
@@ -132,57 +134,57 @@ export function GlobalBudgetForm({ budget, onClose, onCreated }: GlobalBudgetFor
       onClose={onClose}
     >
       <div className={styles.fields}>
-        <FormField
-          control={form.control}
-          name="name"
-          render={(field) => (
-            <TextField label="Name" marking="Required" maxLength={120} {...field} />
-          )}
-        />
-        {budget ? (
-          <div className={styles.readOnly}>
-            <span className={styles.readOnlyLabel}>Year</span>
-            <span className={styles.readOnlyValue}>{budget.year}</span>
-            <LockedNote>{yearLock}</LockedNote>
-          </div>
-        ) : (
+        <FieldRow>
           <FormField
             control={form.control}
-            name="year"
+            name="name"
             render={(field) => (
-              <ChoiceField
-                label="Year"
+              <TextField label="Name" marking="Required" maxLength={120} {...field} />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="ownerId"
+            render={(field) => (
+              <PersonField
+                label="Owner"
                 marking="Required"
-                hint="The year can't change once the global budget is saved."
-                options={yearChoices(currentYear).map((year) => ({
-                  id: String(year),
-                  label: String(year),
-                  active: true,
-                }))}
+                tip="A person who can manage global budgets for all markets."
                 {...field}
               />
             )}
           />
-        )}
-        <FormField
-          control={form.control}
-          name="amount"
-          render={(field) => (
-            <MoneyField label="Amount" marking="Required" currency="USD" {...field} />
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="ownerId"
-          render={(field) => (
-            <PersonField
-              label="Owner"
-              marking="Required"
-              hint="A person who can manage global budgets for all markets."
-              {...field}
+        </FieldRow>
+        <FieldRow>
+          {budget ? (
+            <ReadOnlyField label="Year" value={budget.year} lock={yearLock} />
+          ) : (
+            <FormField
+              control={form.control}
+              name="year"
+              render={(field) => (
+                <ChoiceField
+                  label="Year"
+                  marking="Required"
+                  tip="The year can't change once the global budget is saved."
+                  options={yearChoices(currentYear).map((year) => ({
+                    id: String(year),
+                    label: String(year),
+                    active: true,
+                  }))}
+                  {...field}
+                />
+              )}
             />
           )}
-        />
+          <FormField
+            control={form.control}
+            name="amount"
+            render={(field) => (
+              <MoneyField label="Amount" marking="Required" currency="USD" {...field} />
+            )}
+          />
+        </FieldRow>
         <FormField
           control={form.control}
           name="description"

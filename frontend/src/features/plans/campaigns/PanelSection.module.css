@@ -6,17 +6,12 @@
   border-top: 1px solid var(--hairline);
 }
 
-/* A panel's sub-section heading: 16/24 Arial bold in ink, the same for every section (C-03). */
+/* The heading's text, a "Calculated" tag and a help tip on one wrapping line. */
 .title {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  margin: 0;
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-md);
 }
 
 /* DescriptionList (design system §5.4): one key–value layout everywhere — a 200 px label

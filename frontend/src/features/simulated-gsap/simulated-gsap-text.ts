@@ -1,8 +1,7 @@
 import { plural } from '@/format/text';
 
 export const PANEL_TITLE = 'Simulated GSAP';
-export const PANEL_SUBTITLE =
-  'Stands in for GSAP until live integration: it returns one SWBS code for each line item sent to it.';
+export const PANEL_SUBTITLE = 'Returns one SWBS code for each line item sent to it.';
 export const SEND_ALL = 'Send SWBS requests to simulated GSAP';
 export const SEND_NOW = 'Send to simulated GSAP now';
 export const NOTHING_READY = 'No line item is waiting for an SWBS code';

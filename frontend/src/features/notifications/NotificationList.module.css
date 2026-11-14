@@ -8,13 +8,6 @@
   border-bottom: 1px solid var(--hairline);
 }
 
-.title {
-  padding-block: var(--space-1);
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
 .empty {
   padding: var(--space-7) var(--space-4);
   color: var(--ink-2);
@@ -93,11 +86,11 @@
 
 .itemTitle {
   color: var(--ink);
-  font-weight: 500;
+  font-weight: var(--weight-regular);
 }
 
 .unread .itemTitle {
-  font-weight: 600;
+  font-weight: var(--weight-bold);
 }
 
 .deleted {

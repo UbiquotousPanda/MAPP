@@ -1,5 +1,5 @@
 import { expect, type Page } from '@playwright/test';
-import { callApi, chooseOption, expectNoAxeViolations, expectToast, signInAs } from './fixtures';
+import { callApi, choose, expectNoAxeViolations, expectToast, signInAs } from './fixtures';
 import { lubricantsActivity } from './lubricants';
 import { decideAs } from './planning-changes';
 import type { Named } from './planning';
@@ -15,7 +15,7 @@ export interface ApprovedActivity extends Named {
   path: string;
 }
 
-/** Priya's 12,000.00 USD Lubricants activity, approved by Daniel Okoro; ends signed in as Daniel. */
+/** Priya's $12,000.00 Lubricants activity, approved by Daniel Okoro; ends signed in as Daniel. */
 export async function approvedActivity(page: Page, label: string): Promise<ApprovedActivity> {
   await signInAs(page, PRIYA);
   const activity = await lubricantsActivity(page, label, '12000.00');
@@ -82,13 +82,15 @@ export async function fillAndSavePurchaseRequest(
     .getByRole('listbox', { name: 'MoA approver' })
     .getByRole('option', { name: /^Daniel Okoro/ })
     .click();
-  await chooseOption(
+  await choose(
+    page,
     page.getByRole('combobox', { name: /^Approval workflow(?! for)/ }),
-    'Purchase request approval (MoA)',
+    /^Purchase request approval \(MoA\)/,
   );
-  await chooseOption(
+  await choose(
+    page,
     page.getByRole('combobox', { name: /^Approval workflow for modification/ }),
-    'Purchase request change approval (MoA)',
+    /^Purchase request change approval \(MoA\)/,
   );
   await page
     .getByRole('group', { name: /^Material or service/ })
@@ -104,7 +106,7 @@ export async function fillAndSavePurchaseRequest(
     .fill('Priya Raman');
   await page.getByRole('textbox', { name: 'Vendor', exact: true }).fill('Northlight Events GmbH');
   await page.getByRole('textbox', { name: 'Vendor code', exact: true }).fill('V-100101');
-  await chooseOption(page.getByRole('combobox', { name: /^Email group/ }), 'DE_LUBES');
+  await choose(page, page.getByRole('combobox', { name: /^Email group/ }), /^DE_LUBES/);
   await page.getByLabel(/^Delivery date/).fill(deliveryDate);
   await expectNoAxeViolations(page);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
@@ -155,9 +157,81 @@ export async function openFromWaitingForGsap(page: Page, id: string, name: strin
   await page.getByRole('button', { name: 'Waiting for GSAP', exact: true }).click();
   await expect(page).toHaveURL(/waiting=true/);
   await page.getByRole('searchbox', { name: 'Search purchase requests' }).fill(id);
-  const table = page.getByRole('region', { name: 'Purchase requests by vendor' });
-  await expect(table.getByRole('link', { name, exact: true })).toBeVisible();
-  await expectNoAxeViolations(page);
+  const table = page.getByRole('table', { name: 'Purchase requests by vendor' });
   await table.getByRole('link', { name, exact: true }).click();
   await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
+}
+
+/** As Alex Morgan: the line item's SWBS code from the simulated GSAP, through the API (030). */
+export async function swbsCodeThroughApi(page: Page, lineItem: Named): Promise<void> {
+  await signInAs(page, ALEX);
+  await callApi(page, 'POST', '/api/v1/simulated-gsap/swbs-runs', { lineItemIds: [lineItem.id] });
+}
+
+/** As Priya: what the PR form saves for the whole line item (USD, Email group DE_LUBES); `PR for <name>`. */
+export async function savedPurchaseRequest(
+  page: Page,
+  lineItem: Named,
+  amount: string,
+  deliveryDate: string,
+): Promise<{ id: string; version: number }> {
+  await signInAs(page, PRIYA);
+  return callApi(page, 'POST', '/api/v1/purchase-requests', {
+    name: `PR for ${lineItem.name}`,
+    description: '',
+    ownerId: 'U-1002',
+    moaApproverId: 'U-1003',
+    approvalWorkflowId: 'WF-1004',
+    modificationWorkflowId: 'WF-1005',
+    attributes: {
+      'SA-1036': ['SO-1164'],
+      'SA-1037': ['SO-1165'],
+      'SA-1038': 'Christmas gift boxes',
+      'SA-1041': 'Priya Raman',
+      'SA-1042': 'Northlight Events GmbH',
+      'SA-1043': 'V-100101',
+      'SA-1050': 'SO-1170',
+    },
+    lines: [
+      {
+        lineItemId: lineItem.id,
+        currency: 'USD',
+        amount,
+        deliveryDate,
+        overallLimit: amount,
+        description: '',
+        attributes: {},
+      },
+    ],
+    then: 'save',
+  });
+}
+
+interface PurchaseRequestApproval {
+  sections: { rounds: { id: string; outcome: string; currentLevel: number }[] }[];
+}
+
+/** The line item gets its SWBS code; Priya raises and submits the PR, Daniel approves it. Ends as Daniel. */
+export async function approvedPurchaseRequest(
+  page: Page,
+  lineItem: Named,
+  amount: string,
+  deliveryDate: string,
+): Promise<string> {
+  await swbsCodeThroughApi(page, lineItem);
+  const { id, version } = await savedPurchaseRequest(page, lineItem, amount, deliveryDate);
+  const path = `/api/v1/purchase-requests/${id}/approval`;
+  const submitted = await callApi<PurchaseRequestApproval>(page, 'POST', `${path}/submit`, {
+    version,
+  });
+  const round = submitted.sections
+    .flatMap((section) => section.rounds)
+    .find((candidate) => candidate.outcome === 'open');
+  await signInAs(page, DANIEL);
+  await callApi(page, 'POST', `${path}/approve`, {
+    roundId: round?.id,
+    level: round?.currentLevel,
+    comment: '',
+  });
+  return id;
 }

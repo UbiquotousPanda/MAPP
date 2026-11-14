@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { addressIdSchema } from '@/api/ids';
 import type { CustomDashboardFilters } from '../model';
 
 const KEYS = ['from', 'to', 'plan', 'team'] as const;
@@ -8,14 +9,8 @@ const DATE = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/)
   .refine(isCalendarDate);
-const PLAN_IDS = z
-  .array(z.string().regex(/^P-\d{1,9}$/))
-  .max(MAX_IDS)
-  .transform(unique);
-const TEAM_IDS = z
-  .array(z.string().regex(/^T-\d{1,9}$/))
-  .max(MAX_IDS)
-  .transform(unique);
+const PLAN_IDS = z.array(addressIdSchema).max(MAX_IDS).transform(unique);
+const TEAM_IDS = z.array(addressIdSchema).max(MAX_IDS).transform(unique);
 
 // An empty value ("from=", "plan=") means "none", so a viewer can clear a saved filter.
 export function readFilters(

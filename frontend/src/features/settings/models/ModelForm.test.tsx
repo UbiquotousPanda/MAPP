@@ -25,7 +25,7 @@ function field(name: RegExp) {
 
 describe('ModelForm (FR-009, FR-010)', () => {
   it('names every field with its marking and explains the allowed activity types', async () => {
-    renderForm({ kind: 'new' });
+    const { user } = renderForm({ kind: 'new' });
 
     const form = screen.getByRole('dialog', { name: 'New model' });
     expect(field(/^Name/)).toHaveAccessibleDescription('required');
@@ -33,7 +33,10 @@ describe('ModelForm (FR-009, FR-010)', () => {
     expect(field(/^MQL→deal rate/)).toBeInTheDocument();
     expect(field(/^Average deal size/)).toHaveAccessibleDescription(/USD/);
     const types = await within(form).findByRole('group', { name: /Allowed activity types/ });
-    expect(types).toHaveTextContent('Activities in plans using this model can be of these types.');
+    await user.click(within(form).getByRole('button', { name: 'About Allowed activity types' }));
+    expect(screen.getByRole('dialog', { name: 'About Allowed activity types' })).toHaveTextContent(
+      'Activities in plans using this model can be of these types.',
+    );
     // Inactive types are not offered for new choices.
     expect(within(types).queryByRole('checkbox', { name: /Print advert/ })).not.toBeInTheDocument();
   });
@@ -49,13 +52,13 @@ describe('ModelForm (FR-009, FR-010)', () => {
     await user.type(field(/^Average deal size/), '10k');
 
     expect(
-      screen.getByText('250,000 INQ → 5,000 MQL → 250 deals → 2,500,000.00 USD revenue'),
+      screen.getByText('250,000 INQ → 5,000 MQL → 250 deals → $2,500,000.00 revenue'),
     ).toBeInTheDocument();
 
     await user.clear(field(/^MQL→deal rate/));
     await user.type(field(/^MQL→deal rate/), '10');
     expect(
-      screen.getByText('250,000 INQ → 5,000 MQL → 500 deals → 5,000,000.00 USD revenue'),
+      screen.getByText('250,000 INQ → 5,000 MQL → 500 deals → $5,000,000.00 revenue'),
     ).toBeInTheDocument();
   });
 
@@ -100,5 +103,35 @@ describe('ModelForm (FR-009, FR-010)', () => {
     await user.click(screen.getByRole('button', { name: 'Try again' }));
 
     expect(await screen.findByRole('checkbox', { name: 'Event' })).toBeInTheDocument();
+  });
+
+  it('047 FR-001 US1 scenario 2 refuses a velocity that is not whole months, never truncating or dropping it', async () => {
+    const { user, api } = renderForm({ kind: 'new' });
+
+    await user.clear(field(/^INQ→MQL velocity/));
+    await user.type(field(/^INQ→MQL velocity/), '1.5');
+    await user.clear(field(/^MQL→deal velocity/));
+    await user.type(field(/^MQL→deal velocity/), 'abc');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByText('2 problems need your attention')).toBeInTheDocument();
+    expect(field(/^INQ→MQL velocity/)).toHaveAccessibleDescription(
+      /Enter a whole number of months from 0 to 24\./,
+    );
+    expect(field(/^MQL→deal velocity/)).toHaveAccessibleDescription(
+      /Enter a whole number of months from 0 to 24\./,
+    );
+    expect(api.requests.filter((request) => request.method !== 'GET')).toEqual([]);
+  });
+
+  it('047 FR-001 refuses an emptied velocity on edit instead of ignoring it', async () => {
+    const { user, api } = renderForm({ kind: 'edit', model: LUBRICANTS });
+
+    await screen.findByRole('checkbox', { name: 'Event' });
+    await user.clear(field(/^INQ→MQL velocity/));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByText('1 problem needs your attention')).toBeInTheDocument();
+    expect(api.requests.filter((request) => request.method !== 'GET')).toEqual([]);
   });
 });

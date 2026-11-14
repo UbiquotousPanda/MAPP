@@ -14,10 +14,19 @@ import (
 // Table holds the records of one type by id. Records are kept encoded, so a caller never shares memory with
 // what is stored, as with rows read from a database.
 type Table[T any] struct {
-	db   *DB
-	idOf func(T) string
-	mu   sync.Mutex
-	rows map[string][]byte
+	db    *DB
+	name  string
+	idOf  func(T) string
+	mu    sync.Mutex
+	rows  map[string][]byte
+	rules rules[T]
+	// probes holds each row decoded once, for Where's filter only; callers always get a fresh copy.
+	probes map[string]probe[T]
+}
+
+type probe[T any] struct {
+	data   []byte
+	record T
 }
 
 // TableOf returns db's table name, made on first use: fakes built on one DB share it.
@@ -31,7 +40,7 @@ func TableOf[T any](db *DB, name string, idOf func(T) string) *Table[T] {
 		}
 		return t
 	}
-	t := &Table[T]{db: db, idOf: idOf, rows: map[string][]byte{}}
+	t := &Table[T]{db: db, name: name, idOf: idOf, rows: map[string][]byte{}}
 	db.tables[name] = t
 	return t
 }
@@ -56,24 +65,45 @@ func (t *Table[T]) List() ([]T, error) {
 }
 
 func (t *Table[T]) Where(keep func(T) bool) ([]T, error) {
-	t.mu.Lock()
-	ids := slices.SortedFunc(maps.Keys(t.rows), byID)
-	rows := make([][]byte, len(ids))
-	for i, id := range ids {
-		rows[i] = t.rows[id]
+	rows, err := t.snapshot()
+	if err != nil {
+		return nil, err
 	}
-	t.mu.Unlock()
 	kept := []T{}
-	for _, data := range rows {
+	for _, p := range rows {
+		if !keep(p.record) {
+			continue
+		}
 		var record T
-		if err := decode(data, &record); err != nil {
+		if err := decode(p.data, &record); err != nil {
 			return nil, err
 		}
-		if keep(record) {
-			kept = append(kept, record)
-		}
+		kept = append(kept, record)
 	}
 	return kept, nil
+}
+
+// snapshot returns every row in id order, each decoded once per stored version for Where's filter.
+func (t *Table[T]) snapshot() ([]probe[T], error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.probes == nil {
+		t.probes = map[string]probe[T]{}
+	}
+	ids := slices.SortedFunc(maps.Keys(t.rows), byID)
+	rows := make([]probe[T], len(ids))
+	for i, id := range ids {
+		p, ok := t.probes[id]
+		if !ok || &p.data[0] != &t.rows[id][0] {
+			p = probe[T]{data: t.rows[id]}
+			if err := decode(p.data, &p.record); err != nil {
+				return nil, err
+			}
+			t.probes[id] = p
+		}
+		rows[i] = p
+	}
+	return rows, nil
 }
 
 func (t *Table[T]) Put(ctx context.Context, records ...T) error {
@@ -88,9 +118,14 @@ func (t *Table[T]) Put(ctx context.Context, records ...T) error {
 		}
 	}
 	t.mu.Lock()
-	defer t.mu.Unlock()
+	undo := make([]func(), len(records))
 	for i, record := range records {
-		t.set(keep, t.idOf(record), encoded[i])
+		undo[i] = t.set(keep, t.idOf(record), encoded[i])
+	}
+	t.mu.Unlock()
+	if err := t.checkPut(ctx, records); err != nil {
+		undoAll(undo)
+		return err
 	}
 	return nil
 }
@@ -102,21 +137,34 @@ func (t *Table[T]) Delete(ctx context.Context, ids ...string) error {
 		return err
 	}
 	t.mu.Lock()
-	defer t.mu.Unlock()
-	for _, id := range ids {
-		t.set(keep, id, nil)
+	undo := make([]func(), len(ids))
+	for i, id := range ids {
+		undo[i] = t.set(keep, id, nil)
+	}
+	t.mu.Unlock()
+	if err := t.db.later(ctx, func() error { return t.db.restricted(t.name, ids) }); err != nil {
+		undoAll(undo)
+		return err
 	}
 	return nil
 }
 
-func (t *Table[T]) set(keep func(undo func()), id string, data []byte) {
+func undoAll(undo []func()) {
+	for i := len(undo) - 1; i >= 0; i-- {
+		undo[i]()
+	}
+}
+
+func (t *Table[T]) set(keep func(undo func()), id string, data []byte) func() {
 	old, existed := t.rows[id]
-	keep(func() { t.restore(id, old, existed) })
+	undo := func() { t.restore(id, old, existed) }
+	keep(undo)
 	if data == nil {
 		delete(t.rows, id)
-		return
+	} else {
+		t.rows[id] = data
 	}
-	t.rows[id] = data
+	return undo
 }
 
 func (t *Table[T]) restore(id string, old []byte, existed bool) {
@@ -132,7 +180,7 @@ func (t *Table[T]) restore(id string, old []byte, existed bool) {
 func (t *Table[T]) copyTo(db *DB) table {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	return &Table[T]{db: db, idOf: t.idOf, rows: maps.Clone(t.rows)}
+	return &Table[T]{db: db, name: t.name, idOf: t.idOf, rows: maps.Clone(t.rows), rules: t.rules.clone()}
 }
 
 func byID(a, b string) int {

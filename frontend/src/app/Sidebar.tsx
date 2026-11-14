@@ -5,10 +5,10 @@ import { Logo } from '@/ui/Logo/Logo';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import { useAccess } from '@/session/access';
 import { cx } from '@/ui/cx';
-import { useCurrentUser, useSession } from '@/session/useSession';
 import { MAIN_ITEMS, MORE_ITEMS, navItemsFor } from './navigation';
 import type { NavItem } from './navigation';
 import styles from './Sidebar.module.css';
+import { useSidebarCollapsed } from './useSidebarCollapsed';
 
 export interface SidebarProps {
   /** In the menu drawer: always expanded and without Collapse, so one Escape closes the drawer. */
@@ -16,15 +16,10 @@ export interface SidebarProps {
 }
 
 export function Sidebar({ inDrawer = false }: SidebarProps) {
-  const person = useCurrentUser();
-  const { updatePreferences } = useSession();
   const moreId = useId();
-  const collapsed = !inDrawer && person.preferences.sidebarCollapsed;
+  const sidebar = useSidebarCollapsed();
+  const collapsed = !inDrawer && sidebar.collapsed;
   const variant = inDrawer ? 'drawer' : collapsed ? 'rail' : 'full';
-
-  function toggleCollapsed() {
-    updatePreferences({ sidebarCollapsed: !collapsed });
-  }
 
   return (
     <div className={cx(styles.sidebar, styles[variant])}>
@@ -48,7 +43,7 @@ export function Sidebar({ inDrawer = false }: SidebarProps) {
 
       {!inDrawer && (
         <div className={styles.footer}>
-          <CollapseButton collapsed={collapsed} onToggle={toggleCollapsed} />
+          <CollapseButton collapsed={collapsed} onToggle={sidebar.toggle} />
         </div>
       )}
     </div>

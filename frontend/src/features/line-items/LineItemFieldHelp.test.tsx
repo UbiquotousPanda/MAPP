@@ -87,7 +87,7 @@ describe('016 FR-047: the line-item screens show the Field help of every labelle
     renderWithProviders(
       <>
         <UnassignedBalanceRow balance={section.balance} />
-        <SpreadGrid grid={section.grid} noDates={false} />
+        <SpreadGrid grid={section.grid} quarterly={section.gridQuarterly} noDates={false} />
       </>,
       { user: testUser() },
     );

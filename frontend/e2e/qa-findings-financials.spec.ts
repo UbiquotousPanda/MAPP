@@ -30,7 +30,7 @@ test('038 FR-004, FR-007: Mei, a Planner, sees no Not linked tab and FT-1004 ans
 
   await page.goto('/financials');
   const tabs = page.getByRole('tablist', { name: 'Transaction type' });
-  await expect(tabs.getByRole('tab', { name: /^All \(\d+\)$/ })).toBeVisible();
+  await expect(tabs.getByRole('tab', { name: 'All', exact: true })).toBeVisible();
   await expect(tabs.getByRole('tab', { name: /Not linked/ })).toHaveCount(0);
   await expectNoAxeViolations(page);
 

@@ -147,7 +147,7 @@ describe('PlansAtAGlanceCard', () => {
       'Planned cost',
     ]);
     for (const name of ['Campaigns', 'Activities', 'Planned cost']) {
-      expect(within(table).getByRole('columnheader', { name }).className).toMatch(/number/);
+      expect(within(table).getByRole('columnheader', { name }).className).toMatch(/numeric/);
     }
   });
 
@@ -176,22 +176,10 @@ describe('PlansAtAGlanceCard', () => {
     expect(screen.queryByRole('link', { name: /View all/ })).not.toBeInTheDocument();
   });
 
-  it('says which plans it covers and what it shows (FR-008)', async () => {
-    const { user } = renderCard('everything');
-
-    const card = screen.getByRole('region', { name: 'Plans at a glance' });
-    expect(card).toHaveTextContent('Live roll-up across all plans');
-    await user.click(within(card).getByRole('button', { name: 'About Plans at a glance' }));
-    expect(screen.getByRole('dialog', { name: 'About Plans at a glance' })).toHaveTextContent(
-      'Every plan your teams work on, the teams on it, and live status rolled up from its activities.',
-    );
-  });
-
   it('offers Switch to Everything when none of the teams has a plan (FR-021)', async () => {
     const { user, onShowEverything } = renderCard('myTeams', page([]));
 
     expect(await screen.findByText('None of your teams has a plan yet.')).toBeInTheDocument();
-    expect(screen.getByText('Live roll-up across your teams')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Switch to Everything' }));
 
     expect(onShowEverything).toHaveBeenCalledOnce();

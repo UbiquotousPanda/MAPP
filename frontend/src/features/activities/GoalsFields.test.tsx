@@ -31,7 +31,7 @@ describe('GoalsFields (feature 006, FR-018)', () => {
     await user.click(screen.getByRole('button', { name: 'About MQL calculation' }));
     expect(
       await screen.findByText(
-        "MQL = INQ × 2.00 % · deals = MQL × 5.00 % · revenue = deals × 10,000.00 USD — each rounded to a whole number (model 'Lubricants 1.0').",
+        "MQL = INQ × 2.00 % · deals = MQL × 5.00 % · revenue = deals × $10,000.00 — each rounded to a whole number (model 'Lubricants 1.0').",
       ),
     ).toBeVisible();
   });

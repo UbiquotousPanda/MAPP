@@ -15,7 +15,6 @@ import type { FormState, StoredActivity } from './activity-form-state';
 import styles from './ActivityForm.module.css';
 import { ACTIVITY_SECTION } from './activity-form-progress';
 
-const FROM_INITIATIVE = 'From the initiative';
 const ONGOING_WARNING = "Ongoing can't be undone after saving.";
 const ONGOING_LOCKED = "Ongoing can't be undone — to plan with an end date, create a new activity.";
 
@@ -37,13 +36,6 @@ export function ActivityDatesCard(props: ActivityDatesCardProps) {
   const { form, data, value, stored, planCurrency } = props;
   const { date } = useFormatters();
   const { initiative } = data.context;
-  const defaults = data.defaults;
-  const datesFromInitiative = Boolean(
-    defaults?.startDate &&
-    value.startDate === defaults.startDate &&
-    value.endDate === (defaults.endDate ?? '') &&
-    !value.ongoing,
-  );
   const allowed =
     initiative.startDate && initiative.endDate
       ? { start: initiative.startDate, end: initiative.endDate }
@@ -73,7 +65,6 @@ export function ActivityDatesCard(props: ActivityDatesCardProps) {
                 idPrefix="field"
                 marking="Needed to submit"
                 tip={help('activity.dates')}
-                hint={datesFromInitiative ? FROM_INITIATIVE : undefined}
                 start={start.value}
                 end={end.value}
                 onChange={(range) => {
@@ -138,11 +129,6 @@ export function ActivityDatesCard(props: ActivityDatesCardProps) {
             label="Planned cost"
             marking="Needed to submit"
             tip={help('activity.plannedCost')}
-            hint={
-              planCurrency === 'USD'
-                ? '0.00 or more'
-                : `0.00 or more, in ${planCurrency}, the plan's currency`
-            }
             currency={planCurrency}
             {...field}
             name={fieldId('plannedCost')}

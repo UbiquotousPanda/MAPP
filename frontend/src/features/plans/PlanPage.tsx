@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useOutlet, useParams, useSearchParams } from 'react-router';
+import { useNavigate, useOutlet, useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -11,7 +12,7 @@ import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
 import type { TabItem } from '@/ui/Tabs/Tabs';
 import { HistorySection, showHistory } from '@/features/activity-log';
 import { usePageTitle } from '@/ui/usePageTitle';
-import { allows, moreItemFor } from '@/session/gate-action';
+import { allows, gateItem, moreItemFor } from '@/session/gate-action';
 import { useWorkbookMenu } from '@/features/workbook';
 import { BudgetByMonthCard } from './phasing/BudgetByMonthCard';
 import { useCampaignTreeContent } from './campaigns/useCampaignTreeContent';
@@ -50,14 +51,19 @@ export function PlanPage() {
   const [treeSearch, setTreeSearch] = useState('');
   const found = usePlanSearchRows(planId, treeSearch);
   const panel = useOutlet();
-  const [search, setSearch] = useSearchParams();
+  const [search, setSearch] = useAddressParams();
   const tab = planTabOf(search);
   // View history: once the History tab is shown, its heading takes the focus (feature 011).
   const focusHistory = useRef(false);
   usePageTitle(panel ? null : (plan.data?.name ?? 'Plan'));
   const actions = usePlanActions({ onDeleted: () => void navigate('/plans') });
-  const exportItems = usePlanExport(planId);
-  const workbookItems = useWorkbookMenu(planId, allows(plan.data?.access?.content.editActivities));
+  const canExport = allows(plan.data?.access?.export);
+  const exportItems = usePlanExport(planId, canExport);
+  const workbookItems = useWorkbookMenu(
+    planId,
+    allows(plan.data?.access?.content.editActivities),
+    canExport,
+  );
   const viewOnly = changesNothingIn(plan.data?.access);
 
   useEffect(() => {
@@ -153,7 +159,10 @@ export function PlanPage() {
         },
         data.access?.edit,
       ),
-      ...moreItemFor(status, data.access?.publish),
+      // Unpublish is a less-used action: always in More, never a header button.
+      ...(data.status === 'draft'
+        ? moreItemFor(status, data.access?.publish)
+        : gateItem(status, data.access?.publish)),
       ...actions.copyItem(data),
       { label: 'View history', onSelect: viewHistory },
       ...workbookItems,
@@ -166,9 +175,8 @@ export function PlanPage() {
           plan={data}
           moreItems={moreItems}
           statusAction={
-            allows(data.access?.publish) && (
-              <Button onClick={status.onSelect}>{status.label}</Button>
-            )
+            data.status === 'draft' &&
+            allows(data.access?.publish) && <Button onClick={status.onSelect}>Publish</Button>
           }
         />
         <div className={styles.body}>

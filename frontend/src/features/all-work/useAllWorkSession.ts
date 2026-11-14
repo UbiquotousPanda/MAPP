@@ -8,45 +8,37 @@ import { useAllWorkState } from './all-work-store';
 import type { AllWorkEntry } from './all-work-store';
 import { leftOutMessage } from './all-work-text';
 import type { SavedView, ViewState } from './all-work-types';
-import { fromAddress, hasAddressFilters } from './schemas';
+import { addressOf, fromAddress, hasAddressFilters } from './schemas';
 import { leftOutOf, standardState, yearRange } from './view-state';
 import type { PageSize } from './view-state';
 
-/** A new state, or a change of the state as it is when the change applies. */
+const SYNCED = { allWorkAddress: true };
+
+function isSynced(state: unknown): boolean {
+  return typeof state === 'object' && state !== null && 'allWorkAddress' in state;
+}
+
 export type StateChange = ViewState | ((current: ViewState) => ViewState);
 
 export interface AllWorkSession {
-  /** null until the visit has chosen its view. */
   state: ViewState | null;
   entry: AllWorkEntry;
-  /**
-   * Shows another state, or a change of the state as it is then; the page goes back to 1 unless
-   * `keepPage`.
-   */
+  /** The page goes back to 1 unless `keepPage`. */
   setState: (next: StateChange, options?: { keepPage?: boolean }) => void;
-  /**
-   * Applies a saved view (FR-031): what no longer exists is left out and named in a message;
-   * the view is then the active one (FR-030).
-   */
+  /** What no longer exists is left out and named in a message. */
   applyView: (view: SavedView) => Promise<void>;
-  /** Marks a view as the active one without changing what is shown (after saving it). */
   setAppliedView: (viewId: string | null) => void;
-  /** Back to the standard view: the current year, no filters, the remembered columns. */
   applyStandard: () => void;
   setPage: (page: number) => void;
   setPageSize: (pageSize: PageSize) => void;
-  /** Remembers the scroll position before a record opens (FR-016). */
   rememberScroll: () => void;
-  /** Why the visit could not start (preferences, choices or saved views failed to load). */
   startError: unknown;
   retryStart: () => void;
 }
 
 /**
- * The person's All work visit (FR-009, D-122): it starts from the person's default saved view,
- * else the standard view — the current year with the remembered columns — or from the filters in
- * the address, which it then removes; afterwards it keeps the state while the person moves around
- * MAPP.
+ * Starts from the filters in the address, else the default saved view, else the standard view; then
+ * keeps the state while the person moves around and writes it back into the address.
  */
 export function useAllWorkSession(): AllWorkSession {
   const user = useCurrentUser();
@@ -55,14 +47,15 @@ export function useAllWorkSession(): AllWorkSession {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { show } = useToast();
-  const fromLink = hasAddressFilters(new URLSearchParams(location.search));
+  // An address the page wrote itself already shows; any other one with filters is a link to apply.
+  const fromLink =
+    hasAddressFilters(new URLSearchParams(location.search)) && !isSynced(location.state);
   const starting = !entry.initialized || fromLink;
+  const address = starting || !entry.state ? null : `?${addressOf(entry.state)}`;
   const preferences = useAllWorkPreferences();
-  // The choices of the current year, which also say which year that is.
   const current = useAllWorkOptions(null, starting);
   const views = useSavedViews();
 
-  /** A saved view's state without what no longer exists, and the names of what was left out. */
   const fitted = useCallback(
     async (view: SavedView) => {
       try {
@@ -86,9 +79,9 @@ export function useAllWorkSession(): AllWorkSession {
     const params = new URLSearchParams(location.search);
     const start = { initialized: true, page: 1, scrollY: 0 };
     if (hasAddressFilters(params)) {
-      update({ ...start, state: fromAddress(params, standard), appliedViewId: null });
-      // The filters were applied once; the address goes back to plain /all-work (D-122).
-      void navigate(location.pathname, { replace: true });
+      const state = fromAddress(params, standard);
+      update({ ...start, state, appliedViewId: null });
+      void navigate(`?${addressOf(state)}`, { replace: true, state: SYNCED });
       return;
     }
     const defaultView = views.data.items.find((view) => view.isDefault);
@@ -96,7 +89,6 @@ export function useAllWorkSession(): AllWorkSession {
       update({ ...start, state: standard, appliedViewId: null });
       return;
     }
-    // A new visit starts from the person's default view (FR-009).
     let cancelled = false;
     void fitted(defaultView).then(({ state, names }) => {
       if (cancelled) return;
@@ -112,12 +104,17 @@ export function useAllWorkSession(): AllWorkSession {
     current.data,
     views.data,
     location.search,
-    location.pathname,
     navigate,
     update,
     fitted,
     show,
   ]);
+
+  useEffect(() => {
+    if (address !== null && address !== location.search) {
+      void navigate(address, { replace: true, state: SYNCED });
+    }
+  }, [address, location.search, navigate]);
 
   const setState = useCallback(
     (next: StateChange, { keepPage = false }: { keepPage?: boolean } = {}) =>

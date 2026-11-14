@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { amountText, moneyText, RateTip } from '@/features/line-items';
+import { amountText, Converted, moneyText } from '@/features/line-items';
 import { useFieldHelp } from '@/features/settings';
 import type { Money } from '@/features/line-items';
 import { toCents } from '@/format/decimal';
 import type { Activity } from './api';
 import styles from './ActivityPage.module.css';
-import { lineItemsAttentionText, lineItemsText } from './activity-text';
+import { lineItemsAttentionText } from './activity-text';
 
 /** Planned cost, unassigned planned cost and line items, with the display currency beside. */
 export function ActivityFigures({ activity }: { activity: Activity }) {
@@ -41,7 +41,7 @@ export function ActivityFigures({ activity }: { activity: Activity }) {
             ? 'No line items yet'
             : attention > 0
               ? lineItemsAttentionText(attention)
-              : `${lineItemsText(count)}, all filled in`
+              : 'All filled in'
         }
       />
     </section>
@@ -57,14 +57,7 @@ function UnassignedCard({
 }) {
   const tip = useFieldHelp().help('activity.unassignedPlannedCost');
   if (!unassigned) {
-    return (
-      <SummaryCard
-        label="Unassigned planned cost"
-        tip={tip}
-        value="—"
-        detail="No planned cost yet"
-      />
-    );
+    return <SummaryCard label="Unassigned planned cost" tip={tip} value="—" />;
   }
   const cents = toCents(unassigned.amount);
   let detail: ReactNode;
@@ -77,12 +70,7 @@ function UnassignedCard({
   } else if (cents === 0n) {
     detail = 'All of the planned cost is assigned';
   } else {
-    detail = (
-      <>
-        <span>Not yet assigned to a line item</span>
-        <Beside primary={unassigned} secondary={display} />
-      </>
-    );
+    detail = <Beside primary={unassigned} secondary={display} />;
   }
   return (
     <SummaryCard
@@ -95,15 +83,10 @@ function UnassignedCard({
   );
 }
 
-/** "≈ 15,822.78 USD ⓘ": the display-currency amount under a card's value, when it differs. */
+/** "≈ $15,822.78" under a card's value, when the display currency differs. */
 function Beside({ primary, secondary }: { primary: Money; secondary: Money | null }) {
   if (!secondary || secondary.currency === primary.currency) {
     return null;
   }
-  return (
-    <span className={styles.beside}>
-      ≈ {moneyText(secondary)}
-      <RateTip codes={[primary.currency, secondary.currency]} />
-    </span>
-  );
+  return <Converted from={primary.currency} amount={secondary} />;
 }

@@ -2,6 +2,8 @@ package apibench
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"slices"
 	"strings"
 	"testing"
@@ -113,4 +115,18 @@ func (s *Server) CampaignIDs(tb testing.TB, planID string) []string {
 		campaignIDs = append(campaignIDs, c.ID)
 	}
 	return campaignIDs
+}
+
+// DeleteSeen deletes the record at path with the version it has now, as the web app sends the one it shows.
+func (c *Client) DeleteSeen(tb testing.TB, path string) Response {
+	tb.Helper()
+	return c.Do(tb, http.MethodDelete, fmt.Sprintf("%s?version=%d", path, c.Version(tb, path)), nil)
+}
+
+// Version is the version of the record at path now.
+func (c *Client) Version(tb testing.TB, path string) int {
+	tb.Helper()
+	var record struct{ Version int }
+	c.Do(tb, http.MethodGet, path, nil).Decode(tb, &record)
+	return record.Version
 }

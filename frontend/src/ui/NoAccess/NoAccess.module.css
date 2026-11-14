@@ -1,5 +1,4 @@
-/* Like the not-found page: a centred icon, title, sentence and Go to Home (feature 014, FR-008).
-   On the grey page its secondary text and links are Text Strong (constitution X). */
+/* On the grey page secondary text and links are Text Strong (constitution X). */
 .page {
   --ink-2: var(--ink);
   --link: var(--ink);
@@ -12,7 +11,6 @@
   text-align: center;
 }
 
-/* The icon sits in a grey circle, like the empty states. */
 .icon {
   display: grid;
   place-items: center;
@@ -31,7 +29,7 @@
 .title {
   color: var(--ink);
   font-size: var(--text-2xl);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .text {

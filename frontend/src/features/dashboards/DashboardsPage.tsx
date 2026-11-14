@@ -1,6 +1,7 @@
 import { LayoutDashboard } from 'lucide-react';
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
@@ -10,6 +11,7 @@ import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { Tabs } from '@/ui/Tabs/Tabs';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { ExportMenu } from '@/ui/ExportMenu/ExportMenu';
 import { downloadDashboard, useDashboard } from './api';
 import type { PlanningDashboard } from './api';
 import { ApprovalsPanel } from './ApprovalsPanel';
@@ -20,7 +22,6 @@ import type { DashboardFilters as Filters, DashboardKind } from './dashboard-lin
 import { emptyText, financeCoverage } from './dashboard-text';
 import { DashboardFilters } from './DashboardFilters';
 import { MarketsTable, PlanCampaignsTable, PlansTable } from './DashboardTables';
-import { ExportMenu } from './ExportMenu';
 import { FigureCards } from './FigureCards';
 import { GlobalBudgetsPanel } from './GlobalBudgetsPanel';
 import { MonthlyChart } from './MonthlyChart';
@@ -33,18 +34,13 @@ const TITLES: Record<DashboardKind, string> = {
   regional: 'Regional dashboard',
 };
 
-const DESCRIPTIONS: Record<DashboardKind, string> = {
-  executive: 'Budget, planned cost and spend of every market you can see.',
-  regional: 'Budget, planned cost and spend of one market, plan by plan.',
-};
-
 interface DashboardsPageProps {
   kind: DashboardKind;
 }
 
 export function DashboardsPage({ kind }: DashboardsPageProps) {
   usePageTitle(TITLES[kind]);
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const navigate = useNavigate();
   const filters = readFilters(params);
   const dashboard = useDashboard(kind, filters);
@@ -75,10 +71,12 @@ export function DashboardsPage({ kind }: DashboardsPageProps) {
       <PageHeader
         eyebrow="Dashboards"
         title={TITLES[kind]}
-        description={DESCRIPTIONS[kind]}
         actions={
           dashboard.data?.canExport && (
-            <ExportMenu download={(format) => downloadDashboard(kind, filters, format)} />
+            <ExportMenu
+              formats={['pptx', 'pdf']}
+              download={(format) => downloadDashboard(kind, filters, format)}
+            />
           )
         }
       />

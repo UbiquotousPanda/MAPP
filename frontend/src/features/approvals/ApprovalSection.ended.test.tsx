@@ -76,10 +76,7 @@ describe('ApprovalSection when approval ends early (feature 008, US5)', () => {
     const dialog = await screen.findByRole('alertdialog', {
       name: "Recall the submission of 'Launch film'?",
     });
-    await user.type(
-      within(dialog).getByRole('textbox', { name: 'Reason (optional)' }),
-      'Wrong workflow',
-    );
+    await user.type(within(dialog).getByRole('textbox', { name: 'Reason' }), 'Wrong workflow');
     await user.click(within(dialog).getByRole('button', { name: 'Recall submission' }));
 
     expect(await screen.findByText("Submission of 'Launch film' recalled")).toBeInTheDocument();

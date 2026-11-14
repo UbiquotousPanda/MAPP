@@ -2,15 +2,18 @@ import type { UIMatch } from 'react-router';
 
 /** What every route inside RequireSignIn says about its page, in its `handle` (router.tsx). */
 export interface PageHandle {
-  /** The page's name in the browser tab, shown already while the session is being checked. */
   title: string;
+  /** True for a page that uses the wide content column, such as a report. */
+  wide?: boolean;
 }
 
-/** The tab title of the page asked for: the `handle` of the deepest matching route. */
 export function requestedPageTitle(matches: UIMatch[]): string {
-  // router.test.tsx checks that every route inside RequireSignIn has one.
   const handle = matches.at(-1)?.handle;
   return isPageHandle(handle) ? handle.title : '';
+}
+
+export function isWidePage(matches: UIMatch[]): boolean {
+  return matches.some((match) => isPageHandle(match.handle) && match.handle.wide === true);
 }
 
 function isPageHandle(handle: unknown): handle is PageHandle {

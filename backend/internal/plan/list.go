@@ -218,7 +218,7 @@ func (s *Service) itemOf(ctx context.Context, p Plan, r listReads) (PlanSummary,
 	}
 	own := identity(p.Currency)
 	return PlanSummary{
-		ID: p.ID, Name: p.Name, Year: p.Year, Status: p.Status, AOP: p.AOP, BCPIR: p.BCPIR, Owner: sh.owner, Teams: sh.teams,
+		ID: p.ID, Name: p.Name, Year: p.Year, Status: p.Status, Version: p.Version, AOP: p.AOP, BCPIR: p.BCPIR, Owner: sh.owner, Teams: sh.teams,
 		BusinessUnit: sh.businessUnit, Figures: sh.figures, Completeness: sh.completeness,
 		Access:   authz.PlanAccessOf(ctx, AccessFacts(p)),
 		PlanType: p.PlanType, Currency: p.Currency, PlanBudget: own.optional(p.Budget), PlanPlannedCost: own.optional(f.PlannedCost),

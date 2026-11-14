@@ -10,6 +10,8 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { DatasetSummary } from '../model';
 import { useDatasets } from './api';
 import { UploadDialog } from './UploadDialog';
@@ -28,7 +30,6 @@ export function DatasetsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Dashboards', to: '/dashboards' }, { label: 'Datasets' }]}
         title="Datasets"
-        description="Data from your own CSV and Excel files, to chart beside SP&A One data."
         actions={
           <Button variant="primary" icon={<Upload />} onClick={upload}>
             Upload data
@@ -92,7 +93,7 @@ function DatasetTable({ datasets, caption, withOwner = false }: DatasetTableProp
   const { dateTime } = useFormatters();
   return (
     <div role="region" aria-label={caption} tabIndex={0} className={styles.scroller}>
-      <table className={styles.table}>
+      <table className={cx(dataTable.table, styles.table)}>
         <caption className="visually-hidden">{caption}</caption>
         <thead>
           <tr>

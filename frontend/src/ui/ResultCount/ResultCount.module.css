@@ -1,0 +1,15 @@
+.count {
+  margin: 0 0 0 auto;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--leading-sm);
+  white-space: nowrap;
+}
+
+@media (max-width: 599px) {
+  .count {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+}

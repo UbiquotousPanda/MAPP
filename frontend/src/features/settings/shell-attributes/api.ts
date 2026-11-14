@@ -1,13 +1,7 @@
-/**
- * What the Shell attribute pages ask the API (feature 002, US2): the attributes of every level,
- * one attribute and every change to attributes (options: options-api.ts).
- *
- * Every change refreshes what it can affect when it is done, also when it failed (a refused save
- * may mean someone else changed the attribute meanwhile): the lists, the attribute, its options,
- * the forms of the levels (SC-008), the activity log, the recycle bin and the Settings counts.
- */
+// A change refreshes what it can affect even when refused: someone else may have changed the attribute.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryKey } from '@tanstack/react-query';
+import type { Seen } from '@/api/seen';
 import { api, call } from '@/api/client';
 import type { components } from '@/api/generated/schema';
 import { SETTINGS_KEYS } from '../api';
@@ -23,14 +17,10 @@ export type DeleteResult = components['schemas']['DeleteResult'];
 export type AttributeCheckRequest = components['schemas']['AttributeCheckRequest'];
 export type AttributeCheckResult = components['schemas']['AttributeCheckResult'];
 
-/** Every level's attributes: the Settings list, its level counts and the editor's sections. */
 const ALL_ATTRIBUTES_KEY = ['shell-attributes', 'all'] as const;
 
-/** The Settings list of attributes (every key that starts with it). */
 const LISTS: QueryKey = ['shell-attributes'];
-/** The pages of single attributes. */
 const ATTRIBUTE_PAGES: QueryKey = ['shell-attribute'];
-/** What else a change to attributes or options can make out of date. */
 const ELSEWHERE: QueryKey[] = [
   ['shell-attribute-options'],
   ['shell-attribute-form'],
@@ -39,10 +29,8 @@ const ELSEWHERE: QueryKey[] = [
   SETTINGS_KEYS.overview,
 ];
 
-/** Everything a change to attributes or options can make out of date; an Undo brings it back. */
 export const CHANGED_BY_ANY_CHANGE: QueryKey[] = [LISTS, ATTRIBUTE_PAGES, ...ELSEWHERE];
 
-/** Every Shell attribute of every level, in display order (GET /api/v1/shell-attributes). */
 export function useAllShellAttributes() {
   return useQuery({
     queryKey: ALL_ATTRIBUTES_KEY,
@@ -50,7 +38,6 @@ export function useAllShellAttributes() {
   });
 }
 
-/** One Shell attribute with its usage and locks. */
 export function useShellAttribute(id: string) {
   return useQuery({
     queryKey: SETTINGS_KEYS.shellAttribute(id),
@@ -58,14 +45,12 @@ export function useShellAttribute(id: string) {
   });
 }
 
-/** The attribute as it is stored now, never from the cache (after a conflict). */
 export function fetchAttribute(id: string) {
   return call(
     api.GET('/api/v1/shell-attributes/{attributeId}', { params: { path: { attributeId: id } } }),
   );
 }
 
-/** Creates a Shell attribute with its first options. */
 export function useCreateAttribute() {
   const refresh = useRefresh();
   return useMutation({
@@ -75,13 +60,11 @@ export function useCreateAttribute() {
   });
 }
 
-/** A change to an attribute: only the changed fields, and the version the person started from. */
 export interface AttributeChange {
   id: string;
   body: ShellAttributeUpdate;
 }
 
-/** Saves the changed fields of an attribute (D-203). */
 export function useUpdateAttribute() {
   const refresh = useRefresh();
   return useMutation({
@@ -96,7 +79,6 @@ export function useUpdateAttribute() {
   });
 }
 
-/** What the change would affect, before saving (FR-021); saves nothing. */
 export function checkAttributeImpact({ id, body }: AttributeChange): Promise<ChangeImpact> {
   return call(
     api.POST('/api/v1/shell-attributes/{attributeId}/impact', {
@@ -106,14 +88,12 @@ export function checkAttributeImpact({ id, body }: AttributeChange): Promise<Cha
   );
 }
 
-/** A status change: the record, the new status and the version the person started from. */
 export interface StatusChange {
   id: string;
   active: boolean;
   version: number;
 }
 
-/** Sets an attribute inactive or reactivates it (FR-004, FR-023). */
 export function useSetAttributeStatus() {
   const refresh = useRefresh();
   return useMutation({
@@ -128,17 +108,12 @@ export function useSetAttributeStatus() {
   });
 }
 
-/** A move of an attribute, or of its whole section, one place up or down (FR-019). */
 export interface AttributeMove {
   attribute: ShellAttribute;
   what: 'attribute' | 'section';
   direction: 'up' | 'down';
 }
 
-/**
- * Moves an attribute or its section. The answer is the level's new order, which replaces that
- * level in the list at once, so the moved row is in its new place when the move is done.
- */
 export function useMoveAttribute() {
   const queryClient = useQueryClient();
   const refresh = useRefresh();
@@ -160,14 +135,13 @@ export function useMoveAttribute() {
   });
 }
 
-/** Moves an attribute and its options to the recycle bin; answers the entry for Undo. */
 export function useDeleteAttribute() {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: (id: string) =>
+    mutationFn: ({ id, version }: Seen) =>
       call(
         api.DELETE('/api/v1/shell-attributes/{attributeId}', {
-          params: { path: { attributeId: id } },
+          params: { path: { attributeId: id }, query: { version } },
         }),
       ),
     // Not the deleted attribute's own page: it would ask for an attribute that is gone.
@@ -175,11 +149,6 @@ export function useDeleteAttribute() {
   });
 }
 
-/**
- * What saving these values on a record of `level` would say (the preview's **Try saving**,
- * FR-020): the problems, the dependent values it would clear and the fields still needed. Saves
- * nothing.
- */
 export function checkAttributeValues(
   level: ShellAttribute['level'],
   body: AttributeCheckRequest,
@@ -189,7 +158,6 @@ export function checkAttributeValues(
   );
 }
 
-/** The attributes of every level, with `level`'s replaced by its new order. */
 function withLevelReplaced(
   all: ShellAttributeList,
   level: ShellAttribute['level'],
@@ -201,10 +169,6 @@ function withLevelReplaced(
   return { items, total: items.length };
 }
 
-/**
- * Asks again for what a change can affect (only the queries on screen are asked at once). A
- * change waits for this, so the page shows the new state when the change's message appears.
- */
 export function useRefresh() {
   const queryClient = useQueryClient();
   return (keys: QueryKey[] = CHANGED_BY_ANY_CHANGE) =>

@@ -87,7 +87,6 @@ export function ApprovalWorkflowsPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Approval workflows' }]}
         title="Approval workflows"
-        description="Who approves activities, level by level."
         actions={
           <CanChange permission="workflows.manage">
             <Button variant="primary" icon={<Plus />} onClick={() => setForm({ kind: 'new' })}>

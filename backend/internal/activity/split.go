@@ -14,12 +14,9 @@ import (
 	"mapp/internal/settings"
 )
 
-// Split activity (feature 016, FR-026 – FR-031, data-model §3.6, D-267): one activity becomes two inside its
-// plan. Whole line items move to the new activity and keep their IDs; part of the planned cost moves with
-// them; goals stay on the original; the new activity remembers where it came from (splitFromId). Splitting a
-// Submitted or Approved activity follows the re-approval rule of domain model §2.5. No undo.
+// A split moves whole line items, keeping their IDs, and part of the planned cost to a new activity that
+// remembers where it came from; goals stay on the original. No undo.
 
-// The messages of a split (016 plan "User-visible messages", data-model §3.6).
 const (
 	splitSuffix           = " (split)"
 	msgSplitNothing       = "Choose line items or an amount to move."
@@ -33,12 +30,9 @@ const (
 	splitRestartDetails   = "Approval restarted because the activity was split."
 )
 
-// Split splits the activity id, all or nothing (FR-028 – FR-030): the new activity — a copy of the original's
-// type, owner, dates, ongoing, workflow, description, external name and Shell attributes, with the chosen name,
-// the moved planned cost, no goals, status Created and the split link — the ticked line items moved to it with
-// their IDs, values and spreads, the original's planned cost lowered by the moved amount, and the original back
-// to Created when it was Submitted or Approved (FR-029). Each change is logged: "split" on the original,
-// "created … Split from" on the new activity, "moved" on each line item.
+// Split is all or nothing. The new activity copies the original's type, owner, dates, ongoing, workflow,
+// description, external name and Shell attributes, with no goals and status Created; the original goes back
+// to Created when it was Submitted or Approved.
 func (s *Service) Split(ctx context.Context, a actor.Actor, id string, in SplitRequest) (SplitResult, error) {
 	var result SplitResult
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
@@ -75,7 +69,6 @@ func (s *Service) Split(ctx context.Context, a actor.Actor, id string, in SplitR
 	return result, nil
 }
 
-// refusal stops the split p before it saves anything: its problems, a missing or an out-of-date version.
 func (p *splitPlan) refusal(version *int) error {
 	if version == nil || *version < 1 {
 		p.problems.Add("version", reloadMessage)
@@ -115,7 +108,6 @@ func (s *Service) createSplitOff(ctx context.Context, a actor.Actor, p splitPlan
 	return created, nil
 }
 
-// lowerOriginal saves the original after the split p: less planned cost, and Created when approval restarts.
 func (s *Service) lowerOriginal(ctx context.Context, a actor.Actor, p splitPlan, created Activity) (Activity, error) {
 	before := p.original
 	after := before
@@ -124,7 +116,9 @@ func (s *Service) lowerOriginal(ctx context.Context, a actor.Actor, p splitPlan,
 		after.PlannedCost = &left
 	}
 	if p.restart {
-		after.Status = StatusCreated
+		if err := after.MoveTo(StatusCreated); err != nil {
+			return Activity{}, err
+		}
 	}
 	after.Touch(a, s.now())
 	if err := s.repo.Put(ctx, after); err != nil {
@@ -149,7 +143,6 @@ func (s *Service) lowerOriginal(ctx context.Context, a actor.Actor, p splitPlan,
 	return after, nil
 }
 
-// newSplitActivity is the new activity of a split (FR-028), without its ID and record facts.
 func newSplitActivity(p splitPlan) Activity {
 	o := p.original
 	created := Activity{
@@ -165,7 +158,7 @@ func newSplitActivity(p splitPlan) Activity {
 	return created
 }
 
-// cloneValues returns a copy of Shell attribute values that shares nothing with them; never nil.
+// cloneValues shares nothing with the values it copies; never nil.
 func cloneValues(values settings.AttributeValues) settings.AttributeValues {
 	clone := settings.AttributeValues{}
 	for id, v := range values {
@@ -186,7 +179,6 @@ func movedText(s *Service, lineItems int, amount *money.Money) string {
 	return strings.Join(parts, " and ")
 }
 
-// samePlannedCost reports whether two planned costs are the same.
 func samePlannedCost(x, y *money.Money) bool {
 	if x == nil || y == nil {
 		return x == nil && y == nil

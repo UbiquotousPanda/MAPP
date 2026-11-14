@@ -4,11 +4,11 @@ package workbooktest
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"slices"
-	"time"
 
 	"mapp/internal/plan"
-	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/fake"
 	"mapp/internal/workbook"
@@ -29,7 +29,15 @@ func NewStore(db *fake.DB, plans Plans) Store {
 }
 
 func (s Store) AddImport(ctx context.Context, imp workbook.Import) error {
+	if used, err := s.CheckUsed(ctx, imp.CheckID); err != nil || used {
+		return errors.Join(err, fmt.Errorf("plan_imports: check_id %q is not unique", imp.CheckID))
+	}
 	return s.imports.Put(ctx, imp)
+}
+
+func (s Store) CheckUsed(_ context.Context, checkID string) (bool, error) {
+	used, err := s.imports.Where(func(i workbook.Import) bool { return i.CheckID == checkID })
+	return len(used) > 0, err
 }
 
 func (s Store) ListImports(ctx context.Context, scope authz.Scope, planID string, limit int) ([]workbook.Import, error) {
@@ -65,12 +73,20 @@ func (s Store) GetImport(ctx context.Context, scope authz.Scope, id string) (wor
 	return imp, true, nil
 }
 
-func (s Store) MarkUndone(ctx context.Context, id string, by actor.Actor, at time.Time) error {
+func (s Store) MarkUndone(ctx context.Context, id string, u workbook.Undone) error {
 	imp, found, err := s.imports.Get(id)
 	if err != nil || !found {
 		return err
 	}
-	imp.UndoneAt, imp.UndoneBy = &at, &by
+	imp.Records = slices.Clone(imp.Records)
+	for _, k := range u.Kept {
+		for i := range imp.Records {
+			if imp.Records[i].RecordID == k.ID {
+				imp.Records[i].KeptReason = k.Reason
+			}
+		}
+	}
+	imp.UndoneAt, imp.UndoneBy = &u.At, &u.By
 	return s.imports.Put(ctx, imp)
 }
 

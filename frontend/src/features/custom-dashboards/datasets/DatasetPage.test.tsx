@@ -48,7 +48,7 @@ describe('051 FR-040, FR-044: a dataset’s page (US3 scenario 5)', () => {
       'href',
       '/dashboards/DB-1001',
     );
-    expect(await screen.findByText('Rows 1–50 of 60')).toBeInTheDocument();
+    expect(await screen.findByText('1–50 of 60')).toBeInTheDocument();
     await expectNoAxeViolations();
   });
 
@@ -59,19 +59,19 @@ describe('051 FR-040, FR-044: a dataset’s page (US3 scenario 5)', () => {
     const cells = within(rows)
       .getAllByRole('cell')
       .map((cell) => cell.textContent);
-    expect(cells.slice(4, 8)).toEqual(['Event 2', '04 Mar 2026', '11', '1,200.00 EUR']);
+    expect(cells.slice(4, 8)).toEqual(['Event 2', '04 Mar 2026', '11', '€1,200.00']);
   });
 
   it('pages through the rows', async () => {
     const { user, api } = renderPage();
 
-    await user.click(await screen.findByRole('button', { name: 'Next' }));
+    await user.click(await screen.findByRole('button', { name: 'Next page' }));
 
-    expect(await screen.findByText('Rows 51–60 of 60')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Next' })).not.toBeInTheDocument();
+    expect(await screen.findByText('51–60 of 60')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
     expect(api.requests.map((r) => r.search)).toContain('?offset=50&limit=50');
-    await user.click(screen.getByRole('button', { name: 'Previous' }));
-    expect(await screen.findByText('Rows 1–50 of 60')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Previous page' }));
+    expect(await screen.findByText('1–50 of 60')).toBeInTheDocument();
   });
 
   it('shows a shared dataset view-only: no Edit, Sharing or Delete', async () => {

@@ -3,9 +3,9 @@ import { useId, useState } from 'react';
 import type { components } from '@/api/generated/schema';
 import { Button } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import type { Money } from './api';
 import { LAST_LINE, REMOVE_AFTER_SAVE, REMOVE_LINE, removeText, removeTitle } from './form-text';
-import styles from './LineRowsEditor.module.css';
 
 type Availability = components['schemas']['ActionAvailability'];
 
@@ -35,6 +35,9 @@ export function RemoveLineButton({
   }
 
   function handleClick() {
+    if (reason) {
+      return;
+    }
     if (reserved) {
       setConfirming(true);
     } else {
@@ -42,22 +45,26 @@ export function RemoveLineButton({
     }
   }
 
+  const button = (
+    <Button
+      size="sm"
+      variant="tertiary"
+      icon={<Trash2 />}
+      aria-disabled={reason ? true : undefined}
+      aria-describedby={reason ? reasonId : undefined}
+      onClick={handleClick}
+    >
+      {REMOVE_LINE}
+    </Button>
+  );
+
   return (
     <>
-      <Button
-        size="sm"
-        variant="tertiary"
-        icon={<Trash2 />}
-        disabled={reason !== ''}
-        aria-describedby={reason ? reasonId : undefined}
-        onClick={handleClick}
-      >
-        {REMOVE_LINE}
-      </Button>
+      {reason ? <Tooltip content={reason}>{button}</Tooltip> : button}
       {reason && (
-        <p id={reasonId} className={styles.reason}>
+        <span id={reasonId} className="visually-hidden">
           {reason}
-        </p>
+        </span>
       )}
       {reserved && (
         <ConfirmDialog

@@ -4,9 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"mapp/internal/history"
+	"mapp/internal/platform/web"
 )
 
-// listActivityTypes answers GET /api/v1/activity-types.
 func (h *Handler) listActivityTypes(c *gin.Context) {
 	types, err := h.service.ListActivityTypes(c.Request.Context(), actorOf(c))
 	respond(c, http.StatusOK, ActivityTypePage{Items: types, Total: len(types)}, err)
@@ -28,8 +30,6 @@ func (h *Handler) createActivityType(c *gin.Context) {
 	respond(c, http.StatusCreated, activityType, err)
 }
 
-// updateActivityType answers PATCH /api/v1/activity-types/{activityTypeId} with the activity type after the
-// change.
 func (h *Handler) updateActivityType(c *gin.Context) {
 	var update ActivityTypeUpdate
 	if !readBody(c, &update) {
@@ -41,12 +41,15 @@ func (h *Handler) updateActivityType(c *gin.Context) {
 
 // deleteActivityType answers DELETE /api/v1/activity-types/{activityTypeId} with the recycle-bin entry.
 func (h *Handler) deleteActivityType(c *gin.Context) {
-	entry, err := h.service.DeleteActivityType(c.Request.Context(), actorOf(c), c.Param("activityTypeId"))
+	ctx, err := history.SeenVersion(c, c.Param("activityTypeId"))
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	entry, err := h.service.DeleteActivityType(ctx, actorOf(c), c.Param("activityTypeId"))
 	respondDeleted(c, entry, err)
 }
 
-// activityTypeImpact answers POST /api/v1/activity-types/{activityTypeId}/impact with the warnings to confirm
-// before saving.
 func (h *Handler) activityTypeImpact(c *gin.Context) {
 	var update ActivityTypeUpdate
 	if !readBody(c, &update) {
@@ -56,8 +59,6 @@ func (h *Handler) activityTypeImpact(c *gin.Context) {
 	respond(c, http.StatusOK, impact, err)
 }
 
-// setActivityTypeStatus answers POST /api/v1/activity-types/{activityTypeId}/status with the activity type in
-// its new status.
 func (h *Handler) setActivityTypeStatus(c *gin.Context) {
 	var update StatusUpdate
 	if !readBody(c, &update) {

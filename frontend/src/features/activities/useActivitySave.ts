@@ -2,11 +2,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { ApiError, CONFLICT_NEXT_STEP, conflictMessage } from '@/api/errors';
-import { overLimitMessages } from '@/features/overspend';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { valuesToClear } from '@/ui/ShellAttributeFields/rules';
 import type { AttributeForm, ClearedValue } from '@/ui/ShellAttributeFields/rules';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import type { FormProblems } from '@/ui/useFormProblems';
 import { useFormatters } from '@/format/useFormatters';
 import { fetchLatestActivity, useCreateActivity, useUpdateActivity } from './api';
@@ -43,7 +43,7 @@ export function useActivitySave(options: ActivitySaveOptions) {
   const { date, dateFormat } = useFormatters();
   const create = useCreateActivity();
   const update = useUpdateActivity();
-  const [version, setVersion] = useState(activity?.version ?? 0);
+  const { version, loadLatest } = useEditedRecord({ version: activity?.version ?? 0 });
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState<Question<ClearedValue[]> | null>(null);
@@ -55,15 +55,6 @@ export function useActivitySave(options: ActivitySaveOptions) {
     if (saving) {
       return;
     }
-    const overLimits = overLimitMessages(
-      data.overspendLimits,
-      activity?.plannedCost?.amount ?? null,
-      values.plannedCost,
-    );
-    if (overLimits.length > 0) {
-      setFailure({ message: overLimits.join(' ') });
-      return;
-    }
     setFailure(null);
     const cleared = attributeForm
       ? valuesToClear(attributeForm, values.attributes, activity?.attributes ?? {})
@@ -72,19 +63,11 @@ export function useActivitySave(options: ActivitySaveOptions) {
       setClearing({ about: cleared, values, addAnother });
       return;
     }
-    void confirmApproval(values, addAnother);
+    void send(values, addAnother, false);
   }
 
-  async function confirmApproval(values: FormState, addAnother: boolean) {
-    const underApproval = activity?.status === 'submitted' || activity?.status === 'approved';
-    const changes = underApproval ? reapprovalChanges(initial, values, date, planCurrency) : [];
-    if (changes.length > 0) {
-      setReapproval({ about: changes, values, addAnother });
-      return;
-    }
-    await send(values, addAnother, false);
-  }
-
+  // The API decides whether a change restarts approval: it refuses the save on restartApproval until
+  // the person confirms, and the question lists the typed changes.
   async function send(values: FormState, addAnother: boolean, restartApproval: boolean) {
     setSaving(true);
     try {
@@ -92,7 +75,13 @@ export function useActivitySave(options: ActivitySaveOptions) {
       setReapproval(null);
     } catch (error) {
       setReapproval(null);
-      await showFailure(error instanceof ApiError ? error : new ApiError('other'));
+      const failure = error instanceof ApiError ? error : new ApiError('other');
+      if (asksToRestart(failure) && !restartApproval) {
+        const about = reapprovalChanges(initial, values, date, planCurrency);
+        setReapproval({ about, values, addAnother });
+        return;
+      }
+      await showFailure(failure);
     } finally {
       setSaving(false);
     }
@@ -131,10 +120,7 @@ export function useActivitySave(options: ActivitySaveOptions) {
     }
     if (error.kind === 'conflict' && activity) {
       // When the activity cannot be read now, the next Save meets the conflict again.
-      const latest = await fetchLatestActivity(queryClient, activity.id).catch(() => undefined);
-      if (latest) {
-        setVersion(latest.version);
-      }
+      await loadLatest(() => fetchLatestActivity(queryClient, activity.id));
       setFailure({
         message: conflictMessage(error, 'activity', dateFormat),
         nextStep: CONFLICT_NEXT_STEP,
@@ -154,7 +140,7 @@ export function useActivitySave(options: ActivitySaveOptions) {
     confirmClearing: () => {
       setClearing(null);
       if (clearing) {
-        void confirmApproval(clearing.values, clearing.addAnother);
+        void send(clearing.values, clearing.addAnother, false);
       }
     },
     cancelClearing: () => setClearing(null),
@@ -166,4 +152,8 @@ export function useActivitySave(options: ActivitySaveOptions) {
     },
     cancelReapproval: () => setReapproval(null),
   };
+}
+
+function asksToRestart(error: ApiError): boolean {
+  return error.kind === 'validation' && error.fields.some((f) => f.field === 'restartApproval');
 }

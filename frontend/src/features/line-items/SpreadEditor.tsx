@@ -1,23 +1,25 @@
 import { Plus } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import type { ClipboardEvent } from 'react';
 import { Button } from '@/ui/Button/Button';
 import { problemOf } from '@/ui/FormPanel/problem-of';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { MoneyField } from '@/ui/MoneyField/MoneyField';
 import type { FieldProblem } from '@/ui/FormErrorSummary/FormErrorSummary';
 import { cx } from '@/ui/cx';
-import { FieldHelpTip } from '@/features/settings';
+import { useFieldHelp } from '@/features/settings';
+import { formatAmount, toCents } from '@/format/decimal';
+import type { components } from '@/api/generated/schema';
 import { monthFieldId } from './line-item-form-state';
 import type { CustomMonth } from './line-item-form-state';
 import { leftOutText, pastedValues } from './spread-paste';
 import {
   addMonths,
   amountText,
-  centsInput,
   formatMonth,
   isOutsideDates,
+  moneyText,
   parseAmount,
-  spreadMonths,
 } from './line-item-math';
 import type { ActivityDates, SpreadMethod } from './line-item-math';
 import {
@@ -37,6 +39,8 @@ import {
 } from './line-item-text';
 import styles from './SpreadEditor.module.css';
 
+type SpreadPreview = components['schemas']['SpreadPreview'];
+
 const METHODS: SpreadMethod[] = ['evenly', 'firstMonth', 'lastMonth', 'custom'];
 
 export interface SpreadEditorProps {
@@ -46,10 +50,10 @@ export interface SpreadEditorProps {
   currency: string;
   dates: ActivityDates;
   customMonths: CustomMonth[];
+  /** The spread as the API works it out for the form; undefined until it answers. */
+  spread: SpreadPreview | null | undefined;
   /** Custom amounts were typed or saved: leaving Custom says they will be replaced. */
   customTyped: boolean;
-  /** Where the method came from ("The plan's default"), until it is changed. */
-  source?: string;
   problems: FieldProblem[];
   onMethodChange: (method: SpreadMethod) => void;
   onMonthChange: (month: string, amount: string) => void;
@@ -68,47 +72,36 @@ export function SpreadEditor({
   currency,
   dates,
   customMonths,
+  spread,
   customTyped,
-  source,
   problems,
   onMethodChange,
   onMonthChange,
   onAddMonth,
   onUseTotal,
 }: SpreadEditorProps) {
-  const groupId = useId();
-  const cost = parseAmount(plannedCost) ?? 0n;
+  const { help } = useFieldHelp();
 
   return (
     <div className={styles.editor}>
-      <fieldset id="spread" tabIndex={-1} className={styles.methods}>
-        <legend className="visually-hidden">{LABEL.spread}</legend>
-        <div className={styles.radios}>
-          {METHODS.map((option) => (
-            <label key={option} className={styles.radio}>
-              <input
-                type="radio"
-                name={`${groupId}-spread`}
-                value={option}
-                checked={method === option}
-                onChange={() => onMethodChange(option)}
-              />
-              {SPREAD_LABELS[option]}
-            </label>
-          ))}
-          <FieldHelpTip helpKey="lineItem.spread" label={LABEL.spread} />
-        </div>
-        {source && <p className={styles.note}>{source}</p>}
-        {problemOf(problems, 'spread') && (
-          <p className={styles.error}>{problemOf(problems, 'spread')}</p>
-        )}
-      </fieldset>
+      <RadioGroup
+        label={LABEL.spread}
+        labelHidden
+        tip={help('lineItem.spread')}
+        name="spread"
+        layout="row"
+        options={METHODS.map((option) => ({ value: option, label: SPREAD_LABELS[option] }))}
+        value={method}
+        onChange={onMethodChange}
+        error={problemOf(problems, 'spread')}
+      />
 
       {method !== 'custom' && customTyped && <p className={styles.note}>{LEAVING_CUSTOM}</p>}
 
       {method === 'custom' ? (
         <CustomGrid
-          plannedCost={cost}
+          plannedCost={amountText(parseAmount(plannedCost) ?? 0n, currency)}
+          spread={spread}
           currency={currency}
           dates={dates}
           months={customMonths}
@@ -118,7 +111,7 @@ export function SpreadEditor({
           onUseTotal={onUseTotal}
         />
       ) : (
-        <Preview method={method} cost={cost} currency={currency} dates={dates} />
+        <Preview method={method} spread={spread} dates={dates} />
       )}
     </div>
   );
@@ -126,16 +119,16 @@ export function SpreadEditor({
 
 function Preview({
   method,
-  cost,
-  currency,
+  spread,
   dates,
 }: {
   method: Exclude<SpreadMethod, 'custom'>;
-  cost: bigint;
-  currency: string;
+  spread: SpreadPreview | null | undefined;
   dates: ActivityDates;
 }) {
-  const spread = spreadMonths(method, cost, dates);
+  if (!spread) {
+    return null;
+  }
   if (spread.state === 'notSpread') {
     return <p className={styles.note}>{NOT_SPREAD_YET}</p>;
   }
@@ -149,8 +142,8 @@ function Preview({
     <>
       {ongoingNote && <p className={styles.note}>{ongoingNote}</p>}
       <ul className={styles.preview} aria-label="Preview of the spread">
-        {spread.months.map(({ month, cents }) => (
-          <li key={month}>{previewLine(formatMonth(month), amountText(cents, currency))}</li>
+        {spread.months.map(({ month, amount }) => (
+          <li key={month}>{previewLine(formatMonth(month), moneyText(amount))}</li>
         ))}
       </ul>
     </>
@@ -158,7 +151,9 @@ function Preview({
 }
 
 interface CustomGridProps {
-  plannedCost: bigint;
+  /** The planned cost as people read it, "€10,000.00". */
+  plannedCost: string;
+  spread: SpreadPreview | null | undefined;
   currency: string;
   dates: ActivityDates;
   months: CustomMonth[];
@@ -170,6 +165,7 @@ interface CustomGridProps {
 
 function CustomGrid({
   plannedCost,
+  spread,
   currency,
   dates,
   months,
@@ -178,8 +174,8 @@ function CustomGrid({
   onAddMonth,
   onUseTotal,
 }: CustomGridProps) {
-  const sum = months.reduce((total, month) => total + (parseAmount(month.amount) ?? 0n), 0n);
-  const difference = plannedCost - sum;
+  const total = spread?.customTotal;
+  const difference = spread?.difference ? toCents(spread.difference.amount) : 0n;
   const first = months[0]?.month;
   const last = months[months.length - 1]?.month;
   const [leftOut, setLeftOut] = useState<string | null>(null);
@@ -245,21 +241,27 @@ function CustomGrid({
           </Button>
         )}
       </div>
-      <p
-        className={cx(styles.total, difference < 0n && styles.tooMuch)}
-        role="status"
-        aria-live="polite"
-      >
-        {customTotalText(centsInput(sum), centsInput(plannedCost), currency, {
-          sign: difference === 0n ? 0 : difference > 0n ? 1 : -1,
-          amount: centsInput(difference < 0n ? -difference : difference),
-        })}
-      </p>
-      {difference !== 0n && (
-        <Button size="sm" onClick={() => onUseTotal(centsInput(sum))}>
+      {total && (
+        <p
+          className={cx(styles.total, difference < 0n && styles.tooMuch)}
+          role="status"
+          aria-live="polite"
+        >
+          {customTotalText(moneyText(total), plannedCost, {
+            sign: difference === 0n ? 0 : difference > 0n ? 1 : -1,
+            amount: spread?.difference ? moneyText(unsigned(spread.difference)) : '',
+          })}
+        </p>
+      )}
+      {total && difference !== 0n && (
+        <Button size="sm" onClick={() => onUseTotal(formatAmount(total.amount))}>
           {USE_MONTH_TOTAL}
         </Button>
       )}
     </div>
   );
+}
+
+function unsigned(money: SpreadPreview['customTotal'] & object) {
+  return { ...money, amount: money.amount.replace(/^-/, '') };
 }

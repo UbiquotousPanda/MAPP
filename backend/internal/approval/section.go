@@ -120,6 +120,9 @@ func (s *Service) viewerOn(ctx context.Context, view *Section, at decisionPoint,
 	if at.sub.waiting() {
 		decide := ActionAvailability{Available: au.allowed, Reason: au.shown}
 		view.Actions.Approve, view.Actions.Decline = decide, decide
+		if decide.Available && at.sub.Blocked != "" {
+			view.Actions.Approve = ActionAvailability{Reason: at.sub.Blocked}
+		}
 	}
 	limitDecisions(ctx, &view.Actions, at.sub, at.round)
 	return nil
@@ -129,7 +132,7 @@ func (s *Service) viewerOn(ctx context.Context, view *Section, at decisionPoint,
 // who may decide, and an Approved activity explains why Recall is not offered.
 func availableActions(sub subject, open *Round) ActionSet {
 	var set ActionSet
-	switch submissionKind(sub, open) {
+	switch submissionKind(sub) {
 	case kindSubmit:
 		set.Submit.Available = true
 	case kindResubmit:

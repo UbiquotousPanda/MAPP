@@ -5,22 +5,21 @@ import (
 	"strconv"
 )
 
-// The texts of feature 015 that the API answers: plan "User-visible messages", "Simulated GSAP extract",
-// "API operations" and data model §4.2. Every text a person reads is here, so the wording stays one.
+// Every text a person reads is here, so the wording stays one.
 
 // The not-linked reasons (data model §4.2): the reason of the first key a transaction carries.
 const (
-	reasonLineItemID    = "No line item %s — check the line item ID in GSAP."
-	reasonTrackingKey   = "No line item for HX key %s — check the tracking key in GSAP."
-	reasonPONotLinked   = "PO %s isn't linked to a line item yet."
-	reasonPOSeveral     = "PO %s has lines on several line items — the row needs its PO line."
-	reasonSwbsNone      = "SWBS code %s isn't on any linked transaction yet."
-	reasonSwbsSeveral   = "SWBS code %s is on transactions of several line items."
-	reasonNoReference   = "No line item reference (line item ID, HX key, PO number or SWBS code)."
-	reasonLineItemInBin = "Line item %s is in the recycle bin — its amounts come back when it's restored."
+	reasonLineItemID     = "No line item %s — check the line item ID in GSAP."
+	reasonTrackingKey    = "No line item for HX key %s — check the tracking key in GSAP."
+	reasonPONotLinked    = "PO %s isn't linked to a line item yet."
+	reasonPOSeveral      = "PO %s has lines on several line items — the row needs its PO line."
+	reasonSwbsNone       = "SWBS code %s isn't on any linked transaction yet."
+	reasonSwbsSeveral    = "SWBS code %s is on transactions of several line items."
+	reasonNoReference    = "No line item reference (line item ID, HX key, PO number or SWBS code)."
+	reasonLineItemInBin  = "Line item %s is in the recycle bin — its amounts come back when it's restored."
+	reasonLineItemPurged = "Line item %s was deleted permanently — link this transaction to another line item."
 )
 
-// The column rules of the simulated GSAP extract (plan, "Simulated GSAP extract").
 const (
 	msgType          = "Type must be PO, INVOICE, PAYMENT or ACCRUAL."
 	msgDocumentEmpty = "Document number is missing."
@@ -42,7 +41,6 @@ const (
 	msgRepeatedKey   = "Row %d repeats %s from row %d — keep one."
 )
 
-// The whole-file refusals of the simulated GSAP extract.
 const (
 	msgFileName       = "Choose a .csv file — GSAP extracts are imported as CSV."
 	msgFileUnreadable = "The file couldn't be read — choose it again."
@@ -53,7 +51,6 @@ const (
 	msgFileColumns    = "The first row must name the columns. Missing: %s."
 )
 
-// The refusals of the operations (plan, "API operations"; 014 messages 1–4 for access).
 const (
 	msgRecordGone       = "This %s no longer exists — someone may have deleted it."
 	msgTransactionGone  = "This GSAP transaction doesn't exist."
@@ -73,11 +70,9 @@ const (
 	msgChooseRecord     = "Choose a plan, campaign, initiative, activity or line item."
 	msgChooseSort       = "Choose a column and a direction, such as postingDate:desc."
 	msgChoosePage       = "Choose a page from 1."
-	msgChoosePageSize   = "Choose 50, 100 or 200 rows per page."
 	transactionNoun     = "GSAP transaction"
 )
 
-// The words of how a transaction was matched (plan, "Matched by").
 const (
 	matchedLineItemID  = "line item ID %s"
 	matchedTrackingKey = "HX key %s"
@@ -85,7 +80,6 @@ const (
 	matchedSwbsCode    = "SWBS code %s"
 )
 
-// The activity-log texts (FR-027, data model §7).
 const (
 	importKindSingular      = "GSAP extract"
 	importKindPlural        = "GSAP extracts"
@@ -99,15 +93,12 @@ const (
 	relinkedText            = "%s earlier %s now linked"
 )
 
-// The feed names (FR-008).
 const (
 	csvFeedName  = "Simulated GSAP extract"
 	demoFeedName = "Demo data (simulated GSAP)"
 )
 
-// countsText is "<rows> rows: <new> new, <updated> updated, <unchanged> unchanged, <refused> refused ·
-// <notLinked> not linked", with " · <n> earlier transactions are now linked" when an import linked some
-// (data model §7, US4 scenarios 2, 7 and 8).
+// countsText ends with " · <n> earlier transactions are now linked" when an import linked some.
 func countsText(c ImportCounts) string {
 	text := fmt.Sprintf("%s: %d new, %d updated, %d unchanged, %d refused · %d not linked",
 		plural(c.Rows, "row", "rows"), c.New, c.Updated, c.Unchanged, c.Refused, c.NotLinked)
@@ -117,7 +108,6 @@ func countsText(c ImportCounts) string {
 	return text
 }
 
-// relinkedSentence is "2 earlier transactions are now linked" (US4 scenario 8).
 func relinkedSentence(n int) string {
 	if n == 1 {
 		return "1 earlier transaction is now linked"
@@ -125,7 +115,6 @@ func relinkedSentence(n int) string {
 	return fmt.Sprintf(relinkedText, strconv.Itoa(n), "transactions are")
 }
 
-// plural writes n with the singular or plural noun: "1 row", "4 rows".
 func plural(n int, singular, pluralNoun string) string {
 	if n == 1 {
 		return "1 " + singular

@@ -26,7 +26,12 @@ import {
 } from './line-item-form-state';
 import type { LineItemFormState } from './line-item-form-state';
 import { LINE_ITEM_SECTION } from './line-item-form-progress';
-import type { FinanceBudgetItemRef, LineItemCurrency, LineItemFormOptions } from './api';
+import type {
+  FinanceBudgetItemRef,
+  LineItemCurrency,
+  LineItemFormOptions,
+  LineItemPreview,
+} from './api';
 import {
   LABEL,
   SECTION_BASICS,
@@ -56,6 +61,8 @@ export interface LineItemFormCardsProps {
   storedAttributes: AttributeValues;
   /** The stored line item's SWBS code; "" for a new one or before GSAP answered (030 FR-004). */
   storedSwbsCode: string;
+  /** What saving would give, from the API; undefined until it answers. */
+  preview: LineItemPreview | undefined;
 }
 
 /** The line-item form's six sections, in order (FR-007). */
@@ -87,7 +94,6 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
               maxLength={120}
               {...field}
               onChange={(value) => change('name', value)}
-              hint={state.sources.name}
             />
           )}
         />
@@ -101,7 +107,6 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
               marking="Needed to submit"
               {...field}
               onChange={(value) => change('ownerId', value)}
-              hint={state.sources.ownerId}
             />
           )}
         />
@@ -126,7 +131,8 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
           currencies={currencies}
           problems={problems}
           planCode={planCode}
-          onCurrencyChange={(code) => update((s) => changeCurrency(s, code, currencies, planCode))}
+          converted={props.preview?.plannedCostPlan ?? null}
+          onCurrencyChange={(code) => update((s) => changeCurrency(s, code))}
           onPlannedCostChange={(text) => update((s) => changePlannedCost(s, text))}
         />
       </FormCard>
@@ -138,11 +144,13 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
           currency={state.currency}
           dates={dates}
           customMonths={state.customMonths}
+          spread={props.preview?.spread}
           customTyped={state.customTyped}
-          source={state.sources.spread}
           problems={problems}
           onMethodChange={(method) =>
-            update((s) => changeSpreadMethod(s, method, dates, activity.planYear))
+            update((s) =>
+              changeSpreadMethod(s, method, dates, activity.planYear, props.preview?.spread?.seed),
+            )
           }
           onMonthChange={(month, amount) => update((s) => changeCustomMonth(s, month, amount))}
           onAddMonth={(month) => update((s) => addCustomMonth(s, month))}
@@ -158,6 +166,7 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
       >
         <ShellAttributeFields
           sectionHeading="h2"
+          sectionRank="panel"
           form={props.attributeForm}
           values={state.attributes}
           onChange={(values) => change('attributes', values)}
@@ -204,7 +213,7 @@ export function LineItemFormCards(props: LineItemFormCardsProps) {
               name={field.name}
               checked={field.value}
               onChange={(checked) => change('requestSwbs', checked)}
-              hint={[SWBS_HELP, state.sources.requestSwbs].filter(Boolean).join(' ')}
+              hint={SWBS_HELP}
               error={field.error}
               disabledReason={props.storedSwbsCode ? SWBS_KEPT_ON : undefined}
             />

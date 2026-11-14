@@ -291,7 +291,7 @@ Shanghai". Then unlink it.
   line".
 - **Two people import at the same time.** Imports are applied one after the other. Each one's preview may
   differ from its result; the result is what counts and is what the dialog shows.
-- **Large data.** The Financials page pages its rows (50, 100 or 200 per page). Cards show at most 5 latest
+- **Large data.** The Financials page pages its rows (25, 50, 100 or 200 per page, 50 by default; D-432). Cards show at most 5 latest
   transactions.
 - **No GSAP data loaded yet** (an empty store, not the demo). Every Financials card says "No GSAP data
   loaded yet". People who may import see **Import GSAP extract**.
@@ -423,8 +423,8 @@ Each requirement traces to **BUS.FIN.080** unless another ID is given.
 - **FR-020** (changes 001 navigation): The sidebar's main group MUST include **Financials** after All work.
   It opens `/financials`.
 - **FR-021**: The Financials page MUST offer the following.
-  - **Tabs**: All · Purchase orders · Invoices · Payments · Accruals · Not linked, each with its count for
-    the other filters.
+  - **Tabs**: All · Purchase orders · Invoices · Payments · Accruals · Not linked, each but All with its
+    count for the other filters (D-421: All's count is the result count's total).
   - **Search** (document number, PO number, vendor code or name, SWBS code, HX key, description, linked
     line item or activity name or ID).
   - **Year**, the linked plan's year (not-linked transactions by posting year; default the current year),
@@ -433,7 +433,7 @@ Each requirement traces to **BUS.FIN.080** unless another ID is given.
   - **Summary tiles**: Committed, Invoiced, Paid and Accrued for the current filters.
   - A **table** with type chip, number (with line), posting date, vendor, amount (own currency and display
     currency), linked line item and activity (links) or a "Not linked" chip, and SWBS code. It is sorted
-    newest first by default, can be sorted by any heading, and is paged 50 / 100 / 200.
+    newest first by default, can be sorted by any heading, and is paged 25 / 50 / 100 / 200, 50 by default (D-432).
 
   Filters, tab, search, sort and page MUST be kept in the address, so that a link reproduces the view.
 - **FR-022**: Selecting a transaction MUST open its details panel at

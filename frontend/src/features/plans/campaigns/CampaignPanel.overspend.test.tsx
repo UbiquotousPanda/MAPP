@@ -5,7 +5,7 @@ import { DETAILS, findForm, renderPanel } from '@/testing/fixtures/campaign-pane
 import { budgetAndCost, campaign, usd } from '@/testing/fixtures/campaigns';
 import { apiError, reply } from '@/testing/replies';
 
-const OVERSPEND = 'When planned cost goes over this budget';
+const OVERSPEND = 'If planned cost exceeds the budget';
 const PATCH = 'PATCH /api/v1/campaigns/C-1001';
 
 function withPlanned(overrides: Parameters<typeof campaign>[0] = {}) {
@@ -47,7 +47,7 @@ describe('CampaignPanel — overspend control (037 US1)', () => {
     await user.clear(budget);
     await user.type(budget, '300000');
     const refused =
-      "The planned cost is 380,000.00 USD; this budget refuses overspending, so it can't be lower than that.";
+      "The planned cost is $380,000.00; this budget refuses overspending, so it can't be lower than that.";
 
     expect(within(form).getByText(refused)).toBeVisible();
     await user.click(within(form).getByRole('button', { name: 'Save' }));
@@ -69,7 +69,7 @@ describe('CampaignPanel — overspend control (037 US1)', () => {
 
   it('shows the API refusal in the panel and keeps the typed values (037 FR-016)', async () => {
     const message =
-      "Not saved — the planned cost of plan 'FY2026 Lubricants Europe' would be 1,250,000.00 USD, over its budget of 1,200,000.00 USD by 50,000.00 USD. Its owner refuses overspending.";
+      "Not saved — the planned cost of plan 'FY2026 Lubricants Europe' would be $1,250,000.00, over its budget of $1,200,000.00 by $50,000.00. Its owner refuses overspending.";
     const { user } = renderPanel(`${DETAILS}/edit`, [
       withPlanned(),
       reply(

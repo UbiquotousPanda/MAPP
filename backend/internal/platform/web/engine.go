@@ -23,6 +23,7 @@ type Options struct {
 	Meter          metric.MeterProvider
 	BodyLimits     map[string]int64
 	TrustedProxies []string
+	PublicHosts    []string
 }
 
 // NewEngine puts recovery inside tracing, request ID and log, so a panic keeps their attributes and is a 500.
@@ -42,7 +43,7 @@ func NewEngine(o Options) (*gin.Engine, error) {
 		LogRequest(),
 		Recover(),
 		SecurityHeaders(),
-		SameOrigin(),
+		SameOrigin(o.PublicHosts),
 		RejectControlInPath(),
 		LimitBody(maxBodyBytes, o.BodyLimits),
 	)

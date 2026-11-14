@@ -31,9 +31,9 @@ describe('032 FR-001/FR-018: line item Purchase requests section', () => {
   it('shows what is requested and available as the server sends them, and its purchase requests (US1 scenario 5)', async () => {
     renderSection({ body: lineItemSection() });
 
-    expect(await screen.findByText('6,000.00 EUR', { selector: 'dd' })).toBeInTheDocument();
+    expect(await screen.findByText('€6,000.00', { selector: 'dd' })).toBeInTheDocument();
     expect(within(section()).getByText('Total requested')).toBeInTheDocument();
-    expect(within(section()).getByText('3,200.00 EUR', { selector: 'dd' })).toBeInTheDocument();
+    expect(within(section()).getByText('€3,200.00', { selector: 'dd' })).toBeInTheDocument();
     const row = within(section()).getByRole('row', { name: /PR for Stand build/ });
     expect(within(row).getByRole('link', { name: 'PR for Stand build' })).toHaveAttribute(
       'href',
@@ -63,15 +63,13 @@ describe('032 FR-001/FR-018: line item Purchase requests section', () => {
 
     const row = await screen.findByRole('row', { name: /PR for Stand build/ });
     expect(row).toHaveTextContent('$3,700.00');
-    expect(row).toHaveTextContent("3,404.00 EUR in the line item's currency");
+    expect(row).toHaveTextContent("€3,404.00 in the line item's currency");
   });
 
   it('says when rates moved the requests above the planned cost (edge case)', async () => {
     renderSection({ body: lineItemSection({ availableToRequest: money('-120.00') }) });
 
-    expect(
-      await screen.findByText('Requested above planned cost by 120.00 EUR'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Requested above planned cost by €120.00')).toBeInTheDocument();
   });
 
   it('explains why New purchase request is not offered, or leaves it out (FR-049, US1 scenario 8)', async () => {

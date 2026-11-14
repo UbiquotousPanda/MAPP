@@ -1,4 +1,5 @@
 import {
+  ChartColumnIncreasing,
   ChartNoAxesCombined,
   CircleCheckBig,
   ClipboardList,
@@ -86,6 +87,13 @@ const DASHBOARD_BUILDER: NavItem = {
   permissions: ['dashboards.build'],
 };
 
+const REPORTS: NavItem = {
+  label: 'Reports',
+  path: '/reports',
+  icon: ChartColumnIncreasing,
+  permissions: ['reports.view'],
+};
+
 const FINANCIALS: NavItem = {
   label: 'Financials',
   path: '/financials',
@@ -123,6 +131,7 @@ export const MAIN_ITEMS: NavItem[] = [
   FINANCIALS,
   PURCHASE_REQUESTS,
   DASHBOARDS,
+  REPORTS,
   DASHBOARD_BUILDER,
 ];
 

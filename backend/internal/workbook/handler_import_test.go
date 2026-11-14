@@ -30,7 +30,7 @@ func TestImport_SkeletonListedAndUndone_Contract_012FR034_FR035_FR036(t *testing
 	t.Parallel()
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 
-	detail := decoded[workbook.Detail](t, priya.Do(t, http.MethodPost, planPath+"/imports", skeleton(t)), http.StatusCreated)
+	detail := decoded[workbook.Detail](t, priya.Do(t, http.MethodPost, planPath+"/imports", checked(t, priya, skeleton(t))), http.StatusCreated)
 
 	created := workbook.LevelTotals{Campaigns: 1, Initiatives: 1, Activities: 1, LineItems: 1}
 	if detail.Import.Created != created || detail.Import.RowsLeftOut != 1 || len(detail.Problems) != 1 || detail.Undo == nil {
@@ -47,6 +47,32 @@ func TestImport_SkeletonListedAndUndone_Contract_012FR034_FR035_FR036(t *testing
 	if body := decoded[apiError](t, again, http.StatusConflict); body.Error.Code != "already_resolved" {
 		t.Errorf("a second undo = %+v", body)
 	}
+}
+
+func TestImport_ACheckImportsOnceAndOnlyItsOwnFile_Contract_SMH1(t *testing.T) {
+	t.Parallel()
+	priya := apitest.New(t).SignIn(t, priyasEmail)
+	body := checked(t, priya, skeleton(t))
+	decoded[workbook.Detail](t, priya.Do(t, http.MethodPost, planPath+"/imports", body), http.StatusCreated)
+
+	twice := decoded[apiError](t, priya.Do(t, http.MethodPost, planPath+"/imports", body), http.StatusConflict)
+	other := exportedWith(t, priya, map[string]string{"A-1001": "4321.00"})
+	other["checkId"] = body["checkId"]
+	unchecked := decoded[apiError](t, priya.Do(t, http.MethodPost, planPath+"/imports", other), http.StatusBadRequest)
+
+	if twice.Error.Code != "not_allowed" || len(unchecked.Error.Fields) != 1 || unchecked.Error.Fields[0].Field != "checkId" {
+		t.Errorf("second import = %+v, unchecked file = %+v", twice, unchecked)
+	}
+	if page := decoded[workbook.Page](t, priya.Do(t, http.MethodGet, planPath+"/imports", nil), http.StatusOK); page.Total != 1 {
+		t.Errorf("imports = %d, want 1", page.Total)
+	}
+}
+
+// checked is the body of an Import of upload: the upload with the ID of its check.
+func checked(t *testing.T, client *apitest.Client, upload map[string]any) map[string]any {
+	t.Helper()
+	check := decoded[workbook.Check](t, client.Do(t, http.MethodPost, planPath+"/imports/check", upload), http.StatusOK)
+	return map[string]any{"fileName": upload["fileName"], "content": upload["content"], "checkId": check.CheckID}
 }
 
 // assertLoggedAndListed checks the created activity's log entry carries the import's note and the plan lists it.
@@ -68,7 +94,8 @@ func assertLoggedAndListed(t *testing.T, priya *apitest.Client, detail workbook.
 func TestImport_OtherPeopleSeeNoImportOfAPlanTheyCannotSee_Contract_012FR035(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
-	detail := decoded[workbook.Detail](t, server.SignIn(t, priyasEmail).Do(t, http.MethodPost, planPath+"/imports", skeleton(t)), http.StatusCreated)
+	priya := server.SignIn(t, priyasEmail)
+	detail := decoded[workbook.Detail](t, priya.Do(t, http.MethodPost, planPath+"/imports", checked(t, priya, skeleton(t))), http.StatusCreated)
 	mei := server.SignIn(t, "mei.lin@shell.com")
 
 	if got := mei.Do(t, http.MethodGet, "/api/v1/imports/"+detail.Import.ID, nil); got.Status != http.StatusNotFound {
@@ -103,7 +130,7 @@ func TestImport_UpdatesByIDApprovedOnScreen_Contract_012FR029_FR032(t *testing.T
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 
 	detail := decoded[workbook.Detail](t, priya.Do(t, http.MethodPost, planPath+"/imports",
-		exportedWith(t, priya, map[string]string{"A-1001": "4321.00", "A-1002": "1.00"})), http.StatusCreated)
+		checked(t, priya, exportedWith(t, priya, map[string]string{"A-1001": "4321.00", "A-1002": "1.00"}))), http.StatusCreated)
 
 	if detail.Import.Updated.Activities != 1 || len(detail.Records) != 1 || detail.Records[0].ID != "A-1001" {
 		t.Errorf("updated = %+v, records %+v", detail.Import.Updated, detail.Records)

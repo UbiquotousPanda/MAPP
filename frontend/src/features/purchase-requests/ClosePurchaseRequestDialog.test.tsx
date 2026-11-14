@@ -45,10 +45,10 @@ describe('032 FR-041/FR-055: close', () => {
 
     const dialog = await screen.findByRole('alertdialog', { name: TITLE });
     const row = await within(dialog).findByRole('row', { name: /L-1006 · HX1006/ });
-    expect(row).toHaveTextContent('9,200.00 EUR');
-    expect(row).toHaveTextContent('7,500.00 EUR');
-    expect(row).toHaveTextContent('1,700.00 EUR');
-    expect(dialog).toHaveTextContent('1,847.83 USD returns to the plan in total.');
+    expect(row).toHaveTextContent('€9,200.00');
+    expect(row).toHaveTextContent('€7,500.00');
+    expect(row).toHaveTextContent('€1,700.00');
+    expect(dialog).toHaveTextContent('$1,847.83 returns to the plan in total.');
     await expectNoAxeViolations();
     await user.click(within(dialog).getByRole('button', { name: 'Close purchase request' }));
 

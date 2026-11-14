@@ -29,16 +29,16 @@ type demoLineItem struct {
 }
 
 // demoLineItems are L-1001 … L-1010, in ID order (L-1009 and L-1010 are the GBP plan's of 016: 15,000.00 GBP and
-// 23,000.00 EUR = 19,750.00 GBP, leaving 5,250.00 GBP of "UK launch event" unassigned). Every one has its activity's owner and the finance budget
+// 23,000.00 EUR = 19,166.67 GBP, leaving 5,833.33 GBP of "UK launch event" unassigned). Every one has its activity's owner and the finance budget
 // year of its plan, the FY2027 ones with an item of 2027. Fleet roadshow (Declined) has none: the empty state.
 var demoLineItems = []demoLineItem{
 	{plan: lubricantsPlan, activity: "Launch film", name: "Agency fee", currency: "USD", plannedCost: "50000.00",
 		method: lineitem.SpreadEvenly, spendType: spendDigitalPlatform, glCode: glAdvertisingDigital,
 		budget: lubricantsBudget, item: itemEuropeDigital, requestSwbs: true},
-	// 46,000.00 EUR = 50,000.00 USD at 0.92: Launch film keeps 20,000.00 USD unassigned; "3 fields needed".
+	// 46,000.00 EUR = 51,111.11 USD at 0.90: Launch film keeps 18,888.89 USD unassigned; "3 fields needed".
 	{plan: lubricantsPlan, activity: "Launch film", name: "Film production", currency: "EUR", plannedCost: "46000.00",
 		method: lineitem.SpreadEvenly, requestSwbs: true},
-	// 15,800.00 GBP = 20,000.00 USD at 0.79.
+	// 15,800.00 GBP = 21,066.67 USD at 0.75.
 	{plan: lubricantsPlan, activity: "Social always-on", name: "Venue hire", currency: "GBP", plannedCost: "15800.00",
 		method: lineitem.SpreadFirstMonth, spendType: spendEvent, glCode: glEventsSponsorship,
 		budget: lubricantsBudget, item: itemEuropeEvents, requestSwbs: true},

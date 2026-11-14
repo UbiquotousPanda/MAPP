@@ -1,6 +1,9 @@
 import { Link } from 'react-router';
 import { useFormatters } from '@/format/useFormatters';
 import { Card } from '@/ui/Card/Card';
+import dataTable from '@/ui/Table/Table.module.css';
+import { cx } from '@/ui/cx';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import type { DashboardCampaignRow } from './api';
 import styles from './Dashboards.module.css';
 
@@ -39,13 +42,13 @@ function CampaignList({ title, difference, rows }: CampaignListProps) {
       {rows.length === 0 ? (
         <p className={styles.note}>None.</p>
       ) : (
-        <div className={styles.scroll}>
-          <table className={styles.table}>
-            <caption>{title}</caption>
+        <ScrollBox label={title}>
+          <table className={cx(dataTable.table, styles.table)}>
+            <caption className="visually-hidden">{title}</caption>
             <thead>
               <tr>
                 {['Campaign', 'Plan', 'Budget', 'Planned cost', difference].map((t, i) => (
-                  <th key={t} scope="col" className={i > 1 ? styles.number : undefined}>
+                  <th key={t} scope="col" className={i > 1 ? dataTable.numeric : undefined}>
                     {t}
                   </th>
                 ))}
@@ -60,14 +63,14 @@ function CampaignList({ title, difference, rows }: CampaignListProps) {
                     </Link>
                   </th>
                   <td>{row.plan.name}</td>
-                  <td className={styles.number}>{money(row.figures.budget)}</td>
-                  <td className={styles.number}>{money(row.figures.plannedCost)}</td>
-                  <td className={styles.number}>{money(row.difference)}</td>
+                  <td className={dataTable.numeric}>{money(row.figures.budget)}</td>
+                  <td className={dataTable.numeric}>{money(row.figures.plannedCost)}</td>
+                  <td className={dataTable.numeric}>{money(row.difference)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollBox>
       )}
     </Card>
   );

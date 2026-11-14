@@ -1,0 +1,184 @@
+import { screen, waitFor, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { approvalsGrid, LONG_COMMENT } from '@/testing/fixtures/approvals-report';
+import { testUser } from '@/testing/fixtures/users';
+import { renderWithProviders } from '@/testing/render';
+import { choose } from '@/testing/select';
+import { ApprovalsGrid } from './ApprovalsGrid';
+import type { ApprovalsGridProps } from './ApprovalsGrid';
+import { DEFAULT_PARAMS } from './schemas';
+
+function renderGrid(
+  props: Partial<ApprovalsGridProps> = {},
+  route = '/reports/approvals',
+  today = '2026-03-12',
+) {
+  const onParams = vi.fn();
+  const rendered = renderWithProviders(
+    <ApprovalsGrid grid={approvalsGrid()} params={DEFAULT_PARAMS} onParams={onParams} {...props} />,
+    { route, user: testUser({ today }), path: '/reports/approvals' },
+  );
+  return { ...rendered, onParams };
+}
+
+describe('ApprovalsGrid (041 US2)', () => {
+  it('shows the columns in order, one row per approver step, with a dash for what is missing', async () => {
+    renderGrid();
+
+    const headings = screen.getAllByRole('columnheader').map((h) => h.textContent);
+    expect(headings).toEqual([
+      'Record ID',
+      'Record name',
+      'Record type',
+      'Approver',
+      'Decided on',
+      'Status',
+      'Submitted on',
+      'Level',
+      'Purchase order',
+      'Amount',
+      'Owner',
+      'Comments',
+    ]);
+    const waiting = screen.getByRole('row', { name: /Event stand/ });
+    expect(within(waiting).getAllByText('—').length).toBeGreaterThanOrEqual(3);
+    expect(within(waiting).getByText('4500001, 4500002')).toBeInTheDocument();
+    const automatic = screen.getByRole('row', { name: /Webinar/ });
+    expect(within(automatic).getByText('Approved automatically')).toBeInTheDocument();
+  });
+
+  it("says how many days a waiting step has waited by the server's date", () => {
+    renderGrid({}, '/reports/approvals', '2026-03-20');
+
+    const waiting = screen.getByRole('row', { name: /Event stand/ });
+    expect(within(waiting).getByText('Waiting 10 days')).toBeInTheDocument();
+  });
+
+  it('leaves out the Purchase order column when no row on the page has one', () => {
+    const grid = approvalsGrid();
+    grid.items = grid.items.map((row) => ({ ...row, purchaseOrderNumber: null }));
+    renderGrid({ grid });
+
+    const headings = screen.getAllByRole('columnheader').map((h) => h.textContent);
+    expect(headings).not.toContain('Purchase order');
+    expect(headings.at(0)).toBe('Record ID');
+    expect(headings.at(-1)).toBe('Comments');
+    const automatic = screen.getByRole('row', { name: /Webinar/ });
+    expect(within(automatic).getAllByRole('cell')).toHaveLength(headings.length - 1);
+  });
+
+  it('links a record name only when the person may open it', () => {
+    renderGrid();
+
+    expect(screen.getByRole('link', { name: 'Spring launch' })).toHaveAttribute(
+      'href',
+      '/activities/A-1001',
+    );
+    expect(screen.getByText('Event stand')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Event stand' })).toBeNull();
+  });
+
+  it('filters by record type, status and approver behind Filters (n), with chips and Clear filters', async () => {
+    const { user, onParams } = renderGrid({ params: { ...DEFAULT_PARAMS, outcomes: ['waiting'] } });
+
+    expect(screen.getByRole('button', { name: /^Filters/ })).toHaveTextContent('1');
+    const menus = screen.getByRole('group', { name: 'Filters' });
+    await user.click(within(menus).getByRole('button', { name: /^Record type/ }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Purchase requests' }));
+    expect(onParams).toHaveBeenCalledWith({ recordTypes: ['purchaseRequest'] });
+    await user.keyboard('{Escape}');
+    await user.click(within(menus).getByRole('button', { name: /^Approver/ }));
+    await user.click(await screen.findByRole('checkbox', { name: 'Bob Ruiz' }));
+    expect(onParams).toHaveBeenCalledWith({ approvers: ['U-1001'] });
+    await user.keyboard('{Escape}');
+    await user.click(within(menus).getByRole('button', { name: /^Status/ }));
+    expect(await screen.findByRole('checkbox', { name: 'Not needed' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Remove filter: Status: Waiting' }));
+    expect(onParams).toHaveBeenCalledWith({ outcomes: [] });
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(onParams).toHaveBeenCalledWith({ recordTypes: [], outcomes: [], approvers: [] });
+  });
+
+  it('sorts by the column of the heading pressed', async () => {
+    const { user, onParams } = renderGrid();
+
+    await user.click(screen.getByRole('button', { name: 'Approver' }));
+
+    expect(onParams).toHaveBeenCalledWith({ sort: 'approver', order: 'asc' });
+  });
+
+  it('searches by the typed text', async () => {
+    const { user, onParams } = renderGrid();
+
+    await user.type(screen.getByRole('searchbox', { name: 'Search approvals' }), 'stand');
+
+    await waitFor(() => expect(onParams).toHaveBeenCalledWith({ q: 'stand' }));
+  });
+
+  it('pages and changes the page size, naming the rows on screen', async () => {
+    const grid = { ...approvalsGrid(), total: 120, page: 2, pageSize: 50 };
+    const { user, onParams } = renderGrid({ grid });
+
+    expect(screen.getByText('51–100 of 120')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
+    await user.click(screen.getByRole('button', { name: 'Previous page' }));
+    await choose(user, screen.getByRole('combobox', { name: 'Rows per page' }), '25');
+
+    expect(onParams).toHaveBeenCalledWith({ page: 3 });
+    expect(onParams).toHaveBeenCalledWith({ page: 1 });
+    expect(onParams).toHaveBeenCalledWith({ pageSize: 25 });
+  });
+
+  it('opens a long comment in full on the page and closes it again', async () => {
+    const { user } = renderGrid();
+
+    await user.click(screen.getByRole('button', { name: 'Read in full' }));
+    const dialog = await screen.findByRole('alertdialog');
+
+    expect(within(dialog).getByText(LONG_COMMENT)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+  });
+
+  it('says there are no approvals yet when nothing is filtered', () => {
+    renderGrid({ grid: { ...approvalsGrid(), items: [], total: 0 } });
+
+    expect(screen.getByText(/No approvals yet/)).toBeInTheDocument();
+  });
+
+  it('says the filters exclude everything, and Reset filters clears them', async () => {
+    const { user, onParams } = renderGrid({
+      grid: { ...approvalsGrid(), items: [], total: 0 },
+      params: { ...DEFAULT_PARAMS, q: 'zzz', outcomes: ['waiting'] },
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Reset filters' }));
+
+    expect(screen.getByText('Your filters exclude everything.')).toBeInTheDocument();
+    expect(onParams).toHaveBeenCalledWith({ q: '', recordTypes: [], approvers: [], outcomes: [] });
+  });
+
+  it('names the plans whose amounts the person cannot see', () => {
+    renderGrid({ covers: { plans: 1, of: 2 } });
+    expect(screen.getByText(/Amounts cover 1 of 2 plans/)).toBeInTheDocument();
+  });
+
+  it('says financial data is out of reach when no plan shows amounts', () => {
+    renderGrid({ covers: { plans: 0, of: 2 } });
+
+    expect(screen.getByText(/You can’t see financial data/)).toBeInTheDocument();
+  });
+
+  it('shows a loading skeleton', () => {
+    renderGrid({ grid: undefined });
+
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+  });
+
+  it('shows an error with Try again', () => {
+    renderGrid({ grid: undefined, failed: true });
+
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+  });
+});

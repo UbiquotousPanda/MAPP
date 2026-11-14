@@ -18,8 +18,6 @@ func (s *Service) PurchaseRequest(ctx context.Context, id string) (approval.Purc
 	return engineFacts(f), found, err
 }
 
-// ListInScope returns the purchase requests among ids that the engine's plans scope or the person's
-// purchaseRequests.list scope sees.
 func (s *Service) ListInScope(ctx context.Context, scope authz.Scope, ids []string) ([]approval.PurchaseRequestFacts, error) {
 	list, err := s.factsInScope(ctx, scope, ids)
 	if err != nil {
@@ -48,9 +46,9 @@ func (s *Service) ReadyCheck(ctx context.Context, a actor.Actor, id string, kind
 	return check, nil
 }
 
-// RoundChanged sets the status for a round event (data-model §3.5); the engine logs the event itself.
+// RoundChanged sets the status for a round event; the engine logs the event itself.
 //
-//nolint:revive // argument-limit 5: the port's signature, declared by approval (031 contracts/go-api.md)
+//nolint:revive // argument-limit 5: the port's signature, declared by approval
 func (s *Service) RoundChanged(ctx context.Context, a actor.Actor, id string, kind approval.SubjectKind, outcome approval.Outcome) (approval.PurchaseRequestFacts, error) {
 	f, err := s.roundChanged(ctx, a, id, roundEvent{kind: RoundKind(kind), event: RoundEvent(outcome)})
 	return engineFacts(f), err
@@ -78,7 +76,7 @@ func engineFacts(f Facts) approval.PurchaseRequestFacts {
 	return approval.PurchaseRequestFacts{
 		ID: f.ID, Name: f.Name, Status: string(f.Status), OwnerID: f.OwnerID, MoAApproverID: f.MoAApproverID,
 		Amount: amount, WorkflowID: f.WorkflowID, ModificationWorkflowID: f.ModificationWorkflowID, Path: f.Path,
-		Meta: f.Meta, Access: f.Plan, Overages: f.Overages,
+		Meta: f.Meta, Access: f.Plan, Overages: f.Overages, Blocked: f.Unapproved, Submissions: f.Submissions,
 		Plan: approval.PlanFacts{ID: f.Plan.ID, TeamIDs: f.Plan.TeamIDs, OwnerID: f.Plan.OwnerID, CreatedByID: f.Plan.CreatedByID},
 	}
 }

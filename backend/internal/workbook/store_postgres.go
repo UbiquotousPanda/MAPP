@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"time"
 
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
@@ -24,7 +23,7 @@ func (s *PostgresStore) AddImport(ctx context.Context, imp Import) error {
 	q := s.db.Queries(ctx)
 	err := q.AddPlanImport(ctx, sqlcdb.AddPlanImportParams{
 		ID: imp.ID, PlanID: imp.PlanID, FileName: imp.FileName, ImportedAt: imp.ImportedAt, ImportedByID: imp.ImportedBy.ID,
-		ImportedByName: imp.ImportedBy.Name, RowsRead: imp.RowsRead, RowsLeftOut: imp.RowsLeftOut,
+		ImportedByName: imp.ImportedBy.Name, RowsRead: imp.RowsRead, RowsLeftOut: imp.RowsLeftOut, CheckID: &imp.CheckID,
 	})
 	if err != nil {
 		return fmt.Errorf("add import %s: %w", imp.ID, err)
@@ -48,6 +47,14 @@ func (s *PostgresStore) AddImport(ctx context.Context, imp Import) error {
 	return nil
 }
 
+func (s *PostgresStore) CheckUsed(ctx context.Context, checkID string) (bool, error) {
+	used, err := s.db.Queries(ctx).PlanImportCheckUsed(ctx, checkID)
+	if err != nil {
+		return false, fmt.Errorf("select the import of check %s: %w", checkID, err)
+	}
+	return used, nil
+}
+
 func (s *PostgresStore) ListImports(ctx context.Context, scope authz.Scope, planID string, limit int) ([]Import, error) {
 	return s.inScope(ctx, scope, importFilter{planID: &planID, limit: limit})
 }
@@ -69,9 +76,16 @@ func (s *PostgresStore) GetImport(ctx context.Context, scope authz.Scope, id str
 	return imp, true, nil
 }
 
-func (s *PostgresStore) MarkUndone(ctx context.Context, id string, by actor.Actor, at time.Time) error {
+func (s *PostgresStore) MarkUndone(ctx context.Context, id string, u Undone) error {
+	for _, k := range u.Kept {
+		err := s.db.Queries(ctx).MarkPlanImportRecordKept(ctx, sqlcdb.MarkPlanImportRecordKeptParams{
+			KeptReason: k.Reason, ImportID: id, RecordID: k.ID})
+		if err != nil {
+			return fmt.Errorf("keep record %s of import %s: %w", k.ID, id, err)
+		}
+	}
 	err := s.db.Queries(ctx).MarkPlanImportUndone(ctx, sqlcdb.MarkPlanImportUndoneParams{
-		ID: id, UndoneAt: &at, UndoneByID: &by.ID, UndoneByName: &by.Name,
+		ID: id, UndoneAt: &u.At, UndoneByID: &u.By.ID, UndoneByName: &u.By.Name,
 	})
 	if err != nil {
 		return fmt.Errorf("mark import %s undone: %w", id, err)
@@ -108,9 +122,16 @@ func (s *PostgresStore) inScope(ctx context.Context, scope authz.Scope, f import
 	for _, r := range records {
 		i := byID[r.ImportID]
 		imports[i].Records = append(imports[i].Records, ImportRecord{Level: Level(r.Level), RecordID: r.RecordID, Name: r.RecordName,
-			ParentID: r.ParentID, Action: r.Action})
+			ParentID: r.ParentID, Action: r.Action, KeptReason: deref(r.KeptReason)})
 	}
 	return imports, nil
+}
+
+func deref(text *string) string {
+	if text == nil {
+		return ""
+	}
+	return *text
 }
 
 func importOf(r sqlcdb.PlanImport) Import {

@@ -1,11 +1,11 @@
 import { Send } from 'lucide-react';
 import { useState } from 'react';
+import { InlineError } from '@/ui/InlineError/InlineError';
 import { Button } from '@/ui/Button/Button';
 import { ConfirmDialog } from '@/ui/ConfirmDialog/ConfirmDialog';
 import { useSendSwbsRequests } from './api';
 import { GsapProgress } from './GsapProgress';
 import { SEND_NOW, SEND_NOW_TEXT, sendNowTitle } from './simulated-gsap-text';
-import styles from './SimulatedGsapPanel.module.css';
 
 export interface SendNowButtonProps {
   lineItemId: string;
@@ -28,11 +28,7 @@ export function SendNowButton({ lineItemId, lineItemName }: SendNowButtonProps) 
         {SEND_NOW}
       </Button>
       {send.isPending && <GsapProgress />}
-      {send.error && (
-        <p role="alert" className={styles.problem}>
-          {send.error.message}
-        </p>
-      )}
+      {send.error && <InlineError>{send.error.message}</InlineError>}
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}

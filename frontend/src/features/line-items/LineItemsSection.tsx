@@ -8,10 +8,12 @@ import { CompletenessChip } from '@/ui/CompletenessChip/CompletenessChip';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { components } from '@/api/generated/schema';
 import { allows, gateItem } from '@/session/gate-action';
 import { cx } from '@/ui/cx';
 import { fieldHref, recordHref } from '@/ui/record-links';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { useFinancialRecord } from './gsap-financials';
 import type { FinancialFiguresData } from './gsap-financials';
 import { moneyText } from './line-item-math';
@@ -25,7 +27,6 @@ import {
   DUPLICATE,
   EDIT,
   EMPTY_SECTION,
-  SECTION_SUBTITLE,
   SECTION_TITLE,
   planCurrencyColumn,
   SPREAD_LABELS,
@@ -51,8 +52,6 @@ export interface LineItemsSectionProps {
  */
 export function LineItemsSection({ activityId }: LineItemsSectionProps) {
   const section = useLineItemSection(activityId);
-  // The GSAP figures of each line item, from the activity's record view: the same query as the
-  // Financials card, so the page asks once (015 FR-016, plan "Query keys").
   const financials = useFinancialRecord(activityId);
   const actions = useLineItemActions();
   const location = useLocation();
@@ -68,7 +67,6 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
   }, [highlight, section.data]);
 
   const access = section.data?.access;
-  // 014 FR-011: Add line item only for a person who may add line items here.
   const addButton = allows(access?.add) ? (
     <LinkButton to={`/activities/${encodeURIComponent(activityId)}/line-items/new`} icon={<Plus />}>
       {ADD_LINE_ITEM}
@@ -77,20 +75,20 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
 
   if (section.isPending) {
     return (
-      <Card title={SECTION_TITLE} subtitle={SECTION_SUBTITLE}>
+      <Card title={SECTION_TITLE}>
         <Skeleton lines={3} />
       </Card>
     );
   }
   if (section.isError) {
     return (
-      <Card title={SECTION_TITLE} subtitle={SECTION_SUBTITLE}>
+      <Card title={SECTION_TITLE}>
         <ErrorState error={section.error} onRetry={() => void section.refetch()} />
       </Card>
     );
   }
 
-  const { items, balance, grid, activity } = section.data;
+  const { items, balance, grid, gridQuarterly, activity } = section.data;
   // The reader's display currency: the API answers the USD amounts in it (FR-005, D-213).
   const displayCode = balance.assigned.currency;
   // The plan currency (016 FR-015), when the API sends the plan amounts and it is not the reader's.
@@ -104,78 +102,73 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
         : 'loading';
 
   return (
-    <Card
-      title={SECTION_TITLE}
-      subtitle={SECTION_SUBTITLE}
-      actions={items.length > 0 ? addButton : undefined}
-    >
+    <Card title={SECTION_TITLE} actions={items.length > 0 ? addButton : undefined}>
       <div className={styles.stack}>
         {items.length === 0 ? (
           <EmptyState icon={<ReceiptText />} title={EMPTY_SECTION} action={addButton} />
         ) : (
-          // The rows scroll sideways inside the card on narrow screens, never the page.
-          <div
-            className={styles.scroll}
-            role="region"
-            aria-label="Line items table, scrolls sideways"
-            tabIndex={0}
-          >
-            <table className={styles.table}>
-              <caption className="visually-hidden">{SECTION_TITLE}</caption>
-              <thead>
-                <tr>
-                  <th scope="col" className={styles.nameColumn}>
-                    Name
-                  </th>
-                  <th scope="col" className={styles.number}>
-                    Planned cost
-                  </th>
-                  {planColumn && (
-                    <th scope="col" className={styles.number}>
-                      {planCurrencyColumn(planColumn)}
+          <div className={styles.bleed}>
+            <ScrollBox label="Line items table">
+              <table className={cx(dataTable.table, styles.table)}>
+                <caption className="visually-hidden">{SECTION_TITLE}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" className={styles.nameColumn}>
+                      Name
                     </th>
-                  )}
-                  <th scope="col" className={styles.number}>
-                    {usdColumn(displayCode)}
-                  </th>
-                  <th scope="col" className={styles.number}>
-                    {`Committed (${displayCode})`}
-                  </th>
-                  <th scope="col" className={styles.number}>
-                    {`Invoiced (${displayCode})`}
-                  </th>
-                  <th scope="col">Spread</th>
-                  <th scope="col">Completeness</th>
-                  <th scope="col">SWBS request</th>
-                  <th scope="col">
-                    <span className="visually-hidden">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <Row
-                    key={item.id}
-                    item={item}
-                    planColumn={planColumn !== null}
-                    gsap={figuresOf(item.id)}
-                    highlighted={item.id === highlight}
-                    onSelectField={(field) => void navigate(fieldHref('lineItem', item.id, field))}
-                    onView={() => void navigate(recordHref('lineItem', item.id))}
-                    onEdit={() => void navigate(`${recordHref('lineItem', item.id)}/edit`)}
-                    onDuplicate={() => actions.duplicate(item, activity)}
-                    onDelete={() => actions.remove(item, activity)}
-                    access={access}
-                  />
-                ))}
-              </tbody>
-            </table>
+                    <th scope="col" className={dataTable.numeric}>
+                      Planned cost
+                    </th>
+                    {planColumn && (
+                      <th scope="col" className={dataTable.numeric}>
+                        {planCurrencyColumn(planColumn)}
+                      </th>
+                    )}
+                    <th scope="col" className={dataTable.numeric}>
+                      {usdColumn(displayCode)}
+                    </th>
+                    <th scope="col" className={dataTable.numeric}>
+                      {`Committed (${displayCode})`}
+                    </th>
+                    <th scope="col" className={dataTable.numeric}>
+                      {`Invoiced (${displayCode})`}
+                    </th>
+                    <th scope="col">Spread</th>
+                    <th scope="col">Completeness</th>
+                    <th scope="col">SWBS request</th>
+                    <th scope="col">
+                      <span className="visually-hidden">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <Row
+                      key={item.id}
+                      item={item}
+                      planColumn={planColumn !== null}
+                      gsap={figuresOf(item.id)}
+                      highlighted={item.id === highlight}
+                      onSelectField={(field) =>
+                        void navigate(fieldHref('lineItem', item.id, field))
+                      }
+                      onView={() => void navigate(recordHref('lineItem', item.id))}
+                      onEdit={() => void navigate(`${recordHref('lineItem', item.id)}/edit`)}
+                      onDuplicate={() => actions.duplicate(item, activity)}
+                      onDelete={() => actions.remove(item, activity)}
+                      access={access}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </ScrollBox>
           </div>
         )}
         <UnassignedBalanceRow balance={balance} />
         {items.length > 0 && (
           <SpreadGrid
             grid={grid}
+            quarterly={gridQuarterly}
             noDates={!activity.startDate || (!activity.endDate && !activity.ongoing)}
           />
         )}
@@ -185,7 +178,6 @@ export function LineItemsSection({ activityId }: LineItemsSectionProps) {
   );
 }
 
-/** A line item's GSAP figures, while they load, or none (no access, no data, a failure). */
 type GsapCell = FinancialFiguresData | 'loading' | 'none';
 
 interface RowProps {
@@ -223,13 +215,13 @@ function Row({
         </Link>
         <span className={styles.id}>{item.id}</span>
       </td>
-      <td className={styles.number}>{moneyText(item.plannedCost)}</td>
+      <td className={dataTable.numeric}>{moneyText(item.plannedCost)}</td>
       {planColumn && (
-        <td className={styles.number}>
+        <td className={dataTable.numeric}>
           {item.plannedCostPlan ? moneyText(item.plannedCostPlan) : '—'}
         </td>
       )}
-      <td className={styles.number}>{moneyText(item.plannedCostDisplay)}</td>
+      <td className={dataTable.numeric}>{moneyText(item.plannedCostDisplay)}</td>
       <GsapCells gsap={gsap} />
       <td className={styles.text}>{SPREAD_LABELS[item.spread.method]}</td>
       <td>
@@ -241,7 +233,7 @@ function Row({
       <td>
         <SwbsChip status={item.swbsStatus} />
       </td>
-      <td className={styles.actions}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={item.name}
           items={[
@@ -268,15 +260,15 @@ function GsapCells({ gsap }: { gsap: GsapCell }) {
     const text = gsap === 'loading' ? '…' : '—';
     return (
       <>
-        <td className={styles.number}>{text}</td>
-        <td className={styles.number}>{text}</td>
+        <td className={dataTable.numeric}>{text}</td>
+        <td className={dataTable.numeric}>{text}</td>
       </>
     );
   }
   const over = gsap.committedAbovePlanned;
   return (
     <>
-      <td className={cx(styles.number, over && styles.over)}>
+      <td className={cx(dataTable.numeric, over && styles.over)}>
         {over && (
           <CircleAlert
             role="img"
@@ -286,7 +278,7 @@ function GsapCells({ gsap }: { gsap: GsapCell }) {
         )}
         {moneyText(gsap.committed)}
       </td>
-      <td className={styles.number}>{moneyText(gsap.invoiced)}</td>
+      <td className={dataTable.numeric}>{moneyText(gsap.invoiced)}</td>
     </>
   );
 }

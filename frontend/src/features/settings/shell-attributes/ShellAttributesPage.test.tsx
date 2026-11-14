@@ -23,11 +23,7 @@ describe('ShellAttributesPage: list (FR-016 – FR-019)', () => {
       '/settings/shell-attributes/SA-1001',
     );
     expect(screen.getByRole('heading', { level: 1, name: 'Shell attributes' })).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Shell's own fields on each level's form. Changes apply to every form straight away.",
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Changes apply to every form straight away.')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent(
       'Settings›Shell attributes',
     );
@@ -88,7 +84,7 @@ describe('ShellAttributesPage: list (FR-016 – FR-019)', () => {
     expect(rowNames()).toEqual(['Lubricants attributes', 'Brands']);
     expect(router.state.location.search).toBe('?level=activity&q=lubri');
 
-    await user.click(screen.getByRole('button', { name: 'Inactive 1' }));
+    await user.click(screen.getByRole('button', { name: 'Inactive' }));
     expect(rowNames()).toEqual(['Lubricants attributes', 'Old notes']);
   });
 

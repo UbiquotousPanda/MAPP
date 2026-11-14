@@ -13,9 +13,8 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// Split activity (016 US4) on the demo data: A-1011 "UK launch event" of the GBP plan P-1004 in the
-// initiative I-1009 "UK" (40,000.00 GBP, 01 Mar – 31 May 2027) with L-1009 "Venue" 15,000.00 GBP and L-1010
-// "Agency fee (Ireland)" 23,000.00 EUR = 19,750.00 GBP; I-1010 "Ireland" holds A-1012 "Dealer conference".
+// Demo data: A-1011 of the GBP plan P-1004 in I-1009 (40,000.00 GBP, 01 Mar – 31 May 2027) holds L-1009 15,000.00 GBP
+// and L-1010 23,000.00 EUR = 19,166.67 GBP; I-1010 "Ireland" holds A-1012 "Dealer conference".
 
 const (
 	ukLaunchEvent = "A-1011"
@@ -25,7 +24,6 @@ const (
 	agencyItem    = "L-1010"
 )
 
-// splitBody is the body of a split preview or split.
 func splitBody(name, initiativeID string, lineItemIDs []string, plannedCost any, restart bool, version int) map[string]any {
 	if lineItemIDs == nil {
 		lineItemIDs = []string{}
@@ -36,8 +34,7 @@ func splitBody(name, initiativeID string, lineItemIDs []string, plannedCost any,
 	}
 }
 
-// The Split dialog of UK launch event lists its line items with their amounts in GBP, suggests "UK launch
-// event (split)" and offers the plan's initiatives, its own first (FR-026).
+// Amounts in GBP, "UK launch event (split)" suggested, the plan's initiatives offered with its own first.
 func TestSplitOptions_Contract_FR026(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -50,7 +47,7 @@ func TestSplitOptions_Contract_FR026(t *testing.T) {
 	response.Decode(t, &options)
 	if options.PlanCurrency != "GBP" || options.SuggestedName != "UK launch event (split)" || options.NeedsRestart ||
 		options.PlannedCost.Format() != "40,000.00 GBP" || len(options.LineItems) != 2 ||
-		options.LineItems[1].PlannedCost.Format() != "23,000.00 EUR" || options.LineItems[1].PlannedCostPlan.Format() != "19,750.00 GBP" {
+		options.LineItems[1].PlannedCost.Format() != "23,000.00 EUR" || options.LineItems[1].PlannedCostPlan.Format() != "19,166.67 GBP" {
 		t.Errorf("options = %s", response.Body)
 	}
 	if len(options.Destinations) != 2 || options.Destinations[0].Initiative.ID != ukInitiative || options.Destinations[0].MoveProblem != nil ||
@@ -59,14 +56,13 @@ func TestSplitOptions_Contract_FR026(t *testing.T) {
 	}
 }
 
-// The preview shows both activities as the split leaves them (spec US4-1): the original at 20,250.00 GBP
-// with 5,250.00 GBP unassigned, the new one at 19,750.00 GBP with 0.00 unassigned; the split then gives the
-// same figures, keeps L-1010's ID and links both activities (FR-027, FR-028, FR-031).
+// Original 20,833.33 GBP with 5,833.33 unassigned, new one 19,166.67 GBP with 0.00 unassigned; the split then
+// gives the same figures, keeps L-1010's ID and links both activities.
 func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
-	body := splitBody("Ireland roadshow", irelandInit, []string{agencyItem}, "19750.00", false, 1)
+	body := splitBody("Ireland roadshow", irelandInit, []string{agencyItem}, "19166.67", false, 1)
 
 	previewed := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split-preview", body)
 
@@ -77,11 +73,11 @@ func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 		t.Fatalf("preview = %s", previewed.Body)
 	}
 	o, c := preview.Original, preview.Created
-	if o.PlannedCost.Format() != "20,250.00 GBP" || o.UnassignedPlannedCost.Format() != "5,250.00 GBP" || o.UnassignedState != "left" ||
+	if o.PlannedCost.Format() != "20,833.33 GBP" || o.UnassignedPlannedCost.Format() != "5,833.33 GBP" || o.UnassignedState != "left" ||
 		!slices.Equal(o.LineItemNames, []string{"Venue"}) || o.Status != activity.StatusCreated || o.InitiativeName != "UK" {
 		t.Errorf("original side = %+v", o)
 	}
-	if c.PlannedCost.Format() != "19,750.00 GBP" || c.UnassignedPlannedCost.Format() != "0.00 GBP" || c.UnassignedState != "allAssigned" ||
+	if c.PlannedCost.Format() != "19,166.67 GBP" || c.UnassignedPlannedCost.Format() != "0.00 GBP" || c.UnassignedState != "allAssigned" ||
 		!slices.Equal(c.LineItemNames, []string{"Agency fee (Ireland)"}) || c.Name != "Ireland roadshow" || c.InitiativeName != "Ireland" {
 		t.Errorf("created side = %+v", c)
 	}
@@ -92,12 +88,12 @@ func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	var result activity.SplitResult
 	split.Decode(t, &result)
 	original, created := result.Activity, result.NewActivity
-	if original.PlannedCost.Format() != "20,250.00 GBP" || original.UnassignedPlannedCost.Format() != "5,250.00 GBP" ||
+	if original.PlannedCost.Format() != "20,833.33 GBP" || original.UnassignedPlannedCost.Format() != "5,833.33 GBP" ||
 		original.LineItems.Count != 1 || len(original.SplitInto) != 1 || original.SplitInto[0].ID != created.ID {
 		t.Errorf("original = %+v", original)
 	}
 	if created.ID != "A-1014" || created.Name != "Ireland roadshow" || created.Initiative.ID != irelandInit ||
-		created.PlannedCost.Format() != "19,750.00 GBP" || created.UnassignedPlannedCost.Format() != "0.00 GBP" ||
+		created.PlannedCost.Format() != "19,166.67 GBP" || created.UnassignedPlannedCost.Format() != "0.00 GBP" ||
 		created.LineItems.Count != 1 || created.SplitFrom == nil ||
 		*created.SplitFrom != (activity.SplitLink{ID: ukLaunchEvent, Name: "UK launch event", PlanID: "P-1004"}) {
 		t.Errorf("new activity = %+v (split from %+v)", created, created.SplitFrom)
@@ -111,8 +107,7 @@ func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	}
 }
 
-// A split moves amounts, never creates or loses them: the plan's planned cost and line items stay the same
-// (SC-005).
+// A split moves amounts, never creates or loses them.
 func TestSplit_SumsUnchanged_SC005(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -137,8 +132,7 @@ func TestSplit_SumsUnchanged_SC005(t *testing.T) {
 	}
 }
 
-// Nothing ticked and 0.00 to move: the preview lists the problem and the split refuses it, changing nothing
-// (FR-027, US4-4).
+// Nothing ticked and 0.00 to move: the preview lists the problem and the split refuses it, changing nothing.
 func TestSplit_NothingChosen_FR027(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -158,53 +152,36 @@ func TestSplit_NothingChosen_FR027(t *testing.T) {
 		`"fields":[{"field":"lineItemIds","message":"Choose line items or an amount to move."}]}}`)
 }
 
-// At most the activity's planned cost moves (FR-026); a line item of another activity is refused too.
-func TestSplit_AmountTooHigh_FR026(t *testing.T) {
+// Every refusal names its field: line items of another activity, an amount above the planned cost, a name
+// already in the destination (ignoring letter case), another plan's initiative and one whose dates do not fit.
+func TestSplit_Refusals_FR026(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
+	tests := []struct {
+		activityID string
+		body       map[string]any
+		fields     string
+	}{
+		{ukLaunchEvent, splitBody("Ireland roadshow", irelandInit, []string{"L-1001"}, "50000", false, 1),
+			`{"field":"lineItemIds","message":"L-1001 is not a line item of this activity."},` +
+				`{"field":"plannedCost","message":"Move at most 40,000.00 GBP, the activity's planned cost."}`},
+		{ukLaunchEvent, splitBody("dealer CONFERENCE", irelandInit, []string{agencyItem}, nil, false, 1),
+			`{"field":"name","message":"'Ireland' already has an activity called 'Dealer conference'."}`},
+		{"A-1001", splitBody("Launch film part 2", ukInitiative, nil, "1000", false, 1),
+			`{"field":"initiativeId","message":"Choose another initiative of this plan."}`},
+		{"A-1001", splitBody("Launch film part 2", "I-1004", nil, "1000", false, 1),
+			`{"field":"initiativeId","message":"'Launch film' runs 01 Mar – 31 May 2026, but 'Retail events' runs ` +
+				`01 Jun – 31 Dec 2026. Change the activity's dates first, or pick another initiative."}`},
+	}
 
-	refused := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split",
-		splitBody("Ireland roadshow", irelandInit, []string{"L-1001"}, "50000", false, 1))
-
-	assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"lineItemIds","message":"L-1001 is not a line item of this activity."},`+
-		`{"field":"plannedCost","message":"Move at most 40,000.00 GBP, the activity's planned cost."}]}}`)
-}
-
-// The new activity's name is unique in the chosen initiative, ignoring letter case (FR-026).
-func TestSplit_NameUnique_FR026(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-
-	refused := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split",
-		splitBody("dealer CONFERENCE", irelandInit, []string{agencyItem}, nil, false, 1))
-
-	assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"name","message":"'Ireland' already has an activity called 'Dealer conference'."}]}}`)
-}
-
-// The new activity's initiative follows Move's rules: another plan's initiative is refused, and so is one
-// whose dates do not contain the activity's (FR-026, US4-5).
-func TestSplit_DestinationRules_FR026(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	priya := server.SignIn(t, priyasEmail)
-
-	otherPlan := priya.Do(t, http.MethodPost, "/api/v1/activities/A-1001/split",
-		splitBody("Launch film part 2", ukInitiative, nil, "1000", false, 1))
-	outside := priya.Do(t, http.MethodPost, "/api/v1/activities/A-1001/split",
-		splitBody("Launch film part 2", "I-1004", nil, "1000", false, 1))
-	options := priya.Do(t, http.MethodGet, "/api/v1/activities/A-1001/split-options", nil)
-
-	assertAnswer(t, otherPlan, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"initiativeId","message":"Choose another initiative of this plan."}]}}`)
-	assertAnswer(t, outside, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
-		`"fields":[{"field":"initiativeId","message":"'Launch film' runs 01 Mar – 31 May 2026, but 'Retail events' runs `+
-		`01 Jun – 31 Dec 2026. Change the activity's dates first, or pick another initiative."}]}}`)
+	for _, tt := range tests {
+		refused := priya.Do(t, http.MethodPost, "/api/v1/activities/"+tt.activityID+"/split", tt.body)
+		assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
+			`"fields":[`+tt.fields+`]}}`)
+	}
 	var page activity.SplitOptions
-	options.Decode(t, &page)
+	priya.Do(t, http.MethodGet, "/api/v1/activities/A-1001/split-options", nil).Decode(t, &page)
 	for _, d := range page.Destinations {
 		if d.Initiative.ID == "I-1004" && d.MoveProblem == nil {
 			t.Errorf("Retail events is offered without its dates reason: %+v", d)
@@ -212,8 +189,7 @@ func TestSplit_DestinationRules_FR026(t *testing.T) {
 	}
 }
 
-// The new activity copies the original's type, owner, dates, workflow, description, external name and Shell
-// attributes, with no goals ("Goals stay on …") and status Created (FR-028).
+// Type, owner, dates, workflow, description, external name and Shell attributes are copied; status Created.
 func TestSplit_CreatesCopyOfFieldsWithoutGoals_FR028(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -243,8 +219,7 @@ func TestSplit_CreatesCopyOfFieldsWithoutGoals_FR028(t *testing.T) {
 	}
 }
 
-// Splitting the Approved Social always-on needs the person's confirmation and returns it to Created (FR-029,
-// US4-3); the moved line item is ready to send no more, because its new activity is Created.
+// The moved line item is ready to send no more, because its new activity is Created.
 func TestSplit_ApprovedNeedsRestart_FR029(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -278,8 +253,7 @@ func TestSplit_ApprovedNeedsRestart_FR029(t *testing.T) {
 	}
 }
 
-// A split is logged on the original ("split", what moved, planned cost old → new), on the new activity
-// (created, "Split from …") and on each moved line item (moved) (FR-030).
+// Logged on the original (what moved, planned cost old → new), the new activity ("Split from …") and each moved line item.
 func TestSplit_Logs_FR030(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)

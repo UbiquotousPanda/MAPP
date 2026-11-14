@@ -3,7 +3,6 @@ import { manuallyLinked, transactionOf } from '@/testing/fixtures/financial-tran
 import { FT_1003, FT_1004, FT_1009 } from '@/testing/fixtures/financials';
 import {
   accruedLabel,
-  countLine,
   importButtonLabel,
   importCountsText,
   importedToast,
@@ -44,11 +43,9 @@ describe('financialsText (015 plan, "User-visible messages")', () => {
       accrual: 2,
       notLinked: 1,
     };
-    expect(tabLabel('all', tabCounts)).toBe('All (11)');
+    expect(tabLabel('all', tabCounts)).toBe('All');
     expect(tabLabel('purchaseOrder', tabCounts)).toBe('Purchase orders (4)');
     expect(tabLabel('notLinked', undefined)).toBe('Not linked');
-    expect(countLine(4, 11)).toBe('4 of 11 transactions');
-    expect(countLine(1, 1)).toBe('1 of 1 transaction');
   });
 
   it('writes the source line (FR-008)', () => {

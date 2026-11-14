@@ -1,0 +1,29 @@
+.button {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--ink-2);
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.button svg {
+  width: 16px;
+  height: 16px;
+}

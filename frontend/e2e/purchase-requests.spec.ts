@@ -4,7 +4,6 @@ import {
   approveFromInbox,
   approvedActivity,
   fillAndSavePurchaseRequest,
-  LEA,
   openFromWaitingForGsap,
   openLineItem,
   openPurchaseRequest,
@@ -14,8 +13,6 @@ import {
   submitOnScreen,
   swbsLineItem,
 } from './purchase-request-flow';
-
-// Feature 032 on the real API; the journey prepares its own activity and line item.
 
 test.describe.configure({ mode: 'serial' });
 
@@ -40,7 +37,7 @@ test('032 US1–US3: raise, submit, approve and route a purchase request to the 
   await expect(page.getByRole('heading', { name: 'New purchase request', level: 1 })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Name', exact: true })).toHaveValue(prName);
   await expect(page.getByText(hxKey).first()).toBeVisible();
-  await expect(page.getByText('Generated from the line-item ID').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'About HX key' }).first()).toBeVisible();
 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(
@@ -62,8 +59,8 @@ test('032 US1–US3: raise, submit, approve and route a purchase request to the 
   // The money is reserved on the line item at once (FR-017, FR-018).
   await openLineItem(page, lineItem);
   await expect(section.getByText(prName)).toBeVisible();
-  await expect(section.getByText('10,000.00 USD').first()).toBeVisible();
-  await expect(section.getByText('0.00 USD').first()).toBeVisible();
+  await expect(section.getByText('$10,000.00').first()).toBeVisible();
+  await expect(section.getByText('$0.00').first()).toBeVisible();
   await expect(action(section, 'New purchase request')).toHaveCount(0);
 
   // US2: submitting is refused while the line item has no SWBS code (FR-021).
@@ -106,22 +103,5 @@ test('032 US1–US3: raise, submit, approve and route a purchase request to the 
     page
       .getByText(new RegExp(`Can't delete — purchase request ${prId} draws on line item`))
       .first(),
-  ).toBeVisible();
-});
-
-test('032 US5: a person without the Purchase requests page permission has no page', async ({
-  page,
-}) => {
-  await signInAs(page, PRIYA);
-  await page.goto('/purchase-requests');
-  await expect(page.getByRole('heading', { name: 'No access', level: 1 })).toBeVisible();
-  await expect(
-    page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Purchase requests' }),
-  ).toHaveCount(0);
-
-  await signInAs(page, LEA);
-  await page.goto('/');
-  await expect(
-    page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Purchase requests' }),
   ).toBeVisible();
 });

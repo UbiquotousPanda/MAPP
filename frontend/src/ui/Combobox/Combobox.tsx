@@ -1,5 +1,4 @@
 import { Check, X } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { cx } from '../cx';
@@ -7,6 +6,7 @@ import { FieldShell } from '../FieldShell/FieldShell';
 import type { FieldFrameProps } from '../FieldShell/FieldShell';
 import inputs from '../FieldShell/inputs.module.css';
 import { InfoTip } from '../InfoTip/InfoTip';
+import { Popover } from '../Popover/Popover';
 import styles from './Combobox.module.css';
 
 export interface ComboboxOption {
@@ -101,7 +101,15 @@ export function Combobox({
       setOpen(false);
     }
     setQuery('');
-    setActiveIndex(0);
+    // The list stays open on a multiple choice, so its active option stays on the one just chosen.
+    setActiveIndex(
+      multiple
+        ? Math.max(
+            0,
+            options.findIndex((option) => option.id === id),
+          )
+        : 0,
+    );
   }
 
   function remove(id: string) {
@@ -211,65 +219,63 @@ export function Combobox({
           <span role="status" className="visually-hidden">
             {status}
           </span>
-          <Popover.Portal>
-            <Popover.Content
-              role="presentation"
-              className={styles.popover}
-              align="start"
-              sideOffset={4}
-              style={{ width: 'var(--radix-popover-trigger-width)' }}
-              // The focus stays in the input: it never moves into the list.
-              onOpenAutoFocus={(event) => event.preventDefault()}
-              onCloseAutoFocus={(event) => event.preventDefault()}
-              onInteractOutside={(event) => {
-                if (event.target instanceof Node && anchor.current?.contains(event.target)) {
-                  event.preventDefault();
-                }
-              }}
-              // Keeps the focus in the input when an option or the list's scroll bar is clicked.
-              onMouseDown={(event) => event.preventDefault()}
-            >
-              {shown.length === 0 ? (
-                <p className={styles.message}>{noMatchText(query.trim())}</p>
-              ) : (
-                <>
-                  <p className={styles.count} aria-hidden="true">
-                    {countText(matches.length)}
-                  </p>
-                  <ul
-                    id={listId}
-                    role="listbox"
-                    aria-label={frame.label}
-                    aria-multiselectable={multiple || undefined}
-                    className={styles.list}
-                  >
-                    {shown.map((option, index) => {
-                      const chosen = value.includes(option.id);
-                      return (
-                        // eslint-disable-next-line jsx-a11y-x/click-events-have-key-events -- the input handles keys (aria-activedescendant)
-                        <li
-                          key={option.id}
-                          id={optionId(index)}
-                          role="option"
-                          aria-selected={chosen}
-                          className={cx(styles.option, index === active && styles.active)}
-                          onClick={() => choose(option.id)}
-                        >
-                          <span className={styles.optionContent}>
-                            {option.content ?? option.label}
-                          </span>
-                          {chosen && <Check className={styles.check} aria-hidden="true" />}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {limitText && shown.length < matches.length && (
-                    <p className={styles.message}>{limitText(shown.length, matches.length)}</p>
-                  )}
-                </>
-              )}
-            </Popover.Content>
-          </Popover.Portal>
+          <Popover.Content
+            role="presentation"
+            width="anchor"
+            padding="sm"
+            sideOffset={4}
+            // The focus stays in the input: it never moves into the list.
+            onOpenAutoFocus={(event) => event.preventDefault()}
+            onCloseAutoFocus={(event) => event.preventDefault()}
+            onInteractOutside={(event) => {
+              if (event.target instanceof Node && anchor.current?.contains(event.target)) {
+                event.preventDefault();
+              }
+            }}
+            // Keeps the focus in the input when an option or the list's scroll bar is clicked.
+            onMouseDown={(event) => event.preventDefault()}
+          >
+            {shown.length === 0 ? (
+              <p className={styles.message}>{noMatchText(query.trim())}</p>
+            ) : (
+              <>
+                <p className={styles.count} aria-hidden="true">
+                  {countText(matches.length)}
+                </p>
+                <ul
+                  id={listId}
+                  role="listbox"
+                  aria-label={frame.label}
+                  aria-multiselectable={multiple || undefined}
+                  className={styles.list}
+                >
+                  {shown.map((option, index) => {
+                    const chosen = value.includes(option.id);
+                    return (
+                      // eslint-disable-next-line jsx-a11y-x/click-events-have-key-events -- the input handles keys (aria-activedescendant)
+                      <li
+                        key={option.id}
+                        id={optionId(index)}
+                        role="option"
+                        aria-selected={chosen}
+                        className={cx(styles.option, index === active && styles.active)}
+                        onClick={() => choose(option.id)}
+                        onMouseMove={() => setActiveIndex(index)}
+                      >
+                        <span className={styles.optionContent}>
+                          {option.content ?? option.label}
+                        </span>
+                        {chosen && <Check className={styles.check} aria-hidden="true" />}
+                      </li>
+                    );
+                  })}
+                </ul>
+                {limitText && shown.length < matches.length && (
+                  <p className={styles.message}>{limitText(shown.length, matches.length)}</p>
+                )}
+              </>
+            )}
+          </Popover.Content>
         </Popover.Root>
       )}
     </FieldShell>

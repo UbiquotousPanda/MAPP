@@ -18,8 +18,10 @@ type Store struct {
 
 func NewStore(db *fake.DB) Store {
 	return Store{
-		campaigns:   fake.TableOf(db, "campaigns", func(c campaign.Campaign) string { return c.ID }),
-		initiatives: fake.TableOf(db, "initiatives", func(i campaign.Initiative) string { return i.ID }),
+		campaigns: fake.TableOf(db, "campaigns", func(c campaign.Campaign) string { return c.ID }).
+			Unique("campaigns_name_key", func(c campaign.Campaign) string { return c.PlanID + "/" + fake.LowerC(c.Name) }),
+		initiatives: fake.TableOf(db, "initiatives", func(i campaign.Initiative) string { return i.ID }).
+			Unique("initiatives_name_key", func(i campaign.Initiative) string { return i.CampaignID + "/" + fake.LowerC(i.Name) }),
 	}
 }
 

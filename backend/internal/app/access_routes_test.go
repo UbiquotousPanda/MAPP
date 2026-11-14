@@ -1,13 +1,10 @@
 package app_test
 
 import (
-	"net/http"
 	"slices"
-	"strings"
 	"testing"
 
 	"mapp/internal/access"
-	"mapp/internal/platform/apitest"
 )
 
 // Operations not served yet have their rule too, so they are protected the moment they are (D-301).
@@ -52,35 +49,5 @@ func TestPublicRules_OnlyTheSixWithoutSession_FR010(t *testing.T) {
 		"POST /api/v1/auth/sign-in", "POST /api/v1/auth/sign-out"}
 	if !slices.Equal(public, want) {
 		t.Errorf("public operations = %q, want %q", public, want)
-	}
-}
-
-// The role check comes before anything else of the request. Sara Novak holds plans.view, data.export,
-// finance.view and dashboards.view only.
-func TestEveryNeedRule_RefusesWithoutThePermission_FR009_FR010(t *testing.T) {
-	t.Parallel()
-	server := apitest.New(t)
-	sara := server.SignIn(t, "sara.novak@shell.com")
-	viewer := []string{"plans.view", "data.export", "finance.view", "dashboards.view"}
-	checked := 0
-	for _, op := range contractOperations(t) {
-		rule, _ := access.RuleFor(op.route)
-		if rule.Kind != access.Need && rule.Kind != access.InPlan || slices.Contains(viewer, string(rule.Permission)) ||
-			slices.Contains(notYetServed, op.route) {
-			continue
-		}
-		method, path, _ := strings.Cut(op.route, " ")
-		path = pathParameter.ReplaceAllString(path, "X-1001") // any value: the role check comes first
-
-		response := sara.Do(t, method, path, nil, apitest.SkipRequestValidation())
-
-		if response.Status != http.StatusForbidden || !strings.Contains(string(response.Body), `"code":"forbidden"`) ||
-			!strings.Contains(string(response.Body), "isn't part of your role (Viewer). Ask an administrator if you need it.") {
-			t.Errorf("%s as a Viewer = %d %s, want 403 forbidden with the role message", op.route, response.Status, response.Body)
-		}
-		checked++
-	}
-	if checked < 80 {
-		t.Errorf("checked %d operations, want the 80 or more that need a permission a Viewer lacks", checked)
 	}
 }

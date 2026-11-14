@@ -1,5 +1,6 @@
 import type { MouseEvent } from 'react';
 import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
 import styles from './AllWorkGrid.module.css';
 import type { AllWorkColumn, AllWorkRow } from './all-work-types';
 import { CellValue } from './CellValue';
@@ -69,7 +70,7 @@ export function GridRow({
         )}
       </th>
       {columns.map((column, index) => (
-        <td key={column.key} className={cx(isNumeric(column) && styles.end)}>
+        <td key={column.key} className={cx(isNumeric(column) && dataTable.numeric)}>
           <CellValue cell={row.cells[index]} search={isSearched(column.key) ? search : ''} />
         </td>
       ))}

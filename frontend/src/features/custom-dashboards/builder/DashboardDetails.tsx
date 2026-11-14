@@ -1,21 +1,26 @@
+import type { ReactNode } from 'react';
 import { Combobox } from '@/ui/Combobox/Combobox';
 import { DateRangeField } from '@/ui/DateRangeField/DateRangeField';
+import { FieldRow } from '@/ui/FieldRow/FieldRow';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { TextField } from '@/ui/TextField/TextField';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { CustomDashboardFilters } from '../model';
 import { usePlanChoices, useTeamChoices } from './api';
 import type { Choice } from './api';
 import type { BuilderAction, Draft } from './builder-reducer';
 import { NAME_FIELD_ID } from './canvas-dom';
+import builder from './Builder.module.css';
 import styles from './Inspector.module.css';
 
 export interface DashboardDetailsProps {
   draft: Draft;
   errorAt: (path: string) => string | undefined;
   onAction: (action: BuilderAction) => void;
+  hideButton: ReactNode;
 }
 
-export function DashboardDetails({ draft, errorAt, onAction }: DashboardDetailsProps) {
+export function DashboardDetails({ draft, errorAt, onAction, hideButton }: DashboardDetailsProps) {
   const plans = usePlanChoices();
   const teams = useTeamChoices();
   const { filters } = draft;
@@ -27,7 +32,12 @@ export function DashboardDetails({ draft, errorAt, onAction }: DashboardDetailsP
 
   return (
     <div className={styles.tab}>
-      <h2 className={styles.widgetTitle}>Dashboard</h2>
+      <div className={builder.panelHeader}>
+        <SectionHeading level={2} rank="card">
+          Dashboard
+        </SectionHeading>
+        {hideButton}
+      </div>
       <TextField
         label="Name"
         name={NAME_FIELD_ID}
@@ -47,7 +57,11 @@ export function DashboardDetails({ draft, errorAt, onAction }: DashboardDetailsP
         error={errorAt('description')}
       />
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>Default filters</legend>
+        <legend className={styles.legend}>
+          <SectionHeading level={3} rank="sub">
+            Default filters
+          </SectionHeading>
+        </legend>
         <p className={styles.note}>
           Viewers start with these. They apply to SP&A One data, never to uploaded data.
         </p>
@@ -61,22 +75,24 @@ export function DashboardDetails({ draft, errorAt, onAction }: DashboardDetailsP
           }
           errors={{ end: errorAt('filters.dateTo') }}
         />
-        <ChoicesField
-          label="Plans"
-          name="dashboard-filter-plans"
-          choices={plans.data}
-          value={filters.planIds}
-          error={errorAt('filters.planIds')}
-          onChange={(planIds) => setFilters({ planIds })}
-        />
-        <ChoicesField
-          label="Teams"
-          name="dashboard-filter-teams"
-          choices={teamChoices}
-          value={filters.teamIds}
-          error={errorAt('filters.teamIds')}
-          onChange={(teamIds) => setFilters({ teamIds })}
-        />
+        <FieldRow>
+          <ChoicesField
+            label="Plans"
+            name="dashboard-filter-plans"
+            choices={plans.data}
+            value={filters.planIds}
+            error={errorAt('filters.planIds')}
+            onChange={(planIds) => setFilters({ planIds })}
+          />
+          <ChoicesField
+            label="Teams"
+            name="dashboard-filter-teams"
+            choices={teamChoices}
+            value={filters.teamIds}
+            error={errorAt('filters.teamIds')}
+            onChange={(teamIds) => setFilters({ teamIds })}
+          />
+        </FieldRow>
       </fieldset>
     </div>
   );
@@ -98,7 +114,7 @@ function ChoicesField({ label, name, choices, value, error, onChange }: ChoicesF
       label={label}
       name={name}
       multiple
-      hint="Empty: all you may see."
+      tip="Empty: all you may see."
       options={choices ?? []}
       value={value}
       onChange={onChange}

@@ -1,7 +1,8 @@
-import { useId } from 'react';
-import { ScrollBox } from '@/features/financials';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { useFormatters } from '@/format/useFormatters';
 import { Card } from '@/ui/Card/Card';
+import { Select } from '@/ui/Select/Select';
+import dataTable from '@/ui/Table/Table.module.css';
 import type { SpaView } from './api';
 import { Bar } from './Bar';
 import { FigureButton } from './FigureButton';
@@ -17,38 +18,31 @@ interface SpaDimensionProps {
 
 /** Planned cost by the dimension the person chooses, largest first (013 FR-018). */
 export function SpaDimension({ view, onDimension, onTrace }: SpaDimensionProps) {
-  const id = useId();
   const { money } = useFormatters();
   const breakdown = view.dimension;
   return (
     <Card
       title={DIMENSION.title}
       actions={
-        <label className={styles.picker} htmlFor={id}>
-          {DIMENSION.choose}
-          <select
-            id={id}
-            className={styles.select}
-            value={breakdown.key}
-            onChange={(event) => onDimension(event.target.value)}
-          >
-            {view.dimensions.map((dimension) => (
-              <option key={dimension.key} value={dimension.key}>
-                {dimension.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          label={DIMENSION.choose}
+          value={breakdown.key}
+          options={view.dimensions.map((dimension) => ({
+            value: dimension.key,
+            label: dimension.label,
+          }))}
+          onChange={onDimension}
+        />
       }
     >
       {breakdown.countsInEach && <p className={styles.note}>{DIMENSION.countsInEach}</p>}
-      <ScrollBox label={`Planned cost by ${breakdown.label}`} className={styles.scroll}>
-        <table className={styles.table}>
+      <ScrollBox label={`Planned cost by ${breakdown.label}`}>
+        <table className={dataTable.table}>
           <caption className="visually-hidden">Planned cost by {breakdown.label}</caption>
           <thead>
             <tr>
               <th scope="col">{breakdown.label}</th>
-              <th scope="col" className={styles.numeric}>
+              <th scope="col" className={dataTable.numeric}>
                 Planned cost
               </th>
               <th scope="col">{DIMENSION.share}</th>
@@ -58,7 +52,7 @@ export function SpaDimension({ view, onDimension, onTrace }: SpaDimensionProps) 
             {breakdown.rows.map((row) => (
               <tr key={row.key}>
                 <th scope="row">{row.label}</th>
-                <td className={styles.numeric}>
+                <td className={dataTable.numeric}>
                   <FigureButton
                     figure={`${breakdown.label}: ${row.label}`}
                     value={row.amount}
@@ -76,9 +70,9 @@ export function SpaDimension({ view, onDimension, onTrace }: SpaDimensionProps) 
             ))}
           </tbody>
           <tfoot>
-            <tr className={styles.totals}>
+            <tr className={dataTable.total}>
               <th scope="row">Total</th>
-              <td className={styles.numeric}>{money(breakdown.total)}</td>
+              <td className={dataTable.numeric}>{money(breakdown.total)}</td>
               <td />
             </tr>
           </tfoot>

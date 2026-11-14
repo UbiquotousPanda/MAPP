@@ -20,7 +20,6 @@ import type { ApprovalDelegation, DelegationScope } from './delegations-api';
 import { delegationChanges, delegationSchema, delegationValuesOf, newDelegation } from './schemas';
 import type { DelegationValues } from './schemas';
 
-/** The longest note the API takes. */
 const NOTE_MAX = 500;
 const FIELDS = ['personId', 'delegateId', 'startDate', 'endDate', 'note'] as const;
 /** The date fields' ids: the API's keys with the field's prefix (DateRangeField's ids). */
@@ -36,16 +35,10 @@ export interface DelegationFormProps {
   canManageOthers: boolean;
   /** The list the delegation was opened from (its latest version is read from there). */
   scope: DelegationScope;
-  /** Back to the list of delegations. */
   onClose: () => void;
 }
 
-/**
- * "Add delegation" / "Edit delegation" (017 US4, FR-022, FR-024): the delegating person (only for
- * someone who may manage others' delegations; the signed-in person otherwise), the delegate, the
- * first and last day and an optional note. The API checks everything and every problem shows at
- * once, in the summary and at its field; a change someone saved first is named with its time.
- */
+/** The API checks everything; every problem shows at once, and a change someone saved first is named with its time. */
 export function DelegationForm({
   delegation,
   canManageOthers,
@@ -158,7 +151,7 @@ export function DelegationForm({
           <PersonField
             label="Delegate"
             marking="Required"
-            hint="Someone with a role that approves activities."
+            tip="Someone with a role that approves activities."
             {...field}
           />
         )}
@@ -182,9 +175,7 @@ export function DelegationForm({
       <FormField
         control={form.control}
         name="note"
-        render={(field) => (
-          <TextAreaField label="Note (optional)" rows={3} maxLength={NOTE_MAX} {...field} />
-        )}
+        render={(field) => <TextAreaField label="Note" rows={3} maxLength={NOTE_MAX} {...field} />}
       />
     </FormPanel>
   );

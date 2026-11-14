@@ -1,19 +1,26 @@
 import { ChevronRight, Landmark, Lock, Plus } from 'lucide-react';
-import { useId, useState } from 'react';
-import { Link, Navigate, useSearchParams } from 'react-router';
+import { useState } from 'react';
+import { Link, Navigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
+import { Select } from '@/ui/Select/Select';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { plural } from '@/format/text';
 import { usePageTitle } from '@/ui/usePageTitle';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { cx } from '@/ui/cx';
+import linkCard from '@/ui/LinkCard/LinkCard.module.css';
+import { useCurrentYear } from '@/session/useToday';
 import { BudgetFigures } from './BudgetFigures';
 import { GlobalBudgetForm } from './GlobalBudgetForm';
 import { useGlobalBudgets } from './api';
 import type { GlobalBudgetSummary } from './api';
-import { emptyText, PAGE_DESCRIPTION } from './global-budgets-text';
+import { emptyText } from './global-budgets-text';
 import { yearOf } from './schemas';
 import styles from './GlobalBudgetsPage.module.css';
 
@@ -24,14 +31,13 @@ import styles from './GlobalBudgetsPage.module.css';
  */
 export function GlobalBudgetsPage() {
   usePageTitle('Global budgets');
-  const [params, setParams] = useSearchParams();
-  const currentYear = new Date().getFullYear();
+  const [params, setParams] = useAddressParams();
+  const currentYear = useCurrentYear();
   const year = yearOf(params, currentYear);
   const budgets = useGlobalBudgets(year);
   const [creating, setCreating] = useState(false);
   // The new global budget opens once its form has closed (its unsaved-changes guard is gone).
   const [createdId, setCreatedId] = useState<string | null>(null);
-  const yearId = useId();
   const forbidden = budgets.error instanceof ApiError && budgets.error.kind === 'forbidden';
   const years = withChosen(budgets.data?.years ?? [], [currentYear, year]);
 
@@ -39,7 +45,6 @@ export function GlobalBudgetsPage() {
     <>
       <PageHeader
         title="Global budgets"
-        description={PAGE_DESCRIPTION}
         actions={
           <Button variant="primary" icon={<Plus />} onClick={() => setCreating(true)}>
             New global budget
@@ -48,31 +53,18 @@ export function GlobalBudgetsPage() {
       />
       <section className={styles.panel} aria-label="Global budgets">
         <div className={styles.toolbar}>
-          <label htmlFor={yearId} className={styles.field}>
-            Year
-          </label>
-          <select
-            id={yearId}
-            className={styles.select}
+          <Select
+            label="Year"
             value={year === null ? 'all' : String(year)}
-            onChange={(event) =>
-              setParams(
-                event.target.value === String(currentYear) ? {} : { year: event.target.value },
-              )
+            options={[
+              { value: 'all', label: 'All years' },
+              ...years.map((choice) => ({ value: String(choice), label: String(choice) })),
+            ]}
+            onChange={(value) =>
+              setParams(value === String(currentYear) ? {} : { year: value }, { replace: true })
             }
-          >
-            <option value="all">All years</option>
-            {years.map((choice) => (
-              <option key={choice} value={choice}>
-                {choice}
-              </option>
-            ))}
-          </select>
-          {budgets.data && (
-            <p className={styles.count} aria-live="polite">
-              {plural(budgets.data.total, 'global budget')}
-            </p>
-          )}
+          />
+          {budgets.data && <ResultCount>{plural(budgets.data.total, 'global budget')}</ResultCount>}
         </div>
         <div className={styles.body}>
           {budgets.data ? (
@@ -120,20 +112,24 @@ function BudgetCard({ budget }: { budget: GlobalBudgetSummary }) {
   ];
 
   return (
-    <li className={styles.card}>
+    <li className={cx(styles.card, linkCard.card)}>
       <div className={styles.cardHeader}>
-        <h2 className={styles.name}>
-          <Link to={`/budgets/${encodeURIComponent(budget.id)}`}>{budget.name}</Link>
-        </h2>
+        <SectionHeading level={2} rank="card">
+          <Link
+            to={`/budgets/${encodeURIComponent(budget.id)}`}
+            className={cx(linkCard.link, styles.name)}
+          >
+            {budget.name}
+          </Link>
+        </SectionHeading>
+        <p className={styles.facts}>{facts.join(' · ')}</p>
         <ChevronRight aria-hidden="true" className={styles.chevron} />
       </div>
-      <p className={styles.facts}>{facts.join(' · ')}</p>
       <BudgetFigures figures={budget.figures} />
     </li>
   );
 }
 
-/** The years to offer: the API's, the current year and the chosen one, newest first. */
 function withChosen(years: number[], more: (number | null)[]): number[] {
   const all = new Set(years);
   for (const year of more) {

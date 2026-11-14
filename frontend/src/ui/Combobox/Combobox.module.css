@@ -36,8 +36,8 @@
 }
 
 .input {
-  flex: 1 1 120px;
-  min-width: 80px;
+  flex: 1 1 40px;
+  min-width: 40px;
   min-height: var(--space-7);
   padding: 2px var(--space-1);
   border: 0;
@@ -101,21 +101,6 @@
 .remove svg {
   width: 14px;
   height: 14px;
-}
-
-.popover {
-  z-index: 60;
-  min-width: 240px;
-  padding: var(--space-1);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-control);
-  background: var(--raised);
-  box-shadow: var(--shadow-md);
-}
-
-/* Dark Raised is 3.9:1 for Text Subtle, so secondary text there is Text Strong (constitution X). */
-:global(:root[data-theme='dark']) .popover {
-  --ink-2: var(--ink);
 }
 
 .count {

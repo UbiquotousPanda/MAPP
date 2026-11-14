@@ -12,6 +12,7 @@ import { useFormatters } from '@/format/useFormatters';
 import { usePageTitle } from '@/ui/usePageTitle';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { filterRecords, useListFilters } from '@/ui/useListFilters';
 import type { ListFilters } from '@/ui/useListFilters';
 import { CanChange, SettingsViewOnlyNote } from '@/ui/CanChange/CanChange';
@@ -83,7 +84,6 @@ export function CurrenciesPage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'Currencies' }]}
         title="Currencies"
-        description="Currencies for line items, plans and display, with their dated rates per 1 USD."
         actions={
           <CanChange permission="exchangeRates.manage">
             <>
@@ -122,7 +122,9 @@ export function CurrenciesPage() {
           name={deleting.name}
           usage={deleting.usage}
           active={deleting.active}
-          remove={() => deleteCurrency.mutateAsync(deleting.code)}
+          remove={() =>
+            deleteCurrency.mutateAsync({ id: deleting.code, version: deleting.version })
+          }
           setInactive={() => status.applyInactive(target(deleting))}
           invalidate={CURRENCY_LISTS}
           onDeleted={() => {
@@ -160,11 +162,7 @@ function CurrenciesCard({ currencies, filters, actions }: CurrenciesCardProps) {
 
   // USD always exists (FR-028), so the list is never empty.
   const all = currencies.data.items;
-  const { shown, counts } = filterRecords(
-    all,
-    filters,
-    (currency) => `${currency.code} ${currency.name}`,
-  );
+  const { shown } = filterRecords(all, filters, (currency) => `${currency.code} ${currency.name}`);
 
   return (
     <Card>
@@ -175,7 +173,7 @@ function CurrenciesCard({ currencies, filters, actions }: CurrenciesCardProps) {
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: CURRENCY_NOUN }}
       />
       {shown.length === 0 ? (
@@ -184,14 +182,14 @@ function CurrenciesCard({ currencies, filters, actions }: CurrenciesCardProps) {
           <Button onClick={filters.clear}>Clear filters</Button>
         </div>
       ) : (
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Code</th>
                 <th scope="col">Name</th>
                 <th scope="col">Symbol</th>
-                <th scope="col" className={styles.number}>
+                <th scope="col" className={dataTable.numeric}>
                   Rate
                 </th>
                 <th scope="col">Used by</th>
@@ -226,7 +224,7 @@ function CurrencyRow({ currency, actions }: { currency: Currency; actions: Curre
       </th>
       <td className={styles.nowrap}>{currency.name}</td>
       <td>{currency.symbol || '—'}</td>
-      <td className={styles.number}>
+      <td className={dataTable.numeric}>
         {rateLine(currency.code, currency.rate)}
         <span className={styles.secondLine}>
           {inverseLine(currency.code, currency.inverseRate)}
@@ -244,7 +242,7 @@ function CurrencyRow({ currency, actions }: { currency: Currency; actions: Curre
           {currency.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={currency.code}
           items={[

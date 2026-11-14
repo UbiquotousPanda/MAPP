@@ -1,8 +1,10 @@
-import { CircleAlert, TriangleAlert } from 'lucide-react';
-import { cx } from '../cx';
+import { TriangleAlert } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { DateControl } from '../DateField/DateInput';
+import { useTypedDate } from '../DateField/useTypedDate';
 import { FieldShell } from '../FieldShell/FieldShell';
 import type { FieldMarking } from '../FieldShell/FieldShell';
-import inputs from '../FieldShell/inputs.module.css';
+import { InlineError } from '../InlineError/InlineError';
 import styles from './DateRangeField.module.css';
 
 /** A start and an end date, "YYYY-MM-DD" or "" when not set. */
@@ -51,6 +53,15 @@ export function DateRangeField({
   const startId = `${idPrefix}-startDate`;
   const endId = `${idPrefix}-endDate`;
   const notes = [allowedHint, endDisabledReason].filter(Boolean);
+  // A page may not re-render between two quick changes, so each change builds on the last one reported.
+  const latest = useRef({ start, end });
+  useEffect(() => {
+    latest.current = { start, end };
+  }, [start, end]);
+  const report = (range: DateRange) => {
+    latest.current = range;
+    onChange(range);
+  };
 
   return (
     <FieldShell
@@ -86,7 +97,7 @@ export function DateRangeField({
             max={end || allowed?.end}
             error={errors.start}
             required={required}
-            onChange={(value) => onChange({ start: value, end })}
+            onChange={(value) => report({ ...latest.current, start: value })}
           />
           <DateInput
             id={endId}
@@ -97,7 +108,7 @@ export function DateRangeField({
             error={errors.end}
             required={required}
             disabled={Boolean(endDisabledReason)}
-            onChange={(value) => onChange({ start, end: value })}
+            onChange={(value) => report({ ...latest.current, end: value })}
           />
         </div>
       )}
@@ -119,30 +130,23 @@ interface DateInputProps {
 
 function DateInput(props: DateInputProps) {
   const { id, label, value, min, max, error, disabled, required, onChange } = props;
+  const typed = useTypedDate(value, onChange);
+  const problem = typed.problem ?? error;
   const errorId = `${id}-error`;
   return (
     <div className={styles.date}>
       <label htmlFor={id} className={styles.label}>
         {label}
       </label>
-      <input
-        id={id}
-        type="date"
-        value={value}
-        min={min}
-        max={max}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? errorId : undefined}
-        aria-required={required}
-        className={cx(inputs.input, error && inputs.invalid)}
+      <DateControl
+        {...{ id, label, typed, min, max, disabled, required }}
+        invalid={Boolean(problem)}
+        describedBy={problem ? errorId : undefined}
       />
-      {error && (
-        <p id={errorId} className={styles.error}>
-          <CircleAlert />
-          {error}
-        </p>
+      {problem && (
+        <InlineError id={errorId} quiet>
+          {problem}
+        </InlineError>
       )}
     </div>
   );

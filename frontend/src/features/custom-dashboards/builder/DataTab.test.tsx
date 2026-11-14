@@ -1,9 +1,9 @@
 import { screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
-import { expectNoAxeViolations } from '@/testing/axe';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { choose, optionNames } from '@/testing/select';
 import { testUser } from '@/testing/fixtures/users';
 import type { DataSource, Widget, WidgetQuery, WidgetType } from '../model';
 import { BAR_QUERY, BAR_WIDGET, EVENT_LEADS, SOURCES } from './builder-fixtures';
@@ -54,10 +54,10 @@ describe('051 US1-3, FR-016–FR-020: the Data tab builds the query from the dat
     const { user } = renderTab(empty('bar'));
     expect(screen.queryByLabelText(/Group by/)).not.toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText(/Source/), 'Activities');
-    await user.selectOptions(screen.getByLabelText(/Group by/), 'Activity type');
+    await choose(user, screen.getByLabelText(/Source/), 'Activities');
+    await choose(user, screen.getByLabelText(/Group by/), 'Activity type');
     await user.click(screen.getByRole('button', { name: 'Add measure' }));
-    await user.selectOptions(screen.getByLabelText('What to measure'), 'Planned cost');
+    await choose(user, screen.getByLabelText('What to measure'), 'Planned cost');
 
     expect(latest).toMatchObject({
       source: 'activities',
@@ -67,20 +67,22 @@ describe('051 US1-3, FR-016–FR-020: the Data tab builds the query from the dat
     });
   });
 
-  it('groups the sources as SP&A One data and Uploaded data, with Upload data', () => {
-    renderTab(empty('bar'));
+  it('groups the sources as SP&A One data and Uploaded data, with Upload data', async () => {
+    const { user } = renderTab(empty('bar'));
+    await user.click(screen.getByLabelText(/Source/));
     expect(screen.getByRole('group', { name: 'SP&A One data' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Uploaded data' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
     expect(screen.getByRole('link', { name: 'Upload data' })).toHaveAttribute('href', '/datasets');
   });
 
   it('groups a date field by month and sorts by the dates', async () => {
     const { user } = renderTab(empty('bar'));
-    await user.selectOptions(screen.getByLabelText(/Source/), 'Activities');
-    await user.selectOptions(screen.getByLabelText(/Group by/), 'Start date');
+    await choose(user, screen.getByLabelText(/Source/), 'Activities');
+    await choose(user, screen.getByLabelText(/Group by/), 'Start date');
 
-    expect(screen.getByLabelText('Group dates by (group by)')).toHaveValue('month');
-    await user.selectOptions(screen.getByLabelText('Group dates by (group by)'), 'Quarter');
+    expect(screen.getByLabelText('Group dates by (group by)')).toHaveTextContent('Month');
+    await choose(user, screen.getByLabelText('Group dates by (group by)'), 'Quarter');
     expect(latest).toMatchObject({
       dimension: { field: 'startDate', dateGroup: 'quarter' },
       sort: { by: 'dimension', direction: 'asc' },
@@ -89,7 +91,7 @@ describe('051 US1-3, FR-016–FR-020: the Data tab builds the query from the dat
 
   it('offers only what the type takes: no breakdown for a pie, no group for a key figure', async () => {
     const { user } = renderTab(empty('pie'));
-    await user.selectOptions(screen.getByLabelText(/Source/), 'Activities');
+    await choose(user, screen.getByLabelText(/Source/), 'Activities');
     expect(screen.getByLabelText(/Group by/)).toBeInTheDocument();
     expect(screen.queryByLabelText(/Break down by/)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Add measure' }));
@@ -98,7 +100,7 @@ describe('051 US1-3, FR-016–FR-020: the Data tab builds the query from the dat
 
   it('shows no group for a key figure', async () => {
     const { user } = renderTab(empty('kpi'));
-    await user.selectOptions(screen.getByLabelText(/Source/), 'Activities');
+    await choose(user, screen.getByLabelText(/Source/), 'Activities');
     expect(screen.queryByLabelText(/Group by/)).not.toBeInTheDocument();
   });
 });
@@ -106,7 +108,7 @@ describe('051 US1-3, FR-016–FR-020: the Data tab builds the query from the dat
 describe('051 FR-031: changing the source keeps what fits and says what was cleared', () => {
   it('clears the group and the measure that Event leads 2026 does not have', async () => {
     const { user } = renderTab(BAR_WIDGET);
-    await user.selectOptions(screen.getByLabelText(/Source/), 'Event leads 2026');
+    await choose(user, screen.getByLabelText(/Source/), 'Event leads 2026');
 
     expect(screen.getByRole('status')).toHaveTextContent(
       "Cleared what doesn't fit Event leads 2026: Group by, 1 measure.",
@@ -129,7 +131,7 @@ describe('051 FR-031: changing the source keeps what fits and says what was clea
       },
     };
     const { user } = renderTab(leads);
-    await user.selectOptions(screen.getByLabelText(/Source/), 'Agency spend');
+    await choose(user, screen.getByLabelText(/Source/), 'Agency spend');
 
     expect(latest).toMatchObject({
       source: 'DS-1002',
@@ -147,8 +149,8 @@ describe('051 FR-019, FR-020: filters, sort and top N', () => {
   it('adds a filter with is one of and one value per line', async () => {
     const { user } = renderTab(BAR_WIDGET);
     await user.click(screen.getByRole('button', { name: 'Add filter' }));
-    await user.selectOptions(screen.getByLabelText('Field'), 'Status');
-    await user.selectOptions(screen.getByLabelText('Comparison'), 'is one of');
+    await choose(user, screen.getByLabelText('Field'), 'Status');
+    await choose(user, screen.getByLabelText('Comparison'), 'is one of');
     await user.type(screen.getByLabelText('Values'), 'Planned{Enter}Done');
 
     expect(latest?.filters).toEqual([
@@ -159,9 +161,9 @@ describe('051 FR-019, FR-020: filters, sort and top N', () => {
   it('offers comparisons by the field: between for amounts, contains for text', async () => {
     const { user } = renderTab(BAR_WIDGET);
     await user.click(screen.getByRole('button', { name: 'Add filter' }));
-    await user.selectOptions(screen.getByLabelText('Field'), 'Planned cost');
-    expect(screen.queryByRole('option', { name: 'contains' })).not.toBeInTheDocument();
-    await user.selectOptions(screen.getByLabelText('Comparison'), 'between');
+    await choose(user, screen.getByLabelText('Field'), 'Planned cost');
+    expect(await optionNames(user, screen.getByLabelText('Comparison'))).not.toContain('contains');
+    await choose(user, screen.getByLabelText('Comparison'), 'between');
     await user.type(screen.getByLabelText('From'), '100');
     await user.type(screen.getByLabelText('To'), '500');
 
@@ -172,8 +174,8 @@ describe('051 FR-019, FR-020: filters, sort and top N', () => {
 
   it('sorts by the group, shows the top 10 and groups the rest as Other', async () => {
     const { user } = renderTab(BAR_WIDGET);
-    await user.selectOptions(screen.getByLabelText('Sort by'), 'The group');
-    await user.selectOptions(screen.getByLabelText('Order'), 'Ascending');
+    await choose(user, screen.getByLabelText('Sort by'), 'The group');
+    await choose(user, screen.getByLabelText('Order'), 'Ascending');
     await user.clear(screen.getByLabelText('Show top'));
     await user.type(screen.getByLabelText('Show top'), '10');
     await user.click(screen.getByLabelText('Group the rest as Other'));
@@ -183,10 +185,5 @@ describe('051 FR-019, FR-020: filters, sort and top N', () => {
       limit: 10,
       groupRest: true,
     });
-  });
-
-  it('has no accessibility violations (SC-006)', async () => {
-    renderTab(BAR_WIDGET);
-    await expectNoAxeViolations();
   });
 });

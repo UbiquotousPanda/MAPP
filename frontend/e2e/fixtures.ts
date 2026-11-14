@@ -38,24 +38,25 @@ export async function expectNoAxeViolations(page: Page): Promise<void> {
   expect(summary).toEqual([]);
 }
 
+/** Checks the page in the light theme, then in the dark one, as the system setting switches. */
+export async function axeInBothThemes(page: Page): Promise<void> {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme });
+    await expect(page.locator('html')).toHaveAttribute('data-theme', colorScheme);
+    await expectNoAxeViolations(page);
+  }
+  await page.emulateMedia({ colorScheme: 'light' });
+}
+
 export async function expectToast(page: Page, text: string | RegExp): Promise<void> {
   await expect(page.getByText(text).first()).toBeVisible();
 }
 
-/** The action called exactly `name`, link or button; when both exist, the first one wins. */
 export function action(scope: Page | Locator, name: string): Locator {
   return scope
     .getByRole('link', { name, exact: true })
     .or(scope.getByRole('button', { name, exact: true }))
     .first();
-}
-
-export async function chooseOption(select: Locator, text: string): Promise<void> {
-  const option = select
-    .locator('option')
-    .filter({ hasText: new RegExp(`^\\s*${escapeRegExp(text)}`) });
-  const label = (await option.first().textContent())?.trim() ?? text;
-  await select.selectOption({ label });
 }
 
 export function escapeRegExp(text: string): string {
@@ -77,10 +78,40 @@ export async function callApi<T>(
   return body;
 }
 
+/** Deletes the record at url with the version it has now, as the web app sends the one it shows. */
+export async function deleteSeen<T>(page: Page, url: string): Promise<T> {
+  const { version } = await callApi<{ version: number }>(page, 'GET', url);
+  return callApi<T>(page, 'DELETE', `${url}?version=${version}`);
+}
+
 export function itemAt<T>(items: readonly T[], index: number): T {
   const item = items.at(index);
   if (item === undefined) {
     throw new Error(`Expected an item at ${index} of ${items.length}.`);
   }
   return item;
+}
+
+export async function choose(
+  page: Page,
+  combobox: Locator,
+  option: string | RegExp,
+): Promise<void> {
+  await combobox.click();
+  await page.getByRole('option', { name: option, exact: typeof option === 'string' }).click();
+}
+
+/** Folds out the filter menus behind Filters (n) (ui/FilterBar), unless they are out already. */
+export async function openFilters(page: Page): Promise<void> {
+  const button = page.getByRole('button', { name: /^Filters/ });
+  if ((await button.getAttribute('aria-expanded')) !== 'true') {
+    await button.click();
+  }
+}
+
+export async function chooseFilter(page: Page, filter: string, value: string): Promise<void> {
+  await openFilters(page);
+  await page.getByRole('button', { name: new RegExp(`^${filter}( ·|$)`) }).click();
+  await page.getByRole('radio', { name: value, exact: true }).click();
+  await page.keyboard.press('Escape');
 }

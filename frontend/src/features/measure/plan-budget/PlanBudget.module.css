@@ -1,0 +1,36 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.summaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* A figure that follows from the card's headline: its label left, its value right. */
+.pair {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.pairValue {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
+}
+
+.danger {
+  color: var(--danger-text);
+}

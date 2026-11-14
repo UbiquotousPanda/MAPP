@@ -8,12 +8,9 @@ describe('PeoplePage (feature 003, US1): the list', () => {
     const { user } = renderPeople();
 
     expect(await screen.findByText('4 of 5 people')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Active 4' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.queryByRole('row', { name: /^Jane Doe/ })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'All 5' }));
+    await user.click(screen.getByRole('button', { name: 'All' }));
     expect(screen.getByText('5 of 5 people')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'People' })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent('Settings');

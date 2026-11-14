@@ -7,6 +7,7 @@ import { formatPercent } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
 import styles from '@/ui/settings-table.module.css';
 import { CanChange } from '@/ui/CanChange/CanChange';
+import { Tag } from '@/ui/Tag/Tag';
 import { MetaLine } from '../MetaLine';
 import { SETTING_NOUNS } from '../settings-nouns';
 import { UsageLine } from '../UsageLine';
@@ -86,8 +87,8 @@ export function ModelDetails({ model, actions, onClose }: ModelDetailsProps) {
             <dd>
               <ul role="list" className={styles.chips}>
                 {model.activityTypes.map((type) => (
-                  <li key={type.id} className={styles.chip}>
-                    {type.active ? type.name : `${type.name} (inactive)`}
+                  <li key={type.id}>
+                    <Tag>{type.active ? type.name : `${type.name} (inactive)`}</Tag>
                   </li>
                 ))}
               </ul>
@@ -104,6 +105,8 @@ export function ModelDetails({ model, actions, onClose }: ModelDetailsProps) {
           inqToMqlRate={model.inqToMqlRate}
           mqlToDealRate={model.mqlToDealRate}
           averageDealSize={model.averageDealSize.amount}
+          inqToMqlVelocityMonths={model.inqToMqlVelocityMonths}
+          mqlToDealVelocityMonths={model.mqlToDealVelocityMonths}
         />
         <MetaLine record={model} />
       </div>

@@ -118,8 +118,8 @@ describe('SplitActivityDialog (016 US4, FR-026 – FR-029)', () => {
     const name = await within(dialog).findByRole('textbox', { name: /^New activity name/ });
     expect(name).toHaveValue('Launch film (split)');
     expect(within(dialog).getByRole('radio', { name: /Digital & social/ })).toBeChecked();
-    expect(within(dialog).getByText('19,750.00 GBP')).toBeVisible();
-    expect(within(dialog).getByText('(23,000.00 EUR)')).toBeVisible();
+    expect(within(dialog).getByText('£19,750.00')).toBeVisible();
+    expect(within(dialog).getByText('(€23,000.00)')).toBeVisible();
 
     await user.clear(name);
     await user.type(name, 'Ireland roadshow');
@@ -132,8 +132,8 @@ describe('SplitActivityDialog (016 US4, FR-026 – FR-029)', () => {
 
     const preview = await within(dialog).findByRole('region', { name: 'After the split' });
     expect(await within(preview).findByText('New: Ireland roadshow')).toBeVisible();
-    expect(within(preview).getByText('20,250.00 GBP')).toBeVisible();
-    expect(within(preview).getByText('5,250.00 GBP')).toBeVisible();
+    expect(within(preview).getByText('£20,250.00')).toBeVisible();
+    expect(within(preview).getByText('£5,250.00')).toBeVisible();
     expect(within(dialog).getByText("Goals stay on 'Launch film'.")).toBeVisible();
 
     await user.click(within(dialog).getByRole('button', { name: 'Split activity' }));
@@ -234,7 +234,7 @@ describe('SplitActivityDialog (016 US4, FR-026 – FR-029)', () => {
             problems: [
               {
                 field: 'plannedCost',
-                message: "Move at most 40,000.00 GBP, the activity's planned cost.",
+                message: "Move at most £40,000.00, the activity's planned cost.",
               },
               {
                 field: 'name',
@@ -252,7 +252,7 @@ describe('SplitActivityDialog (016 US4, FR-026 – FR-029)', () => {
 
     const alert = await within(dialog).findByRole('alert');
     await waitFor(() =>
-      expect(alert).toHaveTextContent("Move at most 40,000.00 GBP, the activity's planned cost."),
+      expect(alert).toHaveTextContent("Move at most £40,000.00, the activity's planned cost."),
     );
     expect(alert).toHaveTextContent(
       "'Ireland roadshow' is already an activity of this initiative.",

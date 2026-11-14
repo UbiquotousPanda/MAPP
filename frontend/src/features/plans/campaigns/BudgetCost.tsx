@@ -3,7 +3,7 @@ import { ProgressBar } from '@/ui/ProgressBar/ProgressBar';
 import type { components } from '@/api/generated/schema';
 import { formatWhole } from '@/format/decimal';
 import { useFormatters } from '@/format/useFormatters';
-import { AmountPair } from '../AmountPair';
+import { ConvertedAmount } from '@/features/line-items';
 import { isNegative, remainingWhileTyping, withoutSign } from './budget';
 import styles from './BudgetCost.module.css';
 import { Fact, Facts, PanelSection } from './PanelSection';
@@ -117,7 +117,7 @@ export function BudgetCostSection({
       <Facts>
         <Fact label={BUDGET} helpKey={`${level}.budget`}>
           {budget && display?.budget ? (
-            <AmountPair primary={budget} secondary={display.budget} />
+            <ConvertedAmount primary={budget} secondary={display.budget} />
           ) : (
             <RemainingAmount value={budget} none={NO_BUDGET_SET} />
           )}
@@ -136,7 +136,7 @@ export function BudgetCostSection({
         )}
         <Fact label={<CalculatedLabel label={PLANNED_COST} helpKey={`${level}.plannedCost`} />}>
           {plannedCost ? (
-            <AmountPair primary={plannedCost} secondary={display?.plannedCost} />
+            <ConvertedAmount primary={plannedCost} secondary={display?.plannedCost} />
           ) : (
             <span className={styles.stack}>
               <span>—</span>

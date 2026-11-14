@@ -10,6 +10,7 @@ import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import type { PlanningLevel } from '@/ui/LevelTag/LevelTag';
 import { cx } from '@/ui/cx';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { HISTORY_PAGE_SIZE, historyKey, useLogEntries } from './api';
 import { LogEntryList } from './LogEntryList';
 import { planningLabel } from './log-text';
@@ -103,9 +104,9 @@ function PanelPart({
     <section aria-labelledby={headingId} className={styles.panelPart}>
       <div className={styles.panelHeader}>
         <div>
-          <h3 id={headingId} className={styles.panelTitle}>
+          <SectionHeading level={3} rank="sub" id={headingId}>
             History
-          </h3>
+          </SectionHeading>
           <p className={styles.panelSubtitle}>{subtitle}</p>
         </div>
         {actions}

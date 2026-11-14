@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { BRAND_OPTION, globalBudget, LUBRICANTS } from '@/testing/fixtures/global-budgets';
 import { budgetRow, renderBudgetPage } from '@/testing/fixtures/global-budget-page';
 import { reply } from '@/testing/replies';
+import { choose } from '@/testing/select';
+import { expectNoAxeViolations } from '@/testing/axe';
 
 describe('GlobalBudgetPage allocations (014 US6, FR-030, FR-034)', () => {
   it('changes an allocation with the allocation and plan versions (US6 scenario 2)', async () => {
@@ -26,6 +28,7 @@ describe('GlobalBudgetPage allocations (014 US6, FR-030, FR-034)', () => {
     });
     const amount = within(dialog).getByRole('textbox', { name: /Amount/ });
     expect(amount).toHaveValue('1,200,000.00');
+    await expectNoAxeViolations();
     await user.clear(amount);
     await user.type(amount, '1300000');
     await user.click(within(dialog).getByRole('button', { name: 'Save allocation' }));
@@ -105,7 +108,8 @@ describe('GlobalBudgetPage allocations (014 US6, FR-030, FR-034)', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Allocate' }));
     expect(within(dialog).getByText('Choose a plan.')).toBeInTheDocument();
 
-    await user.selectOptions(
+    await choose(
+      user,
       await within(dialog).findByRole('combobox', { name: /Plan/ }),
       'FY2026 Brand Europe',
     );

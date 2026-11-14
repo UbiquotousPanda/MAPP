@@ -1,6 +1,3 @@
-/* What only the People and Teams lists need besides the shared Settings list look
-   (SettingsTable.module.css). */
-
 /* At most two lines of a team's description; the details show all of it. */
 .clamp {
   display: -webkit-box;
@@ -13,7 +10,6 @@
   color: var(--ink-2);
 }
 
-/* The members' avatars, then their number, right-aligned under the header. */
 .members {
   display: inline-flex;
   align-items: center;
@@ -30,7 +26,7 @@
 }
 
 .avatars li + li {
-  margin-left: -8px;
+  margin-left: calc(-1 * var(--space-2));
 }
 
 .avatars li {
@@ -38,8 +34,7 @@
   box-shadow: 0 0 0 2px var(--surface);
 }
 
-/* A person's teams stay on one line, so every row of the list has the same height; a narrow
-   screen scrolls the table sideways instead. */
+/* Teams stay on one line so every row has the same height; a narrow screen scrolls sideways. */
 .teamsCell ul {
   flex-wrap: nowrap;
   white-space: nowrap;

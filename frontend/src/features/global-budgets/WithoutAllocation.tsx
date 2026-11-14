@@ -2,7 +2,10 @@ import { Link } from 'react-router';
 import { Button } from '@/ui/Button/Button';
 import { PersonLabel } from '@/ui/PersonLabel/PersonLabel';
 import { TeamPills } from '@/ui/TeamPill/TeamPill';
-import { ScrollBox } from '@/features/financials';
+import { cx } from '@/ui/cx';
+import dataTable from '@/ui/Table/Table.module.css';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
 import { PlanStatusChip } from '@/features/plans';
 import { useFormatters } from '@/format/useFormatters';
 import type { AllocationOption, GlobalBudget } from './api';
@@ -24,17 +27,17 @@ export function WithoutAllocation({
   return (
     <section className={styles.panel} aria-labelledby="without-heading">
       <div className={styles.panelHeader}>
-        <h2 id="without-heading" className={styles.heading}>
+        <SectionHeading level={2} rank="card" id="without-heading">
           {heading}
-        </h2>
+        </SectionHeading>
       </div>
       {plans.length === 0 ? (
         <p
           className={styles.emptyLine}
         >{`Every plan of ${budget.year} you can see has an allocation.`}</p>
       ) : (
-        <ScrollBox label={heading} className={styles.scroll}>
-          <table className={styles.table}>
+        <ScrollBox label={heading}>
+          <table className={cx(dataTable.table, dataTable.ruledHead, styles.table)}>
             <caption className="visually-hidden">{heading}</caption>
             <thead>
               <tr>
@@ -42,7 +45,7 @@ export function WithoutAllocation({
                 <th scope="col">Teams</th>
                 <th scope="col">Owner</th>
                 <th scope="col">Status</th>
-                <th scope="col" className={styles.numeric}>
+                <th scope="col" className={dataTable.numeric}>
                   Budget now
                 </th>
                 <th scope="col">
@@ -70,8 +73,8 @@ export function WithoutAllocation({
                   <td>
                     <PlanStatusChip status={option.plan.status} />
                   </td>
-                  <td className={styles.numeric}>{money(option.budget)}</td>
-                  <td className={styles.actions}>
+                  <td className={dataTable.numeric}>{money(option.budget)}</td>
+                  <td className={dataTable.actions}>
                     <Button
                       size="sm"
                       onClick={() => onAllocate(option)}

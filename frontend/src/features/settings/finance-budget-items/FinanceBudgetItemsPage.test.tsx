@@ -19,11 +19,7 @@ describe('FinanceBudgetItemsPage: the list (FR-014, FR-015)', () => {
       screen.getByRole('heading', { level: 1, name: 'Finance budget items' }),
     ).toBeInTheDocument();
     expect(document.title).toBe('Finance budget items · SP&A One');
-    expect(
-      screen.getByText(
-        'The finance budget items line items link to. A simple list until the Finance module arrives.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText('The finance budget items line items link to.')).toBeInTheDocument();
 
     const lubricants = await screen.findByRole('region', { name: '2026 Lubricants Budget' });
     expect(lubricants).toHaveTextContent('3 items · Default finance budget of 2 plans');

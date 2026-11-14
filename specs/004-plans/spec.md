@@ -59,7 +59,7 @@ result count and summary cards against the seed plans.
 3. **Given** the list, **When** the user types "mobility" or a plan ID in "Search name or ID", **Then**
    only matching plans remain, ignoring letter case.
 4. **Given** the user switches to **My teams**, **Then** only plans with one of the user's teams remain,
-   with the hint "Shows your teams' plans. Everyone can still open every plan in this phase."
+   with the hint "You can still open every plan." *(D-421)*
 5. **Given** filters that hide every plan, **Then** "Nothing matches these filters" offers **Clear
    filters**; with no plans at all, the empty state offers **Create your first plan**.
 
@@ -83,7 +83,8 @@ goal figure against the seed data.
 2. **Given** plan budget 1,200,000 USD and campaign budgets totalling 1,300,000 USD, **Then** Remaining
    budget shows "−100,000.00 USD" in red with "Over-allocated by 100,000.00 USD" (D-015).
 3. **Given** planned cost 960,000 USD, **Then** Budget used shows 80 % with a bar that turns red above
-   100 %; **Given** no plan budget, **Then** the budget cards show "—" with "No plan budget set".
+   100 %; **Given** no plan budget, **Then** the budget cards show "—", with "No plan budget set" on the
+   Plan budget card only (D-422).
 4. **Given** no business unit, **Then** the completeness chip reads "1 field needed" and links to it.
 5. **Given** a goal of INQ 250,000 and activity goals summing to INQ 150,000, **Then** Goals shows the
    plan's INQ, MQL and Revenue beside the activity totals and "60 % of the INQ goal planned".
@@ -197,8 +198,11 @@ check the dialog's counts, choose Undo and confirm everything is back with the s
 - **FR-003**: The list MUST offer pill filters All · Draft · Published, a year filter (All years and each
   year with a plan), search on name or ID ignoring letter case, removable filter chips and a result count;
   it is sorted by year (newest first), then name; filters and layout are remembered per user. *Amended by
-  [039 FR-006 – FR-009](../039-search-whole-hierarchy/spec.md) (D-366): the search also lists a plan when a
-  campaign, initiative, activity or line item in it matches, and says where.*
+  [052 FR-006 – FR-009](../052-search-whole-hierarchy/spec.md) (D-380): the search also lists a plan when a
+  campaign, initiative, activity or line item in it matches, and says where.* *Amended by D-421: the status
+  buttons show no counts (the result count does); the years, plan type, My teams and BCPIR plans are filter
+  buttons behind **Filters (n)** (design system §5.2); the filters live in the address, written in place, and the
+  per-user memory applies only when the address names none.*
 - **FR-004**: **My teams** MUST show plans with one of the user's teams; it never stops anyone opening a
   plan (Q-006), and **All plans** is the default.
   *Since feature 014 this rule follows roles: every action needs its permission of 014 Table A in the plan's scope (014 FR-041).*
@@ -209,10 +213,11 @@ check the dialog's counts, choose Undo and confirm everything is back with the s
   the sections Basics, Budget, Shell attributes and Goals, each field after the fields it depends on (year
   before default finance budget, teams before owner, model before goals, business unit before SMP), with
   markings shown as words (domain model §3).
-- **FR-006**: The form MUST pre-fill and label the defaults of field catalogue §1 (year = current year,
+- **FR-006**: The form MUST pre-fill the defaults of field catalogue §1 (year = current year,
   choices current year − 1 to + 5; the user's teams; the user as owner when eligible; Strategic / AOP and
   BCPIR plan = No; spread = Evenly; goal stage = INQ) and the model when only one is active. *Amended by
-  feature 034 (D-326): the year choices are the current year to + 10, no past year.*
+  feature 034 (D-326): the year choices are the current year to + 10, no past year. Amended 2026-11-12 (product
+  owner UI review): a pre-filled default is shown by the field itself, with no separate "Default: …" line.*
 - **FR-007**: Model MUST offer only active models and show the chosen model's rates and deal size; Owner
   MUST offer only members of the chosen teams and, with no team chosen, stay visible but disabled with the
   reason (R1); Default finance budget MUST offer only finance budgets of the plan's year, and a year
@@ -246,7 +251,7 @@ check the dialog's counts, choose Undo and confirm everything is back with the s
 - **FR-014**: Tree rows MUST expand and collapse by mouse and keyboard; search MUST match name or ID
   ignoring letter case, keep ancestors of matches visible and open the path, or say "Nothing in this plan
   matches '<text>'"; a plan without campaigns says "No campaigns yet — a campaign is a theme that runs for
-  most of the year." *Amended by [039 FR-001 – FR-004](../039-search-whole-hierarchy/spec.md) (D-366): the
+  most of the year." *Amended by [052 FR-001 – FR-004](../052-search-whole-hierarchy/spec.md) (D-380): the
   search also matches line items, shown as rows under their activity while a search is typed.*
 - **FR-015**: Details MUST show every field of field catalogue §1 read-only, "—" when empty, calculated
   values labelled "Calculated", business-unit attributes only while shown, and inactive values

@@ -1,0 +1,52 @@
+.toolbar {
+  margin-bottom: var(--space-4);
+}
+
+/* A fade on the right edge says more columns sit off-screen; the local layer covers it once scrolled to the end. */
+.scroll {
+  overflow-x: auto;
+  background:
+    linear-gradient(to left, var(--surface) 40%, transparent) right / 48px 100% no-repeat local,
+    linear-gradient(to left, color-mix(in srgb, var(--ink) 28%, transparent), transparent) right /
+      24px 100% no-repeat scroll;
+}
+
+.table tr > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  box-shadow: inset -1px 0 0 var(--row-divider);
+}
+
+.table tbody tr > :first-child {
+  background: var(--surface);
+}
+
+.table tbody tr:hover > :first-child {
+  background: var(--hover);
+}
+
+/* Dates, people, IDs and amounts stay on one line; only the named long-text cells wrap. */
+.table td {
+  white-space: nowrap;
+}
+
+.table .name {
+  min-width: 180px;
+  white-space: normal;
+}
+
+.table .commentCell {
+  min-width: 240px;
+  max-width: 360px;
+  white-space: normal;
+}
+
+.comment {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}

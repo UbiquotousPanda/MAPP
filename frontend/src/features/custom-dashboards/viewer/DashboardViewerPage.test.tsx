@@ -201,8 +201,8 @@ describe('051 FR-037: the filters bar (US2 scenario 7)', () => {
   it('starts from the dashboard’s saved filters when the address has none', async () => {
     renderViewer({ body: customDashboard({ filters: SAVED_FILTERS }) });
 
-    expect(await screen.findByLabelText('Start date')).toHaveValue('2026-01-01');
-    expect(screen.getByLabelText('End date')).toHaveValue('2026-12-31');
+    expect(await screen.findByLabelText('Start date')).toHaveValue('01 Jan 2026');
+    expect(screen.getByLabelText('End date')).toHaveValue('31 Dec 2026');
     expect(screen.queryByRole('button', { name: 'Reset filters' })).not.toBeInTheDocument();
   });
 
@@ -212,8 +212,8 @@ describe('051 FR-037: the filters bar (US2 scenario 7)', () => {
       { route: '/dashboards/DB-1001?from=2026-07-01&to=not-a-date' },
     );
 
-    expect(await screen.findByLabelText('Start date')).toHaveValue('2026-07-01');
-    expect(screen.getByLabelText('End date')).toHaveValue('2026-12-31');
+    expect(await screen.findByLabelText('Start date')).toHaveValue('01 Jul 2026');
+    expect(screen.getByLabelText('End date')).toHaveValue('31 Dec 2026');
   });
 
   it('keeps a changed filter in the address', async () => {
@@ -237,6 +237,6 @@ describe('051 FR-037: the filters bar (US2 scenario 7)', () => {
     await user.click(await screen.findByRole('button', { name: 'Reset filters' }));
 
     await waitFor(() => expect(router.state.location.search).toBe(''));
-    expect(screen.getByLabelText('Start date')).toHaveValue('2026-01-01');
+    expect(screen.getByLabelText('Start date')).toHaveValue('01 Jan 2026');
   });
 });

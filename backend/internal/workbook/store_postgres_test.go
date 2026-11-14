@@ -40,7 +40,7 @@ func TestPostgresStore_ImportsInScope_012FR035(t *testing.T) {
 					TeamIDs: []string{"T-100" + n}, DefaultSpread: plan.SpreadEvenly, GoalStage: plan.StageINQ,
 					Status: plan.StatusDraft, Meta: meta}),
 				store.AddImport(ctx, workbook.Import{ID: "IMP-100" + n, PlanID: "P-100" + n, FileName: "plan.xlsx", ImportedAt: at,
-					ImportedBy: priya, RowsRead: 2, RowsLeftOut: 1,
+					ImportedBy: priya, RowsRead: 2, RowsLeftOut: 1, CheckID: "check-" + n,
 					Records:  []workbook.ImportRecord{{Level: workbook.LevelCampaign, RecordID: "C-100" + n, Name: "Spring", ParentID: "P-100" + n, Action: "created"}},
 					Problems: []workbook.Problem{{Sheet: "Campaigns", Row: 3, Column: "Owner", Value: "x", Reason: "No active person has this e-mail"}}}))
 		}

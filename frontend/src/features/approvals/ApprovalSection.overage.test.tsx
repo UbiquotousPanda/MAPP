@@ -10,7 +10,7 @@ import { reply } from '@/testing/replies';
 import type { ActivityApproval } from './api';
 import { ApprovalStatusAction } from './ApprovalStatusAction';
 
-const WARNING = "Line items of activity 'Launch film' are 25,000.00 USD above its planned cost";
+const WARNING = "Line items of activity 'Launch film' are $25,000.00 above its planned cost";
 const REFUSAL = `${WARNING} — ask the owner to lower them, or decline.`;
 const OVERAGE = {
   activity: { type: 'activity', id: 'A-1042', name: 'Launch film' },

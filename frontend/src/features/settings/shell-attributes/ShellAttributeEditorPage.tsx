@@ -1,4 +1,5 @@
-import { useParams, useSearchParams } from 'react-router';
+import { useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError } from '@/api/errors';
 import { Card } from '@/ui/Card/Card';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
@@ -16,21 +17,14 @@ export interface ShellAttributeEditorPageProps {
   mode: 'create' | 'edit';
 }
 
-/**
- * The Shell attribute editor (feature 002, US2, US3, FR-016 – FR-023), a full page for create and
- * edit: Basics, Place on the form, Depends on and condition and — on create, or when an attribute
- * starts depending on another — its options with their links; locked fields with their reason;
- * every problem at once; the impact check before a change of marking or type; unsaved changes
- * protected.
- */
+/** The Shell attribute editor, one full page for create and edit. */
 export function ShellAttributeEditorPage({ mode }: ShellAttributeEditorPageProps) {
   return mode === 'create' ? <CreateAttribute /> : <EditAttribute />;
 }
 
-/** /settings/shell-attributes/new?level=activity */
 function CreateAttribute() {
   usePageTitle('New Shell attribute');
-  const [params] = useSearchParams();
+  const [params] = useAddressParams();
   const level = levelOf(params) ?? 'plan';
 
   return (
@@ -48,7 +42,6 @@ function CreateAttribute() {
   );
 }
 
-/** /settings/shell-attributes/:attributeId/edit */
 function EditAttribute() {
   const { attributeId = '' } = useParams();
   const attribute = useShellAttribute(attributeId);

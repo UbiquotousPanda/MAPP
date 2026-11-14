@@ -30,12 +30,19 @@ export function ResultsPanel({ result, onSelectFailed, onClose }: ResultsPanelPr
             variant="primary"
             onClick={() =>
               onSelectFailed(
-                notDone.map((o) => ({
-                  id: o.recordId,
-                  level: o.level,
-                  name: o.name,
-                  planId: o.planId,
-                })),
+                notDone.flatMap((o) =>
+                  o.version
+                    ? [
+                        {
+                          id: o.recordId,
+                          level: o.level,
+                          name: o.name,
+                          planId: o.planId,
+                          version: o.version,
+                        },
+                      ]
+                    : [],
+                ),
               )
             }
           >

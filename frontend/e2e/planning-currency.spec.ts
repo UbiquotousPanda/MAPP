@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
   callApi,
-  chooseOption,
+  choose,
   expectNoAxeViolations,
   expectToast,
   signInAs,
@@ -11,7 +11,7 @@ import { lubricantsActivity } from './lubricants';
 import { lineItemFields } from './planning-changes';
 
 // Feature 016's journeys (plan, Tests › End-to-end) against the real API, on records of the tests' own:
-// GSAP rates, a plan in GBP with its budget by month, a split in GBP, and All work over two years.
+// GSAP rates, a plan in GBP with its budget by month, and a split in GBP.
 // Attribute filters, Breakdown and Field help are left to the feature that finishes them.
 
 const ALEX = 'alex.morgan@shell.com';
@@ -77,13 +77,13 @@ test('016 US1 (T089): an administrator imports GSAP rates after a review; a futu
   await page.goto('/settings/currencies');
   await page.getByRole('button', { name: 'EUR', exact: true }).click();
   const euro = page.getByRole('dialog', { name: 'Euro (EUR)' });
-  await expect(euro).toContainText('1 USD = 0.92 EUR');
+  await expect(euro).toContainText('1 USD = 0.90 EUR');
   const history = euro.getByRole('region', { name: 'Rate history' });
   const future = history.getByRole('row', { name: new RegExp(`^From 01 Mar ${NEXT_YEAR} `) });
   await expect(future).toContainText('0.95');
   await expect(future).toContainText(fileName);
   await expect(future).not.toContainText('Current');
-  await expect(history.getByRole('row', { name: / Current / })).toContainText('0.92');
+  await expect(history.getByRole('row', { name: / Current / })).toContainText('0.90');
   await expectNoAxeViolations(page);
 });
 
@@ -95,29 +95,29 @@ test('016 US2, US3 (T089): Priya plans in GBP with USD beside it and phases the 
   const name = uniqueName('GBP plan');
   await page.goto('/plans/new');
   await page.getByRole('textbox', { name: 'Plan name' }).fill(name);
-  await chooseOption(page.getByRole('combobox', { name: 'Model' }), 'Lubricants 1.0');
-  await chooseOption(page.getByRole('combobox', { name: 'Plan currency' }), 'GBP');
+  await choose(page, page.getByRole('combobox', { name: 'Model' }), /^Lubricants 1\.0/);
+  await choose(page, page.getByRole('combobox', { name: 'Plan currency' }), /^GBP/);
   await page.getByRole('textbox', { name: 'Plan budget' }).fill('600000');
   await page.getByRole('checkbox', { name: 'Lubricants', exact: true }).check();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
 
-  // The plan's amounts are in GBP with their USD value (GBP 0.79 per USD in the demo rates).
+  // The plan's amounts are in GBP with their USD value (GBP 0.75 per USD in the demo rates).
   await expect(page.getByRole('group', { name: 'Plan facts' })).toContainText('Planned in GBP');
   const summary = page.getByRole('region', { name: 'Summary' });
-  await expect(summary).toContainText('600,000.00 GBP');
-  await expect(summary).toContainText('≈ 759,493.67 USD');
+  await expect(summary).toContainText('£600,000.00');
+  await expect(summary).toContainText('≈ about $800,000.00');
 
   const card = page.getByRole('region', { name: 'Budget by month', exact: true });
   const editor = page.getByRole('dialog', { name: `Budget by month — ${name}` });
   await card.getByRole('button', { name: 'Edit budget by month' }).click();
   await editor.getByRole('radio', { name: /^Evenly/ }).check();
-  await expect(editor.getByText('Each month gets 50,000.00 GBP.')).toBeVisible();
+  await expect(editor.getByText('Each month gets £50,000.00.')).toBeVisible();
   await editor.getByRole('button', { name: 'Save budget by month' }).click();
   await expect(editor).toHaveCount(0);
   await expect(
     card.getByRole('row', {
-      name: new RegExp(`^Budget (About Budget )?${'50,000\\.00 '.repeat(12)}600,000\\.00$`),
+      name: new RegExp(`^Budget (About Budget )?${'£50,000\\.00 '.repeat(12)}£600,000\\.00$`),
     }),
   ).toBeVisible();
 
@@ -130,14 +130,14 @@ test('016 US2, US3 (T089): Priya plans in GBP with USD beside it and phases the 
     .click();
   await editor.getByRole('textbox', { name: new RegExp(`^Q1 ${THIS_YEAR}`) }).fill('100000');
   await expect(
-    editor.getByText('550,000.00 of 600,000.00 GBP phased — 50,000.00 left'),
+    editor.getByText('£550,000.00 of £600,000.00 phased — £50,000.00 left'),
   ).toBeVisible();
   await expectNoAxeViolations(page);
   await editor.getByRole('button', { name: 'Save budget by month' }).click();
   await expect(editor).toHaveCount(0);
   await expect(
     card.getByRole('row', {
-      name: /^Budget (About Budget )?33,333\.33 33,333\.33 33,333\.34 50,000\.00 /,
+      name: /^Budget (About Budget )?£33,333\.33 £33,333\.33 £33,333\.34 £50,000\.00 /,
     }),
   ).toBeVisible();
   await expect(
@@ -156,13 +156,13 @@ test('016 US2, US4 (T089): a GBP activity converts its EUR line item and splits 
   await addLineItem(page, activity.id, '15000.00', 'GBP');
   await addLineItem(page, activity.id, '23000.00', 'EUR');
 
-  // 23,000.00 EUR at 0.92 is 25,000.00 USD, which is 19,750.00 GBP at 0.79.
+  // €23,000.00 at 0.90 is $25,555.56, which is £19,166.67 at 0.75.
   await page.goto(activity.path);
   await expect(page.getByRole('heading', { name: activity.name, level: 1 })).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Summary' })).toContainText('5,250.00 GBP');
+  await expect(page.getByRole('region', { name: 'Summary' })).toContainText('£5,833.33');
   await expect(
     page.getByRole('row', {
-      name: /^EUR line item \S+ L-\d+ 23,000\.00 EUR 19,750\.00 GBP 25,000\.00 USD /,
+      name: /^EUR line item \S+ L-\d+ €23,000\.00 £19,166\.67 \$25,555\.56 /,
     }),
   ).toBeVisible();
 
@@ -176,37 +176,10 @@ test('016 US2, US4 (T089): a GBP activity converts its EUR line item and splits 
   await dialog.getByRole('textbox', { name: /^New activity name/ }).fill(newName);
   await dialog.getByRole('checkbox', { name: /^EUR line item/ }).check();
   const after = dialog.getByRole('region', { name: 'After the split' });
-  await expect(after).toContainText('20,250.00 GBP');
-  await expect(after).toContainText('19,750.00 GBP');
+  await expect(after).toContainText('£20,833.33');
+  await expect(after).toContainText('£19,166.67');
   await expectNoAxeViolations(page);
   await dialog.getByRole('button', { name: 'Split activity' }).click();
   await expectToast(page, `'${activity.name}' split — '${newName}' created.`);
   await expect(page.getByText(new RegExp(`Split into '${newName}'`)).first()).toBeVisible();
-});
-
-test('016 US5 (T089): All work over two years shows Budget & cost by year and compares it with the phased budget', async ({
-  page,
-}) => {
-  await signInAs(page, PRIYA);
-  await page.goto('/all-work');
-  await page.getByRole('button', { name: /^Years/ }).click();
-  const years = page.getByRole('dialog', { name: 'Years' });
-  await chooseOption(years.getByRole('combobox', { name: 'To' }), String(NEXT_YEAR));
-  await page.keyboard.press('Escape');
-  await expect(
-    page.getByRole('button', { name: `Years · ${THIS_YEAR}–${NEXT_YEAR}` }),
-  ).toBeVisible();
-
-  await page.getByRole('tab', { name: 'Budget & cost' }).click();
-  const period = page.getByRole('group', { name: 'Period' });
-  await expect(period.getByRole('button', { name: 'Yearly' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  const table = page.getByRole('table', { name: 'Budget & cost' });
-  await expect(table.getByRole('columnheader', { name: String(THIS_YEAR) })).toBeVisible();
-  await expect(table.getByRole('columnheader', { name: String(NEXT_YEAR) })).toBeVisible();
-  await page.getByRole('switch', { name: 'Compare with phased budget' }).click();
-  await expect(table.getByRole('row', { name: /Phased budget/ }).first()).toBeVisible();
-  await expectNoAxeViolations(page);
 });

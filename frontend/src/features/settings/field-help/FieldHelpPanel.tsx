@@ -6,6 +6,7 @@ import { ApiError, conflictMessage } from '@/api/errors';
 import { Button } from '@/ui/Button/Button';
 import { FormField } from '@/ui/FormField/FormField';
 import { FormPanel } from '@/ui/FormPanel/FormPanel';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { TextAreaField } from '@/ui/TextAreaField/TextAreaField';
 import { useToast } from '@/ui/Toast/useToast';
 import { CHECK_ON_SAVE, useFormProblems } from '@/ui/useFormProblems';
@@ -120,7 +121,7 @@ export function FieldHelpPanel({ entry, onClose }: FieldHelpPanelProps) {
             render={(field) => (
               <TextAreaField
                 label="Help text"
-                hint="Plain text, shown in the ⓘ beside the field. Leave it empty to hide the ⓘ."
+                tip="Plain text, shown in the ⓘ beside the field. Leave it empty to hide the ⓘ."
                 maxLength={HELP_MAX_LENGTH}
                 rows={5}
                 {...field}
@@ -128,7 +129,9 @@ export function FieldHelpPanel({ entry, onClose }: FieldHelpPanelProps) {
             )}
           />
           <div className={styles.defaultText}>
-            <h3>Default text</h3>
+            <SectionHeading level={3} rank="label">
+              Default text
+            </SectionHeading>
             <p>{entry.defaultText}</p>
             {entry.isDefault ? (
               <p className={styles.meta}>This field uses the default text.</p>

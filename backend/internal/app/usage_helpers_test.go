@@ -51,7 +51,7 @@ func personUsage(t *testing.T, c *apitest.Client, personID string) []usageCount 
 
 func deletePlan(t *testing.T, c *apitest.Client, id string) string {
 	t.Helper()
-	response := c.Do(t, http.MethodDelete, "/api/v1/plans/"+id, nil)
+	response := c.DeleteSeen(t, "/api/v1/plans/"+id)
 	if response.Status != http.StatusOK {
 		t.Fatalf("DELETE plan %s = %d %s, want 200", id, response.Status, response.Body)
 	}

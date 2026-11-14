@@ -50,7 +50,7 @@ export function FinancialsCard({ scope }: { scope: HomeScope }) {
     // No Open Financials here: the page would only refuse too.
     return (
       <Card title="Financials">
-        <EmptyState icon={<Lock />} title={FINANCIALS_CARD.noAccess} />
+        <EmptyState compact icon={<Lock />} title={FINANCIALS_CARD.noAccess} />
       </Card>
     );
   }
@@ -76,10 +76,10 @@ function Overview({ overview, open }: { overview: FinancialOverview; open: React
   return (
     <Card title={financialsTitle(year)} subtitle={subtitle} actions={open}>
       {empty ? (
-        <EmptyState
-          icon={<ReceiptText />}
-          title={source.dataAsOf ? FINANCIALS_CARD.empty : FINANCIALS_CARD.noData}
-        />
+        <p className={styles.empty}>
+          <ReceiptText aria-hidden="true" className={styles.icon} />
+          {source.dataAsOf ? FINANCIALS_CARD.empty : FINANCIALS_CARD.noData}
+        </p>
       ) : (
         <dl className={styles.figures}>
           <Figure

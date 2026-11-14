@@ -37,10 +37,7 @@ describe('ApprovalWorkflowsPage (feature 008, US4)', () => {
     const search = () => screen.getByRole('searchbox', { name: 'Search approval workflows' });
 
     expect(screen.getByText('1 of 2 approval workflows')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Active 1' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.queryByRole('row', { name: /China BC/ })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /^All/ }));

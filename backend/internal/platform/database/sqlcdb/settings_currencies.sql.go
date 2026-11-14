@@ -10,6 +10,40 @@ import (
 	"time"
 )
 
+const currencyUses = `-- name: CurrencyUses :many
+SELECT 'performanceFact'::text AS kind, currency::text AS currency, count(*)::integer AS records
+FROM performance_facts WHERE currency IS NOT NULL GROUP BY currency
+UNION ALL
+SELECT 'financialTransaction'::text, currency, count(*)::integer FROM financial_transactions GROUP BY currency
+ORDER BY 1, 2
+`
+
+type CurrencyUsesRow struct {
+	Kind     string
+	Currency string
+	Records  int
+}
+
+func (q *Queries) CurrencyUses(ctx context.Context) ([]CurrencyUsesRow, error) {
+	rows, err := q.db.Query(ctx, currencyUses)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CurrencyUsesRow{}
+	for rows.Next() {
+		var i CurrencyUsesRow
+		if err := rows.Scan(&i.Kind, &i.Currency, &i.Records); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const deleteCurrency = `-- name: DeleteCurrency :exec
 DELETE FROM currencies
 WHERE code = $1

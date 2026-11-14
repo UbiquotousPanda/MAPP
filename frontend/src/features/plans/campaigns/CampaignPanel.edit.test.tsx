@@ -71,6 +71,7 @@ describe('CampaignPanel — edit (feature 005, US3)', () => {
               monthly: Array.from({ length: 12 }, () => gbp('10000.00')),
               total: gbp('120000.00'),
               problem: null,
+              evenly: Array.from({ length: 12 }, () => gbp('10000.00')),
             },
           }),
         },

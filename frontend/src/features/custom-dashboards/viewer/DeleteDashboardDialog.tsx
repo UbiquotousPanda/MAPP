@@ -11,6 +11,7 @@ export interface DashboardToDelete {
   id: string;
   name: string;
   sharedWith: TeamRef[];
+  version: number;
 }
 
 interface DeleteDashboardDialogProps {
@@ -34,7 +35,7 @@ export function DeleteDashboardDialog({
       return;
     }
     try {
-      afterDelete(await remove.mutateAsync(dashboard.id));
+      afterDelete(await remove.mutateAsync(dashboard));
       onClose();
       onDeleted?.();
     } catch (error) {

@@ -91,8 +91,10 @@
   --chart-seq-4: #336094;
   --chart-seq-5: #003c88;
 
-  --banner-bg: var(--ink);
-  --banner-text: var(--surface);
+  --banner-bg: var(--chip);
+  --banner-text: var(--ink);
+  /* Hover inside a card: the dark Hover Background is darker than Surface, so it would not show there. */
+  --hover-on-card: color-mix(in srgb, var(--ink) 8%, var(--surface));
 
   --level-plan: #003c88;
   --level-campaign: #87217d;
@@ -132,6 +134,8 @@
   --control-sm: 32px;
   --control-md: 40px;
   --control-lg: 48px;
+  --icon-sm: 16px;
+  --icon-md: 20px;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -172,7 +176,9 @@
 
   /* Media queries cannot read custom properties, so they write the breakpoints 600 and 960 px. */
   --content-max: 1300px;
+  --content-wide: 1800px;
   --form-max: 720px;
+  --form-page: 960px;
   --grid-gap: 20px;
   --gutter: 24px;
   --card-padding: 24px;
@@ -181,7 +187,9 @@
   --sidebar-collapsed: 64px;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --dur: 0.25s;
+  --dur-fast: 0.15s;
 }
 
 /* TODO(DARK_TOKENS): Shell has not given dark --link-hover, --disabled-text, --danger or --danger-text. */

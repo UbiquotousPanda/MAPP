@@ -19,6 +19,7 @@ type tx struct {
 	readOnly bool
 	mu       sync.Mutex
 	undo     []func()
+	deferred []func() error
 }
 
 // DB runs Writes one at a time, as database.DB does; a failed Write puts back everything it changed.
@@ -30,6 +31,9 @@ type DB struct {
 
 type table interface {
 	copyTo(db *DB) table
+	has(id string) bool
+	referencing(parent, id string) (string, bool, error)
+	encoded() [][]byte
 }
 
 func NewDB() *DB {
@@ -64,6 +68,11 @@ func (db *DB) Write(ctx context.Context, fn func(ctx context.Context) error) err
 	}()
 	if err := fn(context.WithValue(ctx, txKey{}, t)); err != nil {
 		return err
+	}
+	for _, check := range t.deferred {
+		if err := check(); err != nil {
+			return err
+		}
 	}
 	committed = true
 	return nil
@@ -108,4 +117,27 @@ func (t *tx) rollBack() {
 	for i := len(t.undo) - 1; i >= 0; i-- {
 		t.undo[i]()
 	}
+}
+
+// later runs check when the Write commits, as PostgreSQL checks a deferred foreign key; outside a Write, at once.
+func (db *DB) later(ctx context.Context, check func() error) error {
+	current, joined := db.current(ctx)
+	if !joined {
+		return check()
+	}
+	current.mu.Lock()
+	defer current.mu.Unlock()
+	current.deferred = append(current.deferred, check)
+	return nil
+}
+
+// Encoded is every row of the table name as JSON, for a fake reading another area's table; nil when none made it.
+func (db *DB) Encoded(name string) [][]byte {
+	db.tablesMu.Lock()
+	t, found := db.tables[name]
+	db.tablesMu.Unlock()
+	if !found {
+		return nil
+	}
+	return t.encoded()
 }

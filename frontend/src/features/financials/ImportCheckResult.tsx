@@ -1,6 +1,7 @@
 import { FileText, LoaderCircle, RotateCcw } from 'lucide-react';
 import { useId } from 'react';
 import { Button } from '@/ui/Button/Button';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type {
   FinancialImportCheck,
   FinancialImportNotLinkedRow,
@@ -47,7 +48,6 @@ export function ImportCheckResult({
           heading={listHeading('Problems', check.problems.length, check.problemsTotal)}
           rows={check.problems}
           line={problemLine}
-          tone="problem"
         />
       )}
       {check.notLinkedTotal > 0 && (
@@ -78,16 +78,15 @@ interface RowListProps<T> {
   heading: string;
   rows: T[];
   line: (row: T) => string;
-  tone?: 'problem';
 }
 
-function RowList<T>({ heading, rows, line, tone }: RowListProps<T>) {
+function RowList<T>({ heading, rows, line }: RowListProps<T>) {
   const id = useId();
   return (
     <section aria-labelledby={id} className={styles.rows}>
-      <h3 id={id} className={tone === 'problem' ? styles.problemHeading : styles.heading}>
+      <SectionHeading level={3} rank="label" id={id}>
         {heading}
-      </h3>
+      </SectionHeading>
       {/* A long list scrolls; it can take the focus, so the keyboard can scroll it too. */}
       {/* eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex -- the list scrolls */}
       <ul className={styles.list} tabIndex={0} aria-labelledby={id}>

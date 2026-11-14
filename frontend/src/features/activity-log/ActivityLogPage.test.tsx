@@ -53,9 +53,6 @@ describe('ActivityLogPage', () => {
     ]);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Activity log' })).toBeInTheDocument();
-    expect(
-      screen.getByText("See who changed what, and when. Entries can't be edited or removed."),
-    ).toBeInTheDocument();
     expect(document.title).toBe('Activity log · SP&A One');
     expect(await screen.findByRole('link', { name: 'Film shoot' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /edit|delete|remove entry/i })).toBeNull();
@@ -238,13 +235,32 @@ describe('ActivityLogPage', () => {
   });
 
   it('asks nothing while the custom range ends before it starts (FR-003)', async () => {
-    const { api } = renderPage('/activity-log?range=custom&from=2026-10-12&to=2026-10-01', [
+    const { api, user } = renderPage('/activity-log?range=custom&from=2026-10-12&to=2026-10-01', [
       reply('GET /api/v1/activity-log', { body: logPage([logEntry()]) }),
     ]);
 
+    // Filters is folded out already, as the address holds filters.
+    await user.click(screen.getByRole('button', { name: 'Dates' }));
     expect(
       await screen.findByText('The end date must be on or after the start date.'),
     ).toBeInTheDocument();
     expect(logSearches(api)).toHaveLength(0);
+  });
+
+  it('opens Filters for the filters of the address, and writes changes in place (D-421)', async () => {
+    const { user, router } = renderPage('/activity-log?person=U-1003', [
+      reply('GET /api/v1/activity-log', { body: logPage([logEntry()]) }),
+    ]);
+
+    expect(await screen.findByRole('button', { name: 'Filters (1)' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await user.click(
+      await screen.findByRole('button', { name: 'Remove filter: Person: Daniel Okoro' }),
+    );
+
+    await waitFor(() => expect(router.state.location.search).toBe(''));
+    expect(router.state.historyAction).toBe('REPLACE');
   });
 });

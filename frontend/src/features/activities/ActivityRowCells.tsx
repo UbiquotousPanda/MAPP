@@ -1,17 +1,13 @@
 import { CircleAlert } from 'lucide-react';
 import { Link } from 'react-router';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
+import { Converted } from '@/features/line-items';
 import { useFormatters } from '@/format/useFormatters';
 import { ActivityStatusChip } from '@/ui/ActivityStatusChip/ActivityStatusChip';
 import type { ActivitySummary } from './api';
 import styles from './ActivityRowCells.module.css';
 import { lineItemsAttentionText } from './activity-text';
 
-/**
- * The status cell of an activity row (FR-033): the status chip and the completeness — "All filled
- * in", or "3 fields needed" and "1 line item needs attention" as links to the activity's Ready to
- * submit panel.
- */
 export function ActivityRowStatus({ row, href }: { row: ActivitySummary; href: string }) {
   const { missingFields, lineItemsNeedingAttention } = row.completeness;
   return (
@@ -38,12 +34,7 @@ export function ActivityRowStatus({ row, href }: { row: ActivitySummary; href: s
   );
 }
 
-/**
- * The planned-cost cell of an activity row, with a red mark when its line items exceed it
- * (the unassigned planned cost is negative). In the reader's display currency (D-220); in a plan
- * planned in another currency, the plan-currency amount with the display one under it, muted
- * (016 FR-013).
- */
+// Overspent: the unassigned planned cost is negative because the line items exceed it.
 export function ActivityRowCost({ row }: { row: ActivitySummary }) {
   const { money } = useFormatters();
   const overspent = row.unassignedPlannedCost?.amount.startsWith('-') ?? false;
@@ -60,7 +51,11 @@ export function ActivityRowCost({ row }: { row: ActivitySummary }) {
           <span className="visually-hidden">Line items exceed the planned cost</span>
         </>
       )}
-      {both && <span className={styles.beside}>≈ {money(display)}</span>}
+      {both && plan && display && (
+        <span className={styles.beside}>
+          <Converted from={plan.currency} amount={display} />
+        </span>
+      )}
     </span>
   );
 }

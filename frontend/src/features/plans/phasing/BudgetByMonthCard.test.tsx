@@ -6,7 +6,14 @@ import { fieldHelpReply, helpOf } from '@/testing/fixtures/field-help-texts';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { nth } from '@/testing/dom';
-import { budgetByMonth, gbp, periods, phasing, twelveAmounts } from '@/testing/fixtures/phasing';
+import {
+  budgetByMonth,
+  gbp,
+  periods,
+  phasing,
+  twelve,
+  twelveAmounts,
+} from '@/testing/fixtures/phasing';
 import { plan } from '@/testing/fixtures/plans';
 import { reply } from '@/testing/replies';
 import { BudgetByMonthCard } from './BudgetByMonthCard';
@@ -102,6 +109,8 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     expect(rows[0]).toHaveTextContent('50,000.00');
     expect(rows[0]).toHaveTextContent('600,000.00');
     expect(rows[1]).toHaveTextContent('480,000.00');
+    expect(rows[2]).toHaveTextContent('120,000.00');
+    expect(rows[3]).toHaveTextContent('360,000.00');
     expect(within(card).getByText('1 campaign is not phased')).toBeInTheDocument();
   });
 
@@ -116,11 +125,13 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     expect(screen.getAllByRole('row')[1]).toHaveTextContent('150,000.00');
   });
 
-  it('marks a period over its budget in red with words, and shows Other years (FR-024)', async () => {
+  it('marks a period over its budget in red with the amount the API answers, and shows Other years (FR-024, D-061)', async () => {
     const over = Array<boolean>(12).fill(false);
     over[2] = true;
     const plannedCost = twelveAmounts('40000.00');
     plannedCost[2] = gbp('65000.00');
+    const overBy = twelve(null);
+    overBy[2] = gbp('15000.00');
     renderCard(undefined, [
       reply(
         'GET /api/v1/plans/{planId}/budget-by-month',
@@ -129,7 +140,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
             rows: [
               {
                 ...nth(budgetByMonth().rows, 0),
-                months: periods({ plannedCost, over }),
+                months: periods({ plannedCost, over, overBy }),
                 otherYears: gbp('5000.00'),
               },
             ],
@@ -139,7 +150,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
       ),
     ]);
 
-    const cell = await screen.findByText('Over by 15,000.00');
+    const cell = await screen.findByText('Over by £15,000.00');
     expect(cell.className).toMatch(/over/);
     expect(screen.getByRole('columnheader', { name: 'Other years' })).toBeInTheDocument();
   });
@@ -152,7 +163,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
         name: 'Helix UK',
         budgetPhasing: phasing({
           method: 'custom',
-          problem: 'Adds up to 590,000.00 GBP, not the budget 600,000.00 GBP',
+          problem: 'Adds up to £590,000.00, not the budget £600,000.00',
         }),
       },
       [],
@@ -161,7 +172,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
 
     expect(
       screen.getByText(
-        'Budget by month: Adds up to 590,000.00 GBP, not the budget 600,000.00 GBP. Needed to publish.',
+        'Budget by month: Adds up to £590,000.00, not the budget £600,000.00. Needed to publish.',
       ),
     ).toBeInTheDocument();
     expect(await screen.findByText('Not phased')).toBeInTheDocument();
@@ -181,7 +192,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     await user.click(within(dialog).getByRole('radio', { name: /Custom/ }));
     await user.click(within(dialog).getByRole('button', { name: 'Split evenly' }));
     expect(
-      within(dialog).getByText('600,000.00 of 600,000.00 GBP phased — all of it'),
+      within(dialog).getByText('£600,000.00 of £600,000.00 phased — all of it'),
     ).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole('button', { name: 'Quarterly' }));
@@ -189,7 +200,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     await user.clear(q1);
     await user.type(q1, '140000');
     expect(
-      within(dialog).getByText('590,000.00 of 600,000.00 GBP phased — 10,000.00 left'),
+      within(dialog).getByText('£590,000.00 of £600,000.00 phased — £10,000.00 left'),
     ).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Save budget by month' }));
 
@@ -215,6 +226,23 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     expect(await screen.findByText(/Budget by month of .* saved/)).toBeInTheDocument();
   });
 
+  it('shows and splits by the months the API split the budget into, never its own (D-061)', async () => {
+    const evenly = [...Array.from({ length: 11 }, () => gbp('49999.99')), gbp('50000.11')];
+    const { user } = renderCard({ ...PLAN, budgetPhasing: phasing({ evenly }) });
+
+    await screen.findByRole('table');
+    await user.click(screen.getByRole('button', { name: 'Edit budget by month' }));
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Budget by month — FY2027 Lubricants UK & Ireland',
+    });
+    expect(
+      within(dialog).getByText(/Each month gets £49,999\.99; December gets £50,000\.11\./),
+    ).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('radio', { name: /Custom/ }));
+    await user.click(within(dialog).getByRole('button', { name: 'Split evenly' }));
+    expect(within(dialog).getByRole('textbox', { name: /Dec 2027/ })).toHaveValue('50,000.11');
+  });
+
   it('copies the planned cost by month and names what it leaves out (FR-021)', async () => {
     const { user } = renderCard(
       { ...PLAN, id: 'C-1005', name: 'Helix UK', budgetPhasing: phasing({ method: 'none' }) },
@@ -229,7 +257,7 @@ describe('BudgetByMonthCard (016 FR-024)', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Copy from planned cost' }));
 
     expect(within(dialog).getByRole('textbox', { name: 'Jan 2027' })).toHaveValue('40,000.00');
-    expect(within(dialog).getByText('Left out: 5,000.00 GBP in other years.')).toBeInTheDocument();
+    expect(within(dialog).getByText('Left out: £5,000.00 in other years.')).toBeInTheDocument();
   });
 
   it('comes into view with the focus when a completeness link leads to it (T053)', async () => {

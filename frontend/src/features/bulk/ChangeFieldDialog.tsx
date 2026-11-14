@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { CheckboxField } from '@/ui/CheckboxField/CheckboxField';
 import { ChoiceField } from '@/ui/ChoiceField/ChoiceField';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { useBulkFields } from './api';
+import { selectionOf, useBulkFields } from './api';
 import { BulkDialog, Problem } from './BulkDialog';
 import styles from './bulk.module.css';
 import { NOT_OFFERED_FIELDS, recordsText } from './bulk-text';
@@ -27,7 +28,7 @@ export function ChangeFieldDialog({ records, onClose, onDone }: BulkActionDialog
     field && (clear || value)
       ? {
           action: 'changeField',
-          recordIds: records.map((r) => r.id),
+          ...selectionOf(records),
           field: { key, value: clear ? null : value },
           restartApproval: restart,
         }
@@ -98,11 +99,11 @@ function describe(
         {verb} {field?.label} on {recordsText(preview.counts.done)}.
       </p>
       {preview.reapproval.length > 0 && (
-        <fieldset className={styles.sentences}>
-          <legend>
+        <>
+          <p>
             These {preview.reapproval.length} activities are submitted or approved — changing their
             dates sends them back for approval:
-          </legend>
+          </p>
           <ul className={styles.list}>
             {preview.reapproval.map((r) => (
               <li key={r.recordId}>
@@ -110,25 +111,18 @@ function describe(
               </li>
             ))}
           </ul>
-          <label>
-            <input
-              type="radio"
-              name="restart"
-              checked={!restart}
-              onChange={() => setRestart(false)}
-            />{' '}
-            Leave those unchanged
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="restart"
-              checked={restart}
-              onChange={() => setRestart(true)}
-            />{' '}
-            Change and restart approval
-          </label>
-        </fieldset>
+          <RadioGroup
+            label="What to do with those activities"
+            labelHidden
+            name="restart"
+            options={[
+              { value: 'leave', label: 'Leave those unchanged' },
+              { value: 'restart', label: 'Change and restart approval' },
+            ]}
+            value={restart ? 'restart' : 'leave'}
+            onChange={(choice) => setRestart(choice === 'restart')}
+          />
+        </>
       )}
     </>
   );

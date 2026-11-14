@@ -20,8 +20,8 @@ import (
 	"mapp/internal/settings/settingstest"
 )
 
-// P-1004 is planned in GBP at 0.79 per USD: 600,000.00 GBP = 759,493.67 USD; A-1011 40,000.00 GBP = 50,632.91
-// USD; its line item L-1010 23,000.00 EUR = 25,000.00 USD = 19,750.00 GBP.
+// P-1004 is planned in GBP at 0.75 per USD: 600,000.00 GBP = 800,000.00 USD; A-1011 40,000.00 GBP = 53,333.33
+// USD; its line item L-1010 23,000.00 EUR = 25,555.56 USD = 19,166.67 GBP.
 func TestAllWorkSource_ConvertsPlanCurrency_FR014(t *testing.T) {
 	t.Parallel()
 	built, db := newSeededApp(t)
@@ -40,31 +40,31 @@ func TestAllWorkSource_ConvertsPlanCurrency_FR014(t *testing.T) {
 	}
 
 	p, launch, agency := byID["P-1004"], byID["A-1011"], byID["L-1010"]
-	if p.Budget == nil || p.Budget.String() != "759493.67" || p.BudgetPlan == nil || p.BudgetPlan.Format() != "600,000.00 GBP" ||
+	if p.Budget == nil || p.Budget.String() != "800000.00" || p.BudgetPlan == nil || p.BudgetPlan.Format() != "600,000.00 GBP" ||
 		p.PlanCurrency != "GBP" || p.PlanType != "crossMarket" || p.PlanYear != 2027 || p.PhasingMethod != "evenly" {
 		t.Errorf("P-1004 = budget %v (%v), %s %s %d %s", p.Budget, p.BudgetPlan, p.PlanCurrency, p.PlanType, p.PlanYear, p.PhasingMethod)
 	}
-	if len(p.PhasedBudgetUSD) != 12 || p.PhasedBudgetUSD[0].Month != "2027-01" || p.PhasedBudgetUSD[0].USD.String() != "63291.14" ||
-		p.PhasedBudgetUSD[11].USD.String() != "63291.13" {
-		t.Errorf("phased budget in USD = %+v, want 63,291.14 a month and the rest in December", p.PhasedBudgetUSD)
+	if len(p.PhasedBudgetUSD) != 12 || p.PhasedBudgetUSD[0].Month != "2027-01" || p.PhasedBudgetUSD[0].USD.String() != "66666.67" ||
+		p.PhasedBudgetUSD[11].USD.String() != "66666.63" {
+		t.Errorf("phased budget in USD = %+v, want 66,666.67 a month and the rest in December", p.PhasedBudgetUSD)
 	}
 	var phasedSum money.Amount
 	for _, m := range p.PhasedBudgetUSD {
 		phasedSum = phasedSum.Add(m.USD)
 	}
-	if phasedSum.String() != "759493.67" {
-		t.Errorf("the phased months add up to %s USD, want the budget 759,493.67", phasedSum)
+	if phasedSum.String() != "800000.00" {
+		t.Errorf("the phased months add up to %s USD, want the budget 800,000.00", phasedSum)
 	}
-	if launch.PlannedCost == nil || launch.PlannedCost.String() != "50632.91" || launch.PlannedCostPlan == nil ||
+	if launch.PlannedCost == nil || launch.PlannedCost.String() != "53333.33" || launch.PlannedCostPlan == nil ||
 		launch.PlannedCostPlan.Format() != "40,000.00 GBP" || launch.PlanCurrency != "GBP" || launch.PlanYear != 2027 {
 		t.Errorf("A-1011 = %v (%v), %s %d", launch.PlannedCost, launch.PlannedCostPlan, launch.PlanCurrency, launch.PlanYear)
 	}
-	if agency.PlannedCost == nil || agency.PlannedCost.String() != "25000.00" || agency.PlannedCostPlan == nil ||
-		agency.PlannedCostPlan.Format() != "19,750.00 GBP" || agency.LocalPlannedCost.Format() != "23,000.00 EUR" {
+	if agency.PlannedCost == nil || agency.PlannedCost.String() != "25555.56" || agency.PlannedCostPlan == nil ||
+		agency.PlannedCostPlan.Format() != "19,166.67 GBP" || agency.LocalPlannedCost.Format() != "23,000.00 EUR" {
 		t.Errorf("L-1010 = %v USD, %v, %v", agency.PlannedCost, agency.PlannedCostPlan, agency.LocalPlannedCost)
 	}
 	c := byID[launchCampaignID(data)]
-	if c.Budget == nil || c.Budget.String() != "506329.11" || c.BudgetPlan.Format() != "400,000.00 GBP" ||
+	if c.Budget == nil || c.Budget.String() != "533333.33" || c.BudgetPlan.Format() != "400,000.00 GBP" ||
 		c.PhasingMethod != "custom" || len(c.PhasedBudgetUSD) != 12 || !c.PhasedBudgetUSD[0].USD.IsZero() {
 		t.Errorf("Helix UK & Ireland = %v (%v), %s, %+v", c.Budget, c.BudgetPlan, c.PhasingMethod, c.PhasedBudgetUSD)
 	}
@@ -79,7 +79,7 @@ func launchCampaignID(data allwork.YearData) string {
 	return ""
 }
 
-// A-1011's unassigned 40,000.00 − (15,000.00 + 19,750.00) = 5,250.00 GBP = 6,645.57 USD (D-213).
+// A-1011's unassigned 40,000.00 − (15,000.00 + 19,166.67) = 5,833.33 GBP = 7,777.77 USD (D-213).
 func TestApprovals_DisplayFromPlanCurrency(t *testing.T) {
 	t.Parallel()
 	db, now := seededStore(t)
@@ -105,9 +105,9 @@ func TestApprovals_DisplayFromPlanCurrency(t *testing.T) {
 		t.Fatalf("Activity: %v", err)
 	}
 
-	if launch.PlannedCost == nil || launch.PlannedCost.Format() != "50,632.91 USD" || launch.UnassignedPlannedCost == nil ||
-		launch.UnassignedPlannedCost.Format() != "6,645.57 USD" {
-		t.Errorf("A-1011 = planned %v, unassigned %v; want 50,632.91 USD and 6,645.57 USD", launch.PlannedCost, launch.UnassignedPlannedCost)
+	if launch.PlannedCost == nil || launch.PlannedCost.Format() != "53,333.33 USD" || launch.UnassignedPlannedCost == nil ||
+		launch.UnassignedPlannedCost.Format() != "7,777.77 USD" {
+		t.Errorf("A-1011 = planned %v, unassigned %v; want 53,333.33 USD and 7,777.77 USD", launch.PlannedCost, launch.UnassignedPlannedCost)
 	}
 	if usdActivity.PlannedCost == nil || usdActivity.PlannedCost.Currency != "USD" {
 		t.Errorf("A-1001 of a USD plan = %v, want USD unchanged", usdActivity.PlannedCost)

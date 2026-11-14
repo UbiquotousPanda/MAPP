@@ -39,11 +39,9 @@ export const LABELS = {
   swbsCode: 'SWBS code',
 } as const;
 
-export const MOA_HINT =
-  'The person whose approval is named in the PR form (Manual of Authorities).';
+export const MOA_TIP = 'Manual of Authorities';
 export const WORKFLOW_HINT = 'Only active workflows for purchase requests are offered.';
 export const MODIFICATION_HINT = 'Used when an approved purchase request is changed.';
-export const OVERALL_LIMIT_HINT = 'Defaults to the amount.';
 export const SWBS_HINT = 'Filled by GSAP through the line item';
 export const NO_SWBS = 'Not received yet';
 export const LAST_LINE =
@@ -70,8 +68,7 @@ export const NOT_READY_TITLE = 'Not saved — these things are needed first:';
 
 export const PICKER = {
   title: 'Add a line',
-  description:
-    'Line items of this plan and company code, with what each still has available to request.',
+  description: 'Line items of this plan and company code.',
   search: 'Search line items',
   placeholder: 'Search name, ID or HX key',
   available: 'Available to request',
@@ -82,9 +79,16 @@ export const PICKER = {
   alreadyOnForm: 'Already on this purchase request',
   choose: 'Choose',
   stepTitle: 'Choose a line item',
-  stepDescription:
-    'A purchase request starts from a line item: choose the one to request money from.',
 } as const;
+
+export function moreText(shown: number, total: number, canShowMore: boolean): string {
+  const find = canShowMore ? 'Show more, or search' : 'Search';
+  return `Showing ${shown} of ${total} line items. ${find} by name, ID or HX key to find the others.`;
+}
+
+export function showMoreLabel(count: number): string {
+  return `Show ${count} more`;
+}
 
 export function noMatchText(query: string): string {
   return query ? `No line items match '${query}'.` : 'No line items to choose from.';

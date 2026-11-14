@@ -138,6 +138,8 @@ describe('useActivityActions (feature 006, FR-029 – FR-032)', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/plans/P-1001'));
     expect(await screen.findByText("Activity 'Launch film' deleted")).toBeVisible();
+    const deleted = api.requests.find((request) => request.method === 'DELETE');
+    expect(deleted?.search).toBe(`?version=${launchFilm().version}`);
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
     const messages = await findMessages();

@@ -65,10 +65,10 @@ func TestDeleteDataset_ToRecycleBin_FR045(t *testing.T) {
 	decoded[dataset.View](t, priya.Do(t, http.MethodPut, path+"/sharing", map[string]any{"version": 1, "teamIds": []string{europe}}),
 		http.StatusOK)
 
-	byDaniel := server.SignIn(t, danielsEmail).Do(t, http.MethodDelete, path, nil)
-	result := decoded[history.DeleteResult](t, priya.Do(t, http.MethodDelete, path, nil), http.StatusOK)
+	byDaniel := server.SignIn(t, danielsEmail).DeleteSeen(t, path)
+	result := decoded[history.DeleteResult](t, priya.DeleteSeen(t, path), http.StatusOK)
 	gone := priya.Do(t, http.MethodGet, path, nil)
-	again := priya.Do(t, http.MethodDelete, path, nil)
+	again := priya.DeleteSeen(t, path)
 
 	if result.RecycleBinEntry.RecordType != "dataset" || result.RecycleBinEntry.RecordName != createdName {
 		t.Errorf("bin entry = %+v", result.RecycleBinEntry)

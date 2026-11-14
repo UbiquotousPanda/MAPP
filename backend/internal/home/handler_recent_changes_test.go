@@ -8,7 +8,6 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// recentChange is the part of an ActivityLogEntry these tests read.
 type recentChange struct {
 	Action     string `json:"action"`
 	RecordType string `json:"recordType"`
@@ -22,29 +21,25 @@ type recentChange struct {
 	} `json:"recordNow"`
 }
 
-// isBinnedDelete reports whether c is actorName's delete of the activity recordID, now in the recycle bin.
 func (c recentChange) isBinnedDelete(actorName, recordID string) bool {
 	return c.Action == "deleted" && c.RecordType == "activity" && c.RecordID == recordID &&
 		c.Actor.Name == actorName && c.RecordNow.State == "inRecycleBin"
 }
 
-// recentChangesPage is a RecentChangesPage as these tests read it.
 type recentChangesPage struct {
 	Items []recentChange `json:"items"`
 	Total int            `json:"total"`
 }
 
-// Priya deletes an activity of her team's plan: her Recent changes start with it, its record now in the
-// recycle bin; Mei, in another team, sees it only under Everything; another scope is refused (FR-015,
-// FR-016, 011 FR-008).
+// Mei, in another team, sees Priya's delete only under Everything.
 func TestHomeRecentChanges_Contract(t *testing.T) { //nolint:gocyclo // 12: one delete seen from each scope and person, then the refused scopes
 	t.Parallel()
 	server := apitest.New(t)
-	server.GrantRole(t, meisEmail, "globalPlanner", "all") // 014: every market's plans, for Everything
+	server.GrantRole(t, meisEmail, "globalPlanner", "all") // every market's plans, for Everything
 	priya := server.SignIn(t, priyasEmail)
 	mei := server.SignIn(t, meisEmail)
 
-	if deleted := priya.Do(t, http.MethodDelete, "/api/v1/activities/A-1002", nil); deleted.Status != http.StatusOK {
+	if deleted := priya.DeleteSeen(t, "/api/v1/activities/A-1002"); deleted.Status != http.StatusOK {
 		t.Fatalf("DELETE /api/v1/activities/A-1002 = %d %s", deleted.Status, deleted.Body)
 	}
 	priyas := get[recentChangesPage](t, priya, "/api/v1/home/recent-changes?scope=myTeams")

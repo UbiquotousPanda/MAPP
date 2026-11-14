@@ -26,6 +26,7 @@ type fakePurchases struct {
 	facts    map[string]PurchaseRequestFacts
 	problems map[string][]SubmitProblem
 	events   map[string][]purchaseEvent
+	changing map[string]bool
 	order    []string
 }
 
@@ -55,9 +56,29 @@ func (f *fakePurchases) RoundChanged(_ context.Context, a actor.Actor, id string
 	}
 	f.events[id] = append(f.events[id], purchaseEvent{kind: kind, outcome: outcome})
 	facts.Status = statusAfter(facts.Status, kind, outcome)
+	if kind == KindModifiedPurchaseRequest && outcome != OutcomeSuperseded {
+		f.changing[id] = outcome == OutcomeOpen
+	}
+	facts.Submissions = submissions(facts.Status, f.changing[id])
 	facts.Touch(a, f.clock.Now())
 	f.facts[id] = facts
 	return facts, nil
+}
+
+// submissions is 032's rule as the fake answers it: changing says a change of the approved request is in review.
+func submissions(status string, changing bool) map[SubjectKind]string {
+	first, change := "", ""
+	switch {
+	case status == StatusCreated:
+		first = SubmissionSubmit
+	case status == StatusDeclined || (status == StatusSubmitted || status == StatusInReview) && !changing:
+		first = SubmissionResubmit
+	case changing:
+		change = SubmissionResubmit
+	case status == StatusApproved:
+		change = SubmissionSubmit
+	}
+	return map[SubjectKind]string{KindPurchaseRequest: first, KindModifiedPurchaseRequest: change}
 }
 
 // statusAfter is client 013's status model as 032 maps the events.
@@ -93,7 +114,7 @@ func endedStatus(status string, modification bool, outcome Outcome) string {
 func (f *fixture) usePurchases(t *testing.T) *fakePurchases {
 	t.Helper()
 	prs := &fakePurchases{clock: f.clock, facts: map[string]PurchaseRequestFacts{}, problems: map[string][]SubmitProblem{},
-		events: map[string][]purchaseEvent{}}
+		events: map[string][]purchaseEvent{}, changing: map[string]bool{}}
 	err := f.history.Register(history.Kind{
 		Name: string(KindPurchaseRequest), Singular: "purchase request", Plural: "purchase requests",
 		Snapshot: func(_ context.Context, id string) (history.Snapshot, bool, error) {
@@ -127,7 +148,8 @@ func (f *fixture) addPurchaseRequest(t *testing.T, prs *fakePurchases, pr purcha
 		Amount: amount, WorkflowID: pr.workflow, ModificationWorkflowID: pr.modification,
 		Path: []errs.RecordRef{{Type: "plan", ID: "P-1001", Name: "FY2026 Lubricants Europe"}},
 		Meta: record.NewMeta(actor.System, start), Plan: PlanFacts{ID: "P-1001", TeamIDs: []string{"T-1001"}},
-		Access: authz.PlanFacts{ID: "P-1001", TeamIDs: []string{"T-1001"}},
+		Access:      authz.PlanFacts{ID: "P-1001", TeamIDs: []string{"T-1001"}},
+		Submissions: submissions(StatusCreated, false),
 	}
 	prs.order = append(prs.order, pr.id)
 }

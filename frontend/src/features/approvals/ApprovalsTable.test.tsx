@@ -39,7 +39,7 @@ describe('ApprovalsTable (feature 008, US3)', () => {
       'Submitted',
     ]);
     const row = screen.getByRole('row', { name: /Launch film/ });
-    expect(row).toHaveTextContent('A-1042');
+    expect(row).not.toHaveTextContent('A-1042');
     expect(row).toHaveTextContent('FY2026 Lubricants Europe › Spring launch');
     expect(row).toHaveTextContent('Priya Raman');
     expect(row).toHaveTextContent('$50,000.00');
@@ -84,6 +84,14 @@ describe('ApprovalsTable (feature 008, US3)', () => {
     const row = screen.getByRole('row', { name: /Launch film/ });
     expect(within(row).getByText('Start date passed')).toBeInTheDocument();
     expect(row).toHaveTextContent('Lubricants EU approval (inactive)');
+  });
+
+  it('says why an open row cannot be approved now, such as an activity no longer approved', () => {
+    const reason = 'The activity must be approved again.';
+    renderTable([rowOf({ blockedReason: reason })]);
+
+    const row = screen.getByRole('row', { name: /Launch film/ });
+    expect(within(row).getByText(reason)).toBeInTheDocument();
   });
 
   it('adds my decision and the status in Decided by me, with the level only while open', () => {
@@ -210,17 +218,20 @@ describe('ApprovalsTable rules (feature 017, US4 and US6)', () => {
     expect(second).not.toHaveTextContent('Overdue');
   });
 
-  it('shows at most two chips: one problem chip with every problem, and the escalation (design system §4.1)', () => {
+  it('flags a row with its dots stacked before its name, naming every problem (design system §4.1)', () => {
     renderTable([
       rowOf({ overdue: true, startDatePassed: true, escalatedTo: ALEX, asDelegateOf: [CARLOS] }),
     ]);
 
     const name = screen.getByRole('rowheader', { name: /Launch film/ });
-    const chips = [...(name.querySelector('[class*="chips"]')?.children ?? [])].map(
-      (chip) => chip.textContent,
-    );
-    expect(chips).toEqual(['Overdue · Start date passed', 'Escalated to Alex Morgan']);
-    // Who decides is a note under the ID, not a chip.
+    expect(
+      within(name)
+        .getAllByRole('button')
+        .map((dot) => dot.textContent),
+    ).toEqual([
+      'Overdue · Start date passed; Escalated to Alex Morgan',
+      expect.stringContaining('Launch film'),
+    ]);
     expect(within(name).getByText('as delegate of Carlos Mendes').className).toMatch(/delegate/);
   });
 });

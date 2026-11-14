@@ -1,12 +1,16 @@
-import { useId } from 'react';
-import { FilterChips } from '@/ui/FilterChips/FilterChips';
+import { FilterBar } from '@/ui/FilterBar/FilterBar';
 import type { FilterChip } from '@/ui/FilterChips/FilterChips';
+import { SearchField } from '@/ui/SearchField/SearchField';
+import { Select } from '@/ui/Select/Select';
+import { ResultCount } from '@/ui/ResultCount/ResultCount';
+import { countText } from '@/ui/ResultCount/count-text';
 import type { FinancialRecordRef, FinancialTransactionPage } from './api';
-import { DelayedSearch } from './DelayedSearch';
 import { clearedFilters } from './financials-links';
 import type { FinancialFilters } from './financials-links';
-import { countLine } from './financials-text';
+import { SEARCH_PLACEHOLDER, TRANSACTIONS } from './financials-text';
 import styles from './FinancialsPage.module.css';
+
+const SEARCH_DELAY_MS = 300;
 
 const LEVEL_WORDS: Record<FinancialRecordRef['type'], string> = {
   plan: 'Plan',
@@ -21,12 +25,11 @@ const LEVEL_WORDS: Record<FinancialRecordRef['type'], string> = {
 interface FinancialsToolbarProps {
   filters: FinancialFilters;
   page: FinancialTransactionPage | undefined;
-  onChange: (patch: Partial<FinancialFilters>, replace?: boolean) => void;
+  onChange: (patch: Partial<FinancialFilters>) => void;
 }
 
-/** Search, Year and Plan, the count at the end; the record and plan filters as chips below. */
+/** Search, Year and Plan (no Filters (n): these are all its filters), the count; chips below. */
 export function FinancialsToolbar({ filters, page, onChange }: FinancialsToolbarProps) {
-  const ids = useId();
   const choices = page?.choices;
   const year = filters.year ?? page?.year ?? choices?.currentYear;
   const years = withChosen(choices?.years ?? [], year);
@@ -48,57 +51,41 @@ export function FinancialsToolbar({ filters, page, onChange }: FinancialsToolbar
   }
 
   return (
-    <div className={styles.toolbar}>
-      <div className={styles.row}>
-        <div className={styles.search}>
-          <DelayedSearch value={filters.q} onChange={(q) => onChange({ q }, true)} />
-        </div>
-        <div className={styles.field}>
-          <label htmlFor={`${ids}-year`}>Year</label>
-          <select
-            id={`${ids}-year`}
-            className={`${styles.control} ${styles.select} ${styles.year}`}
-            value={year ?? ''}
-            onChange={(event) => onChange({ year: Number(event.target.value), planId: '' })}
-          >
-            {years.map((choice) => (
-              <option key={choice} value={choice}>
-                {choice}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className={styles.field}>
-          <label htmlFor={`${ids}-plan`}>Plan</label>
-          <select
-            id={`${ids}-plan`}
-            className={`${styles.control} ${styles.select}`}
+    <FilterBar
+      className={styles.toolbar}
+      search={
+        <SearchField
+          size="sm"
+          delay={SEARCH_DELAY_MS}
+          label="Search transactions"
+          placeholder={SEARCH_PLACEHOLDER}
+          value={filters.q}
+          onChange={(q) => onChange({ q })}
+        />
+      }
+      quick={
+        <>
+          <Select
+            label="Year"
+            value={year === undefined ? '' : String(year)}
+            options={years.map((choice) => ({ value: String(choice), label: String(choice) }))}
+            onChange={(value) => onChange({ year: Number(value), planId: '' })}
+          />
+          <Select
+            label="Plan"
             value={filters.planId}
-            onChange={(event) => onChange({ planId: event.target.value })}
-          >
-            <option value="">All plans</option>
-            {plans.map((plan) => (
-              <option key={plan.id} value={plan.id}>
-                {plan.name}
-              </option>
-            ))}
-            {filters.planId && !plans.some((plan) => plan.id === filters.planId) && (
-              <option value={filters.planId}>{filters.planId}</option>
-            )}
-          </select>
-        </div>
-        {page && (
-          <p className={styles.count} aria-live="polite">
-            {countLine(page.total, page.counts.all)}
-          </p>
-        )}
-      </div>
-      <FilterChips
-        chips={chips}
-        onRemove={(key) => onChange({ [key]: '' })}
-        onClearAll={() => onChange(clearedFilters(filters))}
-      />
-    </div>
+            options={planOptions(plans, filters.planId)}
+            onChange={(planId) => onChange({ planId })}
+          />
+        </>
+      }
+      end={
+        page && <ResultCount>{countText(page.total, page.counts.all, TRANSACTIONS)}</ResultCount>
+      }
+      chips={chips}
+      onRemoveChip={(key) => onChange({ [key]: '' })}
+      onClearFilters={() => onChange(clearedFilters(filters))}
+    />
   );
 }
 
@@ -107,4 +94,14 @@ function withChosen(years: number[], chosen: number | undefined): number[] {
   return chosen === undefined || years.includes(chosen)
     ? years
     : [...years, chosen].sort((a, b) => b - a);
+}
+
+/** All plans, the year's plans, and the chosen one when the year has no such plan (an old link). */
+function planOptions(plans: { id: string; name: string }[], chosen: string) {
+  const options = [{ value: '', label: 'All plans' }];
+  options.push(...plans.map((plan) => ({ value: plan.id, label: plan.name })));
+  if (chosen && !plans.some((plan) => plan.id === chosen)) {
+    options.push({ value: chosen, label: chosen });
+  }
+  return options;
 }

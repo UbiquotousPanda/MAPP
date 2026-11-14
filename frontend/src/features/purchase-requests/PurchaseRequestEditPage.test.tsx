@@ -4,7 +4,6 @@ import type { components } from '@/api/generated/schema';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { formAnswers } from '@/testing/fixtures/purchase-request-forms';
 import {
-  configuration,
   lineItemOption,
   no,
   purchaseRequest,
@@ -88,7 +87,7 @@ describe('032 FR-016/FR-053/FR-054: edit', () => {
       conflict: { changedBy: 'Daniel Okoro', changedAt: '2026-10-27T09:45:00Z' },
     });
     let reads = 0;
-    const { user } = renderEdit(() => {
+    const { api, user } = renderEdit(() => {
       reads += 1;
       return { body: purchaseRequest({ version: 3 + reads - 1 }) };
     }, [reply(PUT, { status: 409, body: conflict })]);
@@ -100,10 +99,20 @@ describe('032 FR-016/FR-053/FR-054: edit', () => {
     );
     expect(failure.closest('[role="alert"]')).toHaveTextContent('Your entries are still here.');
     await waitFor(() => expect(reads).toBe(2));
-    await user.click(screen.getByRole('button', { name: 'Reload' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(api.bodiesOf(SAVED)).toHaveLength(2));
+    await user.click(await screen.findByRole('button', { name: 'Reload' }));
 
-    await waitFor(() => expect(reads).toBe(3));
+    await waitFor(() => expect(reads).toBeGreaterThanOrEqual(4));
     expect(field('name')).toHaveValue('PR for Stand build (mine)');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(api.bodiesOf(SAVED)).toHaveLength(3));
+    const [first, second, afterReload] = api.bodiesOf(SAVED);
+    expect([first, second]).toEqual([
+      expect.objectContaining({ version: 3 }),
+      expect.objectContaining({ version: 3 }),
+    ]);
+    expect(afterReload).not.toEqual(expect.objectContaining({ version: 3 }));
   });
 
   it('lists every gate problem of a refused re-submission at once', async () => {
@@ -198,7 +207,13 @@ describe('032 FR-016/FR-053/FR-054: edit', () => {
   });
 
   it('keeps a Closed purchase request read-only', async () => {
-    renderEdit({ body: purchaseRequest({ status: 'closed' }) });
+    const closed = no('Closed purchase requests cannot be changed.');
+    renderEdit({
+      body: purchaseRequest({
+        status: 'closed',
+        access: { ...purchaseRequest().access, edit: closed },
+      }),
+    });
 
     expect(
       await screen.findByText('Closed purchase requests cannot be changed.'),
@@ -233,10 +248,7 @@ describe('032 FR-023/FR-036/FR-039: save label by status', () => {
   });
 
   it('only lines added while lines need no approval: Save, and the PR stays approved', async () => {
-    const { api, user } = renderEdit({ body: routedPurchaseRequest() }, [
-      reply('GET /api/v1/purchase-request-configuration', {
-        body: configuration({ linesOnApprovedPurchaseRequests: 'withoutApproval' }),
-      }),
+    const { api, user } = renderEdit({ body: routedPurchaseRequest({ addedLinesThen: 'save' }) }, [
       reply('GET /api/v1/purchase-requests/line-item-options', {
         body: { items: [lineItemOption()], total: 1 },
       }),

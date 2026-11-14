@@ -108,6 +108,23 @@ describe('RecycleBinPage', () => {
     expect(screen.getByRole('searchbox', { name: 'Search name or ID' })).toHaveValue('');
   });
 
+  it('keeps the search and the record type in the address, written in place (D-421)', async () => {
+    const { user, router } = renderPage(
+      [reply('GET /api/v1/recycle-bin', { body: binPage([binItem(), lineItemEntry()]) })],
+      '/recycle-bin?type=lineItem',
+    );
+
+    expect(await screen.findByRole('button', { name: 'Line items' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(rowNames()).toEqual(['Print ads']);
+    await user.type(screen.getByRole('searchbox', { name: 'Search name or ID' }), 'p');
+
+    expect(router.state.location.search).toBe('?type=lineItem&q=p');
+    expect(router.state.historyAction).toBe('REPLACE');
+  });
+
   it('highlights the row holding the record of a link from the activity log (FR-008)', async () => {
     renderPage(
       [reply('GET /api/v1/recycle-bin', { body: binPage([lineItemEntry(), binItem()]) })],

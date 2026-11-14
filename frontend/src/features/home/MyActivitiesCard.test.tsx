@@ -57,7 +57,6 @@ describe('MyActivitiesCard', () => {
       'false',
     );
     expect(within(card()).queryByRole('link', { name: 'Winter promo' })).not.toBeInTheDocument();
-    expect(card()).toHaveTextContent('Activities you own, by status');
   });
 
   it('unfolds and folds a group on its button (FR-014)', async () => {

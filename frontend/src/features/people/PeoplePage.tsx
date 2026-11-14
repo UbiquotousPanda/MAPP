@@ -16,6 +16,7 @@ import { TeamPills } from '@/ui/TeamPill/TeamPill';
 import { useToast } from '@/ui/Toast/useToast';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import styles from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { filterRecords, useListFilters } from '@/ui/useListFilters';
 import { useStatusFlow } from '@/ui/useStatusFlow';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -56,7 +57,6 @@ export function PeoplePage() {
       <PageHeader
         breadcrumb={[{ label: 'Settings', to: '/settings' }, { label: 'People' }]}
         title="People"
-        description="Everyone who can sign in to SP&A One, with their job title and teams."
         actions={
           <CanChange permission="people.manage">
             <Button variant="primary" icon={<Plus />} onClick={() => setForm({ kind: 'new' })}>
@@ -153,7 +153,7 @@ function PeopleCard({ currentUserId, onNew, onOpen, actions }: PeopleCardProps) 
     );
   }
 
-  const { shown, counts } = filterRecords(
+  const { shown } = filterRecords(
     all,
     filters,
     (person) => `${person.name} ${person.email} ${person.jobTitle}`,
@@ -168,7 +168,7 @@ function PeopleCard({ currentUserId, onNew, onOpen, actions }: PeopleCardProps) 
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         count={{ shown: shown.length, total: all.length, noun: PERSON_NOUN }}
       />
       {shown.length === 0 ? (
@@ -178,8 +178,8 @@ function PeopleCard({ currentUserId, onNew, onOpen, actions }: PeopleCardProps) 
         </div>
       ) : (
         // On narrow screens the table scrolls sideways inside its card (design system §2).
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col">Name</th>
@@ -221,7 +221,7 @@ function PersonRow({ person, isYou, onOpen, actions }: PersonRowProps) {
   const canChange = useCanChange('people.manage');
   return (
     <tr>
-      <th scope="row" className={`${styles.nameCell} ${styles.nowrap}`}>
+      <th scope="row" className={`${dataTable.nameCell} ${styles.nowrap}`}>
         <Link
           className={styles.personLink}
           to={`/settings/people/${encodeURIComponent(person.id)}`}
@@ -243,7 +243,7 @@ function PersonRow({ person, isYou, onOpen, actions }: PersonRowProps) {
           {person.active ? 'Active' : 'Inactive'}
         </StatusChip>
       </td>
-      <td className={styles.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={person.name}
           items={[

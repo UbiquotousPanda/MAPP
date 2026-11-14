@@ -6,6 +6,10 @@
   animation: fade-in var(--dur) var(--ease-out);
 }
 
+.overlay[data-state='closed'] {
+  animation: fade-out var(--dur-fast) var(--ease-in) forwards;
+}
+
 /* A centred question: 512 px (Shell), 12 px corners, 24 px padding. */
 .dialog {
   position: fixed;
@@ -13,14 +17,22 @@
   left: 50%;
   z-index: 50;
   width: min(512px, calc(100vw - 32px));
-  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   padding: var(--card-padding);
   overflow-y: auto;
   border-radius: var(--radius-dialog);
   background: var(--raised);
   box-shadow: var(--shadow-lg);
   transform: translate(-50%, -50%);
-  animation: fade-in var(--dur) var(--ease-out);
+  animation: dialog-in var(--dur) var(--ease-out);
+}
+
+.dialog[data-state='closed'] {
+  animation: dialog-out var(--dur-fast) var(--ease-in) forwards;
+}
+
+.lg {
+  width: min(640px, calc(100vw - 32px));
 }
 
 .dialog:focus {
@@ -34,9 +46,9 @@
 
 .title {
   color: var(--ink);
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-weight: var(--weight-heading);
-  line-height: var(--leading-xl);
+  line-height: var(--leading-lg);
   overflow-wrap: break-word;
 }
 
@@ -68,5 +80,25 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+}
+
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -49%) scale(0.98);
   }
 }

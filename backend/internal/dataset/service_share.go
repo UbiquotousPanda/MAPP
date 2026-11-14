@@ -9,6 +9,7 @@ import (
 	"mapp/internal/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
+	"mapp/internal/sharing"
 )
 
 const (
@@ -16,7 +17,7 @@ const (
 	maxShares    = 20
 )
 
-type sharing struct {
+type shares struct {
 	SharedWith []string `json:"sharedWith"`
 }
 
@@ -32,7 +33,7 @@ func (s *Service) Share(ctx context.Context, a actor.Actor, id string, in Sharin
 		if err != nil {
 			return err
 		}
-		if slices.Equal(teamIDs, stored.SharedWith) {
+		if !sharing.Changed(stored.SharedWith, teamIDs) {
 			view, err = s.view(ctx, a, stored)
 			return err
 		}
@@ -54,11 +55,9 @@ func (s *Service) checkSharing(ctx context.Context, a actor.Actor, stored Datase
 	if err != nil {
 		return nil, err
 	}
-	teamIDs := slices.Clone(in.TeamIDs)
-	slices.Sort(teamIDs)
-	teamIDs = slices.Compact(teamIDs)
+	teamIDs := sharing.TeamIDs(in.TeamIDs)
 	var problems errs.Problems
-	if len(teamIDs) > maxShares || slices.ContainsFunc(teamIDs, func(t string) bool { return !slices.Contains(allowed, t) }) {
+	if len(teamIDs) > maxShares || !sharing.Allowed(teamIDs, allowed) {
 		problems.Add(teamIDsField, msgOnlyYourTeams)
 	}
 	if in.Version == nil {
@@ -80,7 +79,7 @@ func (s *Service) reshare(ctx context.Context, a actor.Actor, stored Dataset, te
 	if err := s.repo.ReplaceShares(ctx, changed.ID, teamIDs); err != nil {
 		return Dataset{}, err
 	}
-	changes, err := history.Diff(sharing{stored.SharedWith}, sharing{teamIDs})
+	changes, err := history.Diff(shares{sharing.TeamIDs(stored.SharedWith)}, shares{teamIDs})
 	if err != nil {
 		return Dataset{}, err
 	}

@@ -44,6 +44,16 @@ type PhasedPeriods struct {
 	Difference  []*money.Money  `json:"difference"` // budget − planned cost; null entries when not phased
 	Allocated   *[]*money.Money `json:"allocated"`  // plans and campaigns: the children's phased budgets; null for initiatives
 	Over        []bool          `json:"over"`       // planned cost or allocated above the phased budget
+	OverBy      []*money.Money  `json:"overBy"`     // how far the larger of the two is above it; null when not over
+	Totals      PeriodTotals    `json:"totals"`
+}
+
+// PeriodTotals add up a row's periods; the planned cost includes other years and activities without dates.
+type PeriodTotals struct {
+	Budget      *money.Money `json:"budget"`
+	PlannedCost money.Money  `json:"plannedCost"`
+	Difference  *money.Money `json:"difference"`
+	Allocated   *money.Money `json:"allocated"`
 }
 
 const methodNone = "none"
@@ -222,13 +232,19 @@ func phasedRow(n *tnode, planned buckets, keys []string, currency string) Budget
 	}
 	row.Months = periodsOfMonths(budget, plannedMonths, allocated, n.n.Level != LevelInitiative, 1, inPlan)
 	row.Quarters = periodsOfMonths(budget, plannedMonths, allocated, n.n.Level != LevelInitiative, 3, inPlan)
-	if a, found := planned[periodOther]; found && !a.IsZero() {
+	for _, period := range []string{periodOther, periodNoDates} {
+		a, found := planned[period]
+		if !found || a.IsZero() {
+			continue
+		}
 		m := inPlan(a)
-		row.OtherYears = &m
-	}
-	if a, found := planned[periodNoDates]; found && !a.IsZero() {
-		m := inPlan(a)
-		row.NoDates = &m
+		if period == periodOther {
+			row.OtherYears = &m
+		} else {
+			row.NoDates = &m
+		}
+		row.Months.Totals.PlannedCost.Amount = row.Months.Totals.PlannedCost.Amount.Add(a)
+		row.Quarters.Totals.PlannedCost.Amount = row.Quarters.Totals.PlannedCost.Amount.Add(a)
 	}
 	return row
 }
@@ -237,23 +253,14 @@ func periodsOfMonths(budget, planned, allocated []money.Amount, hasAllocated boo
 	inPlan func(money.Amount) money.Money) PhasedPeriods {
 	n := 12 / size
 	p := PhasedPeriods{Budget: make([]*money.Money, n), PlannedCost: make([]money.Money, n), Difference: make([]*money.Money, n),
-		Over: make([]bool, n)}
+		Over: make([]bool, n), OverBy: make([]*money.Money, n)}
 	var alloc []*money.Money
 	if hasAllocated {
 		alloc = make([]*money.Money, n)
 		p.Allocated = &alloc
 	}
 	for i := range n {
-		var b, c, al money.Amount
-		for m := i * size; m < (i+1)*size; m++ {
-			c = c.Add(planned[m])
-			if budget != nil {
-				b = b.Add(budget[m])
-			}
-			if allocated != nil {
-				al = al.Add(allocated[m])
-			}
-		}
+		b, c, al := sumOf(budget, i, size), sumOf(planned, i, size), sumOf(allocated, i, size)
 		p.PlannedCost[i] = inPlan(c)
 		if allocated != nil {
 			m := inPlan(al)
@@ -265,6 +272,36 @@ func periodsOfMonths(budget, planned, allocated []money.Amount, hasAllocated boo
 		bm, diff := inPlan(b), inPlan(b.Sub(c))
 		p.Budget[i], p.Difference[i] = &bm, &diff
 		p.Over[i] = c.Cmp(b) > 0 || (allocated != nil && al.Cmp(b) > 0)
+		if p.Over[i] {
+			by := inPlan(money.FromCents(max(c.Sub(b).Cents(), al.Sub(b).Cents())))
+			p.OverBy[i] = &by
+		}
 	}
+	p.Totals = totalsOf(budget, planned, allocated, inPlan)
 	return p
+}
+
+func sumOf(months []money.Amount, period, size int) money.Amount {
+	var sum money.Amount
+	if months == nil {
+		return sum
+	}
+	for m := period * size; m < (period+1)*size; m++ {
+		sum = sum.Add(months[m])
+	}
+	return sum
+}
+
+func totalsOf(budget, planned, allocated []money.Amount, inPlan func(money.Amount) money.Money) PeriodTotals {
+	t := PeriodTotals{PlannedCost: inPlan(money.Sum(planned...))}
+	if budget != nil {
+		b := inPlan(money.Sum(budget...))
+		d := inPlan(b.Amount.Sub(t.PlannedCost.Amount))
+		t.Budget, t.Difference = &b, &d
+	}
+	if allocated != nil {
+		a := inPlan(money.Sum(allocated...))
+		t.Allocated = &a
+	}
+	return t
 }

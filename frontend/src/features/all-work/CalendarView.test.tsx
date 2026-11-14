@@ -79,13 +79,13 @@ describe('CalendarView (US5)', () => {
     expect(bar).toHaveTextContent('Helix launch eventApproved');
     expect(bar.className).toMatch(/wordsAfter/);
     // A bar long enough for its words keeps them on it.
-    expect(barOf(/Helix launch$/).className).not.toMatch(/wordsAfter|wordsBefore/);
+    expect(barOf(/Helix launch ?Campaign$/).className).not.toMatch(/wordsAfter|wordsBefore/);
   });
 
-  it('puts the words of a short bar near the end of the year before it', () => {
+  it('keeps the words of a short bar near the end of the year on it, never before it', () => {
     renderCalendar(withRow('A-1001', { startDate: '2026-12-01', endDate: '2026-12-10' }));
 
-    expect(barOf(/Helix launch event/).className).toMatch(/wordsBefore/);
+    expect(barOf(/Helix launch event/).className).not.toMatch(/wordsAfter|wordsBefore/);
   });
 
   it('explains the colours with a legend of words, each word once (FR-025, SC-008, UI audit X-14)', () => {
@@ -100,7 +100,7 @@ describe('CalendarView (US5)', () => {
         .getAllByRole('listitem')
         .map((item) => item.textContent),
     ).toEqual(['Partly approved', 'Approved', 'Declined', 'Created', 'No activities']);
-    expect(barOf(/Helix launch$/)).toHaveTextContent('Helix launchPartly approved');
+    expect(barOf(/Helix launch ?Campaign$/)).toHaveTextContent('Helix launchPartly approved');
   });
 
   it('shows a range of years as one timeline with year and quarter bands (016 FR-036)', () => {

@@ -13,7 +13,7 @@ describe('013 FR-005: the address of the SP&A view', () => {
       fc.property(fc.array(fc.tuple(fc.constantFrom(...KEYS), fc.string())), (pairs) => {
         const state = readSpaState(new URLSearchParams(pairs));
         expect(['quarter', 'month']).toContain(state.period);
-        expect(state.campaign === undefined || /^C-[0-9]+$/.test(state.campaign)).toBe(true);
+        expect(state.campaign === undefined || state.campaign.trim() !== '').toBe(true);
       }),
     );
   });

@@ -73,7 +73,7 @@ func TestAccessOperations_NeedAccessManage_FR009_FR017(t *testing.T) {
 		{http.MethodPost, "/api/v1/roles", map[string]any{"name": "Analyst", "permissions": []string{"plans.view"}, "defaultScope": "all"}},
 		{http.MethodGet, "/api/v1/roles/RL-1005", nil},
 		{http.MethodPatch, "/api/v1/roles/RL-1005", map[string]any{"description": "Sees plans.", "version": 1}},
-		{http.MethodDelete, "/api/v1/roles/RL-1007", nil},
+		{http.MethodDelete, "/api/v1/roles/RL-1007?version=1", nil},
 		{http.MethodGet, "/api/v1/people/U-1006/roles", nil},
 		{http.MethodPost, "/api/v1/people/U-1006/roles/impact", map[string]any{"roles": []any{}, "version": 1}},
 		{http.MethodPut, "/api/v1/people/U-1006/roles", map[string]any{"roles": []any{}, "version": 1}},
@@ -159,8 +159,8 @@ func TestRoles_CreateChangeDelete_FR018(t *testing.T) {
 	taken := alex.Do(t, http.MethodPost, "/api/v1/roles", map[string]any{"name": "analyst", "permissions": []string{"plans.view"}, "defaultScope": "all"})
 	changed := alex.Do(t, http.MethodPatch, "/api/v1/roles/RL-1007", map[string]any{"permissions": []string{"plans.view", "finance.view"}, "version": 1})
 	adminChange := alex.Do(t, http.MethodPatch, "/api/v1/roles/RL-1001", map[string]any{"name": "Boss", "version": 1})
-	inUse := alex.Do(t, http.MethodDelete, "/api/v1/roles/RL-1003", nil)
-	deleted := alex.Do(t, http.MethodDelete, "/api/v1/roles/RL-1007", nil)
+	inUse := alex.DeleteSeen(t, "/api/v1/roles/RL-1003")
+	deleted := alex.DeleteSeen(t, "/api/v1/roles/RL-1007")
 	gone := alex.Do(t, http.MethodGet, "/api/v1/roles/RL-1007", nil)
 
 	var r role
@@ -195,7 +195,7 @@ func TestRoles_CreateChangeDelete_FR018(t *testing.T) {
 		Total int
 	}
 	alex.Do(t, http.MethodGet, "/api/v1/roles", nil).Decode(t, &page)
-	if page.Total != 7 || page.Items[0].Name != "Administrator" || len(page.Items[0].Locks) != 5 || len(page.Items[0].Permissions) != 31 {
+	if page.Total != 7 || page.Items[0].Name != "Administrator" || len(page.Items[0].Locks) != 5 || len(page.Items[0].Permissions) != 34 {
 		t.Errorf("roles = %d, first %+v", page.Total, page.Items[0])
 	}
 }

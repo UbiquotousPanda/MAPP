@@ -459,6 +459,8 @@ amounts (no goods-receipt data exists).
 - **FR-010**: Users MUST add a line only through Add line and a line-item picker that searches by name, ID
   and HX key, shows each line item's available amount, offers eligible line items (FR-002) whose activity
   has the PR's company code, and lists matching ineligible ones as unavailable with the reason (013 FR-014).
+  The picker shows the first five matches and how many there are in all; **Show more** adds ten at a time
+  up to the fifty the API sends, and the search finds the others (amended 2026-11-13).
 - **FR-011**: A line MUST have: Line item (name and ID) and HX key, read-only; Currency (needed to save; an
   active currency; defaults to the line item's); Amount (needed to save; above 0.00); Delivery date (needed
   to save; a calendar date); Overall limit (needed to submit; 0.00 or more; defaults to the amount);
@@ -603,7 +605,9 @@ amounts (no goods-receipt data exists).
 - **FR-045**: Users MUST be able to search by PR ID, name, vendor, HX key, GSAP PR number and PO number, and
   filter by Status, PR type and Vendor (each with "Not completed"), Owner, Created date range and Waiting for
   GSAP; active filters are visible and removable one by one; filters, search, sort and page live in the
-  address so Back keeps them (013 FR-062).
+  address so Back keeps them (013 FR-062). *Amended by D-421: the search and the Waiting for GSAP view are
+  in the toolbar, the other filters behind **Filters (n)** (Created as one date range), Sort at its end; every
+  change is written in place, so Back leaves the list.*
 - **FR-046**: Users MUST be able to sort by name, ID, status, amount and created date within the vendor
   groups, page through 50 PRs at a time and open the PR or line item behind a row (013 FR-063).
 - **FR-047**: Amounts on the page MUST be in the reader's display currency with the currency code; line

@@ -1,31 +1,18 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useState } from 'react';
 import type { MouseEvent } from 'react';
 import { Link } from 'react-router';
 import { Button } from '@/ui/Button/Button';
+import { MONTH_NAMES, WEEKDAYS, monthWeeks } from '@/ui/DatePicker/calendar';
+import { Popover } from '@/ui/Popover/Popover';
 import { cx } from '@/ui/cx';
 import { useFormatters } from '@/format/useFormatters';
+import { ScrollBox } from '@/ui/ScrollBox/ScrollBox';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import type { AllWorkResult, AllWorkRow } from './all-work-types';
-import { monthWeeks, runsOn } from './calendar';
+import { runsOn } from './calendar';
 import styles from './MonthCalendar.module.css';
 import { rowHref } from './row-href';
-
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /** A day lists this many activities; the rest are behind "+ n more". */
 const SHOWN_PER_DAY = 3;
@@ -52,9 +39,9 @@ export function MonthCalendar({ result, onOpen }: MonthCalendarProps) {
   return (
     <div className={styles.month}>
       <div className={styles.header}>
-        <h3 className={styles.title} aria-live="polite">
+        <SectionHeading level={3} rank="sub" aria-live="polite">
           {title}
-        </h3>
+        </SectionHeading>
         <div className={styles.buttons}>
           <Button
             size="sm"
@@ -77,7 +64,7 @@ export function MonthCalendar({ result, onOpen }: MonthCalendarProps) {
           />
         </div>
       </div>
-      <div className={styles.scroll}>
+      <ScrollBox label={title}>
         <table className={styles.grid}>
           <caption className="visually-hidden">{title}</caption>
           <thead>
@@ -108,7 +95,7 @@ export function MonthCalendar({ result, onOpen }: MonthCalendarProps) {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollBox>
     </div>
   );
 }
@@ -140,23 +127,16 @@ function Day({ date, isToday, activities, onOpen }: DayProps) {
               + {more} more <span className="visually-hidden">on {formatters.date(date)}</span>
             </button>
           </Popover.Trigger>
-          <Popover.Portal>
-            <Popover.Content
-              className={styles.dayList}
-              align="start"
-              sideOffset={4}
-              aria-label={formatters.date(date)}
-            >
-              <p className={styles.dayTitle}>{formatters.date(date)}</p>
-              <ul className={styles.items}>
-                {activities.map((row) => (
-                  <li key={row.key}>
-                    <ActivityLink row={row} onOpen={onOpen} />
-                  </li>
-                ))}
-              </ul>
-            </Popover.Content>
-          </Popover.Portal>
+          <Popover.Content width="sm" sideOffset={4} aria-label={formatters.date(date)}>
+            <p className={styles.dayTitle}>{formatters.date(date)}</p>
+            <ul className={styles.items}>
+              {activities.map((row) => (
+                <li key={row.key}>
+                  <ActivityLink row={row} onOpen={onOpen} />
+                </li>
+              ))}
+            </ul>
+          </Popover.Content>
         </Popover.Root>
       )}
     </div>

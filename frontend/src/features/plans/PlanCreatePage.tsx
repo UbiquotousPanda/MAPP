@@ -3,6 +3,7 @@ import { ApiError } from '@/api/errors';
 import { forbiddenMessage } from '@/session/access';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
+import { FormPage } from '@/ui/FormRail/FormRail';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { useToast } from '@/ui/Toast/useToast';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
@@ -40,7 +41,7 @@ export function PlanCreatePage() {
   }
 
   return (
-    <>
+    <FormPage>
       <PageHeader
         breadcrumb={[{ label: 'Plans', to: '/plans' }, { label: 'New plan' }]}
         title="New plan"
@@ -59,6 +60,6 @@ export function PlanCreatePage() {
           cancelTo="/plans"
         />
       )}
-    </>
+    </FormPage>
   );
 }

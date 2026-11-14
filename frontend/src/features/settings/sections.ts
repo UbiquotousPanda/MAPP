@@ -1,40 +1,23 @@
-/**
- * Feature 002's cards of the Settings page (FR-001). The page's full list, with the cards other
- * features add from their own folders, is assembled in app/settings-sections.ts.
- */
+/** The page's full list, with the cards other features add, is assembled in app/settings-sections.ts. */
 import { Calculator, Coins, ListChecks, Shapes, Wallet } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ComponentType } from 'react';
 import type { components } from '@/api/generated/schema';
 import type { Permission } from '@/session/access';
 
-/** One card of the Settings page. */
 export interface SettingsSection {
   title: string;
-  /** One sentence on what the section holds (plan 002, "Settings cards"). */
   description: string;
   path: string;
   icon: LucideIcon;
-  /** 002's sections: the count of active records in GET /api/v1/settings/overview. */
+  /** 002's sections, from GET /api/v1/settings/overview; other features' sections use ActiveCount. */
   overviewKey?: keyof components['schemas']['SettingsOverview'];
-  /**
-   * Other features' sections: a component that shows "<n> active" from their own data. Left out
-   * until the feature builds it.
-   */
   ActiveCount?: ComponentType;
-  /**
-   * A section that has no page yet: its card shows "Coming soon" and is not a link (FR-001). Left
-   * out for every section with a page — a page still being built is a link to its stub.
-   */
+  /** Only a section with no page at all; a page still being built is a link to its stub. */
   comingSoon?: boolean;
-  /**
-   * What a role of the person must include for the card to be shown (feature 014, FR-012), such as
-   * "access.manage" for Roles and access; left out for the cards everyone reads (D-240).
-   */
   permission?: Permission;
 }
 
-/** Feature 002's own sections. */
 export const SETTINGS_OWN_SECTIONS: SettingsSection[] = [
   {
     title: 'Models',
@@ -69,8 +52,7 @@ export const SETTINGS_OWN_SECTIONS: SettingsSection[] = [
   },
   {
     title: 'Finance budget items',
-    description:
-      'The finance budget items line items link to — a simple list until the Finance module arrives.',
+    description: 'The finance budget items line items link to.',
     path: '/settings/finance-budget-items',
     icon: Wallet,
     overviewKey: 'financeBudgetItems',

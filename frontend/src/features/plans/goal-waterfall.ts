@@ -1,12 +1,8 @@
-/**
- * The plan goal at every stage while the form is typed (FR-009, plan "Goal waterfall"): forwards
- * from INQ, partly backwards from MQL, backwards from Revenue — the same rounding as Go's
- * plans.planWaterfall (half up to whole numbers, revenue to the cent). What the API calculates is
- * what gets stored and shown afterwards.
- */
+// The same rounding as Go's plans.planWaterfall (half up to whole numbers, revenue to the cent);
+// what the API calculates is what gets stored and shown afterwards.
 import {
-  formatAmount,
   formatCents,
+  formatMoneyText,
   formatPercent,
   formatWhole,
   parseDecimalInput,
@@ -19,14 +15,10 @@ import type { GoalStage } from './plan-text';
 
 export type WaterfallStage = 'inq' | 'mql' | 'deals' | 'revenue';
 
-/** One row of the goal table: the typed stage, a calculated one, or one that can't be worked out. */
 export interface GoalRow {
   stage: WaterfallStage;
-  /** "250,000", "2,500,000.00 USD"; null when there is nothing to show. */
   value: string | null;
-  /** The typed stage is not calculated. */
   calculated: boolean;
-  /** "MQL = INQ × 2.00 %" for a calculated stage. */
   formula?: string;
   /** Why the stage can't be worked out (a rate or the deal size is 0). */
   reason?: string;
@@ -47,11 +39,7 @@ function ratio(n: bigint | null, mul: bigint, div: bigint): bigint | null {
   return (n * mul * 2n + div) / (2n * div);
 }
 
-/**
- * The four stages for a typed goal: the typed one as typed, the others worked out from the model.
- * Without a model the calculated stages say CHOOSE_A_MODEL (as their reason); without a goal
- * amount, or one that can't be read, every value is null.
- */
+/** Without a model the calculated stages say CHOOSE_A_MODEL; an unreadable goal leaves every value null. */
 export function goalRows(
   stage: GoalStage,
   amount: string,
@@ -62,7 +50,9 @@ export function goalRows(
   const dealCents = model ? toCents(model.averageDealSize.amount) : 0n;
   const rate1 = model ? formatPercent(model.inqToMqlRate) : '';
   const rate2 = model ? formatPercent(model.mqlToDealRate) : '';
-  const dealSize = model ? `${formatAmount(model.averageDealSize.amount)} USD` : '';
+  const dealSize = model
+    ? formatMoneyText({ amount: model.averageDealSize.amount, currency: 'USD' })
+    : '';
 
   let inq: bigint | null = null;
   let mql: bigint | null = null;
@@ -122,7 +112,10 @@ export function goalRows(
     inq: inq === null ? null : formatWhole(inq),
     mql: mql === null ? null : formatWhole(mql),
     deals: deals === null ? null : formatWhole(deals),
-    revenue: revenueCents === null ? null : `${formatAmount(formatCents(revenueCents))} USD`,
+    revenue:
+      revenueCents === null
+        ? null
+        : formatMoneyText({ amount: formatCents(revenueCents), currency: 'USD' }),
   };
 
   return (['inq', 'mql', 'deals', 'revenue'] as const).map((row) => {

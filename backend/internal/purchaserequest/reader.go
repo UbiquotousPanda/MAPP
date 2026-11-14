@@ -173,8 +173,8 @@ func (r *reader) plan(pr PurchaseRequest) (errs.RecordRef, []errs.RecordRef) {
 	return errs.RecordRef{Type: planType, ID: pr.PlanID, Name: pr.PlanID}, []errs.RecordRef{}
 }
 
-// waiting is 032 FR-032: approved, routed (its lines got their Sent date) and a line GSAP has not answered.
-func waiting(pr PurchaseRequest) bool {
+// WaitingForGSAP: approved, routed (its lines got their Sent date) and a line GSAP has not answered.
+func WaitingForGSAP(pr PurchaseRequest) bool {
 	if pr.Status != StatusApproved || !slices.ContainsFunc(pr.Lines, func(l Line) bool { return l.SentOn != nil }) {
 		return false
 	}

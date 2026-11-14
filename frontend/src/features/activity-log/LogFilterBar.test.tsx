@@ -5,11 +5,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
 import { testUser } from '@/testing/fixtures/users';
 import { logSummary } from '@/testing/fixtures/activity-log';
+import { openFilters } from '@/testing/filters';
 import { LogFilterBar, SEARCH_DELAY_MS } from './LogFilterBar';
 import { NO_FILTERS } from './log-filters';
 import type { LogFilterState } from './log-filters';
 
-type OnChange = (filters: LogFilterState, typing?: boolean) => void;
+type OnChange = (filters: LogFilterState) => void;
 
 /** The filter bar with its filters kept in state, as the page keeps them in the address. */
 function Harness({ initial, onChange }: { initial: LogFilterState; onChange: OnChange }) {
@@ -17,9 +18,10 @@ function Harness({ initial, onChange }: { initial: LogFilterState; onChange: OnC
   return (
     <LogFilterBar
       filters={filters}
-      onChange={(...args) => {
-        onChange(...args);
-        setFilters(args[0]);
+      onChange={(patch) => {
+        const next = { ...filters, ...patch };
+        onChange(next);
+        setFilters(next);
       }}
       summary={logSummary()}
       record={{ type: 'activity', id: 'A-1042', name: 'Film shoot' }}
@@ -41,17 +43,23 @@ describe('LogFilterBar', () => {
     vi.useRealTimers();
   });
 
-  it('offers the summary’s people, record types and plans (FR-003)', () => {
-    renderBar();
+  it('offers the summary’s people, record types and plans (FR-003)', async () => {
+    const { user } = renderBar();
+    await openFilters(user);
 
-    const options = (name: string) =>
-      within(screen.getByRole('combobox', { name }))
-        .getAllByRole('option')
-        .map((option) => option.textContent);
-    expect(options('Person')).toEqual(['Anyone', 'Daniel Okoro', 'Priya Raman']);
-    expect(options('Record type')).toEqual(['Any type', 'Activity', 'Line item']);
-    expect(options('Plan')).toEqual(['Any plan', 'FY2026 Lubricants Europe']);
-    expect(screen.getByRole('button', { name: 'Action: Any action' })).toBeInTheDocument();
+    const options = async (name: string) => {
+      await user.click(screen.getByRole('button', { name }));
+      const menu = await screen.findByRole('dialog', { name });
+      const shown = within(menu)
+        .getAllByRole('radio')
+        .map((radio) => radio.closest('label')?.textContent);
+      await user.keyboard('{Escape}');
+      return shown;
+    };
+    expect(await options('Person')).toEqual(['Anyone', 'Daniel Okoro', 'Priya Raman']);
+    expect(await options('Record type')).toEqual(['Any type', 'Activity', 'Line item']);
+    expect(await options('Plan')).toEqual(['Any plan', 'FY2026 Lubricants Europe']);
+    expect(screen.getByRole('button', { name: 'Action' })).toBeInTheDocument();
     expect(
       screen.getByRole('searchbox', { name: 'Search name, ID or person' }),
     ).toBeInTheDocument();
@@ -59,8 +67,10 @@ describe('LogFilterBar', () => {
 
   it('filters by person and shows the filter as a chip (FR-003)', async () => {
     const { user, onChange } = renderBar();
+    await openFilters(user);
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Person' }), 'Daniel Okoro');
+    await user.click(screen.getByRole('button', { name: 'Person' }));
+    await user.click(await screen.findByRole('radio', { name: 'Daniel Okoro' }));
 
     expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, person: 'U-1003' });
     expect(
@@ -70,33 +80,33 @@ describe('LogFilterBar', () => {
 
   it('ticks several actions in one menu, kept in the menu’s order (FR-003)', async () => {
     const { user, onChange } = renderBar();
+    await openFilters(user);
 
-    await user.click(screen.getByRole('button', { name: 'Action: Any action' }));
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Permanently deleted' }));
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Deleted' }));
+    await user.click(screen.getByRole('button', { name: 'Action' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Permanently deleted' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Deleted' }));
 
     expect(onChange).toHaveBeenLastCalledWith({
       ...NO_FILTERS,
       actions: ['deleted', 'deletedPermanently'],
     });
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Deleted' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    expect(screen.getByRole('checkbox', { name: 'Deleted' })).toBeChecked();
     await user.keyboard('{Escape}');
-    expect(
-      screen.getByRole('button', { name: 'Action: Deleted, Permanently deleted' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Action · 2' })).toBeInTheDocument();
   });
 
   it('chooses a date range, and Custom dates with their error (FR-003)', async () => {
     const { user, onChange } = renderBar();
+    await openFilters(user);
 
-    await user.click(screen.getByRole('button', { name: 'This week' }));
+    await user.click(screen.getByRole('button', { name: 'Date' }));
+    await user.click(await screen.findByRole('radio', { name: 'This week' }));
     expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, range: 'week' });
     expect(screen.getByRole('button', { name: 'Remove filter: Date: This week' })).toBeVisible();
 
-    await user.click(screen.getByRole('button', { name: 'Custom' }));
+    await user.click(screen.getByRole('radio', { name: 'Custom' }));
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Dates' }));
     await user.type(screen.getByLabelText('From'), '2026-10-12');
     await user.type(screen.getByLabelText('To'), '2026-10-01');
 
@@ -127,7 +137,7 @@ describe('LogFilterBar', () => {
     await act(() => vi.advanceTimersByTimeAsync(SEARCH_DELAY_MS));
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith({ ...NO_FILTERS, q: 'film' }, true);
+    expect(onChange).toHaveBeenCalledWith({ ...NO_FILTERS, q: 'film' });
     expect(screen.getByRole('button', { name: "Remove filter: Search: 'film'" })).toBeVisible();
   });
 

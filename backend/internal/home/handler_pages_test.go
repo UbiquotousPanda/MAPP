@@ -10,9 +10,7 @@ import (
 	"mapp/internal/platform/apitest"
 )
 
-// For every seeded person, Waiting for my approval counts the Waiting for me tab of the Approvals page, and
-// each activity that needs attention shows what its page shows: its fields still needed, its line items
-// needing attention and how far its line items exceed its planned cost (SC-002, FR-017).
+// Each attention row shows its page's fields still needed, line items needing attention and overspend.
 func TestHome_PersonalCardsEqualTheirPages_SC002_FR017(t *testing.T) { //nolint:gocyclo // 14: every person, each card compared with its own page
 	t.Parallel()
 	server := apitest.New(t)
@@ -52,8 +50,6 @@ func TestHome_PersonalCardsEqualTheirPages_SC002_FR017(t *testing.T) { //nolint:
 	}
 }
 
-// For every seeded person, each of their activities shows on Home the status, planned cost and completeness
-// of its own page (SC-002, FR-017).
 func TestHome_MyActivitiesEqualTheirPages_SC002_FR017(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -67,7 +63,7 @@ func TestHome_MyActivitiesEqualTheirPages_SC002_FR017(t *testing.T) {
 		for _, g := range view.Groups {
 			for _, row := range g.Items {
 				page := get[activity.View](t, client, "/api/v1/activities/"+row.ID, apitest.SkipValidation())
-				// Home adds up plans in the display currency, so it shows the page's display amount (016 FR-014).
+				// Home adds up plans in the display currency, so it shows the page's display amount.
 				if row.Status != string(page.DisplayStatus) || !same(row.PlannedCost, page.Display.PlannedCost) ||
 					len(row.Missing) != page.Completeness.MissingFields || row.ItemsBelow != page.Completeness.LineItemsNeedingAttention {
 					t.Errorf("%s: %+v\nits page: %s, %v, %+v", email, row, page.DisplayStatus, page.PlannedCost, page.Completeness)
@@ -77,14 +73,13 @@ func TestHome_MyActivitiesEqualTheirPages_SC002_FR017(t *testing.T) {
 	}
 }
 
-// A deleted record never counts: once Priya deletes Launch film, it leaves her cards, My activities, Needs
-// your attention and her plan's row at once (FR-019).
+// Once Priya deletes Launch film, it leaves her cards, My activities, Needs your attention and her plan's row.
 func TestHome_DeletedRecordsNeverCount_FR019(t *testing.T) { //nolint:gocyclo // 14: one delete, then every card that must lose the record
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 
-	deleted := priya.Do(t, http.MethodDelete, "/api/v1/activities/A-1001", nil)
+	deleted := priya.DeleteSeen(t, "/api/v1/activities/A-1001")
 	if deleted.Status != http.StatusOK {
 		t.Fatalf("DELETE /api/v1/activities/A-1001 = %d %s", deleted.Status, deleted.Body)
 	}
@@ -93,9 +88,9 @@ func TestHome_DeletedRecordsNeverCount_FR019(t *testing.T) { //nolint:gocyclo //
 	attention := get[home.HomeAttentionPage](t, priya, "/api/v1/home/attention")
 	rows := get[home.PlanPage](t, priya, "/api/v1/home/plans?scope=myTeams")
 
-	// Priya also owns the two activities of the GBP plan P-1004 (016): 65,000.00 GBP = 82,278.48 USD.
-	if summary.ActivitiesOwned.Count != 8 || view.Total != 8 || summary.PlannedCost.PlannedCost != usd(t, "422278.48") {
-		t.Errorf("after the delete: %d owned, %d in My activities, planned %v; want 8, 8 and 422,278.48 USD",
+	// Priya also owns the two activities of the GBP plan P-1004 (016): 65,000.00 GBP = 86,666.67 USD.
+	if summary.ActivitiesOwned.Count != 8 || view.Total != 8 || summary.PlannedCost.PlannedCost != usd(t, "426666.67") {
+		t.Errorf("after the delete: %d owned, %d in My activities, planned %v; want 8, 8 and 426,666.67 USD",
 			summary.ActivitiesOwned.Count, view.Total, summary.PlannedCost.PlannedCost)
 	}
 	for _, item := range attention.Items {

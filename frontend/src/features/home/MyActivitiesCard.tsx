@@ -5,6 +5,7 @@ import { Button, LinkButton } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { CompletenessChip } from '@/ui/CompletenessChip/CompletenessChip';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
+import { SectionHeading } from '@/ui/SectionHeading/SectionHeading';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { ActivityStatusChip } from '@/ui/ActivityStatusChip/ActivityStatusChip';
 import { cx } from '@/ui/cx';
@@ -23,27 +24,23 @@ import {
 import styles from './MyActivitiesCard.module.css';
 import { SectionError } from './SectionError';
 
-/** How many activities a group shows before "View all (n)" (FR-014). */
 const SHOWN = 5;
 
-/**
- * My activities (FR-014): the activities the person owns, in every plan, grouped by the status
- * people see — Declined, Created, Submitted, Approved, In progress, Complete — with Complete
- * folded. "Activities I own" leads here while All work is not built (D-174).
- */
+/** Grouped by the status people see, Complete folded; "Activities I own" leads here while All work is not built (D-174). */
 export function MyActivitiesCard() {
   const activities = useHomeMyActivities();
 
   return (
     // The card's place on Home, for the "Activities I own" card's link.
     <div id="my-activities" className={styles.anchor}>
-      <Card title="My activities" subtitle="Activities you own, by status">
+      <Card title="My activities">
         {activities.isPending ? (
           <Skeleton lines={4} height="18px" />
         ) : activities.isError ? (
           <SectionError onRetry={() => void activities.refetch()} />
         ) : activities.data.groups.length === 0 ? (
           <EmptyState
+            compact
             icon={<ListChecks />}
             title={NO_ACTIVITIES}
             action={<LinkButton to="/plans">Go to Plans</LinkButton>}
@@ -71,7 +68,7 @@ function ActivityGroup({ group }: { group: MyActivityGroup }) {
 
   return (
     <section className={styles.group}>
-      <h3 className={styles.heading}>
+      <SectionHeading level={3} rank="label">
         <button
           type="button"
           className={styles.toggle}
@@ -83,7 +80,7 @@ function ActivityGroup({ group }: { group: MyActivityGroup }) {
           <ActivityStatusChip status={group.status} />{' '}
           <span className={styles.count}>{formatWhole(group.count)}</span>
         </button>
-      </h3>
+      </SectionHeading>
       <div id={listId} hidden={!open}>
         <ul className={styles.rows}>
           {rows.map((row) => (

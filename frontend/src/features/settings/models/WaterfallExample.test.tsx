@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
 import { WaterfallExample } from './WaterfallExample';
 
-const LUBRICANTS = { inqToMqlRate: '2.00', mqlToDealRate: '5.00', averageDealSize: '10000.00' };
+const LUBRICANTS = {
+  inqToMqlRate: '2.00',
+  mqlToDealRate: '5.00',
+  averageDealSize: '10000.00',
+  inqToMqlVelocityMonths: 0,
+  mqlToDealVelocityMonths: 0,
+};
 
 function inquiries() {
   return screen.getByRole('textbox', { name: 'Example number of inquiries' });
@@ -18,7 +24,7 @@ describe('WaterfallExample (FR-010, SC-006)', () => {
     expect(screen.getByRole('button', { name: 'About Worked example' })).toBeInTheDocument();
     expect(inquiries()).toHaveValue('250,000');
     expect(
-      screen.getByText('250,000 INQ → 5,000 MQL → 250 deals → 2,500,000.00 USD revenue'),
+      screen.getByText('250,000 INQ → 5,000 MQL → 250 deals → $2,500,000.00 revenue'),
     ).toBeInTheDocument();
   });
 
@@ -29,29 +35,39 @@ describe('WaterfallExample (FR-010, SC-006)', () => {
     await user.type(inquiries(), '25');
 
     // 25 × 2 % = 0.5 → 1 MQL (half up); 1 × 5 % = 0.05 → 0 deals.
-    expect(screen.getByText('25 INQ → 1 MQL → 0 deals → 0.00 USD revenue')).toBeInTheDocument();
+    expect(screen.getByText('25 INQ → 1 MQL → 0 deals → $0.00 revenue')).toBeInTheDocument();
 
     await user.clear(inquiries());
     await user.type(inquiries(), '500');
     // 500 × 2 % = 10 MQL; 10 × 5 % = 0.5 → 1 deal.
-    expect(
-      screen.getByText('500 INQ → 10 MQL → 1 deal → 10,000.00 USD revenue'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('500 INQ → 10 MQL → 1 deal → $10,000.00 revenue')).toBeInTheDocument();
   });
 
   it('works with the rates and the deal size it is given (Mobility 1.0)', () => {
     renderWithProviders(
-      <WaterfallExample inqToMqlRate="3" mqlToDealRate="4" averageDealSize="5000.00" />,
+      <WaterfallExample
+        inqToMqlRate="3"
+        mqlToDealRate="4"
+        averageDealSize="5000.00"
+        inqToMqlVelocityMonths={0}
+        mqlToDealVelocityMonths={0}
+      />,
     );
 
     expect(
-      screen.getByText('250,000 INQ → 7,500 MQL → 300 deals → 1,500,000.00 USD revenue'),
+      screen.getByText('250,000 INQ → 7,500 MQL → 300 deals → $1,500,000.00 revenue'),
     ).toBeInTheDocument();
   });
 
   it('asks for both rates and the deal size when one is missing', () => {
     renderWithProviders(
-      <WaterfallExample inqToMqlRate="2" mqlToDealRate={null} averageDealSize="10000.00" />,
+      <WaterfallExample
+        inqToMqlRate="2"
+        mqlToDealRate={null}
+        averageDealSize="10000.00"
+        inqToMqlVelocityMonths={0}
+        mqlToDealVelocityMonths={0}
+      />,
     );
 
     expect(
@@ -77,9 +93,31 @@ describe('WaterfallExample (FR-010, SC-006)', () => {
         inqToMqlRate="100"
         mqlToDealRate="100"
         averageDealSize="100000000000000.00"
+        inqToMqlVelocityMonths={0}
+        mqlToDealVelocityMonths={0}
       />,
     );
 
     expect(screen.getByText('Too large to calculate — try fewer inquiries.')).toBeInTheDocument();
   });
+});
+
+it('047 FR-004 shows where each velocity places its stage', () => {
+  renderWithProviders(
+    <WaterfallExample {...LUBRICANTS} inqToMqlVelocityMonths={1} mqlToDealVelocityMonths={2} />,
+  );
+
+  expect(
+    screen.getByText(
+      '250,000 INQ → 5,000 MQL 1 month later → 250 deals 2 months later → $2,500,000.00 revenue',
+    ),
+  ).toBeInTheDocument();
+});
+
+it('047 FR-004 shows no lag when a velocity is zero', () => {
+  renderWithProviders(<WaterfallExample {...LUBRICANTS} />);
+
+  expect(
+    screen.getByText('250,000 INQ → 5,000 MQL → 250 deals → $2,500,000.00 revenue'),
+  ).toBeInTheDocument();
 });

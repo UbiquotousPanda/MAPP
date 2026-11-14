@@ -62,7 +62,7 @@ func TestLogAndRecycleBin_Filtered_FR007_FR038(t *testing.T) {
 	server := apitest.New(t, apitest.WithoutDemoHistory()) // only the entries of this test
 	alex, priya, mei := server.SignIn(t, alexsEmail), server.SignIn(t, priyasEmail), server.SignIn(t, meisEmail)
 	var deleted struct{ RecycleBinEntry struct{ ID string } }
-	mei.Do(t, http.MethodDelete, "/api/v1/initiatives/I-1006", nil).Decode(t, &deleted)
+	mei.DeleteSeen(t, "/api/v1/initiatives/I-1006").Decode(t, &deleted)
 	alex.Do(t, http.MethodPatch, "/api/v1/models/MOD-1002", map[string]any{"name": "Mobility 1.1", "version": 1}, apitest.SkipRequestValidation())
 
 	var log struct {

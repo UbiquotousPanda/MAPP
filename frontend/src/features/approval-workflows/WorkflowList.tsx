@@ -1,5 +1,6 @@
 import { CircleAlert, Plus, Workflow } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import { Button } from '@/ui/Button/Button';
 import { CanChange } from '@/ui/CanChange/CanChange';
@@ -7,6 +8,7 @@ import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ListToolbar } from '@/ui/ListToolbar/ListToolbar';
 import { SegmentedFilter } from '@/ui/SegmentedFilter/SegmentedFilter';
 import list from '@/ui/settings-table.module.css';
+import dataTable from '@/ui/Table/Table.module.css';
 import { StatusChip } from '@/ui/StatusChip/StatusChip';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import { useCanChange } from '@/ui/useCanChange';
@@ -23,7 +25,7 @@ const ALL = 'all';
 
 /** What the shown workflows approve, kept in the address (`approves`) like the other filters. */
 function useApprovesFilter() {
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAddressParams();
   const raw = params.get('approves') ?? '';
   const approves = isObjectType(raw) ? raw : ALL;
 
@@ -81,7 +83,7 @@ export function WorkflowList({ all, filters, onNew, actions }: WorkflowListProps
 function WorkflowTable({ all, filters, actions }: Omit<WorkflowListProps, 'onNew'>) {
   const { approves, setApproves, clear } = useApprovesFilter();
   const ofKind = all.filter((workflow) => approves === ALL || workflow.objectType === approves);
-  const { shown, counts } = filterRecords(ofKind, filters, (workflow) => workflow.name);
+  const { shown } = filterRecords(ofKind, filters, (workflow) => workflow.name);
   const kindOptions = [
     { value: ALL, label: 'Any' },
     ...OBJECT_TYPES.map((type) => ({
@@ -100,7 +102,7 @@ function WorkflowTable({ all, filters, actions }: Omit<WorkflowListProps, 'onNew
           value: filters.q,
           onChange: filters.setQ,
         }}
-        status={{ value: filters.status, onChange: filters.setStatus, counts }}
+        status={{ value: filters.status, onChange: filters.setStatus }}
         filters={
           <SegmentedFilter
             label="Approves"
@@ -117,8 +119,8 @@ function WorkflowTable({ all, filters, actions }: Omit<WorkflowListProps, 'onNew
           <Button onClick={clear}>Clear filters</Button>
         </div>
       ) : (
-        <div className={list.tableScroll}>
-          <table className={list.table}>
+        <div className={dataTable.scroll}>
+          <table className={dataTable.table}>
             <thead>
               <tr>
                 <th scope="col" className={styles.nameCol}>
@@ -132,7 +134,7 @@ function WorkflowTable({ all, filters, actions }: Omit<WorkflowListProps, 'onNew
                   Used by
                 </th>
                 <th scope="col">Status</th>
-                <th scope="col" className={styles.actionsCell}>
+                <th scope="col" className={dataTable.actions}>
                   <span className="visually-hidden">Actions</span>
                 </th>
               </tr>
@@ -162,7 +164,7 @@ function WorkflowRow({
 
   return (
     <tr>
-      <th scope="row" className={list.nameCell}>
+      <th scope="row" className={dataTable.nameCell}>
         <span className={styles.name}>
           <Link to={details}>{workflow.name}</Link>
           {workflow.warnings.length > 0 && (
@@ -188,7 +190,7 @@ function WorkflowRow({
           <StatusChip tone="neutral">Inactive</StatusChip>
         )}
       </td>
-      <td className={list.actionsCell}>
+      <td className={dataTable.actions}>
         <ActionsMenu
           label={workflow.name}
           items={[

@@ -1,13 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { useParams } from 'react-router';
+import { useAddressParams } from '@/ui/useAddressParams';
 import { ApiError, conflictMessage } from '@/api/errors';
 import { budgetCheck } from '@/features/overspend';
 import { allows } from '@/session/gate-action';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
+import { FormPage } from '@/ui/FormRail/FormRail';
 import { PageHeader } from '@/ui/PageHeader/PageHeader';
 import { useToast } from '@/ui/Toast/useToast';
+import { useEditedRecord } from '@/ui/useEditedRecord';
 import type { SaveFailure } from '@/ui/FormPanel/problem-of';
 import { useFormatters } from '@/format/useFormatters';
 import { usePageTitle } from '@/ui/usePageTitle';
@@ -39,7 +42,7 @@ export function PlanEditPage() {
   }
 
   return (
-    <>
+    <FormPage>
       <PageHeader
         breadcrumb={[
           { label: 'Plans', to: '/plans' },
@@ -55,20 +58,20 @@ export function PlanEditPage() {
       ) : (
         <EditForm plan={plan.data} />
       )}
-    </>
+    </FormPage>
   );
 }
 
 function EditForm({ plan: loaded }: { plan: Plan }) {
   const [plan] = useState(loaded);
   const initial = valuesFromPlan(plan);
-  const [search] = useSearchParams();
+  const [search] = useAddressParams();
   const queryClient = useQueryClient();
   const { show } = useToast();
   const { dateFormat } = useFormatters();
   const updatePlan = useUpdatePlan(plan.id);
   const changeEffects = useChangeEffects(plan.id);
-  const [version, setVersion] = useState(plan.version);
+  const { version, loadLatest } = useEditedRecord(plan);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   const [effects, setEffects] = useState<{ data: PlanChangeEffects; modelOnly: boolean } | null>(
     null,
@@ -137,10 +140,7 @@ function EditForm({ plan: loaded }: { plan: Plan }) {
       return;
     }
     if (apiError.kind === 'conflict') {
-      const latest = await fetchLatestPlan(queryClient, plan.id).catch(() => undefined);
-      if (latest) {
-        setVersion(latest.version);
-      }
+      await loadLatest(() => fetchLatestPlan(queryClient, plan.id));
       setFailure({
         message: conflictMessage(apiError, 'plan', dateFormat),
         nextStep: CONFLICT_NEXT_STEP,

@@ -8,6 +8,7 @@ import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, pending, reply } from '@/testing/replies';
 import type { Answer } from '@/testing/replies';
+import { choose } from '@/testing/select';
 import { PurchaseRequestCreatePage } from './PurchaseRequestCreatePage';
 
 const DEFAULTS = 'GET /api/v1/purchase-requests/new-defaults';
@@ -38,8 +39,8 @@ function field(id: string): HTMLElement {
 }
 
 async function chooseWorkflows(user: ReturnType<typeof renderCreate>['user']) {
-  await user.selectOptions(field('approvalWorkflowId'), 'WF-1101');
-  await user.selectOptions(field('modificationWorkflowId'), 'WF-1102');
+  await choose(user, field('approvalWorkflowId'), 'Purchase request approval (MoA)');
+  await choose(user, field('modificationWorkflowId'), 'Purchase request change approval (MoA)');
   await user.type(field('lines[0].deliveryDate'), '2026-11-30');
 }
 
@@ -51,7 +52,7 @@ describe('032 FR-003/FR-053/FR-054: new purchase request', () => {
     expect(field('lines[0].amount')).toHaveValue('9,200.00');
     expect(field('lines[0].overallLimit')).toHaveValue('9,200.00');
     expect(screen.getByText('HX1006')).toBeInTheDocument();
-    expect(screen.getByText('Generated from the line-item ID')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'About HX key' })).toBeInTheDocument();
     expect(screen.getByText('SIM-GB01-0001')).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument();
     await expectNoAxeViolations();
@@ -226,5 +227,38 @@ describe('032 FR-003/FR-053/FR-054: new purchase request', () => {
     await user.click(await screen.findByRole('button', { name: 'Choose Gift boxes (L-1011)' }));
 
     await waitFor(() => expect(router.state.location.search).toBe('?lineItemId=L-1011'));
+  });
+
+  it('032 FR-010: shows the first five line items, more on Show more, and how many the search can find', async () => {
+    const items = Array.from({ length: 8 }, (_, i) =>
+      lineItemOption({
+        lineItem: { ...lineItemOption().lineItem, id: `L-20${i}`, name: `Item ${i}` },
+      }),
+    );
+    const { user } = renderCreate(
+      { body: defaults() },
+      [reply('GET /api/v1/purchase-requests/line-item-options', { body: { items, total: 42 } })],
+      '/purchase-requests/new',
+    );
+
+    expect(
+      await screen.findByRole('button', { name: 'Choose Item 0 (L-200)' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /^Choose Item/ })).toHaveLength(5);
+    expect(
+      screen.getByText(
+        'Showing 5 of 42 line items. Show more, or search by name, ID or HX key to find the others.',
+      ),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Show 3 more' }));
+
+    expect(screen.getAllByRole('button', { name: /^Choose Item/ })).toHaveLength(8);
+    expect(
+      screen.getByText(
+        'Showing 8 of 42 line items. Search by name, ID or HX key to find the others.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Show \d+ more$/ })).not.toBeInTheDocument();
   });
 });

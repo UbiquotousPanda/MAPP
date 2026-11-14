@@ -115,9 +115,9 @@ describe('formatting', () => {
     expect(formatAmount('-12500')).toBe('-12,500.00');
   });
 
-  it('writes money with the code after the amount, as the API does (002 Money.Format)', () => {
-    expect(formatMoneyText({ amount: '120000', currency: 'USD' })).toBe('120,000.00 USD');
-    expect(formatMoneyText({ amount: '46000.00', currency: 'EUR' })).toBe('46,000.00 EUR');
+  it('writes money in the symbol form of every currency (002 Money.Format, D-413)', () => {
+    expect(formatMoneyText({ amount: '120000', currency: 'USD' })).toBe('$120,000.00');
+    expect(formatMoneyText({ amount: '46000.00', currency: 'EUR' })).toBe('€46,000.00');
   });
 
   it('writes percentages with two decimals and rates with two to six', () => {

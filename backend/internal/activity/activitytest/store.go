@@ -23,10 +23,13 @@ type Store struct {
 
 func NewStore(db *fake.DB) Store {
 	return Store{
-		activities: fake.TableOf(db, "activities", func(a activity.Activity) string { return a.ID }),
-		plans:      plantest.NewStore(db),
-		campaigns:  campaigntest.NewStore(db),
-		approvals:  approvaltest.NewStore(db),
+		activities: fake.TableOf(db, "activities", func(a activity.Activity) string { return a.ID }).
+			Unique("activities_name_key", func(a activity.Activity) string { return a.InitiativeID + "/" + fake.LowerC(a.Name) }).
+			Check("activities_dates_check", datesInOrder).
+			Check("activities_ongoing_check", func(a activity.Activity) bool { return !a.Ongoing || a.EndDate == nil }),
+		plans:     plantest.NewStore(db),
+		campaigns: campaigntest.NewStore(db),
+		approvals: approvaltest.NewStore(db),
 	}
 }
 
@@ -94,4 +97,8 @@ func saved(a activity.Activity) activity.Activity {
 		a.Attributes = settings.AttributeValues{}
 	}
 	return a
+}
+
+func datesInOrder(a activity.Activity) bool {
+	return a.StartDate == nil || a.EndDate == nil || !a.EndDate.Before(*a.StartDate)
 }

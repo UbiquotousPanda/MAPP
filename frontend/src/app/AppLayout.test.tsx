@@ -1,6 +1,8 @@
-import { screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { renderWithProviders } from '@/testing/render';
+import { Outlet } from 'react-router';
+import { SessionProvider } from '@/session/SessionProvider';
+import { renderRoutes, renderWithProviders } from '@/testing/render';
 import type { CurrentUser } from '@/session/useSession';
 import { testUser } from '@/testing/fixtures/users';
 import { AppLayout } from './AppLayout';
@@ -55,5 +57,26 @@ describe('AppLayout', () => {
 
     expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open menu' })).toBeInTheDocument();
+  });
+
+  it('widens the content column only for a page whose route asks for it (039 contracts/ui.md)', () => {
+    const pageOf = (wide: boolean) => ({
+      element: (
+        <SessionProvider>
+          <AppLayout>
+            <Outlet />
+          </AppLayout>
+        </SessionProvider>
+      ),
+      children: [{ path: '*', element: <h1>A page</h1>, handle: { title: 'A page', wide } }],
+    });
+    const column = () => screen.getByRole('heading', { name: 'A page' }).parentElement?.className;
+    renderRoutes([pageOf(true)], { route: '/reports/approvals', user: PRIYA });
+    expect(column()).toMatch(/contentWide/);
+
+    cleanup();
+    renderRoutes([pageOf(false)], { route: '/plans', user: PRIYA });
+
+    expect(column()).not.toMatch(/contentWide/);
   });
 });

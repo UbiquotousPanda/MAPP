@@ -22,10 +22,11 @@ describe('FinanceBudgetItemsPage: create and edit (US5 scenarios 3 and 4, FR-014
     await screen.findByRole('region', { name: '2026 Lubricants Budget' });
     await user.click(screen.getByRole('button', { name: 'New finance budget item' }));
     const form = await screen.findByRole('dialog', { name: 'New finance budget item' });
-    expect(within(form).getByRole('combobox', { name: /^Budget year/ })).toHaveValue('2026');
+    expect(within(form).getByRole('combobox', { name: /^Budget year/ })).toHaveTextContent('2026');
     const budgetName = within(form).getByRole('combobox', { name: /^Budget name/ });
-    expect(budgetName).toHaveAccessibleDescription(
-      expect.stringContaining('Items with the same year and budget name form one finance budget.'),
+    await user.click(within(form).getByRole('button', { name: 'About Budget name' }));
+    expect(screen.getByRole('dialog', { name: 'About Budget name' })).toHaveTextContent(
+      'Items with the same year and budget name form one finance budget.',
     );
     await waitFor(() =>
       expect(
@@ -96,7 +97,10 @@ describe('FinanceBudgetItemsPage: create and edit (US5 scenarios 3 and 4, FR-014
     await chooseAction('Europe – Digital', 'Edit', user);
     const form = await screen.findByRole('dialog', { name: 'Edit finance budget item' });
     expect(within(form).queryByRole('combobox', { name: /^Budget year/ })).not.toBeInTheDocument();
-    expect(form).toHaveTextContent(YEAR_LOCK);
+    await user.click(within(form).getByRole('button', { name: "Why Budget year can't change" }));
+    expect(screen.getByRole('dialog', { name: "Why Budget year can't change" })).toHaveTextContent(
+      YEAR_LOCK,
+    );
     const name = within(form).getByRole('textbox', { name: /^Item name/ });
     await user.clear(name);
     await user.type(name, 'Europe – Online');

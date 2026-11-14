@@ -50,8 +50,8 @@ func TestFinancialPlanning_SeedTree_FR012(t *testing.T) {
 			t.Errorf("%s planned %v, want %s", name, n.PlannedCost, want)
 		}
 	}
-	planned("Venue hire", "20000.00")  // 15,800.00 GBP
-	planned("Stand build", "10000.00") // 9,200.00 EUR
+	planned("Venue hire", "21066.67")  // 15,800.00 GBP
+	planned("Stand build", "10222.22") // 9,200.00 EUR
 	planned("Speaker fees", "5000.00")
 	planned("Social always-on", "80000.00")
 	planned("Billboard winter wave", "45000.00")
@@ -133,8 +133,8 @@ func TestPlanningSource_FinancialFigures_FR023(t *testing.T) {
 		byName[n.Name] = n
 	}
 	venue, fee := byName["Venue hire"], byName["Agency fee"]
-	if venue.Finance == nil || venue.Finance.Committed.Format() != "20,000.00" || venue.Finance.POCount != 1 ||
-		venue.Finance.InvoiceCount != 1 || venue.Finance.Paid.Format() != "20,000.00" {
+	if venue.Finance == nil || venue.Finance.Committed.Format() != "21,066.67" || venue.Finance.POCount != 1 ||
+		venue.Finance.InvoiceCount != 1 || venue.Finance.Paid.Format() != "21,066.67" {
 		t.Errorf("Venue hire = %+v", venue.Finance)
 	}
 	if fee.Finance != nil {

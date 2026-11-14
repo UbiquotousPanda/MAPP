@@ -186,7 +186,7 @@ func TestSettingsKindsRegistered_FR006(t *testing.T) {
 	var deleted struct {
 		RecycleBinEntry struct{ ID, RecordType, RecordTypeLabel string }
 	}
-	alex.Do(t, http.MethodDelete, "/api/v1/currencies/JPY", nil).Decode(t, &deleted)
+	alex.DeleteSeen(t, "/api/v1/currencies/JPY").Decode(t, &deleted)
 	undone := alex.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+deleted.RecycleBinEntry.ID+"/undo", nil)
 
 	if deleted.RecycleBinEntry.RecordType != "currency" || deleted.RecycleBinEntry.RecordTypeLabel != "currency" {

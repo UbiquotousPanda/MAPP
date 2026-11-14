@@ -10,9 +10,9 @@ import {
   SHOW_LEVELS_LABELS,
   STRATEGIC_LABELS,
 } from './all-work-text';
-import type { FilterValue, Filters, SavedView, ViewState } from './all-work-types';
-import { NAME_MAX, nameTaken, viewNamed } from './view-names';
-import { NO_FILTERS, withYears } from './view-state';
+import type { FilterValue, Filters, ViewState } from './all-work-types';
+import { attributeFilterOf } from './attribute-filters';
+import { NO_FILTERS, toQueryParams, withYears } from './view-state';
 
 const ADDRESS_KEYS = [
   'year',
@@ -32,8 +32,13 @@ const ADDRESS_KEYS = [
   'strategic',
   'bcpir',
   'showLevels',
+  'attr',
+  'view',
   'search',
 ] as const;
+
+const NOT_IN_ADDRESS = new Set(['column', 'sort', 'period', 'comparePhased']);
+const VIEWS = ['grid', 'calendar', 'budget', 'breakdown'] as const;
 
 const CURRENCY_CODE = /^[A-Z]{3}$/;
 
@@ -73,6 +78,8 @@ const addressSchema = z.object({
   planTypes: known(PLAN_TYPE_LABELS),
   planCurrencies: currencyCodes,
   finance: known(FINANCE_LABELS),
+  attributes: z.array(z.string()).transform((values) => values.flatMap(attributeFilterOf)),
+  view: z.enum(VIEWS).catch('grid'),
   search: z.string().catch(''),
 });
 
@@ -84,6 +91,8 @@ const NO_ADDRESS: Address = {
   planTypes: [],
   planCurrencies: [],
   finance: [],
+  attributes: [],
+  view: 'grid',
   search: '',
 };
 
@@ -91,23 +100,35 @@ export function hasAddressFilters(params: URLSearchParams): boolean {
   return ADDRESS_KEYS.some((key) => params.has(key));
 }
 
+/** The view's year, filters, view and search as an address: the Grid and no filter are left out. */
+export function addressOf(state: ViewState): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(toQueryParams(state))) {
+    if (!NOT_IN_ADDRESS.has(key) && !(key === 'view' && value === 'grid')) {
+      [value].flat().forEach((one) => params.append(key, String(one)));
+    }
+  }
+  return params.toString();
+}
+
 export function fromAddress(params: URLSearchParams, base: ViewState): ViewState {
-  const { year, yearFrom, yearTo, search, ...address } = readAddress(params);
-  const { planTypes, planCurrencies, finance, bcpir, ...lists } = address;
+  const { year, yearFrom, yearTo, search, view, ...address } = readAddress(params);
+  const { planTypes, planCurrencies, finance, bcpir, attributes, ...lists } = address;
   const filters: Filters = {
     ...lists,
     ...(planTypes.length > 0 && { planTypes }),
     ...(planCurrencies.length > 0 && { planCurrencies }),
     ...(finance.length > 0 && { finance }),
     ...(bcpir !== 'include' && { bcpir }),
+    ...(attributes.length > 0 && { attributes }),
   };
   if (yearFrom !== undefined && yearTo !== undefined && isRange(yearFrom, yearTo)) {
-    return withYears({ ...base, filters, search }, yearFrom, yearTo);
+    return withYears({ ...base, view, filters, search }, yearFrom, yearTo);
   }
   const { yearFrom: _from, yearTo: _to, ...single } = base;
   void _from;
   void _to;
-  return { ...single, year: year ?? yearFrom ?? base.year, filters, search };
+  return { ...single, view, year: year ?? yearFrom ?? base.year, filters, search };
 }
 
 function isRange(from: number, to: number): boolean {
@@ -133,28 +154,9 @@ function readAddress(params: URLSearchParams): Address {
     planTypes: params.getAll('planType'),
     planCurrencies: params.getAll('planCurrency'),
     finance: params.getAll('finance'),
+    attributes: params.getAll('attr'),
+    view: params.get('view'),
     search: params.get('search'),
   });
   return parsed.success ? parsed.data : NO_ADDRESS;
 }
-
-const viewName = z
-  .string()
-  .refine((name) => name.trim() !== '', 'Enter a name for the view.')
-  .refine((name) => [...name.trim()].length <= NAME_MAX, 'Use 60 characters or fewer.');
-
-export const saveViewSchema = z.object({ name: viewName, isDefault: z.boolean() });
-
-export type SaveViewValues = z.infer<typeof saveViewSchema>;
-
-export function renameViewSchema(views: SavedView[], viewId: string) {
-  return z.object({
-    name: viewName.superRefine((name, context) => {
-      if (viewNamed(views, name, viewId)) {
-        context.addIssue({ code: 'custom', message: nameTaken(name) });
-      }
-    }),
-  });
-}
-
-export type RenameViewValues = z.infer<ReturnType<typeof renameViewSchema>>;

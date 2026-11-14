@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FormDialog } from '@/ui/FormDialog/FormDialog';
-import styles from './bulk.module.css';
+import { RadioGroup } from '@/ui/RadioGroup/RadioGroup';
 import { actionWord, levelText, levelsPresent } from './bulk-text';
 import type { BulkKind, BulkLevel, SelectedRecord } from './bulk-types';
 
@@ -30,15 +30,16 @@ export function MixedLevelDialog({ action, records, onKeep, onClose }: MixedLeve
       submitLabel="Continue"
       onSubmit={() => onKeep(level)}
     >
-      <fieldset className={styles.sentences}>
-        <legend>Which records should it work on?</legend>
-        {present.map((l) => (
-          <label key={l}>
-            <input type="radio" name="level" checked={level === l} onChange={() => setLevel(l)} />{' '}
-            {KEEP_WORDS[l]} ({levelText(l, records.filter((r) => r.level === l).length)})
-          </label>
-        ))}
-      </fieldset>
+      <RadioGroup
+        label="Which records should it work on?"
+        name="level"
+        options={present.map((l) => ({
+          value: l,
+          label: `${KEEP_WORDS[l]} (${levelText(l, records.filter((r) => r.level === l).length)})`,
+        }))}
+        value={level}
+        onChange={setLevel}
+      />
     </FormDialog>
   );
 }

@@ -28,6 +28,9 @@ func (s *Service) MoveToBin(ctx context.Context, a actor.Actor, kindName, id str
 			return err
 		}
 		top := snapshots[0]
+		if err = checkSeen(ctx, k, top); err != nil {
+			return err
+		}
 		path, err := s.ancestors(ctx, k.Parent, top.ParentID)
 		if err != nil {
 			return err

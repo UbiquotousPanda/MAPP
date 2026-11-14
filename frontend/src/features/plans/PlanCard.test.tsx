@@ -34,7 +34,9 @@ describe('PlanCard (FR-002)', () => {
       'href',
       '/plans/P-1001',
     );
-    expect(screen.getByText('P-1001 · 2026 · AOP')).toBeInTheDocument();
+    expect(screen.getByText('P-1001').closest('p')).toHaveTextContent(
+      'P-1001 · 2026 · AOP · Operational',
+    );
     // The plan type (016 FR-032): Operational until the API sends another.
     expect(screen.getByText('Operational')).toBeInTheDocument();
     expect(screen.getByText('Draft')).toBeInTheDocument();
@@ -62,10 +64,10 @@ describe('PlanCard (FR-002)', () => {
     expect(within(moneyLine('Plan budget')).getByText('108% used').className).toMatch(/problem/);
   });
 
-  it('says what is missing: no budget, no owner, no business unit', () => {
+  it('says what is missing: no owner, no business unit; no budget is only "—"', () => {
     renderCard(china);
 
-    expect(screen.getByText('No plan budget set')).toBeInTheDocument();
+    expect(screen.queryByText('No plan budget set')).not.toBeInTheDocument();
     expect(moneyLine('Plan budget')).toHaveTextContent('—');
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.getByText('No owner yet')).toBeInTheDocument();
@@ -82,9 +84,9 @@ describe('PlanCard (FR-002)', () => {
     });
 
     expect(screen.getByText('Cross-market')).toBeInTheDocument();
-    expect(moneyLine('Plan budget')).toHaveTextContent('600,000.00 GBP');
-    expect(moneyLine('Plan budget')).toHaveTextContent('1,200,000.00 USD');
-    expect(moneyLine('Planned cost')).toHaveTextContent('480,000.00 GBP≈ about 960,000.00 USD');
+    expect(moneyLine('Plan budget')).toHaveTextContent('£600,000.00');
+    expect(moneyLine('Plan budget')).toHaveTextContent('$1,200,000.00');
+    expect(moneyLine('Planned cost')).toHaveTextContent('£480,000.00≈ about $960,000.00');
   });
 
   it('says "No activities yet" rather than "0 of 0" (functional review X-08)', () => {
