@@ -114,7 +114,7 @@ export function OptionsCard({ attribute }: { attribute: ShellAttribute }) {
     <Card
       title="Options"
       actions={
-        <div className={styles.cardButtons}>
+        <>
           <Button icon={<Plus />} onClick={() => setPanel({})}>
             Add option
           </Button>
@@ -124,7 +124,7 @@ export function OptionsCard({ attribute }: { attribute: ShellAttribute }) {
           <Button icon={<Download />} onClick={() => downloadOptionsTemplate(attribute)}>
             Download template
           </Button>
-        </div>
+        </>
       }
     >
       <div className={styles.optionsToolbar}>
