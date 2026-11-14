@@ -1,4 +1,4 @@
-package purchaserequest
+package core
 
 import (
 	"cmp"
@@ -8,9 +8,9 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/purchaserequest/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
 )
@@ -18,7 +18,7 @@ import (
 // Page reads every matching purchase request's id, vendor and USD amount in one statement, in page order,
 // then the page's purchase requests with their lines and the PO lines of its vendors (research R17).
 func (s *PostgresStore) Page(ctx context.Context, list authz.Scope, q ListQuery) (Page, error) {
-	matches, err := s.db.Queries(ctx).PagePurchaseRequests(ctx, pageParams(list, q))
+	matches, err := sqlcdb.New(s.db.Conn(ctx)).PagePurchaseRequests(ctx, pageParams(list, q))
 	if err != nil {
 		return Page{}, fmt.Errorf("select the purchase requests page: %w", err)
 	}
@@ -28,7 +28,7 @@ func (s *PostgresStore) Page(ctx context.Context, list authz.Scope, q ListQuery)
 	for _, m := range onPage {
 		ids = append(ids, m.ID)
 	}
-	items, err := s.read(ctx, s.db.Queries(ctx).ListPurchaseRequests, ids)
+	items, err := s.read(ctx, sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequests, ids)
 	if err != nil {
 		return Page{}, err
 	}
@@ -87,7 +87,7 @@ func (s *PostgresStore) vendorGroups(ctx context.Context, matches, onPage []sqlc
 
 // addPOLines adds to each vendor group the PO lines of its matching purchase requests, for its invoiced total.
 func (s *PostgresStore) addPOLines(ctx context.Context, groups []VendorGroup, matches []sqlcdb.PagePurchaseRequestsRow, prIDs []string) error {
-	lines, err := s.db.Queries(ctx).ListPurchaseRequestLines(ctx, sqlcdb.ListPurchaseRequestLinesParams{PurchaseRequestIds: prIDs})
+	lines, err := sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequestLines(ctx, sqlcdb.ListPurchaseRequestLinesParams{PurchaseRequestIds: prIDs})
 	if err != nil {
 		return fmt.Errorf("select the PO lines of the page's vendors: %w", err)
 	}
@@ -113,7 +113,7 @@ func (s *PostgresStore) AddRouting(ctx context.Context, r Routing) error {
 	if err != nil {
 		return err
 	}
-	err = s.db.Queries(ctx).AddPurchaseRequestRouting(ctx, sqlcdb.AddPurchaseRequestRoutingParams{
+	err = sqlcdb.New(s.db.Conn(ctx)).AddPurchaseRequestRouting(ctx, sqlcdb.AddPurchaseRequestRoutingParams{
 		ID: r.ID, PurchaseRequestID: r.PurchaseRequestID, Type: string(r.Type), RoutedAt: r.RoutedAt,
 		RoutedByID: r.RoutedBy.ID, RoutedByName: r.RoutedBy.Name, Recipients: recipients, Form: form,
 	})
@@ -124,7 +124,7 @@ func (s *PostgresStore) AddRouting(ctx context.Context, r Routing) error {
 }
 
 func (s *PostgresStore) Routings(ctx context.Context, purchaseRequestID string) ([]Routing, error) {
-	rows, err := s.db.Queries(ctx).ListPurchaseRequestRoutings(ctx, sqlcdb.ListPurchaseRequestRoutingsParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequestRoutings(ctx, sqlcdb.ListPurchaseRequestRoutingsParams{
 		PurchaseRequestID: &purchaseRequestID,
 	})
 	if err != nil {
@@ -146,7 +146,7 @@ func (s *PostgresStore) Routings(ctx context.Context, purchaseRequestID string) 
 }
 
 func (s *PostgresStore) Configuration(ctx context.Context) (Configuration, error) {
-	rows, err := s.db.Queries(ctx).GetPurchaseRequestConfiguration(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).GetPurchaseRequestConfiguration(ctx)
 	if err != nil {
 		return Configuration{}, fmt.Errorf("select the purchase request configuration: %w", err)
 	}
@@ -161,7 +161,7 @@ func (s *PostgresStore) Configuration(ctx context.Context) (Configuration, error
 
 func (s *PostgresStore) PutConfiguration(ctx context.Context, c Configuration) error {
 	created, by := cmp.Or(c.CreatedAt, c.UpdatedAt), cmp.Or(c.CreatedBy, c.UpdatedBy)
-	err := s.db.Queries(ctx).PutPurchaseRequestConfiguration(ctx, sqlcdb.PutPurchaseRequestConfigurationParams{
+	err := sqlcdb.New(s.db.Conn(ctx)).PutPurchaseRequestConfiguration(ctx, sqlcdb.PutPurchaseRequestConfigurationParams{
 		PurchaseSupport: c.PurchaseSupport, LinesOnApproved: string(c.LinesOnApproved), Version: c.Version,
 		CreatedAt: created, CreatedByID: by.ID, CreatedByName: by.Name, UpdatedAt: c.UpdatedAt,
 		UpdatedByID: c.UpdatedBy.ID, UpdatedByName: c.UpdatedBy.Name,

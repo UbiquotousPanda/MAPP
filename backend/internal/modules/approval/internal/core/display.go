@@ -1,9 +1,9 @@
-package approval
+package core
 
 import (
 	"context"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
 )

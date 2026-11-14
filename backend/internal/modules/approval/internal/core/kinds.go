@@ -1,11 +1,11 @@
-package approval
+package core
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 )
 

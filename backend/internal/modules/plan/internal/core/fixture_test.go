@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"context"
@@ -9,14 +9,14 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/history"
-	"mapp/internal/history/historytest"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/history/historytest"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 type fixture struct {

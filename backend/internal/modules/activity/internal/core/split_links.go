@@ -1,4 +1,4 @@
-package activity
+package core
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // splitLinks returns the split links of the activity a of the plan planID (FR-031): the activity it was split

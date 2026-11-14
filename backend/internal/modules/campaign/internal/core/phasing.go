@@ -1,14 +1,14 @@
-package campaign
+package core
 
 import (
 	"context"
 	"reflect"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // Budget by month of campaigns and initiatives (016 FR-020 – FR-025, D-265): the same rules as the plan's,

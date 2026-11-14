@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"bytes"

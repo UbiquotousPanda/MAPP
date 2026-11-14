@@ -1,11 +1,11 @@
-package purchaserequest
+package core
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval"
 	"mapp/internal/platform/web"
 )
 

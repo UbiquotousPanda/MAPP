@@ -1,4 +1,4 @@
-package workbook_test
+package core_test
 
 import (
 	"encoding/base64"
@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/workbook/internal/core"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/sheet"
-	"mapp/internal/workbook"
 )
 
 func skeleton(t *testing.T) map[string]any {
@@ -30,17 +30,17 @@ func TestImport_SkeletonListedAndUndone_Contract_012FR034_FR035_FR036(t *testing
 	t.Parallel()
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 
-	detail := decoded[workbook.Detail](t, priya.Do(t, http.MethodPost, planPath+"/imports", skeleton(t)), http.StatusCreated)
+	detail := decoded[core.Detail](t, priya.Do(t, http.MethodPost, planPath+"/imports", skeleton(t)), http.StatusCreated)
 
-	created := workbook.LevelTotals{Campaigns: 1, Initiatives: 1, Activities: 1, LineItems: 1}
+	created := core.LevelTotals{Campaigns: 1, Initiatives: 1, Activities: 1, LineItems: 1}
 	if detail.Import.Created != created || detail.Import.RowsLeftOut != 1 || len(detail.Problems) != 1 || detail.Undo == nil {
 		t.Fatalf("detail = %+v, problems %+v", detail.Import, detail.Problems)
 	}
 	assertLoggedAndListed(t, priya, detail)
 
-	undone := decoded[workbook.Detail](t, priya.Do(t, http.MethodPost, "/api/v1/imports/"+detail.Import.ID+"/undo", nil), http.StatusOK)
+	undone := decoded[core.Detail](t, priya.Do(t, http.MethodPost, "/api/v1/imports/"+detail.Import.ID+"/undo", nil), http.StatusOK)
 
-	if undone.Import.Status != "undone" || undone.Undo != nil || slices.ContainsFunc(undone.Records, func(r workbook.RecordRef) bool { return r.Exists }) {
+	if undone.Import.Status != "undone" || undone.Undo != nil || slices.ContainsFunc(undone.Records, func(r core.RecordRef) bool { return r.Exists }) {
 		t.Errorf("after undo: %+v %+v", undone.Import, undone.Records)
 	}
 	again := priya.Do(t, http.MethodPost, "/api/v1/imports/"+detail.Import.ID+"/undo", nil)
@@ -50,7 +50,7 @@ func TestImport_SkeletonListedAndUndone_Contract_012FR034_FR035_FR036(t *testing
 }
 
 // assertLoggedAndListed checks the created activity's log entry carries the import's note and the plan lists it.
-func assertLoggedAndListed(t *testing.T, priya *apitest.Client, detail workbook.Detail) {
+func assertLoggedAndListed(t *testing.T, priya *apitest.Client, detail core.Detail) {
 	t.Helper()
 	activityID := detail.Records[2].ID
 	log := decoded[struct {
@@ -59,7 +59,7 @@ func assertLoggedAndListed(t *testing.T, priya *apitest.Client, detail workbook.
 	if len(log.Items) == 0 || !strings.Contains(log.Items[0].Details, "Imported from 'skeleton.xlsx' ("+detail.Import.ID+")") {
 		t.Errorf("log of %s = %+v", activityID, log.Items)
 	}
-	page := decoded[workbook.Page](t, priya.Do(t, http.MethodGet, planPath+"/imports", nil), http.StatusOK)
+	page := decoded[core.Page](t, priya.Do(t, http.MethodGet, planPath+"/imports", nil), http.StatusOK)
 	if page.Total != 1 || page.Items[0].ID != detail.Import.ID || page.Items[0].Status != "imported" {
 		t.Errorf("imports = %+v", page)
 	}
@@ -68,7 +68,7 @@ func assertLoggedAndListed(t *testing.T, priya *apitest.Client, detail workbook.
 func TestImport_OtherPeopleSeeNoImportOfAPlanTheyCannotSee_Contract_012FR035(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
-	detail := decoded[workbook.Detail](t, server.SignIn(t, priyasEmail).Do(t, http.MethodPost, planPath+"/imports", skeleton(t)), http.StatusCreated)
+	detail := decoded[core.Detail](t, server.SignIn(t, priyasEmail).Do(t, http.MethodPost, planPath+"/imports", skeleton(t)), http.StatusCreated)
 	mei := server.SignIn(t, "mei.lin@shell.com")
 
 	if got := mei.Do(t, http.MethodGet, "/api/v1/imports/"+detail.Import.ID, nil); got.Status != http.StatusNotFound {
@@ -102,7 +102,7 @@ func TestImport_UpdatesByIDApprovedOnScreen_Contract_012FR029_FR032(t *testing.T
 	t.Parallel()
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 
-	detail := decoded[workbook.Detail](t, priya.Do(t, http.MethodPost, planPath+"/imports",
+	detail := decoded[core.Detail](t, priya.Do(t, http.MethodPost, planPath+"/imports",
 		exportedWith(t, priya, map[string]string{"A-1001": "4321.00", "A-1002": "1.00"})), http.StatusCreated)
 
 	if detail.Import.Updated.Activities != 1 || len(detail.Records) != 1 || detail.Records[0].ID != "A-1001" {
@@ -124,10 +124,10 @@ func TestCheck_CSVIsTheActivitiesSheet_Contract_012FR028(t *testing.T) {
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 	csv := "\xEF\xBB\xBFCampaign;Initiative;Activity name;Activity type\nHelix launch;Digital & social;Podcast;Event\n"
 
-	check := decoded[workbook.Check](t, priya.Do(t, http.MethodPost, planPath+"/imports/check",
+	check := decoded[core.Check](t, priya.Do(t, http.MethodPost, planPath+"/imports/check",
 		map[string]any{"fileName": "activities.csv", "content": base64.StdEncoding.EncodeToString([]byte(csv))}), http.StatusOK)
 
-	if diff := cmp.Diff(workbook.LevelCounts{Level: workbook.LevelActivity, Create: 1}, check.Levels[2]); diff != "" || len(check.Problems) != 0 {
+	if diff := cmp.Diff(core.LevelCounts{Level: core.LevelActivity, Create: 1}, check.Levels[2]); diff != "" || len(check.Problems) != 0 {
 		t.Errorf("activities (-want +got):\n%s problems %v", diff, reasons(check))
 	}
 }

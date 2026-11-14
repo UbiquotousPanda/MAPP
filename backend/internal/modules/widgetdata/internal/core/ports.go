@@ -1,5 +1,5 @@
 // Package widgetdata answers a dashboard widget's data from built-in sources and datasets, read within the person's scope.
-package widgetdata
+package core
 
 import (
 	"context"

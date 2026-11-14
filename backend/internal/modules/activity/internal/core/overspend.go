@@ -1,9 +1,9 @@
-package activity
+package core
 
 import (
 	"context"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/overspend"
 )
 
 // Overspend gives the budgets set to Refuse above an activity and what is left to plan in each (037 FR-014).

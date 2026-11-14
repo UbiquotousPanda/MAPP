@@ -1,4 +1,4 @@
-package activity
+package core
 
 import (
 	"cmp"
@@ -6,11 +6,11 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/campaign"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Messages of the plan's "Ready to submit panel" row.

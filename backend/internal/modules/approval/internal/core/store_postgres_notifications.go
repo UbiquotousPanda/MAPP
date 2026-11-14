@@ -1,4 +1,4 @@
-package approval
+package core
 
 import (
 	"context"
@@ -7,14 +7,14 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"mapp/internal/modules/approval/internal/sqlcdb"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/record"
 )
 
 func (s *PostgresStore) GetNotification(ctx context.Context, id string) (Notification, bool, error) {
-	row, err := s.db.Queries(ctx).GetNotification(ctx, id)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetNotification(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Notification{}, false, nil
 	}
@@ -25,7 +25,7 @@ func (s *PostgresStore) GetNotification(ctx context.Context, id string) (Notific
 }
 
 func (s *PostgresStore) NotificationsOf(ctx context.Context, personID string) ([]Notification, error) {
-	rows, err := s.db.Queries(ctx).NotificationsOf(ctx, personID)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).NotificationsOf(ctx, personID)
 	if err != nil {
 		return nil, fmt.Errorf("select notifications of %s: %w", personID, err)
 	}
@@ -49,7 +49,7 @@ func (s *PostgresStore) PutNotification(ctx context.Context, n Notification) err
 }
 
 func (s *PostgresStore) GetDelegation(ctx context.Context, id string) (Delegation, bool, error) {
-	row, err := s.db.Queries(ctx).GetDelegation(ctx, id)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetDelegation(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Delegation{}, false, nil
 	}
@@ -60,7 +60,7 @@ func (s *PostgresStore) GetDelegation(ctx context.Context, id string) (Delegatio
 }
 
 func (s *PostgresStore) ListDelegations(ctx context.Context) ([]Delegation, error) {
-	rows, err := s.db.Queries(ctx).ListDelegations(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListDelegations(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select approval delegations: %w", err)
 	}

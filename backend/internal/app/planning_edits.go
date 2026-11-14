@@ -4,15 +4,15 @@ import (
 	"context"
 	"maps"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

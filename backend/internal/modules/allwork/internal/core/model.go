@@ -9,7 +9,7 @@
 // display currency — is a pure function of the year's nodes (tree.go, rollup.go, columns.go, …), worked out
 // on the server for every request (D-114). The only records it stores are two kinds of personal settings:
 // saved views and the remembered columns (D-121).
-package allwork
+package core
 
 import (
 	"time"

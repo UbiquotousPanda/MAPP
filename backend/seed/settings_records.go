@@ -7,10 +7,10 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

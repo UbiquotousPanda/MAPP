@@ -1,4 +1,4 @@
-package dataset
+package core
 
 import (
 	"context"
@@ -11,14 +11,14 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/history"
-	"mapp/internal/history/historytest"
-	"mapp/internal/people"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/history/historytest"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"
-	"mapp/internal/settings"
 )
 
 const (

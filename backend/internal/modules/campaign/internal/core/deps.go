@@ -1,12 +1,12 @@
-package campaign
+package core
 
 import (
 	"context"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Deps holds what campaigns needs from other features (005 plan, "Dependencies through small

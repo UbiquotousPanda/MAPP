@@ -1,15 +1,15 @@
-package activity
+package core
 
 import (
 	"context"
 
-	"mapp/internal/campaign"
-	"mapp/internal/history"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // What activities reads from earlier features: small consumer-side interfaces (D-196). The repositories

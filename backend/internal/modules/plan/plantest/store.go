@@ -6,7 +6,7 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/fake"
 )

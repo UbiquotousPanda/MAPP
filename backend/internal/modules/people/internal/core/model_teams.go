@@ -1,4 +1,4 @@
-package people
+package core
 
 import "mapp/internal/platform/record"
 

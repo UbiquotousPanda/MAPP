@@ -1,14 +1,14 @@
-package widgetdata_test
+package core_test
 
 import (
 	"context"
 	"testing"
 
+	"mapp/internal/modules/widgetdata/internal/core"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/widgetdata"
 )
 
 var viewer = actor.Actor{ID: "U-1009", Name: "Vera Viewer"}
@@ -25,33 +25,33 @@ type fakeTx struct{}
 func (fakeTx) Read(ctx context.Context, fn func(ctx context.Context) error) error { return fn(ctx) }
 
 type fakeReader struct {
-	rows  widgetdata.Rows
-	asked []widgetdata.Prefilter
+	rows  core.Rows
+	asked []core.Prefilter
 	who   []string
 }
 
-func (f *fakeReader) Rows(_ context.Context, a actor.Actor, p widgetdata.Prefilter) (widgetdata.Rows, error) {
+func (f *fakeReader) Rows(_ context.Context, a actor.Actor, p core.Prefilter) (core.Rows, error) {
 	f.asked = append(f.asked, p)
 	f.who = append(f.who, a.ID)
 	return f.rows, nil
 }
 
 type fakeDatasets struct {
-	tables map[string]widgetdata.Table
+	tables map[string]core.Table
 }
 
-func (f fakeDatasets) Visible(_ context.Context, _ actor.Actor) ([]widgetdata.DatasetInfo, error) {
-	out := []widgetdata.DatasetInfo{}
+func (f fakeDatasets) Visible(_ context.Context, _ actor.Actor) ([]core.DatasetInfo, error) {
+	out := []core.DatasetInfo{}
 	for _, t := range f.tables {
 		out = append(out, t.Info)
 	}
 	return out, nil
 }
 
-func (f fakeDatasets) Table(_ context.Context, _ actor.Actor, id string) (widgetdata.Table, error) {
+func (f fakeDatasets) Table(_ context.Context, _ actor.Actor, id string) (core.Table, error) {
 	t, found := f.tables[id]
 	if !found {
-		return widgetdata.Table{}, errs.NotFound("This dataset doesn't exist.")
+		return core.Table{}, errs.NotFound("This dataset doesn't exist.")
 	}
 	return t, nil
 }
@@ -60,23 +60,23 @@ type fakeRates money.Rates
 
 func (f fakeRates) Rates(context.Context) (money.Rates, error) { return money.Rates(f), nil }
 
-func text(s string) widgetdata.Value { return widgetdata.TextValue(s) }
+func text(s string) core.Value { return core.TextValue(s) }
 
-func usd(t *testing.T, s string) widgetdata.Value {
+func usd(t *testing.T, s string) core.Value {
 	t.Helper()
 	a, err := money.ParseAmount(s)
 	if err != nil {
 		t.Fatalf("ParseAmount(%q): %v", s, err)
 	}
-	return widgetdata.MoneyValue(&a)
+	return core.MoneyValue(&a)
 }
 
-func service(readers map[string]widgetdata.SourceReader, datasets widgetdata.DatasetTables) *widgetdata.Service {
+func service(readers map[string]core.SourceReader, datasets core.DatasetTables) *core.Service {
 	rates := fakeRates{"EUR": money.RateFromMicros(500_000)}
-	return widgetdata.NewService(fakeTx{}, widgetdata.Deps{Sources: readers, Datasets: datasets, Rates: rates})
+	return core.NewService(fakeTx{}, core.Deps{Sources: readers, Datasets: datasets, Rates: rates})
 }
 
-func moneyText(c widgetdata.Cell) string {
+func moneyText(c core.Cell) string {
 	if c.Money == nil {
 		return "—"
 	}

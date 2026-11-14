@@ -1,9 +1,9 @@
-package budget
+package core
 
 import (
 	"context"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/overspend"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 )

@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/dataset"
-	"mapp/internal/people"
+	"mapp/internal/modules/dataset"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/fake"
 )
 

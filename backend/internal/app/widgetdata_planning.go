@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"slices"
 
-	"mapp/internal/allwork"
-	"mapp/internal/financials"
-	"mapp/internal/plan"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/clock"
@@ -15,7 +16,6 @@ import (
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/money"
 	"mapp/internal/stores"
-	"mapp/internal/widgetdata"
 )
 
 // widgetPlanning reads the plans in the person's scope with everything in them, as All work does (010), each

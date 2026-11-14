@@ -1,11 +1,11 @@
-// Package customdashboard holds the dashboards people build from widgets, owned by one person and shared
+// Package core holds the dashboards people build from widgets, owned by one person and shared
 // view-only with teams (feature 051).
-package customdashboard
+package core
 
 import (
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/record"

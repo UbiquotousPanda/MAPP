@@ -1,4 +1,4 @@
-package dataset
+package core
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"mapp/internal/modules/dataset/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/record"
 )
 
@@ -24,12 +24,12 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) Get(ctx context.Context, id string) (Dataset, bool, error) {
-	row, err := s.db.Queries(ctx).GetDataset(ctx, id)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetDataset(ctx, id)
 	return s.one(ctx, row, err)
 }
 
 func (s *PostgresStore) GetVisible(ctx context.Context, personID, id string) (Dataset, bool, error) {
-	row, err := s.db.Queries(ctx).GetDatasetVisible(ctx, sqlcdb.GetDatasetVisibleParams{ID: id, PersonID: personID})
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetDatasetVisible(ctx, sqlcdb.GetDatasetVisibleParams{ID: id, PersonID: personID})
 	return s.one(ctx, row, err)
 }
 
@@ -48,7 +48,7 @@ func (s *PostgresStore) one(ctx context.Context, row sqlcdb.Dataset, err error) 
 }
 
 func (s *PostgresStore) ListVisible(ctx context.Context, personID string) ([]Dataset, error) {
-	rows, err := s.db.Queries(ctx).ListDatasetsVisible(ctx, personID)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListDatasetsVisible(ctx, personID)
 	if err != nil {
 		return nil, fmt.Errorf("select visible datasets: %w", err)
 	}
@@ -65,7 +65,7 @@ func (s *PostgresStore) complete(ctx context.Context, rows []sqlcdb.Dataset) ([]
 		ids = append(ids, r.ID)
 		byID[r.ID] = &list[i]
 	}
-	q := s.db.Queries(ctx)
+	q := sqlcdb.New(s.db.Conn(ctx))
 	columns, err := q.DatasetColumns(ctx, ids)
 	if err != nil {
 		return nil, fmt.Errorf("select dataset columns: %w", err)
@@ -97,7 +97,7 @@ func datasetOf(r sqlcdb.Dataset) Dataset {
 }
 
 func (s *PostgresStore) CountOfOwner(ctx context.Context, ownerID string) (int, error) {
-	count, err := s.db.Queries(ctx).CountDatasetsOfOwner(ctx, ownerID)
+	count, err := sqlcdb.New(s.db.Conn(ctx)).CountDatasetsOfOwner(ctx, ownerID)
 	if err != nil {
 		return 0, fmt.Errorf("count datasets: %w", err)
 	}
@@ -105,7 +105,7 @@ func (s *PostgresStore) CountOfOwner(ctx context.Context, ownerID string) (int, 
 }
 
 func (s *PostgresStore) OwnerOf(ctx context.Context, id string) (string, bool, error) {
-	owner, err := s.db.Queries(ctx).DatasetOwner(ctx, id)
+	owner, err := sqlcdb.New(s.db.Conn(ctx)).DatasetOwner(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "", false, nil
 	}
@@ -120,7 +120,7 @@ func (s *PostgresStore) Rows(ctx context.Context, id string) ([]Row, error) {
 }
 
 func (s *PostgresStore) RowsPage(ctx context.Context, id string, offset, limit int) ([]Row, error) {
-	stored, err := s.db.Queries(ctx).DatasetRows(ctx, sqlcdb.DatasetRowsParams{
+	stored, err := sqlcdb.New(s.db.Conn(ctx)).DatasetRows(ctx, sqlcdb.DatasetRowsParams{
 		DatasetID: id, FirstRow: offset + 1, LastRow: offset + limit,
 	})
 	if err != nil {
@@ -139,7 +139,7 @@ func (s *PostgresStore) RowsPage(ctx context.Context, id string, offset, limit i
 
 func (s *PostgresStore) Insert(ctx context.Context, d Dataset, rows []Row) error {
 	return s.db.Write(ctx, func(ctx context.Context) error {
-		q := s.db.Queries(ctx)
+		q := sqlcdb.New(s.db.Conn(ctx))
 		if err := q.InsertDataset(ctx, insertParams(d)); err != nil {
 			return fmt.Errorf("insert dataset: %w", err)
 		}
@@ -169,7 +169,7 @@ func (s *PostgresStore) insertColumns(ctx context.Context, id string, columns []
 			DatasetID: id, Position: c.Position, Key: c.Key, Label: c.Label, Kind: string(c.Kind), Currency: c.Currency,
 		})
 	}
-	if _, err := s.db.Queries(ctx).InsertDatasetColumns(ctx, params); err != nil {
+	if _, err := sqlcdb.New(s.db.Conn(ctx)).InsertDatasetColumns(ctx, params); err != nil {
 		return fmt.Errorf("insert dataset columns: %w", err)
 	}
 	return nil
@@ -184,14 +184,14 @@ func (s *PostgresStore) insertRows(ctx context.Context, id string, rows []Row) e
 		}
 		params = append(params, sqlcdb.InsertDatasetRowsParams{DatasetID: id, RowNumber: i + 1, Cells: cells})
 	}
-	if _, err := s.db.Queries(ctx).InsertDatasetRows(ctx, params); err != nil {
+	if _, err := sqlcdb.New(s.db.Conn(ctx)).InsertDatasetRows(ctx, params); err != nil {
 		return fmt.Errorf("insert dataset rows: %w", err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) Update(ctx context.Context, d Dataset) error {
-	err := s.db.Queries(ctx).UpdateDataset(ctx, sqlcdb.UpdateDatasetParams{
+	err := sqlcdb.New(s.db.Conn(ctx)).UpdateDataset(ctx, sqlcdb.UpdateDatasetParams{
 		ID: d.ID, Name: d.Name, Description: d.Description, Version: d.Version, UpdatedAt: d.UpdatedAt,
 		UpdatedByID: d.UpdatedBy.ID, UpdatedByName: d.UpdatedBy.Name,
 	})
@@ -205,7 +205,7 @@ func (s *PostgresStore) Update(ctx context.Context, d Dataset) error {
 // name index row by row.
 func (s *PostgresStore) UpdateLabels(ctx context.Context, id string, columns []Column) error {
 	return s.db.Write(ctx, func(ctx context.Context) error {
-		if err := s.db.Queries(ctx).DeleteDatasetColumns(ctx, id); err != nil {
+		if err := sqlcdb.New(s.db.Conn(ctx)).DeleteDatasetColumns(ctx, id); err != nil {
 			return fmt.Errorf("delete dataset columns: %w", err)
 		}
 		return s.insertColumns(ctx, id, columns)
@@ -213,7 +213,7 @@ func (s *PostgresStore) UpdateLabels(ctx context.Context, id string, columns []C
 }
 
 func (s *PostgresStore) ReplaceShares(ctx context.Context, id string, teamIDs []string) error {
-	q := s.db.Queries(ctx)
+	q := sqlcdb.New(s.db.Conn(ctx))
 	if err := q.DeleteDatasetShares(ctx, id); err != nil {
 		return fmt.Errorf("delete dataset shares: %w", err)
 	}
@@ -225,14 +225,14 @@ func (s *PostgresStore) ReplaceShares(ctx context.Context, id string, teamIDs []
 
 // RemoveTeamShares unshares every dataset from a deleted team (D-379).
 func (s *PostgresStore) RemoveTeamShares(ctx context.Context, teamID string) error {
-	if err := s.db.Queries(ctx).DeleteDatasetSharesOfTeam(ctx, teamID); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteDatasetSharesOfTeam(ctx, teamID); err != nil {
 		return fmt.Errorf("delete dataset shares of team %s: %w", teamID, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) Delete(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteDataset(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteDataset(ctx, id); err != nil {
 		return fmt.Errorf("delete dataset: %w", err)
 	}
 	return nil

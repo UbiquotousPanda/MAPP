@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/access"
+	"mapp/internal/modules/access"
 	"mapp/internal/platform/authz"
 )
 

@@ -1,4 +1,4 @@
-package swbs
+package core
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package lineitem
+package core
 
 import (
 	"context"
@@ -6,12 +6,12 @@ import (
 	"slices"
 	"time"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // Provided to other features (plan, "Provided to other features"): what activities (006), plans (004),

@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"context"
@@ -8,13 +8,13 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
 )
 
 const (

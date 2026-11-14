@@ -1,4 +1,4 @@
-package budget
+package core
 
 import (
 	"cmp"
@@ -8,8 +8,8 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 const fallbackColour = "slate"

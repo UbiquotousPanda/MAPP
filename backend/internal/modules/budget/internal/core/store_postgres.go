@@ -1,4 +1,4 @@
-package budget
+package core
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/budget/internal/sqlcdb"
+	"mapp/internal/modules/overspend"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
 )
@@ -27,7 +27,7 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) GetBudget(ctx context.Context, id string) (GlobalBudget, bool, error) {
-	row, err := s.db.Queries(ctx).GetGlobalBudget(ctx, id)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetGlobalBudget(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return GlobalBudget{}, false, nil
 	}
@@ -38,7 +38,7 @@ func (s *PostgresStore) GetBudget(ctx context.Context, id string) (GlobalBudget,
 }
 
 func (s *PostgresStore) ListBudgets(ctx context.Context) ([]GlobalBudget, error) {
-	rows, err := s.db.Queries(ctx).ListGlobalBudgets(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListGlobalBudgets(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select global budgets: %w", err)
 	}
@@ -50,7 +50,7 @@ func (s *PostgresStore) ListBudgets(ctx context.Context) ([]GlobalBudget, error)
 }
 
 func (s *PostgresStore) PutBudget(ctx context.Context, b GlobalBudget) error {
-	err := s.db.Queries(ctx).PutGlobalBudget(ctx, sqlcdb.PutGlobalBudgetParams{
+	err := sqlcdb.New(s.db.Conn(ctx)).PutGlobalBudget(ctx, sqlcdb.PutGlobalBudgetParams{
 		ID: b.ID, Name: b.Name, Year: b.Year, AmountMinor: b.Amount.Cents(), OwnerID: b.OwnerID,
 		Description: b.Description, Version: b.Version, CreatedAt: b.CreatedAt, CreatedByID: b.CreatedBy.ID,
 		CreatedByName: b.CreatedBy.Name, UpdatedAt: b.UpdatedAt, UpdatedByID: b.UpdatedBy.ID,
@@ -63,7 +63,7 @@ func (s *PostgresStore) PutBudget(ctx context.Context, b GlobalBudget) error {
 }
 
 func (s *PostgresStore) DeleteBudget(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteGlobalBudget(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteGlobalBudget(ctx, id); err != nil {
 		return fmt.Errorf("delete global budget %s: %w", id, err)
 	}
 	return nil
@@ -82,7 +82,7 @@ func (s *PostgresStore) AllocationsOf(ctx context.Context, globalBudgetID string
 }
 
 func (s *PostgresStore) AllocationsOfBudgets(ctx context.Context, globalBudgetIDs []string) ([]Allocation, error) {
-	rows, err := s.db.Queries(ctx).ListAllocationsOfBudgets(ctx, globalBudgetIDs)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListAllocationsOfBudgets(ctx, globalBudgetIDs)
 	return allocationsFromRows(rows, err)
 }
 
@@ -93,7 +93,7 @@ func (s *PostgresStore) AllocationOfPlan(ctx context.Context, planID string) (Al
 // AllocationsInScope returns the allocations of globalBudgetID ("" for every global budget) to the plans the
 // scope sees.
 func (s *PostgresStore) AllocationsInScope(ctx context.Context, scope authz.Scope, globalBudgetID string) ([]Allocation, error) {
-	rows, err := s.db.Queries(ctx).ListAllocationsInScope(ctx, sqlcdb.ListAllocationsInScopeParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListAllocationsInScope(ctx, sqlcdb.ListAllocationsInScopeParams{
 		GlobalBudgetID: database.NullIfEmpty(globalBudgetID), SeesEverything: scope.Everything,
 		ViewerID: scope.PersonID, ViewsPlans: scope.Holds, ViewerTeamIds: scope.TeamIDs,
 	})
@@ -101,7 +101,7 @@ func (s *PostgresStore) AllocationsInScope(ctx context.Context, scope authz.Scop
 }
 
 func (s *PostgresStore) PutAllocation(ctx context.Context, a Allocation) error {
-	err := s.db.Queries(ctx).PutAllocation(ctx, sqlcdb.PutAllocationParams{
+	err := sqlcdb.New(s.db.Conn(ctx)).PutAllocation(ctx, sqlcdb.PutAllocationParams{
 		ID: a.ID, GlobalBudgetID: a.GlobalBudgetID, PlanID: a.PlanID, AmountMinor: a.Amount.Amount.Cents(),
 		AmountCurrency: a.Amount.Currency, Version: a.Version, CreatedAt: a.CreatedAt, CreatedByID: a.CreatedBy.ID,
 		CreatedByName: a.CreatedBy.Name, UpdatedAt: a.UpdatedAt, UpdatedByID: a.UpdatedBy.ID,
@@ -114,14 +114,14 @@ func (s *PostgresStore) PutAllocation(ctx context.Context, a Allocation) error {
 }
 
 func (s *PostgresStore) DeleteAllocation(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteAllocation(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteAllocation(ctx, id); err != nil {
 		return fmt.Errorf("delete budget allocation %s: %w", id, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) allocations(ctx context.Context, filter sqlcdb.ListAllocationsParams) ([]Allocation, error) {
-	rows, err := s.db.Queries(ctx).ListAllocations(ctx, filter)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListAllocations(ctx, filter)
 	return allocationsFromRows(rows, err)
 }
 

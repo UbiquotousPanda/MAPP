@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/plan"
-	"mapp/internal/settings"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 )
 
 // The three demo plans of 004 plan "Seed", P-1001 … P-1003: one published plan of Lubricants, a draft of

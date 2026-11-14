@@ -1,10 +1,10 @@
-package plan
+package core
 
 import (
 	"math/big"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Why a goal stage can't be worked out from the model (plan "User-visible messages"). Only working backwards

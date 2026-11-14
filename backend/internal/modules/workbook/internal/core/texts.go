@@ -1,4 +1,4 @@
-package workbook
+package core
 
 const (
 	msgChooseFile      = "Choose an .xlsx or .csv file."

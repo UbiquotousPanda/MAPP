@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // The activity log names every field of a Settings record in words and writes its values as people read

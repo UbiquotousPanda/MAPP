@@ -1,12 +1,12 @@
-package overspend_test
+package core_test
 
 import (
 	"net/http"
 	"strings"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )

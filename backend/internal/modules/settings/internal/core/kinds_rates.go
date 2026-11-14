@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"

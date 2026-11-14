@@ -1,4 +1,4 @@
-package allwork
+package core
 
 type Labels struct {
 	Status, Timing, Swbs, PlanType string

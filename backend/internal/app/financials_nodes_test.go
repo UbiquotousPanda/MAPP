@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/activity"
-	"mapp/internal/financials"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/financials"
 	"mapp/internal/platform/actor"
 )
 

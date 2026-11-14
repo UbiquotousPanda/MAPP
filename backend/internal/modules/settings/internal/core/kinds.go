@@ -1,10 +1,10 @@
-package settings
+package core
 
 import (
 	"context"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/money"
 )
 

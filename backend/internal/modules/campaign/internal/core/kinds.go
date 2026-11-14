@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // The history kinds of this package (data model §7), and the kind of their parent, feature 004's plan.

@@ -1,15 +1,15 @@
-package activity
+package core
 
 import (
 	"encoding/json"
 	"reflect"
 	"testing"
 
-	"mapp/internal/campaign"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // The pure rules of activities, without storage: dates, names, goals, display status and the

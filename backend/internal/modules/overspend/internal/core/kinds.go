@@ -1,11 +1,11 @@
-package overspend
+package core
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 const (

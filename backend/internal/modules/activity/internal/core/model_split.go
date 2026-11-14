@@ -1,4 +1,4 @@
-package activity
+package core
 
 import (
 	"mapp/internal/platform/errs"

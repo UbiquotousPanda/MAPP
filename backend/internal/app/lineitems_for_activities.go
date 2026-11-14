@@ -3,10 +3,10 @@ package app
 import (
 	"context"
 
-	"mapp/internal/activity"
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
-	"mapp/internal/settings"
 )
 
 // The line-item problem codes activities shows in its Ready to submit panel (007 data model §3.6).

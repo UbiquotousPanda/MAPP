@@ -1,11 +1,11 @@
-package settings
+package core
 
 import (
 	"context"
 	"reflect"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // "Used by" counts every record using a Settings record, those in the recycle bin included and said so,

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"mapp/internal/app"
-	"mapp/internal/auth"
+	"mapp/internal/modules/auth"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
 	"mapp/internal/platform/querycount"

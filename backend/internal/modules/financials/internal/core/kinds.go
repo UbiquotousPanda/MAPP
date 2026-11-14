@@ -1,10 +1,10 @@
-package financials
+package core
 
 import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // The history kinds of feature 015 (data model §7, D-254). Both are top level, so no recycle-bin sweep ever

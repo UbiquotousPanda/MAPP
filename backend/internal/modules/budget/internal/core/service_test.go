@@ -1,4 +1,4 @@
-package budget
+package core
 
 import (
 	"fmt"
@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // The list shows the global budgets of the chosen year by name with their four totals, every year that has

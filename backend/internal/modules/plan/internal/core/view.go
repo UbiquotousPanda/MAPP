@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"cmp"
@@ -7,12 +7,12 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 func (s *Service) converter(ctx context.Context, a actor.Actor) (converter, error) {

@@ -1,10 +1,10 @@
-package approval
+package core
 
 import (
 	"context"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/ids"

@@ -1,10 +1,10 @@
-package lineitem
+package core
 
 import (
 	"reflect"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // Moving a line item to another activity (a split, 016 FR-028) changes only its activity: its ID, currency,

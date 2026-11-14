@@ -1,6 +1,6 @@
 package stores
 
-import "mapp/internal/bulk"
+import "mapp/internal/modules/bulk"
 
 type BulkStore interface {
 	bulk.Store

@@ -1,11 +1,11 @@
-package workbook
+package core
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/web"
 )

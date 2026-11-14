@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // The demo data of feature 017, approval rules (017 data-model §13, FR-037): line managers, the reminder,

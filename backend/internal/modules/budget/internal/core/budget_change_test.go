@@ -1,4 +1,4 @@
-package budget
+package core
 
 import (
 	"fmt"
@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 func TestCreate_GlobalBudget_FR029(t *testing.T) { //nolint:gocyclo // 11: one create, then its fields, figures, locks, actions and log entry

@@ -1,4 +1,4 @@
-package purchaserequest_test
+package core_test
 
 import (
 	"context"
@@ -7,13 +7,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/purchaserequest/internal/core"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
 	"mapp/internal/platform/record"
-	"mapp/internal/purchaserequest"
 	"mapp/internal/stores"
 	"mapp/seed"
 )
@@ -21,7 +21,7 @@ import (
 var seededAt = time.Date(2026, 3, 12, 9, 0, 0, 0, time.UTC)
 
 // seededDB is the demo data on PostgreSQL, with Mei named to approve PR-1001 (on the UK plan of Lubricants Europe).
-func seededDB(t *testing.T) *purchaserequest.PostgresStore {
+func seededDB(t *testing.T) *core.PostgresStore {
 	t.Helper()
 	db := dbtest.NewFilledDB(t, "pr032", func(db *database.DB) {
 		if err := seed.Load(context.Background(), stores.Postgres(db), func() time.Time { return seededAt }); err != nil {
@@ -38,7 +38,7 @@ func seededDB(t *testing.T) *purchaserequest.PostgresStore {
 	if err := db.Write(t.Context(), func(ctx context.Context) error { return approval.NewPostgresStore(db).PutRound(ctx, round) }); err != nil {
 		t.Fatalf("round: %v", err)
 	}
-	return purchaserequest.NewPostgresStore(db)
+	return core.NewPostgresStore(db)
 }
 
 func scopeOf(person string, holds bool, teams ...string) authz.Scope {
@@ -51,19 +51,19 @@ func TestPostgresStore_ScopeIsolation_032_FR050(t *testing.T) {
 	nobody := scopeOf("U-9999", false)
 	tests := []struct {
 		name  string
-		scope purchaserequest.ViewScope
+		scope core.ViewScope
 		want  []string
 	}{
-		{name: "the plan's team with plans.view", scope: purchaserequest.ViewScope{Plans: scopeOf("U-1006", true, "T-1001"), List: nobody},
+		{name: "the plan's team with plans.view", scope: core.ViewScope{Plans: scopeOf("U-1006", true, "T-1001"), List: nobody},
 			want: []string{"PR-1001"}},
-		{name: "another team", scope: purchaserequest.ViewScope{Plans: scopeOf("U-1006", true, "T-1002"), List: nobody}, want: []string{}},
-		{name: "the owner without a team", scope: purchaserequest.ViewScope{Plans: scopeOf("U-1002", false), List: scopeOf("U-1002", false)},
+		{name: "another team", scope: core.ViewScope{Plans: scopeOf("U-1006", true, "T-1002"), List: nobody}, want: []string{}},
+		{name: "the owner without a team", scope: core.ViewScope{Plans: scopeOf("U-1002", false), List: scopeOf("U-1002", false)},
 			want: []string{"PR-1001"}},
-		{name: "the MoA approver", scope: purchaserequest.ViewScope{Plans: scopeOf("U-1003", false), List: scopeOf("U-1003", false)},
+		{name: "the MoA approver", scope: core.ViewScope{Plans: scopeOf("U-1003", false), List: scopeOf("U-1003", false)},
 			want: []string{"PR-1001"}},
-		{name: "the Purchase requests page's scope", scope: purchaserequest.ViewScope{Plans: scopeOf("U-1007", false),
+		{name: "the Purchase requests page's scope", scope: core.ViewScope{Plans: scopeOf("U-1007", false),
 			List: scopeOf("U-1007", true, "T-1001")}, want: []string{"PR-1001"}},
-		{name: "an approver named in a round", scope: purchaserequest.ViewScope{Plans: scopeOf("U-1004", true, "T-1002"),
+		{name: "an approver named in a round", scope: core.ViewScope{Plans: scopeOf("U-1004", true, "T-1002"),
 			List: scopeOf("U-1004", false)}, want: []string{"PR-1001"}},
 	}
 	for _, tt := range tests {
@@ -91,7 +91,7 @@ func TestPostgresStore_ScopeIsolation_032_FR050(t *testing.T) {
 func TestPostgresStore_PageScopeIsolation_032_FR050(t *testing.T) {
 	t.Parallel()
 	store := seededDB(t)
-	q := purchaserequest.ListQuery{Sort: "id", Page: 1, PageSize: 50}
+	q := core.ListQuery{Sort: "id", Page: 1, PageSize: 50}
 	tests := []struct {
 		name  string
 		scope authz.Scope
@@ -115,7 +115,7 @@ func TestPostgresStore_PageScopeIsolation_032_FR050(t *testing.T) {
 	}
 }
 
-func ids(list []purchaserequest.PurchaseRequest) []string {
+func ids(list []core.PurchaseRequest) []string {
 	got := []string{}
 	for _, pr := range list {
 		got = append(got, pr.ID)

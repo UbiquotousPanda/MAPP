@@ -1,13 +1,13 @@
-package settings
+package core
 
 import (
 	"context"
 	"fmt"
 	"slices"
 
+	"mapp/internal/modules/settings/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
 )

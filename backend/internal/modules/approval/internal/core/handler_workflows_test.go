@@ -1,11 +1,11 @@
-package approval_test
+package core_test
 
 import (
 	"net/http"
 	"slices"
 	"testing"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -22,7 +22,7 @@ func TestListApprovalWorkflows_SeededThree_FR005_FR037(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s, want 200", response.Status, response.Body)
 	}
-	var page approval.WorkflowPage
+	var page core.WorkflowPage
 	response.Decode(t, &page)
 	if page.Total != 5 || len(page.Items) != 5 {
 		t.Fatalf("page = %+v, want the 5 seeded workflows (032 adds two for purchase requests)", page)
@@ -54,7 +54,7 @@ func TestGetApprovalWorkflow_UsedBy_FR005(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s, want 200", response.Status, response.Body)
 	}
-	var details approval.WorkflowDetails
+	var details core.WorkflowDetails
 	response.Decode(t, &details)
 	var got []string
 	for _, a := range details.Activities {
@@ -136,7 +136,7 @@ func TestDeactivateActivate_FR007(t *testing.T) {
 	if inactive.Active || inactive.Version != 2 || inactive.WaitingCount != 1 {
 		t.Errorf("deactivated = %+v, want inactive in version 2, 1 waiting", inactive)
 	}
-	if appr.Rounds[0].Outcome != approval.OutcomeOpen || appr.Workflow == nil || appr.Workflow.Active {
+	if appr.Rounds[0].Outcome != core.OutcomeOpen || appr.Workflow == nil || appr.Workflow.Active {
 		t.Errorf("approval = %+v, want the round still open and the workflow shown inactive", appr)
 	}
 	assertError(t, stale, http.StatusConflict, "version_conflict", "Not saved — Alex Morgan changed this approval workflow")
@@ -145,12 +145,12 @@ func TestDeactivateActivate_FR007(t *testing.T) {
 	}
 }
 
-func decodeWorkflow(t *testing.T, response *apitest.Response, status int) approval.WorkflowView {
+func decodeWorkflow(t *testing.T, response *apitest.Response, status int) core.WorkflowView {
 	t.Helper()
 	if response.Status != status {
 		t.Fatalf("status = %d %s, want %d", response.Status, response.Body, status)
 	}
-	var view approval.WorkflowView
+	var view core.WorkflowView
 	response.Decode(t, &view)
 	return view
 }

@@ -5,10 +5,10 @@ import (
 	"slices"
 	"testing"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 func TestLoad_Settings_FR032_038_FR061_L30(t *testing.T) {

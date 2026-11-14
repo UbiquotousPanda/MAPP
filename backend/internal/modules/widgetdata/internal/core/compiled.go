@@ -1,4 +1,4 @@
-package widgetdata
+package core
 
 const (
 	aggCount         = "count"

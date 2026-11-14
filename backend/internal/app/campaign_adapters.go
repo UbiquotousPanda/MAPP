@@ -4,8 +4,8 @@ import (
 	"context"
 	"maps"
 
-	"mapp/internal/campaign"
-	"mapp/internal/plan"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/money"
 	"mapp/internal/stores"
 )

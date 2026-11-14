@@ -1,17 +1,17 @@
-package lineitem
+package core
 
 import (
 	"context"
 	"fmt"
 
+	"mapp/internal/modules/lineitem/internal/sqlcdb"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // keptArea is what the transaction memo keeps of line items.
@@ -145,7 +145,7 @@ func (s *PostgresStore) Delete(ctx context.Context, id string) error {
 }
 
 func (s *PostgresStore) list(ctx context.Context, filter sqlcdb.ListLineItemsParams) ([]LineItem, error) {
-	rows, err := s.db.Queries(ctx).ListLineItems(ctx, filter)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListLineItems(ctx, filter)
 	s.records().Keep(ctx, rows)
 	return lineItemsFromRows(rows, err)
 }
@@ -156,18 +156,18 @@ func (s *PostgresStore) records() memo.Records[sqlcdb.ListLineItemsRow] {
 		Area: keptArea, ID: func(r sqlcdb.ListLineItemsRow) string { return r.LineItem.ID },
 		Parent: func(r sqlcdb.ListLineItemsRow) string { return r.LineItem.ActivityID },
 		Read: func(ctx context.Context, ids, activityIDs []string) ([]sqlcdb.ListLineItemsRow, error) {
-			return s.db.Queries(ctx).ListLineItems(ctx, sqlcdb.ListLineItemsParams{Ids: ids, ActivityIds: activityIDs})
+			return sqlcdb.New(s.db.Conn(ctx)).ListLineItems(ctx, sqlcdb.ListLineItemsParams{Ids: ids, ActivityIds: activityIDs})
 		},
 	}
 }
 
 func (s *PostgresStore) change(ctx context.Context) *sqlcdb.Queries {
 	memo.Forget(ctx, keptArea)
-	return s.db.Queries(ctx)
+	return sqlcdb.New(s.db.Conn(ctx))
 }
 
 func (s *PostgresStore) listInScope(ctx context.Context, scope authz.Scope, id *string) ([]LineItem, error) {
-	rows, err := s.db.Queries(ctx).ListLineItemsInScope(ctx, sqlcdb.ListLineItemsInScopeParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListLineItemsInScope(ctx, sqlcdb.ListLineItemsInScopeParams{
 		ID: id, SeesEverything: scope.Everything, ViewerID: scope.PersonID, ViewsPlans: scope.Holds,
 		ViewerTeamIds: scope.TeamIDs,
 	})

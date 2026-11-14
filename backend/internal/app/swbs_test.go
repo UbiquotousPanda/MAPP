@@ -6,10 +6,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/swbs"
 	"mapp/internal/platform/authz"
 	"mapp/internal/stores/storestest"
-	"mapp/internal/swbs"
 )
 
 func TestSwbsCandidates_030_FR007(t *testing.T) {

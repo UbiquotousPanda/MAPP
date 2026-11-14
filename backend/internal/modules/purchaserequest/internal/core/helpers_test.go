@@ -1,4 +1,4 @@
-package purchaserequest_test
+package core_test
 
 import (
 	"net/http"
@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/purchaserequest/internal/core"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/purchaserequest"
 )
 
 const (
@@ -74,14 +74,14 @@ func body(lineItemID, currency, amount string) map[string]any {
 	}
 }
 
-func create(t *testing.T, c *apitest.Client, b map[string]any) purchaserequest.View {
+func create(t *testing.T, c *apitest.Client, b map[string]any) core.View {
 	t.Helper()
-	return decoded[purchaserequest.View](t, c.Do(t, http.MethodPost, prs, b), http.StatusCreated)
+	return decoded[core.View](t, c.Do(t, http.MethodPost, prs, b), http.StatusCreated)
 }
 
-func get(t *testing.T, c *apitest.Client, id string) purchaserequest.View {
+func get(t *testing.T, c *apitest.Client, id string) core.View {
 	t.Helper()
-	return decoded[purchaserequest.View](t, c.Do(t, http.MethodGet, prs+"/"+id, nil), http.StatusOK)
+	return decoded[core.View](t, c.Do(t, http.MethodGet, prs+"/"+id, nil), http.StatusOK)
 }
 
 // receiveSwbsCodes runs the simulated GSAP's SWBS batch as Lea, the requisitioner (feature 030).
@@ -94,21 +94,21 @@ func receiveSwbsCodes(t *testing.T, s *apitest.Server) {
 }
 
 // approved creates a purchase request on Stand build, submits it as Priya and approves it as Daniel.
-func approved(t *testing.T, s *apitest.Server) purchaserequest.View {
+func approved(t *testing.T, s *apitest.Server) core.View {
 	t.Helper()
 	receiveSwbsCodes(t, s)
 	priya, daniel := s.SignIn(t, priyasEmail), s.SignIn(t, danielsEmail)
 	pr := create(t, priya, body(standBuild, "EUR", "9200.00"))
-	sub := decoded[purchaserequest.ApprovalView](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/approval/submit",
+	sub := decoded[core.ApprovalView](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/approval/submit",
 		map[string]any{"version": pr.Version}), http.StatusOK)
 	decide(t, daniel, "approve", sub)
 	return get(t, priya, pr.ID)
 }
 
-func decide(t *testing.T, c *apitest.Client, action string, at purchaserequest.ApprovalView) purchaserequest.ApprovalView {
+func decide(t *testing.T, c *apitest.Client, action string, at core.ApprovalView) core.ApprovalView {
 	t.Helper()
 	round := openRound(t, at)
-	return decoded[purchaserequest.ApprovalView](t, c.Do(t, http.MethodPost, prs+"/"+at.PurchaseRequestID+"/approval/"+action,
+	return decoded[core.ApprovalView](t, c.Do(t, http.MethodPost, prs+"/"+at.PurchaseRequestID+"/approval/"+action,
 		map[string]any{"roundId": round.ID, "level": round.CurrentLevel, "comment": "Wrong vendor"}), http.StatusOK)
 }
 
@@ -117,7 +117,7 @@ type roundRef struct {
 	CurrentLevel int
 }
 
-func openRound(t *testing.T, at purchaserequest.ApprovalView) roundRef {
+func openRound(t *testing.T, at core.ApprovalView) roundRef {
 	t.Helper()
 	for _, s := range at.Sections {
 		for _, r := range s.Rounds {

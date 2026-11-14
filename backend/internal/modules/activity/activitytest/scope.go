@@ -4,8 +4,8 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/activity"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/authz"
 )
 

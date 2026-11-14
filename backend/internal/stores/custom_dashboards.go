@@ -3,7 +3,7 @@ package stores
 import (
 	"context"
 
-	"mapp/internal/customdashboard"
+	"mapp/internal/modules/customdashboard"
 )
 
 // CustomDashboardStore is the custom dashboards store as the wiring and the seed use it.

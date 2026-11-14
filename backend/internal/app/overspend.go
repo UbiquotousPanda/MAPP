@@ -1,8 +1,8 @@
 package app
 
 import (
-	"mapp/internal/history"
-	"mapp/internal/overspend"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/overspend"
 )
 
 // overspendArea builds Settings › Overspend control after Settings, whose exchange rates the guard needs for

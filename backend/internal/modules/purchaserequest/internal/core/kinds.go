@@ -1,4 +1,4 @@
-package purchaserequest
+package core
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"errors"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 var errConfigurationKept = errors.New("purchaserequest: the Purchase Request Configuration is never removed")

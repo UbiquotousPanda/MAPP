@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"encoding/json"
@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // A missing version, or one below 1, is refused on "version" with every other problem, and nothing changes.

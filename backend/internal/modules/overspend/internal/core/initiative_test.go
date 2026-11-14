@@ -1,11 +1,11 @@
-package overspend_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/campaign"
-	"mapp/internal/overspend"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/overspend/internal/core"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )
@@ -25,7 +25,7 @@ func TestInitiativeRefuse_CreateActivityOverTheBudget_Contract_037_US1(t *testin
 	within := createActivity(t, priya, printOutdoor, newActivity("Within", "100.00"))
 	over := createActivity(t, priya, printOutdoor, newActivity("One cent over", "0.01"))
 
-	if set.Overspend.Mode != overspend.Refuse {
+	if set.Overspend.Mode != core.Refuse {
 		t.Errorf("037 US1 set = %+v, want Refuse", set.Overspend)
 	}
 	created(t, within)

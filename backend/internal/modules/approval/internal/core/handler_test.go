@@ -1,4 +1,4 @@
-package approval_test
+package core_test
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval/internal/core"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/apitest"
 )
@@ -42,7 +42,7 @@ func TestGetActivityApproval_MobilityWaitingAtLevel2_FR024_FR037(t *testing.T) {
 	}
 	round := appr.Rounds[0]
 	carlos := actor.Actor{ID: "U-1005", Name: "Carlos Mendes"}
-	if round.ID != "AR-1008" || round.Outcome != approval.OutcomeOpen || round.CurrentLevel != 2 || round.LevelCount != 2 {
+	if round.ID != "AR-1008" || round.Outcome != core.OutcomeOpen || round.CurrentLevel != 2 || round.LevelCount != 2 {
 		t.Errorf("round = %s %s at level %d of %d, want AR-1008 open at level 2 of 2", round.ID, round.Outcome, round.CurrentLevel, round.LevelCount)
 	}
 	first, second := round.Levels[0], round.Levels[1]
@@ -74,7 +74,7 @@ func TestGetSubmission_IncompleteMobilityListsAll_FR010(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s, want 200", response.Status, response.Body)
 	}
-	var submission approval.Submission
+	var submission core.Submission
 	response.Decode(t, &submission)
 	if submission.Ready || !submission.Available || submission.Kind != "submit" || submission.RoundNumber != 1 ||
 		submission.Workflow != nil || len(submission.Levels) != 0 {
@@ -88,7 +88,7 @@ func TestSubmit_ReadyActivity_FR011(t *testing.T) {
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 	submission := priya.Do(t, http.MethodGet, "/api/v1/activities/"+fleetRoadshow+"/approval/submission", nil)
-	var before approval.Submission
+	var before core.Submission
 	submission.Decode(t, &before)
 	if !before.Ready || before.Kind != "resubmit" || before.RoundNumber != 2 || before.Workflow == nil || before.Workflow.ID != "WF-1001" {
 		t.Fatalf("submission = %+v, want a ready re-submission with WF-1001 as round 2", before)
@@ -104,7 +104,7 @@ func TestSubmit_ReadyActivity_FR011(t *testing.T) {
 			appr.ActivityVersion, appr.LatestDecline)
 	}
 	round := appr.Rounds[0]
-	if round.Number != 2 || round.Outcome != approval.OutcomeOpen || round.Comment != "Reduced to fit the Q2 budget." ||
+	if round.Number != 2 || round.Outcome != core.OutcomeOpen || round.Comment != "Reduced to fit the Q2 budget." ||
 		round.Levels[0].State != "waiting" || round.Levels[0].Approvers[0].Name != "Daniel Okoro" {
 		t.Errorf("round = %+v, want round 2 waiting for Daniel Okoro with the comment", round)
 	}
@@ -124,7 +124,7 @@ func TestApprove_Level2AsAlex_US2(t *testing.T) {
 
 	appr := decodeApproval(t, response)
 	round := appr.Rounds[0]
-	if appr.Status != "approved" || round.Outcome != approval.OutcomeApproved || round.EndedAt == nil || !round.EndedAt.Equal(now) {
+	if appr.Status != "approved" || round.Outcome != core.OutcomeApproved || round.EndedAt == nil || !round.EndedAt.Equal(now) {
 		t.Errorf("approval %s, round %s ended %v; want approved now", appr.Status, round.Outcome, round.EndedAt)
 	}
 	if actions := historyActions(round); !slices.Equal(actions, []string{"approved", "approved", "submitted"}) {
@@ -178,10 +178,10 @@ func TestApprovalSummary_FR028(t *testing.T) {
 	broken := daniel.Do(t, http.MethodGet, "/api/v1/approvals/summary?monthStart=yesterday&monthEnd=2026-03-01T00:00:00Z", nil,
 		apitest.SkipRequestValidation())
 
-	if got, want := decodeCounts(t, march), (approval.Counts{WaitingForMe: 1, AllOpen: 2, DeclinedThisMonth: 2}); got != want {
+	if got, want := decodeCounts(t, march), (core.Counts{WaitingForMe: 1, AllOpen: 2, DeclinedThisMonth: 2}); got != want {
 		t.Errorf("this month = %+v, want %+v", got, want)
 	}
-	if got, want := decodeCounts(t, february), (approval.Counts{WaitingForMe: 1, AllOpen: 2, ApprovedThisMonth: 4}); got != want {
+	if got, want := decodeCounts(t, february), (core.Counts{WaitingForMe: 1, AllOpen: 2, ApprovedThisMonth: 4}); got != want {
 		t.Errorf("February = %+v, want %+v", got, want)
 	}
 	assertError(t, broken, http.StatusBadRequest, "validation_failed", "Some fields need your attention.")
@@ -198,7 +198,7 @@ func TestApprovalPreview_FR032(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s, want 200", response.Status, response.Body)
 	}
-	var preview approval.Preview
+	var preview core.Preview
 	response.Decode(t, &preview)
 	activity := preview.Activity
 	if activity.ID != tradeMagazineAds || activity.Status != "submitted" || len(activity.Path) != 3 || activity.Owner == nil ||
@@ -218,17 +218,17 @@ func TestApprovalPreview_FR032(t *testing.T) {
 	assertError(t, gone, http.StatusNotFound, "not_found", "This activity no longer exists — someone may have deleted it.")
 }
 
-func decodeRows(t *testing.T, response *apitest.Response) approval.RowPage {
+func decodeRows(t *testing.T, response *apitest.Response) core.RowPage {
 	t.Helper()
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s, want 200", response.Status, response.Body)
 	}
-	var page approval.RowPage
+	var page core.RowPage
 	response.Decode(t, &page)
 	return page
 }
 
-func rowIDs(page approval.RowPage) []string {
+func rowIDs(page core.RowPage) []string {
 	ids := []string{}
 	for _, row := range page.Items {
 		ids = append(ids, row.Activity.ID)
@@ -236,27 +236,27 @@ func rowIDs(page approval.RowPage) []string {
 	return ids
 }
 
-func decodeCounts(t *testing.T, response *apitest.Response) approval.Counts {
+func decodeCounts(t *testing.T, response *apitest.Response) core.Counts {
 	t.Helper()
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s, want 200", response.Status, response.Body)
 	}
-	var counts approval.Counts
+	var counts core.Counts
 	response.Decode(t, &counts)
 	return counts
 }
 
-func decodeApproval(t *testing.T, response *apitest.Response) approval.ActivityApproval {
+func decodeApproval(t *testing.T, response *apitest.Response) core.ActivityApproval {
 	t.Helper()
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s, want 200", response.Status, response.Body)
 	}
-	var appr approval.ActivityApproval
+	var appr core.ActivityApproval
 	response.Decode(t, &appr)
 	return appr
 }
 
-func historyActions(round approval.RoundView) []string {
+func historyActions(round core.RoundView) []string {
 	var actions []string
 	for _, e := range round.History {
 		actions = append(actions, e.Action)
@@ -264,7 +264,7 @@ func historyActions(round approval.RoundView) []string {
 	return actions
 }
 
-func problemFields(problems []approval.SubmitProblem) []string {
+func problemFields(problems []core.SubmitProblem) []string {
 	var fields []string
 	for _, p := range problems {
 		fields = append(fields, p.Field)

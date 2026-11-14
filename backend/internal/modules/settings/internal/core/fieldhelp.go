@@ -1,11 +1,11 @@
-package settings
+package core
 
 import (
 	"context"
 	"strings"
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/record"

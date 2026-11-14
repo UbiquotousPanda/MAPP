@@ -1,10 +1,10 @@
-package lineitem
+package core
 
 import (
 	"context"
 	"fmt"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/record"

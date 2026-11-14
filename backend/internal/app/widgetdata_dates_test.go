@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/date"
-	"mapp/internal/widgetdata"
 )
 
 const helixUK = "C-1005"

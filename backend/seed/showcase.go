@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/lineitem"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/plan"
 )
 
 // showcaseJSON is one tree, plan down to line item, so the two showcase plans read as the plans they are.

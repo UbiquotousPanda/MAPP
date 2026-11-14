@@ -1,4 +1,4 @@
-package purchaserequest
+package core
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // checker checks one save of a purchase request (data-model §3.2), collecting every problem at once.

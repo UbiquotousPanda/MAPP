@@ -1,14 +1,14 @@
-package activity
+package core
 
 import (
 	"context"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // derived are the values worked out from a stored activity when it is read (D-041).

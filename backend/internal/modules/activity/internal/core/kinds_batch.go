@@ -1,10 +1,10 @@
-package activity
+package core
 
 import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // The history functions of activities for many records at once (history.Kind).

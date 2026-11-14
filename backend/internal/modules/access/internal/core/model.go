@@ -1,11 +1,11 @@
-// Package access holds roles, role assignments and the access rules (feature 014, data model §1.1–§1.3), builds
+// Package core holds roles, role assignments and the access rules (feature 014, data model §1.1–§1.3), builds
 // the Grants of the signed-in person on every request (middleware.go) and declares the access rule of every
 // API operation (routes.go). The permissions themselves are fixed in code, in platform/authz.
 //
 // Administrators change roles, people's roles and the rules in Settings › Roles and access; every change
 // applies to the person's next request, because Grants are built per request from the stored records
 // (FR-020).
-package access
+package core
 
 import (
 	"mapp/internal/platform/authz"

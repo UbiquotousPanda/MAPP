@@ -7,9 +7,9 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/fake"
-	"mapp/internal/settings"
 )
 
 type Store struct {

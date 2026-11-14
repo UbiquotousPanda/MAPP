@@ -3,7 +3,7 @@ package stores
 import (
 	"context"
 
-	"mapp/internal/campaign"
+	"mapp/internal/modules/campaign"
 )
 
 // CampaignStore is the campaigns and initiatives store as the wiring and the seed use it: the service's Store and what other areas' adapters call.

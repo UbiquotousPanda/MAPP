@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -84,11 +85,23 @@ func (d *DB) Read(ctx context.Context, fn func(ctx context.Context) error) error
 	return d.run(memo.With(ctx), readOnlySnapshot, fn)
 }
 
-func (d *DB) Queries(ctx context.Context) *sqlcdb.Queries {
+// Conn is what a module's generated queries run on (ADR-0022): the context's transaction, or the pool.
+type Conn interface {
+	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	CopyFrom(ctx context.Context, table pgx.Identifier, columns []string, rows pgx.CopyFromSource) (int64, error)
+}
+
+func (d *DB) Conn(ctx context.Context) Conn {
 	if current, ok := ctx.Value(txKey{}).(transaction); ok {
-		return sqlcdb.New(current.tx)
+		return current.tx
 	}
-	return sqlcdb.New(d.pool)
+	return d.pool
+}
+
+func (d *DB) Queries(ctx context.Context) *sqlcdb.Queries {
+	return sqlcdb.New(d.Conn(ctx))
 }
 
 func (d *DB) run(ctx context.Context, options pgx.TxOptions, fn func(ctx context.Context) error) error {

@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"slices"
 
-	"mapp/internal/approval"
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/purchaserequest"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/ids"
-	"mapp/internal/purchaserequest"
-	"mapp/internal/settings"
 )
 
 const (

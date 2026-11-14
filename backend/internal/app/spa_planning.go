@@ -3,12 +3,12 @@ package app
 import (
 	"context"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/spa"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/spa"
 	"mapp/internal/stores"
 )
 

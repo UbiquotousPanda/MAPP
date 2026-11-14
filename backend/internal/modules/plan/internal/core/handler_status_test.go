@@ -1,11 +1,11 @@
-package plan_test
+package core_test
 
 import (
 	"net/http"
 	"strings"
 	"testing"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -20,7 +20,7 @@ func TestPublish_NotReadyThenPublished_FR024(t *testing.T) {
 	server.GrantRole(t, priyasEmail, "globalPlanner", "all") // 014: every market's plans
 
 	refused := priya.Do(t, http.MethodPost, "/api/v1/plans/P-1002/publish", nil)
-	var china plan.PlanView
+	var china core.PlanView
 	priya.Do(t, http.MethodGet, "/api/v1/plans/P-1002", nil).Decode(t, &china)
 	form := formOf(china)
 	form["attributes"] = map[string]any{"SA-1001": []string{"SO-1002"}}
@@ -36,7 +36,7 @@ func TestPublish_NotReadyThenPublished_FR024(t *testing.T) {
 	assertAnswer(t, refused, http.StatusConflict, `{"error":{"code":"not_ready","message":"Publish needs 4 fields","fields":[],`+
 		`"missing":[{"record":{"type":"plan","id":"P-1002","name":"FY2026 Mobility China"},`+
 		`"fields":[{"field":"attributes.SA-1001","label":"Business unit"}]},`+below+`]}}`)
-	if china.Status != plan.StatusDraft || china.Version != 1 {
+	if china.Status != core.StatusDraft || china.Version != 1 {
 		t.Errorf("after the refusal: %s, version %d; want Draft, version 1", china.Status, china.Version)
 	}
 	assertFields(t, saved, http.StatusOK, map[string]any{"status": "draft", "version": 2})

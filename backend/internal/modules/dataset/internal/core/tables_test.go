@@ -1,9 +1,9 @@
-package dataset
+package core
 
 import (
 	"testing"
 
-	"mapp/internal/widgetdata"
+	"mapp/internal/modules/widgetdata"
 )
 
 func TestTables_VisibleOnlyAndTyped_FR044(t *testing.T) {

@@ -1,10 +1,10 @@
-package people_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -20,7 +20,7 @@ func TestPeople_ManagerField_FR016(t *testing.T) {
 
 	jane := createPerson(t, alex, map[string]any{"name": "Jane Doe", "email": janesEmail, "managerId": daniel})
 	after := listPeople(t, alex)
-	var danielsDetails people.PersonDetails
+	var danielsDetails core.PersonDetails
 	alex.Do(t, http.MethodGet, "/api/v1/people/"+daniel, nil).Decode(t, &danielsDetails)
 	loop := alex.Do(t, http.MethodPatch, "/api/v1/people/"+daniel, map[string]any{"managerId": jane.ID, "version": danielsDetails.Version})
 	cleared := alex.Do(t, http.MethodPatch, "/api/v1/people/"+jane.ID, map[string]any{"managerId": "", "version": jane.Version})
@@ -43,15 +43,15 @@ func TestPeople_ManagerField_FR016(t *testing.T) {
 }
 
 // listPeople reads GET /api/v1/people as client, by person id.
-func listPeople(t *testing.T, client *apitest.Client) map[string]people.PersonListItem {
+func listPeople(t *testing.T, client *apitest.Client) map[string]core.PersonListItem {
 	t.Helper()
-	var page people.PersonPage
+	var page core.PersonPage
 	response := client.Do(t, http.MethodGet, "/api/v1/people", nil)
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET /api/v1/people = %d %s", response.Status, response.Body)
 	}
 	response.Decode(t, &page)
-	byID := map[string]people.PersonListItem{}
+	byID := map[string]core.PersonListItem{}
 	for _, p := range page.Items {
 		byID[p.ID] = p
 	}

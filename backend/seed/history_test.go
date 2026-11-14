@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/activity/activitytest"
-	"mapp/internal/campaign/campaigntest"
-	"mapp/internal/history"
-	"mapp/internal/lineitem/lineitemtest"
+	"mapp/internal/modules/activity/activitytest"
+	"mapp/internal/modules/campaign/campaigntest"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/lineitem/lineitemtest"
 	"mapp/internal/platform/apitest"
 	"mapp/seed"
 )

@@ -1,4 +1,4 @@
-package allwork
+package core
 
 const (
 	StrategicInclude = "include"

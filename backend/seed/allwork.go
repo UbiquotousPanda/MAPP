@@ -4,8 +4,8 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/activity"
-	"mapp/internal/allwork"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/allwork"
 	"mapp/internal/platform/ids"
 )
 

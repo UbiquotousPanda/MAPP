@@ -1,4 +1,4 @@
-package overspend_test
+package core_test
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/activity"
+	"mapp/internal/modules/activity"
 	"mapp/internal/platform/apitest"
 )
 

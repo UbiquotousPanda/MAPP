@@ -1,9 +1,9 @@
-package auth
+package core
 
 import (
 	"context"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 )
 
 type Transactor interface {

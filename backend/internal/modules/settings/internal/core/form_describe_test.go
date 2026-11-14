@@ -1,11 +1,11 @@
-package settings
+package core
 
 import (
 	"encoding/json"
 	"reflect"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // A planning record's changes are logged field by field, its Shell attribute values attribute by

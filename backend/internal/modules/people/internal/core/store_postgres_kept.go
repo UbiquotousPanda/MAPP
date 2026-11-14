@@ -1,10 +1,10 @@
-package people
+package core
 
 import (
 	"context"
 	"fmt"
 
-	"mapp/internal/platform/database/sqlcdb"
+	"mapp/internal/modules/people/internal/sqlcdb"
 	"mapp/internal/platform/memo"
 )
 
@@ -14,7 +14,7 @@ const keptArea = "people"
 
 func (s *PostgresStore) change(ctx context.Context) *sqlcdb.Queries {
 	memo.Forget(ctx, keptArea)
-	return s.db.Queries(ctx)
+	return sqlcdb.New(s.db.Conn(ctx))
 }
 
 func keptTable[R any](ctx context.Context, name string, read func(ctx context.Context) ([]R, error),
@@ -28,24 +28,24 @@ func keptTable[R any](ctx context.Context, name string, read func(ctx context.Co
 
 func (s *PostgresStore) people(ctx context.Context) (memo.Table[sqlcdb.Person], error) {
 	return keptTable(ctx, "people", func(ctx context.Context) ([]sqlcdb.Person, error) {
-		return s.db.Queries(ctx).ListPeople(ctx)
+		return sqlcdb.New(s.db.Conn(ctx)).ListPeople(ctx)
 	}, func(r sqlcdb.Person) string { return r.ID })
 }
 
 func (s *PostgresStore) preferences(ctx context.Context) (memo.Table[sqlcdb.Preference], error) {
 	return keptTable(ctx, "preferences", func(ctx context.Context) ([]sqlcdb.Preference, error) {
-		return s.db.Queries(ctx).ListPreferences(ctx)
+		return sqlcdb.New(s.db.Conn(ctx)).ListPreferences(ctx)
 	}, func(r sqlcdb.Preference) string { return r.PersonID })
 }
 
 func (s *PostgresStore) teams(ctx context.Context) (memo.Table[sqlcdb.Team], error) {
 	return keptTable(ctx, "teams", func(ctx context.Context) ([]sqlcdb.Team, error) {
-		return s.db.Queries(ctx).ListTeams(ctx)
+		return sqlcdb.New(s.db.Conn(ctx)).ListTeams(ctx)
 	}, func(r sqlcdb.Team) string { return r.ID })
 }
 
 func (s *PostgresStore) membershipRows(ctx context.Context) (memo.Table[sqlcdb.TeamMembership], error) {
 	return keptTable(ctx, "memberships", func(ctx context.Context) ([]sqlcdb.TeamMembership, error) {
-		return s.db.Queries(ctx).ListMemberships(ctx, sqlcdb.ListMembershipsParams{})
+		return sqlcdb.New(s.db.Conn(ctx)).ListMemberships(ctx, sqlcdb.ListMembershipsParams{})
 	}, func(r sqlcdb.TeamMembership) string { return r.ID })
 }

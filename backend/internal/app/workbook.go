@@ -1,8 +1,8 @@
 package app
 
 import (
-	"mapp/internal/history"
-	"mapp/internal/workbook"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/workbook"
 )
 
 // workbookArea builds feature 012's plan workbook after the planning areas it creates and updates through.

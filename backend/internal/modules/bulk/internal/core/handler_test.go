@@ -1,4 +1,4 @@
-package bulk_test
+package core_test
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/bulk"
+	"mapp/internal/modules/bulk/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -39,7 +39,7 @@ func decoded[T any](t *testing.T, response *apitest.Response, status int) T {
 	return v
 }
 
-func outcomesOf(result bulk.Result) map[string]string {
+func outcomesOf(result core.Result) map[string]string {
 	got := map[string]string{}
 	for _, o := range result.Outcomes {
 		got[o.RecordID] = o.Outcome + ": " + strings.Join(o.Reasons, " | ")
@@ -51,7 +51,7 @@ func TestFields_Contract_012FR009(t *testing.T) {
 	t.Parallel()
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 
-	list := decoded[bulk.FieldList](t, priya.Do(t, http.MethodGet, "/api/v1/bulk-actions/fields?level=activity", nil), http.StatusOK)
+	list := decoded[core.FieldList](t, priya.Do(t, http.MethodGet, "/api/v1/bulk-actions/fields?level=activity", nil), http.StatusOK)
 
 	keys := []string{}
 	offered := []string{"date", "singleChoice", "multipleChoice", "yesNo"}
@@ -75,8 +75,8 @@ func TestRun_ChangeOwner_Contract_012FR008_FR023(t *testing.T) {
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 	body := map[string]any{"action": "changeOwner", "ownerId": danielID, "recordIds": []string{"A-1001", "A-1005"}}
 
-	preview := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, previewPath, body), http.StatusOK)
-	run := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath, body), http.StatusCreated)
+	preview := decoded[core.Result](t, priya.Do(t, http.MethodPost, previewPath, body), http.StatusOK)
+	run := decoded[core.Result](t, priya.Do(t, http.MethodPost, runPath, body), http.StatusCreated)
 
 	if !preview.Preview || preview.Counts.Done != 2 || run.ID == nil || run.Counts.Done != 2 {
 		t.Fatalf("preview %+v, run %+v", preview.Counts, run.Counts)
@@ -100,7 +100,7 @@ func TestRun_ForbiddenSkippedUnseenFailed_Contract_012FR024(t *testing.T) {
 	server := apitest.New(t)
 	sara := server.SignIn(t, sarasEmail)
 
-	result := decoded[bulk.Result](t, sara.Do(t, http.MethodPost, runPath,
+	result := decoded[core.Result](t, sara.Do(t, http.MethodPost, runPath,
 		map[string]any{"action": "changeOwner", "ownerId": danielID, "recordIds": []string{"A-1001", "A-9999"}}), http.StatusCreated)
 
 	got := outcomesOf(result)
@@ -115,9 +115,9 @@ func TestRun_ChangeField_Contract_012FR010_FR011(t *testing.T) {
 	body := map[string]any{"action": "changeField", "recordIds": []string{"A-1002", "A-1001"},
 		"field": map[string]any{"key": "endDate", "value": map[string]any{"date": "2026-06-20"}}}
 
-	left := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, previewPath, body), http.StatusOK)
+	left := decoded[core.Result](t, priya.Do(t, http.MethodPost, previewPath, body), http.StatusOK)
 	body["restartApproval"] = true
-	restarted := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath, body), http.StatusCreated)
+	restarted := decoded[core.Result](t, priya.Do(t, http.MethodPost, runPath, body), http.StatusCreated)
 
 	if len(left.Reapproval) != 1 || left.Reapproval[0].RecordID != "A-1002" || outcomesOf(left)["A-1002"] == "done: " {
 		t.Errorf("leave unchanged: reapproval %+v, outcomes %v", left.Reapproval, outcomesOf(left))
@@ -131,7 +131,7 @@ func TestRun_Submit_Contract_012FR012_FR013(t *testing.T) {
 	t.Parallel()
 	priya := apitest.New(t).SignIn(t, priyasEmail)
 
-	result := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, previewPath,
+	result := decoded[core.Result](t, priya.Do(t, http.MethodPost, previewPath,
 		map[string]any{"action": "submit", "recordIds": []string{"C-1001", "A-1002", "A-1004", "A-1005"}}), http.StatusOK)
 
 	got := outcomesOf(result)
@@ -151,9 +151,9 @@ func TestTargets_Contract_012FR016(t *testing.T) {
 	t.Parallel()
 	alex := apitest.New(t).SignIn(t, alexsEmail)
 
-	page := decoded[bulk.TargetPage](t, alex.Do(t, http.MethodPost, "/api/v1/bulk-actions/targets",
+	page := decoded[core.TargetPage](t, alex.Do(t, http.MethodPost, "/api/v1/bulk-actions/targets",
 		map[string]any{"action": "copy", "recordIds": []string{"A-1001"}, "search": "events"}), http.StatusOK)
-	mixed := decoded[bulk.TargetPage](t, alex.Do(t, http.MethodPost, "/api/v1/bulk-actions/targets",
+	mixed := decoded[core.TargetPage](t, alex.Do(t, http.MethodPost, "/api/v1/bulk-actions/targets",
 		map[string]any{"action": "move", "recordIds": []string{"A-1001", "A-1008"}}), http.StatusOK)
 
 	paths := []string{}
@@ -174,11 +174,11 @@ func TestRun_CopyMoveDeleteUndo_Contract_012FR014_FR020(t *testing.T) {
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 
-	copied := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath,
+	copied := decoded[core.Result](t, priya.Do(t, http.MethodPost, runPath,
 		map[string]any{"action": "copy", "recordIds": []string{"A-1001"}, "targetId": "I-1001"}), http.StatusCreated)
-	moved := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath,
+	moved := decoded[core.Result](t, priya.Do(t, http.MethodPost, runPath,
 		map[string]any{"action": "move", "recordIds": []string{"A-1003"}, "targetId": "I-1001"}), http.StatusCreated)
-	deleted := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath,
+	deleted := decoded[core.Result](t, priya.Do(t, http.MethodPost, runPath,
 		map[string]any{"action": "delete", "recordIds": []string{"I-1003", "A-1001", copied.Outcomes[0].NewRecordID}}), http.StatusCreated)
 
 	if copied.Outcomes[0].Outcome != "done" || moved.Outcomes[0].Outcome != "done" {
@@ -187,7 +187,7 @@ func TestRun_CopyMoveDeleteUndo_Contract_012FR014_FR020(t *testing.T) {
 	if len(deleted.RecycleBinEntries) != 3 || deleted.DeleteSummary == nil || deleted.UndoAvailableUntil == nil {
 		t.Fatalf("delete = %v %+v", outcomesOf(deleted), deleted.DeleteSummary)
 	}
-	undone := decoded[bulk.UndoResult](t, priya.Do(t, http.MethodPost, runPath+"/"+*deleted.ID+"/undo", nil), http.StatusOK)
+	undone := decoded[core.UndoResult](t, priya.Do(t, http.MethodPost, runPath+"/"+*deleted.ID+"/undo", nil), http.StatusOK)
 	if len(undone.Restored) != 3 {
 		t.Errorf("restored %d records, want 3", len(undone.Restored))
 	}
@@ -195,7 +195,7 @@ func TestRun_CopyMoveDeleteUndo_Contract_012FR014_FR020(t *testing.T) {
 	if body := decoded[apiError](t, again, http.StatusConflict); body.Error.Code != "already_resolved" {
 		t.Errorf("a second undo = %+v", body)
 	}
-	late := decoded[bulk.Result](t, priya.Do(t, http.MethodPost, runPath,
+	late := decoded[core.Result](t, priya.Do(t, http.MethodPost, runPath,
 		map[string]any{"action": "delete", "recordIds": []string{"A-1001"}}), http.StatusCreated)
 	server.Advance(3 * time.Minute)
 	if body := decoded[apiError](t, priya.Do(t, http.MethodPost, runPath+"/"+*late.ID+"/undo", nil), http.StatusConflict); body.Error.Code != "undo_expired" {

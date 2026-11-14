@@ -1,4 +1,4 @@
-package lineitem
+package core
 
 import (
 	"reflect"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/errs"
 )
 

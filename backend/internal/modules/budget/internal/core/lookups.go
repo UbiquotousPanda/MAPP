@@ -1,4 +1,4 @@
-package budget
+package core
 
 import (
 	"cmp"
@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 )
 
 // lookups are the people and teams the rows and options of one answer refer to, read once for all of them.

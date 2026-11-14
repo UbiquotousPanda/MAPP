@@ -6,7 +6,7 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/financials"
+	"mapp/internal/modules/financials"
 	"mapp/internal/platform/fake"
 )
 

@@ -1,14 +1,14 @@
-// Package simulatedgsap is the simulated GSAP's purchasing side (feature 033, ADR-0016): it answers a purchase
+// Package core is the simulated GSAP's purchasing side (feature 033, ADR-0016): it answers a purchase
 // request routed to the requisitioner with a GSAP PR number and a purchase order, and books the PO lines.
-package simulatedgsap
+package core
 
 import (
 	"context"
 
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/purchaserequest"
 )
 
 type Numbers interface {

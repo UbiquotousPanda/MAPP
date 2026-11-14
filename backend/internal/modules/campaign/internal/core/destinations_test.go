@@ -1,12 +1,12 @@
-package campaign
+package core
 
 import (
 	"encoding/json"
 	"reflect"
 	"testing"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 )
 
 // An initiative moves only to another campaign of its plan: one that already has an initiative with its

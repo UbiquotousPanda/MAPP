@@ -1,4 +1,4 @@
-package spa
+package core
 
 import (
 	"net/http"

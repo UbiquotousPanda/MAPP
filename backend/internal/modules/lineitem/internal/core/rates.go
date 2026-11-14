@@ -1,10 +1,10 @@
-package lineitem
+package core
 
 import (
 	"context"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // rateTable is every currency with its current rate, and the date and source of that rate (016 FR-002,

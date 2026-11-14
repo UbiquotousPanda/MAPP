@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/dataset"
+	"mapp/internal/modules/dataset"
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/widgetdata"
 )
 
 const eventLeads = "DS-1001"

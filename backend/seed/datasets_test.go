@@ -10,8 +10,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/dataset"
-	"mapp/internal/dataset/datasettest"
+	"mapp/internal/modules/dataset"
+	"mapp/internal/modules/dataset/datasettest"
 	"mapp/internal/platform/apitest"
 	"mapp/seed"
 )

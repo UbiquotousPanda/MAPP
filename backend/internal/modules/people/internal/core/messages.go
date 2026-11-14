@@ -1,4 +1,4 @@
-package people
+package core
 
 // Every text the people API says, from the plan's "User-visible messages" table (003 plan). Code and tests
 // use these constants, so each text is written once. "%s" and "%d" are filled in at run time.

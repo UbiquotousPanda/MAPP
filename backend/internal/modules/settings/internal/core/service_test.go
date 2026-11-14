@@ -1,10 +1,10 @@
-package settings
+package core
 
 import (
 	"slices"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // The Settings page counts the active records of each section (FR-001).

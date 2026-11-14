@@ -1,11 +1,11 @@
-package allwork_test
+package core_test
 
 import (
 	"net/http"
 	"slices"
 	"testing"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -36,11 +36,11 @@ func TestPreferences_GetPut_Contract(t *testing.T) {
 		`"fields":[{"field":"columns","message":"Each column can be chosen once."}]}}`)
 	// The grid in the remembered order, sorted, as the web app asks for it.
 	sorted := priya.Do(t, http.MethodGet, "/api/v1/all-work?column=plannedCost&column=id&sort=plannedCost:desc", nil)
-	var r allwork.Result
+	var r core.Result
 	sorted.Decode(t, &r)
 	var plans []string
 	for _, row := range r.Rows {
-		if row.Level == allwork.LevelPlan {
+		if row.Level == core.LevelPlan {
 			plans = append(plans, row.Name)
 		}
 	}
@@ -74,7 +74,7 @@ func TestSavedViews_CRUD_Contract(t *testing.T) { //nolint:gocyclo // 13: one vi
 
 	created := priya.Do(t, http.MethodPost, "/api/v1/saved-views", newViewBody("Helix by month", false))
 	refused := priya.Do(t, http.MethodPost, "/api/v1/saved-views", newViewBody("helix BY month", false))
-	var view allwork.SavedView
+	var view core.SavedView
 	created.Decode(t, &view)
 	updated := priya.Do(t, http.MethodPatch, "/api/v1/saved-views/"+view.ID, map[string]any{"name": "Helix monthly", "isDefault": true})
 	listed := priya.Do(t, http.MethodGet, "/api/v1/saved-views", nil)
@@ -90,12 +90,12 @@ func TestSavedViews_CRUD_Contract(t *testing.T) { //nolint:gocyclo // 13: one vi
 	}
 	assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
 		`"fields":[{"field":"name","message":"You already have a view called 'Helix by month'."}]}}`)
-	var after allwork.SavedView
+	var after core.SavedView
 	updated.Decode(t, &after)
 	if updated.Status != http.StatusOK || after.Name != "Helix monthly" || !after.IsDefault {
 		t.Errorf("updated = %d %s", updated.Status, updated.Body)
 	}
-	var page allwork.SavedViewPage
+	var page core.SavedViewPage
 	listed.Decode(t, &page)
 	var names []string
 	for _, v := range page.Items {
@@ -124,7 +124,7 @@ func TestViews_NotLogged_D121(t *testing.T) {
 	binBefore := priya.Do(t, http.MethodGet, "/api/v1/recycle-bin", nil)
 
 	created := priya.Do(t, http.MethodPost, "/api/v1/saved-views", newViewBody("Not logged", true))
-	var view allwork.SavedView
+	var view core.SavedView
 	created.Decode(t, &view)
 	priya.Do(t, http.MethodPatch, "/api/v1/saved-views/"+view.ID, map[string]any{"name": "Still not logged"})
 	priya.Do(t, http.MethodDelete, "/api/v1/saved-views/"+view.ID, nil)

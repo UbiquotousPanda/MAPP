@@ -1,4 +1,4 @@
-package allwork
+package core
 
 import "mapp/internal/platform/money"
 

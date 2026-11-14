@@ -3,7 +3,7 @@ package stores
 import (
 	"context"
 
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/lineitem"
 )
 
 // LineItemStore is the line items store as the wiring and the seed use it: the service's Store and what other areas' adapters call.

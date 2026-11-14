@@ -7,7 +7,7 @@
 // kept on planning records (values.go), the API types (views.go), the usage hook (usage.go) and the
 // repository (repository.go, store_json.go). Feature 002 adds the service, the readers, the history kinds
 // and the handler.
-package settings
+package core
 
 import (
 	"slices"

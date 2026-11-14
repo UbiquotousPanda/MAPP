@@ -1,4 +1,4 @@
-package people
+package core
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"mapp/internal/modules/people/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/record"
 )
 
@@ -33,7 +33,7 @@ func (s *PostgresStore) Get(ctx context.Context, id string) (Person, bool, error
 }
 
 func (s *PostgresStore) FindByEmail(ctx context.Context, email string) (Person, bool, error) {
-	row, err := s.db.Queries(ctx).FindPersonByEmail(ctx, email)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).FindPersonByEmail(ctx, email)
 	return onePerson(row, err, email)
 }
 

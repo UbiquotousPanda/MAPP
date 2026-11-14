@@ -1,4 +1,4 @@
-package dashboard_test
+package core_test
 
 import (
 	"bytes"
@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/dashboard"
-	"mapp/internal/financials"
+	"mapp/internal/modules/dashboard/internal/core"
+	"mapp/internal/modules/financials"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )
@@ -38,9 +38,9 @@ func get(t *testing.T, c *apitest.Client, path string, status int) *apitest.Resp
 	return r
 }
 
-func view(t *testing.T, c *apitest.Client, path string) dashboard.View {
+func view(t *testing.T, c *apitest.Client, path string) core.View {
 	t.Helper()
-	var v dashboard.View
+	var v core.View
 	get(t, c, path, http.StatusOK).Decode(t, &v)
 	return v
 }
@@ -92,7 +92,7 @@ func TestExecutive_OnlyThePlansInScope_FR002(t *testing.T) {
 
 	r := get(t, c, executive+"?year=2026", http.StatusOK)
 
-	var v dashboard.View
+	var v core.View
 	r.Decode(t, &v)
 	same(t, "Priya's dashboard", texts(1, "P-1001", "1,200,000.00 USD", 1, 1, true),
 		texts(v.PlanCount, v.Plans[0].Plan.ID, amount(v.Totals.Budget), len(v.Markets), v.Approvals.Waiting, v.GlobalBudgets == nil))

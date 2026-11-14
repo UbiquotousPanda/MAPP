@@ -1,4 +1,4 @@
-package allwork_test
+package core_test
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -31,13 +31,13 @@ func TestGetAllWork_Contract(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET /api/v1/all-work = %d %s", response.Status, response.Body)
 	}
-	var r allwork.Result
+	var r core.Result
 	response.Decode(t, &r)
 	var plans []string
-	levels := map[allwork.Level]int{}
+	levels := map[core.Level]int{}
 	for _, row := range r.Rows {
 		levels[row.Level]++
-		if row.Level == allwork.LevelPlan {
+		if row.Level == core.LevelPlan {
 			plans = append(plans, row.Name)
 		}
 	}
@@ -46,8 +46,8 @@ func TestGetAllWork_Contract(t *testing.T) {
 		t.Errorf("plans %q, year %d, view %s, currency %s, %d columns, today %s", plans, r.Year, r.View,
 			r.DisplayCurrency, len(r.Columns), r.Today)
 	}
-	if levels[allwork.LevelCampaign] != 3 || levels[allwork.LevelInitiative] != 6 || levels[allwork.LevelActivity] != 10 ||
-		levels[allwork.LevelLineItem] != 8 || levels[allwork.LevelUnassigned] == 0 {
+	if levels[core.LevelCampaign] != 3 || levels[core.LevelInitiative] != 6 || levels[core.LevelActivity] != 10 ||
+		levels[core.LevelLineItem] != 8 || levels[core.LevelUnassigned] == 0 {
 		t.Errorf("rows per level = %v", levels)
 	}
 	if r.Summary.Activities != 10 || r.Count.Shown != 10 || r.Count.Total != 10 || r.Count.Noun != "activities" ||
@@ -56,15 +56,15 @@ func TestGetAllWork_Contract(t *testing.T) {
 		t.Errorf("summary %+v, count %+v, totals %d activities", r.Summary, r.Count, r.Totals.Activities)
 	}
 	calendar := priya.Do(t, http.MethodGet, "/api/v1/all-work?view=calendar&year=2026", nil)
-	var c allwork.Result
+	var c core.Result
 	calendar.Decode(t, &c)
 	for _, row := range c.Rows {
-		if row.Level == allwork.LevelLineItem || row.Level == allwork.LevelUnassigned {
+		if row.Level == core.LevelLineItem || row.Level == core.LevelUnassigned {
 			t.Errorf("calendar row %s is a %s", row.Key, row.Level)
 		}
 	}
 	ordered := priya.Do(t, http.MethodGet, "/api/v1/all-work?column=plannedCost&column=id&column=createdAt", nil)
-	var o allwork.Result
+	var o core.Result
 	ordered.Decode(t, &o)
 	var keys []string
 	for _, col := range o.Columns {
@@ -74,7 +74,7 @@ func TestGetAllWork_Contract(t *testing.T) {
 		t.Errorf("columns = %q", keys)
 	}
 	empty := priya.Do(t, http.MethodGet, "/api/v1/all-work?year=2030", nil)
-	var e allwork.Result
+	var e core.Result
 	empty.Decode(t, &e)
 	if len(e.Rows) != 0 || e.Summary.PlannedCost != nil || e.Count.Total != 0 {
 		t.Errorf("2030 = %+v", e)
@@ -117,11 +117,11 @@ func TestGetAllWork_EveryFilterParameter_FR004(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET = %d %s", response.Status, response.Body)
 	}
-	var r allwork.Result
+	var r core.Result
 	response.Decode(t, &r)
 	var activities []string
 	for _, row := range r.Rows {
-		if row.Level == allwork.LevelActivity && row.Role == allwork.RoleMatch {
+		if row.Level == core.LevelActivity && row.Role == core.RoleMatch {
 			activities = append(activities, row.Name)
 		}
 	}
@@ -142,7 +142,7 @@ func TestGetOptions_Contract(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET options = %d %s", response.Status, response.Body)
 	}
-	var o allwork.Options
+	var o core.Options
 	response.Decode(t, &o)
 	var plans, owners []string
 	for _, p := range o.Plans {

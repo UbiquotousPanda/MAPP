@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"context"
@@ -7,10 +7,10 @@ import (
 	"slices"
 	"time"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // The level registry (004 plan, "Levels below the plan"; D-195): the features below the plan — campaign and

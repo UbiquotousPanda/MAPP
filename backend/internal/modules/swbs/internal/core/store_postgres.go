@@ -1,13 +1,13 @@
-package swbs
+package core
 
 import (
 	"context"
 	"fmt"
 	"math"
 
+	"mapp/internal/modules/swbs/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/record"
 )
 
@@ -22,7 +22,7 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) AddRun(ctx context.Context, run Run) error {
-	q := s.db.Queries(ctx)
+	q := sqlcdb.New(s.db.Conn(ctx))
 	err := q.AddSwbsRun(ctx, sqlcdb.AddSwbsRunParams{
 		ID: run.ID, Source: string(run.Source), Version: run.Version, CreatedAt: run.CreatedAt,
 		CreatedByID: run.CreatedBy.ID, CreatedByName: run.CreatedBy.Name, UpdatedAt: run.UpdatedAt,
@@ -56,7 +56,7 @@ func (s *PostgresStore) GetRun(ctx context.Context, id string) (Run, bool, error
 }
 
 func (s *PostgresStore) DeleteRun(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteSwbsRun(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteSwbsRun(ctx, id); err != nil {
 		return fmt.Errorf("delete SWBS run %s: %w", id, err)
 	}
 	return nil
@@ -67,7 +67,7 @@ func (s *PostgresStore) ListRuns(ctx context.Context, limit int) ([]Run, int, er
 	if err != nil {
 		return nil, 0, err
 	}
-	total, err := s.db.Queries(ctx).CountSwbsRuns(ctx)
+	total, err := sqlcdb.New(s.db.Conn(ctx)).CountSwbsRuns(ctx)
 	if err != nil {
 		return nil, 0, fmt.Errorf("count SWBS runs: %w", err)
 	}
@@ -75,7 +75,7 @@ func (s *PostgresStore) ListRuns(ctx context.Context, limit int) ([]Run, int, er
 }
 
 func (s *PostgresStore) CountCodes(ctx context.Context, prefix string) (int, error) {
-	n, err := s.db.Queries(ctx).CountSwbsCodes(ctx, prefix)
+	n, err := sqlcdb.New(s.db.Conn(ctx)).CountSwbsCodes(ctx, prefix)
 	if err != nil {
 		return 0, fmt.Errorf("count SWBS codes starting %s: %w", prefix, err)
 	}
@@ -83,7 +83,7 @@ func (s *PostgresStore) CountCodes(ctx context.Context, prefix string) (int, err
 }
 
 func (s *PostgresStore) list(ctx context.Context, id *string, limit int) ([]Run, error) {
-	rows, err := s.db.Queries(ctx).ListSwbsRuns(ctx, sqlcdb.ListSwbsRunsParams{ID: id, MaxRuns: int32(min(limit, math.MaxInt32))}) //nolint:gosec // G115: min keeps it in range
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListSwbsRuns(ctx, sqlcdb.ListSwbsRunsParams{ID: id, MaxRuns: int32(min(limit, math.MaxInt32))}) //nolint:gosec // G115: min keeps it in range
 	if err != nil {
 		return nil, fmt.Errorf("select SWBS runs: %w", err)
 	}

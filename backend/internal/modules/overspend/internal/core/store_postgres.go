@@ -1,13 +1,13 @@
-package overspend
+package core
 
 import (
 	"cmp"
 	"context"
 	"fmt"
 
+	"mapp/internal/modules/overspend/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
 )
@@ -23,7 +23,7 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) PlanningBudgets(ctx context.Context) ([]Budget, error) {
-	rows, err := s.db.Queries(ctx).ListOverspendBudgets(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListOverspendBudgets(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select budgets with their planned cost: %w", err)
 	}
@@ -37,7 +37,7 @@ func (s *PostgresStore) PlanningBudgets(ctx context.Context) ([]Budget, error) {
 }
 
 func (s *PostgresStore) GlobalBudgets(ctx context.Context) ([]GlobalBudget, error) {
-	rows, err := s.db.Queries(ctx).ListOverspendGlobalBudgets(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListOverspendGlobalBudgets(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select global budgets with their plans: %w", err)
 	}
@@ -58,7 +58,7 @@ func (s *PostgresStore) GlobalBudgets(ctx context.Context) ([]GlobalBudget, erro
 }
 
 func (s *PostgresStore) Configuration(ctx context.Context) (Configuration, error) {
-	rows, err := s.db.Queries(ctx).GetOverspendConfiguration(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).GetOverspendConfiguration(ctx)
 	if err != nil {
 		return Configuration{}, fmt.Errorf("select the overspend configuration: %w", err)
 	}
@@ -74,7 +74,7 @@ func (s *PostgresStore) Configuration(ctx context.Context) (Configuration, error
 
 func (s *PostgresStore) PutConfiguration(ctx context.Context, c Configuration) error {
 	created, by := cmp.Or(c.CreatedAt, c.UpdatedAt), cmp.Or(c.CreatedBy, c.UpdatedBy)
-	err := s.db.Queries(ctx).PutOverspendConfiguration(ctx, sqlcdb.PutOverspendConfigurationParams{
+	err := sqlcdb.New(s.db.Conn(ctx)).PutOverspendConfiguration(ctx, sqlcdb.PutOverspendConfigurationParams{
 		DefaultMode: string(c.DefaultMode.Normalised()), ApprovalOverPlannedCost: string(c.ApprovalOverPlannedCost.Normalised()),
 		Version: c.Version, CreatedAt: created, CreatedByID: by.ID,
 		CreatedByName: by.Name, UpdatedAt: c.UpdatedAt, UpdatedByID: c.UpdatedBy.ID, UpdatedByName: c.UpdatedBy.Name,

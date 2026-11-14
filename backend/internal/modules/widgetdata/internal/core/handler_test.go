@@ -1,4 +1,4 @@
-package widgetdata_test
+package core_test
 
 import (
 	"net/http"
@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/widgetdata/internal/core"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/widgetdata"
 )
 
 const (
@@ -64,15 +64,15 @@ func TestQueryWidgetData_AnswersTheWidget_FR016(t *testing.T) {
 	t.Parallel()
 	c := apitest.New(t).SignIn(t, priyaEmail)
 	r := sumByType("activities")
-	r.Query.Filters = []widgetdata.Filter{{Field: "status", Operator: "ne", Values: []string{"Declined"}}}
-	r.Filters = &widgetdata.Filters{PlanIDs: []string{}, TeamIDs: []string{}}
+	r.Query.Filters = []core.Filter{{Field: "status", Operator: "ne", Values: []string{"Declined"}}}
+	r.Filters = &core.Filters{PlanIDs: []string{}, TeamIDs: []string{}}
 
 	answer := c.Do(t, http.MethodPost, query, r)
 
 	if answer.Status != http.StatusOK {
 		t.Fatalf("POST %s = %d %s", query, answer.Status, answer.Body)
 	}
-	var data widgetdata.Data
+	var data core.Data
 	answer.Decode(t, &data)
 	if len(data.Rows) == 0 || data.GroupCount != len(data.Rows) || data.Totals[0].Money == nil {
 		t.Errorf("answer = %+v, want activity types with their planned cost", data)
@@ -86,7 +86,7 @@ func TestQueryWidgetData_Refusals_FR019(t *testing.T) {
 	invalid.Query.Measures[0].Field = ptr("activity")
 	tests := []struct {
 		name   string
-		r      widgetdata.Request
+		r      core.Request
 		status int
 		code   string
 	}{

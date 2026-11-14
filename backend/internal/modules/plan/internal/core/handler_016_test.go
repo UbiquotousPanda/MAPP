@@ -1,4 +1,4 @@
-package plan_test
+package core_test
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -16,13 +16,13 @@ import (
 // evenly, with 65,000.00 GBP planned on two activities, a campaign budget and two initiative budgets (5 amounts).
 
 // getPlan reads the plan id as client and stops the test unless it answers 200.
-func getPlan(t *testing.T, client *apitest.Client, id string) plan.PlanView {
+func getPlan(t *testing.T, client *apitest.Client, id string) core.PlanView {
 	t.Helper()
 	response := client.Do(t, http.MethodGet, "/api/v1/plans/"+id, nil)
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET plan %s = %d %s", id, response.Status, response.Body)
 	}
-	var p plan.PlanView
+	var p core.PlanView
 	response.Decode(t, &p)
 	return p
 }
@@ -74,7 +74,7 @@ func TestCreatePlan_CurrencyAndType_Contract_FR011_FR032(t *testing.T) {
 	if created.Status != http.StatusCreated {
 		t.Fatalf("create = %d %s", created.Status, created.Body)
 	}
-	var p plan.PlanView
+	var p core.PlanView
 	created.Decode(t, &p)
 	if p.Currency != "GBP" || p.PlanType != "strategic" || p.PlanFigures.Budget.Format() != "100,000.00 GBP" ||
 		p.Figures.Budget.Format() != "126,582.28 USD" || p.CurrencyLock != nil {
@@ -140,7 +140,7 @@ func TestSetPlanPhasing_Contract_FR020(t *testing.T) {
 	if saved.Status != http.StatusOK {
 		t.Fatalf("save = %d %s", saved.Status, saved.Body)
 	}
-	var p plan.PlanView
+	var p core.PlanView
 	saved.Decode(t, &p)
 	if p.BudgetPhasing.Method != "custom" || p.BudgetPhasing.Total.Format() != "610,000.00 GBP" || p.BudgetPhasing.Problem == nil ||
 		*p.BudgetPhasing.Problem != "Adds up to 610,000.00 GBP, not the budget 600,000.00 GBP" || p.Version != before.Version+1 {

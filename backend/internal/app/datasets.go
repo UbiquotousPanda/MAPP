@@ -3,9 +3,9 @@ package app
 import (
 	"context"
 
-	"mapp/internal/customdashboard"
-	"mapp/internal/dataset"
-	"mapp/internal/history"
+	"mapp/internal/modules/customdashboard"
+	"mapp/internal/modules/dataset"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 )
 

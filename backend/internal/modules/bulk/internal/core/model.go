@@ -1,11 +1,11 @@
-// Package bulk runs one action on many selected campaigns, initiatives and activities (feature 012): each
+// Package core runs one action on many selected campaigns, initiatives and activities (feature 012): each
 // record through its owning area's single operation, with a preview that is the same run, discarded.
-package bulk
+package core
 
 import (
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 )

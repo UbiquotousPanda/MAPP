@@ -1,14 +1,14 @@
-package plan
+package core
 
 import (
 	"reflect"
 	"testing"
 	"time"
 
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // phasingOf is a phasing save of method with custom months as pairs of month and amount.

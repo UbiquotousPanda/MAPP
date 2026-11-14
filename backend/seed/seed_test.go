@@ -9,13 +9,13 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/budget"
-	"mapp/internal/history"
-	"mapp/internal/people"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/sample"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"
-	"mapp/internal/sample"
-	"mapp/internal/settings"
 	"mapp/internal/stores/storestest"
 	"mapp/seed"
 )

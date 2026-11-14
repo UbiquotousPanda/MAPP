@@ -1,13 +1,13 @@
-package plan
+package core
 
 import (
 	"reflect"
 	"testing"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // planWithBudget is a plan with a budget in USD; "" for none.

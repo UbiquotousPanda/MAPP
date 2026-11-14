@@ -1,4 +1,4 @@
-package financials_test
+package core_test
 
 import (
 	"context"
@@ -8,12 +8,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
-	"mapp/internal/financials"
-	"mapp/internal/lineitem"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/financials/internal/core"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
@@ -21,7 +22,6 @@ import (
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 var (
@@ -31,18 +31,18 @@ var (
 // pgStore gives a store whose database holds the line items L-1001 (plan P-1001, team T-1001) and L-1002
 // (plan P-1002, team T-1002), the import FIM-1001 and four transactions: linked to each line item, not
 // linked, and linked to a line item that is not stored.
-func pgStore(t *testing.T) (*database.DB, *financials.PostgresStore, []financials.Transaction) {
+func pgStore(t *testing.T) (*database.DB, *core.PostgresStore) {
 	t.Helper()
 	db := dbtest.NewDB(t)
-	s := financials.NewPostgresStore(db)
+	s := core.NewPostgresStore(db)
 	directory, catalogue := people.NewPostgresStore(db), settings.NewPostgresStore(db)
 	planStore, containers := plan.NewPostgresStore(db), campaign.NewPostgresStore(db)
 	activityStore, items := activity.NewPostgresStore(db), lineitem.NewPostgresStore(db)
 	linked := pgTransaction("FT-1001", "L-1001")
-	linked.MatchedBy, linked.ManualLink = financials.MatchedByManual, &financials.ManualLink{By: actor.System, At: pgMeta.CreatedAt}
+	linked.MatchedBy, linked.ManualLink = core.MatchedByManual, &core.ManualLink{By: actor.System, At: pgMeta.CreatedAt}
 	unlinked := pgTransaction("FT-1003", "")
-	unlinked.Type, unlinked.AccrualMonth, unlinked.MatchedBy, unlinked.NotLinkedReason = financials.TypeAccrual, "2026-09", "", "No match"
-	stored := []financials.Transaction{linked, pgTransaction("FT-1002", "L-1002"), unlinked, pgTransaction("FT-1004", "L-9999")}
+	unlinked.Type, unlinked.AccrualMonth, unlinked.MatchedBy, unlinked.NotLinkedReason = core.TypeAccrual, "2026-09", "", "No match"
+	stored := []core.Transaction{linked, pgTransaction("FT-1002", "L-1002"), unlinked, pgTransaction("FT-1004", "L-9999")}
 	pgWrite(t, db, func(ctx context.Context) error {
 		err := errors.Join(
 			catalogue.PutCurrency(ctx, settings.Currency{Code: "USD", Name: "US dollar", Active: true, Meta: pgMeta}),
@@ -50,7 +50,7 @@ func pgStore(t *testing.T) (*database.DB, *financials.PostgresStore, []financial
 			catalogue.PutModel(ctx, settings.Model{ID: "MOD-1001", Name: "Leads", ActivityTypeIDs: []string{"AT-1001"},
 				InqToMqlRate: money.PercentFromHundredths(200), MqlToDealRate: money.PercentFromHundredths(1000),
 				AverageDealSize: money.USD(money.FromCents(100)), Meta: pgMeta}),
-			s.PutImport(ctx, financials.Import{ID: "FIM-1001", Source: financials.SourceDemo, FeedName: "Demo data", Rows: 4,
+			s.PutImport(ctx, core.Import{ID: "FIM-1001", Source: core.SourceDemo, FeedName: "Demo data", Rows: 4,
 				New: 4, NotLinked: 1, Meta: pgMeta}))
 		for _, n := range []string{"1", "2"} {
 			err = errors.Join(err,
@@ -71,7 +71,7 @@ func pgStore(t *testing.T) (*database.DB, *financials.PostgresStore, []financial
 		}
 		return err
 	})
-	return db, s, stored
+	return db, s
 }
 
 func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) {
@@ -81,17 +81,17 @@ func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) 
 	}
 }
 
-func pgTransaction(id, lineItemID string) financials.Transaction {
-	return financials.Transaction{ID: id, Fields: financials.Fields{Type: financials.TypeInvoice, DocumentNumber: "51" + id[3:],
+func pgTransaction(id, lineItemID string) core.Transaction {
+	return core.Transaction{ID: id, Fields: core.Fields{Type: core.TypeInvoice, DocumentNumber: "51" + id[3:],
 		LineNumber: "1", PONumber: "45001", POLineNumber: "10", PostingDate: date.MustParse("2026-03-31"),
 		Amount: money.FromCents(-12050), Currency: "EUR", VendorCode: "V-1", VendorName: "Agency", Description: "Credit",
 		SwbsCode: "SWBS-1", TrackingKey: "HX1001", SentLineItemID: lineItemID},
-		LineItemID: lineItemID, MatchedBy: financials.MatchedByLineItemID, ImportID: "FIM-1001", Meta: pgMeta}
+		LineItemID: lineItemID, MatchedBy: core.MatchedByLineItemID, ImportID: "FIM-1001", Meta: pgMeta}
 }
 
 func TestPostgresStoreTransactionScopeIsolationFR009(t *testing.T) {
 	t.Parallel()
-	_, s, _ := pgStore(t)
+	_, s := pgStore(t)
 	inTeam := func(teamID string) authz.Scope {
 		return authz.Scope{PersonID: "U-1001", Holds: true, TeamIDs: []string{teamID}}
 	}

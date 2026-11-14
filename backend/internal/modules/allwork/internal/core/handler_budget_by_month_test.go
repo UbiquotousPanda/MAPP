@@ -1,11 +1,11 @@
-package allwork_test
+package core_test
 
 import (
 	"net/http"
 	"slices"
 	"testing"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -22,7 +22,7 @@ func TestGetBudgetByMonth_Contract_FR024(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s", response.Status, response.Body)
 	}
-	var result allwork.BudgetByMonth
+	var result core.BudgetByMonth
 	response.Decode(t, &result)
 	if result.PlanID != "P-1004" || result.Year != 2027 || result.Currency != "GBP" || len(result.Rows) != 4 {
 		t.Fatalf("result = %s", response.Body)

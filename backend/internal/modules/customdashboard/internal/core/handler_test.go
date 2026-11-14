@@ -1,4 +1,4 @@
-package customdashboard_test
+package core_test
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/customdashboard"
+	"mapp/internal/modules/customdashboard/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -60,7 +60,7 @@ func TestListCustomDashboards_MineAndSharedWithMe_FR003(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	names := func(email string) string {
-		list := decode[customdashboard.List](t, server.SignIn(t, email).Do(t, http.MethodGet, listPath, nil), http.StatusOK)
+		list := decode[core.List](t, server.SignIn(t, email).Do(t, http.MethodGet, listPath, nil), http.StatusOK)
 		return fmt.Sprintf("mine %v shared %v", ids(list.Mine), ids(list.SharedWithMe))
 	}
 
@@ -72,7 +72,7 @@ func TestListCustomDashboards_MineAndSharedWithMe_FR003(t *testing.T) {
 	}
 }
 
-func ids(list []customdashboard.Summary) []string {
+func ids(list []core.Summary) []string {
 	out := []string{}
 	for _, s := range list {
 		out = append(out, s.ID)
@@ -84,7 +84,7 @@ func TestGetCustomDashboard_200_404_FR005(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 
-	view := decode[customdashboard.View](t, server.SignIn(t, saraEmail).Do(t, http.MethodGet, demoPath, nil), http.StatusOK)
+	view := decode[core.View](t, server.SignIn(t, saraEmail).Do(t, http.MethodGet, demoPath, nil), http.StatusOK)
 	mei := server.SignIn(t, meiEmail)
 
 	if view.IsOwner || view.Access.Edit.Available || view.Access.Copy.Available || len(view.Widgets) != 6 ||
@@ -102,7 +102,7 @@ func TestCreateCustomDashboard_201_400_403_409_FR008_FR033(t *testing.T) {
 	broken := newDashboard("")
 	broken["widgets"].([]any)[0].(map[string]any)["layout"] = map[string]int{"x": 11, "y": 0, "w": 3, "h": 2}
 
-	created := decode[customdashboard.View](t, priya.Do(t, http.MethodPost, listPath, newDashboard("Activities")), http.StatusCreated)
+	created := decode[core.View](t, priya.Do(t, http.MethodPost, listPath, newDashboard("Activities")), http.StatusCreated)
 	refused := priya.Do(t, http.MethodPost, listPath, broken)
 	taken := priya.Do(t, http.MethodPost, listPath, newDashboard("lubricants europe overview"))
 	viewer := server.SignIn(t, saraEmail).Do(t, http.MethodPost, listPath, newDashboard("Mine"))
@@ -122,7 +122,7 @@ func TestCreateCustomDashboard_413_FR008(t *testing.T) {
 	t.Parallel()
 	priya := apitest.New(t).SignIn(t, priyaEmail)
 	body := newDashboard("Large")
-	body["description"] = strings.Repeat("x", customdashboard.MaxBodyBytes)
+	body["description"] = strings.Repeat("x", core.MaxBodyBytes)
 
 	assertError(t, priya.Do(t, http.MethodPost, listPath, body, apitest.SkipRequestValidation()),
 		http.StatusRequestEntityTooLarge, "too_large")
@@ -136,7 +136,7 @@ func TestUpdateCustomDashboard_200_403_404_409_FR006_FR012(t *testing.T) {
 
 	notOwner := server.SignIn(t, danielEmail).Do(t, http.MethodPatch, demoPath, rename)
 	notSeen := server.SignIn(t, meiEmail).Do(t, http.MethodPatch, demoPath, rename)
-	changed := decode[customdashboard.View](t, priya.Do(t, http.MethodPatch, demoPath, rename), http.StatusOK)
+	changed := decode[core.View](t, priya.Do(t, http.MethodPatch, demoPath, rename), http.StatusOK)
 	stale := priya.Do(t, http.MethodPatch, demoPath, map[string]any{"version": 1, "description": "Again"})
 
 	assertError(t, notOwner, http.StatusForbidden, "forbidden")
@@ -167,8 +167,8 @@ func TestCopyCustomDashboard_201_404_409_FR011(t *testing.T) {
 	server := apitest.New(t)
 	daniel := server.SignIn(t, danielEmail)
 
-	copied := decode[customdashboard.View](t, daniel.Do(t, http.MethodPost, demoPath+"/copy", nil), http.StatusCreated)
-	named := decode[customdashboard.View](t, daniel.Do(t, http.MethodPost, demoPath+"/copy", map[string]string{"name": "Mine"}),
+	copied := decode[core.View](t, daniel.Do(t, http.MethodPost, demoPath+"/copy", nil), http.StatusCreated)
+	named := decode[core.View](t, daniel.Do(t, http.MethodPost, demoPath+"/copy", map[string]string{"name": "Mine"}),
 		http.StatusCreated)
 	taken := daniel.Do(t, http.MethodPost, demoPath+"/copy", map[string]string{"name": "mine"})
 	notSeen := server.SignIn(t, meiEmail).Do(t, http.MethodPost, demoPath+"/copy", nil)
@@ -189,7 +189,7 @@ func TestShareCustomDashboard_200_400_403_FR046(t *testing.T) {
 
 	notHers := priya.Do(t, http.MethodPut, path, map[string]any{"version": 1, "teamIds": []string{"T-1001", "T-1002"}})
 	notOwner := server.SignIn(t, danielEmail).Do(t, http.MethodPut, path, map[string]any{"version": 1, "teamIds": []string{}})
-	private := decode[customdashboard.View](t, priya.Do(t, http.MethodPut, path, map[string]any{"version": 1, "teamIds": []string{}}),
+	private := decode[core.View](t, priya.Do(t, http.MethodPut, path, map[string]any{"version": 1, "teamIds": []string{}}),
 		http.StatusOK)
 	gone := server.SignIn(t, saraEmail).Do(t, http.MethodGet, demoPath, nil)
 

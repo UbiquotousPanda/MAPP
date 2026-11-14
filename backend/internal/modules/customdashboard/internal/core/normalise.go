@@ -1,4 +1,4 @@
-package customdashboard
+package core
 
 // normalised gives every list of the dashboard a value, so answers hold [] and never null.
 func normalised(d Dashboard) Dashboard {

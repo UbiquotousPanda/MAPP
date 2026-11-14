@@ -1,10 +1,10 @@
-package budget
+package core
 
 import (
 	"context"
 
-	"mapp/internal/overspend"
-	"mapp/internal/people"
+	"mapp/internal/modules/overspend"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
 )

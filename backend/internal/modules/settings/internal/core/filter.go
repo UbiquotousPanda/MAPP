@@ -1,4 +1,4 @@
-package settings
+package core
 
 func filter[T any](list []T, keep func(T) bool) []T {
 	kept := []T{}

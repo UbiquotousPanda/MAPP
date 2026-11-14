@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
 	"mapp/internal/platform/date"
 )
 

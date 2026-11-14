@@ -1,12 +1,12 @@
-package lineitem
+package core
 
 import (
 	"cmp"
 	"context"
 	"slices"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/fake"
-	"mapp/internal/settings"
 )
 
 // fakeStore is lineitemtest.Store for this package's own tests, which cannot import lineitemtest.

@@ -7,7 +7,7 @@
 //
 // Every business package registers a Kind for each record type it owns (in internal/app), logs its changes
 // with Service.Log inside the Write that makes the change, and deletes with Service.MoveToBin.
-package history
+package core
 
 import (
 	"encoding/json"

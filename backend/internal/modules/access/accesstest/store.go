@@ -5,7 +5,7 @@ package accesstest
 import (
 	"context"
 
-	"mapp/internal/access"
+	"mapp/internal/modules/access"
 	"mapp/internal/platform/fake"
 )
 

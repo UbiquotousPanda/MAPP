@@ -1,10 +1,10 @@
-package history_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -55,18 +55,18 @@ func deleteFolder(t *testing.T, c *apitest.Client, id string) {
 }
 
 // getLog answers GET /api/v1/activity-log with query, and stops the test when it is not 200.
-func getLog(t *testing.T, c *apitest.Client, query string) history.LogPage {
+func getLog(t *testing.T, c *apitest.Client, query string) core.LogPage {
 	t.Helper()
 	response := c.Do(t, http.MethodGet, "/api/v1/activity-log"+query, nil)
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET /api/v1/activity-log%s = %d %s", query, response.Status, response.Body)
 	}
-	var page history.LogPage
+	var page core.LogPage
 	response.Decode(t, &page)
 	return page
 }
 
-func entryIDs(entries []history.EntryView) []string {
+func entryIDs(entries []core.EntryView) []string {
 	list := make([]string, 0, len(entries))
 	for _, e := range entries {
 		list = append(list, e.ID)
@@ -75,7 +75,7 @@ func entryIDs(entries []history.EntryView) []string {
 }
 
 // firstID returns the id of the first entry, or "nothing" when there is none, for failure messages.
-func firstID(entries []history.EntryView) string {
+func firstID(entries []core.EntryView) string {
 	if len(entries) == 0 {
 		return "nothing"
 	}

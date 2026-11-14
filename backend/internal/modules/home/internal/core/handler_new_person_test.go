@@ -1,10 +1,10 @@
-package home_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/home"
+	"mapp/internal/modules/home/internal/core"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )
@@ -28,17 +28,17 @@ func TestHomeSummary_GettingStartedForANewPerson_FR020(t *testing.T) { //nolint:
 	}
 	newcomer := server.SignIn(t, "nina.berg@shell.com")
 
-	alone := get[home.SummaryView](t, newcomer, "/api/v1/home/summary?scope=myTeams")
+	alone := get[core.SummaryView](t, newcomer, "/api/v1/home/summary?scope=myTeams")
 	joined := alex.Do(t, http.MethodPatch, "/api/v1/people/"+nina.ID, map[string]any{"name": "Nina Berg",
 		"email": "nina.berg@shell.com", "jobTitle": "", "teamIds": []string{"T-1003"}, "version": nina.Version})
-	inTeam := get[home.SummaryView](t, newcomer, "/api/v1/home/summary?scope=myTeams")
+	inTeam := get[core.SummaryView](t, newcomer, "/api/v1/home/summary?scope=myTeams")
 
 	if alone.GettingStarted == nil || *alone.GettingStarted != "notInTeam" {
 		t.Errorf("getting started = %v, want notInTeam", alone.GettingStarted)
 	}
-	empty := home.PlannedCostTotal{PlannedCost: money.USD(money.Amount{})}
-	if alone.Plans != (home.PlanCounts{}) || alone.ActivitiesOwned != (home.ActivityCounts{}) ||
-		alone.WaitingForMe != (home.WaitingCounts{}) || alone.PlannedCost != empty {
+	empty := core.PlannedCostTotal{PlannedCost: money.USD(money.Amount{})}
+	if alone.Plans != (core.PlanCounts{}) || alone.ActivitiesOwned != (core.ActivityCounts{}) ||
+		alone.WaitingForMe != (core.WaitingCounts{}) || alone.PlannedCost != empty {
 		t.Errorf("cards = %+v, want every card empty", alone)
 	}
 	if joined.Status != http.StatusOK || inTeam.GettingStarted != nil || inTeam.Plans.Count != 1 {

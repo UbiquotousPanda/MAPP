@@ -1,4 +1,4 @@
-package simulatedgsap
+package core
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/purchaserequest"
 )
 
 type fakeNumbers map[string]int

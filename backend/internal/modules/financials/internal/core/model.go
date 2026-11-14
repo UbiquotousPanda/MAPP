@@ -11,7 +11,7 @@
 // The package reads the planning tree, the exchange rates, the display currency and the access rules
 // through the consumer interfaces of ports.go, which internal/app implements over features 002–007 and
 // 014 (D-196, D-252).
-package financials
+package core
 
 import (
 	"strings"

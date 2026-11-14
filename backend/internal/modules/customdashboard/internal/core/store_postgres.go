@@ -1,4 +1,4 @@
-package customdashboard
+package core
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"mapp/internal/modules/customdashboard/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/record"
 )
 
@@ -23,7 +23,7 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) ListVisible(ctx context.Context, personID string) ([]Dashboard, error) {
-	rows, err := s.db.Queries(ctx).ListCustomDashboardsVisible(ctx, personID)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListCustomDashboardsVisible(ctx, personID)
 	if err != nil {
 		return nil, fmt.Errorf("select visible custom dashboards: %w", err)
 	}
@@ -31,17 +31,17 @@ func (s *PostgresStore) ListVisible(ctx context.Context, personID string) ([]Das
 }
 
 func (s *PostgresStore) GetVisible(ctx context.Context, personID, id string) (Dashboard, bool, error) {
-	row, err := s.db.Queries(ctx).GetCustomDashboardVisible(ctx, sqlcdb.GetCustomDashboardVisibleParams{ID: id, PersonID: personID})
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetCustomDashboardVisible(ctx, sqlcdb.GetCustomDashboardVisibleParams{ID: id, PersonID: personID})
 	return s.one(ctx, row, err)
 }
 
 func (s *PostgresStore) Get(ctx context.Context, id string) (Dashboard, bool, error) {
-	row, err := s.db.Queries(ctx).GetCustomDashboard(ctx, id)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetCustomDashboard(ctx, id)
 	return s.one(ctx, row, err)
 }
 
 func (s *PostgresStore) Insert(ctx context.Context, d Dashboard) error {
-	err := s.db.Queries(ctx).InsertCustomDashboard(ctx, sqlcdb.InsertCustomDashboardParams{
+	err := sqlcdb.New(s.db.Conn(ctx)).InsertCustomDashboard(ctx, sqlcdb.InsertCustomDashboardParams{
 		ID: d.ID, Name: d.Name, Description: d.Description, OwnerID: d.OwnerID,
 		FilterDateFrom: database.DateColumn(d.Filters.DateFrom), FilterDateTo: database.DateColumn(d.Filters.DateTo),
 		FilterPlanIds: d.Filters.PlanIDs, FilterTeamIds: d.Filters.TeamIDs, Version: d.Version, CreatedAt: d.CreatedAt,
@@ -59,7 +59,7 @@ func (s *PostgresStore) Insert(ctx context.Context, d Dashboard) error {
 
 // Update saves the dashboard's own fields; widgets and shares change through their Replace methods.
 func (s *PostgresStore) Update(ctx context.Context, d Dashboard, previousVersion int) error {
-	updated, err := s.db.Queries(ctx).UpdateCustomDashboard(ctx, sqlcdb.UpdateCustomDashboardParams{
+	updated, err := sqlcdb.New(s.db.Conn(ctx)).UpdateCustomDashboard(ctx, sqlcdb.UpdateCustomDashboardParams{
 		ID: d.ID, PreviousVersion: previousVersion, Name: d.Name, Description: d.Description,
 		FilterDateFrom: database.DateColumn(d.Filters.DateFrom), FilterDateTo: database.DateColumn(d.Filters.DateTo),
 		FilterPlanIds: d.Filters.PlanIDs, FilterTeamIds: d.Filters.TeamIDs, Version: d.Version,
@@ -75,21 +75,21 @@ func (s *PostgresStore) Update(ctx context.Context, d Dashboard, previousVersion
 }
 
 func (s *PostgresStore) Delete(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteCustomDashboard(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteCustomDashboard(ctx, id); err != nil {
 		return fmt.Errorf("delete custom dashboard %s: %w", id, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) ReplaceWidgets(ctx context.Context, id string, widgets []Widget) error {
-	if err := s.db.Queries(ctx).DeleteCustomDashboardWidgets(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteCustomDashboardWidgets(ctx, id); err != nil {
 		return fmt.Errorf("delete widgets of custom dashboard %s: %w", id, err)
 	}
 	return s.insertWidgets(ctx, id, widgets)
 }
 
 func (s *PostgresStore) ReplaceShares(ctx context.Context, id string, teamIDs []string) error {
-	if err := s.db.Queries(ctx).DeleteCustomDashboardShares(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteCustomDashboardShares(ctx, id); err != nil {
 		return fmt.Errorf("delete shares of custom dashboard %s: %w", id, err)
 	}
 	return s.insertShares(ctx, id, teamIDs)
@@ -97,14 +97,14 @@ func (s *PostgresStore) ReplaceShares(ctx context.Context, id string, teamIDs []
 
 // RemoveTeamShares unshares every dashboard from a deleted team (D-379).
 func (s *PostgresStore) RemoveTeamShares(ctx context.Context, teamID string) error {
-	if err := s.db.Queries(ctx).DeleteCustomDashboardSharesOfTeam(ctx, teamID); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteCustomDashboardSharesOfTeam(ctx, teamID); err != nil {
 		return fmt.Errorf("delete custom dashboard shares of team %s: %w", teamID, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) UsingDataset(ctx context.Context, personID, datasetID string) ([]Ref, error) {
-	rows, err := s.db.Queries(ctx).DashboardsUsingDataset(ctx, sqlcdb.DashboardsUsingDatasetParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).DashboardsUsingDataset(ctx, sqlcdb.DashboardsUsingDatasetParams{
 		DatasetID: &datasetID, PersonID: personID,
 	})
 	if err != nil {
@@ -118,7 +118,7 @@ func (s *PostgresStore) UsingDataset(ctx context.Context, personID, datasetID st
 }
 
 func (s *PostgresStore) NameTaken(ctx context.Context, ownerID, name, exceptID string) (bool, error) {
-	taken, err := s.db.Queries(ctx).CustomDashboardNameTaken(ctx, sqlcdb.CustomDashboardNameTakenParams{
+	taken, err := sqlcdb.New(s.db.Conn(ctx)).CustomDashboardNameTaken(ctx, sqlcdb.CustomDashboardNameTakenParams{
 		OwnerID: ownerID, Name: name, ExceptID: exceptID,
 	})
 	if err != nil {
@@ -129,7 +129,7 @@ func (s *PostgresStore) NameTaken(ctx context.Context, ownerID, name, exceptID s
 
 // OwnerOf lets history show a dashboard's log and bin entries to its owner.
 func (s *PostgresStore) OwnerOf(ctx context.Context, id string) (ownerID string, found bool, err error) {
-	ownerID, err = s.db.Queries(ctx).CustomDashboardOwner(ctx, id)
+	ownerID, err = sqlcdb.New(s.db.Conn(ctx)).CustomDashboardOwner(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "", false, nil
 	}
@@ -159,11 +159,11 @@ func (s *PostgresStore) withParts(ctx context.Context, rows []sqlcdb.CustomDashb
 	for _, row := range rows {
 		ids = append(ids, row.ID)
 	}
-	widgetRows, err := s.db.Queries(ctx).CustomDashboardWidgets(ctx, ids)
+	widgetRows, err := sqlcdb.New(s.db.Conn(ctx)).CustomDashboardWidgets(ctx, ids)
 	if err != nil {
 		return nil, fmt.Errorf("select custom dashboard widgets: %w", err)
 	}
-	shareRows, err := s.db.Queries(ctx).CustomDashboardShares(ctx, ids)
+	shareRows, err := sqlcdb.New(s.db.Conn(ctx)).CustomDashboardShares(ctx, ids)
 	if err != nil {
 		return nil, fmt.Errorf("select custom dashboard shares: %w", err)
 	}
@@ -191,14 +191,14 @@ func (s *PostgresStore) insertWidgets(ctx context.Context, id string, widgets []
 		}
 		rows = append(rows, row)
 	}
-	if _, err := s.db.Queries(ctx).InsertCustomDashboardWidgets(ctx, rows); err != nil {
+	if _, err := sqlcdb.New(s.db.Conn(ctx)).InsertCustomDashboardWidgets(ctx, rows); err != nil {
 		return fmt.Errorf("insert widgets of custom dashboard %s: %w", id, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) insertShares(ctx context.Context, id string, teamIDs []string) error {
-	err := s.db.Queries(ctx).InsertCustomDashboardShares(ctx, sqlcdb.InsertCustomDashboardSharesParams{
+	err := sqlcdb.New(s.db.Conn(ctx)).InsertCustomDashboardShares(ctx, sqlcdb.InsertCustomDashboardSharesParams{
 		DashboardID: id, TeamIds: teamIDs,
 	})
 	if err != nil {

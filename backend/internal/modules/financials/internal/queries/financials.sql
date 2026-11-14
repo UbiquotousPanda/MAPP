@@ -36,14 +36,11 @@ WHERE (t.line_item_id IS NULL AND sqlc.arg(can_import)::boolean)
     OR (t.line_item_id IS NOT NULL AND sqlc.arg(finance_everything)::boolean)
     OR EXISTS (
         SELECT 1
-        FROM line_items li
-        JOIN activities a ON a.id = li.activity_id
-        JOIN initiatives i ON i.id = a.initiative_id
-        JOIN campaigns c ON c.id = i.campaign_id
-        WHERE li.id = t.line_item_id
-            AND plan_in_scope(c.plan_id, sqlc.arg(sees_everything)::boolean, sqlc.arg(viewer_id)::text,
+        FROM line_item_plans_view lp
+        WHERE lp.line_item_id = t.line_item_id
+            AND plan_in_scope(lp.plan_id, sqlc.arg(sees_everything)::boolean, sqlc.arg(viewer_id)::text,
                 sqlc.arg(views_plans)::boolean, sqlc.arg(viewer_team_ids)::text[])
-            AND plan_in_permission_scope(c.plan_id, false, sqlc.arg(viewer_id)::text,
+            AND plan_in_permission_scope(lp.plan_id, false, sqlc.arg(viewer_id)::text,
                 sqlc.arg(holds_finance)::boolean, sqlc.arg(finance_team_ids)::text[]))
 ORDER BY length(t.id), t.id COLLATE "C";
 

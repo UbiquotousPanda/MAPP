@@ -92,3 +92,7 @@ ORDER BY length(id), id COLLATE "C";
 -- name: ListActivityWorkflows :many
 SELECT id, coalesce(approval_workflow_id, '')::text AS approval_workflow_id
 FROM activities;
+
+-- name: CountActivitiesOwnedBy :one
+SELECT count(*)::integer FROM activities
+WHERE owner_id = sqlc.arg(person_id)::text;

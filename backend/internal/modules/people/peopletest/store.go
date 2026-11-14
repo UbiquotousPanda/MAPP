@@ -5,7 +5,7 @@ package peopletest
 import (
 	"context"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/fake"
 )
 

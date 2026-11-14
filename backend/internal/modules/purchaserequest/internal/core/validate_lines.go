@@ -1,4 +1,4 @@
-package purchaserequest
+package core
 
 import (
 	"context"
@@ -6,10 +6,10 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 func canSee(ctx context.Context, f LineItemFacts) bool {

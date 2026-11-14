@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // fakeSettings is Settings with two active models, one inactive, two finance budgets and a few Shell

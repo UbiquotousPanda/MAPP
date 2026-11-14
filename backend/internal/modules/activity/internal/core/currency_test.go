@@ -1,9 +1,9 @@
-package activity_test
+package core_test
 
 import (
 	"testing"
 
-	"mapp/internal/activity"
+	"mapp/internal/modules/activity/internal/core"
 	"mapp/internal/platform/money"
 )
 
@@ -26,17 +26,17 @@ func TestPlannedCost_MustBePlanCurrency_FR011(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 
-	_, refused := f.service.Create(t.Context(), priya, ukInitiativeID, activity.Input{
+	_, refused := f.service.Create(t.Context(), priya, ukInitiativeID, core.Input{
 		Name: "Dealer dinner", ActivityTypeID: eventType, PlannedCost: usdInput("1000.00"),
 	})
-	view := f.create(t, ukInitiativeID, activity.Input{Name: "Dealer dinner", ActivityTypeID: eventType, PlannedCost: gbpInput("1000.00")})
+	view := f.create(t, ukInitiativeID, core.Input{Name: "Dealer dinner", ActivityTypeID: eventType, PlannedCost: gbpInput("1000.00")})
 
 	assertError(t, refused, problems("plannedCost", "Enter the amount in GBP, the plan's currency."))
 	stored, _ := f.stored(t, view.ID)
 	if view.PlannedCost == nil || view.PlannedCost.Format() != "1,000.00 GBP" || stored.PlannedCost.Currency != "GBP" {
 		t.Errorf("planned cost = %v, stored %v; want 1,000.00 GBP", view.PlannedCost, stored.PlannedCost)
 	}
-	_, refusedEdit := f.edit(t, priya, view.ID, func(u *activity.Update) { u.PlannedCost = usdInput("2000.00") })
+	_, refusedEdit := f.edit(t, priya, view.ID, func(u *core.Update) { u.PlannedCost = usdInput("2000.00") })
 	assertError(t, refusedEdit, problems("plannedCost", "Enter the amount in GBP, the plan's currency."))
 }
 
@@ -45,7 +45,7 @@ func TestPlannedCost_MustBePlanCurrency_FR011(t *testing.T) {
 func TestActivityDisplay_FromPlanCurrency_FR013(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	f.lineItems.facts[ukLaunchID] = activity.LineItemFacts{Count: 2, PlannedCostPlan: amount(t, "34750.00"), Currency: "GBP"}
+	f.lineItems.facts[ukLaunchID] = core.LineItemFacts{Count: 2, PlannedCostPlan: amount(t, "34750.00"), Currency: "GBP"}
 
 	view := f.get(t, ukLaunchID)
 	rows, err := f.service.ListForPlan(t.Context(), priya, "P-1004")
@@ -60,7 +60,7 @@ func TestActivityDisplay_FromPlanCurrency_FR013(t *testing.T) {
 	if view.Display.PlannedCost.Format() != "50,632.91 USD" || view.Display.UnassignedPlannedCost.Format() != "6,645.57 USD" {
 		t.Errorf("display = %v / %v, want 50,632.91 USD / 6,645.57 USD", view.Display.PlannedCost, view.Display.UnassignedPlannedCost)
 	}
-	var row *activity.Summary
+	var row *core.Summary
 	for i := range rows {
 		if rows[i].ID == ukLaunchID {
 			row = &rows[i]
@@ -100,7 +100,7 @@ func TestActivityForm_TypeDefaultConverted_FR016(t *testing.T) {
 }
 
 // typeOption returns the form's activity type id; nil when the form does not offer it.
-func typeOption(form activity.FormView, id string) *activity.TypeOption {
+func typeOption(form core.FormView, id string) *core.TypeOption {
 	for i := range form.ActivityTypes {
 		if form.ActivityTypes[i].ID == id {
 			return &form.ActivityTypes[i]
@@ -116,10 +116,10 @@ func TestGoals_RevenueStaysUSD_FR019(t *testing.T) {
 	f := newFixture(t)
 	inq := int64(1_000)
 
-	view := f.create(t, ukInitiativeID, activity.Input{Name: "Dealer dinner", ActivityTypeID: eventType,
-		Goals: activity.GoalsInput{INQ: &inq}})
-	_, refused := f.service.Create(t.Context(), priya, ukInitiativeID, activity.Input{Name: "Fleet day", ActivityTypeID: eventType,
-		Goals: activity.GoalsInput{INQ: &inq, SetLaterStagesMyself: true, Revenue: gbpInput("1000.00")}})
+	view := f.create(t, ukInitiativeID, core.Input{Name: "Dealer dinner", ActivityTypeID: eventType,
+		Goals: core.GoalsInput{INQ: &inq}})
+	_, refused := f.service.Create(t.Context(), priya, ukInitiativeID, core.Input{Name: "Fleet day", ActivityTypeID: eventType,
+		Goals: core.GoalsInput{INQ: &inq, SetLaterStagesMyself: true, Revenue: gbpInput("1000.00")}})
 
 	if view.Goals.Revenue == nil || view.Goals.Revenue.Format() != "10,000.00 USD" {
 		t.Errorf("calculated revenue = %v, want 10,000.00 USD (1 deal of 10,000.00 USD)", view.Goals.Revenue)

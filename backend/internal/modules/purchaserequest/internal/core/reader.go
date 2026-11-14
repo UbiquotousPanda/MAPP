@@ -1,10 +1,10 @@
-package purchaserequest
+package core
 
 import (
 	"context"
 	"slices"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"

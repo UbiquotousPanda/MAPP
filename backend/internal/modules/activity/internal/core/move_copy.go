@@ -1,4 +1,4 @@
-package activity
+package core
 
 import (
 	"cmp"
@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/campaign"
-	"mapp/internal/history"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"

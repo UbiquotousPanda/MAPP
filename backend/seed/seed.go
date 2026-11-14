@@ -9,13 +9,13 @@ import (
 	"fmt"
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

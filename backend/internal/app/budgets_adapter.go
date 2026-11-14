@@ -4,8 +4,8 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/budget"
-	"mapp/internal/plan"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
 	"mapp/internal/stores"

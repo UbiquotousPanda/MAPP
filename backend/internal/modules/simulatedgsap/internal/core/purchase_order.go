@@ -1,14 +1,14 @@
-package simulatedgsap
+package core
 
 import (
 	"context"
 	"fmt"
 	"strconv"
 
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/ids"
-	"mapp/internal/purchaserequest"
 )
 
 const (

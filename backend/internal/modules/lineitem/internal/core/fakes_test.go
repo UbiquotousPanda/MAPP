@@ -1,16 +1,16 @@
-package lineitem
+package core
 
 import (
 	"context"
 	"encoding/json"
 	"slices"
 
-	"mapp/internal/history"
-	"mapp/internal/people"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 type fakeActivities struct {

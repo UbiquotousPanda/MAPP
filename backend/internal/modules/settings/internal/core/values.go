@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 )

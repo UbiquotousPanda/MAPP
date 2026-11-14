@@ -1,6 +1,6 @@
-// Package spa is the SP&A view of a plan or campaign (feature 013): planned cost against committed and actual
+// Package core is the SP&A view of a plan or campaign (feature 013): planned cost against committed and actual
 // spend, by period, by dimension and by activity, with the budget and procurement panels. It stores nothing.
-package spa
+package core
 
 import (
 	"time"

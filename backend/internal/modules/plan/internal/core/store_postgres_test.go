@@ -1,4 +1,4 @@
-package plan_test
+package core_test
 
 import (
 	"context"
@@ -9,16 +9,16 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan/internal/core"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 var (
@@ -27,7 +27,7 @@ var (
 
 // pgStore gives a store whose database holds what plans refer to: US dollars, the model MOD-1001, the
 // people U-1001 to U-1003 and the teams T-1001 and T-1002.
-func pgStore(t *testing.T) (*database.DB, *plan.PostgresStore) {
+func pgStore(t *testing.T) (*database.DB, *core.PostgresStore) {
 	t.Helper()
 	db := dbtest.NewDB(t)
 	directory, catalogue := people.NewPostgresStore(db), settings.NewPostgresStore(db)
@@ -45,7 +45,7 @@ func pgStore(t *testing.T) (*database.DB, *plan.PostgresStore) {
 			directory.PutTeam(ctx, people.Team{ID: "T-1001", Name: "Lubricants Europe", Colour: "blue", Meta: meta}),
 			directory.PutTeam(ctx, people.Team{ID: "T-1002", Name: "Mobility China", Colour: "teal", Meta: meta}))
 	})
-	return db, plan.NewPostgresStore(db)
+	return db, core.NewPostgresStore(db)
 }
 
 func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) {
@@ -55,10 +55,10 @@ func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) 
 	}
 }
 
-func pgPlan(id, createdBy, ownerID string, teamIDs ...string) plan.Plan {
-	return plan.Plan{ID: id, Name: "Plan " + id, Year: 2026, ModelID: "MOD-1001", TeamIDs: append([]string{}, teamIDs...),
-		OwnerID: ownerID, DefaultSpread: plan.SpreadEvenly, GoalStage: plan.StageINQ,
-		Attributes: settings.AttributeValues{}, Status: plan.StatusDraft, Currency: "USD", PlanType: plan.TypeOperational,
+func pgPlan(id, createdBy, ownerID string, teamIDs ...string) core.Plan {
+	return core.Plan{ID: id, Name: "Plan " + id, Year: 2026, ModelID: "MOD-1001", TeamIDs: append([]string{}, teamIDs...),
+		OwnerID: ownerID, DefaultSpread: core.SpreadEvenly, GoalStage: core.StageINQ,
+		Attributes: settings.AttributeValues{}, Status: core.StatusDraft, Currency: "USD", PlanType: core.TypeOperational,
 		BudgetPhasing: rollup.NotPhased, Meta: record.NewMeta(actor.Actor{ID: createdBy, Name: createdBy}, pgAt)}
 }
 
@@ -67,7 +67,7 @@ func pgPlan(id, createdBy, ownerID string, teamIDs ...string) plan.Plan {
 func TestPostgresStorePlanScopeIsCanViewFR009(t *testing.T) {
 	t.Parallel()
 	db, s := pgStore(t)
-	stored := []plan.Plan{pgPlan("P-1001", "U-1003", "U-1003", "T-1001"), pgPlan("P-1002", "U-1001", "U-1002", "T-1002"),
+	stored := []core.Plan{pgPlan("P-1001", "U-1003", "U-1003", "T-1001"), pgPlan("P-1002", "U-1001", "U-1002", "T-1002"),
 		pgPlan("P-1003", "U-1001", ""), pgPlan("P-1004", "U-1003", "")}
 	pgWrite(t, db, func(ctx context.Context) error {
 		return errors.Join(s.Put(ctx, stored[0]), s.Put(ctx, stored[1]), s.Put(ctx, stored[2]), s.Put(ctx, stored[3]))
@@ -114,7 +114,7 @@ func viewing(t *testing.T, personID string, scope authz.ScopeType, teamIDs ...st
 	return authz.With(t.Context(), grants)
 }
 
-func seenByCanView(ctx context.Context, stored []plan.Plan) []string {
+func seenByCanView(ctx context.Context, stored []core.Plan) []string {
 	ids := []string{}
 	for _, p := range stored {
 		if authz.CanView(ctx, authz.PlanFacts{ID: p.ID, TeamIDs: p.TeamIDs, OwnerID: p.OwnerID, CreatedByID: p.CreatedBy.ID}) {
@@ -124,7 +124,7 @@ func seenByCanView(ctx context.Context, stored []plan.Plan) []string {
 	return ids
 }
 
-func planIDs(list []plan.Plan) []string {
+func planIDs(list []core.Plan) []string {
 	ids := []string{}
 	for _, p := range list {
 		ids = append(ids, p.ID)

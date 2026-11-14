@@ -1,9 +1,9 @@
-package activity
+package core
 
 import (
 	"fmt"
 
-	"mapp/internal/campaign"
+	"mapp/internal/modules/campaign"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 )

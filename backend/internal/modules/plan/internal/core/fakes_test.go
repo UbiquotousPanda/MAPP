@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"slices"
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 )

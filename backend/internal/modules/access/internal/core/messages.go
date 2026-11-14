@@ -1,4 +1,4 @@
-package access
+package core
 
 // The texts the access API says (plan "User-visible messages"); "%s" and "%d" are filled in at run time.
 

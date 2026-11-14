@@ -3,9 +3,9 @@ package app
 import (
 	"context"
 
-	"mapp/internal/customdashboard"
-	"mapp/internal/history"
-	"mapp/internal/people"
+	"mapp/internal/modules/customdashboard"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people"
 	"mapp/internal/stores"
 )
 

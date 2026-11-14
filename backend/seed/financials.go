@@ -3,7 +3,7 @@ package seed
 import (
 	"context"
 
-	"mapp/internal/financials"
+	"mapp/internal/modules/financials"
 	"mapp/internal/platform/money"
 )
 

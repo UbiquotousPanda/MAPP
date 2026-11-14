@@ -1,9 +1,9 @@
-package dashboard
+package core
 
 import (
 	"strconv"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
 
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"

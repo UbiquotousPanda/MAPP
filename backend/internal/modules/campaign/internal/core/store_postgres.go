@@ -1,18 +1,18 @@
-package campaign
+package core
 
 import (
 	"context"
 	"fmt"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/overspend"
 
+	"mapp/internal/modules/campaign/internal/sqlcdb"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // PostgresStore is the Store on PostgreSQL; initiatives are in store_postgres_initiatives.go. The
@@ -78,13 +78,13 @@ func (s *PostgresStore) DeleteCampaign(ctx context.Context, id string) error {
 }
 
 func (s *PostgresStore) campaigns(ctx context.Context, filter sqlcdb.ListCampaignsParams) ([]Campaign, error) {
-	rows, err := s.db.Queries(ctx).ListCampaigns(ctx, filter)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListCampaigns(ctx, filter)
 	s.campaignRecords().Keep(ctx, rows)
 	return campaignsFromRows(rows, err)
 }
 
 func (s *PostgresStore) campaignsInScope(ctx context.Context, scope authz.Scope, id *string) ([]Campaign, error) {
-	rows, err := s.db.Queries(ctx).ListCampaignsInScope(ctx, sqlcdb.ListCampaignsInScopeParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListCampaignsInScope(ctx, sqlcdb.ListCampaignsInScopeParams{
 		ID: id, SeesEverything: scope.Everything, ViewerID: scope.PersonID, ViewsPlans: scope.Holds,
 		ViewerTeamIds: scope.TeamIDs,
 	})

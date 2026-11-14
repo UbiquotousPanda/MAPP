@@ -1,12 +1,12 @@
-package activity_test
+package core_test
 
 import (
 	"net/http"
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/history"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/apitest"
 )
 
@@ -32,7 +32,7 @@ func TestNewActivityForm_Contract_FR001(t *testing.T) {
 
 	response := priya.Do(t, http.MethodGet, "/api/v1/initiatives/I-1001/activity-form", nil)
 
-	var form activity.FormView
+	var form core.FormView
 	assertStatus(t, response, http.StatusOK)
 	response.Decode(t, &form)
 	if form.Context.Initiative.Name != "Digital & social" || form.Defaults == nil || form.Defaults.Owner.Name != "Priya Raman" ||
@@ -57,12 +57,12 @@ func TestCreateActivity_Contract_FR004(t *testing.T) {
 	})
 	gone := priya.Do(t, http.MethodPost, "/api/v1/initiatives/I-9999/activities", map[string]any{"name": "Launch video", "activityTypeId": "AT-1002"})
 
-	var view activity.View
+	var view core.View
 	assertStatus(t, created, http.StatusCreated)
 	created.Decode(t, &view)
 	// A-1013 is the activity of the demo history's deleted initiative, in the recycle bin (011 T019); A-1011 and
 	// A-1012 are 016's GBP plan.
-	if view.ID != "A-1014" || view.Status != activity.StatusCreated || view.PlannedCost.Format() != "25,000.00 USD" {
+	if view.ID != "A-1014" || view.Status != core.StatusCreated || view.PlannedCost.Format() != "25,000.00 USD" {
 		t.Errorf("created = %+v", view)
 	}
 	assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.","fields":[`+
@@ -82,7 +82,7 @@ func TestListPlanActivities_Contract_FR033(t *testing.T) {
 
 	response := priya.Do(t, http.MethodGet, "/api/v1/plans/P-1002/activities", nil)
 
-	var page activity.SummaryPage
+	var page core.SummaryPage
 	assertStatus(t, response, http.StatusOK)
 	response.Decode(t, &page)
 	var rows []string
@@ -104,7 +104,7 @@ func TestGetActivity_Contract_FR019(t *testing.T) {
 
 	response := priya.Do(t, http.MethodGet, "/api/v1/activities/A-1001", nil)
 
-	var view activity.View
+	var view core.View
 	assertStatus(t, response, http.StatusOK)
 	response.Decode(t, &view)
 	var messages []string
@@ -112,7 +112,7 @@ func TestGetActivity_Contract_FR019(t *testing.T) {
 		messages = append(messages, p.Message)
 	}
 	want := []string{"Company code — needed to submit", "Cost centre — needed to submit", "PIR — needed to submit"}
-	if view.Completeness.MissingFields != 3 || !slices.Equal(messages, want) || view.DisplayStatus != activity.DisplayCreated ||
+	if view.Completeness.MissingFields != 3 || !slices.Equal(messages, want) || view.DisplayStatus != core.DisplayCreated ||
 		view.Goals.Revenue.Format() != "2,500,000.00 USD" || view.Plan.Name != "FY2026 Lubricants Europe" {
 		t.Errorf("A-1001 = %+v", view)
 	}
@@ -128,7 +128,7 @@ func TestEditActivityForm_Contract_FR013(t *testing.T) {
 
 	response := priya.Do(t, http.MethodGet, "/api/v1/activities/A-1001/form", nil)
 
-	var form activity.FormView
+	var form core.FormView
 	assertStatus(t, response, http.StatusOK)
 	response.Decode(t, &form)
 	if form.Defaults != nil || !slices.Equal(form.ExistingNames, []string{"Social always-on"}) {
@@ -145,7 +145,7 @@ func TestUpdateActivity_Contract_FR026(t *testing.T) {
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 	daniel := server.SignIn(t, "daniel.okoro@shell.com")
-	var a1004 activity.View
+	var a1004 core.View
 	priya.Do(t, http.MethodGet, "/api/v1/activities/A-1004", nil).Decode(t, &a1004)
 	form := formOf(a1004)
 	form.PlannedCost = usdInput("35000.00")
@@ -157,10 +157,10 @@ func TestUpdateActivity_Contract_FR026(t *testing.T) {
 
 	assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
 		`"fields":[{"field":"restartApproval","message":"This activity will need approval again — confirm the change to save it."}]}}`)
-	var view activity.View
+	var view core.View
 	assertStatus(t, saved, http.StatusOK)
 	saved.Decode(t, &view)
-	if view.Status != activity.StatusCreated || view.Version != 2 || view.PlannedCost.Format() != "35,000.00 USD" {
+	if view.Status != core.StatusCreated || view.Version != 2 || view.PlannedCost.Format() != "35,000.00 USD" {
 		t.Errorf("saved = status %s, version %d, cost %v", view.Status, view.Version, view.PlannedCost)
 	}
 	assertAnswer(t, outOfDate, http.StatusConflict, `{"error":{"code":"version_conflict","message":"Not saved — Priya Raman changed this activity",`+

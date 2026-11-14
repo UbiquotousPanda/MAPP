@@ -1,11 +1,11 @@
-package plan
+package core
 
 import (
 	"reflect"
 	"slices"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 )
 

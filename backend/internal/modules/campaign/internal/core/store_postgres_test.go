@@ -1,4 +1,4 @@
-package campaign_test
+package core_test
 
 import (
 	"context"
@@ -10,9 +10,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/campaign"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/campaign/internal/core"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
@@ -20,8 +22,6 @@ import (
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 var (
@@ -30,7 +30,7 @@ var (
 
 // pgStore gives a store whose database holds the plans P-1001 (team T-1001) and P-1002 (team T-1002, owned
 // by U-1002), with what they refer to.
-func pgStore(t *testing.T) (*database.DB, *campaign.PostgresStore) {
+func pgStore(t *testing.T) (*database.DB, *core.PostgresStore) {
 	t.Helper()
 	db := dbtest.NewDB(t)
 	directory, catalogue, planStore := people.NewPostgresStore(db), settings.NewPostgresStore(db), plan.NewPostgresStore(db)
@@ -52,7 +52,7 @@ func pgStore(t *testing.T) (*database.DB, *campaign.PostgresStore) {
 			directory.PutTeam(ctx, people.Team{ID: "T-1002", Name: "Mobility China", Colour: "teal", Meta: pgMeta}),
 			planStore.Put(ctx, p("P-1001", "T-1001", "")), planStore.Put(ctx, p("P-1002", "T-1002", "U-1002")))
 	})
-	return db, campaign.NewPostgresStore(db)
+	return db, core.NewPostgresStore(db)
 }
 
 func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) {
@@ -62,18 +62,18 @@ func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) 
 	}
 }
 
-func pgCampaign(id, planID, name string) campaign.Campaign {
-	return campaign.Campaign{ID: id, PlanID: planID, Name: name, Attributes: settings.AttributeValues{},
+func pgCampaign(id, planID, name string) core.Campaign {
+	return core.Campaign{ID: id, PlanID: planID, Name: name, Attributes: settings.AttributeValues{},
 		BudgetPhasing: rollup.NotPhased, Meta: pgMeta}
 }
 
-func pgInitiative(id, campaignID string) campaign.Initiative {
-	return campaign.Initiative{ID: id, CampaignID: campaignID, Name: "Initiative " + id,
+func pgInitiative(id, campaignID string) core.Initiative {
+	return core.Initiative{ID: id, CampaignID: campaignID, Name: "Initiative " + id,
 		Attributes: settings.AttributeValues{}, BudgetPhasing: rollup.NotPhased, Meta: pgMeta}
 }
 
 // pgFixture saves C-1001 and C-1003 in P-1001 and C-1002 in P-1002, each with one initiative.
-func pgFixture(t *testing.T) (*database.DB, *campaign.PostgresStore, []campaign.Campaign, []campaign.Initiative) {
+func pgFixture(t *testing.T) (*database.DB, *core.PostgresStore, []core.Campaign, []core.Initiative) {
 	t.Helper()
 	db, s := pgStore(t)
 	owner, start, end := "U-1001", date.MustParse("2026-02-01"), date.MustParse("2026-06-30")
@@ -85,10 +85,10 @@ func pgFixture(t *testing.T) (*database.DB, *campaign.PostgresStore, []campaign.
 	second.Budget = &budget
 	second.BudgetPhasing = rollup.Phasing{Method: rollup.MethodCustom, Months: []rollup.PhasingMonth{
 		{Month: "2026-03", Amount: money.FromCents(5000000)}}}
-	stored := []campaign.Campaign{first, second, pgCampaign("C-1003", "P-1001", "Retail")}
+	stored := []core.Campaign{first, second, pgCampaign("C-1003", "P-1001", "Retail")}
 	initiative := pgInitiative("I-1001", "C-1001")
 	initiative.StartDate, initiative.EndDate, initiative.Budget = &start, &start, &budget
-	initiatives := []campaign.Initiative{initiative, pgInitiative("I-1002", "C-1002")}
+	initiatives := []core.Initiative{initiative, pgInitiative("I-1002", "C-1002")}
 	pgWrite(t, db, func(ctx context.Context) error {
 		return errors.Join(s.PutCampaign(ctx, stored[0]), s.PutCampaign(ctx, stored[1]), s.PutCampaign(ctx, stored[2]),
 			s.PutInitiative(ctx, initiatives[0]), s.PutInitiative(ctx, initiatives[1]))
@@ -132,7 +132,7 @@ func TestPostgresStoreCampaignScopeIsolationFR009(t *testing.T) {
 	}
 }
 
-func assertScopedGets(t *testing.T, s *campaign.PostgresStore, scope authz.Scope, visible []string) {
+func assertScopedGets(t *testing.T, s *core.PostgresStore, scope authz.Scope, visible []string) {
 	t.Helper()
 	for _, id := range []string{"C-1001", "C-1002"} {
 		if _, found, err := s.GetCampaignInScope(t.Context(), scope, id); err != nil || found != slices.Contains(visible, id) {
@@ -144,7 +144,7 @@ func assertScopedGets(t *testing.T, s *campaign.PostgresStore, scope authz.Scope
 	}
 }
 
-func campaignIDs(list []campaign.Campaign) []string {
+func campaignIDs(list []core.Campaign) []string {
 	ids := []string{}
 	for _, c := range list {
 		ids = append(ids, c.ID)
@@ -152,7 +152,7 @@ func campaignIDs(list []campaign.Campaign) []string {
 	return ids
 }
 
-func initiativeIDs(list []campaign.Initiative) []string {
+func initiativeIDs(list []core.Initiative) []string {
 	ids := []string{}
 	for _, i := range list {
 		ids = append(ids, i.ID)

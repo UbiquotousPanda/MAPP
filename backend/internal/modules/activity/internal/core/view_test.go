@@ -1,10 +1,10 @@
-package activity_test
+package core_test
 
 import (
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
+	"mapp/internal/modules/activity/internal/core"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 )
@@ -16,9 +16,9 @@ import (
 func TestView_DerivedValues_FR019_FR020(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	f.lineItems.facts["A-1001"] = activity.LineItemFacts{
+	f.lineItems.facts["A-1001"] = core.LineItemFacts{
 		Count: 3, PlannedCostPlan: money.FromCents(10_000_000), AutoSpread: 2, CustomSpread: 1,
-		Problems: []activity.LineItemProblem{{LineItemID: "L-1002", LineItemName: "Edit", Code: "missingField",
+		Problems: []core.LineItemProblem{{LineItemID: "L-1002", LineItemName: "Edit", Code: "missingField",
 			Field: "attributes.SA-1033", Message: "GL code — needed to submit"}},
 	}
 	f.deactivateWorkflow(t, lubricantsFlow)
@@ -28,19 +28,19 @@ func TestView_DerivedValues_FR019_FR020(t *testing.T) {
 	if view.Plan.Name != "FY2026 Lubricants Europe" || view.Campaign.Name != "Helix launch" || view.Initiative.Name != "Digital & social" {
 		t.Errorf("path = %+v › %+v › %+v", view.Plan, view.Campaign, view.Initiative)
 	}
-	if view.Owner.Name != "Priya Raman" || view.ActivityType != (activity.TypeRef{ID: contentType, Name: "Content production", Active: true, Allowed: true}) ||
-		*view.ApprovalWorkflow != (activity.WorkflowRef{ID: lubricantsFlow, Name: "Lubricants EU approval", Active: false}) {
+	if view.Owner.Name != "Priya Raman" || view.ActivityType != (core.TypeRef{ID: contentType, Name: "Content production", Active: true, Allowed: true}) ||
+		*view.ApprovalWorkflow != (core.WorkflowRef{ID: lubricantsFlow, Name: "Lubricants EU approval", Active: false}) {
 		t.Errorf("owner %+v, type %+v, workflow %+v", view.Owner, view.ActivityType, view.ApprovalWorkflow)
 	}
-	if view.UnassignedPlannedCost.Format() != "20,000.00 USD" || view.LineItems != (activity.LineItemTotals{
+	if view.UnassignedPlannedCost.Format() != "20,000.00 USD" || view.LineItems != (core.LineItemTotals{
 		Count: 3, PlannedCost: money.USD(money.FromCents(10_000_000)), AutoSpread: 2, CustomSpread: 1}) {
 		t.Errorf("unassigned %v, line items %+v", view.UnassignedPlannedCost, view.LineItems)
 	}
-	if view.Completeness != (activity.Completeness{MissingFields: 4, LineItemsNeedingAttention: 1}) {
+	if view.Completeness != (core.Completeness{MissingFields: 4, LineItemsNeedingAttention: 1}) {
 		t.Errorf("completeness = %+v, want 4 fields (3 attributes, inactive workflow) and 1 line item", view.Completeness)
 	}
 	r := view.Readiness
-	if r.Ready || r.ProblemCount != 5 || r.Activity[3].Code != activity.ProblemInactiveWorkflow ||
+	if r.Ready || r.ProblemCount != 5 || r.Activity[3].Code != core.ProblemInactiveWorkflow ||
 		r.LineItems[0].Message != "Line item 'Edit' (L-1002): GL code — needed to submit" ||
 		r.Advice[0].Message != "20,000.00 USD not yet assigned to a line item" {
 		t.Errorf("readiness = %+v", r)
@@ -76,9 +76,9 @@ func TestView_HiddenGroupsNotCountedSplitListed_FR015_FR017(t *testing.T) {
 func TestListForPlan_Order_FR033(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	f.create(t, "I-1005", activity.Input{Name: "b promo", ActivityTypeID: eventType, StartDate: text("2026-04-01")})
-	f.create(t, "I-1005", activity.Input{Name: "A promo", ActivityTypeID: eventType, StartDate: text("2026-04-01")})
-	f.create(t, fleetCards, activity.Input{Name: "Another undated", ActivityTypeID: eventType})
+	f.create(t, "I-1005", core.Input{Name: "b promo", ActivityTypeID: eventType, StartDate: text("2026-04-01")})
+	f.create(t, "I-1005", core.Input{Name: "A promo", ActivityTypeID: eventType, StartDate: text("2026-04-01")})
+	f.create(t, fleetCards, core.Input{Name: "Another undated", ActivityTypeID: eventType})
 
 	rows, err := f.service.ListForPlan(t.Context(), priya, "P-1002")
 
@@ -93,7 +93,7 @@ func TestListForPlan_Order_FR033(t *testing.T) {
 	if !slices.Equal(names, want) {
 		t.Errorf("rows = %q, want %q", names, want)
 	}
-	if rows[2].Completeness.MissingFields != 2 || rows[2].Version != 1 || rows[3].DisplayStatus != activity.DisplaySubmitted {
+	if rows[2].Completeness.MissingFields != 2 || rows[2].Version != 1 || rows[3].DisplayStatus != core.DisplaySubmitted {
 		t.Errorf("rows carry completeness, version and status: %+v", rows[2:4])
 	}
 	_, err = f.service.ListForPlan(t.Context(), priya, "P-9999")
@@ -105,13 +105,13 @@ func TestListForPlan_Order_FR033(t *testing.T) {
 func TestView_DisplayStatusOfDemoActivities_FR021(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	want := map[string]activity.DisplayStatus{
-		"A-1002": activity.DisplayInProgress, // 1 Jan – 30 Jun
-		"A-1003": activity.DisplayComplete,   // ended 28 Feb
-		"A-1006": activity.DisplayApproved,   // starts 1 Nov
-		"A-1007": activity.DisplayInProgress, // ongoing
-		"A-1004": activity.DisplaySubmitted,
-		"A-1005": activity.DisplayDeclined,
+	want := map[string]core.DisplayStatus{
+		"A-1002": core.DisplayInProgress, // 1 Jan – 30 Jun
+		"A-1003": core.DisplayComplete,   // ended 28 Feb
+		"A-1006": core.DisplayApproved,   // starts 1 Nov
+		"A-1007": core.DisplayInProgress, // ongoing
+		"A-1004": core.DisplaySubmitted,
+		"A-1005": core.DisplayDeclined,
 	}
 	for id, status := range want {
 		if got := f.get(t, id).DisplayStatus; got != status {

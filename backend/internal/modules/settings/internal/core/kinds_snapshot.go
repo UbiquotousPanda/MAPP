@@ -1,10 +1,10 @@
-package settings
+package core
 
 import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // snapshot returns record as history keeps it: its id, name, parent and stored data.

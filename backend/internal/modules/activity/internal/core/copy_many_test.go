@@ -1,4 +1,4 @@
-package activity_test
+package core_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/activity"
+	"mapp/internal/modules/activity/internal/core"
 )
 
 // A campaign copy copies all its initiatives' activities at once, yet the first initiative's A-1007, the highest
@@ -15,17 +15,17 @@ func TestCopyMany_IDsInitiativeByInitiative_028_FR004(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	const events = "I-1003"
-	f.lineItems.facts["A-1007"] = activity.LineItemFacts{Count: 2}
-	pairs := []activity.CopyPair{{FromID: events, ToID: retailEvents}, {FromID: digitalAndSocial, ToID: printAndOutdoor}}
+	f.lineItems.facts["A-1007"] = core.LineItemFacts{Count: 2}
+	pairs := []core.CopyPair{{FromID: events, ToID: retailEvents}, {FromID: digitalAndSocial, ToID: printAndOutdoor}}
 
-	var counts activity.CopyCounts
+	var counts core.CopyCounts
 	err := f.db.Write(t.Context(), func(ctx context.Context) error {
 		var err error
 		counts, err = f.service.CopyMany(ctx, daniel, pairs, 0)
 		return err
 	})
 
-	if err != nil || counts != (activity.CopyCounts{Activities: 3, LineItems: 2}) {
+	if err != nil || counts != (core.CopyCounts{Activities: 3, LineItems: 2}) {
 		t.Fatalf("CopyMany = %+v, %v; want 3 activities and 2 line items", counts, err)
 	}
 	partner := f.byName(t, retailEvents)["Partner co-marketing fund"]

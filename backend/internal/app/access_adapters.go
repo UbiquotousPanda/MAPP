@@ -4,9 +4,9 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/access"
-	"mapp/internal/approval"
-	"mapp/internal/people"
+	"mapp/internal/modules/access"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/stores"

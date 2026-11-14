@@ -1,12 +1,12 @@
-package lineitem
+package core
 
 import (
 	"reflect"
 	"slices"
 	"testing"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 )
 
 // custom returns a custom spread of the months and amounts given as pairs: "2026-02", "2000.00", ….

@@ -1,4 +1,4 @@
-package swbs_test
+package core_test
 
 import (
 	"context"
@@ -7,15 +7,15 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
-	"mapp/internal/history/historytest"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/history/historytest"
+	"mapp/internal/modules/swbs/internal/core"
+	"mapp/internal/modules/swbs/swbstest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"
-	"mapp/internal/swbs"
-	"mapp/internal/swbs/swbstest"
 )
 
 var (
@@ -24,7 +24,7 @@ var (
 )
 
 type lineItem struct {
-	swbs.Request
+	core.Request
 	ready bool
 	code  string
 	at    time.Time
@@ -36,20 +36,20 @@ type fakeLineItems struct {
 }
 
 func (f *fakeLineItems) add(id, name, companyCode string, ready bool) {
-	f.items = append(f.items, &lineItem{Request: swbs.Request{LineItemID: id, LineItemName: name, CompanyCode: companyCode}, ready: ready})
+	f.items = append(f.items, &lineItem{Request: core.Request{LineItemID: id, LineItemName: name, CompanyCode: companyCode}, ready: ready})
 }
 
-func (f *fakeLineItems) Candidates(_ context.Context, _ authz.Scope, named []string) ([]swbs.Candidate, error) {
-	candidates := []swbs.Candidate{}
+func (f *fakeLineItems) Candidates(_ context.Context, _ authz.Scope, named []string) ([]core.Candidate, error) {
+	candidates := []core.Candidate{}
 	for _, li := range f.items {
 		if named == nil || slices.Contains(named, li.LineItemID) {
-			candidates = append(candidates, swbs.Candidate{Request: li.Request, Ready: li.ready && li.code == ""})
+			candidates = append(candidates, core.Candidate{Request: li.Request, Ready: li.ready && li.code == ""})
 		}
 	}
 	return candidates, nil
 }
 
-func (f *fakeLineItems) Receive(_ context.Context, _ actor.Actor, answers []swbs.Answer, at time.Time) error {
+func (f *fakeLineItems) Receive(_ context.Context, _ actor.Actor, answers []core.Answer, at time.Time) error {
 	if f.failed {
 		return errors.New("line item gone")
 	}
@@ -73,7 +73,7 @@ func (f *fakeLineItems) codeOf(id string) string {
 }
 
 type fixture struct {
-	service *swbs.Service
+	service *core.Service
 	store   swbstest.Store
 	items   *fakeLineItems
 	history *history.Service
@@ -86,8 +86,8 @@ func newFixture(t *testing.T) *fixture {
 	generator := ids.NewGenerator(fake.NewCounters(db))
 	f := &fixture{store: swbstest.NewStore(db), items: &fakeLineItems{}}
 	f.history = history.NewService(db, historytest.NewStore(db), generator, now)
-	f.service = swbs.NewService(history.Tools{Tx: db, IDs: generator, Log: f.history, Now: now}, f.store, f.items,
-		swbs.NewSimulated(f.store))
+	f.service = core.NewService(history.Tools{Tx: db, IDs: generator, Log: f.history, Now: now}, f.store, f.items,
+		core.NewSimulated(f.store))
 	for _, k := range f.service.Kinds() {
 		if err := f.history.Register(k); err != nil {
 			t.Fatalf("Register: %v", err)
@@ -105,7 +105,7 @@ func (f *fixture) log(t *testing.T) []history.Entry {
 	return entries
 }
 
-func (f *fixture) run(t *testing.T, in swbs.RunInput) swbs.RunView {
+func (f *fixture) run(t *testing.T, in core.RunInput) core.RunView {
 	t.Helper()
 	run, err := f.service.Run(t.Context(), alex, in)
 	if err != nil {

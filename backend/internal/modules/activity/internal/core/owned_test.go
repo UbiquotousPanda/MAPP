@@ -1,11 +1,11 @@
-package activity_test
+package core_test
 
 import (
 	"reflect"
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
+	"mapp/internal/modules/activity/internal/core"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 )
@@ -16,9 +16,9 @@ import (
 func TestOwnedBy_AsTheirPagesShowThem_FR019_FR022(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	f.lineItems.facts["A-1001"] = activity.LineItemFacts{
+	f.lineItems.facts["A-1001"] = core.LineItemFacts{
 		Count: 2, PlannedCostPlan: money.FromCents(12_120_000), // 121,200.00 USD: 1,200.00 more than the planned cost
-		Problems: []activity.LineItemProblem{{LineItemID: "L-1002", LineItemName: "Film production", Code: "missingField",
+		Problems: []core.LineItemProblem{{LineItemID: "L-1002", LineItemName: "Film production", Code: "missingField",
 			Field: "attributes.SA-1033", Message: "GL code — needed to submit"}},
 	}
 

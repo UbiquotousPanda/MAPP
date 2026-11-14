@@ -89,3 +89,7 @@ VALUES ($1, $2, $3);
 -- name: DeleteLineItems :exec
 DELETE FROM line_items
 WHERE id = ANY (sqlc.arg(ids)::text[]);
+
+-- name: CountLineItemsOwnedBy :one
+SELECT count(*)::integer FROM line_items
+WHERE owner_id = sqlc.arg(person_id)::text;

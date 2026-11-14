@@ -1,4 +1,4 @@
-package lineitem_test
+package core_test
 
 import (
 	"context"
@@ -10,18 +10,18 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
-	"mapp/internal/lineitem"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/lineitem/internal/core"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 var (
@@ -30,7 +30,7 @@ var (
 
 // pgStore gives a store whose database holds the activities A-1001 (plan P-1001, team T-1001, owned by U-1002)
 // and A-1002 (plan P-1002, team T-1002), with everything they refer to.
-func pgStore(t *testing.T) (*database.DB, *lineitem.PostgresStore) {
+func pgStore(t *testing.T) (*database.DB, *core.PostgresStore) {
 	t.Helper()
 	db := dbtest.NewDB(t)
 	directory, catalogue := people.NewPostgresStore(db), settings.NewPostgresStore(db)
@@ -66,7 +66,7 @@ func pgStore(t *testing.T) (*database.DB, *lineitem.PostgresStore) {
 		}
 		return err
 	})
-	return db, lineitem.NewPostgresStore(db)
+	return db, core.NewPostgresStore(db)
 }
 
 func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) {
@@ -76,14 +76,14 @@ func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) 
 	}
 }
 
-func pgLineItem(id, activityID, name string) lineitem.LineItem {
-	return lineitem.LineItem{ID: id, ActivityID: activityID, Name: name, Currency: "USD",
-		PlannedCost: money.FromCents(120000), Spread: lineitem.Spread{Method: lineitem.SpreadEvenly, Months: []lineitem.MonthAmount{}},
+func pgLineItem(id, activityID, name string) core.LineItem {
+	return core.LineItem{ID: id, ActivityID: activityID, Name: name, Currency: "USD",
+		PlannedCost: money.FromCents(120000), Spread: core.Spread{Method: core.SpreadEvenly, Months: []core.MonthAmount{}},
 		Attributes: settings.AttributeValues{}, Meta: pgMeta}
 }
 
 // pgFixture saves L-1001 in A-1001 with every optional field set and L-1002 in A-1002 with none.
-func pgFixture(t *testing.T) (*database.DB, *lineitem.PostgresStore, []lineitem.LineItem) {
+func pgFixture(t *testing.T) (*database.DB, *core.PostgresStore, []core.LineItem) {
 	t.Helper()
 	db, s := pgStore(t)
 	contracted, year := money.FromCents(100000), 2026
@@ -91,9 +91,9 @@ func pgFixture(t *testing.T) (*database.DB, *lineitem.PostgresStore, []lineitem.
 	full.OwnerID, full.Description, full.ContractedAmount, full.RequestSwbs = "U-1001", "Fee", &contracted, true
 	full.FinanceBudgetYear = &year
 	full.Attributes = settings.AttributeValues{"SA-1004": json.RawMessage(`true`)}
-	full.Spread = lineitem.Spread{Method: lineitem.SpreadCustom, Months: []lineitem.MonthAmount{
+	full.Spread = core.Spread{Method: core.SpreadCustom, Months: []core.MonthAmount{
 		{Month: "2026-04", Amount: money.FromCents(20000)}, {Month: "2026-05", Amount: money.FromCents(100000)}}}
-	stored := []lineitem.LineItem{full, pgLineItem("L-1002", "A-1002", "Agency fee")}
+	stored := []core.LineItem{full, pgLineItem("L-1002", "A-1002", "Agency fee")}
 	pgWrite(t, db, func(ctx context.Context) error { return errors.Join(s.Put(ctx, stored[0]), s.Put(ctx, stored[1])) })
 	return db, s, stored
 }
@@ -141,7 +141,7 @@ func TestPostgresStoreActivityAndLineItemScopeFR009(t *testing.T) {
 	}
 }
 
-func listedIDs(listedActivities []activity.Activity, listedItems []lineitem.LineItem) []string {
+func listedIDs(listedActivities []activity.Activity, listedItems []core.LineItem) []string {
 	ids := []string{}
 	for _, a := range listedActivities {
 		ids = append(ids, a.ID)

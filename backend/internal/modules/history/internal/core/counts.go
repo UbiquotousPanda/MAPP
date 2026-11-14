@@ -1,4 +1,4 @@
-package history
+package core
 
 // CountsText says what came with a copied record, in the words a delete uses for what went with it: "with 2
 // initiatives, 7 activities and 15 line items" (the details of a "copied" log entry: 004 plan *Activity

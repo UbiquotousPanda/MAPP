@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"bytes"
@@ -6,8 +6,8 @@ import (
 	"maps"
 	"slices"
 
-	"mapp/internal/history"
-	"mapp/internal/settings"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 )
 
 // recordChanges lists what a save changes (data model §8): every changed stored field of the record

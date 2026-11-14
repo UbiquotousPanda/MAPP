@@ -1,4 +1,4 @@
-package customdashboard
+package core
 
 import (
 	"cmp"
@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 )

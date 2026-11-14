@@ -5,14 +5,14 @@ import (
 	"errors"
 	"time"
 
-	"mapp/internal/financials"
-	"mapp/internal/plan"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/purchaserequest"
+	"mapp/internal/modules/spa"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/purchaserequest"
-	"mapp/internal/spa"
 )
 
 // spaArea wires the SP&A view (013): a read-only view over the plan reader of All work, 015's figures and 032's

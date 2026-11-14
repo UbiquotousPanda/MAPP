@@ -1,11 +1,11 @@
-package widgetdata_test
+package core_test
 
 import (
 	"errors"
 	"math"
 	"testing"
 
-	"mapp/internal/widgetdata"
+	"mapp/internal/modules/widgetdata/internal/core"
 )
 
 func TestNumber_ParseAndString(t *testing.T) {
@@ -25,7 +25,7 @@ func TestNumber_ParseAndString(t *testing.T) {
 	for _, tt := range valid {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			n, err := widgetdata.ParseNumber(tt.in)
+			n, err := core.ParseNumber(tt.in)
 			if err != nil || n.Units() != tt.units || n.String() != tt.text {
 				t.Errorf("ParseNumber(%q) = %d %q, %v; want %d %q", tt.in, n.Units(), n.String(), err, tt.units, tt.text)
 			}
@@ -36,22 +36,22 @@ func TestNumber_ParseAndString(t *testing.T) {
 		name, in string
 		want     error
 	}{
-		{"FR-019 empty", "", widgetdata.ErrNumberFormat},
-		{"FR-019 a lone minus", "-", widgetdata.ErrNumberFormat},
-		{"FR-019 a point without decimals", "1.", widgetdata.ErrNumberFormat},
-		{"FR-019 decimals without a whole part", ".5", widgetdata.ErrNumberFormat},
-		{"FR-019 thousands separators", "1,000", widgetdata.ErrNumberFormat},
-		{"FR-019 five decimals", "1.23456", widgetdata.ErrNumberFormat},
-		{"FR-019 sixteen integer digits", "1234567890123456", widgetdata.ErrNumberFormat},
-		{"FR-019 a plus sign", "+1", widgetdata.ErrNumberFormat},
-		{"FR-019 spaces", " 1", widgetdata.ErrNumberFormat},
-		{"FR-019 an exponent", "1e3", widgetdata.ErrNumberFormat},
-		{"FR-018 fifteen digits beyond the range", "999999999999999", widgetdata.ErrNumberRange},
+		{"FR-019 empty", "", core.ErrNumberFormat},
+		{"FR-019 a lone minus", "-", core.ErrNumberFormat},
+		{"FR-019 a point without decimals", "1.", core.ErrNumberFormat},
+		{"FR-019 decimals without a whole part", ".5", core.ErrNumberFormat},
+		{"FR-019 thousands separators", "1,000", core.ErrNumberFormat},
+		{"FR-019 five decimals", "1.23456", core.ErrNumberFormat},
+		{"FR-019 sixteen integer digits", "1234567890123456", core.ErrNumberFormat},
+		{"FR-019 a plus sign", "+1", core.ErrNumberFormat},
+		{"FR-019 spaces", " 1", core.ErrNumberFormat},
+		{"FR-019 an exponent", "1e3", core.ErrNumberFormat},
+		{"FR-018 fifteen digits beyond the range", "999999999999999", core.ErrNumberRange},
 	}
 	for _, tt := range invalid {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if _, err := widgetdata.ParseNumber(tt.in); !errors.Is(err, tt.want) {
+			if _, err := core.ParseNumber(tt.in); !errors.Is(err, tt.want) {
 				t.Errorf("ParseNumber(%q) error = %v, want %v", tt.in, err, tt.want)
 			}
 		})
@@ -59,7 +59,7 @@ func TestNumber_ParseAndString(t *testing.T) {
 
 	t.Run("FR-018 the smallest units print exactly", func(t *testing.T) {
 		t.Parallel()
-		if got := widgetdata.NumberOfUnits(math.MinInt64).String(); got != "-922337203685477.5808" {
+		if got := core.NumberOfUnits(math.MinInt64).String(); got != "-922337203685477.5808" {
 			t.Errorf("String() = %q, want -922337203685477.5808", got)
 		}
 	})

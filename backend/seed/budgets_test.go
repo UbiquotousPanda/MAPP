@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/budget"
-	"mapp/internal/budget/budgettest"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/budget/budgettest"
 )
 
 // The demo global budget of 014 (FR-040, plan "Demo data"): GB-1001 "FY2026 Global marketing budget", 2026,

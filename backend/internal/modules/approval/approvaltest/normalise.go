@@ -3,7 +3,7 @@ package approvaltest
 import (
 	"cmp"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval"
 	"mapp/internal/platform/actor"
 )
 

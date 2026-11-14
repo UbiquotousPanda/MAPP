@@ -1,9 +1,9 @@
-package campaign
+package core
 
 import (
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // amountOf returns the amount of a budget; nil without one.

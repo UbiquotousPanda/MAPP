@@ -1,4 +1,4 @@
-package workbook_test
+package core_test
 
 import (
 	"context"
@@ -8,22 +8,22 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/workbook/internal/core"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database/dbtest"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
-	"mapp/internal/workbook"
 )
 
 // The imports of a plan are read only by people who see the plan, as a missing one otherwise.
 func TestPostgresStore_ImportsInScope_012FR035(t *testing.T) {
 	t.Parallel()
 	db := dbtest.NewDB(t)
-	store := workbook.NewPostgresStore(db)
+	store := core.NewPostgresStore(db)
 	at := time.Date(2026, 3, 12, 9, 0, 0, 0, time.UTC)
 	meta := record.NewMeta(actor.System, at)
 	priya := actor.Actor{ID: "U-1002", Name: "Priya Raman"}
@@ -39,10 +39,10 @@ func TestPostgresStore_ImportsInScope_012FR035(t *testing.T) {
 				plans.Put(ctx, plan.Plan{ID: "P-100" + n, Name: "Plan " + n, Year: 2026, ModelID: "MOD-1001",
 					TeamIDs: []string{"T-100" + n}, DefaultSpread: plan.SpreadEvenly, GoalStage: plan.StageINQ,
 					Status: plan.StatusDraft, Meta: meta}),
-				store.AddImport(ctx, workbook.Import{ID: "IMP-100" + n, PlanID: "P-100" + n, FileName: "plan.xlsx", ImportedAt: at,
+				store.AddImport(ctx, core.Import{ID: "IMP-100" + n, PlanID: "P-100" + n, FileName: "plan.xlsx", ImportedAt: at,
 					ImportedBy: priya, RowsRead: 2, RowsLeftOut: 1,
-					Records:  []workbook.ImportRecord{{Level: workbook.LevelCampaign, RecordID: "C-100" + n, Name: "Spring", ParentID: "P-100" + n, Action: "created"}},
-					Problems: []workbook.Problem{{Sheet: "Campaigns", Row: 3, Column: "Owner", Value: "x", Reason: "No active person has this e-mail"}}}))
+					Records:  []core.ImportRecord{{Level: core.LevelCampaign, RecordID: "C-100" + n, Name: "Spring", ParentID: "P-100" + n, Action: "created"}},
+					Problems: []core.Problem{{Sheet: "Campaigns", Row: 3, Column: "Owner", Value: "x", Reason: "No active person has this e-mail"}}}))
 		}
 		return err
 	})

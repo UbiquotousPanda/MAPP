@@ -1,19 +1,19 @@
-package dashboard
+package core
 
 import (
 	"context"
 	"slices"
 	"time"
 
-	"mapp/internal/allwork"
-	"mapp/internal/approval"
-	"mapp/internal/financials"
-	"mapp/internal/people"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/purchaserequest"
 )
 
 // completenessColumn makes All work read each plan's own needed fields too.

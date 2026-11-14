@@ -1,9 +1,9 @@
-package financials
+package core
 
 import (
 	"context"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 )

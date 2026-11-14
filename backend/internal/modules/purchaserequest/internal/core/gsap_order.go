@@ -1,4 +1,4 @@
-package purchaserequest
+package core
 
 import (
 	"context"
@@ -6,12 +6,12 @@ import (
 	"slices"
 	"strconv"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 const (

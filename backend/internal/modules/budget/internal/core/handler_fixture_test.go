@@ -1,4 +1,4 @@
-package budget_test
+package core_test
 
 import (
 	"encoding/json"
@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/budget"
-	"mapp/internal/history"
+	"mapp/internal/modules/budget/internal/core"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )
@@ -30,7 +30,7 @@ const (
 func demoFigures(t *testing.T, server *apitest.Server) string {
 	t.Helper()
 	carlos := server.SignIn(t, carlosEmail)
-	var view budget.GlobalBudgetView
+	var view core.GlobalBudgetView
 	decode(t, carlos.Do(t, http.MethodGet, "/api/v1/global-budgets/GB-1001", nil), http.StatusOK, &view)
 	return figuresText(view.Figures)
 }
@@ -85,7 +85,7 @@ func validation(fields string) string {
 }
 
 // figuresText writes figures as "<amount> allocated <a> unallocated <u> planned <p>".
-func figuresText(f budget.Figures) string {
+func figuresText(f core.Figures) string {
 	return fmt.Sprintf("%s allocated %s unallocated %s planned %s", f.Amount.Format(), f.Allocated.Format(), f.Unallocated.Format(), f.PlannedCost.Format())
 }
 

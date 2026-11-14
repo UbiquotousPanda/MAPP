@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan"
 )
 
 // readTrees reads the campaigns, initiatives, activities and line items of every plan of a view, one level at

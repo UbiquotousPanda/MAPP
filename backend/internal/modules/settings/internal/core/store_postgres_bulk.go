@@ -1,11 +1,11 @@
-package settings
+package core
 
 import (
 	"context"
 	"fmt"
 
+	"mapp/internal/modules/settings/internal/sqlcdb"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 )
 
 // PutRates saves rates, replacing those with the same id, in two statements whatever their number: a stored

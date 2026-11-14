@@ -3,9 +3,9 @@ package app
 import (
 	"context"
 
-	"mapp/internal/plan"
-	"mapp/internal/settings"
-	"mapp/internal/workbook"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/workbook"
 )
 
 // choices are the lists the plan's cells choose from: people, the types its model allows, workflows,

@@ -5,18 +5,18 @@ import (
 	"reflect"
 	"testing"
 
-	"mapp/internal/campaign"
-	"mapp/internal/campaign/campaigntest"
-	"mapp/internal/history"
-	"mapp/internal/history/historytest"
-	"mapp/internal/people/peopletest"
-	"mapp/internal/plan"
-	"mapp/internal/plan/plantest"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/campaign/campaigntest"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/history/historytest"
+	"mapp/internal/modules/people/peopletest"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/plan/plantest"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/settings/settingstest"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"
-	"mapp/internal/settings"
-	"mapp/internal/settings/settingstest"
 )
 
 // Lubricants Europe is complete; Mobility China's Retail growth has no cluster or region and Fleet cards no dates.

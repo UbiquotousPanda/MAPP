@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"mapp/internal/modules/settings/internal/sqlcdb"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/record"
 )
 
@@ -89,7 +89,7 @@ func (s *PostgresStore) DeleteFinanceBudgetItem(ctx context.Context, id string) 
 }
 
 func (s *PostgresStore) GetFieldHelp(ctx context.Context, key string) (FieldHelpText, bool, error) {
-	row, err := s.db.Queries(ctx).GetFieldHelp(ctx, key)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetFieldHelp(ctx, key)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return FieldHelpText{}, false, nil
 	}
@@ -100,7 +100,7 @@ func (s *PostgresStore) GetFieldHelp(ctx context.Context, key string) (FieldHelp
 }
 
 func (s *PostgresStore) ListFieldHelp(ctx context.Context) ([]FieldHelpText, error) {
-	rows, err := s.db.Queries(ctx).ListFieldHelp(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListFieldHelp(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select field help: %w", err)
 	}

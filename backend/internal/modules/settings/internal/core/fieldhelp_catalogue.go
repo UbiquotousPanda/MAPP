@@ -1,4 +1,4 @@
-package settings
+package core
 
 // The Field help catalogue (016 FR-045, data-model §6, D-271): every built-in field and calculated value of
 // the planning levels and pages, with a stable key, its screen label and the help text MAPP supplies.

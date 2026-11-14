@@ -1,4 +1,4 @@
-package plan_test
+package core_test
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -60,9 +60,9 @@ func TestCreatePlan_201AndValidation_FR010(t *testing.T) {
 	if created.Status != http.StatusCreated {
 		t.Fatalf("create = %d %s, want 201", created.Status, created.Body)
 	}
-	var p plan.PlanView
+	var p core.PlanView
 	created.Decode(t, &p)
-	if p.ID != "P-1005" || p.Status != plan.StatusDraft || p.Name != "FY2026 Lubricants Test" ||
+	if p.ID != "P-1005" || p.Status != core.StatusDraft || p.Name != "FY2026 Lubricants Test" ||
 		p.Owner == nil || p.Owner.Name != "Priya Raman" || len(p.Completeness.Missing) != 0 ||
 		p.Goals.Plan.MQL == nil || *p.Goals.Plan.MQL != 5000 || p.Goals.Plan.Revenue == nil ||
 		p.Goals.Plan.Revenue.Amount.String() != "2500000.00" || p.CreatedBy.Name != "Priya Raman" {
@@ -93,17 +93,17 @@ func assertJSON(t *testing.T, response *apitest.Response, status int, want any) 
 	}
 }
 
-func listOf(t *testing.T, response *apitest.Response) plan.PlanList {
+func listOf(t *testing.T, response *apitest.Response) core.PlanList {
 	t.Helper()
 	if response.Status != http.StatusOK {
 		t.Fatalf("list = %d %s, want 200", response.Status, response.Body)
 	}
-	var list plan.PlanList
+	var list core.PlanList
 	response.Decode(t, &list)
 	return list
 }
 
-func listIDs(list plan.PlanList) []string {
+func listIDs(list core.PlanList) []string {
 	planIDs := []string{}
 	for _, item := range list.Items {
 		planIDs = append(planIDs, item.ID)
@@ -134,7 +134,7 @@ func TestListPlans_SeedOrderSummaryAndFilters_FR001_FR003(t *testing.T) {
 		summary.PlannedCost.Format() != "732,278.48 USD" || summary.Budget == nil || summary.Budget.Format() != "3,259,493.67 USD" {
 		t.Errorf("summary = %+v; want 4 plans, 3 Draft, 1 Published, 732,278.48 USD planned, 3,259,493.67 USD", summary)
 	}
-	for name, list := range map[string]plan.PlanList{"draft 2026": draft2026, "mobility": byName, "p-1002": byID} {
+	for name, list := range map[string]core.PlanList{"draft 2026": draft2026, "mobility": byName, "p-1002": byID} {
 		if ids := listIDs(list); !reflect.DeepEqual(ids, []string{"P-1002"}) || list.Total != 4 {
 			t.Errorf("%s: %q, total %d; want P-1002 of 4", name, ids, list.Total)
 		}
@@ -171,18 +171,18 @@ func TestGetPlan_ViewAnd404_FR011(t *testing.T) {
 		"businessUnit": []any{map[string]any{"id": "SO-1002", "label": "Lubricants", "active": true}},
 		"version":      1, "createdAt": "2026-02-26T09:00:00Z", "createdBy": priyaRef, "updatedAt": "2026-02-26T09:00:00Z", "updatedBy": priyaRef,
 	})
-	var p plan.PlanView
+	var p core.PlanView
 	europe.Decode(t, &p)
 	goal := p.Goals.Plan
 	if goal.INQ == nil || *goal.INQ != 250_000 || goal.MQL == nil || *goal.MQL != 5_000 || goal.Deals == nil || *goal.Deals != 250 ||
-		goal.Revenue == nil || goal.Revenue.Format() != "2,500,000.00 USD" || p.Goals.Stage != plan.StageINQ {
+		goal.Revenue == nil || goal.Revenue.Format() != "2,500,000.00 USD" || p.Goals.Stage != core.StageINQ {
 		t.Errorf("goals = %+v", p.Goals)
 	}
 	if len(p.Completeness.Missing) != 0 || p.Figures.Currency != "USD" || p.Figures.Budget.Format() != "1,200,000.00 USD" {
 		t.Errorf("completeness %+v, figures %+v; want all filled in, in USD", p.Completeness, p.Figures)
 	}
 	assertFields(t, china, http.StatusOK, map[string]any{"status": "draft", "businessUnit": []any{}})
-	var chinaPlan plan.PlanView
+	var chinaPlan core.PlanView
 	china.Decode(t, &chinaPlan)
 	if missing := chinaPlan.Completeness.Missing; len(missing) != 1 || missing[0].Field != "attributes.SA-1001" || missing[0].Label != "Business unit" {
 		t.Errorf("completeness missing = %+v, want the Business unit", missing)
@@ -242,11 +242,11 @@ func TestCopy_201_FR027_FR028(t *testing.T) {
 	gone := priya.Do(t, http.MethodPost, "/api/v1/plans/P-9999/copy",
 		map[string]any{"name": "Copy", "year": 2026, "includeContents": false})
 
-	var result plan.CopyResult
+	var result core.CopyResult
 	copied.Decode(t, &result)
 	p := result.Plan
-	if copied.Status != http.StatusCreated || p.ID != "P-1005" || p.Year != 2027 || p.Status != plan.StatusDraft ||
-		p.DefaultFinanceBudget != nil || p.Contents != (plan.Contents{Campaigns: 2, Initiatives: 4, Activities: 7, LineItems: 6}) ||
+	if copied.Status != http.StatusCreated || p.ID != "P-1005" || p.Year != 2027 || p.Status != core.StatusDraft ||
+		p.DefaultFinanceBudget != nil || p.Contents != (core.Contents{Campaigns: 2, Initiatives: 4, Activities: 7, LineItems: 6}) ||
 		p.CreatedBy.Name != "Priya Raman" {
 		t.Errorf("copy = %d %s", copied.Status, copied.Body)
 	}

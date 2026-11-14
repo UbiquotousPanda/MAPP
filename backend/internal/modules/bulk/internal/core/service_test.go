@@ -1,4 +1,4 @@
-package bulk_test
+package core_test
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/bulk"
+	"mapp/internal/modules/bulk/internal/core"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
@@ -22,46 +22,46 @@ func TestRun_RequestChecks_012FR006_FR007(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		req  bulk.Request
+		req  core.Request
 		want errs.FieldError
 	}{
-		{name: "nothing selected", req: bulk.Request{Action: bulk.ActionDelete},
+		{name: "nothing selected", req: core.Request{Action: core.ActionDelete},
 			want: errs.FieldError{Field: "recordIds", Message: "Select at least one record."}},
-		{name: "FR-006 over 1,000 records", req: bulk.Request{Action: bulk.ActionDelete, RecordIDs: many},
+		{name: "FR-006 over 1,000 records", req: core.Request{Action: core.ActionDelete, RecordIDs: many},
 			want: errs.FieldError{Field: "recordIds", Message: "Bulk actions handle up to 1,000 records at a time — narrow the filters"}},
-		{name: "a plan is not selectable", req: bulk.Request{Action: bulk.ActionDelete, RecordIDs: []string{"P-1001"}},
+		{name: "a plan is not selectable", req: core.Request{Action: core.ActionDelete, RecordIDs: []string{"P-1001"}},
 			want: errs.FieldError{Field: "recordIds", Message: "Only campaigns, initiatives and activities can be selected."}},
-		{name: "an unknown action", req: bulk.Request{Action: "archive", RecordIDs: []string{"A-1001"}},
+		{name: "an unknown action", req: core.Request{Action: "archive", RecordIDs: []string{"A-1001"}},
 			want: errs.FieldError{Field: "action", Message: "Choose one of the listed actions."}},
-		{name: "no owner", req: bulk.Request{Action: bulk.ActionChangeOwner, RecordIDs: []string{"A-1001"}},
+		{name: "no owner", req: core.Request{Action: core.ActionChangeOwner, RecordIDs: []string{"A-1001"}},
 			want: errs.FieldError{Field: "ownerId", Message: "Choose a person."}},
-		{name: "an inactive owner", req: bulk.Request{Action: bulk.ActionChangeOwner, RecordIDs: []string{"A-1001"}, OwnerID: "U-1009"},
+		{name: "an inactive owner", req: core.Request{Action: core.ActionChangeOwner, RecordIDs: []string{"A-1001"}, OwnerID: "U-1009"},
 			want: errs.FieldError{Field: "ownerId", Message: "Person U-1009 is inactive — choose an active person."}},
-		{name: "FR-007 change field on two levels", req: bulk.Request{Action: bulk.ActionChangeField, RecordIDs: []string{"A-1001", "C-1001"},
-			Field: &bulk.FieldChange{Key: "startDate"}},
+		{name: "FR-007 change field on two levels", req: core.Request{Action: core.ActionChangeField, RecordIDs: []string{"A-1001", "C-1001"},
+			Field: &core.FieldChange{Key: "startDate"}},
 			want: errs.FieldError{Field: "recordIds", Message: "Change field works on one level at a time — keep only one level."}},
-		{name: "FR-007 copy on two levels", req: bulk.Request{Action: bulk.ActionCopy, RecordIDs: []string{"I-1001", "C-1001"}, TargetID: "P-1"},
+		{name: "FR-007 copy on two levels", req: core.Request{Action: core.ActionCopy, RecordIDs: []string{"I-1001", "C-1001"}, TargetID: "P-1"},
 			want: errs.FieldError{Field: "recordIds", Message: "Copy works on one level at a time — keep only one level."}},
-		{name: "no target", req: bulk.Request{Action: bulk.ActionMove, RecordIDs: []string{"A-1001"}},
+		{name: "no target", req: core.Request{Action: core.ActionMove, RecordIDs: []string{"A-1001"}},
 			want: errs.FieldError{Field: "targetId", Message: "Choose where to move them."}},
-		{name: "a long comment", req: bulk.Request{Action: bulk.ActionSubmit, RecordIDs: []string{"A-1001"}, Comment: strings.Repeat("x", 2001)},
+		{name: "a long comment", req: core.Request{Action: core.ActionSubmit, RecordIDs: []string{"A-1001"}, Comment: strings.Repeat("x", 2001)},
 			want: errs.FieldError{Field: "comment", Message: "Use 2,000 characters or fewer."}},
-		{name: "FR-009 a field not offered", req: bulk.Request{Action: bulk.ActionChangeField, RecordIDs: []string{"A-1001"},
-			Field: &bulk.FieldChange{Key: "plannedCost"}},
+		{name: "FR-009 a field not offered", req: core.Request{Action: core.ActionChangeField, RecordIDs: []string{"A-1001"},
+			Field: &core.FieldChange{Key: "plannedCost"}},
 			want: errs.FieldError{Field: "field.key", Message: "plannedCost can't be changed for activities here."}},
-		{name: "FR-009 a required field is not cleared", req: bulk.Request{Action: bulk.ActionChangeField, RecordIDs: []string{"A-1001"},
-			Field: &bulk.FieldChange{Key: "activityType"}},
+		{name: "FR-009 a required field is not cleared", req: core.Request{Action: core.ActionChangeField, RecordIDs: []string{"A-1001"},
+			Field: &core.FieldChange{Key: "activityType"}},
 			want: errs.FieldError{Field: "field.value", Message: "Activity type is required — it can't be cleared."}},
-		{name: "an option of another field", req: bulk.Request{Action: bulk.ActionChangeField, RecordIDs: []string{"A-1001"},
-			Field: &bulk.FieldChange{Key: "activityType", Value: &bulk.FieldValue{OptionIDs: []string{"SO-1"}}}},
+		{name: "an option of another field", req: core.Request{Action: core.ActionChangeField, RecordIDs: []string{"A-1001"},
+			Field: &core.FieldChange{Key: "activityType", Value: &core.FieldValue{OptionIDs: []string{"SO-1"}}}},
 			want: errs.FieldError{Field: "field.value", Message: "Choose one of the listed options."}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			f := newFixture(t)
-			f.planning.fields = []bulk.Field{{Key: "activityType", Label: "Activity type", Kind: "singleChoice", Required: true,
-				Options: []bulk.FieldOption{{ID: "AT-1", Label: "Event"}}}}
+			f.planning.fields = []core.Field{{Key: "activityType", Label: "Activity type", Kind: "singleChoice", Required: true,
+				Options: []core.FieldOption{{ID: "AT-1", Label: "Event"}}}}
 
 			_, err := f.service.Run(t.Context(), priya, tt.req)
 
@@ -72,11 +72,11 @@ func TestRun_RequestChecks_012FR006_FR007(t *testing.T) {
 
 func TestChangeOwner_ChangedOrAlreadySet_012FR008_FR021(t *testing.T) {
 	t.Parallel()
-	owned := activity("A-1002", "Trade fair", bulk.StatusCreated)
+	owned := activity("A-1002", "Trade fair", core.StatusCreated)
 	owned.OwnerID = "U-1003"
-	f := newFixture(t, container("C-1001", "Helix launch", bulk.LevelCampaign), activity("A-1001", "Launch film", bulk.StatusCreated), owned)
+	f := newFixture(t, container("C-1001", "Helix launch", core.LevelCampaign), activity("A-1001", "Launch film", core.StatusCreated), owned)
 
-	result, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003",
+	result, err := f.service.Run(t.Context(), priya, core.Request{Action: core.ActionChangeOwner, OwnerID: "U-1003",
 		RecordIDs: []string{"C-1001", "A-1001", "A-1002", "A-1001"}})
 	if err != nil {
 		t.Fatalf("Run: %v", err)
@@ -87,16 +87,16 @@ func TestChangeOwner_ChangedOrAlreadySet_012FR008_FR021(t *testing.T) {
 	if diff := cmp.Diff([]any{&id, "changed", "Bulk change of 1 campaign and 2 activities (BLK-1001)"}, gotHead); diff != "" {
 		t.Errorf("id, verb and note (-want +got):\n%s", diff)
 	}
-	want := []bulk.Outcome{
-		{RecordID: "C-1001", Level: bulk.LevelCampaign, Name: "Helix launch", PlanID: "P-1001", Outcome: "done", Reasons: []string{}},
-		{RecordID: "A-1001", Level: bulk.LevelActivity, Name: "Launch film", PlanID: "P-1001", Outcome: "done", Reasons: []string{}},
-		{RecordID: "A-1002", Level: bulk.LevelActivity, Name: "Trade fair", PlanID: "P-1001", Outcome: "skipped",
+	want := []core.Outcome{
+		{RecordID: "C-1001", Level: core.LevelCampaign, Name: "Helix launch", PlanID: "P-1001", Outcome: "done", Reasons: []string{}},
+		{RecordID: "A-1001", Level: core.LevelActivity, Name: "Launch film", PlanID: "P-1001", Outcome: "done", Reasons: []string{}},
+		{RecordID: "A-1002", Level: core.LevelActivity, Name: "Trade fair", PlanID: "P-1001", Outcome: "skipped",
 			Reasons: []string{"Already set — nothing to change"}},
 	}
 	if diff := cmp.Diff(want, result.Outcomes); diff != "" {
 		t.Errorf("outcomes (-want +got):\n%s", diff)
 	}
-	if result.Counts != (bulk.Counts{Done: 2, Skipped: 1}) || f.stored(t, "A-1001").OwnerID != "U-1003" {
+	if result.Counts != (core.Counts{Done: 2, Skipped: 1}) || f.stored(t, "A-1001").OwnerID != "U-1003" {
 		t.Errorf("counts %+v, owner %s", result.Counts, f.stored(t, "A-1001").OwnerID)
 	}
 	if _, found, _ := f.store.GetAction(t.Context(), "BLK-1001", priya.ID); !found {
@@ -106,9 +106,9 @@ func TestChangeOwner_ChangedOrAlreadySet_012FR008_FR021(t *testing.T) {
 
 func TestRun_EveryLogEntryCarriesTheNote_012FR023(t *testing.T) {
 	t.Parallel()
-	f := newFixture(t, activity("A-1001", "Launch film", bulk.StatusCreated), activity("A-1002", "Trade fair", bulk.StatusCreated))
+	f := newFixture(t, activity("A-1001", "Launch film", core.StatusCreated), activity("A-1002", "Trade fair", core.StatusCreated))
 
-	if _, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003",
+	if _, err := f.service.Run(t.Context(), priya, core.Request{Action: core.ActionChangeOwner, OwnerID: "U-1003",
 		RecordIDs: []string{"A-1001", "A-1002"}}); err != nil {
 		t.Fatalf("Run: %v", err)
 	}
@@ -126,8 +126,8 @@ func TestRun_EveryLogEntryCarriesTheNote_012FR023(t *testing.T) {
 
 func TestPreview_SavesNothing_012D126(t *testing.T) {
 	t.Parallel()
-	f := newFixture(t, activity("A-1001", "Launch film", bulk.StatusCreated))
-	req := bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003", RecordIDs: []string{"A-1001"}}
+	f := newFixture(t, activity("A-1001", "Launch film", core.StatusCreated))
+	req := core.Request{Action: core.ActionChangeOwner, OwnerID: "U-1003", RecordIDs: []string{"A-1001"}}
 
 	preview, err := f.service.Preview(t.Context(), priya, req)
 	if err != nil {
@@ -135,7 +135,7 @@ func TestPreview_SavesNothing_012D126(t *testing.T) {
 	}
 
 	gotHead := []any{preview.Preview, preview.ID, preview.Note, preview.Counts}
-	if diff := cmp.Diff([]any{true, (*string)(nil), "Bulk change of 1 activity", bulk.Counts{Done: 1}}, gotHead); diff != "" {
+	if diff := cmp.Diff([]any{true, (*string)(nil), "Bulk change of 1 activity", core.Counts{Done: 1}}, gotHead); diff != "" {
 		t.Errorf("preview (-want +got):\n%s", diff)
 	}
 	if f.stored(t, "A-1001").OwnerID != "" || len(f.log(t)) != 0 {
@@ -149,19 +149,19 @@ func TestPreview_SavesNothing_012D126(t *testing.T) {
 
 func TestRun_GoneFailedOthersKept_UnexpectedErrorSavesNothing_012FR022(t *testing.T) {
 	t.Parallel()
-	f := newFixture(t, activity("A-1001", "Launch film", bulk.StatusCreated))
-	req := bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003", RecordIDs: []string{"A-1999", "A-1001"}}
+	f := newFixture(t, activity("A-1001", "Launch film", core.StatusCreated))
+	req := core.Request{Action: core.ActionChangeOwner, OwnerID: "U-1003", RecordIDs: []string{"A-1999", "A-1001"}}
 
 	result, err := f.service.Run(t.Context(), priya, req)
 	if err != nil {
 		t.Fatalf("Run: %v", err)
 	}
-	if result.Counts != (bulk.Counts{Done: 1, Failed: 1}) || result.Outcomes[0].Reasons[0] != "No longer exists" {
+	if result.Counts != (core.Counts{Done: 1, Failed: 1}) || result.Outcomes[0].Reasons[0] != "No longer exists" {
 		t.Errorf("result = %+v", result)
 	}
 
 	f.planning.brokenNext = true
-	if _, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1004",
+	if _, err := f.service.Run(t.Context(), priya, core.Request{Action: core.ActionChangeOwner, OwnerID: "U-1004",
 		RecordIDs: []string{"A-1001"}}); err == nil {
 		t.Fatal("a storage failure must fail the run")
 	}
@@ -173,7 +173,7 @@ func TestRun_GoneFailedOthersKept_UnexpectedErrorSavesNothing_012FR022(t *testin
 func TestChangeField_ReapprovalAndRefusals_012FR010_FR011(t *testing.T) {
 	t.Parallel()
 	day := date.New(2026, 6, 30)
-	change := &bulk.FieldChange{Key: "endDate", Value: &bulk.FieldValue{Date: &day}}
+	change := &core.FieldChange{Key: "endDate", Value: &core.FieldValue{Date: &day}}
 	tests := []struct {
 		name         string
 		restart      bool
@@ -189,12 +189,12 @@ func TestChangeField_ReapprovalAndRefusals_012FR010_FR011(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			f := newFixture(t, activity("A-1001", "Launch film", bulk.StatusCreated), activity("A-1002", "Fleet card", bulk.StatusApproved),
-				activity("A-1003", "Trade fair", bulk.StatusSubmitted), activity("A-1004", "Podcast", bulk.StatusCreated))
-			f.planning.fields = []bulk.Field{{Key: "endDate", Label: "End date", Kind: "date"}}
+			f := newFixture(t, activity("A-1001", "Launch film", core.StatusCreated), activity("A-1002", "Fleet card", core.StatusApproved),
+				activity("A-1003", "Trade fair", core.StatusSubmitted), activity("A-1004", "Podcast", core.StatusCreated))
+			f.planning.fields = []core.Field{{Key: "endDate", Label: "End date", Kind: "date"}}
 			f.planning.refusals["A-1004"] = errs.Validation(errs.FieldError{Field: "endDate", Message: "Dates must be inside the initiative's dates."})
 
-			result, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeField, Field: change,
+			result, err := f.service.Run(t.Context(), priya, core.Request{Action: core.ActionChangeField, Field: change,
 				RecordIDs: []string{"A-1001", "A-1002", "A-1003", "A-1004"}, RestartApproval: tt.restart})
 			if err != nil {
 				t.Fatalf("Run: %v", err)
@@ -220,15 +220,15 @@ func TestChangeField_ReapprovalAndRefusals_012FR010_FR011(t *testing.T) {
 
 func TestSubmit_ActivitiesOnlyEveryReasonAtOnce_012FR012_FR013(t *testing.T) {
 	t.Parallel()
-	f := newFixture(t, container("C-1001", "Helix launch", bulk.LevelCampaign), activity("A-1001", "Launch film", bulk.StatusCreated),
-		activity("A-1002", "Fleet card", bulk.StatusApproved), activity("A-1003", "Trade fair", bulk.StatusSubmitted),
-		activity("A-1004", "Podcast", bulk.StatusCreated))
+	f := newFixture(t, container("C-1001", "Helix launch", core.LevelCampaign), activity("A-1001", "Launch film", core.StatusCreated),
+		activity("A-1002", "Fleet card", core.StatusApproved), activity("A-1003", "Trade fair", core.StatusSubmitted),
+		activity("A-1004", "Podcast", core.StatusCreated))
 	f.planning.refusals["A-1004"] = errs.NotReady("Fill in the missing fields first.", []errs.ReadinessGroup{
 		{Record: errs.RecordRef{Type: "activity", ID: "A-1004"}, Fields: []errs.MissingField{{Label: "Owner"}, {Label: "Company code"}}},
 		{Record: errs.RecordRef{Type: "line item", ID: "L-1004"}, Fields: []errs.MissingField{{Label: "GL code"}}},
 	})
 
-	result, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionSubmit,
+	result, err := f.service.Run(t.Context(), priya, core.Request{Action: core.ActionSubmit,
 		RecordIDs: []string{"C-1001", "A-1001", "A-1002", "A-1003", "A-1004"}})
 	if err != nil {
 		t.Fatalf("Run: %v", err)
@@ -253,20 +253,20 @@ func TestSubmit_ActivitiesOnlyEveryReasonAtOnce_012FR012_FR013(t *testing.T) {
 
 func TestDelete_NestedCountedOnceAndSummarised_012FR019_FR020(t *testing.T) {
 	t.Parallel()
-	elsewhere := activity("A-1005", "Trade fair", bulk.StatusApproved)
+	elsewhere := activity("A-1005", "Trade fair", core.StatusApproved)
 	elsewhere.Ancestors = []string{"I-1009", "C-1001"}
-	f := newFixture(t, container("I-1001", "Events", bulk.LevelInitiative, "C-1001"), activity("A-1001", "Launch film", bulk.StatusCreated),
+	f := newFixture(t, container("I-1001", "Events", core.LevelInitiative, "C-1001"), activity("A-1001", "Launch film", core.StatusCreated),
 		elsewhere)
-	f.planning.below["I-1001"] = bulk.Below{Counts: bulk.BelowCounts{Activities: 2, LineItems: 5}, InApproval: 1}
-	f.planning.below["A-1005"] = bulk.Below{Counts: bulk.BelowCounts{LineItems: 1}, InApproval: 1}
+	f.planning.below["I-1001"] = core.Below{Counts: core.BelowCounts{Activities: 2, LineItems: 5}, InApproval: 1}
+	f.planning.below["A-1005"] = core.Below{Counts: core.BelowCounts{LineItems: 1}, InApproval: 1}
 
-	result, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionDelete, RecordIDs: []string{"I-1001", "A-1001", "A-1005"}})
+	result, err := f.service.Run(t.Context(), priya, core.Request{Action: core.ActionDelete, RecordIDs: []string{"I-1001", "A-1001", "A-1005"}})
 	if err != nil {
 		t.Fatalf("Run: %v", err)
 	}
 
-	wantSummary := &bulk.DeleteSummary{Selected: bulk.LevelCounts{Initiatives: 1, Activities: 1},
-		Below: bulk.BelowCounts{Activities: 2, LineItems: 6}, SubmittedOrApproved: 2}
+	wantSummary := &core.DeleteSummary{Selected: core.LevelCounts{Initiatives: 1, Activities: 1},
+		Below: core.BelowCounts{Activities: 2, LineItems: 6}, SubmittedOrApproved: 2}
 	if diff := cmp.Diff(wantSummary, result.DeleteSummary); diff != "" {
 		t.Errorf("summary (-want +got):\n%s", diff)
 	}
@@ -282,8 +282,8 @@ func TestDelete_NestedCountedOnceAndSummarised_012FR019_FR020(t *testing.T) {
 
 func TestUndo_Refusals_012FR020(t *testing.T) {
 	t.Parallel()
-	f := newFixture(t, activity("A-1001", "Launch film", bulk.StatusCreated))
-	if _, err := f.service.Run(t.Context(), priya, bulk.Request{Action: bulk.ActionChangeOwner, OwnerID: "U-1003",
+	f := newFixture(t, activity("A-1001", "Launch film", core.StatusCreated))
+	if _, err := f.service.Run(t.Context(), priya, core.Request{Action: core.ActionChangeOwner, OwnerID: "U-1003",
 		RecordIDs: []string{"A-1001"}}); err != nil {
 		t.Fatal(err)
 	}

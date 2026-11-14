@@ -1,4 +1,4 @@
-package allwork
+package core
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"mapp/internal/modules/allwork/internal/sqlcdb"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 )
 
 // PostgresStore is the Store on PostgreSQL. A saved view's state is a json document: it is screen
@@ -23,7 +23,7 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) GetPreferences(ctx context.Context, personID string) (PreferencesRecord, bool, error) {
-	row, err := s.db.Queries(ctx).GetAllWorkPreferences(ctx, personID)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetAllWorkPreferences(ctx, personID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return PreferencesRecord{}, false, nil
 	}
@@ -42,14 +42,14 @@ func (s *PostgresStore) PutPreferences(ctx context.Context, p PreferencesRecord)
 	if p.Sort != nil {
 		params.SortColumn, params.SortDirection = &p.Sort.Column, &p.Sort.Direction
 	}
-	if err := s.db.Queries(ctx).PutAllWorkPreferences(ctx, params); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).PutAllWorkPreferences(ctx, params); err != nil {
 		return fmt.Errorf("save All work preferences of %s: %w", p.PersonID, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) GetView(ctx context.Context, id string) (StoredView, bool, error) {
-	row, err := s.db.Queries(ctx).GetSavedView(ctx, id)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetSavedView(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return StoredView{}, false, nil
 	}
@@ -61,7 +61,7 @@ func (s *PostgresStore) GetView(ctx context.Context, id string) (StoredView, boo
 }
 
 func (s *PostgresStore) ListViews(ctx context.Context, personID string) ([]StoredView, error) {
-	rows, err := s.db.Queries(ctx).ListSavedViews(ctx, personID)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListSavedViews(ctx, personID)
 	if err != nil {
 		return nil, fmt.Errorf("select saved views of %s: %w", personID, err)
 	}
@@ -81,7 +81,7 @@ func (s *PostgresStore) PutView(ctx context.Context, v StoredView) error {
 	if err != nil {
 		return fmt.Errorf("encode saved view %s: %w", v.ID, err)
 	}
-	err = s.db.Queries(ctx).PutSavedView(ctx, sqlcdb.PutSavedViewParams{
+	err = sqlcdb.New(s.db.Conn(ctx)).PutSavedView(ctx, sqlcdb.PutSavedViewParams{
 		ID: v.ID, PersonID: v.PersonID, Name: v.Name, IsDefault: v.IsDefault, State: state,
 		CreatedAt: v.CreatedAt, UpdatedAt: v.UpdatedAt,
 	})
@@ -92,7 +92,7 @@ func (s *PostgresStore) PutView(ctx context.Context, v StoredView) error {
 }
 
 func (s *PostgresStore) DeleteView(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteSavedView(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteSavedView(ctx, id); err != nil {
 		return fmt.Errorf("delete saved view %s: %w", id, err)
 	}
 	return nil

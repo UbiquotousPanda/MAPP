@@ -4,8 +4,8 @@ import (
 	"context"
 	"slices"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/ids"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

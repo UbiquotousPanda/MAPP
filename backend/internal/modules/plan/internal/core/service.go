@@ -1,10 +1,10 @@
-package plan
+package core
 
 import (
 	"context"
 
-	"mapp/internal/history"
-	"mapp/internal/people"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/ids"
@@ -20,7 +20,7 @@ type Service struct {
 	tx        Transactor
 	repo      Store
 	ids       *ids.Generator
-	history   *history.Service
+	history   history.Recorder
 	settings  Settings
 	directory Directory
 	now       clock.Clock

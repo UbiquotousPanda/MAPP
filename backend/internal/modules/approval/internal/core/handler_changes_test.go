@@ -1,4 +1,4 @@
-package approval_test
+package core_test
 
 import (
 	"net/http"
@@ -7,14 +7,14 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
-	"mapp/internal/history"
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval/internal/core"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // socialAlwaysOn is the seeded Approved Lubricants activity, approved by Daniel Okoro in round 1, with the
@@ -37,7 +37,7 @@ func TestRecall_WaitingMobilityActivity_FR021(t *testing.T) {
 
 	appr := decodeApproval(t, response)
 	round := appr.Rounds[0]
-	if appr.Status != "created" || round.Outcome != approval.OutcomeRecalled || round.Levels[1].State != "notDecided" {
+	if appr.Status != "created" || round.Outcome != core.OutcomeRecalled || round.Levels[1].State != "notDecided" {
 		t.Errorf("approval %s, round %s, level 2 %s; want Created, recalled, level 2 not decided", appr.Status, round.Outcome, round.Levels[1].State)
 	}
 	if entry := round.History[0]; entry.Action != "recalled" || entry.Level != 2 || entry.Actor.Name != "Mei Lin" ||
@@ -73,13 +73,13 @@ func TestPlannedCostChangeRestartsApproval_FR022(t *testing.T) {
 		t.Errorf("statuses %s, %s; want both Created", submitted.Status, approved.Status)
 	}
 	open := decodeApproval(t, priya.Do(t, http.MethodGet, "/api/v1/activities/"+tradeMagazineAds+"/approval", nil))
-	if round := open.Rounds[0]; round.Number != 2 || round.Outcome != approval.OutcomeRestarted || round.History[0].Action != "restarted" ||
+	if round := open.Rounds[0]; round.Number != 2 || round.Outcome != core.OutcomeRestarted || round.History[0].Action != "restarted" ||
 		round.History[0].Actor.Name != "Priya Raman" || !slices.Equal(changeTexts(round.History[0]),
 		[]string{"Planned cost changed from 30,000.00 USD to 35,000.00 USD"}) {
 		t.Errorf("round 2 = %s, latest entry %+v; want restarted with the planned cost change", round.Outcome, round.History[0])
 	}
 	closed := decodeApproval(t, priya.Do(t, http.MethodGet, "/api/v1/activities/"+socialAlwaysOn+"/approval", nil))
-	if round := closed.Rounds[0]; round.Outcome != approval.OutcomeApproved || round.History[0].Action != "restarted" ||
+	if round := closed.Rounds[0]; round.Outcome != core.OutcomeApproved || round.History[0].Action != "restarted" ||
 		round.History[0].Level != 0 || !slices.Equal(changeTexts(round.History[0]), []string{"Planned cost changed from 80,000.00 USD to 90,000.00 USD"}) {
 		t.Errorf("approved round = %s, latest entry %+v; want still approved, with the restart", round.Outcome, round.History[0])
 	}
@@ -106,7 +106,7 @@ func TestLineItemCurrencyChangeKeepsApproval_034_FR001(t *testing.T) {
 	}
 	appr := decodeApproval(t, priya.Do(t, http.MethodGet, "/api/v1/activities/"+socialAlwaysOn+"/approval", nil))
 	round := appr.Rounds[0]
-	if appr.Status != "approved" || round.Outcome != approval.OutcomeApproved || len(round.History) != len(before.Rounds[0].History) {
+	if appr.Status != "approved" || round.Outcome != core.OutcomeApproved || len(round.History) != len(before.Rounds[0].History) {
 		t.Errorf("approval %s, round %s with %d history entries; want still approved with %d", appr.Status, round.Outcome,
 			len(round.History), len(before.Rounds[0].History))
 	}
@@ -138,7 +138,7 @@ func TestLineItemChangeOnSubmittedKeepsRound_034_FR001(t *testing.T) {
 	}
 	after := decodeApproval(t, priya.Do(t, http.MethodGet, path+"/approval", nil))
 	round := after.Rounds[0]
-	if after.Status != "submitted" || round.ID != before.Rounds[0].ID || round.Outcome != approval.OutcomeOpen ||
+	if after.Status != "submitted" || round.ID != before.Rounds[0].ID || round.Outcome != core.OutcomeOpen ||
 		round.CurrentLevel != before.Rounds[0].CurrentLevel {
 		t.Errorf("approval %s, round %s %s at level %d; want still submitted in %s at level %d", after.Status, round.ID,
 			round.Outcome, round.CurrentLevel, before.Rounds[0].ID, before.Rounds[0].CurrentLevel)
@@ -175,7 +175,7 @@ func TestDeleteSubmittedActivity_UndoKeepsRound_RestoreCancels_FR023(t *testing.
 		t.Errorf("open while deleted = %q, want %s gone", whileDeleted, tradeMagazineAds)
 	}
 	if undone.Status != http.StatusOK || afterUndo.Status != "submitted" || afterUndo.Rounds[0].ID != "AR-1004" ||
-		afterUndo.Rounds[0].Outcome != approval.OutcomeOpen || !afterUndo.Viewer.IsCurrentApprover {
+		afterUndo.Rounds[0].Outcome != core.OutcomeOpen || !afterUndo.Viewer.IsCurrentApprover {
 		t.Errorf("after Undo: %d, %s, round %s %s; want Submitted with AR-1004 still open", undone.Status, afterUndo.Status,
 			afterUndo.Rounds[0].ID, afterUndo.Rounds[0].Outcome)
 	}
@@ -188,7 +188,7 @@ func TestDeleteSubmittedActivity_UndoKeepsRound_RestoreCancels_FR023(t *testing.
 		t.Errorf("restore details = %q, want the note about round 2", result.Details)
 	}
 	round := afterRestore.Rounds[0]
-	if afterRestore.Status != "created" || round.ID != "AR-1004" || round.Outcome != approval.OutcomeCancelled ||
+	if afterRestore.Status != "created" || round.ID != "AR-1004" || round.Outcome != core.OutcomeCancelled ||
 		round.EndedAt == nil || !round.EndedAt.Equal(deletedAt) || round.Levels[0].State != "notDecided" {
 		t.Errorf("after Restore: %s, round %+v; want Created with AR-1004 cancelled at the delete", afterRestore.Status, round)
 	}
@@ -305,7 +305,7 @@ func usd(amount string) *money.Input {
 	return &money.Input{Amount: amount, Currency: "USD"}
 }
 
-func changeTexts(e approval.HistoryEntryView) []string {
+func changeTexts(e core.HistoryEntryView) []string {
 	texts := []string{}
 	for _, c := range e.Changes {
 		texts = append(texts, c.Text)

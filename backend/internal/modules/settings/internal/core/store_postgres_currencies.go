@@ -1,12 +1,12 @@
-package settings
+package core
 
 import (
 	"context"
 	"fmt"
 
+	"mapp/internal/modules/settings/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
@@ -76,7 +76,7 @@ func (s *PostgresStore) ListRates(ctx context.Context) ([]ExchangeRate, error) {
 }
 
 func (s *PostgresStore) RatesOf(ctx context.Context, code string) ([]ExchangeRate, error) {
-	rows, err := s.db.Queries(ctx).RatesOf(ctx, code)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).RatesOf(ctx, code)
 	return ratesFromRows(rows, err)
 }
 

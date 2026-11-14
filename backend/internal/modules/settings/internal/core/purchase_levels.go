@@ -1,4 +1,4 @@
-package settings
+package core
 
 // The Shell attribute levels and attribute roles of feature 032's purchase requests (032 data-model §4).
 const (

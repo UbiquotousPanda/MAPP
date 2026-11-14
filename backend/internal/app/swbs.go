@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/history"
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/swbs"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
-	"mapp/internal/swbs"
 )
 
 const companyCodeLabel = "company code"

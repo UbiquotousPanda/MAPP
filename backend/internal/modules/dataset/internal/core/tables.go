@@ -1,13 +1,13 @@
-package dataset
+package core
 
 import (
 	"context"
 
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/widgetdata"
 )
 
 var _ widgetdata.DatasetTables = (*Service)(nil)

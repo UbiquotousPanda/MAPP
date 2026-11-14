@@ -30,7 +30,8 @@ fit together. Exact library versions are fixed in feature 001's `plan.md` and `r
 ## 2. API (`backend/`)
 
 - Go, one program (`cmd/api`), Gin in the handler layer only (feature 024, ADR-0011).
-- One package per business area, each with the same files and layers:
+- One module per business area, `internal/modules/<area>/` (ADR-0022): its contract in `<area>.go`, and inside
+  its private `internal/` the same files and layers:
 
 | Layer | Responsibility | Example |
 |---|---|---|
@@ -38,16 +39,19 @@ fit together. Exact library versions are fixed in feature 001's `plan.md` and `r
 | **Service** | All business rules: validation, calculations, status changes, activity log. Receives the actor. | `plan.Service.Create(ctx, actor, input)` |
 | **Store** | Read and write records. The service declares the `Store` it needs (`store.go`); the PostgreSQL store satisfies it. | `plan.Store` → `plan.PostgresStore` |
 
-- Shared platform code (small and boring, `internal/platform/`): the database pool, migrations and
-  generated queries; the Gin engine and its middleware; the error format; the actor and authorisation;
+- Shared platform code, the kernel (small and boring, `internal/platform/`): the database pool and the
+  migrations; the Gin engine and its middleware; the error format; the actor and authorisation;
   readable IDs; record bookkeeping (version, created/updated); clock (so tests can fix "today"); money
   (exact decimals); logging and telemetry; and the in-memory fakes the tests run on. The full list is in
   `backend/docs/GO_STANDARDS.md` §2.
-- The activity log and recycle bin core (`internal/history`) is created by feature 001 and used by every
-  feature; feature 011 adds its screens.
+- The activity log and recycle bin core (`internal/modules/history`) is created by feature 001 and used by
+  every feature through `history.Recorder`; feature 011 adds its screens.
 - **Server is authoritative:** totals, remaining budgets, unassigned balance, spreads, currency
   conversion, goals, statuses and completeness are always computed in services and returned to the web
   app.
+- The areas form a module graph: 59 cross-module imports, no cycles, five tiers. Each module owns its
+  tables and generates its own queries; `internal/architecture/` declares the graph and the table owners,
+  and its tests keep the code to them. `modular-monolith-architecture.md` describes the design (ADR-0022).
 
 ### API conventions (detailed in feature 001's contract)
 
@@ -86,7 +90,7 @@ fit together. Exact library versions are fixed in feature 001's `plan.md` and `r
   (id, name) that services use for owners, approvals and the activity log.
 - **Roles and access (feature 014, ADR-0008):** five roles with team scopes. Every action needs its
   permission in the plan's scope, enforced by the API through a fail-closed route table
-  (`internal/access`) and scoped service checks. The scope comes only from the signed-in actor, every
+  (`internal/modules/access`) and scoped service checks. The scope comes only from the signed-in actor, every
   query on plan-owned data filters by it, and a record outside it answers 404 like a missing one.
   Nobody approves an activity they own or submitted (segregation of duties).
 - **Later:** Microsoft Entra ID single sign-on replaces demo sign-in (Shell's target architecture, see
@@ -116,3 +120,7 @@ Management → Go API on Azure Container Apps → Azure Database for PostgreSQL;
 exchanging CSV files with GSAP through Blob SFTP and SAP Cloud Integration; Entra ID + SAM, Key Vault,
 Dynatrace; GitHub Actions delivery under Shell TCM and SEMS. MAPP's two-part design grows into that
 without rewrites.
+
+`azure-deployment-architecture.md` turns that summary into a design for this codebase — which Azure
+service runs which artefact, the one-host-name rule the content security policy forces, migrations as
+their own release step, and the five pieces of work needed before a deployment can work (ADR-0021).

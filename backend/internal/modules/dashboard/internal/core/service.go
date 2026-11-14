@@ -1,10 +1,10 @@
-package dashboard
+package core
 
 import (
 	"context"
 	"time"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
 	"mapp/internal/platform/actor"
 )
 

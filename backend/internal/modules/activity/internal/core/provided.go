@@ -1,4 +1,4 @@
-package activity
+package core
 
 import (
 	"cmp"
@@ -6,12 +6,12 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/campaign"
-	"mapp/internal/plan"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Summaries returns one roll-up summary per activity under the initiatives initiativeIDs (FR-005, D-105):

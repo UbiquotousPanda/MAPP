@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"mapp/internal/dataset"
+	"mapp/internal/modules/dataset"
 	"mapp/internal/platform/ids"
 )
 

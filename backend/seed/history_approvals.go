@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
-	"mapp/internal/history"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/history"
 )
 
 // addApprovalActions logs every approval action of the last 14 days as 008 logs it on the activity (step 3);

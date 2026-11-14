@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/memo"

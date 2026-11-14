@@ -1,4 +1,4 @@
-package approval
+package core
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"slices"
 
+	"mapp/internal/modules/approval/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/record"
 )
@@ -55,7 +55,7 @@ func (s *PostgresStore) ListWorkflows(ctx context.Context) ([]Workflow, error) {
 // each activity it shows, and only this store changes them.
 func (s *PostgresStore) workflows(ctx context.Context) ([]Workflow, error) {
 	return memo.Get(ctx, keptArea+":workflows", func(ctx context.Context) ([]Workflow, error) {
-		rows, err := s.db.Queries(ctx).ListWorkflows(ctx)
+		rows, err := sqlcdb.New(s.db.Conn(ctx)).ListWorkflows(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("select approval workflows: %w", err)
 		}
@@ -65,7 +65,7 @@ func (s *PostgresStore) workflows(ctx context.Context) ([]Workflow, error) {
 
 func (s *PostgresStore) change(ctx context.Context) *sqlcdb.Queries {
 	memo.Forget(ctx, keptArea)
-	return s.db.Queries(ctx)
+	return sqlcdb.New(s.db.Conn(ctx))
 }
 
 // copyOfWorkflow returns w with a list of levels of its own, so a caller never changes the kept one.
@@ -110,7 +110,7 @@ func (s *PostgresStore) insertLevel(ctx context.Context, workflowID string, numb
 	if err := errors.Join(appliesErr, autoErr); err != nil {
 		return err
 	}
-	q := s.db.Queries(ctx)
+	q := sqlcdb.New(s.db.Conn(ctx))
 	err := q.InsertWorkflowLevel(ctx, sqlcdb.InsertWorkflowLevelParams{
 		WorkflowID: workflowID, Number: number, Name: l.Name, ApproverType: l.ApproverType, RoleID: l.RoleID,
 		Mode: l.Mode, AppliesWhen: appliesWhen, AutoApproveWhen: autoApproveWhen,
@@ -126,7 +126,7 @@ func (s *PostgresStore) insertLevel(ctx context.Context, workflowID string, numb
 
 // withLevels reads the levels of every workflow in one query.
 func (s *PostgresStore) withLevels(ctx context.Context, rows []sqlcdb.ApprovalWorkflow) ([]Workflow, error) {
-	levelRows, err := s.db.Queries(ctx).ListWorkflowLevels(ctx, nil)
+	levelRows, err := sqlcdb.New(s.db.Conn(ctx)).ListWorkflowLevels(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("select approval workflow levels: %w", err)
 	}

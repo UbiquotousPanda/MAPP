@@ -4,10 +4,10 @@ import (
 	"context"
 	"unicode/utf8"
 
-	"mapp/internal/financials"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/purchaserequest"
+	"mapp/internal/modules/simulatedgsap"
 	"mapp/internal/platform/actor"
-	"mapp/internal/purchaserequest"
-	"mapp/internal/simulatedgsap"
 )
 
 const (

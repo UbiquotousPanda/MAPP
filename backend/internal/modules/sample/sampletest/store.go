@@ -5,8 +5,8 @@ package sampletest
 import (
 	"context"
 
+	"mapp/internal/modules/sample"
 	"mapp/internal/platform/fake"
-	"mapp/internal/sample"
 )
 
 type Store struct {

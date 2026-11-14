@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 )
 

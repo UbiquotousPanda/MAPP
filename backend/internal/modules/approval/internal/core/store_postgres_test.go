@@ -1,4 +1,4 @@
-package approval_test
+package core_test
 
 import (
 	"context"
@@ -6,30 +6,30 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
-	"mapp/internal/campaign"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval/internal/core"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 var (
-	pgMeta                   = record.NewMeta(actor.System, time.Date(2026, time.March, 12, 9, 0, 0, 0, time.UTC))
-	_         approval.Store = (*approval.PostgresStore)(nil)
-	submitted                = time.Date(2026, time.April, 1, 9, 0, 0, 0, time.UTC)
-	approver                 = actor.Actor{ID: "U-1003", Name: "Mei Chen"}
+	pgMeta               = record.NewMeta(actor.System, time.Date(2026, time.March, 12, 9, 0, 0, 0, time.UTC))
+	_         core.Store = (*core.PostgresStore)(nil)
+	submitted            = time.Date(2026, time.April, 1, 9, 0, 0, 0, time.UTC)
+	approver             = actor.Actor{ID: "U-1003", Name: "Mei Chen"}
 )
 
 // pgPlanned gives a store whose database also holds the activities A-1001 (plan P-1001, team T-1001) and
 // A-1002 (plan P-1002, team T-1002).
-func pgPlanned(t *testing.T) (*database.DB, *approval.PostgresStore) {
+func pgPlanned(t *testing.T) (*database.DB, *core.PostgresStore) {
 	t.Helper()
 	db, s := pgStore(t)
 	directory, catalogue := people.NewPostgresStore(db), settings.NewPostgresStore(db)
@@ -59,36 +59,36 @@ func pgPlanned(t *testing.T) (*database.DB, *approval.PostgresStore) {
 	return db, s
 }
 
-func pgRound(id, activityID string, number int, outcome approval.Outcome) approval.Round {
+func pgRound(id, activityID string) core.Round {
 	cost := money.USD(money.FromCents(120000))
-	return approval.Round{ID: id, SubjectKind: approval.KindActivity, SubjectID: activityID, Number: number, WorkflowID: "WF-1001", WorkflowName: "Standard",
-		Levels: []approval.RoundLevel{{Number: 1, Name: "Finance", Approvers: []actor.Actor{},
-			ApproverType: approval.SourcePeople, Mode: approval.ModeAny, Resolution: approval.ResolutionDecide,
-			Excluded:  []approval.Excluded{{Person: actor.Actor{ID: "U-1001", Name: "Priya Raman"}, Reason: approval.ReasonOwner}},
+	return core.Round{ID: id, SubjectKind: core.KindActivity, SubjectID: activityID, Number: 1, WorkflowID: "WF-1001", WorkflowName: "Standard",
+		Levels: []core.RoundLevel{{Number: 1, Name: "Finance", Approvers: []actor.Actor{},
+			ApproverType: core.SourcePeople, Mode: core.ModeAny, Resolution: core.ResolutionDecide,
+			Excluded:  []core.Excluded{{Person: actor.Actor{ID: "U-1001", Name: "Priya Raman"}, Reason: core.ReasonOwner}},
 			StartedAt: &submitted}},
-		CurrentLevel: 1, Outcome: outcome, SubmittedAt: submitted, SubmittedBy: actor.Actor{ID: "U-1001", Name: "Priya Raman"},
-		Facts: &approval.RuleFacts{PlannedCost: &cost, BusinessUnits: []approval.FactOption{}}, Meta: pgMeta}
+		CurrentLevel: 1, Outcome: core.OutcomeOpen, SubmittedAt: submitted, SubmittedBy: actor.Actor{ID: "U-1001", Name: "Priya Raman"},
+		Facts: &core.RuleFacts{PlannedCost: &cost, BusinessUnits: []core.FactOption{}}, Meta: pgMeta}
 }
 
 // named names the approver Mei Chen in the round's first level.
-func named(r approval.Round) approval.Round {
+func named(r core.Round) core.Round {
 	r.Levels[0].Approvers = []actor.Actor{approver}
 	return r
 }
 
-func pgAction(id, roundID, activityID string) approval.Action {
-	return approval.Action{ID: id, RoundID: roundID, RoundNumber: 1, SubjectKind: approval.KindActivity, SubjectID: activityID,
-		Action: approval.ActionApproved, Level: 1, LevelName: "Finance", Approvers: []actor.Actor{approver},
+func pgAction(id, roundID, activityID string) core.Action {
+	return core.Action{ID: id, RoundID: roundID, RoundNumber: 1, SubjectKind: core.KindActivity, SubjectID: activityID,
+		Action: core.ActionApproved, Level: 1, LevelName: "Finance", Approvers: []actor.Actor{approver},
 		Actor: actor.Actor{ID: "U-1002", Name: "Daniel Okoro"}, OnBehalfOf: []actor.Actor{approver}, At: submitted,
-		Changes: []approval.ChangeText{}, Capacity: approval.CapacityDelegate, AsDelegateOf: &approver}
+		Changes: []core.ChangeText{}, Capacity: core.CapacityDelegate, AsDelegateOf: &approver}
 }
 
 func TestPostgresStoreRoundScopeIncludesNamedApproversFR009(t *testing.T) {
 	t.Parallel()
 	db, s := pgPlanned(t)
 	pgWrite(t, db, func(ctx context.Context) error {
-		return errors.Join(s.PutRound(ctx, pgRound("AR-1001", "A-1001", 1, approval.OutcomeOpen)),
-			s.PutRound(ctx, named(pgRound("AR-1002", "A-1002", 1, approval.OutcomeOpen))),
+		return errors.Join(s.PutRound(ctx, pgRound("AR-1001", "A-1001")),
+			s.PutRound(ctx, named(pgRound("AR-1002", "A-1002"))),
 			s.PutAction(ctx, pgAction("AH-1001", "AR-1001", "A-1001")), s.PutAction(ctx, pgAction("AH-1002", "AR-1002", "A-1002")))
 	})
 	tests := []struct {
@@ -119,7 +119,7 @@ func TestPostgresStoreRoundScopeIncludesNamedApproversFR009(t *testing.T) {
 }
 
 // pgStore gives a store whose database already holds the approvers U-1001 and U-1002.
-func pgStore(t *testing.T) (*database.DB, *approval.PostgresStore) {
+func pgStore(t *testing.T) (*database.DB, *core.PostgresStore) {
 	t.Helper()
 	db := dbtest.NewDB(t)
 	directory := people.NewPostgresStore(db)
@@ -128,7 +128,7 @@ func pgStore(t *testing.T) (*database.DB, *approval.PostgresStore) {
 			directory.Put(ctx, people.Person{ID: "U-1001", Name: "Priya Raman", Email: "priya@example.com", Meta: pgMeta}),
 			directory.Put(ctx, people.Person{ID: "U-1002", Name: "Daniel Okoro", Email: "daniel@example.com", Meta: pgMeta}))
 	})
-	return db, approval.NewPostgresStore(db)
+	return db, core.NewPostgresStore(db)
 }
 
 func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) {

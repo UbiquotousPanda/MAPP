@@ -5,7 +5,7 @@ package authtest
 import (
 	"context"
 
-	"mapp/internal/auth"
+	"mapp/internal/modules/auth"
 	"mapp/internal/platform/fake"
 )
 

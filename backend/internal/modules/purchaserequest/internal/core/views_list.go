@@ -1,9 +1,9 @@
-package purchaserequest
+package core
 
 import (
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"

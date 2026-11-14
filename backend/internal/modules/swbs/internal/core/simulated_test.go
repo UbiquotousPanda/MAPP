@@ -1,4 +1,4 @@
-package swbs_test
+package core_test
 
 import (
 	"context"
@@ -7,12 +7,12 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/swbs/internal/core"
+	"mapp/internal/modules/swbs/swbstest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/record"
-	"mapp/internal/swbs"
-	"mapp/internal/swbs/swbstest"
 )
 
 type issued map[string]int
@@ -26,29 +26,29 @@ func TestSimulated_030_FR007(t *testing.T) {
 	tests := []struct {
 		name     string
 		before   issued
-		requests []swbs.Request
+		requests []core.Request
 		want     []string
 	}{
-		{name: "the first code of a company code", requests: []swbs.Request{{LineItemID: "L-1006", CompanyCode: "GB01"}},
+		{name: "the first code of a company code", requests: []core.Request{{LineItemID: "L-1006", CompanyCode: "GB01"}},
 			want: []string{"SIM-GB01-0001"}},
 		{name: "numbering goes on after the codes already given", before: issued{"SIM-GB01-": 41},
-			requests: []swbs.Request{{LineItemID: "L-1006", CompanyCode: "GB01"}, {LineItemID: "L-1007", CompanyCode: "GB01"}},
+			requests: []core.Request{{LineItemID: "L-1006", CompanyCode: "GB01"}, {LineItemID: "L-1007", CompanyCode: "GB01"}},
 			want:     []string{"SIM-GB01-0042", "SIM-GB01-0043"}},
 		{name: "each company code has its own numbers", before: issued{"SIM-NL02-": 2},
-			requests: []swbs.Request{{LineItemID: "L-1", CompanyCode: "GB01"}, {LineItemID: "L-2", CompanyCode: "NL02"},
+			requests: []core.Request{{LineItemID: "L-1", CompanyCode: "GB01"}, {LineItemID: "L-2", CompanyCode: "NL02"},
 				{LineItemID: "L-3", CompanyCode: "GB01"}},
 			want: []string{"SIM-GB01-0001", "SIM-NL02-0003", "SIM-GB01-0002"}},
-		{name: "no company code uses 0000", before: issued{"SIM-0000-": 7}, requests: []swbs.Request{{LineItemID: "L-1"}},
+		{name: "no company code uses 0000", before: issued{"SIM-0000-": 7}, requests: []core.Request{{LineItemID: "L-1"}},
 			want: []string{"SIM-0000-0008"}},
-		{name: "a company code is kept to its letters and digits", requests: []swbs.Request{{LineItemID: "L-1", CompanyCode: " gb 01 "}},
+		{name: "a company code is kept to its letters and digits", requests: []core.Request{{LineItemID: "L-1", CompanyCode: " gb 01 "}},
 			want: []string{"SIM-GB01-0001"}},
 		{name: "a long company code is cut to ten characters",
-			requests: []swbs.Request{{LineItemID: "L-1", CompanyCode: strings.Repeat("A", 12)}}, want: []string{"SIM-AAAAAAAAAA-0001"}},
+			requests: []core.Request{{LineItemID: "L-1", CompanyCode: strings.Repeat("A", 12)}}, want: []string{"SIM-AAAAAAAAAA-0001"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			answers, err := swbs.NewSimulated(tt.before).RequestCodes(t.Context(), tt.requests)
+			answers, err := core.NewSimulated(tt.before).RequestCodes(t.Context(), tt.requests)
 			if err != nil {
 				t.Fatalf("RequestCodes: %v", err)
 			}
@@ -72,18 +72,18 @@ func TestLoadDemo_030_FR021(t *testing.T) {
 	store := swbstest.NewStore(db)
 	items := &fakeLineItems{}
 	items.add("L-1003", "Venue hire", "DE03", true)
-	var run swbs.Run
+	var run core.Run
 	err := db.Write(t.Context(), func(ctx context.Context) error {
 		var err error
-		run, err = swbs.LoadDemo(ctx, store, ids.NewGenerator(fake.NewCounters(db)), swbs.DemoLoad{
-			Requests: []swbs.Request{{LineItemID: "L-1003", LineItemName: "Venue hire", CompanyCode: "DE03"}}, Items: items, At: start,
+		run, err = core.LoadDemo(ctx, store, ids.NewGenerator(fake.NewCounters(db)), core.DemoLoad{
+			Requests: []core.Request{{LineItemID: "L-1003", LineItemName: "Venue hire", CompanyCode: "DE03"}}, Items: items, At: start,
 		})
 		return err
 	})
 	if err != nil {
 		t.Fatalf("LoadDemo: %v", err)
 	}
-	want := swbs.Run{ID: "SWR-1001", Source: swbs.SourceDemo, Meta: record.NewMeta(actor.System, start), Codes: []swbs.Code{
+	want := core.Run{ID: "SWR-1001", Source: core.SourceDemo, Meta: record.NewMeta(actor.System, start), Codes: []core.Code{
 		{LineItemID: "L-1003", LineItemName: "Venue hire", CompanyCode: "DE03", SwbsCode: "SIM-DE03-0001"},
 	}}
 	stored, _, err := store.GetRun(t.Context(), run.ID)

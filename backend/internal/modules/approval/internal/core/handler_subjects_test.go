@@ -1,4 +1,4 @@
-package approval_test
+package core_test
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -17,7 +17,7 @@ func TestResubmitRoute(t *testing.T) {
 		server := apitest.New(t)
 		priya := server.SignIn(t, priyasEmail)
 		before := decodeApproval(t, priya.Do(t, http.MethodGet, "/api/v1/activities/"+tradeMagazineAds+"/approval", nil))
-		var submission approval.Submission
+		var submission core.Submission
 		priya.Do(t, http.MethodGet, "/api/v1/activities/"+tradeMagazineAds+"/approval/submission", nil).Decode(t, &submission)
 
 		after := decodeApproval(t, priya.Do(t, http.MethodPost, "/api/v1/activities/"+tradeMagazineAds+"/approval/submit",
@@ -25,8 +25,8 @@ func TestResubmitRoute(t *testing.T) {
 
 		got := []any{before.Actions.Resubmit.Available, before.Actions.Recall.Available, submission.Kind, submission.Replaces,
 			after.Status, after.Rounds[0].Number, after.Rounds[0].Kind, after.Rounds[0].Outcome, after.Rounds[1].Outcome}
-		want := []any{true, true, "resubmit", &approval.ReplacedRound{RoundNumber: 2, Level: 1, LevelLabel: "Level 1"},
-			"submitted", 3, approval.KindActivity, approval.OutcomeOpen, approval.OutcomeSuperseded}
+		want := []any{true, true, "resubmit", &core.ReplacedRound{RoundNumber: 2, Level: 1, LevelLabel: "Level 1"},
+			"submitted", 3, core.KindActivity, core.OutcomeOpen, core.OutcomeSuperseded}
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Fatalf("re-submission (-want +got):\n%s", diff)
 		}
@@ -48,18 +48,18 @@ func TestWorkflowObjectTypeRoutes(t *testing.T) {
 			"name": "Purchase request approval", "objectType": "purchaseRequest",
 			"levels": []map[string]any{{"name": "", "approverIds": []string{}, "approverType": "recordField", "recordField": "moaApprover"}},
 		})
-		var view approval.WorkflowView
+		var view core.WorkflowView
 		created.Decode(t, &view)
-		if created.Status != http.StatusCreated || view.ObjectType != approval.KindPurchaseRequest ||
+		if created.Status != http.StatusCreated || view.ObjectType != core.KindPurchaseRequest ||
 			view.Levels[0].RecordField == nil || view.Levels[0].RecordField.Label != "MoA approver" {
 			t.Fatalf("created = %d %+v, want a purchase-request workflow approved by the MoA approver", created.Status, view)
 		}
 		refused := alex.Do(t, http.MethodPatch, "/api/v1/approval-workflows/WF-1001", map[string]any{"objectType": "purchaseRequest", "version": 1})
 		assertError(t, refused, http.StatusBadRequest, "validation_failed", "Some fields need your attention.")
 
-		var options approval.RuleOptions
+		var options core.RuleOptions
 		alex.Do(t, http.MethodGet, "/api/v1/approval-rule-options", nil).Decode(t, &options)
-		if len(options.ObjectTypes) != 3 || len(options.RecordFields) != 2 || options.RecordFields[0].ID != approval.RecordFieldMoAApprover {
+		if len(options.ObjectTypes) != 3 || len(options.RecordFields) != 2 || options.RecordFields[0].ID != core.RecordFieldMoAApprover {
 			t.Errorf("options = %+v / %+v, want three object types and the MoA approver field", options.ObjectTypes, options.RecordFields)
 		}
 	})
@@ -73,15 +73,15 @@ func TestRowsAndNotificationsCarrySubject(t *testing.T) {
 		daniel := server.SignIn(t, danielsEmail)
 
 		rows := decodeRows(t, daniel.Do(t, http.MethodGet, "/api/v1/approvals?tab=open", nil))
-		var page approval.NotificationPage
+		var page core.NotificationPage
 		daniel.Do(t, http.MethodGet, "/api/v1/notifications", nil).Decode(t, &page)
 
 		for _, row := range rows.Items {
-			if row.Subject.Kind != approval.KindActivity || row.Subject.Label != "Activity" || row.Activity == nil || row.Subject.ID != row.Activity.ID {
+			if row.Subject.Kind != core.KindActivity || row.Subject.Label != "Activity" || row.Activity == nil || row.Subject.ID != row.Activity.ID {
 				t.Errorf("row = %+v, want an activity row", row.Subject)
 			}
 		}
-		if len(page.Items) == 0 || page.Items[0].Subject.Kind != approval.KindActivity || page.Items[0].Activity == nil {
+		if len(page.Items) == 0 || page.Items[0].Subject.Kind != core.KindActivity || page.Items[0].Activity == nil {
 			t.Errorf("notifications = %+v, want activity notifications with their subject", page.Items)
 		}
 	})

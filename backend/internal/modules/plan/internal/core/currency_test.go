@@ -1,12 +1,12 @@
-package plan
+package core
 
 import (
 	"reflect"
 	"testing"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // gbpInput is the plan form of P-1004 of the 016 demo data: a 2027 Cross-market plan planned in GBP with a

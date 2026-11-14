@@ -1,13 +1,13 @@
-package campaign
+package core
 
 import (
 	"context"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // UpdateCampaign saves the campaign form of the campaign id (FR-018), whatever the plan's status. The

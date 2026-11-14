@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/settings"
+	"mapp/internal/modules/settings"
 )
 
 // The five lists Shell's Hive9 tenant shows live (FA E3.0.2) are seeded with Shell's own values, in that

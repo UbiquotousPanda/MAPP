@@ -1,4 +1,4 @@
-package approval
+package core
 
 // where keeps the records keep accepts, in order; never nil.
 func where[T any](records []T, keep func(T) bool) []T {

@@ -1,6 +1,6 @@
 // Package approval approves records — activities and purchase requests — through approval workflows, and
 // keeps their rounds, history entries and notifications (features 008, 017, 031).
-package approval
+package core
 
 import (
 	"encoding/json"

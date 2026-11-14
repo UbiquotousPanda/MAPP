@@ -7,12 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // The demo activities of 006 plan "Demo data", A-1001 … A-1010, in their initiatives and statuses, with

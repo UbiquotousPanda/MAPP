@@ -3,7 +3,7 @@ package seed
 import (
 	"context"
 
-	"mapp/internal/settings"
+	"mapp/internal/modules/settings"
 	"mapp/internal/stores"
 )
 

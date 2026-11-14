@@ -1,13 +1,13 @@
-package campaign
+package core
 
 import (
 	"context"
 	"fmt"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/overspend"
 
+	"mapp/internal/modules/campaign/internal/sqlcdb"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 )
 
 // AddCampaigns stores new campaigns, each with its phasing months, in two statements whatever their number.

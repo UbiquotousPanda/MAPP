@@ -1,10 +1,10 @@
-package lineitem
+package core
 
 import (
 	"reflect"
 	"testing"
 
-	"mapp/internal/settings"
+	"mapp/internal/modules/settings"
 )
 
 // filledIn is a line item with everything needed to submit: owner, finance budget year and item.

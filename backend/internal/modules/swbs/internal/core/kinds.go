@@ -1,10 +1,10 @@
-package swbs
+package core
 
 import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // Kinds returns the history kind of runs: top level, so nothing ever moves a run to the recycle bin, but

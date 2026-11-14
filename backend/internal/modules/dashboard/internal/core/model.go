@@ -1,11 +1,11 @@
-// Package dashboard is the planning dashboards and the export of plans and dashboards (feature 036): read-only, it
+// Package core is the planning dashboards and the export of plans and dashboards (feature 036): read-only, it
 // works every figure out from what the owning features calculate (ports.go) and stores nothing.
-package dashboard
+package core
 
 import (
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/money"
 )
 

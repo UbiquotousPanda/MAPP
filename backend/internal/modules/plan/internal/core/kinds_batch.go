@@ -1,10 +1,10 @@
-package plan
+package core
 
 import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // snapshotsOf reads the plans ids that are stored as history keeps them, all at once.

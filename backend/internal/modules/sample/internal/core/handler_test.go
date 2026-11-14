@@ -1,4 +1,4 @@
-package sample_test
+package core_test
 
 import (
 	"net/http"

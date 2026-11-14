@@ -1,13 +1,13 @@
-package financials
+package core
 
 import (
 	"context"
 	"fmt"
 
+	"mapp/internal/modules/financials/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
@@ -24,12 +24,12 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) ListTransactions(ctx context.Context) ([]Transaction, error) {
-	rows, err := s.db.Queries(ctx).ListTransactions(ctx, nil)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListTransactions(ctx, nil)
 	return transactionsFromRows(rows, err)
 }
 
 func (s *PostgresStore) GetTransaction(ctx context.Context, id string) (Transaction, bool, error) {
-	rows, err := s.db.Queries(ctx).ListTransactions(ctx, &id)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListTransactions(ctx, &id)
 	list, err := transactionsFromRows(rows, err)
 	if err != nil || len(list) == 0 {
 		return Transaction{}, false, err
@@ -38,12 +38,12 @@ func (s *PostgresStore) GetTransaction(ctx context.Context, id string) (Transact
 }
 
 func (s *PostgresStore) SpendOnLineItems(ctx context.Context, lineItemIDs []string) ([]Transaction, error) {
-	rows, err := s.db.Queries(ctx).ListSpendOnLineItems(ctx, lineItemIDs)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListSpendOnLineItems(ctx, lineItemIDs)
 	return transactionsFromRows(rows, err)
 }
 
 func (s *PostgresStore) TransactionsOnLineItems(ctx context.Context, lineItemIDs []string) ([]Transaction, error) {
-	rows, err := s.db.Queries(ctx).ListTransactionsOnLineItems(ctx, lineItemIDs)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListTransactionsOnLineItems(ctx, lineItemIDs)
 	return transactionsFromRows(rows, err)
 }
 
@@ -51,7 +51,7 @@ func (s *PostgresStore) TransactionsOnLineItems(ctx context.Context, lineItemIDs
 // finance.view in All markets, else one whose stored line item's plan they see and hold finance.view in; a
 // not-linked one only when they may import.
 func (s *PostgresStore) TransactionsInScope(ctx context.Context, plans, finance authz.Scope, canImport bool) ([]Transaction, error) {
-	rows, err := s.db.Queries(ctx).ListTransactionsInScope(ctx, sqlcdb.ListTransactionsInScopeParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListTransactionsInScope(ctx, sqlcdb.ListTransactionsInScopeParams{
 		CanImport: canImport, FinanceEverything: finance.Everything, SeesEverything: plans.Everything,
 		ViewerID: plans.PersonID, ViewsPlans: plans.Holds, ViewerTeamIds: plans.TeamIDs,
 		HoldsFinance: finance.Holds, FinanceTeamIds: finance.TeamIDs,
@@ -60,7 +60,7 @@ func (s *PostgresStore) TransactionsInScope(ctx context.Context, plans, finance 
 }
 
 func (s *PostgresStore) PutTransaction(ctx context.Context, t Transaction) error {
-	if err := s.db.Queries(ctx).PutTransaction(ctx, transactionParams(t)); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).PutTransaction(ctx, transactionParams(t)); err != nil {
 		return fmt.Errorf("save financial transaction %s: %w", t.ID, err)
 	}
 	return nil
@@ -75,7 +75,7 @@ func (s *PostgresStore) AddTransactions(ctx context.Context, list []Transaction)
 	for _, t := range list {
 		rows = append(rows, sqlcdb.AddTransactionsParams(transactionParams(t)))
 	}
-	if _, err := s.db.Queries(ctx).AddTransactions(ctx, rows); err != nil {
+	if _, err := sqlcdb.New(s.db.Conn(ctx)).AddTransactions(ctx, rows); err != nil {
 		return fmt.Errorf("add financial transactions: %w", err)
 	}
 	return nil
@@ -99,19 +99,19 @@ func transactionParams(t Transaction) sqlcdb.PutTransactionParams {
 }
 
 func (s *PostgresStore) DeleteTransaction(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteTransaction(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteTransaction(ctx, id); err != nil {
 		return fmt.Errorf("delete financial transaction %s: %w", id, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) ListImports(ctx context.Context) ([]Import, error) {
-	rows, err := s.db.Queries(ctx).ListFinancialImports(ctx, nil)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListFinancialImports(ctx, nil)
 	return importsFromRows(rows, err)
 }
 
 func (s *PostgresStore) GetImport(ctx context.Context, id string) (Import, bool, error) {
-	rows, err := s.db.Queries(ctx).ListFinancialImports(ctx, &id)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListFinancialImports(ctx, &id)
 	list, err := importsFromRows(rows, err)
 	if err != nil || len(list) == 0 {
 		return Import{}, false, err
@@ -120,7 +120,7 @@ func (s *PostgresStore) GetImport(ctx context.Context, id string) (Import, bool,
 }
 
 func (s *PostgresStore) PutImport(ctx context.Context, i Import) error {
-	err := s.db.Queries(ctx).PutFinancialImport(ctx, sqlcdb.PutFinancialImportParams{
+	err := sqlcdb.New(s.db.Conn(ctx)).PutFinancialImport(ctx, sqlcdb.PutFinancialImportParams{
 		ID: i.ID, Source: string(i.Source), FeedName: i.FeedName, FileName: i.FileName, Rows: i.Rows, New: i.New,
 		Updated: i.Updated, Unchanged: i.Unchanged, Refused: i.Refused, NotLinked: i.NotLinked, Relinked: i.Relinked,
 		Version: i.Version, CreatedAt: i.CreatedAt, CreatedByID: i.CreatedBy.ID, CreatedByName: i.CreatedBy.Name,
@@ -133,7 +133,7 @@ func (s *PostgresStore) PutImport(ctx context.Context, i Import) error {
 }
 
 func (s *PostgresStore) DeleteImport(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteFinancialImport(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteFinancialImport(ctx, id); err != nil {
 		return fmt.Errorf("delete financial import %s: %w", id, err)
 	}
 	return nil

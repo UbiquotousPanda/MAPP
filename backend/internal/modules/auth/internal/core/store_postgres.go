@@ -1,4 +1,4 @@
-package auth
+package core
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"mapp/internal/modules/auth/internal/sqlcdb"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 )
 
 type PostgresStore struct {
@@ -20,7 +20,7 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) Get(ctx context.Context, id string) (Session, bool, error) {
-	row, err := s.db.Queries(ctx).GetSession(ctx, id)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetSession(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Session{}, false, nil
 	}
@@ -31,21 +31,21 @@ func (s *PostgresStore) Get(ctx context.Context, id string) (Session, bool, erro
 }
 
 func (s *PostgresStore) Put(ctx context.Context, session Session) error {
-	if err := s.db.Queries(ctx).PutSession(ctx, sqlcdb.PutSessionParams(session)); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).PutSession(ctx, sqlcdb.PutSessionParams(session)); err != nil {
 		return fmt.Errorf("save session of %s: %w", session.PersonID, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) Delete(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteSession(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteSession(ctx, id); err != nil {
 		return fmt.Errorf("delete session: %w", err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) List(ctx context.Context) ([]Session, error) {
-	rows, err := s.db.Queries(ctx).ListSessions(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListSessions(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select sessions: %w", err)
 	}

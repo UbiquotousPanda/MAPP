@@ -1,11 +1,11 @@
-package plan
+package core
 
 import (
 	"reflect"
 	"testing"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // model returns a model with the rates r1 and r2 (percent) and the average deal size (USD).

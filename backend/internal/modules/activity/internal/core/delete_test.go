@@ -1,12 +1,12 @@
-package activity_test
+package core_test
 
 import (
 	"reflect"
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/history"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 )
 
@@ -38,7 +38,7 @@ func TestDelete_MovesToBin_FR031(t *testing.T) {
 		t.Errorf("entries = %+v, want one deleted entry", entries)
 	}
 	rows, _ := f.service.ListForPlan(t.Context(), priya, "P-1001")
-	if slices.ContainsFunc(rows, func(s activity.Summary) bool { return s.ID == "A-1004" }) {
+	if slices.ContainsFunc(rows, func(s core.Summary) bool { return s.ID == "A-1004" }) {
 		t.Error("the plan still lists the deleted activity")
 	}
 	_, err = f.service.Delete(t.Context(), priya, "A-1004")
@@ -77,7 +77,7 @@ func TestUndo_NameTakenRefused_FR031(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Delete: %v", err)
 	}
-	f.create(t, digitalAndSocial, activity.Input{Name: "LAUNCH FILM", ActivityTypeID: eventType})
+	f.create(t, digitalAndSocial, core.Input{Name: "LAUNCH FILM", ActivityTypeID: eventType})
 
 	_, err = f.history.Undo(t.Context(), priya, entry.ID)
 
@@ -96,7 +96,7 @@ func TestRestore_ResetsToCreatedAndRenames_FR031(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Delete: %v", err)
 	}
-	f.create(t, digitalAndSocial, activity.Input{Name: "Social always-on", ActivityTypeID: eventType})
+	f.create(t, digitalAndSocial, core.Input{Name: "Social always-on", ActivityTypeID: eventType})
 
 	result, err := f.history.Restore(t.Context(), daniel, entry.ID)
 
@@ -104,7 +104,7 @@ func TestRestore_ResetsToCreatedAndRenames_FR031(t *testing.T) {
 		t.Fatalf("Restore: %v", err)
 	}
 	restored, _ := f.stored(t, "A-1002")
-	if restored.Name != "Social always-on (restored)" || restored.Status != activity.StatusCreated || restored.Version != 2 ||
+	if restored.Name != "Social always-on (restored)" || restored.Status != core.StatusCreated || restored.Version != 2 ||
 		restored.UpdatedBy != daniel {
 		t.Errorf("restored = %s, %s, version %d by %v", restored.Name, restored.Status, restored.Version, restored.UpdatedBy)
 	}

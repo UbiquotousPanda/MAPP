@@ -4,12 +4,12 @@ import (
 	"cmp"
 	"context"
 
-	"mapp/internal/campaign"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // demoCampaign is one campaign of 005 data model §9 with its initiatives. Dates are YYYY-MM-DD; "" means

@@ -1,14 +1,14 @@
-package campaign
+package core
 
 import (
 	"reflect"
 	"testing"
 	"time"
 
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // quarterly is the custom phasing of the demo campaign "Helix UK & Ireland": 100,000.00 GBP in each of Mar,

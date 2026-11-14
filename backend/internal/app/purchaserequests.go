@@ -1,8 +1,8 @@
 package app
 
 import (
-	"mapp/internal/history"
-	"mapp/internal/purchaserequest"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/purchaserequest"
 )
 
 // purchaseRequestsArea builds purchase requests (032) after the approval engine, which it plugs into both ways,

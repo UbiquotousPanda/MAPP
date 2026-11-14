@@ -1,12 +1,12 @@
-package approval_test
+package core_test
 
 import (
 	"net/http"
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval/internal/core"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/date"
 )
@@ -29,7 +29,7 @@ func TestRuleOptions_FR001(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s", response.Status, response.Body)
 	}
-	var options approval.RuleOptions
+	var options core.RuleOptions
 	response.Decode(t, &options)
 	var roles, units []string
 	for _, r := range options.Roles {
@@ -49,7 +49,7 @@ func TestCreateWorkflow_RuleFields201_FR001(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	alex := server.SignIn(t, alexsEmail)
-	var options approval.RuleOptions
+	var options core.RuleOptions
 	alex.Do(t, http.MethodGet, "/api/v1/approval-rule-options", nil).Decode(t, &options)
 	mobility := options.BusinessUnits[0].ID
 
@@ -83,7 +83,7 @@ func TestSubmit_WF1003Automatic_FR014(t *testing.T) {
 		workflow := standardWorkflow
 		u.ApprovalWorkflowID, u.PlannedCost = &workflow, usd("8000.00")
 	})
-	var submission approval.Submission
+	var submission core.Submission
 	priya.Do(t, http.MethodGet, "/api/v1/activities/"+fleetRoadshow+"/approval/submission", nil).Decode(t, &submission)
 
 	appr := decodeApproval(t, priya.Do(t, http.MethodPost, "/api/v1/activities/"+fleetRoadshow+"/approval/submit",
@@ -93,7 +93,7 @@ func TestSubmit_WF1003Automatic_FR014(t *testing.T) {
 		t.Errorf("submission = %+v, want approved automatically", submission.Outcomes)
 	}
 	round := appr.Rounds[0]
-	if appr.Status != "approved" || !round.AutoApproved || round.Outcome != approval.OutcomeApproved || round.Facts == nil ||
+	if appr.Status != "approved" || !round.AutoApproved || round.Outcome != core.OutcomeApproved || round.Facts == nil ||
 		round.Facts.PlannedCost.Amount.String() != "8000.00" {
 		t.Errorf("approval %s, round %+v; want approved at submission", appr.Status, round)
 	}
@@ -105,7 +105,7 @@ func TestApprove_BySubmitter403_FR018(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	alex := server.SignIn(t, alexsEmail)
-	var submission approval.Submission
+	var submission core.Submission
 	alex.Do(t, http.MethodGet, "/api/v1/activities/"+fleetRoadshow+"/approval/submission", nil).Decode(t, &submission)
 	appr := decodeApproval(t, alex.Do(t, http.MethodPost, "/api/v1/activities/"+fleetRoadshow+"/approval/submit",
 		map[string]any{"version": submission.ActivityVersion}))
@@ -128,7 +128,7 @@ func TestDelegations_CRUD_FR022_FR024(t *testing.T) {
 	carlos := server.SignIn(t, carlosEmail)
 	today := date.Today(now)
 
-	var before approval.DelegationPage
+	var before core.DelegationPage
 	daniel.Do(t, http.MethodGet, "/api/v1/approval-delegations", nil).Decode(t, &before)
 	created := daniel.Do(t, http.MethodPost, "/api/v1/approval-delegations", map[string]any{
 		"delegateId": "U-1005", "startDate": today.String(), "endDate": today.AddDays(2).String(), "note": "Conference"})
@@ -141,11 +141,11 @@ func TestDelegations_CRUD_FR022_FR024(t *testing.T) {
 	if created.Status != http.StatusCreated {
 		t.Fatalf("POST = %d %s", created.Status, created.Body)
 	}
-	var view approval.DelegationView
+	var view core.DelegationView
 	created.Decode(t, &view)
 	assertValidation(t, refused, `{"field":"delegateId","message":"Sara Novak can't approve activities. Choose someone with a role that approves."}`)
 
-	var asDelegate approval.DelegationPage
+	var asDelegate core.DelegationPage
 	carlos.Do(t, http.MethodGet, "/api/v1/approval-delegations?scope=mine", nil).Decode(t, &asDelegate)
 	if asDelegate.Total != 2 || asDelegate.Items[0].ID != view.ID || asDelegate.Items[0].CanChange {
 		t.Errorf("Carlos's list = %+v, want both of Daniel's, read-only", asDelegate)
@@ -179,7 +179,7 @@ func TestDelegationsAll_NeedsWorkflowsManage_FR024(t *testing.T) {
 
 	assertError(t, refused, http.StatusForbidden, "forbidden",
 		"Changing approval workflows isn't part of your role (Planner). Ask an administrator if you need it.")
-	var page approval.DelegationPage
+	var page core.DelegationPage
 	allowed.Decode(t, &page)
 	if allowed.Status != http.StatusOK || !page.CanManageOthers || page.Total != 1 || !page.Items[0].CanChange {
 		t.Errorf("Alex's = %d %+v, want everyone's, changeable", allowed.Status, page)
@@ -194,7 +194,7 @@ func TestMonitoring_Seeded_TradeMagazineOverdue_FR030(t *testing.T) {
 	alex := server.SignIn(t, alexsEmail)
 	priya := server.SignIn(t, priyasEmail)
 
-	var m, priyas approval.Monitoring
+	var m, priyas core.Monitoring
 	response := alex.Do(t, http.MethodGet, "/api/v1/approvals/monitoring", nil)
 	response.Decode(t, &m)
 	priya.Do(t, http.MethodGet, "/api/v1/approvals/monitoring", nil).Decode(t, &priyas)
@@ -222,7 +222,7 @@ func TestRunEscalations_SeededEscalatesToAlex_FR027(t *testing.T) {
 	alex := server.SignIn(t, alexsEmail)
 
 	response := alex.Do(t, http.MethodPost, "/api/v1/approvals/escalations/run", nil)
-	var run, again approval.EscalationRun
+	var run, again core.EscalationRun
 	response.Decode(t, &run)
 	alex.Do(t, http.MethodPost, "/api/v1/approvals/escalations/run", nil).Decode(t, &again)
 
@@ -235,7 +235,7 @@ func TestRunEscalations_SeededEscalatesToAlex_FR027(t *testing.T) {
 	}
 	appr := decodeApproval(t, alex.Do(t, http.MethodPost, "/api/v1/activities/"+tradeMagazineAds+"/approval/approve",
 		map[string]any{"roundId": "AR-1004", "level": 1}))
-	if entry := appr.Rounds[0].History[0]; appr.Status != "approved" || entry.Capacity != approval.CapacityBackup {
+	if entry := appr.Rounds[0].History[0]; appr.Status != "approved" || entry.Capacity != core.CapacityBackup {
 		t.Errorf("approval %s, entry %+v; want approved by Alex Morgan as backup approver", appr.Status, entry)
 	}
 }

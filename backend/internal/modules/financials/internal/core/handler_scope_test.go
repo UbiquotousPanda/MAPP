@@ -1,4 +1,4 @@
-package financials_test
+package core_test
 
 import (
 	"bytes"

@@ -1,11 +1,11 @@
-package customdashboard
+package core
 
 import (
 	"context"
 	"fmt"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/clock"
@@ -18,7 +18,7 @@ type Service struct {
 	tx        Transactor
 	repo      Store
 	ids       *ids.Generator
-	history   *history.Service
+	history   history.Recorder
 	directory Directory
 	now       clock.Clock
 }

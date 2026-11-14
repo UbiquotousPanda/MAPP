@@ -1,4 +1,4 @@
-package access
+package core
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 )

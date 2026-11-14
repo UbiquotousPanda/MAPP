@@ -1,11 +1,11 @@
-package access
+package core
 
 import (
 	"cmp"
 	"context"
 	"slices"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 )
 

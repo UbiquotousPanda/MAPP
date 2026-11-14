@@ -5,14 +5,14 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
-	"mapp/internal/lineitem"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/purchaserequest"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
-	"mapp/internal/purchaserequest"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

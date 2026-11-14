@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"mapp/internal/people"
-	"mapp/internal/people/peopletest"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/people/peopletest"
 	"mapp/internal/platform/apitest"
 )
 

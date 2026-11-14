@@ -1,4 +1,4 @@
-package approval
+package core
 
 // The messages of the plans' "User-visible messages" tables (008, 017, 031) that the API sends.
 const (

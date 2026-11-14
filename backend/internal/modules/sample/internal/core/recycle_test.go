@@ -1,4 +1,4 @@
-package sample
+package core
 
 import (
 	"reflect"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/record"
 )

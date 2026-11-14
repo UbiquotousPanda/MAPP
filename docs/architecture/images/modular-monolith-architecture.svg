@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1080" width="1500" height="1080" font-family="Jost, Arial, Helvetica, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">MAPP backend: layered monolith today, modular monolith target</title>
+<desc id="d">On the left, today's layered monolith: handler, service and store layers cut across 27 business areas that all share one stores registry, one generated sqlcdb package and one migrations folder. On the right, the modular monolith as built: a kernel of platform packages, then 27 modules in five tiers, each publishing its contract in its root package and keeping its service, store, handler, queries and generated code in a compiler-private internal folder, owning its tables and wired together by the composition root.</desc>
+
+<rect width="1500" height="1080" fill="#ffffff"/>
+
+<text x="50" y="48" font-size="26" font-weight="600" fill="#292929">MAPP backend — from layered monolith to modular monolith</text>
+<text x="50" y="74" font-size="14" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">One binary, one database, one transaction throughout. 27 business areas · 59 cross-module imports · no cycles · 5 tiers. Built (ADR-0022).</text>
+
+<!-- ============ LEFT: TODAY ============ -->
+<rect x="50" y="100" width="610" height="560" rx="12" fill="#fafafa" stroke="#b9b9b9" stroke-width="1.5"/>
+<text x="74" y="132" font-size="16" font-weight="600" fill="#292929">BEFORE — layered monolith (ADR-0003)</text>
+<text x="74" y="154" font-size="12.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">The layer is the first thing you see; the module is a folder convention.</text>
+
+<rect x="74" y="172" width="562" height="56" rx="8" fill="#eef3fa" stroke="#003c88" stroke-width="1.5"/>
+<text x="92" y="196" font-size="14" font-weight="600" fill="#292929">Handler layer — Gin</text>
+<text x="92" y="216" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">286 routes registered across 27 areas</text>
+
+<rect x="74" y="238" width="562" height="56" rx="8" fill="#e6f4f6" stroke="#008192" stroke-width="1.5"/>
+<text x="92" y="262" font-size="14" font-weight="600" fill="#292929">Service layer — every business rule</text>
+<text x="92" y="282" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">59 cross-module imports live here; types of other modules cross freely</text>
+
+<rect x="74" y="304" width="562" height="56" rx="8" fill="#e6f4ee" stroke="#008557" stroke-width="1.5"/>
+<text x="92" y="328" font-size="14" font-weight="600" fill="#292929">Store layer</text>
+<text x="92" y="348" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">store.go + store_postgres.go per area</text>
+
+<!-- shared base -->
+<rect x="74" y="378" width="562" height="104" rx="8" fill="#f6edf5" stroke="#87217d" stroke-width="2"/>
+<text x="92" y="402" font-size="14" font-weight="600" fill="#292929">Shared by every module — the coupling that remains</text>
+<text x="92" y="424" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">internal/stores · one stores.Set holding all 27 stores</text>
+<text x="92" y="444" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">one generated sqlcdb package · any module may call any table's queries</text>
+<text x="92" y="464" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">one migrations folder · one queries folder · no table has an owner</text>
+
+<text x="74" y="512" font-size="13" font-weight="600" fill="#87217d">The four gaps</text>
+<text x="74" y="534" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">1 · Behaviour is inverted (deps.go interfaces), but the provider's types still cross.</text>
+<text x="74" y="554" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">2 · The data layer is shared; stores.PlanStore exists for other modules.</text>
+<text x="74" y="574" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">3 · No module owns its tables.</text>
+<text x="74" y="594" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">4 · Nothing enforces any of it — internal/ is used once, at the repo root.</text>
+
+<text x="74" y="628" font-size="12.5" font-weight="600" fill="#008557">Already true: the graph is a DAG, no cycles, and 27 of 32 query files</text>
+<text x="74" y="646" font-size="12.5" font-weight="600" fill="#008557">touch only their own module's tables.</text>
+
+<!-- arrow across -->
+<path d="M 676 380 L 760 380" stroke="#5b6b7a" stroke-width="3" fill="none" marker-end="url(#ar)"/>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5b6b7a"/></marker></defs>
+
+<!-- ============ RIGHT: TARGET ============ -->
+<rect x="782" y="100" width="668" height="560" rx="12" fill="#f7f9fc" stroke="#003c88" stroke-width="2"/>
+<text x="806" y="132" font-size="16" font-weight="600" fill="#292929">NOW — modular monolith (ADR-0022)</text>
+<text x="806" y="154" font-size="12.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">The module is the unit; the layering lives inside it, unchanged.</text>
+
+<rect x="806" y="172" width="620" height="44" rx="8" fill="#eef1f3" stroke="#5b6b7a" stroke-width="1.5"/>
+<text x="824" y="192" font-size="13.5" font-weight="600" fill="#292929">internal/app — composition root</text>
+<text x="824" y="209" font-size="11.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">builds each module in order, fills its ports from other contracts, mounts its routes</text>
+
+<!-- one module, exploded -->
+<rect x="806" y="228" width="620" height="186" rx="10" fill="#ffffff" stroke="#003c88" stroke-width="1.5"/>
+<text x="824" y="252" font-size="13.5" font-weight="600" fill="#292929">internal/modules/plan/ — every module has these parts</text>
+
+<rect x="824" y="264" width="584" height="40" rx="6" fill="#e6f4ee" stroke="#008557" stroke-width="1.5"/>
+<text x="840" y="282" font-size="12.5" font-weight="600" fill="#292929">plan.go — the published contract</text>
+<text x="840" y="298" font-size="11.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">types, ports and constructors as aliases — the only part others import</text>
+
+<rect x="824" y="310" width="584" height="62" rx="6" fill="#f3f5f7" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="840" y="328" font-size="12.5" font-weight="600" fill="#292929">internal/ — private, enforced by the Go compiler</text>
+<text x="840" y="345" font-size="11.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">core/ (model · store · service · handler) · queries/ · sqlcdb/ (generated)</text>
+<text x="840" y="362" font-size="11.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">unreachable from any other module — no linter needed</text>
+
+<rect x="824" y="378" width="286" height="26" rx="6" fill="#eef3fa" stroke="#003c88" stroke-width="1"/>
+<text x="838" y="396" font-size="11.5" fill="#292929">its tables — one owner; others read its views</text>
+<rect x="1122" y="378" width="286" height="26" rx="6" fill="#eef3fa" stroke="#003c88" stroke-width="1"/>
+<text x="1136" y="396" font-size="11.5" fill="#292929">plantest/ — its in-memory fake</text>
+
+<!-- tiers -->
+<text x="806" y="440" font-size="13" font-weight="600" fill="#003c88">Tiers, computed from the imports the code has today</text>
+
+<rect x="806" y="450" width="620" height="34" rx="6" fill="#f6edf5" stroke="#87217d" stroke-width="1.5"/>
+<text x="822" y="464" font-size="11.5" font-weight="600" fill="#292929">KERNEL</text>
+<text x="822" y="478" font-size="11" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">platform/* only — no business rule; migrations stay in one folder</text>
+
+<rect x="806" y="490" width="620" height="27" rx="6" fill="#eef3fa" stroke="#003c88" stroke-width="1"/>
+<text x="822" y="508" font-size="11.5" font-weight="600" fill="#292929">TIER 0–1</text>
+<text x="898" y="508" font-size="10.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">history · widgetdata · spa · people · settings · access · overspend · rollup · financials · bulk · swbs · sample</text>
+
+<rect x="806" y="523" width="620" height="27" rx="6" fill="#e6f4f6" stroke="#008192" stroke-width="1"/>
+<text x="822" y="541" font-size="11.5" font-weight="600" fill="#292929">TIER 2</text>
+<text x="898" y="541" font-size="10.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">plan · campaign · lineitem · approval · budget · allwork · auth · home · customdashboard · dataset</text>
+
+<rect x="806" y="556" width="620" height="27" rx="6" fill="#e6f4ee" stroke="#008557" stroke-width="1"/>
+<text x="822" y="574" font-size="11.5" font-weight="600" fill="#292929">TIER 3</text>
+<text x="898" y="574" font-size="10.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">activity · purchaserequest · workbook</text>
+
+<rect x="806" y="589" width="620" height="27" rx="6" fill="#eef1f3" stroke="#5b6b7a" stroke-width="1"/>
+<text x="822" y="607" font-size="11.5" font-weight="600" fill="#292929">TIER 4</text>
+<text x="898" y="607" font-size="10.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">dashboard · simulatedgsap — pure consumers, nothing depends on them</text>
+
+<text x="806" y="635" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">A module may import the kernel and any <tspan font-weight="700">lower</tspan> tier — never its own tier or higher.</text>
+<text x="806" y="653" font-size="12" font-weight="600" fill="#008557">All 27 modules sit behind their contract; 13 have fan-in zero.</text>
+
+<!-- ============ BOTTOM: how modules talk + stages ============ -->
+<rect x="50" y="684" width="700" height="196" rx="12" fill="#ffffff" stroke="#b9c6d6" stroke-width="1.5"/>
+<text x="74" y="712" font-size="15" font-weight="600" fill="#292929">How modules talk — synchronous, in one transaction</text>
+<text x="74" y="736" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700">A asks B</tspan> — A declares the interface it needs; internal/app fills it from b.go.</text>
+<text x="74" y="758" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700">A reacts to B</tspan> — B publishes a hook; the composition root subscribes A to it.</text>
+<text x="74" y="780" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700">A needs many of B's rows</tspan> — B publishes a read-only SQL view, named in its contract.</text>
+<text x="74" y="802" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700">Both need the same sum</tspan> — a shared domain module (rollup), never the kernel.</text>
+<text x="74" y="830" font-size="12" fill="#292929" font-family="Arial, Helvetica, sans-serif">No queue, no event bus, no eventual consistency. The hook pattern already exists:</text>
+<text x="74" y="848" font-size="12" fill="#292929" font-family="Arial, Helvetica, sans-serif">deleting a team already removes dashboard and dataset shares in the same transaction.</text>
+<text x="74" y="870" font-size="12" fill="#008557" font-family="Arial, Helvetica, sans-serif" font-weight="600">Enforced by: the compiler · depguard · eleven architecture tests.</text>
+
+<rect x="776" y="684" width="674" height="196" rx="12" fill="#ffffff" stroke="#b9c6d6" stroke-width="1.5"/>
+<text x="800" y="712" font-size="15" font-weight="600" fill="#292929">Migration — seven stages, done (stage 4 dropped)</text>
+<text x="800" y="736" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700" fill="#292929">1</tspan> ✓ The module map, the allow-list and the architecture tests.</text>
+<text x="800" y="756" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700" fill="#292929">2</tspan> ✓ spa moved behind its contract — the pilot.</text>
+<text x="800" y="776" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700" fill="#292929">3</tspan> ✓ The 12 other fan-in-zero modules moved.</text>
+<text x="800" y="796" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700" fill="#292929">4</tspan> — platform/ → kernel/ dropped: platform/ is the kernel (D-380).</text>
+<text x="800" y="816" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700" fill="#292929">5</tspan> ✓ The other 14 moved; history publishes a narrow Recorder.</text>
+<text x="800" y="836" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700" fill="#292929">6</tspan> ✓ Per-module sqlc · table owners · 3 views · overspend declared.</text>
+<text x="800" y="856" font-size="12" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif"><tspan font-weight="700" fill="#292929">7</tspan> ✓ Only internal/app builds modules; stores.Set is wiring only.</text>
+<text x="800" y="876" font-size="12" fill="#008557" font-family="Arial, Helvetica, sans-serif" font-weight="600">Each move kept the tree green: build, tests, architecture tests.</text>
+
+<!-- footer: unchanged -->
+<rect x="50" y="904" width="1400" height="134" rx="12" fill="#eef3fa" stroke="#003c88" stroke-width="1.5"/>
+<text x="74" y="934" font-size="15" font-weight="600" fill="#292929">What does not change</text>
+<text x="74" y="962" font-size="12.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">One binary, one PostgreSQL database, one transaction — no service split, no network hop, no distributed transaction. The Azure design (ADR-0021) is unaffected.</text>
+<text x="74" y="986" font-size="12.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">The API contract: 286 endpoints, the same paths and error envelope; openapi.yaml stays the source of truth and the contract tests pass unchanged.</text>
+<text x="74" y="1010" font-size="12.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">Access control: the fail-closed route table and scoped service checks are untouched. The layering: handler → service → store, per module, exactly as ADR-0003 describes.</text>
+<text x="74" y="1030" font-size="12.5" fill="#5b6b7a" font-family="Arial, Helvetica, sans-serif">The frontend is already feature-sliced with ESLint enforcing inward dependencies — this brings the backend level with it.</text>
+</svg>

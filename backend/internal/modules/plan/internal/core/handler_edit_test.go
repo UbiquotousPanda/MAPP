@@ -1,11 +1,11 @@
-package plan_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 	"time"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -71,7 +71,7 @@ func TestChangeEffects_FR019_FR020(t *testing.T) {
 		`"shownGroups":[]}`)
 	assertAnswer(t, unknown, http.StatusBadRequest, validationBody(`{"field":"modelId","message":"Choose a model from the list."}`))
 	assertAnswer(t, gone, http.StatusNotFound, planGoneBody)
-	var p plan.PlanView
+	var p core.PlanView
 	priya.Do(t, http.MethodGet, "/api/v1/plans/P-1003", nil).Decode(t, &p)
 	if p.Version != 1 || p.Model.ID != "MOD-1001" || len(p.BusinessUnit) != 2 {
 		t.Errorf("FY2027 Global Brand changed: version %d, model %s, business unit %+v", p.Version, p.Model.ID, p.BusinessUnit)
@@ -79,7 +79,7 @@ func TestChangeEffects_FR019_FR020(t *testing.T) {
 }
 
 // formOf is the edit form of a plan as the plan page shows it, unchanged, as the web app sends it.
-func formOf(p plan.PlanView) map[string]any {
+func formOf(p core.PlanView) map[string]any {
 	teamIDs := []string{}
 	for _, team := range p.Teams {
 		teamIDs = append(teamIDs, team.ID)

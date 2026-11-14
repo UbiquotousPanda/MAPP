@@ -1,4 +1,4 @@
-package settings_test
+package core_test
 
 import (
 	"encoding/base64"

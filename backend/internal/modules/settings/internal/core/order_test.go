@@ -1,11 +1,11 @@
-package settings
+package core
 
 import (
 	"encoding/json"
 	"slices"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // move moves the attribute id as Alex.

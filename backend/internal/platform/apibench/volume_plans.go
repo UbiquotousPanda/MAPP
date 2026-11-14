@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"slices"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
-	"mapp/internal/lineitem"
-	"mapp/internal/people"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/people"
 )
 
 // newLineItem is the line item given to a template activity that has none.

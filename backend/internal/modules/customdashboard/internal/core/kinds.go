@@ -1,4 +1,4 @@
-package customdashboard
+package core
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 )

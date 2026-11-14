@@ -1,18 +1,18 @@
-package campaign
+package core
 
 import (
 	"context"
 	"fmt"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/overspend"
 
+	"mapp/internal/modules/campaign/internal/sqlcdb"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 func (s *PostgresStore) GetInitiative(ctx context.Context, id string) (Initiative, bool, error) {
@@ -68,13 +68,13 @@ func (s *PostgresStore) DeleteInitiative(ctx context.Context, id string) error {
 }
 
 func (s *PostgresStore) initiatives(ctx context.Context, filter sqlcdb.ListInitiativesParams) ([]Initiative, error) {
-	rows, err := s.db.Queries(ctx).ListInitiatives(ctx, filter)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListInitiatives(ctx, filter)
 	s.initiativeRecords().Keep(ctx, rows)
 	return initiativesFromRows(rows, err)
 }
 
 func (s *PostgresStore) initiativesInScope(ctx context.Context, scope authz.Scope, id *string) ([]Initiative, error) {
-	rows, err := s.db.Queries(ctx).ListInitiativesInScope(ctx, sqlcdb.ListInitiativesInScopeParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListInitiativesInScope(ctx, sqlcdb.ListInitiativesInScopeParams{
 		ID: id, SeesEverything: scope.Everything, ViewerID: scope.PersonID, ViewsPlans: scope.Holds,
 		ViewerTeamIds: scope.TeamIDs,
 	})

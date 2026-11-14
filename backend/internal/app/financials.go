@@ -4,16 +4,16 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/allwork"
-	"mapp/internal/campaign"
-	"mapp/internal/financials"
-	"mapp/internal/history"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

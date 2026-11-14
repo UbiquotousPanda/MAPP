@@ -1,4 +1,4 @@
-package settings
+package core
 
 // The limits of a Shell attribute and its options (data model §4, §5).
 const (

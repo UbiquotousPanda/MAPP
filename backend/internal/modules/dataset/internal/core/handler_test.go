@@ -1,4 +1,4 @@
-package dataset_test
+package core_test
 
 import (
 	"encoding/base64"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/dataset"
+	"mapp/internal/modules/dataset/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -58,10 +58,10 @@ func statuses(responses ...*apitest.Response) []int {
 }
 
 // created signs Priya in and stores a dataset of hers, not shared, next to the seeded DS-1001.
-func created(t *testing.T, server *apitest.Server) (*apitest.Client, dataset.View) {
+func created(t *testing.T, server *apitest.Server) (*apitest.Client, core.View) {
 	t.Helper()
 	priya := server.SignIn(t, priyasEmail)
-	return priya, decoded[dataset.View](t, priya.Do(t, http.MethodPost, datasetsPath, createBody(createdName, leadsCSV)),
+	return priya, decoded[core.View](t, priya.Do(t, http.MethodPost, datasetsPath, createBody(createdName, leadsCSV)),
 		http.StatusCreated)
 }
 
@@ -77,19 +77,19 @@ func TestPreviewDataset_ProposesColumns_FR041(t *testing.T) {
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 
-	preview := decoded[dataset.Preview](t, priya.Do(t, http.MethodPost, datasetsPath+"/preview",
+	preview := decoded[core.Preview](t, priya.Do(t, http.MethodPost, datasetsPath+"/preview",
 		map[string]any{"fileName": "leads.csv", "content": content(leadsCSV)}), http.StatusOK)
 	unreadable := priya.Do(t, http.MethodPost, datasetsPath+"/preview", map[string]any{"fileName": "leads.txt", "content": content("A\n1\n")})
 	tooLarge := priya.Do(t, http.MethodPost, datasetsPath+"/preview",
-		map[string]any{"fileName": "big.csv", "content": strings.Repeat("A", dataset.MaxUploadBodyBytes)}, apitest.SkipRequestValidation())
+		map[string]any{"fileName": "big.csv", "content": strings.Repeat("A", core.MaxUploadBodyBytes)}, apitest.SkipRequestValidation())
 	bySara := server.SignIn(t, sarasEmail).Do(t, http.MethodPost, datasetsPath+"/preview",
 		map[string]any{"fileName": "leads.csv", "content": content(leadsCSV)})
 
-	kinds := []dataset.Kind{}
+	kinds := []core.Kind{}
 	for _, c := range preview.Columns {
 		kinds = append(kinds, c.ProposedKind)
 	}
-	if !slices.Equal(kinds, []dataset.Kind{dataset.KindText, dataset.KindDate, dataset.KindNumber, dataset.KindMoney}) || preview.RowCount != 2 {
+	if !slices.Equal(kinds, []core.Kind{core.KindText, core.KindDate, core.KindNumber, core.KindMoney}) || preview.RowCount != 2 {
 		t.Errorf("preview = %+v", preview)
 	}
 	if got := statuses(unreadable, tooLarge, bySara); !slices.Equal(got, []int{400, 413, 403}) {
@@ -122,16 +122,16 @@ func TestListDatasets_MineAndSharedWithMe_FR040(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya, view := created(t, server)
-	decoded[dataset.View](t, priya.Do(t, http.MethodPut, datasetsPath+"/"+view.ID+"/sharing",
+	decoded[core.View](t, priya.Do(t, http.MethodPut, datasetsPath+"/"+view.ID+"/sharing",
 		map[string]any{"version": 1, "teamIds": []string{europe}}), http.StatusOK)
 
-	asPriya := decoded[dataset.List](t, priya.Do(t, http.MethodGet, datasetsPath, nil), http.StatusOK)
-	asDaniel := decoded[dataset.List](t, server.SignIn(t, danielsEmail).Do(t, http.MethodGet, datasetsPath, nil), http.StatusOK)
-	asMei := decoded[dataset.List](t, server.SignIn(t, meisEmail).Do(t, http.MethodGet, datasetsPath, nil), http.StatusOK)
+	asPriya := decoded[core.List](t, priya.Do(t, http.MethodGet, datasetsPath, nil), http.StatusOK)
+	asDaniel := decoded[core.List](t, server.SignIn(t, danielsEmail).Do(t, http.MethodGet, datasetsPath, nil), http.StatusOK)
+	asMei := decoded[core.List](t, server.SignIn(t, meisEmail).Do(t, http.MethodGet, datasetsPath, nil), http.StatusOK)
 	bySara := server.SignIn(t, sarasEmail).Do(t, http.MethodGet, datasetsPath, nil)
 
-	hasView := func(list []dataset.Summary) bool {
-		return slices.ContainsFunc(list, func(s dataset.Summary) bool { return s.ID == view.ID })
+	hasView := func(list []core.Summary) bool {
+		return slices.ContainsFunc(list, func(s core.Summary) bool { return s.ID == view.ID })
 	}
 	if !hasView(asPriya.Mine) || !hasView(asDaniel.SharedWithMe) || hasView(asMei.Mine) || hasView(asMei.SharedWithMe) {
 		t.Errorf("Priya %+v, Daniel %+v, Mei %+v", asPriya, asDaniel, asMei)
@@ -149,9 +149,9 @@ func TestGetDataset_VisibleOnly_FR044(t *testing.T) {
 	path := datasetsPath + "/" + view.ID
 
 	beforeShare := daniel.Do(t, http.MethodGet, path, nil)
-	decoded[dataset.View](t, priya.Do(t, http.MethodPut, path+"/sharing", map[string]any{"version": 1, "teamIds": []string{europe}}),
+	decoded[core.View](t, priya.Do(t, http.MethodPut, path+"/sharing", map[string]any{"version": 1, "teamIds": []string{europe}}),
 		http.StatusOK)
-	asDaniel := decoded[dataset.View](t, daniel.Do(t, http.MethodGet, path, nil), http.StatusOK)
+	asDaniel := decoded[core.View](t, daniel.Do(t, http.MethodGet, path, nil), http.StatusOK)
 	asMei := mei.Do(t, http.MethodGet, path, nil)
 	missing := priya.Do(t, http.MethodGet, datasetsPath+"/DS-9999", nil)
 

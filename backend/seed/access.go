@@ -3,7 +3,7 @@ package seed
 import (
 	"context"
 
-	"mapp/internal/access"
+	"mapp/internal/modules/access"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/ids"
 )

@@ -1,4 +1,4 @@
-package workbook_test
+package core_test
 
 import (
 	"bytes"
@@ -10,9 +10,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/workbook/internal/core"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/sheet"
-	"mapp/internal/workbook"
 )
 
 const (
@@ -65,7 +65,7 @@ func upload(t *testing.T, name string, sheets map[string][][]string) map[string]
 	return map[string]any{"fileName": name, "content": base64.StdEncoding.EncodeToString(buf.Bytes())}
 }
 
-func reasons(check workbook.Check) []string {
+func reasons(check core.Check) []string {
 	got := []string{}
 	for _, p := range check.Problems {
 		got = append(got, strings.Join([]string{p.Sheet, strconv.Itoa(p.Row), p.Column, p.Value, p.Reason}, " | "))
@@ -114,7 +114,7 @@ func TestExportThenCheck_NothingToChange_Contract_012FR027_SC004(t *testing.T) {
 		t.Fatalf("export status %d %s", exported.Status, exported.Body)
 	}
 	body := map[string]any{"fileName": "lubricants.xlsx", "content": base64.StdEncoding.EncodeToString(exported.Body)}
-	check := decoded[workbook.Check](t, priya.Do(t, http.MethodPost, planPath+"/imports/check", body), http.StatusOK)
+	check := decoded[core.Check](t, priya.Do(t, http.MethodPost, planPath+"/imports/check", body), http.StatusOK)
 
 	if !check.NothingToChange || len(check.Problems) != 0 {
 		t.Errorf("an unchanged export: nothing to change %v, problems %v", check.NothingToChange, reasons(check))
@@ -136,7 +136,7 @@ func TestCheck_EveryProblemAtOnce_LeftOutBelow_Contract_012FR031_FR033(t *testin
 			{"Helix launch", "Digital & social", "Webinar", "Event", ""}},
 	})
 
-	check := decoded[workbook.Check](t, priya.Do(t, http.MethodPost, planPath+"/imports/check", file), http.StatusOK)
+	check := decoded[core.Check](t, priya.Do(t, http.MethodPost, planPath+"/imports/check", file), http.StatusOK)
 
 	want := []string{
 		"Campaigns | 2 | Start date | 31 Feb 2026 | Not a real date — write it as 2026-03-12",

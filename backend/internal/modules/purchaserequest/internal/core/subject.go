@@ -1,10 +1,10 @@
-package purchaserequest
+package core
 
 import (
 	"context"
 	"slices"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"

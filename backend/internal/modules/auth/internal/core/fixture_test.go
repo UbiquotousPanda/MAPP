@@ -1,4 +1,4 @@
-package auth
+package core
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/people"
-	"mapp/internal/people/peopletest"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/people/peopletest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/fake"

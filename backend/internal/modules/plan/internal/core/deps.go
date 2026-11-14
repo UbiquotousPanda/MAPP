@@ -1,11 +1,11 @@
-package plan
+package core
 
 import (
 	"context"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Plans reads Settings (feature 002) and people and teams (feature 003) through the two small interfaces

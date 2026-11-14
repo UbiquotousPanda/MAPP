@@ -1,9 +1,9 @@
-package dataset
+package core
 
 import (
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/record"
 )
 

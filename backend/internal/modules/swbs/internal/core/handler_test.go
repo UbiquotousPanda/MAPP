@@ -1,4 +1,4 @@
-package swbs_test
+package core_test
 
 import (
 	"net/http"
@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/swbs/internal/core"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/swbs"
 )
 
 const (
@@ -38,11 +38,11 @@ func TestSwbsRuns_Contract_030_FR011(t *testing.T) {
 	t.Parallel()
 	alex := apitest.New(t).SignIn(t, alexsEmail)
 
-	page := decoded[swbs.RunPage](t, alex.Do(t, http.MethodGet, runsPath, nil), http.StatusOK)
+	page := decoded[core.RunPage](t, alex.Do(t, http.MethodGet, runsPath, nil), http.StatusOK)
 
-	want := []swbs.Code{{LineItemID: "L-1003", LineItemName: "Venue hire", CompanyCode: "DE03", SwbsCode: "SIM-DE03-0001"}}
+	want := []core.Code{{LineItemID: "L-1003", LineItemName: "Venue hire", CompanyCode: "DE03", SwbsCode: "SIM-DE03-0001"}}
 	if page.Total != 1 || page.ReadyToSend != 1 || len(page.Items) != 1 || page.Items[0].ID != "SWR-1001" ||
-		page.Items[0].Source != swbs.SourceDemo || page.Items[0].RanBy.Name != "SP&A One" {
+		page.Items[0].Source != core.SourceDemo || page.Items[0].RanBy.Name != "SP&A One" {
 		t.Errorf("page = %+v", page)
 	}
 	if diff := cmp.Diff(want, page.Items[0].Codes); diff != "" {
@@ -58,10 +58,10 @@ func TestSwbsRun_Contract_030_FR006(t *testing.T) {
 	t.Parallel()
 	alex := apitest.New(t).SignIn(t, alexsEmail)
 
-	run := decoded[swbs.RunView](t, alex.Do(t, http.MethodPost, runsPath, map[string]any{}), http.StatusCreated)
+	run := decoded[core.RunView](t, alex.Do(t, http.MethodPost, runsPath, map[string]any{}), http.StatusCreated)
 
-	want := swbs.RunView{ID: "SWR-1002", Source: swbs.SourceSimulated, RanAt: run.RanAt, RanBy: run.RanBy, Sent: 1,
-		Codes: []swbs.Code{{LineItemID: "L-1006", LineItemName: "Stand build", CompanyCode: "GB01", SwbsCode: "SIM-GB01-0001"}}}
+	want := core.RunView{ID: "SWR-1002", Source: core.SourceSimulated, RanAt: run.RanAt, RanBy: run.RanBy, Sent: 1,
+		Codes: []core.Code{{LineItemID: "L-1006", LineItemName: "Stand build", CompanyCode: "GB01", SwbsCode: "SIM-GB01-0001"}}}
 	if diff := cmp.Diff(want, run); diff != "" || run.RanBy.Name != "Alex Morgan" {
 		t.Errorf("run by %s (-want +got):\n%s", run.RanBy.Name, diff)
 	}
@@ -74,7 +74,7 @@ func TestSwbsRun_Contract_030_FR006(t *testing.T) {
 	if stand.SwbsStatus != lineitem.SwbsReceived || stand.HXKey != "HX1006" {
 		t.Errorf("Stand build status %s, HX key %s", stand.SwbsStatus, stand.HXKey)
 	}
-	again := decoded[swbs.RunView](t, alex.Do(t, http.MethodPost, runsPath, map[string]any{}), http.StatusCreated)
+	again := decoded[core.RunView](t, alex.Do(t, http.MethodPost, runsPath, map[string]any{}), http.StatusCreated)
 	if again.Sent != 0 || len(again.Codes) != 0 {
 		t.Errorf("a second run = %+v, want nothing sent", again)
 	}
@@ -112,7 +112,7 @@ func TestSwbsRun_OneNamed_Contract_030_FR015(t *testing.T) {
 	t.Parallel()
 	alex := apitest.New(t).SignIn(t, alexsEmail)
 
-	only := decoded[swbs.RunView](t, alex.Do(t, http.MethodPost, runsPath, map[string]any{"lineItemIds": []string{"L-1006"}}),
+	only := decoded[core.RunView](t, alex.Do(t, http.MethodPost, runsPath, map[string]any{"lineItemIds": []string{"L-1006"}}),
 		http.StatusCreated)
 	if only.Sent != 1 || only.Codes[0].LineItemID != "L-1006" {
 		t.Errorf("named run = %+v", only)

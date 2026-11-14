@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	"mapp/internal/activity"
+	"mapp/internal/modules/activity"
 	"mapp/internal/platform/money"
 )
 

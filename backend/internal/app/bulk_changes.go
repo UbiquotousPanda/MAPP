@@ -6,15 +6,15 @@ import (
 	"encoding/json"
 	"strings"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
-	"mapp/internal/bulk"
-	"mapp/internal/campaign"
-	"mapp/internal/history"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/bulk"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
-	"mapp/internal/settings"
 )
 
 func (p bulkPlanning) SetOwner(ctx context.Context, a actor.Actor, r bulk.Record, ownerID string) (bool, error) {

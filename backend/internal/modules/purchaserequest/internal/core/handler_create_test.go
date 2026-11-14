@@ -1,4 +1,4 @@
-package purchaserequest_test
+package core_test
 
 import (
 	"net/http"
@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/purchaserequest/internal/core"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/purchaserequest"
 )
 
 func TestDefaults_Contract(t *testing.T) {
@@ -17,7 +17,7 @@ func TestDefaults_Contract(t *testing.T) {
 
 	t.Run("032 FR-003 PR for Stand build, the acting owner, everything left, HX1006", func(t *testing.T) {
 		t.Parallel()
-		d := decoded[purchaserequest.Defaults](t, priya.Do(t, http.MethodGet, prs+"/new-defaults?lineItemId="+standBuild, nil), http.StatusOK)
+		d := decoded[core.Defaults](t, priya.Do(t, http.MethodGet, prs+"/new-defaults?lineItemId="+standBuild, nil), http.StatusOK)
 		if d.Name != "PR for Stand build" || d.Owner.ID != "U-1002" || d.Line.HXKey != "HX1006" || d.CompanyCode != "GB01" ||
 			d.Line.Amount.Format() != "9,200.00 EUR" || d.Line.OverallLimit.Format() != "9,200.00 EUR" {
 			t.Errorf("defaults = %+v", d)
@@ -47,15 +47,15 @@ func TestCreate_ReservesAtOnce_Contract_032_FR017(t *testing.T) {
 	priya := s.SignIn(t, priyasEmail)
 
 	pr := create(t, priya, body(mediaBooking, "USD", "26000.00"))
-	section := decoded[purchaserequest.LineItemSection](t, priya.Do(t, http.MethodGet, "/api/v1/line-items/"+mediaBooking+
+	section := decoded[core.LineItemSection](t, priya.Do(t, http.MethodGet, "/api/v1/line-items/"+mediaBooking+
 		"/purchase-requests", nil), http.StatusOK)
-	activity := decoded[purchaserequest.ActivitySection](t, priya.Do(t, http.MethodGet, "/api/v1/activities/A-1004/purchase-requests",
+	activity := decoded[core.ActivitySection](t, priya.Do(t, http.MethodGet, "/api/v1/activities/A-1004/purchase-requests",
 		nil), http.StatusOK)
 
 	got := []any{pr.Status, pr.HXKeys, pr.Vendor, pr.CompanyCode, pr.Lines[0].LineItem.GLCode != "", pr.Notice,
 		section.Requested.Format(), section.AvailableToRequest.Format(), len(section.PurchaseRequests), section.Create.Available,
 		activity.Requested.Format(), len(activity.LineItems)}
-	same(t, "created, line item and activity sections", []any{purchaserequest.StatusCreated, []string{"HX1005"},
+	same(t, "created, line item and activity sections", []any{core.StatusCreated, []string{"HX1005"},
 		"Northlight Events GmbH", "NL02", true, "", "26,000.00 USD", "4,000.00 USD", 1, true, "26,000.00 USD", 1}, got)
 	t.Run("032 FR-012 3,700.00 EUR is 4,021.74 USD at today's rate, above the 4,000.00 USD left", func(t *testing.T) {
 		t.Parallel()

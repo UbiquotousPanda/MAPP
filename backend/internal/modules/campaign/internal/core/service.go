@@ -1,21 +1,21 @@
-package campaign
+package core
 
 import (
 	"context"
 	"maps"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/ids"
-	"mapp/internal/settings"
 )
 
 type Service struct {
 	tx                Transactor
 	repo              Store
 	ids               *ids.Generator
-	history           *history.Service
+	history           history.Recorder
 	now               clock.Clock
 	deps              Deps
 	displayRates      DisplayRates // nil until UseDisplayRates: amounts show in USD

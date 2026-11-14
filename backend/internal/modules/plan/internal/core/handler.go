@@ -1,14 +1,14 @@
-package plan
+package core
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/web"
-	"mapp/internal/rollup"
 )
 
 // Handler answers the HTTP requests of plans (plan "API operations").

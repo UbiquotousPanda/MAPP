@@ -1,4 +1,4 @@
-package allwork
+package core
 
 // keepCompleteBranches hides every plan, campaign and initiative without a shown activity below it
 // (Complete branches only, FR-007) and reports whether n reaches one.

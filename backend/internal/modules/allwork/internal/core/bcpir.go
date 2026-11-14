@@ -1,4 +1,4 @@
-package allwork
+package core
 
 // BCPIR plans (feature 013): the marker of plan rows, the filter and the Breakdown grouping.
 

@@ -1,12 +1,12 @@
-package plan
+package core
 
 import (
 	"slices"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // converter turns amounts of one currency into the currency it answers in (D-079, 016 D-261): Convert(amount,

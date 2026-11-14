@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"mapp/internal/customdashboard"
-	"mapp/internal/customdashboard/customdashboardtest"
+	"mapp/internal/modules/customdashboard"
+	"mapp/internal/modules/customdashboard/customdashboardtest"
 )
 
 // DB-1001 is Priya's dashboard shared with Lubricants Europe, valid as the API would save it, with a bar,

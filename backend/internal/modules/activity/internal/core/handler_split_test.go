@@ -1,4 +1,4 @@
-package activity_test
+package core_test
 
 import (
 	"net/http"
@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/history"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/errs"
 )
@@ -46,7 +46,7 @@ func TestSplitOptions_Contract_FR026(t *testing.T) {
 	response := priya.Do(t, http.MethodGet, "/api/v1/activities/"+ukLaunchEvent+"/split-options", nil)
 
 	assertStatus(t, response, http.StatusOK)
-	var options activity.SplitOptions
+	var options core.SplitOptions
 	response.Decode(t, &options)
 	if options.PlanCurrency != "GBP" || options.SuggestedName != "UK launch event (split)" || options.NeedsRestart ||
 		options.PlannedCost.Format() != "40,000.00 GBP" || len(options.LineItems) != 2 ||
@@ -71,14 +71,14 @@ func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	previewed := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split-preview", body)
 
 	assertStatus(t, previewed, http.StatusOK)
-	var preview activity.SplitPreview
+	var preview core.SplitPreview
 	previewed.Decode(t, &preview)
 	if len(preview.Problems) != 0 || preview.Original == nil || preview.Created == nil {
 		t.Fatalf("preview = %s", previewed.Body)
 	}
 	o, c := preview.Original, preview.Created
 	if o.PlannedCost.Format() != "20,250.00 GBP" || o.UnassignedPlannedCost.Format() != "5,250.00 GBP" || o.UnassignedState != "left" ||
-		!slices.Equal(o.LineItemNames, []string{"Venue"}) || o.Status != activity.StatusCreated || o.InitiativeName != "UK" {
+		!slices.Equal(o.LineItemNames, []string{"Venue"}) || o.Status != core.StatusCreated || o.InitiativeName != "UK" {
 		t.Errorf("original side = %+v", o)
 	}
 	if c.PlannedCost.Format() != "19,750.00 GBP" || c.UnassignedPlannedCost.Format() != "0.00 GBP" || c.UnassignedState != "allAssigned" ||
@@ -89,7 +89,7 @@ func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	split := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split", body)
 
 	assertStatus(t, split, http.StatusCreated)
-	var result activity.SplitResult
+	var result core.SplitResult
 	split.Decode(t, &result)
 	original, created := result.Activity, result.NewActivity
 	if original.PlannedCost.Format() != "20,250.00 GBP" || original.UnassignedPlannedCost.Format() != "5,250.00 GBP" ||
@@ -99,7 +99,7 @@ func TestSplitPreview_MatchesSplit_FR027(t *testing.T) {
 	if created.ID != "A-1014" || created.Name != "Ireland roadshow" || created.Initiative.ID != irelandInit ||
 		created.PlannedCost.Format() != "19,750.00 GBP" || created.UnassignedPlannedCost.Format() != "0.00 GBP" ||
 		created.LineItems.Count != 1 || created.SplitFrom == nil ||
-		*created.SplitFrom != (activity.SplitLink{ID: ukLaunchEvent, Name: "UK launch event", PlanID: "P-1004"}) {
+		*created.SplitFrom != (core.SplitLink{ID: ukLaunchEvent, Name: "UK launch event", PlanID: "P-1004"}) {
 		t.Errorf("new activity = %+v (split from %+v)", created, created.SplitFrom)
 	}
 	var moved struct {
@@ -148,7 +148,7 @@ func TestSplit_NothingChosen_FR027(t *testing.T) {
 	previewed := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split-preview", body)
 	refused := priya.Do(t, http.MethodPost, "/api/v1/activities/"+ukLaunchEvent+"/split", body)
 
-	var preview activity.SplitPreview
+	var preview core.SplitPreview
 	previewed.Decode(t, &preview)
 	want := []errs.FieldError{{Field: "lineItemIds", Message: "Choose line items or an amount to move."}}
 	if !reflect.DeepEqual(preview.Problems, want) {
@@ -203,7 +203,7 @@ func TestSplit_DestinationRules_FR026(t *testing.T) {
 	assertAnswer(t, outside, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
 		`"fields":[{"field":"initiativeId","message":"'Launch film' runs 01 Mar – 31 May 2026, but 'Retail events' runs `+
 		`01 Jun – 31 Dec 2026. Change the activity's dates first, or pick another initiative."}]}}`)
-	var page activity.SplitOptions
+	var page core.SplitOptions
 	options.Decode(t, &page)
 	for _, d := range page.Destinations {
 		if d.Initiative.ID == "I-1004" && d.MoveProblem == nil {
@@ -218,14 +218,14 @@ func TestSplit_CreatesCopyOfFieldsWithoutGoals_FR028(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
-	var original activity.View
+	var original core.View
 	priya.Do(t, http.MethodGet, "/api/v1/activities/A-1001", nil).Decode(t, &original)
 
 	split := priya.Do(t, http.MethodPost, "/api/v1/activities/A-1001/split",
 		splitBody("Launch film (split)", "I-1001", nil, "20000.00", false, original.Version))
 
 	assertStatus(t, split, http.StatusCreated)
-	var result activity.SplitResult
+	var result core.SplitResult
 	split.Decode(t, &result)
 	n := result.NewActivity
 	if n.ActivityType.ID != original.ActivityType.ID || !reflect.DeepEqual(n.Owner, original.Owner) ||
@@ -234,7 +234,7 @@ func TestSplit_CreatesCopyOfFieldsWithoutGoals_FR028(t *testing.T) {
 		n.ExternalName != original.ExternalName || !reflect.DeepEqual(n.Attributes, original.Attributes) {
 		t.Errorf("new activity %+v does not copy %+v", n, original)
 	}
-	if n.Goals.INQ != nil || n.Goals.MQL != nil || n.Goals.Revenue != nil || n.Status != activity.StatusCreated ||
+	if n.Goals.INQ != nil || n.Goals.MQL != nil || n.Goals.Revenue != nil || n.Status != core.StatusCreated ||
 		n.PlannedCost.Format() != "20,000.00 USD" || result.Activity.PlannedCost.Format() != "100,000.00 USD" {
 		t.Errorf("new activity goals %+v, status %s, planned %v; original planned %v", n.Goals, n.Status, n.PlannedCost, result.Activity.PlannedCost)
 	}
@@ -249,7 +249,7 @@ func TestSplit_ApprovedNeedsRestart_FR029(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
-	var options activity.SplitOptions
+	var options core.SplitOptions
 	priya.Do(t, http.MethodGet, "/api/v1/activities/A-1002/split-options", nil).Decode(t, &options)
 	if !options.NeedsRestart {
 		t.Fatalf("options = %+v, want needsRestart", options)
@@ -263,9 +263,9 @@ func TestSplit_ApprovedNeedsRestart_FR029(t *testing.T) {
 	assertAnswer(t, unconfirmed, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
 		`"fields":[{"field":"restartApproval","message":"This activity will need approval again — confirm the change to save it."}]}}`)
 	assertStatus(t, confirmed, http.StatusCreated)
-	var result activity.SplitResult
+	var result core.SplitResult
 	confirmed.Decode(t, &result)
-	if result.Activity.Status != activity.StatusCreated || result.NewActivity.Status != activity.StatusCreated ||
+	if result.Activity.Status != core.StatusCreated || result.NewActivity.Status != core.StatusCreated ||
 		result.Activity.PlannedCost.Format() != "75,000.00 USD" {
 		t.Errorf("after the split: original %s %v, new %s", result.Activity.Status, result.Activity.PlannedCost, result.NewActivity.Status)
 	}

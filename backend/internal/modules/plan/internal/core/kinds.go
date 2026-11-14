@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"cmp"
@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // The history kind of plans (data model §4). Features 005–007 register their kinds below it.

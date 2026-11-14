@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Every line item has its activity's owner, the finance budget year 2026 and finance coding from Shell's lists (D-325).

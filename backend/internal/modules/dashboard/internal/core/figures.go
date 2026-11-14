@@ -1,8 +1,8 @@
-package dashboard
+package core
 
 import (
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // sums are a set of records' amounts in USD; a nil one has nothing to add up, or is financial data not counted.

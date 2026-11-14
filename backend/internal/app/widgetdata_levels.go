@@ -3,10 +3,10 @@ package app
 import (
 	"context"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
-	"mapp/internal/widgetdata"
 )
 
 type values = map[string]widgetdata.Value

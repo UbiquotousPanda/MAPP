@@ -1,4 +1,4 @@
-package campaign_test
+package core_test
 
 import (
 	"net/http"

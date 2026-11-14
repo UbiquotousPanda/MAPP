@@ -1,12 +1,12 @@
-package dataset_test
+package core_test
 
 import (
 	"net/http"
 	"slices"
 	"testing"
 
-	"mapp/internal/dataset"
-	"mapp/internal/history"
+	"mapp/internal/modules/dataset/internal/core"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/apitest"
 )
 
@@ -15,10 +15,10 @@ func TestUpdateDataset_OwnerAndVersion_FR044(t *testing.T) {
 	server := apitest.New(t)
 	priya, view := created(t, server)
 	path := datasetsPath + "/" + view.ID
-	decoded[dataset.View](t, priya.Do(t, http.MethodPut, path+"/sharing", map[string]any{"version": 1, "teamIds": []string{europe}}),
+	decoded[core.View](t, priya.Do(t, http.MethodPut, path+"/sharing", map[string]any{"version": 1, "teamIds": []string{europe}}),
 		http.StatusOK)
 
-	renamed := decoded[dataset.View](t, priya.Do(t, http.MethodPatch, path, map[string]any{"version": 2, "name": "Leads",
+	renamed := decoded[core.View](t, priya.Do(t, http.MethodPatch, path, map[string]any{"version": 2, "name": "Leads",
 		"columns": []map[string]any{{"position": 3, "label": "Cost (EUR)"}}}), http.StatusOK)
 	stale := priya.Do(t, http.MethodPatch, path, map[string]any{"version": 2, "name": "Other"})
 	invalid := priya.Do(t, http.MethodPatch, path, map[string]any{"version": 3, "name": ""})
@@ -27,7 +27,7 @@ func TestUpdateDataset_OwnerAndVersion_FR044(t *testing.T) {
 	byDaniel := server.SignIn(t, danielsEmail).Do(t, http.MethodPatch, path, map[string]any{"version": 3, "name": "Daniel's"})
 	byMei := server.SignIn(t, meisEmail).Do(t, http.MethodPatch, path, map[string]any{"version": 3, "name": "Mei's"})
 
-	if renamed.Name != "Leads" || renamed.Columns[3].Label != "Cost (EUR)" || renamed.Columns[3].Kind != dataset.KindMoney ||
+	if renamed.Name != "Leads" || renamed.Columns[3].Label != "Cost (EUR)" || renamed.Columns[3].Kind != core.KindMoney ||
 		renamed.Version != 3 {
 		t.Errorf("renamed = %+v", renamed)
 	}
@@ -43,7 +43,7 @@ func TestShareDataset_OwnTeamsOnly_FR046(t *testing.T) {
 	path := datasetsPath + "/" + view.ID + "/sharing"
 
 	notHers := priya.Do(t, http.MethodPut, path, map[string]any{"version": 1, "teamIds": []string{china}})
-	shared := decoded[dataset.View](t, priya.Do(t, http.MethodPut, path, map[string]any{"version": 1, "teamIds": []string{europe}}),
+	shared := decoded[core.View](t, priya.Do(t, http.MethodPut, path, map[string]any{"version": 1, "teamIds": []string{europe}}),
 		http.StatusOK)
 	stale := priya.Do(t, http.MethodPut, path, map[string]any{"version": 1, "teamIds": []string{}})
 	byDaniel := server.SignIn(t, danielsEmail).Do(t, http.MethodPut, path, map[string]any{"version": 2, "teamIds": []string{}})
@@ -62,7 +62,7 @@ func TestDeleteDataset_ToRecycleBin_FR045(t *testing.T) {
 	server := apitest.New(t)
 	priya, view := created(t, server)
 	path := datasetsPath + "/" + view.ID
-	decoded[dataset.View](t, priya.Do(t, http.MethodPut, path+"/sharing", map[string]any{"version": 1, "teamIds": []string{europe}}),
+	decoded[core.View](t, priya.Do(t, http.MethodPut, path+"/sharing", map[string]any{"version": 1, "teamIds": []string{europe}}),
 		http.StatusOK)
 
 	byDaniel := server.SignIn(t, danielsEmail).Do(t, http.MethodDelete, path, nil)
@@ -84,8 +84,8 @@ func TestListDatasetRows_PagesAsStored_FR040(t *testing.T) {
 	priya, view := created(t, server)
 	path := datasetsPath + "/" + view.ID + "/rows"
 
-	page := decoded[dataset.RowPage](t, priya.Do(t, http.MethodGet, path+"?offset=1&limit=1", nil), http.StatusOK)
-	all := decoded[dataset.RowPage](t, priya.Do(t, http.MethodGet, path, nil), http.StatusOK)
+	page := decoded[core.RowPage](t, priya.Do(t, http.MethodGet, path+"?offset=1&limit=1", nil), http.StatusOK)
+	all := decoded[core.RowPage](t, priya.Do(t, http.MethodGet, path, nil), http.StatusOK)
 	badLimit := priya.Do(t, http.MethodGet, path+"?limit=0", nil, apitest.SkipRequestValidation())
 	notNumber := priya.Do(t, http.MethodGet, path+"?offset=x", nil, apitest.SkipRequestValidation())
 	byMei := server.SignIn(t, meisEmail).Do(t, http.MethodGet, path, nil)

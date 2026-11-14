@@ -1,12 +1,12 @@
-package campaign
+package core
 
 import (
 	"encoding/json"
 	"reflect"
 	"testing"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 )
 
 // A campaign's completeness lists its own empty needed-to-publish fields in form order: Owner, Dates (one

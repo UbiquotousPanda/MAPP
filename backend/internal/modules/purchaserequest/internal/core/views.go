@@ -1,16 +1,16 @@
-package purchaserequest
+package core
 
 import (
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // The API types below follow the contract's schemas of the same name with "PurchaseRequest" in front.

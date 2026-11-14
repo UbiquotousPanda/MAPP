@@ -1,11 +1,11 @@
-package plan
+package core
 
 import (
 	"context"
 
-	"mapp/internal/history"
-	"mapp/internal/overspend"
-	"mapp/internal/people"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/overspend"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"

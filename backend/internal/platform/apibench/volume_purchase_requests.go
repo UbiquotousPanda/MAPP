@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/ids"
-	"mapp/internal/purchaserequest"
 	"mapp/internal/stores"
 )
 

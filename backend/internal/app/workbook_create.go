@@ -4,17 +4,17 @@ import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
-	"mapp/internal/lineitem"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/workbook"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
-	"mapp/internal/workbook"
 )
 
 // Create creates a record under parentID with the rules of its single create, empty fields taking the

@@ -1,4 +1,4 @@
-package auth_test
+package core_test
 
 import (
 	"context"
@@ -11,10 +11,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"mapp/internal/auth"
-	"mapp/internal/auth/authtest"
-	"mapp/internal/people"
-	"mapp/internal/people/peopletest"
+	"mapp/internal/modules/auth/authtest"
+	"mapp/internal/modules/auth/internal/core"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/people/peopletest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/fake"
@@ -71,9 +71,9 @@ func TestGetDemoPeople_ActivePeopleAndPassword_FR001_FR002(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("status = %d %s, want 200", response.Status, response.Body)
 	}
-	var got auth.DemoPeople
+	var got core.DemoPeople
 	response.Decode(t, &got)
-	want := auth.DemoPeople{Password: demoPassword, People: []people.DemoPerson{
+	want := core.DemoPeople{Password: demoPassword, People: []people.DemoPerson{
 		{ID: "U-1001", Name: "Alex Morgan", Email: "alex.morgan@shell.com", JobTitle: "Marketing administrator", Initials: "AM"},
 		{ID: "U-1005", Name: "Carlos Mendes", Email: "carlos.mendes@shell.com", JobTitle: "Business champion", Initials: "CM"},
 		{ID: "U-1003", Name: "Daniel Okoro", Email: "daniel.okoro@shell.com", JobTitle: "Marketing team leader", Initials: "DO"},
@@ -105,7 +105,7 @@ func TestSignIn_SetsTheSessionCookie_FR003(t *testing.T) {
 	response := server.Do(t, http.MethodPost, "/api/v1/auth/sign-in", signIn(" Priya.Raman@Shell.COM ", demoPassword))
 
 	assertAnswer(t, response, http.StatusOK, priyaBody)
-	cookie := response.Cookie(auth.CookieName)
+	cookie := response.Cookie(core.CookieName)
 	if cookie == nil {
 		t.Fatal("no session cookie was set")
 	}
@@ -135,7 +135,7 @@ func TestSignIn_IncorrectCredentials_FR004(t *testing.T) {
 	response := server.Do(t, http.MethodPost, "/api/v1/auth/sign-in", signIn(priyasEmail, "wrong"))
 
 	assertAnswer(t, response, http.StatusUnauthorized, incorrectBody)
-	if cookie := response.Cookie(auth.CookieName); cookie != nil {
+	if cookie := response.Cookie(core.CookieName); cookie != nil {
 		t.Errorf("a session cookie was set: %+v", cookie)
 	}
 }
@@ -167,7 +167,7 @@ func TestSignOut_EndsTheSession_FR006(t *testing.T) {
 	if response.Status != http.StatusNoContent || len(response.Body) != 0 {
 		t.Errorf("answer = %d %s, want 204 without a body", response.Status, response.Body)
 	}
-	if cleared := response.Cookie(auth.CookieName); cleared == nil || cleared.Value != "" || cleared.MaxAge >= 0 {
+	if cleared := response.Cookie(core.CookieName); cleared == nil || cleared.Value != "" || cleared.MaxAge >= 0 {
 		t.Errorf("cookie = %+v, want the session cookie cleared (empty, Max-Age=0)", cleared)
 	}
 	assertAnswer(t, priya.Do(t, http.MethodGet, "/api/v1/me", nil), http.StatusUnauthorized, signInRequiredBody)
@@ -190,9 +190,9 @@ func TestRequireSignIn_HandlerCanWrite_FR007(t *testing.T) {
 	db := apitest.DemoDB(t, false)
 	notes := fake.TableOf(db, "notes", func(n note) string { return n.ID })
 	now := func() time.Time { return time.Date(2026, 3, 12, 9, 0, 0, 0, time.UTC) }
-	service := auth.NewService(db, authtest.NewStore(db), peopletest.NewStore(db),
-		auth.Options{DemoMode: true, DemoPassword: demoPassword, Now: now})
-	token, _, err := service.SignIn(t.Context(), auth.SignInAttempt{Email: priyasEmail, Password: demoPassword})
+	service := core.NewService(db, authtest.NewStore(db), peopletest.NewStore(db),
+		core.Options{DemoMode: true, DemoPassword: demoPassword, Now: now})
+	token, _, err := service.SignIn(t.Context(), core.SignInAttempt{Email: priyasEmail, Password: demoPassword})
 	if err != nil {
 		t.Fatalf("SignIn: %v", err)
 	}
@@ -212,7 +212,7 @@ func TestRequireSignIn_HandlerCanWrite_FR007(t *testing.T) {
 	engine := gin.New()
 	engine.POST("/api/v1/notes", service.RequireSignIn, saveANote)
 	request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://127.0.0.1/api/v1/notes", nil)
-	request.AddCookie(&http.Cookie{Name: auth.CookieName, Value: token})
+	request.AddCookie(&http.Cookie{Name: core.CookieName, Value: token}) //nolint:gosec // G124: a request cookie sends only its name and value
 	answer := httptest.NewRecorder()
 
 	engine.ServeHTTP(answer, request)
@@ -240,7 +240,7 @@ func signIn(email, password string) map[string]string {
 
 func sessionCookie(t *testing.T, response *apitest.Response) *http.Cookie {
 	t.Helper()
-	cookie := response.Cookie(auth.CookieName)
+	cookie := response.Cookie(core.CookieName)
 	if response.Status != http.StatusOK || cookie == nil {
 		t.Fatalf("sign-in answer = %d %s, want 200 with a session cookie", response.Status, response.Body)
 	}

@@ -1,11 +1,11 @@
-package purchaserequest_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
+	"mapp/internal/modules/purchaserequest/internal/core"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/purchaserequest"
 )
 
 const gsapRun = "/api/v1/simulated-gsap/purchase-requests/"
@@ -43,12 +43,12 @@ func TestSimulatedGSAPOrder_EndToEnd_Contract_033_FR005(t *testing.T) {
 
 	refused := decoded[apiError](t, priya.Do(t, http.MethodPost, gsapRun+pr.ID+"/purchase-order", map[string]any{"version": pr.Version}),
 		http.StatusForbidden)
-	ordered := decoded[purchaserequest.View](t, lea.Do(t, http.MethodPost, gsapRun+pr.ID+"/purchase-order",
+	ordered := decoded[core.View](t, lea.Do(t, http.MethodPost, gsapRun+pr.ID+"/purchase-order",
 		map[string]any{"version": pr.Version}), http.StatusOK)
 	again := decoded[apiError](t, lea.Do(t, http.MethodPost, gsapRun+pr.ID+"/purchase-order",
 		map[string]any{"version": ordered.Version}), http.StatusConflict)
 	record := decoded[figures](t, priya.Do(t, http.MethodGet, "/api/v1/financials/records/"+standBuild, nil), http.StatusOK)
-	waiting := decoded[purchaserequest.ListPage](t, lea.Do(t, http.MethodGet, prs+"?waitingForGsap=true", nil), http.StatusOK)
+	waiting := decoded[core.ListPage](t, lea.Do(t, http.MethodGet, prs+"?waitingForGsap=true", nil), http.StatusOK)
 
 	same(t, "033 FR-010 FR-006 refusals", []string{
 		"Importing GSAP extracts isn't part of your role (Planner). Ask an administrator if you need it.",
@@ -68,17 +68,17 @@ func TestSimulatedGSAPOrder_TopUp_Contract_033_FR007(t *testing.T) {
 	s := apitest.New(t)
 	pr := approved(t, s)
 	lea, priya, daniel, alex := s.SignIn(t, leasEmail), s.SignIn(t, priyasEmail), s.SignIn(t, danielsEmail), s.SignIn(t, alexsEmail)
-	ordered := decoded[purchaserequest.View](t, lea.Do(t, http.MethodPost, gsapRun+pr.ID+"/purchase-order",
+	ordered := decoded[core.View](t, lea.Do(t, http.MethodPost, gsapRun+pr.ID+"/purchase-order",
 		map[string]any{"version": pr.Version}), http.StatusOK)
 
-	changing := decoded[purchaserequest.View](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(ordered, "8000.00", "submitChanges")),
+	changing := decoded[core.View](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(ordered, "8000.00", "submitChanges")),
 		http.StatusOK)
 	inReview := decoded[apiError](t, lea.Do(t, http.MethodPost, gsapRun+pr.ID+"/purchase-order",
 		map[string]any{"version": changing.Version}), http.StatusConflict)
-	at := decoded[purchaserequest.ApprovalView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval", nil), http.StatusOK)
+	at := decoded[core.ApprovalView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval", nil), http.StatusOK)
 	decide(t, daniel, "approve", at)
 	changed := get(t, lea, pr.ID)
-	topUp := decoded[purchaserequest.View](t, lea.Do(t, http.MethodPost, gsapRun+pr.ID+"/purchase-order",
+	topUp := decoded[core.View](t, lea.Do(t, http.MethodPost, gsapRun+pr.ID+"/purchase-order",
 		map[string]any{"version": changed.Version}), http.StatusOK)
 
 	if inReview.Error.Message != "Wait until the change of this purchase request is approved or declined." || !changed.WaitingForGSAP {

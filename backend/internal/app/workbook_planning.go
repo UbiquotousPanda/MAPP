@@ -3,16 +3,16 @@ package app
 import (
 	"context"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
-	"mapp/internal/lineitem"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/workbook"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
-	"mapp/internal/workbook"
 )
 
 const planGoneMessage = "This plan no longer exists — someone may have deleted it."

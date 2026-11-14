@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/access"
-	"mapp/internal/people"
+	"mapp/internal/modules/access"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/ids"

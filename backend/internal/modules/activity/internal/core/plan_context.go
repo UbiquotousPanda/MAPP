@@ -1,14 +1,14 @@
-package activity
+package core
 
 import (
 	"context"
 	"maps"
 	"slices"
 
-	"mapp/internal/campaign"
-	"mapp/internal/plan"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 )
 
 // planContext is where an activity sits: its initiative, campaign and plan, the plan's model and business

@@ -1,4 +1,4 @@
-package activity
+package core
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // fieldCheck is a save whose fields checkFields checks; before is nil for a create.

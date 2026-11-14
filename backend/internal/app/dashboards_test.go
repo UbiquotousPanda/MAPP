@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
 	"mapp/internal/platform/date"
 )
 

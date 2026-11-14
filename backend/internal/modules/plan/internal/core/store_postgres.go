@@ -1,21 +1,21 @@
-package plan
+package core
 
 import (
 	"context"
 	"fmt"
 	"slices"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/overspend"
 
+	"mapp/internal/modules/plan/internal/sqlcdb"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // keptArea is what the transaction memo keeps of plans.
@@ -92,7 +92,7 @@ func (s *PostgresStore) Delete(ctx context.Context, id string) error {
 }
 
 func (s *PostgresStore) list(ctx context.Context, filter sqlcdb.ListPlansParams) ([]Plan, error) {
-	rows, err := s.db.Queries(ctx).ListPlans(ctx, filter)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListPlans(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("select plans: %w", err)
 	}
@@ -105,18 +105,18 @@ func (s *PostgresStore) records() memo.Records[sqlcdb.ListPlansRow] {
 	return memo.Records[sqlcdb.ListPlansRow]{
 		Area: keptArea, ID: func(r sqlcdb.ListPlansRow) string { return r.Plan.ID },
 		Read: func(ctx context.Context, ids, _ []string) ([]sqlcdb.ListPlansRow, error) {
-			return s.db.Queries(ctx).ListPlans(ctx, sqlcdb.ListPlansParams{Ids: ids})
+			return sqlcdb.New(s.db.Conn(ctx)).ListPlans(ctx, sqlcdb.ListPlansParams{Ids: ids})
 		},
 	}
 }
 
 func (s *PostgresStore) change(ctx context.Context) *sqlcdb.Queries {
 	memo.Forget(ctx, keptArea)
-	return s.db.Queries(ctx)
+	return sqlcdb.New(s.db.Conn(ctx))
 }
 
 func (s *PostgresStore) listInScope(ctx context.Context, scope authz.Scope, id *string) ([]Plan, error) {
-	rows, err := s.db.Queries(ctx).ListPlansInScope(ctx, sqlcdb.ListPlansInScopeParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListPlansInScope(ctx, sqlcdb.ListPlansInScopeParams{
 		ID: id, SeesEverything: scope.Everything, ViewerID: scope.PersonID, ViewsPlans: scope.Holds,
 		ViewerTeamIds: scope.TeamIDs,
 	})

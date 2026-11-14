@@ -1,11 +1,11 @@
-package dashboard
+package core
 
 import (
 	"cmp"
 	"slices"
 	"strings"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
 	"mapp/internal/platform/deck"
 	"mapp/internal/platform/money"
 )

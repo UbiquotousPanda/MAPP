@@ -1,11 +1,11 @@
-package people
+package core
 
 import (
 	"context"
 	"fmt"
 
+	"mapp/internal/modules/people/internal/sqlcdb"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/record"
 )
 

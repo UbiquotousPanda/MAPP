@@ -1,4 +1,4 @@
-package budget_test
+package core_test
 
 import (
 	"fmt"
@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/budget"
-	"mapp/internal/history"
+	"mapp/internal/modules/budget/internal/core"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/apitest"
 )
 
@@ -30,7 +30,7 @@ func TestListGlobalBudgets_200_FR036(t *testing.T) {
 	every := carlos.Do(t, http.MethodGet, "/api/v1/global-budgets", nil)
 	refused := carlos.Do(t, http.MethodGet, "/api/v1/global-budgets?year=next", nil, apitest.SkipRequestValidation())
 
-	var page budget.Page
+	var page core.Page
 	decode(t, of2026, http.StatusOK, &page)
 	if page.Total != 1 || len(page.Items) != 1 || !slices.Equal(page.Years, []int{2026}) || !page.Create.Available {
 		t.Fatalf("2026 = %s", of2026.Body)
@@ -62,7 +62,7 @@ func TestGetGlobalBudget_200_404_FR032(t *testing.T) { //nolint:gocyclo // 11: t
 	found := carlos.Do(t, http.MethodGet, "/api/v1/global-budgets/GB-1001", nil)
 	gone := carlos.Do(t, http.MethodGet, "/api/v1/global-budgets/GB-9999", nil)
 
-	var view budget.GlobalBudgetView
+	var view core.GlobalBudgetView
 	decode(t, found, http.StatusOK, &view)
 	if got := figuresText(view.Figures); !strings.HasPrefix(got, "2,500,000.00 USD allocated 2,000,000.00 USD unallocated 500,000.00 USD planned ") {
 		t.Errorf("figures = %s", got)
@@ -84,7 +84,7 @@ func TestGetGlobalBudget_200_404_FR032(t *testing.T) { //nolint:gocyclo // 11: t
 }
 
 // allocationLines writes the allocation rows of a global budget page one per line.
-func allocationLines(rows []budget.AllocationRow) []string {
+func allocationLines(rows []core.AllocationRow) []string {
 	var lines []string
 	for _, r := range rows {
 		var teams []string
@@ -98,7 +98,7 @@ func allocationLines(rows []budget.AllocationRow) []string {
 }
 
 // assertLeftToPlan checks that each row's left to plan is its allocation less its planned cost (domain model §4.2).
-func assertLeftToPlan(t *testing.T, rows []budget.AllocationRow) {
+func assertLeftToPlan(t *testing.T, rows []core.AllocationRow) {
 	t.Helper()
 	for _, r := range rows {
 		planned := "0.00"
@@ -132,7 +132,7 @@ func TestCreateGlobalBudget_201_400_FR029(t *testing.T) {
 			"plannedCost": usd("0.00"), "overAllocated": false},
 		"createdBy": map[string]any{"id": "U-1005", "name": "Carlos Mendes"},
 	})
-	var view budget.GlobalBudgetView
+	var view core.GlobalBudgetView
 	decode(t, created, http.StatusCreated, &view)
 	if len(view.PlansWithoutAllocation) != 2 || view.PlansWithoutAllocation[0].Plan.Name != "FY2027 Global Brand" ||
 		view.PlansWithoutAllocation[1].Plan.Name != "FY2027 Lubricants UK & Ireland" {

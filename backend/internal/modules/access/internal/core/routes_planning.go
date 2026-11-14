@@ -1,4 +1,4 @@
-package access
+package core
 
 import "mapp/internal/platform/authz"
 

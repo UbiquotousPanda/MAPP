@@ -1,4 +1,4 @@
-package budget_test
+package core_test
 
 import (
 	"net/http"
@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/budget"
-	"mapp/internal/history"
+	"mapp/internal/modules/budget/internal/core"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/apitest"
 )
 
@@ -25,7 +25,7 @@ func TestListAllocationOptions_200_404_FR030(t *testing.T) {
 	gone := carlos.Do(t, http.MethodGet, "/api/v1/global-budgets/GB-9999/allocation-options", nil)
 
 	assertJSON(t, none, http.StatusOK, map[string]any{"items": []any{}, "total": 0})
-	var page budget.AllocationOptionPage
+	var page core.AllocationOptionPage
 	decode(t, one, http.StatusOK, &page)
 	if page.Total != 1 || page.Items[0].Plan.Name != "FY2026 Mobility China" || page.Items[0].Budget.Format() != "800,000.00 USD" ||
 		page.Items[0].Owner.Name != "Mei Lin" || !page.Items[0].CanAllocate.Available {
@@ -62,7 +62,7 @@ func TestCreateBudgetAllocation_201_400_409_FR030(t *testing.T) {
 	if stale.Status != http.StatusConflict || !strings.Contains(string(stale.Body), `"code":"version_conflict"`) {
 		t.Errorf("stale = %d %s, want 409 version_conflict", stale.Status, stale.Body)
 	}
-	var view budget.GlobalBudgetView
+	var view core.GlobalBudgetView
 	decode(t, created, http.StatusCreated, &view)
 	if len(view.Allocations) != 2 || view.Allocations[1].ID != "BA-1003" || view.Allocations[1].Amount.Format() != "900,000.00 USD" ||
 		view.Allocations[1].Plan.Version != 2 || view.Figures.Allocated.Format() != "2,100,000.00 USD" {
@@ -104,7 +104,7 @@ func TestUpdateBudgetAllocation_200_409_404_FR030_FR037(t *testing.T) { //nolint
 		"amount": usd("1.00"), "version": 1, "planVersion": 1,
 	})
 
-	var view budget.GlobalBudgetView
+	var view core.GlobalBudgetView
 	decode(t, saved, http.StatusOK, &view)
 	if view.Allocations[0].Amount.Format() != "1,300,000.00 USD" || view.Allocations[0].Version != 2 || view.Figures.Allocated.Format() != "2,100,000.00 USD" {
 		t.Errorf("saved = %s", saved.Body)
@@ -150,7 +150,7 @@ func TestRemoveBudgetAllocation_200_404_AndThePlanBudgetLock_FR031_FR034(t *test
 	saved := mei.Do(t, http.MethodPatch, "/api/v1/plans/P-1002", china)
 
 	assertAnswer(t, locked, http.StatusConflict, `{"error":{"code":"not_allowed","message":"Allocated from 'FY2026 Global marketing budget' — ask Carlos Mendes to change it.","fields":[]}}`)
-	var view budget.GlobalBudgetView
+	var view core.GlobalBudgetView
 	decode(t, removed, http.StatusOK, &view)
 	if len(view.Allocations) != 1 || view.Figures.Allocated.Format() != "1,200,000.00 USD" || len(view.PlansWithoutAllocation) != 1 {
 		t.Errorf("removed = %s", removed.Body)

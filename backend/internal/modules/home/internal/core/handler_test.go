@@ -1,4 +1,4 @@
-package home_test
+package core_test
 
 import (
 	"reflect"
@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/approval"
-	"mapp/internal/home"
-	"mapp/internal/plan"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/home/internal/core"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/apitest"
 )
 
@@ -23,23 +23,23 @@ func TestHomeSummary_Contract(t *testing.T) {
 	daniel := server.SignIn(t, danielsEmail)
 	server.GrantRole(t, danielsEmail, "globalPlanner", "all")
 
-	got := get[home.SummaryView](t, priya, "/api/v1/home/summary?scope=myTeams")
-	everything := get[home.SummaryView](t, priya, "/api/v1/home/summary?scope=everything")
-	danielsCards := get[home.SummaryView](t, daniel, "/api/v1/home/summary?scope=myTeams")
+	got := get[core.SummaryView](t, priya, "/api/v1/home/summary?scope=myTeams")
+	everything := get[core.SummaryView](t, priya, "/api/v1/home/summary?scope=everything")
+	danielsCards := get[core.SummaryView](t, daniel, "/api/v1/home/summary?scope=myTeams")
 
-	if got.Scope != home.ScopeMyTeams || got.DisplayCurrency != "USD" {
+	if got.Scope != core.ScopeMyTeams || got.DisplayCurrency != "USD" {
 		t.Errorf("scope %q, currency %q", got.Scope, got.DisplayCurrency)
 	}
 	// Since 016 her team also has P-1004, FY2027 Lubricants UK & Ireland (Draft, planned in GBP), with two of
 	// her activities: 600,000.00 GBP = 759,493.67 USD budget, 65,000.00 GBP = 82,278.48 USD planned (FR-014).
-	if got.Plans != (home.PlanCounts{Count: 2, Published: 1, Draft: 1}) || everything.Plans != (home.PlanCounts{Count: 4, Published: 1, Draft: 3}) {
+	if got.Plans != (core.PlanCounts{Count: 2, Published: 1, Draft: 1}) || everything.Plans != (core.PlanCounts{Count: 4, Published: 1, Draft: 3}) {
 		t.Errorf("plans = %+v (everything %+v); want 1 published, 1 draft (4: 1 published, 3 draft)", got.Plans, everything.Plans)
 	}
 	if o := got.ActivitiesOwned; o.Count != 9 || o.Declined != 1 || o.Submitted != 1 || o.YearFrom == nil ||
 		*o.YearFrom != 2026 || o.YearTo == nil || *o.YearTo != 2027 { // her plans' years
 		t.Errorf("activities owned = %+v, want 9 in 2026–2027: 1 declined, 1 submitted", o)
 	}
-	if got.WaitingForMe != (home.WaitingCounts{}) {
+	if got.WaitingForMe != (core.WaitingCounts{}) {
 		t.Errorf("waiting for Priya = %+v, want nothing", got.WaitingForMe)
 	}
 	cost := got.PlannedCost
@@ -60,12 +60,12 @@ func TestHome_EqualsPlanAndApprovalPages_SC002_FR017(t *testing.T) {
 	for _, email := range everyone {
 		client := server.SignIn(t, email)
 		counts := get[approval.Counts](t, client, "/api/v1/approvals/summary", apitest.SkipValidation())
-		rows := map[string]home.PlanPage{}
+		rows := map[string]core.PlanPage{}
 		for scope, listScope := range listScopes {
-			summary := get[home.SummaryView](t, client, "/api/v1/home/summary?scope="+scope)
+			summary := get[core.SummaryView](t, client, "/api/v1/home/summary?scope="+scope)
 			list := get[plan.PlanList](t, client, "/api/v1/plans?scope="+listScope, apitest.SkipValidation())
 
-			if summary.Plans != (home.PlanCounts{Count: list.Total, Published: list.Summary.Published, Draft: list.Summary.Draft}) {
+			if summary.Plans != (core.PlanCounts{Count: list.Total, Published: list.Summary.Published, Draft: list.Summary.Draft}) {
 				t.Errorf("%s, %s: plans %+v, Plans list %d (%+v)", email, scope, summary.Plans, list.Total, list.Summary)
 			}
 			if summary.PlannedCost.PlannedCost != orZero(list.Summary.PlannedCost) ||
@@ -77,14 +77,14 @@ func TestHome_EqualsPlanAndApprovalPages_SC002_FR017(t *testing.T) {
 				t.Errorf("%s: waiting for me %d, Approvals page %d", email, summary.WaitingForMe.Count, counts.WaitingForMe)
 			}
 
-			rows[scope] = get[home.PlanPage](t, client, "/api/v1/home/plans?scope="+scope)
-			inOrder := slices.EqualFunc(rows[scope].Items, list.Items, func(r home.PlanRow, p plan.PlanSummary) bool { return r.ID == p.ID })
+			rows[scope] = get[core.PlanPage](t, client, "/api/v1/home/plans?scope="+scope)
+			inOrder := slices.EqualFunc(rows[scope].Items, list.Items, func(r core.PlanRow, p plan.PlanSummary) bool { return r.ID == p.ID })
 			if got := rows[scope]; got.Total != list.Total || !inOrder {
 				t.Errorf("%s, %s: %d plan rows of %d, Plans list %d of %d, or in another order", email, scope, len(got.Items), got.Total, len(list.Items), list.Total)
 			}
 		}
 		for _, row := range rows["myTeams"].Items { // the same row under Everything, so only Everything's are compared with their pages
-			if !slices.ContainsFunc(rows["everything"].Items, func(r home.PlanRow) bool { return reflect.DeepEqual(r, row) }) {
+			if !slices.ContainsFunc(rows["everything"].Items, func(r core.PlanRow) bool { return reflect.DeepEqual(r, row) }) {
 				t.Errorf("%s: My teams row %+v is not a row of Everything", email, row)
 			}
 		}
@@ -109,10 +109,10 @@ func TestHomePlans_Contract(t *testing.T) {
 	sara := server.SignIn(t, sarasEmail)
 	server.GrantRole(t, sarasEmail, "viewer", "all")
 
-	mine := get[home.PlanPage](t, sara, "/api/v1/home/plans?scope=myTeams")
-	all := get[home.PlanPage](t, sara, "/api/v1/home/plans?scope=everything")
+	mine := get[core.PlanPage](t, sara, "/api/v1/home/plans?scope=myTeams")
+	all := get[core.PlanPage](t, sara, "/api/v1/home/plans?scope=everything")
 
-	names := func(page home.PlanPage) []string {
+	names := func(page core.PlanPage) []string {
 		list := []string{}
 		for _, row := range page.Items {
 			list = append(list, row.Name)
@@ -128,7 +128,7 @@ func TestHomePlans_Contract(t *testing.T) {
 		t.Errorf("Everything = %q of %d", got, all.Total)
 	}
 	lubricants := mine.Items[1]
-	if lubricants.Status != "published" || len(lubricants.Teams) != 1 || lubricants.Teams[0] != (home.TeamView{ID: "T-1001", Name: "Lubricants Europe", Colour: "blue", Active: true, Mine: true}) ||
+	if lubricants.Status != "published" || len(lubricants.Teams) != 1 || lubricants.Teams[0] != (core.TeamView{ID: "T-1001", Name: "Lubricants Europe", Colour: "blue", Active: true, Mine: true}) ||
 		lubricants.CampaignCount != 2 || lubricants.ActivityCount != 7 || lubricants.ApprovedActivityCount != 4 ||
 		*lubricants.PlannedCost != usd(t, "460000.00") || *lubricants.BudgetUsedPercent != 38 || lubricants.OverBudget {
 		t.Errorf("FY2026 Lubricants Europe = %+v", lubricants)
@@ -149,8 +149,8 @@ func TestHomeAttention_Contract(t *testing.T) {
 	priya := server.SignIn(t, priyasEmail)
 	alex := server.SignIn(t, alexsEmail)
 
-	page := get[home.HomeAttentionPage](t, priya, "/api/v1/home/attention")
-	alexs := get[home.HomeAttentionPage](t, alex, "/api/v1/home/attention")
+	page := get[core.HomeAttentionPage](t, priya, "/api/v1/home/attention")
+	alexs := get[core.HomeAttentionPage](t, alex, "/api/v1/home/attention")
 
 	if len(page.Items) == 0 || page.Total != len(page.Items) {
 		t.Fatalf("Priya's attention = %d items of %d", len(page.Items), page.Total)
@@ -166,7 +166,7 @@ func TestHomeAttention_Contract(t *testing.T) {
 	if len(first.Path) != 3 || first.Plan.Name != "FY2026 Lubricants Europe" || first.Path[2].Name != "Retail events" {
 		t.Errorf("Fleet roadshow's place = %+v › %+v", first.Plan, first.Path)
 	}
-	var launchFilm *home.HomeAttentionItem
+	var launchFilm *core.HomeAttentionItem
 	for i := range page.Items {
 		if page.Items[i].ID == "A-1001" {
 			launchFilm = &page.Items[i]
@@ -182,7 +182,7 @@ func TestHomeAttention_Contract(t *testing.T) {
 	if !slices.Equal(labels, []string{"Company code", "Cost centre", "PIR"}) {
 		t.Errorf("Launch film needs %q, want Company code, Cost centre, PIR", labels)
 	}
-	var brandPlatform *home.HomeAttentionItem
+	var brandPlatform *core.HomeAttentionItem
 	for i := range alexs.Items {
 		if alexs.Items[i].Name == "Brand platform" {
 			brandPlatform = &alexs.Items[i]
@@ -202,9 +202,9 @@ func TestHomeWaiting_Contract(t *testing.T) {
 	alex := server.SignIn(t, alexsEmail)
 	priya := server.SignIn(t, priyasEmail)
 
-	danielsPage := get[home.WaitingPage](t, daniel, "/api/v1/home/waiting")
-	alexsPage := get[home.WaitingPage](t, alex, "/api/v1/home/waiting")
-	priyasPage := get[home.WaitingPage](t, priya, "/api/v1/home/waiting")
+	danielsPage := get[core.WaitingPage](t, daniel, "/api/v1/home/waiting")
+	alexsPage := get[core.WaitingPage](t, alex, "/api/v1/home/waiting")
+	priyasPage := get[core.WaitingPage](t, priya, "/api/v1/home/waiting")
 
 	if danielsPage.Total != 1 || len(danielsPage.Items) != 1 {
 		t.Fatalf("Daniel's page = %+v, want 1", danielsPage)
@@ -228,7 +228,7 @@ func TestHomeMyActivities_Contract(t *testing.T) {
 	server := apitest.New(t)
 	priya := server.SignIn(t, priyasEmail)
 
-	view := get[home.MyActivitiesView](t, priya, "/api/v1/home/my-activities")
+	view := get[core.MyActivitiesView](t, priya, "/api/v1/home/my-activities")
 
 	var groups []string
 	for _, g := range view.Groups {

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"slices"
 
-	"mapp/internal/allwork"
-	"mapp/internal/people"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Years returns the years that have plans (004) the person may see (014 FR-007).

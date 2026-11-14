@@ -27,7 +27,7 @@ SELECT id, name, description, owner_id, file_name, sheet_name, row_count, versio
 FROM datasets d
 WHERE d.id = sqlc.arg(id)
     AND (d.owner_id = sqlc.arg(person_id) OR EXISTS (
-        SELECT 1 FROM dataset_shares s JOIN team_memberships m ON m.team_id = s.team_id
+        SELECT 1 FROM dataset_shares s JOIN team_members_view m ON m.team_id = s.team_id
         WHERE s.dataset_id = d.id AND m.person_id = sqlc.arg(person_id)));
 
 -- name: ListDatasetsVisible :many
@@ -35,7 +35,7 @@ SELECT id, name, description, owner_id, file_name, sheet_name, row_count, versio
     created_by_name, updated_at, updated_by_id, updated_by_name
 FROM datasets d
 WHERE d.owner_id = sqlc.arg(person_id) OR EXISTS (
-    SELECT 1 FROM dataset_shares s JOIN team_memberships m ON m.team_id = s.team_id
+    SELECT 1 FROM dataset_shares s JOIN team_members_view m ON m.team_id = s.team_id
     WHERE s.dataset_id = d.id AND m.person_id = sqlc.arg(person_id))
 ORDER BY lower(d.name), d.id;
 
@@ -86,7 +86,7 @@ WHERE dataset_id = $1;
 
 -- name: InsertDatasetShares :exec
 INSERT INTO dataset_shares (dataset_id, team_id)
-SELECT sqlc.arg(dataset_id), t.id FROM teams t WHERE t.id = ANY(sqlc.arg(team_ids)::text[]);
+SELECT sqlc.arg(dataset_id), t.id FROM teams_view t WHERE t.id = ANY(sqlc.arg(team_ids)::text[]);
 
 -- name: DeleteDatasetSharesOfTeam :exec
 DELETE FROM dataset_shares

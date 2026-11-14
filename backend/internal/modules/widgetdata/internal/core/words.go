@@ -1,4 +1,4 @@
-package widgetdata
+package core
 
 const (
 	msgNoAccess          = "You don't have access to custom dashboards."

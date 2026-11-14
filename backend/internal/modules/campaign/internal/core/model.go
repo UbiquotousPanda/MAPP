@@ -6,17 +6,17 @@
 // activity seam feature 006 implements (hooks.go) and the repository (store.go, store_json.go).
 // Feature 005 adds the service, the dependency interfaces with their adapters, the roll-ups, the history
 // kinds and the handler. The package never imports the plan or activity packages.
-package campaign
+package core
 
 import (
-	"mapp/internal/overspend"
-	"mapp/internal/people"
+	"mapp/internal/modules/overspend"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 type Campaign struct {

@@ -1,4 +1,4 @@
-package customdashboard
+package core
 
 import "testing"
 

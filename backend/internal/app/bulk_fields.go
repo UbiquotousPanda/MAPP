@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"mapp/internal/bulk"
-	"mapp/internal/settings"
+	"mapp/internal/modules/bulk"
+	"mapp/internal/modules/settings"
 )
 
 const (

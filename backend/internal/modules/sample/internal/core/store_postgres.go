@@ -1,4 +1,4 @@
-package sample
+package core
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"mapp/internal/modules/sample/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/record"
 )
 
@@ -24,7 +24,7 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) GetFolder(ctx context.Context, id string) (Folder, bool, error) {
-	row, err := s.db.Queries(ctx).GetSampleFolder(ctx, id)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetSampleFolder(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Folder{}, false, nil
 	}
@@ -35,7 +35,7 @@ func (s *PostgresStore) GetFolder(ctx context.Context, id string) (Folder, bool,
 }
 
 func (s *PostgresStore) ListFolders(ctx context.Context) ([]Folder, error) {
-	rows, err := s.db.Queries(ctx).ListSampleFolders(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListSampleFolders(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select sample folders: %w", err)
 	}
@@ -47,21 +47,21 @@ func (s *PostgresStore) ListFolders(ctx context.Context) ([]Folder, error) {
 }
 
 func (s *PostgresStore) PutFolder(ctx context.Context, f Folder) error {
-	if err := s.db.Queries(ctx).PutSampleFolder(ctx, sqlcdb.PutSampleFolderParams(folderRow(f))); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).PutSampleFolder(ctx, sqlcdb.PutSampleFolderParams(folderRow(f))); err != nil {
 		return fmt.Errorf("save sample folder %s: %w", f.ID, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) DeleteFolder(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteSampleFolder(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteSampleFolder(ctx, id); err != nil {
 		return fmt.Errorf("delete sample folder %s: %w", id, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) GetNote(ctx context.Context, id string) (Note, bool, error) {
-	row, err := s.db.Queries(ctx).GetSampleNote(ctx, id)
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetSampleNote(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Note{}, false, nil
 	}
@@ -72,7 +72,7 @@ func (s *PostgresStore) GetNote(ctx context.Context, id string) (Note, bool, err
 }
 
 func (s *PostgresStore) ListNotes(ctx context.Context) ([]Note, error) {
-	rows, err := s.db.Queries(ctx).ListSampleNotes(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListSampleNotes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select sample notes: %w", err)
 	}
@@ -80,7 +80,7 @@ func (s *PostgresStore) ListNotes(ctx context.Context) ([]Note, error) {
 }
 
 func (s *PostgresStore) NotesInFolder(ctx context.Context, folderID string) ([]Note, error) {
-	rows, err := s.db.Queries(ctx).ListSampleNotesInFolder(ctx, folderID)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListSampleNotesInFolder(ctx, folderID)
 	if err != nil {
 		return nil, fmt.Errorf("select notes of sample folder %s: %w", folderID, err)
 	}
@@ -88,14 +88,14 @@ func (s *PostgresStore) NotesInFolder(ctx context.Context, folderID string) ([]N
 }
 
 func (s *PostgresStore) PutNote(ctx context.Context, n Note) error {
-	if err := s.db.Queries(ctx).PutSampleNote(ctx, sqlcdb.PutSampleNoteParams(noteRow(n))); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).PutSampleNote(ctx, sqlcdb.PutSampleNoteParams(noteRow(n))); err != nil {
 		return fmt.Errorf("save sample note %s: %w", n.ID, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) DeleteNote(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeleteSampleNote(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeleteSampleNote(ctx, id); err != nil {
 		return fmt.Errorf("delete sample note %s: %w", id, err)
 	}
 	return nil

@@ -1,12 +1,12 @@
-package activity_test
+package core_test
 
 import (
 	"context"
 	"testing"
 
-	"mapp/internal/approval/approvaltest"
-	"mapp/internal/people/peopletest"
-	"mapp/internal/settings/settingstest"
+	"mapp/internal/modules/approval/approvaltest"
+	"mapp/internal/modules/people/peopletest"
+	"mapp/internal/modules/settings/settingstest"
 )
 
 func (f *fixture) deactivateType(t *testing.T, id string) {

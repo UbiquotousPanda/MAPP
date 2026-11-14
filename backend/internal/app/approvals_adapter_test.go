@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
-	"mapp/internal/approval/approvaltest"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/approval/approvaltest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/record"

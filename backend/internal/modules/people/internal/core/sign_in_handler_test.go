@@ -1,4 +1,4 @@
-package people_test
+package core_test
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/auth"
+	"mapp/internal/modules/auth"
 	"mapp/internal/platform/apitest"
 )
 
@@ -37,7 +37,7 @@ func TestDeactivatedPersonCannotSignInAndSessionEnds_FR005(t *testing.T) {
 	jane := createPerson(t, alex, map[string]any{"name": "Jane Doe", "email": janesEmail})
 	janesSession := server.SignIn(t, janesEmail)
 
-	setStatus(t, alex, jane.ID, false, 1)
+	setStatus(t, alex, jane.ID, map[string]any{"active": false, "version": 1})
 	next := janesSession.Do(t, http.MethodGet, "/api/v1/people", nil)
 	signIn := server.Do(t, http.MethodPost, "/api/v1/auth/sign-in", map[string]string{"email": janesEmail, "password": demoPassword(t, server)})
 
@@ -54,9 +54,9 @@ func TestReactivatedPersonCanSignIn_FR007_SC004(t *testing.T) {
 	server := apitest.New(t)
 	alex := server.SignIn(t, alexsEmail)
 	jane := createPerson(t, alex, map[string]any{"name": "Jane Doe", "email": janesEmail, "teamIds": []string{"T-1001"}})
-	setStatus(t, alex, jane.ID, false, 1)
+	setStatus(t, alex, jane.ID, map[string]any{"active": false, "version": 1})
 
-	back := setStatus(t, alex, jane.ID, true, 2)
+	back := setStatus(t, alex, jane.ID, map[string]any{"active": true, "version": 2})
 	me := server.SignIn(t, janesEmail).Do(t, http.MethodGet, "/api/v1/me", nil)
 
 	if !back.Active || len(back.Teams) != 1 || back.Teams[0].ID != "T-1001" {
@@ -67,7 +67,6 @@ func TestReactivatedPersonCanSignIn_FR007_SC004(t *testing.T) {
 	}
 }
 
-// demoSignIn returns what the sign-in page shows: the people it offers and the demo password.
 func demoSignIn(t *testing.T, server *apitest.Server) auth.DemoPeople {
 	t.Helper()
 	var demo auth.DemoPeople
@@ -75,7 +74,6 @@ func demoSignIn(t *testing.T, server *apitest.Server) auth.DemoPeople {
 	return demo
 }
 
-// demoEmails returns the e-mails of the people the sign-in page offers.
 func demoEmails(t *testing.T, server *apitest.Server) []string {
 	t.Helper()
 	var emails []string
@@ -85,7 +83,6 @@ func demoEmails(t *testing.T, server *apitest.Server) []string {
 	return emails
 }
 
-// demoPassword returns the demo password the sign-in page shows.
 func demoPassword(t *testing.T, server *apitest.Server) string {
 	t.Helper()
 	return demoSignIn(t, server).Password

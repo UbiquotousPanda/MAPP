@@ -1,6 +1,6 @@
 // Package overspend lets each budget warn or refuse when planned cost goes over it (feature 037): the setting,
 // the organisation default, and the guard that refuses a save taking a budget set to Refuse over it.
-package overspend
+package core
 
 import (
 	"time"

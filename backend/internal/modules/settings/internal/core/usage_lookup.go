@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 func part(kind string, t tally, text string) UsagePart {

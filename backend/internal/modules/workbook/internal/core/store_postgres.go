@@ -1,4 +1,4 @@
-package workbook
+package core
 
 import (
 	"context"
@@ -6,10 +6,10 @@ import (
 	"math"
 	"time"
 
+	"mapp/internal/modules/workbook/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 )
 
 type PostgresStore struct {
@@ -21,7 +21,7 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) AddImport(ctx context.Context, imp Import) error {
-	q := s.db.Queries(ctx)
+	q := sqlcdb.New(s.db.Conn(ctx))
 	err := q.AddPlanImport(ctx, sqlcdb.AddPlanImportParams{
 		ID: imp.ID, PlanID: imp.PlanID, FileName: imp.FileName, ImportedAt: imp.ImportedAt, ImportedByID: imp.ImportedBy.ID,
 		ImportedByName: imp.ImportedBy.Name, RowsRead: imp.RowsRead, RowsLeftOut: imp.RowsLeftOut,
@@ -57,7 +57,7 @@ func (s *PostgresStore) GetImport(ctx context.Context, scope authz.Scope, id str
 	if err != nil || len(imports) == 0 {
 		return Import{}, false, err
 	}
-	rows, err := s.db.Queries(ctx).ListPlanImportProblems(ctx, id)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListPlanImportProblems(ctx, id)
 	if err != nil {
 		return Import{}, false, fmt.Errorf("select the problems of import %s: %w", id, err)
 	}
@@ -70,7 +70,7 @@ func (s *PostgresStore) GetImport(ctx context.Context, scope authz.Scope, id str
 }
 
 func (s *PostgresStore) MarkUndone(ctx context.Context, id string, by actor.Actor, at time.Time) error {
-	err := s.db.Queries(ctx).MarkPlanImportUndone(ctx, sqlcdb.MarkPlanImportUndoneParams{
+	err := sqlcdb.New(s.db.Conn(ctx)).MarkPlanImportUndone(ctx, sqlcdb.MarkPlanImportUndoneParams{
 		ID: id, UndoneAt: &at, UndoneByID: &by.ID, UndoneByName: &by.Name,
 	})
 	if err != nil {
@@ -85,7 +85,7 @@ type importFilter struct {
 }
 
 func (s *PostgresStore) inScope(ctx context.Context, scope authz.Scope, f importFilter) ([]Import, error) {
-	q := s.db.Queries(ctx)
+	q := sqlcdb.New(s.db.Conn(ctx))
 	rows, err := q.ListPlanImportsInScope(ctx, sqlcdb.ListPlanImportsInScopeParams{
 		ID: f.id, PlanID: f.planID, SeesEverything: scope.Everything, ViewerID: scope.PersonID, ViewsPlans: scope.Holds,
 		ViewerTeamIds: scope.TeamIDs, MaxImports: int32(min(f.limit, math.MaxInt32)), //nolint:gosec // G115: min keeps it in range

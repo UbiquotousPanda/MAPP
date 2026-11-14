@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
-	"mapp/internal/purchaserequest"
-	"mapp/internal/settings"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/purchaserequest"
+	"mapp/internal/modules/settings"
 	"mapp/internal/stores"
 )
 

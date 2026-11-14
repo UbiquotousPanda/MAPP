@@ -1,4 +1,4 @@
-package access
+package core
 
 // spaRoutes are feature 013's: the service reads the plan in scope and needs finance.view for financial figures.
 func spaRoutes() map[string]Rule {

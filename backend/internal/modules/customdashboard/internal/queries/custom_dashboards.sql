@@ -39,7 +39,7 @@ WHERE d.id = sqlc.arg(id)
     AND (d.owner_id = sqlc.arg(person_id) OR EXISTS (
         SELECT 1
         FROM custom_dashboard_shares s
-        JOIN team_memberships m ON m.team_id = s.team_id
+        JOIN team_members_view m ON m.team_id = s.team_id
         WHERE s.dashboard_id = d.id AND m.person_id = sqlc.arg(person_id)));
 
 -- name: ListCustomDashboardsVisible :many
@@ -50,7 +50,7 @@ FROM custom_dashboards d
 WHERE d.owner_id = sqlc.arg(person_id) OR EXISTS (
     SELECT 1
     FROM custom_dashboard_shares s
-    JOIN team_memberships m ON m.team_id = s.team_id
+    JOIN team_members_view m ON m.team_id = s.team_id
     WHERE s.dashboard_id = d.id AND m.person_id = sqlc.arg(person_id))
 ORDER BY length(d.id), d.id COLLATE "C";
 
@@ -83,7 +83,7 @@ WHERE dashboard_id = $1;
 
 -- name: InsertCustomDashboardShares :exec
 INSERT INTO custom_dashboard_shares (dashboard_id, team_id)
-SELECT sqlc.arg(dashboard_id)::text, t.id FROM teams t WHERE t.id = ANY(sqlc.arg(team_ids)::text[]);
+SELECT sqlc.arg(dashboard_id)::text, t.id FROM teams_view t WHERE t.id = ANY(sqlc.arg(team_ids)::text[]);
 
 -- name: DeleteCustomDashboardSharesOfTeam :exec
 DELETE FROM custom_dashboard_shares
@@ -96,7 +96,7 @@ WHERE EXISTS (SELECT 1 FROM custom_dashboard_widgets w WHERE w.dashboard_id = d.
     AND (d.owner_id = sqlc.arg(person_id) OR EXISTS (
         SELECT 1
         FROM custom_dashboard_shares s
-        JOIN team_memberships m ON m.team_id = s.team_id
+        JOIN team_members_view m ON m.team_id = s.team_id
         WHERE s.dashboard_id = d.id AND m.person_id = sqlc.arg(person_id)))
 ORDER BY lower(d.name), d.id;
 

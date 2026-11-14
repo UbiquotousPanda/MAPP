@@ -1,4 +1,4 @@
-package plan_test
+package core_test
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -19,10 +19,10 @@ func TestSearchPlan_FindsLineItemsOnTheDemoData_Contract_039_US1(t *testing.T) {
 	empty := priya.Do(t, http.MethodGet, "/api/v1/plans/P-1001/search?q=%20", nil, apitest.SkipRequestValidation())
 	gone := priya.Do(t, http.MethodGet, "/api/v1/plans/P-9999/search?q=venue", nil)
 
-	var answer plan.PlanSearch
+	var answer core.PlanSearch
 	found.Decode(t, &answer)
-	if found.Status != http.StatusOK || !slices.ContainsFunc(answer.Items, func(m plan.SearchMatch) bool {
-		return m.Level == plan.LevelLineItem && m.Name == "Venue hire" && strings.HasPrefix(m.ParentID, "A-")
+	if found.Status != http.StatusOK || !slices.ContainsFunc(answer.Items, func(m core.SearchMatch) bool {
+		return m.Level == core.LevelLineItem && m.Name == "Venue hire" && strings.HasPrefix(m.ParentID, "A-")
 	}) {
 		t.Errorf("search venue = %d %s, want the line item Venue hire under its activity", found.Status, found.Body)
 	}
@@ -39,9 +39,9 @@ func TestPlansList_FoundInTheContents_Contract_039_US2(t *testing.T) {
 
 	response := priya.Do(t, http.MethodGet, "/api/v1/plans?q=venue%20hire", nil)
 
-	var list plan.PlanList
+	var list core.PlanList
 	response.Decode(t, &list)
-	i := slices.IndexFunc(list.Items, func(p plan.PlanSummary) bool { return p.ID == "P-1001" })
+	i := slices.IndexFunc(list.Items, func(p core.PlanSummary) bool { return p.ID == "P-1001" })
 	if response.Status != http.StatusOK || i < 0 || list.Items[i].FoundIn == nil ||
 		list.Items[i].FoundIn.Match.Name != "Venue hire" {
 		t.Errorf("plans for venue hire = %d %s, want P-1001 found in Venue hire", response.Status, response.Body)

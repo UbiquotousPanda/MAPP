@@ -1,11 +1,11 @@
-package activity
+package core
 
 import (
 	"bytes"
 	"encoding/json"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Small helpers for Shell attribute values as activities stores them (JSON values keyed by attribute id).

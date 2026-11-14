@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 )

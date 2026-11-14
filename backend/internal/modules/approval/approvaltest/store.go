@@ -8,7 +8,7 @@ import (
 	"slices"
 	"time"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval"
 	"mapp/internal/platform/fake"
 )
 

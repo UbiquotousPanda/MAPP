@@ -1,4 +1,4 @@
-package workbook
+package core
 
 import (
 	"encoding/json"

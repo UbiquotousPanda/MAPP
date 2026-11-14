@@ -1,4 +1,4 @@
-package bulk_test
+package core_test
 
 import (
 	"context"
@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/bulk"
-	"mapp/internal/bulk/bulktest"
-	"mapp/internal/history"
-	"mapp/internal/history/historytest"
+	"mapp/internal/modules/bulk/bulktest"
+	"mapp/internal/modules/bulk/internal/core"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/history/historytest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/fake"
@@ -26,7 +26,7 @@ const recordKind = "record"
 
 // stored is a record of the fake planning areas: what the actions read and change.
 type stored struct {
-	bulk.Record
+	core.Record
 	OwnerID string
 	Value   string
 }
@@ -37,36 +37,36 @@ type fakePlanning struct {
 	log        *history.Service
 	refusals   map[string]error
 	people     map[string]bool
-	fields     []bulk.Field
-	below      map[string]bulk.Below
-	targets    []bulk.Target
-	effects    bulk.Consequences
+	fields     []core.Field
+	below      map[string]core.Below
+	targets    []core.Target
+	effects    core.Consequences
 	restarted  []string
 	submitted  []string
 	brokenNext bool
 }
 
-func (f *fakePlanning) Find(_ context.Context, _ actor.Actor, id string) (bulk.Record, error) {
+func (f *fakePlanning) Find(_ context.Context, _ actor.Actor, id string) (core.Record, error) {
 	s, found, err := f.records.Get(id)
 	if err != nil || !found {
-		return bulk.Record{}, errors.Join(err, errs.NotFound("This record no longer exists."))
+		return core.Record{}, errors.Join(err, errs.NotFound("This record no longer exists."))
 	}
 	return s.Record, nil
 }
 
-func (f *fakePlanning) Below(_ context.Context, r bulk.Record) (bulk.Below, error) {
+func (f *fakePlanning) Below(_ context.Context, r core.Record) (core.Below, error) {
 	return f.below[r.ID], nil
 }
 
-func (f *fakePlanning) Fields(context.Context, bulk.Level) ([]bulk.Field, error) {
+func (f *fakePlanning) Fields(context.Context, core.Level) ([]core.Field, error) {
 	return f.fields, nil
 }
 
-func (f *fakePlanning) Destinations(context.Context, actor.Actor, bulk.Kind, bulk.Record) ([]bulk.Target, error) {
+func (f *fakePlanning) Destinations(context.Context, actor.Actor, core.Kind, core.Record) ([]core.Target, error) {
 	return f.targets, nil
 }
 
-func (f *fakePlanning) Consequences(context.Context, actor.Actor, bulk.Record, string) (bulk.Consequences, error) {
+func (f *fakePlanning) Consequences(context.Context, actor.Actor, core.Record, string) (core.Consequences, error) {
 	return f.effects, nil
 }
 
@@ -93,7 +93,7 @@ func (f *fakePlanning) change(ctx context.Context, a actor.Actor, id string, edi
 	return err == nil, err
 }
 
-func (f *fakePlanning) SetOwner(ctx context.Context, a actor.Actor, r bulk.Record, ownerID string) (bool, error) {
+func (f *fakePlanning) SetOwner(ctx context.Context, a actor.Actor, r core.Record, ownerID string) (bool, error) {
 	return f.change(ctx, a, r.ID, func(s *stored) bool {
 		changed := s.OwnerID != ownerID
 		s.OwnerID = ownerID
@@ -101,7 +101,7 @@ func (f *fakePlanning) SetOwner(ctx context.Context, a actor.Actor, r bulk.Recor
 	})
 }
 
-func (f *fakePlanning) SetField(ctx context.Context, a actor.Actor, r bulk.Record, c bulk.SetField) (bool, error) {
+func (f *fakePlanning) SetField(ctx context.Context, a actor.Actor, r core.Record, c core.SetField) (bool, error) {
 	if c.RestartApproval {
 		f.restarted = append(f.restarted, r.ID)
 	}
@@ -113,25 +113,25 @@ func (f *fakePlanning) SetField(ctx context.Context, a actor.Actor, r bulk.Recor
 	})
 }
 
-func (f *fakePlanning) Submit(ctx context.Context, a actor.Actor, r bulk.Record, _ string) error {
-	_, err := f.change(ctx, a, r.ID, func(s *stored) bool { s.Status = bulk.StatusSubmitted; return true })
+func (f *fakePlanning) Submit(ctx context.Context, a actor.Actor, r core.Record, _ string) error {
+	_, err := f.change(ctx, a, r.ID, func(s *stored) bool { s.Status = core.StatusSubmitted; return true })
 	if err == nil {
 		f.submitted = append(f.submitted, r.ID)
 	}
 	return err
 }
 
-func (f *fakePlanning) Copy(ctx context.Context, a actor.Actor, r bulk.Record, _ string) (string, error) {
+func (f *fakePlanning) Copy(ctx context.Context, a actor.Actor, r core.Record, _ string) (string, error) {
 	_, err := f.change(ctx, a, r.ID, func(*stored) bool { return true })
 	return "copy-of-" + r.ID, err
 }
 
-func (f *fakePlanning) Move(ctx context.Context, a actor.Actor, r bulk.Record, targetID string) error {
+func (f *fakePlanning) Move(ctx context.Context, a actor.Actor, r core.Record, targetID string) error {
 	_, err := f.change(ctx, a, r.ID, func(s *stored) bool { s.Ancestors = []string{targetID}; return true })
 	return err
 }
 
-func (f *fakePlanning) Delete(ctx context.Context, a actor.Actor, r bulk.Record) (history.BinEntry, error) {
+func (f *fakePlanning) Delete(ctx context.Context, a actor.Actor, r core.Record) (history.BinEntry, error) {
 	if _, err := f.change(ctx, a, r.ID, func(*stored) bool { return true }); err != nil {
 		return history.BinEntry{}, err
 	}
@@ -140,7 +140,7 @@ func (f *fakePlanning) Delete(ctx context.Context, a actor.Actor, r bulk.Record)
 
 type fixture struct {
 	db       *fake.DB
-	service  *bulk.Service
+	service  *core.Service
 	store    bulktest.Store
 	planning *fakePlanning
 	history  *history.Service
@@ -154,11 +154,11 @@ func newFixture(t *testing.T, records ...stored) *fixture {
 	f := &fixture{db: db, store: bulktest.NewStore(db)}
 	f.history = history.NewService(db, historytest.NewStore(db), generator, now)
 	f.planning = &fakePlanning{records: fake.TableOf(db, "records", func(s stored) string { return s.ID }), log: f.history,
-		refusals: map[string]error{}, people: map[string]bool{"U-1003": true, "U-1009": false}, below: map[string]bulk.Below{}}
+		refusals: map[string]error{}, people: map[string]bool{"U-1003": true, "U-1009": false}, below: map[string]core.Below{}}
 	if err := f.history.Register(f.planning.kind()); err != nil {
 		t.Fatalf("Register: %v", err)
 	}
-	f.service = bulk.NewService(history.Tools{Tx: db, IDs: generator, Log: f.history, Now: now}, f.store, f.planning)
+	f.service = core.NewService(history.Tools{Tx: db, IDs: generator, Log: f.history, Now: now}, f.store, f.planning)
 	if err := db.Write(t.Context(), func(ctx context.Context) error { return f.planning.records.Put(ctx, records...) }); err != nil {
 		t.Fatalf("Put records: %v", err)
 	}
@@ -195,13 +195,13 @@ func (f *fixture) log(t *testing.T) []history.Entry {
 }
 
 func activity(id, name, status string) stored {
-	return stored{Record: bulk.Record{ID: id, Level: bulk.LevelActivity, Name: name, PlanID: "P-1001", PlanName: "FY2026",
+	return stored{Record: core.Record{ID: id, Level: core.LevelActivity, Name: name, PlanID: "P-1001", PlanName: "FY2026",
 		Year: 2026, Ancestors: []string{"I-1001", "C-1001"}, Status: status, Shown: map[string]string{
-			bulk.StatusCreated: "Created", bulk.StatusSubmitted: "Submitted", bulk.StatusApproved: "Approved"}[status]}}
+			core.StatusCreated: "Created", core.StatusSubmitted: "Submitted", core.StatusApproved: "Approved"}[status]}}
 }
 
-func container(id, name string, level bulk.Level, ancestors ...string) stored {
-	return stored{Record: bulk.Record{ID: id, Level: level, Name: name, PlanID: "P-1001", PlanName: "FY2026", Year: 2026,
+func container(id, name string, level core.Level, ancestors ...string) stored {
+	return stored{Record: core.Record{ID: id, Level: level, Name: name, PlanID: "P-1001", PlanName: "FY2026", Year: 2026,
 		Ancestors: ancestors}}
 }
 

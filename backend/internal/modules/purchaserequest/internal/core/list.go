@@ -1,15 +1,15 @@
-package purchaserequest
+package core
 
 import (
 	"context"
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // The sort orders and page sizes of the Purchase requests page (contract listPurchaseRequests).

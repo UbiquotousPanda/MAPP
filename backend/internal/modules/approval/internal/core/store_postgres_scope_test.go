@@ -1,4 +1,4 @@
-package approval_test
+package core_test
 
 import (
 	"context"
@@ -7,8 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
+	"mapp/internal/modules/activity"
 	"mapp/internal/platform/authz"
 )
 
@@ -18,7 +17,7 @@ func TestPostgresStoreActivitiesInScopeOfIDs_028_FR007(t *testing.T) {
 	t.Parallel()
 	db, s := pgPlanned(t)
 	pgWrite(t, db, func(ctx context.Context) error {
-		return s.PutRound(ctx, named(pgRound("AR-1002", "A-1002", 1, approval.OutcomeOpen)))
+		return s.PutRound(ctx, named(pgRound("AR-1002", "A-1002")))
 	})
 	store := activity.NewPostgresStore(db)
 	both := []string{"A-1001", "A-1002"}
@@ -59,8 +58,8 @@ func TestPostgresStoreRoundsOfSubjectsScopeIsolation_036_FR002(t *testing.T) {
 	t.Parallel()
 	db, s := pgPlanned(t)
 	pgWrite(t, db, func(ctx context.Context) error {
-		return errors.Join(s.PutRound(ctx, pgRound("AR-1001", "A-1001", 1, approval.OutcomeOpen)),
-			s.PutRound(ctx, pgRound("AR-1002", "A-1002", 1, approval.OutcomeOpen)),
+		return errors.Join(s.PutRound(ctx, pgRound("AR-1001", "A-1001")),
+			s.PutRound(ctx, pgRound("AR-1002", "A-1002")),
 			s.PutAction(ctx, pgAction("AH-1001", "AR-1001", "A-1001")), s.PutAction(ctx, pgAction("AH-1002", "AR-1002", "A-1002")))
 	})
 	tests := []struct {

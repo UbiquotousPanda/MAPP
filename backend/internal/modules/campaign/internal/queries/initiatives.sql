@@ -80,3 +80,7 @@ VALUES ($1, $2, $3);
 -- name: DeleteInitiatives :exec
 DELETE FROM initiatives
 WHERE id = ANY (sqlc.arg(ids)::text[]);
+
+-- name: CountInitiativesOwnedBy :one
+SELECT count(*)::integer FROM initiatives
+WHERE owner_id = sqlc.arg(person_id)::text;

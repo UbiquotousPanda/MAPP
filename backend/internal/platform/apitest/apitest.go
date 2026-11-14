@@ -19,7 +19,7 @@ import (
 	openapierrors "github.com/pb33f/libopenapi-validator/errors"
 
 	"mapp/internal/app"
-	"mapp/internal/auth"
+	"mapp/internal/modules/auth"
 	"mapp/internal/platform/fake"
 	"mapp/internal/stores"
 	"mapp/internal/stores/storestest"

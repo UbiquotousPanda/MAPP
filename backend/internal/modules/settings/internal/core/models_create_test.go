@@ -1,11 +1,11 @@
-package settings
+package core
 
 import (
 	"reflect"
 	"strings"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
 )

@@ -1,4 +1,4 @@
-package activity_test
+package core_test
 
 import (
 	"context"
@@ -7,12 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/activity/activitytest"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity/activitytest"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 const (
@@ -75,10 +75,10 @@ func TestAddPlanFacts_FollowEveryChange_FR005(t *testing.T) {
 		}
 	}
 
-	created := f.create(t, digitalAndSocial, activity.Input{Name: "Launch video", ActivityTypeID: eventType,
+	created := f.create(t, digitalAndSocial, core.Input{Name: "Launch video", ActivityTypeID: eventType,
 		OwnerID: text("U-1002"), StartDate: text("2026-03-01"), EndDate: text("2026-03-31"), PlannedCost: usdInput("25000"),
 		ApprovalWorkflowID: text(lubricantsFlow)})
-	f.mustEdit(t, created.ID, func(u *activity.Update) { u.PlannedCost = usdInput("30000.00") })
+	f.mustEdit(t, created.ID, func(u *core.Update) { u.PlannedCost = usdInput("30000.00") })
 	after := f.planFigures(t, lubricantsPlan)[lubricantsPlan]
 	if !strings.HasPrefix(after, "8 activities, 4 approved, planned 490000.00,") || !strings.Contains(after, "activity "+created.ID+" (") {
 		t.Errorf("after create and edit = %s", after)
@@ -98,7 +98,7 @@ func TestAddPlanFacts_FollowEveryChange_FR005(t *testing.T) {
 		t.Errorf("after Undo = %s, want %s", got, after)
 	}
 
-	if _, err := f.service.Copy(t.Context(), priya, "A-1001", activity.CopyInput{InitiativeID: digitalAndSocial}); err != nil {
+	if _, err := f.service.Copy(t.Context(), priya, "A-1001", core.CopyInput{InitiativeID: digitalAndSocial}); err != nil {
 		t.Fatalf("Copy: %v", err)
 	}
 	if got := f.planFigures(t, lubricantsPlan)[lubricantsPlan]; !strings.HasPrefix(got, "9 activities, 4 approved, planned 610000.00,") {
@@ -114,23 +114,23 @@ func TestCopyAll_ShiftsYears(t *testing.T) {
 	const events = "I-1003" // Partner co-marketing fund: Approved, ongoing from 1 Mar 2026
 	leap := date.MustParse("2028-02-29")
 	f.change(t, func(ctx context.Context) error {
-		return activitytest.NewStore(f.db).Put(ctx, activity.Activity{
+		return activitytest.NewStore(f.db).Put(ctx, core.Activity{
 			ID: "A-9001", InitiativeID: events, Name: "Leap day stunt", ActivityTypeID: eventType, StartDate: &leap,
-			EndDate: &leap, Status: activity.StatusSubmitted, Attributes: settings.AttributeValues{}, Meta: record.NewMeta(priya, start),
+			EndDate: &leap, Status: core.StatusSubmitted, Attributes: settings.AttributeValues{}, Meta: record.NewMeta(priya, start),
 		})
 	})
 	partner, _ := f.stored(t, "A-1007")
-	f.lineItems.facts["A-1007"] = activity.LineItemFacts{Count: 2}
+	f.lineItems.facts["A-1007"] = core.LineItemFacts{Count: 2}
 	entriesBefore := len(f.entries(t))
 
-	var counts activity.CopyCounts
+	var counts core.CopyCounts
 	err := f.db.Write(t.Context(), func(ctx context.Context) error {
 		var err error
 		counts, err = f.service.CopyAll(ctx, daniel, events, retailEvents, 1)
 		return err
 	})
 
-	if err != nil || counts != (activity.CopyCounts{Activities: 2, LineItems: 2}) {
+	if err != nil || counts != (core.CopyCounts{Activities: 2, LineItems: 2}) {
 		t.Fatalf("CopyAll = %+v, %v; want 2 activities and 2 line items", counts, err)
 	}
 	copies := f.byName(t, retailEvents)
@@ -141,11 +141,11 @@ func TestCopyAll_ShiftsYears(t *testing.T) {
 	if partnerCopy.StartDate.String() != "2027-03-01" || partnerCopy.EndDate != nil || !partnerCopy.Ongoing {
 		t.Errorf("ongoing copy runs %v – %v (ongoing %v), want from 2027-03-01, still ongoing", partnerCopy.StartDate, partnerCopy.EndDate, partnerCopy.Ongoing)
 	}
-	if partnerCopy.Status != activity.StatusCreated || partnerCopy.Meta != record.NewMeta(daniel, start) {
+	if partnerCopy.Status != core.StatusCreated || partnerCopy.Meta != record.NewMeta(daniel, start) {
 		t.Errorf("copy status %s, bookkeeping %+v; want Created, new, by Daniel", partnerCopy.Status, partnerCopy.Meta)
 	}
 	want := partner
-	want.ID, want.InitiativeID, want.Status, want.Meta = partnerCopy.ID, retailEvents, activity.StatusCreated, partnerCopy.Meta
+	want.ID, want.InitiativeID, want.Status, want.Meta = partnerCopy.ID, retailEvents, core.StatusCreated, partnerCopy.Meta
 	want.StartDate = partnerCopy.StartDate
 	if !reflect.DeepEqual(partnerCopy, want) {
 		t.Errorf("copy =\n%+v\nwant every value of the original\n%+v", partnerCopy, want)
@@ -187,13 +187,13 @@ func TestCopyForInitiatives_LeavesLineItemsToTheirLevel_D195(t *testing.T) {
 	}
 }
 
-func (f *fixture) byName(t *testing.T, initiativeID string) map[string]activity.Activity {
+func (f *fixture) byName(t *testing.T, initiativeID string) map[string]core.Activity {
 	t.Helper()
 	list, err := activitytest.NewStore(f.db).ListByInitiative(t.Context(), initiativeID)
 	if err != nil {
 		t.Fatalf("ListByInitiative(%s): %v", initiativeID, err)
 	}
-	named := map[string]activity.Activity{}
+	named := map[string]core.Activity{}
 	for _, a := range list {
 		named[a.Name] = a
 	}

@@ -1,4 +1,4 @@
-package financials
+package core
 
 import (
 	"net/http"

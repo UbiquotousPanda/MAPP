@@ -3,7 +3,7 @@ package seed
 import (
 	"context"
 
-	"mapp/internal/customdashboard"
+	"mapp/internal/modules/customdashboard"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/record"

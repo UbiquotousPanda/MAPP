@@ -4,12 +4,12 @@ import (
 	"context"
 	"strings"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
-	"mapp/internal/bulk"
-	"mapp/internal/campaign"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/bulk"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

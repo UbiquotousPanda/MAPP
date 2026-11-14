@@ -1,4 +1,4 @@
-package people_test
+package core_test
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -87,9 +87,9 @@ func TestPatchPreferences_ThemeKeepsSidebarCollapsed_FR014(t *testing.T) {
 	response := priya.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"theme": "dark"})
 
 	assertAnswer(t, response, http.StatusOK, `{"theme":"dark","sidebarCollapsed":true,"displayCurrency":"USD","dateFormat":"DD MMM YYYY","homeScope":"myTeams","historyIncludeInside":false,"pinnedPlanIds":[]}`)
-	var me people.CurrentUser
+	var me core.CurrentUser
 	priya.Do(t, http.MethodGet, "/api/v1/me", nil).Decode(t, &me)
-	want := people.PreferencesView{Theme: "dark", SidebarCollapsed: true, DisplayCurrency: "USD", DateFormat: "DD MMM YYYY", HomeScope: "myTeams",
+	want := core.PreferencesView{Theme: "dark", SidebarCollapsed: true, DisplayCurrency: "USD", DateFormat: "DD MMM YYYY", HomeScope: "myTeams",
 		PinnedPlanIDs: []string{}}
 	if !reflect.DeepEqual(me.Preferences, want) {
 		t.Errorf("GET /api/v1/me preferences = %+v, want %+v", me.Preferences, want)
@@ -108,7 +108,7 @@ func TestPatchPreferences_HomeScope_FR003(t *testing.T) {
 		apitest.SkipRequestValidation())
 
 	assertAnswer(t, response, http.StatusOK, `{"theme":"system","sidebarCollapsed":false,"displayCurrency":"USD","dateFormat":"DD MMM YYYY","homeScope":"everything","historyIncludeInside":false,"pinnedPlanIds":[]}`)
-	var me people.CurrentUser
+	var me core.CurrentUser
 	priya.Do(t, http.MethodGet, "/api/v1/me", nil).Decode(t, &me)
 	if me.Preferences.HomeScope != "everything" {
 		t.Errorf("GET /api/v1/me home scope = %q, want everything", me.Preferences.HomeScope)
@@ -131,7 +131,7 @@ func TestPatchPreferences_PinnedPlans_FR004_FR005(t *testing.T) {
 
 	assertAnswer(t, pinned, http.StatusOK, `{"theme":"system","sidebarCollapsed":false,"displayCurrency":"USD","dateFormat":"DD MMM YYYY","homeScope":"myTeams","historyIncludeInside":false,"pinnedPlanIds":["P-1002","P-1001"]}`)
 	assertAnswer(t, refused, http.StatusBadRequest, validationBody(`{"field":"pinnedPlanIds","message":"Pin plans by their id, like P-1001."}`))
-	var me people.CurrentUser
+	var me core.CurrentUser
 	priya.Do(t, http.MethodGet, "/api/v1/me", nil).Decode(t, &me)
 	if want := []string{"P-1002", "P-1001"}; !slices.Equal(me.Preferences.PinnedPlanIDs, want) {
 		t.Errorf("GET /api/v1/me pinned plans = %q, want %q (the refusal changed nothing)", me.Preferences.PinnedPlanIDs, want)
@@ -158,9 +158,9 @@ func TestPatchMe_UpdatesProfile_FR021_FR022(t *testing.T) {
 	assertAnswer(t, response, http.StatusOK, `{"id":"U-1002","name":"Priya Sharma","firstName":"Priya",`+
 		`"email":"priya.raman@shell.com","jobTitle":"Senior marketer","initials":"PS",`+
 		`"preferences":`+defaultPreferencesBody+`,"version":2,"teams":`+priyasTeamsBody+`,"access":`+priyasAccessBody+`}`)
-	var me people.CurrentUser
+	var me core.CurrentUser
 	priya.Do(t, http.MethodGet, "/api/v1/me", nil).Decode(t, &me)
-	var details people.PersonDetails
+	var details core.PersonDetails
 	alex.Do(t, http.MethodGet, "/api/v1/people/U-1002", nil).Decode(t, &details)
 	if me.Name != "Priya Sharma" || details.Name != "Priya Sharma" || details.UpdatedBy.Name != "Priya Raman" {
 		t.Errorf("after the change: GET /api/v1/me %q, GET /api/v1/people/U-1002 %q changed by %q; want the new name",
@@ -217,7 +217,7 @@ func TestPreferences_SameInAnotherBrowser_FR025(t *testing.T) {
 	secondBrowser := server.SignIn(t, priyasEmail)
 
 	firstBrowser.Do(t, http.MethodPatch, "/api/v1/me/preferences", map[string]any{"displayCurrency": "EUR", "dateFormat": "YYYY-MM-DD"})
-	var me people.CurrentUser
+	var me core.CurrentUser
 	secondBrowser.Do(t, http.MethodGet, "/api/v1/me", nil).Decode(t, &me)
 
 	if me.Preferences.DisplayCurrency != "EUR" || me.Preferences.DateFormat != "YYYY-MM-DD" {

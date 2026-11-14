@@ -1,4 +1,4 @@
-package approval
+package core
 
 // SubjectKind is the type of record an approval round or workflow is about.
 type SubjectKind string

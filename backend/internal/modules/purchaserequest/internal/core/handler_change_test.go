@@ -1,12 +1,12 @@
-package purchaserequest_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/purchaserequest/internal/core"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/purchaserequest"
 )
 
 // lineItemForm is Stand build's form as stored, with another planned cost.
@@ -33,7 +33,7 @@ func lineItemForm(t *testing.T, c *apitest.Client, plannedCost string) map[strin
 }
 
 // saveBody is the input of a stored purchase request with its first line's amount changed and then.
-func saveBody(pr purchaserequest.View, amount, then string) map[string]any {
+func saveBody(pr core.View, amount, then string) map[string]any {
 	b := body(standBuild, "EUR", amount)
 	l := b["lines"].([]map[string]any)[0]
 	l["id"], l["overallLimit"] = pr.Lines[0].ID, amount
@@ -48,28 +48,28 @@ func TestModification_ApproveAndRestore_Contract_032_FR036(t *testing.T) {
 	priya, daniel := s.SignIn(t, priyasEmail), s.SignIn(t, danielsEmail)
 
 	saved := priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(pr, "8000.00", "save"))
-	changed := decoded[purchaserequest.View](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(pr, "8000.00", "submitChanges")),
+	changed := decoded[core.View](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(pr, "8000.00", "submitChanges")),
 		http.StatusOK)
 
 	same(t, "032 FR-036 saving an approved PR without Submit changes", http.StatusBadRequest, saved.Status)
-	same(t, "032 FR-036 change in review", []any{purchaserequest.StatusInReview, true, "9,200.00 EUR", true},
+	same(t, "032 FR-036 change in review", []any{core.StatusInReview, true, "9,200.00 EUR", true},
 		[]any{changed.Status, changed.ChangePending, approvedAmount(changed), changed.Lines[0].Changed})
-	at := decoded[purchaserequest.ApprovalView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval", nil), http.StatusOK)
+	at := decoded[core.ApprovalView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval", nil), http.StatusOK)
 	decide(t, daniel, "decline", at)
 	restored := get(t, priya, pr.ID)
-	same(t, "032 FR-037 declined change", []any{purchaserequest.StatusApproved, false, "9,200.00 EUR"},
+	same(t, "032 FR-037 declined change", []any{core.StatusApproved, false, "9,200.00 EUR"},
 		[]any{restored.Status, restored.ChangePending, restored.Lines[0].Amount.Format()})
 
-	again := decoded[purchaserequest.View](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(restored, "8000.00", "submitChanges")),
+	again := decoded[core.View](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(restored, "8000.00", "submitChanges")),
 		http.StatusOK)
-	at = decoded[purchaserequest.ApprovalView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval", nil), http.StatusOK)
+	at = decoded[core.ApprovalView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval", nil), http.StatusOK)
 	decide(t, daniel, "approve", at)
 	done := get(t, priya, pr.ID)
-	same(t, "032 FR-037 approved change", []any{purchaserequest.StatusInReview, purchaserequest.StatusApproved, "8,000.00 EUR",
-		purchaserequest.RoutingModification}, []any{again.Status, done.Status, done.Lines[0].Amount.Format(), done.Routings[0].Type})
+	same(t, "032 FR-037 approved change", []any{core.StatusInReview, core.StatusApproved, "8,000.00 EUR",
+		core.RoutingModification}, []any{again.Status, done.Status, done.Lines[0].Amount.Format(), done.Routings[0].Type})
 }
 
-func approvedAmount(v purchaserequest.View) string {
+func approvedAmount(v core.View) string {
 	if v.ApprovedVersion == nil {
 		return ""
 	}
@@ -82,20 +82,20 @@ func TestClose_ReleasesWhatWasNotInvoiced_Contract_032_FR041(t *testing.T) {
 	pr := approved(t, s)
 	priya := s.SignIn(t, priyasEmail)
 
-	preview := decoded[purchaserequest.ClosePreview](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/close-preview", nil), http.StatusOK)
-	closed := decoded[purchaserequest.View](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/close", map[string]any{"version": pr.Version}),
+	preview := decoded[core.ClosePreview](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/close-preview", nil), http.StatusOK)
+	closed := decoded[core.View](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/close", map[string]any{"version": pr.Version}),
 		http.StatusOK)
 	changeAfter := decoded[apiError](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(closed, "1.00", "submitChanges")),
 		http.StatusConflict)
-	resent := decoded[purchaserequest.View](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/resend", map[string]any{"version": closed.Version}),
+	resent := decoded[core.View](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/resend", map[string]any{"version": closed.Version}),
 		http.StatusOK)
 
 	same(t, "preview", []any{true, "9,200.00 EUR", "0.00 EUR"},
 		[]any{preview.Available, preview.Lines[0].Released.Format(), preview.Lines[0].ClosedAmount.Format()})
 	no := "Closed purchase requests cannot be changed."
-	same(t, "closed", []any{purchaserequest.StatusClosed, "0.00 EUR", purchaserequest.RoutingClose, no, no},
+	same(t, "closed", []any{core.StatusClosed, "0.00 EUR", core.RoutingClose, no, no},
 		[]any{closed.Status, closed.Lines[0].Amount.Format(), closed.Routings[0].Type, closed.Notice, changeAfter.Error.Message})
-	same(t, "032 FR-033 resend", []any{3, purchaserequest.RoutingResend}, []any{len(resent.Routings), resent.Routings[0].Type})
+	same(t, "032 FR-033 resend", []any{3, core.RoutingResend}, []any{len(resent.Routings), resent.Routings[0].Type})
 }
 
 func TestDelete_ByStatus_AndRestore_Contract_032_FR042(t *testing.T) {
@@ -114,7 +114,7 @@ func TestDelete_ByStatus_AndRestore_Contract_032_FR042(t *testing.T) {
 	if refused.Error.Message != "Approved purchase requests cannot be deleted — close them instead." {
 		t.Errorf("032 FR-040 = %+v", refused)
 	}
-	if deleted.RecycleBinEntry.RecordType != "purchaseRequest" || taken.Status != purchaserequest.StatusCreated {
+	if deleted.RecycleBinEntry.RecordType != "purchaseRequest" || taken.Status != core.StatusCreated {
 		t.Errorf("032 FR-042 deleted %+v", deleted.RecycleBinEntry)
 	}
 	want := "Can't restore — line item L-1005 has only 29,999.00 USD left to request."
@@ -170,7 +170,7 @@ func TestChangeInReview_KeepsApprovedReserved_038_FR001_FR003_C1(t *testing.T) {
 			s := apitest.New(t)
 			pr := approved(t, s)
 			priya, daniel := s.SignIn(t, priyasEmail), s.SignIn(t, danielsEmail)
-			decoded[purchaserequest.View](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(pr, "8000.00", "submitChanges")),
+			decoded[core.View](t, priya.Do(t, http.MethodPut, prs+"/"+pr.ID, saveBody(pr, "8000.00", "submitChanges")),
 				http.StatusOK)
 
 			refused := decoded[apiError](t, priya.Do(t, http.MethodPost, prs, body(standBuild, "EUR", "1200.00")),
@@ -180,9 +180,9 @@ func TestChangeInReview_KeepsApprovedReserved_038_FR001_FR003_C1(t *testing.T) {
 			same(t, "038 FR-002 the save's room check", true, hasMessage(refused,
 				"Only 0.00 EUR of line item L-1006 is not yet requested."))
 
-			at := decoded[purchaserequest.ApprovalView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval", nil), http.StatusOK)
+			at := decoded[core.ApprovalView](t, priya.Do(t, http.MethodGet, prs+"/"+pr.ID+"/approval", nil), http.StatusOK)
 			if end == "recall" {
-				decoded[purchaserequest.ApprovalView](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/approval/recall",
+				decoded[core.ApprovalView](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/approval/recall",
 					map[string]any{"roundId": openRound(t, at).ID}), http.StatusOK)
 			} else {
 				decide(t, daniel, end, at)
@@ -197,11 +197,11 @@ func TestChangeInReview_KeepsApprovedReserved_038_FR001_FR003_C1(t *testing.T) {
 // option, then the section's Total requested.
 func reservedOnStandBuild(t *testing.T, c *apitest.Client) []string {
 	t.Helper()
-	section := decoded[purchaserequest.LineItemSection](t, c.Do(t, http.MethodGet, "/api/v1/line-items/"+standBuild+
+	section := decoded[core.LineItemSection](t, c.Do(t, http.MethodGet, "/api/v1/line-items/"+standBuild+
 		"/purchase-requests", nil), http.StatusOK)
-	activity := decoded[purchaserequest.ActivitySection](t, c.Do(t, http.MethodGet, "/api/v1/activities/A-1003/purchase-requests",
+	activity := decoded[core.ActivitySection](t, c.Do(t, http.MethodGet, "/api/v1/activities/A-1003/purchase-requests",
 		nil), http.StatusOK)
-	options := decoded[purchaserequest.OptionPage](t, c.Do(t, http.MethodGet, prs+"/line-item-options?search=L-1006", nil),
+	options := decoded[core.OptionPage](t, c.Do(t, http.MethodGet, prs+"/line-item-options?search=L-1006", nil),
 		http.StatusOK)
 	got := []string{section.AvailableToRequest.Format(), "", "", section.Requested.Format()}
 	for _, li := range activity.LineItems {

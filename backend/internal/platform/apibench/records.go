@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
 	"mapp/internal/platform/date"
 	"mapp/internal/stores"
 )

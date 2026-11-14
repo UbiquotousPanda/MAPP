@@ -5,13 +5,13 @@ import (
 	"maps"
 	"slices"
 
-	"mapp/internal/access"
-	"mapp/internal/activity"
-	"mapp/internal/lineitem"
-	"mapp/internal/plan"
+	"mapp/internal/modules/access"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/workbook"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
-	"mapp/internal/workbook"
 )
 
 // workbookWriter imports activities and line items through their areas' importers, which read each parent once

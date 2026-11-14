@@ -5,9 +5,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // loadAttributes reads every Shell attribute of every level and the options of the choice attributes once.

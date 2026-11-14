@@ -1,8 +1,8 @@
 package app
 
 import (
-	"mapp/internal/bulk"
-	"mapp/internal/history"
+	"mapp/internal/modules/bulk"
+	"mapp/internal/modules/history"
 )
 
 // bulkArea builds feature 012's bulk actions after the planning areas and approvals they call.

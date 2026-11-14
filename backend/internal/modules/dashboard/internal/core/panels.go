@@ -1,13 +1,13 @@
-package dashboard
+package core
 
 import (
 	"time"
 
-	"mapp/internal/allwork"
-	"mapp/internal/approval"
-	"mapp/internal/budget"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/money"
-	"mapp/internal/purchaserequest"
 )
 
 var (

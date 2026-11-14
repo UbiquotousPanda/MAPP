@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/record"

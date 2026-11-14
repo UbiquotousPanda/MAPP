@@ -1,8 +1,8 @@
-package plan
+package core
 
 import (
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Completeness is the plan's own missing needed-to-publish fields and every record below that is not

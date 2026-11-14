@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"cmp"
@@ -7,12 +7,12 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // CampaignDestinations returns the plans the campaign id can be moved or copied to (FR-023, FR-024, FR-026,

@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"cmp"
@@ -6,13 +6,13 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/overspend"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 const (

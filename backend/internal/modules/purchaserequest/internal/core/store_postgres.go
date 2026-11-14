@@ -1,17 +1,17 @@
-package purchaserequest
+package core
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 
+	"mapp/internal/modules/purchaserequest/internal/sqlcdb"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // PostgresStore keeps purchase requests on PostgreSQL. The reads that serve a person filter in SQL with
@@ -25,11 +25,11 @@ func NewPostgresStore(db *database.DB) *PostgresStore {
 }
 
 func (s *PostgresStore) Get(ctx context.Context, id string) (PurchaseRequest, bool, error) {
-	return firstOf(s.read(ctx, s.db.Queries(ctx).ListPurchaseRequests, []string{id}))
+	return firstOf(s.read(ctx, sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequests, []string{id}))
 }
 
 func (s *PostgresStore) All(ctx context.Context) ([]PurchaseRequest, error) {
-	return s.read(ctx, s.db.Queries(ctx).ListPurchaseRequests, nil)
+	return s.read(ctx, sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequests, nil)
 }
 
 func (s *PostgresStore) GetInScope(ctx context.Context, scope ViewScope, id string) (PurchaseRequest, bool, error) {
@@ -59,7 +59,7 @@ func scopeParams(scope ViewScope, ids, lineItemIDs []string) sqlcdb.ListPurchase
 }
 
 func (s *PostgresStore) inScope(ctx context.Context, params sqlcdb.ListPurchaseRequestsInScopeParams) ([]PurchaseRequest, error) {
-	rows, err := s.db.Queries(ctx).ListPurchaseRequestsInScope(ctx, params)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequestsInScope(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("select purchase requests in scope: %w", err)
 	}
@@ -85,7 +85,7 @@ func (s *PostgresStore) withLines(ctx context.Context, rows []sqlcdb.PurchaseReq
 	for _, r := range rows {
 		ids = append(ids, r.ID)
 	}
-	lines, err := s.db.Queries(ctx).ListPurchaseRequestLines(ctx, sqlcdb.ListPurchaseRequestLinesParams{PurchaseRequestIds: ids})
+	lines, err := sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequestLines(ctx, sqlcdb.ListPurchaseRequestLinesParams{PurchaseRequestIds: ids})
 	if err != nil {
 		return nil, fmt.Errorf("select purchase request lines: %w", err)
 	}
@@ -112,7 +112,7 @@ func (s *PostgresStore) withLines(ctx context.Context, rows []sqlcdb.PurchaseReq
 }
 
 func (s *PostgresStore) Claims(ctx context.Context, lineItemIDs []string) ([]Claim, error) {
-	rows, err := s.db.Queries(ctx).ListPurchaseRequestClaims(ctx, nonNil(lineItemIDs))
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequestClaims(ctx, nonNil(lineItemIDs))
 	if err != nil {
 		return nil, fmt.Errorf("select purchase request claims: %w", err)
 	}
@@ -122,7 +122,7 @@ func (s *PostgresStore) Claims(ctx context.Context, lineItemIDs []string) ([]Cla
 			LineItemID: r.LineItemID, Status: Status(r.Status),
 			Amount: money.Money{Amount: money.FromCents(r.AmountMinor), Currency: r.Currency}})
 	}
-	changing, err := s.db.Queries(ctx).ListPurchaseRequestChangesInReview(ctx, nonNil(lineItemIDs))
+	changing, err := sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequestChangesInReview(ctx, nonNil(lineItemIDs))
 	if err != nil {
 		return nil, fmt.Errorf("select purchase requests with a change in review: %w", err)
 	}
@@ -142,7 +142,7 @@ func (s *PostgresStore) Put(ctx context.Context, pr PurchaseRequest) error {
 	if err != nil {
 		return err
 	}
-	if err = s.db.Queries(ctx).PutPurchaseRequest(ctx, params); err != nil {
+	if err = sqlcdb.New(s.db.Conn(ctx)).PutPurchaseRequest(ctx, params); err != nil {
 		return fmt.Errorf("save purchase request %s: %w", pr.ID, err)
 	}
 	for _, l := range pr.Lines {
@@ -154,14 +154,14 @@ func (s *PostgresStore) Put(ctx context.Context, pr PurchaseRequest) error {
 }
 
 func (s *PostgresStore) Delete(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeletePurchaseRequest(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeletePurchaseRequest(ctx, id); err != nil {
 		return fmt.Errorf("delete purchase request %s: %w", id, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) GetLine(ctx context.Context, id string) (Line, bool, error) {
-	rows, err := s.db.Queries(ctx).ListPurchaseRequestLines(ctx, sqlcdb.ListPurchaseRequestLinesParams{Ids: []string{id}})
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListPurchaseRequestLines(ctx, sqlcdb.ListPurchaseRequestLinesParams{Ids: []string{id}})
 	if err != nil || len(rows) == 0 {
 		return Line{}, false, err
 	}
@@ -174,14 +174,14 @@ func (s *PostgresStore) PutLine(ctx context.Context, l Line) error {
 	if err != nil {
 		return err
 	}
-	if err = s.db.Queries(ctx).PutPurchaseRequestLine(ctx, params); err != nil {
+	if err = sqlcdb.New(s.db.Conn(ctx)).PutPurchaseRequestLine(ctx, params); err != nil {
 		return fmt.Errorf("save purchase request line %s: %w", l.ID, err)
 	}
 	return nil
 }
 
 func (s *PostgresStore) DeleteLine(ctx context.Context, id string) error {
-	if err := s.db.Queries(ctx).DeletePurchaseRequestLine(ctx, id); err != nil {
+	if err := sqlcdb.New(s.db.Conn(ctx)).DeletePurchaseRequestLine(ctx, id); err != nil {
 		return fmt.Errorf("delete purchase request line %s: %w", id, err)
 	}
 	return nil

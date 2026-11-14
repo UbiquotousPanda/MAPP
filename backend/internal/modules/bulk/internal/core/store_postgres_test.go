@@ -1,4 +1,4 @@
-package bulk_test
+package core_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/bulk"
+	"mapp/internal/modules/bulk/internal/core"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database/dbtest"
 )
@@ -16,10 +16,10 @@ import (
 func TestPostgresStore_GetAction_OnlyTheActor_012FR020(t *testing.T) {
 	t.Parallel()
 	db := dbtest.NewDB(t)
-	store := bulk.NewPostgresStore(db)
+	store := core.NewPostgresStore(db)
 	priya := actor.Actor{ID: "U-1002", Name: "Priya Raman"}
 	ran := time.Date(2026, 3, 12, 9, 0, 0, 0, time.UTC)
-	action := bulk.Action{ID: "BLK-1001", Kind: bulk.ActionDelete, Note: "Bulk delete of 2 activities (BLK-1001)", Actor: priya,
+	action := core.Action{ID: "BLK-1001", Kind: core.ActionDelete, Note: "Bulk delete of 2 activities (BLK-1001)", Actor: priya,
 		RanAt: ran, BinEntryIDs: []string{"BIN-1004", "BIN-1003"}}
 	if err := db.Write(t.Context(), func(ctx context.Context) error { return store.AddAction(ctx, action) }); err != nil {
 		t.Fatalf("AddAction() error: %v", err)

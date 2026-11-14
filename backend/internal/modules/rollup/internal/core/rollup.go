@@ -7,7 +7,7 @@
 // stored in it), so sums are exact and need no rounding; the only rounding is the whole-percent budget
 // used, half up. Results keep the currency of their inputs; TotalIn and ContainerIn name it for a total of
 // nothing. Goal revenue is always USD.
-package rollup
+package core
 
 import (
 	"math/big"

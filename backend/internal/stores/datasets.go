@@ -3,7 +3,7 @@ package stores
 import (
 	"context"
 
-	"mapp/internal/dataset"
+	"mapp/internal/modules/dataset"
 )
 
 // DatasetStore is the datasets store as the wiring and the seed use it (feature 051).

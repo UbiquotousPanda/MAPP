@@ -1,4 +1,4 @@
-package allwork
+package core
 
 import (
 	"slices"
@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // The answers of a yes/no value as people read them.

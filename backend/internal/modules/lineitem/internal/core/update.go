@@ -1,9 +1,9 @@
-package lineitem
+package core
 
 import (
 	"context"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 )
 

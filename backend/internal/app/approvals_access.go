@@ -5,11 +5,11 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/access"
-	"mapp/internal/approval"
+	"mapp/internal/modules/access"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
-	"mapp/internal/settings"
 )
 
 // approvalsAccess implements approval.Access (017 plan, Ports; D-290) over feature 014's access service: who

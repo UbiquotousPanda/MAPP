@@ -4,7 +4,7 @@
 // The shared foundation added feature 003's data layer: Team, Membership, the new preferences fields, the
 // API types (the model files), the usage hooks (usage.go) and the repository methods. Feature 003 adds the
 // service operations, the history kinds and the handlers for people, teams and My profile.
-package people
+package core
 
 import (
 	"cmp"

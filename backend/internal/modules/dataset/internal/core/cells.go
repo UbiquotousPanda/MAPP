@@ -1,4 +1,4 @@
-package dataset
+package core
 
 import (
 	"strings"
@@ -6,9 +6,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/widgetdata"
 )
 
 const (

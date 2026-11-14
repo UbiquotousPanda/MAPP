@@ -1,4 +1,4 @@
-package dataset
+package core
 
 const (
 	msgFileName       = "Choose a file with a name of at most 255 characters."

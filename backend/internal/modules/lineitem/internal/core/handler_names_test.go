@@ -1,4 +1,4 @@
-package lineitem_test
+package core_test
 
 import (
 	"net/http"

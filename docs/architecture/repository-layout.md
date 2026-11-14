@@ -32,32 +32,29 @@ MAPP/
 │   ├── seed/                    the demo dataset; every feature adds its records          (001+)
 │   ├── internal/
 │   │   ├── app/                 configuration and wiring: the only package that knows every other   (001)
-│   │   ├── platform/            small shared helpers                                                 (001)
+│   │   ├── platform/            the kernel: business-free helpers every module may use          (001)
 │   │   │   ├── actor/           who is acting (id, name) and the context helpers
 │   │   │   ├── clock/           "now", replaceable in tests
 │   │   │   ├── errs/            the one error format and its codes
 │   │   │   ├── web/             JSON in/out, errors to HTTP, middleware
-│   │   │   ├── database/        PostgreSQL: pool, migrations, queries, sqlcdb, dbtest     (023)
+│   │   │   ├── database/        PostgreSQL: pool, Conn, migrations/ (one folder), dbtest   (023)
 │   │   │   ├── memo/            values kept for the rest of a read-only transaction       (023)
 │   │   │   ├── fake/            test fakes' transactions, tables and ID counters (tests only)  (029)
 │   │   │   ├── ids/             readable IDs (P-1001 …)
 │   │   │   ├── record/          version and created/updated bookkeeping
 │   │   │   └── apitest/         contract-test helper (tests only)
-│   │   ├── auth/                demo sign-in, sessions, the sign-in middleware              (001)
-│   │   ├── people/              people, "me", preferences; teams and profiles               (001, 003)
-│   │   ├── history/             activity log and recycle bin core; screens' needs           (001, 011)
-│   │   ├── sample/              developer sample records (local/development only)          (001)
-│   │   ├── settings/            models, activity types, attributes, currencies, budget items (002)
-│   │   ├── plan/                plans                                                        (004)
-│   │   ├── campaign/            campaigns and initiatives                                    (005)
-│   │   ├── activity/            activities                                                   (006)
-│   │   ├── lineitem/            line items and spreads                                       (007)
-│   │   ├── approval/            approval workflows, approvals, notifications                 (008)
-│   │   ├── stores/              every area's store and the Transactor; storestest: in memory  (023, 029)
-│   │   └── views/               cross-plan queries for All work                              (010)
-│   │       each business package:  model.go · store.go · store_postgres.go · service.go ·
-│   │                               handler.go, <area>test/ (its fake), a file per use case,
-│   │                               each within 300 non-blank lines, tests beside them      (025)
+│   │   ├── architecture/        the module map, the table owners, and the tests that hold them (ADR-0022)
+│   │   ├── modules/<area>/      one per business area, 27 in all (ADR-0022, constitution B2):
+│   │   │   ├── <area>.go        its published contract: types, ports, constructors (aliases)
+│   │   │   ├── internal/core/   model.go · store.go · store_postgres.go · service.go ·
+│   │   │   │                    handler.go, a file per use case, tests beside them   (025)
+│   │   │   ├── internal/queries/  the SQL of the tables it owns
+│   │   │   ├── internal/sqlcdb/ sqlc's output for them (generated, never edited)
+│   │   │   └── <area>test/      its in-memory fake, for other packages' tests       (029)
+│   │   │                        e.g. people, settings, plan, campaign, activity, lineitem,
+│   │   │                        approval, history, allwork, spa, dashboard …
+│   │   └── stores/              every area's store and the Transactor; storestest: in memory  (023, 029)
+│   │       every file within 300 non-blank lines
 └── frontend/                    React + TypeScript web app
     ├── src/                     constitution F2 (feature 026)
     │   ├── main.tsx             mounts <App /> and nothing else

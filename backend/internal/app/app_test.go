@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"mapp/internal/app"
-	"mapp/internal/auth"
+	"mapp/internal/modules/auth"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/fake"
 	"mapp/internal/stores/storestest"

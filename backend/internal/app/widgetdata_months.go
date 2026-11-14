@@ -5,10 +5,10 @@ import (
 	"maps"
 	"slices"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
-	"mapp/internal/widgetdata"
 )
 
 // The widest years a spread is worked out over, so a month of another year keeps its month.

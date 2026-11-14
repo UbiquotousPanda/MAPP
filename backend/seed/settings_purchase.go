@@ -1,6 +1,6 @@
 package seed
 
-import "mapp/internal/settings"
+import "mapp/internal/modules/settings"
 
 const (
 	purchaseRequestSection = "Purchase request"

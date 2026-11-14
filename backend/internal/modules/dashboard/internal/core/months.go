@@ -1,9 +1,9 @@
-package dashboard
+package core
 
 import (
 	"fmt"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
 	"mapp/internal/platform/money"
 )
 

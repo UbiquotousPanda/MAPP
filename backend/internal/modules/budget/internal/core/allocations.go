@@ -1,4 +1,4 @@
-package budget
+package core
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"mapp/internal/history"
-	"mapp/internal/overspend"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/overspend"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"

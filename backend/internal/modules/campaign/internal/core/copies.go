@@ -1,16 +1,16 @@
-package campaign
+package core
 
 import (
 	"context"
 	"fmt"
 	"maps"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
 )
 
 // copyInitiativesOf copies the initiatives of each campaign of pairs into its copy; the copies get their IDs

@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/customdashboard"
-	"mapp/internal/people"
+	"mapp/internal/modules/customdashboard"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/fake"
 )
 

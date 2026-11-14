@@ -5,8 +5,8 @@ package settingstest
 import (
 	"context"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/fake"
-	"mapp/internal/settings"
 )
 
 type Store struct {

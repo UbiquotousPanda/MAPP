@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"encoding/base64"
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 )
 

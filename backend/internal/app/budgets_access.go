@@ -4,8 +4,8 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/access"
-	"mapp/internal/budget"
+	"mapp/internal/modules/access"
+	"mapp/internal/modules/budget"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 )

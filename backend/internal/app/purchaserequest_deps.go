@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"slices"
 
-	"mapp/internal/financials"
-	"mapp/internal/people"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/purchaserequest"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/purchaserequest"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

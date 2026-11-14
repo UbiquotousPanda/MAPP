@@ -1,12 +1,12 @@
-package home_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
-	"mapp/internal/home"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/home/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -18,7 +18,7 @@ func TestHome_PersonalCardsEqualTheirPages_SC002_FR017(t *testing.T) { //nolint:
 	server := apitest.New(t)
 	for _, email := range everyone {
 		client := server.SignIn(t, email)
-		waiting := get[home.WaitingPage](t, client, "/api/v1/home/waiting")
+		waiting := get[core.WaitingPage](t, client, "/api/v1/home/waiting")
 		tab := get[approval.RowPage](t, client, "/api/v1/approvals?tab=waiting", apitest.SkipValidation())
 		if waiting.Total != tab.Total {
 			t.Errorf("%s: %d waiting, Approvals tab %d", email, waiting.Total, tab.Total)
@@ -29,7 +29,7 @@ func TestHome_PersonalCardsEqualTheirPages_SC002_FR017(t *testing.T) { //nolint:
 			}
 		}
 
-		attention := get[home.HomeAttentionPage](t, client, "/api/v1/home/attention")
+		attention := get[core.HomeAttentionPage](t, client, "/api/v1/home/attention")
 		for _, item := range attention.Items {
 			if item.RecordType != "activity" {
 				continue
@@ -59,8 +59,8 @@ func TestHome_MyActivitiesEqualTheirPages_SC002_FR017(t *testing.T) {
 	server := apitest.New(t)
 	for _, email := range everyone {
 		client := server.SignIn(t, email)
-		view := get[home.MyActivitiesView](t, client, "/api/v1/home/my-activities")
-		summary := get[home.SummaryView](t, client, "/api/v1/home/summary?scope=myTeams")
+		view := get[core.MyActivitiesView](t, client, "/api/v1/home/my-activities")
+		summary := get[core.SummaryView](t, client, "/api/v1/home/summary?scope=myTeams")
 		if view.Total != summary.ActivitiesOwned.Count {
 			t.Errorf("%s: My activities %d, card %d", email, view.Total, summary.ActivitiesOwned.Count)
 		}
@@ -88,10 +88,10 @@ func TestHome_DeletedRecordsNeverCount_FR019(t *testing.T) { //nolint:gocyclo //
 	if deleted.Status != http.StatusOK {
 		t.Fatalf("DELETE /api/v1/activities/A-1001 = %d %s", deleted.Status, deleted.Body)
 	}
-	summary := get[home.SummaryView](t, priya, "/api/v1/home/summary?scope=myTeams")
-	view := get[home.MyActivitiesView](t, priya, "/api/v1/home/my-activities")
-	attention := get[home.HomeAttentionPage](t, priya, "/api/v1/home/attention")
-	rows := get[home.PlanPage](t, priya, "/api/v1/home/plans?scope=myTeams")
+	summary := get[core.SummaryView](t, priya, "/api/v1/home/summary?scope=myTeams")
+	view := get[core.MyActivitiesView](t, priya, "/api/v1/home/my-activities")
+	attention := get[core.HomeAttentionPage](t, priya, "/api/v1/home/attention")
+	rows := get[core.PlanPage](t, priya, "/api/v1/home/plans?scope=myTeams")
 
 	// Priya also owns the two activities of the GBP plan P-1004 (016): 65,000.00 GBP = 82,278.48 USD.
 	if summary.ActivitiesOwned.Count != 8 || view.Total != 8 || summary.PlannedCost.PlannedCost != usd(t, "422278.48") {
@@ -103,7 +103,7 @@ func TestHome_DeletedRecordsNeverCount_FR019(t *testing.T) { //nolint:gocyclo //
 			t.Errorf("Needs your attention still lists the deleted Launch film: %+v", item)
 		}
 	}
-	var lubricants *home.PlanRow
+	var lubricants *core.PlanRow
 	for i := range rows.Items {
 		if rows.Items[i].ID == "P-1001" {
 			lubricants = &rows.Items[i]

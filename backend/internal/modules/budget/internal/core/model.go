@@ -1,13 +1,13 @@
 // Package budget holds global budgets and their allocations to market plans (feature 014, BUS.BUD.040): each
 // allocation becomes the plan's budget, set through plans' SetBudgetFromAllocation (D-235, D-236).
-package budget
+package core
 
 import (
-	"mapp/internal/overspend"
-	"mapp/internal/people"
+	"mapp/internal/modules/overspend"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 const (

@@ -1,11 +1,11 @@
-package history_test
+package core_test
 
 import (
 	"net/http"
 	"slices"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -142,9 +142,9 @@ func TestPurge_Contract(t *testing.T) { //nolint:gocyclo // 11: one purge, then 
 
 	assertAnswer(t, response, http.StatusOK,
 		`{"recordType":"sampleFolder","recordTypeLabel":"sample folder","recordId":"SF-1001","recordName":"Ideas"}`)
-	var bin history.BinPage
+	var bin core.BinPage
 	priya.Do(t, http.MethodGet, "/api/v1/recycle-bin", nil).Decode(t, &bin)
-	if bin.Total != 1 || bin.Items[0].ID != "BIN-1001" || bin.Items[0].RestoreState != history.ParentDeletedPermanently {
+	if bin.Total != 1 || bin.Items[0].ID != "BIN-1001" || bin.Items[0].RestoreState != core.ParentDeletedPermanently {
 		t.Errorf("recycle bin = %+v, want only BIN-1001, which can no longer be restored", bin)
 	}
 	page := getLog(t, priya, "?action=deletedPermanently")
@@ -152,8 +152,8 @@ func TestPurge_Contract(t *testing.T) { //nolint:gocyclo // 11: one purge, then 
 		t.Fatalf("%d permanently deleted entries, want 1", page.Total)
 	}
 	got := page.Items[0]
-	if got.Action != history.ActionDeletedPermanently || got.Verb != "permanently deleted" || got.RecordID != "SF-1001" ||
-		got.Details != "with 1 sample note" || got.Actor.Name != "Priya Raman" || got.RecordNow.State != history.RecordDeletedPermanently {
+	if got.Action != core.ActionDeletedPermanently || got.Verb != "permanently deleted" || got.RecordID != "SF-1001" ||
+		got.Details != "with 1 sample note" || got.Actor.Name != "Priya Raman" || got.RecordNow.State != core.RecordDeletedPermanently {
 		t.Errorf("entry = %+v, want Priya permanently deleted SF-1001 with 1 sample note", got)
 	}
 }
@@ -199,7 +199,7 @@ func TestEmptyRecycleBin_Contract(t *testing.T) {
 	for _, item := range got.Items {
 		items = append(items, item.RecordID+" "+item.Details)
 	}
-	if got.Action != history.ActionEmptiedRecycleBin || got.Verb != "emptied the recycle bin" || got.Details != "2 items" ||
+	if got.Action != core.ActionEmptiedRecycleBin || got.Verb != "emptied the recycle bin" || got.Details != "2 items" ||
 		!slices.Equal(items, []string{"SF-1001 with 1 sample note", "SN-1001 "}) {
 		t.Errorf("entry = %+v with items %q, want the emptied bin with SF-1001 and SN-1001", got, items)
 	}

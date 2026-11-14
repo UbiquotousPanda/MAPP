@@ -1,4 +1,4 @@
-package activity_test
+package core_test
 
 import (
 	"context"
@@ -6,10 +6,10 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/plan/plantest"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/plan/plantest"
+	"mapp/internal/modules/settings/settingstest"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings/settingstest"
 )
 
 // setBusinessUnit sets plan P-1001's Business unit (Mobility SO-1001, Lubricants SO-1002), as a plan edit would.
@@ -27,7 +27,7 @@ func (f *fixture) setBusinessUnit(t *testing.T, optionIDs ...string) {
 	})
 }
 
-func fieldsOf(v activity.View) []string {
+func fieldsOf(v core.View) []string {
 	var fields []string
 	for _, p := range v.Readiness.Activity {
 		fields = append(fields, p.Field)
@@ -42,7 +42,7 @@ func TestUpdate_HiddenGroupValuesKept_FR015(t *testing.T) {
 	lubricantsValues := []string{brands, "SA-1023", "SA-1024", "SA-1025", "SA-1026"}
 	f.setBusinessUnit(t, "SO-1001")
 
-	view := f.mustEdit(t, "A-1001", func(u *activity.Update) {
+	view := f.mustEdit(t, "A-1001", func(u *core.Update) {
 		for _, id := range lubricantsValues {
 			delete(u.Attributes, id) // the form does not show the Lubricants group
 		}
@@ -54,7 +54,7 @@ func TestUpdate_HiddenGroupValuesKept_FR015(t *testing.T) {
 			t.Errorf("the hidden value of %s was lost", id)
 		}
 	}
-	f.mustEdit(t, "A-1001", func(u *activity.Update) { delete(u.Attributes, brands) })
+	f.mustEdit(t, "A-1001", func(u *core.Update) { delete(u.Attributes, brands) })
 	if fields := fieldsOf(f.get(t, "A-1001")); slices.Contains(fields, "attributes."+brands) {
 		t.Errorf("hidden Brands counted as needed: %q", fields)
 	}
@@ -64,7 +64,7 @@ func TestUpdate_HiddenGroupValuesKept_FR015(t *testing.T) {
 	if _, kept := view.Attributes[brands]; !kept || slices.Contains(fieldsOf(view), "attributes."+brands) {
 		t.Errorf("Brands after Lubricants is back: kept %v, problems %q", kept, fieldsOf(view))
 	}
-	view = f.mustEdit(t, "A-1001", func(u *activity.Update) { delete(u.Attributes, brands) })
+	view = f.mustEdit(t, "A-1001", func(u *core.Update) { delete(u.Attributes, brands) })
 	if _, kept := view.Attributes[brands]; kept || !slices.Contains(fieldsOf(view), "attributes."+brands) {
 		t.Errorf("a shown value left out is removed and needed again: kept %v, problems %q", kept, fieldsOf(view))
 	}
@@ -75,16 +75,16 @@ func TestUpdate_SplitNot100SavesButIsListed_FR017(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 
-	view := f.mustEdit(t, "A-1001", func(u *activity.Update) {
+	view := f.mustEdit(t, "A-1001", func(u *core.Update) {
 		u.Attributes[countrySplit] = split("SO-1034", "50.00", "SO-1032", "33.33", "SO-1033", "33.34")
 	})
 
-	if !slices.ContainsFunc(view.Readiness.Activity, func(p activity.SubmitProblem) bool {
+	if !slices.ContainsFunc(view.Readiness.Activity, func(p core.SubmitProblem) bool {
 		return p.Field == "attributes."+countrySplit && p.Message == "Country / OU shares add up to 116.67 % — they must add up to 100.00 %"
 	}) {
 		t.Errorf("readiness = %+v", view.Readiness.Activity)
 	}
-	view = f.mustEdit(t, "A-1001", func(u *activity.Update) {
+	view = f.mustEdit(t, "A-1001", func(u *core.Update) {
 		u.Attributes[countrySplit] = split("SO-1034", "33.33", "SO-1032", "33.33", "SO-1033", "33.34")
 	})
 	if slices.Contains(fieldsOf(view), "attributes."+countrySplit) {
@@ -122,7 +122,7 @@ func TestUpdate_TypedGoalsTurnedOff_FR018(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 
-	view := f.mustEdit(t, "A-1009", func(u *activity.Update) { u.Goals.SetLaterStagesMyself = false })
+	view := f.mustEdit(t, "A-1009", func(u *core.Update) { u.Goals.SetLaterStagesMyself = false })
 
 	stored, _ := f.stored(t, "A-1009")
 	if stored.MQL != nil || stored.Revenue != nil || !view.Goals.Calculated || *view.Goals.MQL != 1_800 {

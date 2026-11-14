@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/apibench"
-	"mapp/internal/widgetdata"
 )
 
 // BenchmarkWidgetData measures the dashboard response times on the demo data and on the volume: each of the twelve

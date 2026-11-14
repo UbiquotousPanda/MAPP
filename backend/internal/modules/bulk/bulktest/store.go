@@ -6,7 +6,7 @@ import (
 	"context"
 	"time"
 
-	"mapp/internal/bulk"
+	"mapp/internal/modules/bulk"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/fake"
 )

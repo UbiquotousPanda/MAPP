@@ -1,21 +1,29 @@
-package auth
+package core
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/platform/actor"
 	"mapp/internal/platform/web"
 )
 
-type Handler struct {
-	service *Service
-	people  *people.Service
+// Directory is what sign-in needs of the people module: who can sign in, and who is signed in.
+type Directory interface {
+	ActivePeople(ctx context.Context) ([]people.DemoPerson, error)
+	CurrentUser(ctx context.Context, a actor.Actor) (people.CurrentUser, error)
 }
 
-func NewHandler(s *Service, peopleService *people.Service) *Handler {
-	return &Handler{service: s, people: peopleService}
+type Handler struct {
+	service *Service
+	people  Directory
+}
+
+func NewHandler(s *Service, directory Directory) *Handler {
+	return &Handler{service: s, people: directory}
 }
 
 // RegisterRoutes leaves out demo-people and sign-in when demo sign-in is off, so they answer 404.

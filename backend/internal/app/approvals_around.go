@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"slices"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 type place struct {

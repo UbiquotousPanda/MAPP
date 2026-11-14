@@ -1,4 +1,4 @@
-package approval
+package core
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"mapp/internal/history"
-	"mapp/internal/people"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/errs"
@@ -28,7 +28,7 @@ type Service struct {
 	activities   Activities
 	purchases    PurchaseRequests // nil until feature 032 is connected
 	ids          *ids.Generator
-	history      *history.Service
+	history      history.Recorder
 	now          clock.Clock
 	displayRates DisplayRates // nil shows USD
 	access       Access

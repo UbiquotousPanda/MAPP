@@ -3,10 +3,10 @@ package app
 import (
 	"context"
 
-	"mapp/internal/budget"
-	"mapp/internal/financials"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/actor"
-	"mapp/internal/widgetdata"
 )
 
 var transactionWords = map[financials.Type]string{ //nolint:gochecknoglobals // the source's type names

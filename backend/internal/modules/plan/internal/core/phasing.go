@@ -1,11 +1,11 @@
-package plan
+package core
 
 import (
 	"context"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/actor"
-	"mapp/internal/rollup"
 )
 
 // SetBudgetPhasing saves the phasing of the plan id's budget (016 FR-020 – FR-023, D-265): Not phased,

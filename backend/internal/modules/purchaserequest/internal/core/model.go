@@ -1,16 +1,16 @@
 // Package purchaserequest holds purchase requests (feature 032): requests raised from line items and reserved
 // on them, approved through the approval engine, routed to the requisitioner and answered by GSAP (033).
-package purchaserequest
+package core
 
 import (
 	"bytes"
 	"strings"
 	"time"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 type Status string

@@ -1,4 +1,4 @@
-package approval
+package core
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"slices"
 
+	"mapp/internal/modules/approval/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/record"
 )
@@ -31,7 +31,7 @@ func (s *PostgresStore) RoundsOf(ctx context.Context, subjectID string) ([]Round
 }
 
 func (s *PostgresStore) RoundsOfSubjects(ctx context.Context, subjectIDs []string) ([]Round, error) {
-	rows, err := s.db.Queries(ctx).ListRoundsOfSubjects(ctx, subjectIDs)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListRoundsOfSubjects(ctx, subjectIDs)
 	if err != nil {
 		return nil, fmt.Errorf("select approval rounds of records: %w", err)
 	}
@@ -42,7 +42,7 @@ func (s *PostgresStore) RoundsOfSubjects(ctx context.Context, subjectIDs []strin
 // it puts back.
 func (s *PostgresStore) OpenRounds(ctx context.Context) ([]Round, error) {
 	return memo.Get(ctx, keptArea+":openRounds", func(ctx context.Context) ([]Round, error) {
-		rows, err := s.db.Queries(ctx).ListOpenRounds(ctx)
+		rows, err := sqlcdb.New(s.db.Conn(ctx)).ListOpenRounds(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("select open approval rounds: %w", err)
 		}
@@ -53,7 +53,7 @@ func (s *PostgresStore) OpenRounds(ctx context.Context) ([]Round, error) {
 // RoundsInScope keeps the rounds of the activities the person acting may see; a round of an activity in the
 // recycle bin is in no scope.
 func (s *PostgresStore) RoundsInScope(ctx context.Context, scope authz.Scope) ([]Round, error) {
-	rows, err := s.db.Queries(ctx).ListRoundsInScope(ctx, sqlcdb.ListRoundsInScopeParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListRoundsInScope(ctx, sqlcdb.ListRoundsInScopeParams{
 		SeesEverything: scope.Everything, ViewerID: scope.PersonID, ViewsPlans: scope.Holds,
 		ViewerTeamIds: scope.TeamIDs,
 	})
@@ -108,22 +108,22 @@ func (s *PostgresStore) PutAction(ctx context.Context, a Action) error {
 }
 
 func (s *PostgresStore) ListActions(ctx context.Context) ([]Action, error) {
-	rows, err := s.db.Queries(ctx).ListActions(ctx, nil)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListActions(ctx, nil)
 	return actionsFromRows(rows, err)
 }
 
 func (s *PostgresStore) ActionsOf(ctx context.Context, subjectID string) ([]Action, error) {
-	rows, err := s.db.Queries(ctx).ListActions(ctx, &subjectID)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListActions(ctx, &subjectID)
 	return actionsFromRows(rows, err)
 }
 
 func (s *PostgresStore) ActionsOfSubjects(ctx context.Context, subjectIDs []string) ([]Action, error) {
-	rows, err := s.db.Queries(ctx).ListActionsOfSubjects(ctx, subjectIDs)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListActionsOfSubjects(ctx, subjectIDs)
 	return actionsFromRows(rows, err)
 }
 
 func (s *PostgresStore) ActionsInScope(ctx context.Context, scope authz.Scope) ([]Action, error) {
-	rows, err := s.db.Queries(ctx).ListActionsInScope(ctx, sqlcdb.ListActionsInScopeParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListActionsInScope(ctx, sqlcdb.ListActionsInScopeParams{
 		SeesEverything: scope.Everything, ViewerID: scope.PersonID, ViewsPlans: scope.Holds,
 		ViewerTeamIds: scope.TeamIDs,
 	})
@@ -131,7 +131,7 @@ func (s *PostgresStore) ActionsInScope(ctx context.Context, scope authz.Scope) (
 }
 
 func (s *PostgresStore) rounds(ctx context.Context, filter sqlcdb.ListRoundsParams) ([]Round, error) {
-	rows, err := s.db.Queries(ctx).ListRounds(ctx, filter)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListRounds(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("select approval rounds: %w", err)
 	}

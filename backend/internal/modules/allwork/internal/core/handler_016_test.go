@@ -1,4 +1,4 @@
-package allwork_test
+package core_test
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -14,13 +14,13 @@ import (
 // UK & Ireland" (Cross-market, in GBP at 0.79 per USD, budget 600,000.00 GBP phased evenly, 65,000.00 GBP planned
 // = 82,278.48 USD).
 
-func allWorkOf(t *testing.T, client *apitest.Client, path string) allwork.Result {
+func allWorkOf(t *testing.T, client *apitest.Client, path string) core.Result {
 	t.Helper()
 	response := client.Do(t, http.MethodGet, path, nil)
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET %s = %d %s", path, response.Status, response.Body)
 	}
-	var r allwork.Result
+	var r core.Result
 	response.Decode(t, &r)
 	return r
 }
@@ -35,12 +35,12 @@ func TestGetAllWork_RangeYearlyCompare_Contract_FR034(t *testing.T) {
 	gbp := allWorkOf(t, priya, "/api/v1/all-work?yearFrom=2026&yearTo=2027&planCurrency=GBP&planType=crossMarket")
 	tooLong := priya.Do(t, http.MethodGet, "/api/v1/all-work?yearFrom=2026&yearTo=2031", nil)
 
-	years, uk := map[string]int{}, allwork.Row{}
+	years, uk := map[string]int{}, core.Row{}
 	for _, row := range r.Rows {
-		if row.Level == allwork.LevelPlan && row.Year != nil {
+		if row.Level == core.LevelPlan && row.Year != nil {
 			years[row.RecordID] = *row.Year
 		}
-		if row.RecordID == "P-1004" && row.Level == allwork.LevelPlan {
+		if row.RecordID == "P-1004" && row.Level == core.LevelPlan {
 			uk = row
 		}
 	}
@@ -51,7 +51,7 @@ func TestGetAllWork_RangeYearlyCompare_Contract_FR034(t *testing.T) {
 	for _, p := range r.Periods {
 		keys = append(keys, p.Key)
 	}
-	if !slices.Equal(keys, []string{"2026", "2027"}) || len(quarters) < 4 || quarters[0] != (allwork.Period{Key: "Q1-2026", Label: "Q1"}) {
+	if !slices.Equal(keys, []string{"2026", "2027"}) || len(quarters) < 4 || quarters[0] != (core.Period{Key: "Q1-2026", Label: "Q1"}) {
 		t.Errorf("periods = %q, want 2026 and 2027; by quarter %+v, want Q1-2026 labelled Q1 first", keys, quarters)
 	}
 	if uk.PlanType != "crossMarket" || len(uk.PhasedBudget) != 2 || uk.PhasedBudget[0] != nil || uk.PhasedBudget[1] == nil ||
@@ -60,7 +60,7 @@ func TestGetAllWork_RangeYearlyCompare_Contract_FR034(t *testing.T) {
 	}
 	var gbpPlans []string
 	for _, row := range gbp.Rows {
-		if row.Level == allwork.LevelPlan {
+		if row.Level == core.LevelPlan {
 			gbpPlans = append(gbpPlans, row.RecordID)
 		}
 	}
@@ -85,7 +85,7 @@ func TestGetBreakdown_Contract_FR040(t *testing.T) {
 	if byYear.Status != http.StatusOK {
 		t.Fatalf("breakdown by year = %d %s", byYear.Status, byYear.Body)
 	}
-	var b allwork.Breakdown
+	var b core.Breakdown
 	byYear.Decode(t, &b)
 	var labels []string
 	for _, g := range b.Groups {
@@ -97,7 +97,7 @@ func TestGetBreakdown_Contract_FR040(t *testing.T) {
 		t.Errorf("groups %q, total %v (card %v), budget %v, 2027 by currency %+v", labels, b.Total.PlannedCost, card.Summary.PlannedCost,
 			b.Total.Budget, b.Groups[1].Children)
 	}
-	var plan allwork.Breakdown
+	var plan core.Breakdown
 	inGBP.Decode(t, &plan)
 	if inGBP.Status != http.StatusOK || plan.Currency != "GBP" || len(plan.Groups) != 1 || plan.Groups[0].Label != "Cross-market" ||
 		plan.Groups[0].PlannedCost.Format() != "65,000.00 GBP" || plan.Groups[0].Budget == nil || plan.Groups[0].Budget.Format() != "600,000.00 GBP" {
@@ -142,10 +142,10 @@ func TestGetOptions_RangeTypesCurrenciesAttributes_Contract_FR037_FR039(t *testi
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET options = %d %s", response.Status, response.Body)
 	}
-	var o, first allwork.Options
+	var o, first core.Options
 	response.Decode(t, &o)
 	oneYear.Decode(t, &first)
-	plans := map[string]allwork.PlanOption{}
+	plans := map[string]core.PlanOption{}
 	for _, p := range o.Plans {
 		plans[p.ID] = p
 	}
@@ -160,8 +160,8 @@ func TestGetOptions_RangeTypesCurrenciesAttributes_Contract_FR037_FR039(t *testi
 	if first.YearFrom != 2026 || first.YearTo != 2026 || !slices.Equal(first.PlanCurrencies, []string{"USD"}) || len(first.Plans) != 1 {
 		t.Errorf("2026 alone: range %d–%d, currencies %q, %d plans", first.YearFrom, first.YearTo, first.PlanCurrencies, len(first.Plans))
 	}
-	var yesNo *allwork.FilterableAttribute
-	levels := []allwork.Level{}
+	var yesNo *core.FilterableAttribute
+	levels := []core.Level{}
 	for i, a := range o.Attributes {
 		if len(levels) == 0 || levels[len(levels)-1] != a.Level {
 			levels = append(levels, a.Level)
@@ -173,7 +173,7 @@ func TestGetOptions_RangeTypesCurrenciesAttributes_Contract_FR037_FR039(t *testi
 			t.Errorf("attribute %s %q offers no values", a.ID, a.Label)
 		}
 	}
-	if len(o.Attributes) == 0 || levels[0] != allwork.LevelPlan || slices.Index(levels, allwork.LevelCampaign) < 0 {
+	if len(o.Attributes) == 0 || levels[0] != core.LevelPlan || slices.Index(levels, core.LevelCampaign) < 0 {
 		t.Errorf("attribute levels %q (%d attributes)", levels, len(o.Attributes))
 	}
 	if yesNo == nil || len(yesNo.Values) != 2 || yesNo.Values[0].Label != "Yes" || yesNo.Values[1].Label != "No" {

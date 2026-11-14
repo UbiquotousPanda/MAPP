@@ -1,9 +1,9 @@
-package settings
+package core
 
 import (
 	"encoding/json"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
 )

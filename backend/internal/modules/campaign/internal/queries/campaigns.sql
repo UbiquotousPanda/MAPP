@@ -79,3 +79,7 @@ VALUES ($1, $2, $3);
 -- name: DeleteCampaigns :exec
 DELETE FROM campaigns
 WHERE id = ANY (sqlc.arg(ids)::text[]);
+
+-- name: CountCampaignsOwnedBy :one
+SELECT count(*)::integer FROM campaigns
+WHERE owner_id = sqlc.arg(person_id)::text;

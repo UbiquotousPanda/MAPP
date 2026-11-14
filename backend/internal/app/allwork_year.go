@@ -4,12 +4,12 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/allwork"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // yearReader collects the nodes of one year.

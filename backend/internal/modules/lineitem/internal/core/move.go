@@ -1,11 +1,11 @@
-package lineitem
+package core
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"

@@ -1,4 +1,4 @@
-package auth
+package core
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/errs"

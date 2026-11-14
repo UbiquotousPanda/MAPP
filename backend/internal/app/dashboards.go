@@ -3,13 +3,13 @@ package app
 import (
 	"context"
 
-	"mapp/internal/allwork"
-	"mapp/internal/dashboard"
-	"mapp/internal/people"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/dashboard"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

@@ -1,12 +1,12 @@
-package overspend_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
-	"mapp/internal/overspend"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/overspend/internal/core"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )
@@ -23,12 +23,12 @@ func TestCampaignRefuse_CreateActivityOverTheBudget_Contract_037_US1(t *testing.
 		helixForm(set.Version, set.Budget.Amount.String(), "warn")), http.StatusOK)
 	afterWarn := createActivity(t, priya, printOutdoor, newActivity("Over on Warn", "5000.00"))
 
-	if set.Overspend.Mode != overspend.Refuse || !set.Overspend.CanChange.Available {
+	if set.Overspend.Mode != core.Refuse || !set.Overspend.CanChange.Available {
 		t.Errorf("037 FR-001 FR-002 set = %+v, want Refuse that Priya may change", set.Overspend)
 	}
 	created(t, within)
 	refusedNaming(t, over, "the planned cost of campaign 'Helix launch' would be ")
-	if warn.Overspend.Mode != overspend.Warn {
+	if warn.Overspend.Mode != core.Warn {
 		t.Errorf("037 FR-001 back to Warn = %+v", warn.Overspend)
 	}
 	created(t, afterWarn)
@@ -74,7 +74,7 @@ func TestOverspendSetting_OnlyOwnerOrBudgetManager_Contract_037_FR003(t *testing
 		rimula.Overspend.CanChange.Available {
 		t.Errorf("037 FR-003 Priya: %+v, control %+v", e, rimula.Overspend)
 	}
-	if saved := decoded[campaign.CampaignView](t, allowed, http.StatusOK); saved.Overspend.Mode != overspend.Refuse {
+	if saved := decoded[campaign.CampaignView](t, allowed, http.StatusOK); saved.Overspend.Mode != core.Refuse {
 		t.Errorf("037 FR-003 Alex manages budgets: %+v", saved.Overspend)
 	}
 }

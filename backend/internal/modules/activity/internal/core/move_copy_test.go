@@ -1,4 +1,4 @@
-package activity_test
+package core_test
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/history"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/record"
 )
@@ -28,7 +28,7 @@ const (
 )
 
 // destinationText writes a destination as "<initiative>: move <problem or ok>, copy <problem or ok>".
-func destinationText(d activity.Destination) string {
+func destinationText(d core.Destination) string {
 	problem := func(p *string) string {
 		if p == nil {
 			return "ok"
@@ -44,7 +44,7 @@ func destinationText(d activity.Destination) string {
 func TestDestinations_ReasonsPerTarget_FR029_FR030(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	f.create(t, printAndOutdoor, activity.Input{Name: "LAUNCH film", ActivityTypeID: eventType})
+	f.create(t, printAndOutdoor, core.Input{Name: "LAUNCH film", ActivityTypeID: eventType})
 
 	destinations, err := f.service.Destinations(t.Context(), priya, launchFilm)
 
@@ -79,9 +79,9 @@ func TestDestinations_ReasonsPerTarget_FR029_FR030(t *testing.T) {
 func TestMove_Refusals_FR029(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	f.create(t, printAndOutdoor, activity.Input{Name: "LAUNCH film", ActivityTypeID: eventType})
+	f.create(t, printAndOutdoor, core.Input{Name: "LAUNCH film", ActivityTypeID: eventType})
 	move := func(initiativeID string, version *int) error {
-		_, err := f.service.Move(t.Context(), priya, launchFilm, activity.MoveInput{InitiativeID: initiativeID, Version: version})
+		_, err := f.service.Move(t.Context(), priya, launchFilm, core.MoveInput{InitiativeID: initiativeID, Version: version})
 		return err
 	}
 	one := 1
@@ -99,8 +99,8 @@ func TestMove_Refusals_FR029(t *testing.T) {
 	}
 
 	f.clock.Advance(time.Hour)
-	f.mustEdit(t, launchFilm, func(u *activity.Update) { u.Description = "Edited." })
-	_, err := f.service.Move(t.Context(), daniel, launchFilm, activity.MoveInput{InitiativeID: events, Version: &one})
+	f.mustEdit(t, launchFilm, func(u *core.Update) { u.Description = "Edited." })
+	_, err := f.service.Move(t.Context(), daniel, launchFilm, core.MoveInput{InitiativeID: events, Version: &one})
 	assertError(t, err, errs.VersionConflict("activity", "Priya Raman", start.Add(time.Hour)))
 }
 
@@ -113,7 +113,7 @@ func TestMove_KeepsStatusAndLogsParent_FR029(t *testing.T) {
 	f.clock.Advance(time.Hour)
 	version := before.Version
 
-	moved, err := f.service.Move(t.Context(), daniel, socialAlwaysOn, activity.MoveInput{InitiativeID: printAndOutdoor, Version: &version})
+	moved, err := f.service.Move(t.Context(), daniel, socialAlwaysOn, core.MoveInput{InitiativeID: printAndOutdoor, Version: &version})
 
 	if err != nil {
 		t.Fatalf("Move: %v", err)
@@ -124,7 +124,7 @@ func TestMove_KeepsStatusAndLogsParent_FR029(t *testing.T) {
 	if !reflect.DeepEqual(after, want) || after.Version != before.Version+1 || after.UpdatedBy != daniel {
 		t.Errorf("stored after the move =\n%+v\nwant every value of\n%+v\nwith a new version by Daniel", after, want)
 	}
-	if moved.Status != activity.StatusApproved || moved.Initiative.ID != printAndOutdoor || len(f.hooks.restarted) != 0 {
+	if moved.Status != core.StatusApproved || moved.Initiative.ID != printAndOutdoor || len(f.hooks.restarted) != 0 {
 		t.Errorf("view = %s in %s, restarts %v; want Approved in Print & outdoor, no restart", moved.Status, moved.Initiative.ID, f.hooks.restarted)
 	}
 	entry := f.entries(t)[0]
@@ -152,7 +152,7 @@ func TestCopy_Names_FR030(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	copyInto := func(initiativeID string) string {
-		view, err := f.service.Copy(t.Context(), priya, launchFilm, activity.CopyInput{InitiativeID: initiativeID})
+		view, err := f.service.Copy(t.Context(), priya, launchFilm, core.CopyInput{InitiativeID: initiativeID})
 		if err != nil {
 			t.Fatalf("Copy into %s: %v", initiativeID, err)
 		}
@@ -173,11 +173,11 @@ func TestCopy_CreatedWithLineItems_FR030(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	registerLineItemKind(t, f.history)
-	f.lineItems.facts[socialAlwaysOn] = activity.LineItemFacts{Count: 2}
+	f.lineItems.facts[socialAlwaysOn] = core.LineItemFacts{Count: 2}
 	original, _ := f.stored(t, socialAlwaysOn)
 	f.clock.Advance(time.Hour)
 
-	copied, err := f.service.Copy(t.Context(), daniel, socialAlwaysOn, activity.CopyInput{InitiativeID: printAndOutdoor})
+	copied, err := f.service.Copy(t.Context(), daniel, socialAlwaysOn, core.CopyInput{InitiativeID: printAndOutdoor})
 
 	if err != nil {
 		t.Fatalf("Copy: %v", err)
@@ -185,14 +185,14 @@ func TestCopy_CreatedWithLineItems_FR030(t *testing.T) {
 	stored, _ := f.stored(t, copied.ID)
 	want := original
 	want.ID, want.InitiativeID, want.Name = copied.ID, printAndOutdoor, "Social always-on (copy)"
-	want.Status, want.Meta = activity.StatusCreated, record.NewMeta(daniel, start.Add(time.Hour))
+	want.Status, want.Meta = core.StatusCreated, record.NewMeta(daniel, start.Add(time.Hour))
 	if copied.ID == socialAlwaysOn || !reflect.DeepEqual(stored, want) {
 		t.Errorf("stored copy =\n%+v\nwant\n%+v", stored, want)
 	}
 	if want := []string{socialAlwaysOn + " → " + copied.ID + " +0"}; !reflect.DeepEqual(f.lineItems.copies, want) {
 		t.Errorf("line-item copies = %q, want %q", f.lineItems.copies, want)
 	}
-	if source, _ := f.stored(t, socialAlwaysOn); source.Status != activity.StatusApproved {
+	if source, _ := f.stored(t, socialAlwaysOn); source.Status != core.StatusApproved {
 		t.Errorf("original is %s, want it still Approved", source.Status)
 	}
 	entry := f.entries(t)[0]
@@ -208,14 +208,14 @@ func TestCopy_TargetDatesMustFit_FR030(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 
-	_, dates := f.service.Copy(t.Context(), priya, launchFilm, activity.CopyInput{InitiativeID: retailEvents})
-	_, otherPlan := f.service.Copy(t.Context(), priya, launchFilm, activity.CopyInput{InitiativeID: stationPromo})
-	_, gone := f.service.Copy(t.Context(), priya, "A-9999", activity.CopyInput{InitiativeID: digitalAndSocial})
+	_, dates := f.service.Copy(t.Context(), priya, launchFilm, core.CopyInput{InitiativeID: retailEvents})
+	_, otherPlan := f.service.Copy(t.Context(), priya, launchFilm, core.CopyInput{InitiativeID: stationPromo})
+	_, gone := f.service.Copy(t.Context(), priya, "A-9999", core.CopyInput{InitiativeID: digitalAndSocial})
 
 	assertError(t, dates, problems("initiativeId", launchFilmDates))
 	assertError(t, otherPlan, problems("initiativeId", "Choose another initiative of this plan."))
 	assertError(t, gone, errs.NotFound("This activity no longer exists — someone may have deleted it."))
-	if copied, err := f.service.Copy(t.Context(), priya, launchFilm, activity.CopyInput{InitiativeID: events}); err != nil ||
+	if copied, err := f.service.Copy(t.Context(), priya, launchFilm, core.CopyInput{InitiativeID: events}); err != nil ||
 		copied.Initiative.ID != events {
 		t.Errorf("Copy into Events = %+v, %v; want the copy there", copied.Initiative, err)
 	}

@@ -1,4 +1,4 @@
-package purchaserequest
+package core
 
 import (
 	"context"

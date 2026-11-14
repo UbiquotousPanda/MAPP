@@ -1,4 +1,4 @@
-package simulatedgsap
+package core
 
 import (
 	"net/http"

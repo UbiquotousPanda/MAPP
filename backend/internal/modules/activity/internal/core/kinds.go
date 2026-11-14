@@ -1,4 +1,4 @@
-package activity
+package core
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"

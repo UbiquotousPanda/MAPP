@@ -1,4 +1,40 @@
 version: "2"
+# One entry per module (ADR-0022): every entry reads the whole schema, so types and foreign keys resolve,
+# and generates only that module's queries, into a package under its internal/ that no other module can import.
+overrides:
+  go:
+    overrides:
+      - db_type: timestamptz
+        go_type: time.Time
+      - db_type: timestamptz
+        nullable: true
+        go_type:
+          type: time.Time
+          pointer: true
+      - db_type: date
+        go_type: time.Time
+      - db_type: date
+        nullable: true
+        go_type:
+          type: time.Time
+          pointer: true
+      - db_type: pg_catalog.int4
+        go_type: int
+      - db_type: pg_catalog.int4
+        nullable: true
+        go_type:
+          type: int
+          pointer: true
+      - db_type: pg_catalog.int8
+        nullable: true
+        go_type:
+          type: int64
+          pointer: true
+      - db_type: text
+        nullable: true
+        go_type:
+          type: string
+          pointer: true
 sql:
   - engine: postgresql
     schema: internal/platform/database/migrations
@@ -9,35 +45,214 @@ sql:
         out: internal/platform/database/sqlcdb
         sql_package: pgx/v5
         emit_empty_slices: true
-        overrides:
-          - db_type: timestamptz
-            go_type: time.Time
-          - db_type: timestamptz
-            nullable: true
-            go_type:
-              type: time.Time
-              pointer: true
-          - db_type: date
-            go_type: time.Time
-          - db_type: date
-            nullable: true
-            go_type:
-              type: time.Time
-              pointer: true
-          - db_type: pg_catalog.int4
-            go_type: int
-          - db_type: pg_catalog.int4
-            nullable: true
-            go_type:
-              type: int
-              pointer: true
-          - db_type: pg_catalog.int8
-            nullable: true
-            go_type:
-              type: int64
-              pointer: true
-          - db_type: text
-            nullable: true
-            go_type:
-              type: string
-              pointer: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/access/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/access/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/activity/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/activity/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/allwork/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/allwork/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/approval/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/approval/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/auth/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/auth/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/budget/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/budget/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/bulk/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/bulk/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/campaign/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/campaign/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/customdashboard/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/customdashboard/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/dataset/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/dataset/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/financials/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/financials/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/history/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/history/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/lineitem/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/lineitem/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/overspend/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/overspend/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/people/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/people/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/plan/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/plan/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/purchaserequest/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/purchaserequest/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/sample/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/sample/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/settings/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/settings/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/swbs/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/swbs/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true
+  - engine: postgresql
+    schema: internal/platform/database/migrations
+    queries: internal/modules/workbook/internal/queries
+    gen:
+      go:
+        package: sqlcdb
+        out: internal/modules/workbook/internal/sqlcdb
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        omit_unused_structs: true

@@ -3,7 +3,7 @@ package settingstest
 import (
 	"context"
 
-	"mapp/internal/settings"
+	"mapp/internal/modules/settings"
 )
 
 func (s Store) GetAttribute(_ context.Context, id string) (settings.Attribute, bool, error) {

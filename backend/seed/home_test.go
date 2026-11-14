@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/home"
+	"mapp/internal/modules/home"
 	"mapp/internal/platform/apitest"
 )
 

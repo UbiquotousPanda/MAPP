@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"cmp"
@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
-	"mapp/internal/settings"
 )
 
 // levelBelowPlan is a level whose Shell attributes move with a campaign, with its name in the attribute

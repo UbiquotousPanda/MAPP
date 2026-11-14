@@ -1,4 +1,4 @@
-package lineitem
+package core
 
 import (
 	"testing"

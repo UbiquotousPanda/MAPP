@@ -6,9 +6,9 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/stores"

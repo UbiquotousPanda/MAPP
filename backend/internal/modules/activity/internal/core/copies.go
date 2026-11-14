@@ -1,15 +1,15 @@
-package activity
+package core
 
 import (
 	"context"
 	"maps"
 	"slices"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 type CopyCounts struct {

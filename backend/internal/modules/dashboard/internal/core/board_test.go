@@ -1,4 +1,4 @@
-package dashboard
+package core
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/allwork"
-	"mapp/internal/financials"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/financials"
 	"mapp/internal/platform/money"
 )
 

@@ -7,8 +7,8 @@ import (
 	"slices"
 	"time"
 
-	"mapp/internal/history"
-	"mapp/internal/plan"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/money"
 )
 

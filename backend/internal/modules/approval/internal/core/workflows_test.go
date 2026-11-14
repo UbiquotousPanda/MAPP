@@ -1,4 +1,4 @@
-package approval
+package core
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
-	"mapp/internal/people/peopletest"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people/peopletest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/record"

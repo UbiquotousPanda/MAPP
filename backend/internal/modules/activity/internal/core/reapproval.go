@@ -1,11 +1,11 @@
-package activity
+package core
 
 import (
 	"context"
 	"slices"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 )
 

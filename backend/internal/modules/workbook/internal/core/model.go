@@ -1,6 +1,6 @@
-// Package workbook is the plan workbook of feature 012: one .xlsx layout per plan, downloaded empty or with the
+// Package core is the plan workbook of feature 012: one .xlsx layout per plan, downloaded empty or with the
 // plan's records, checked and imported row by row through the owning areas, and undone.
-package workbook
+package core
 
 import (
 	"encoding/json"

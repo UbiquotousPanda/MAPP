@@ -1,15 +1,15 @@
-// Package lineitem holds line items (feature 007): the costs of an activity, each in its own currency, spread
+// Package core holds line items (feature 007): the costs of an activity, each in its own currency, spread
 // over the months, coded to finance, and the SWBS code GSAP returns for them (feature 030).
-package lineitem
+package core
 
 import (
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 type SpreadMethod string

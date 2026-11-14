@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/access"
-	"mapp/internal/plan"
+	"mapp/internal/modules/access"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/authz"
 	"mapp/internal/stores"
 )

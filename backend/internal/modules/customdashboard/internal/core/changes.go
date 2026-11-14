@@ -1,4 +1,4 @@
-package customdashboard
+package core
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 type loggedFields struct {

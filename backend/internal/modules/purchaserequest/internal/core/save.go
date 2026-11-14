@@ -1,4 +1,4 @@
-package purchaserequest
+package core
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 )
 
 // Save replaces the purchase request's header and lines: Save on Created and Declined, Save and

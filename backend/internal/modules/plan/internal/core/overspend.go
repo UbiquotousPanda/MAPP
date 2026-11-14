@@ -1,11 +1,11 @@
-package plan
+package core
 
 import (
 	"cmp"
 	"context"
 	"fmt"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/overspend"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 )

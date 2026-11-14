@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/allwork"
-	"mapp/internal/allwork/allworktest"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/allwork/allworktest"
 )
 
 // Priya Raman has two saved views, "Lubricants by month" (Budget & cost of FY2026 Lubricants Europe, by

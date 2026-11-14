@@ -1,4 +1,4 @@
-package dataset_test
+package core_test
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/dataset"
-	"mapp/internal/people"
+	"mapp/internal/modules/dataset/internal/core"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
@@ -23,25 +23,25 @@ const (
 )
 
 // scopeDB holds two datasets of the owner, one shared with the member's team, and a third person in no team.
-func scopeDB(t *testing.T) (*dataset.PostgresStore, *database.DB) {
+func scopeDB(t *testing.T) (*core.PostgresStore, *database.DB) {
 	t.Helper()
 	db := dbtest.NewDB(t)
 	meta := record.NewMeta(actor.System, time.Date(2026, 3, 12, 9, 0, 0, 0, time.UTC))
 	persons := people.NewPostgresStore(db)
-	store := dataset.NewPostgresStore(db)
+	store := core.NewPostgresStore(db)
 	eur := "EUR"
-	columns := []dataset.Column{{Key: "c1", Label: "Event", Kind: dataset.KindText},
-		{Key: "c2", Position: 1, Label: "Cost", Kind: dataset.KindMoney, Currency: &eur}}
-	rows := []dataset.Row{{dataset.TextCell("Expo"), dataset.MinorCell(1850000)}, {dataset.TextCell("Fair"), {Empty: true}}}
+	columns := []core.Column{{Key: "c1", Label: "Event", Kind: core.KindText},
+		{Key: "c2", Position: 1, Label: "Cost", Kind: core.KindMoney, Currency: &eur}}
+	rows := []core.Row{{core.TextCell("Expo"), core.MinorCell(1850000)}, {core.TextCell("Fair"), {Empty: true}}}
 	err := db.Write(t.Context(), func(ctx context.Context) error {
 		return firstError(
 			func() error { return putPeople(ctx, persons, meta) },
 			func() error {
-				return store.Insert(ctx, dataset.Dataset{ID: shared, Name: "Shared", OwnerID: owner, FileName: "a.csv",
+				return store.Insert(ctx, core.Dataset{ID: shared, Name: "Shared", OwnerID: owner, FileName: "a.csv",
 					RowCount: 2, Columns: columns, SharedWith: []string{"T-1"}, Meta: meta}, rows)
 			},
 			func() error {
-				return store.Insert(ctx, dataset.Dataset{ID: private, Name: "Private", OwnerID: owner, FileName: "b.csv",
+				return store.Insert(ctx, core.Dataset{ID: private, Name: "Private", OwnerID: owner, FileName: "b.csv",
 					Columns: columns, SharedWith: []string{}, Meta: meta}, nil)
 			},
 		)
@@ -133,17 +133,17 @@ func TestPostgresStoreRowsAndColumns_AsStored_FR042(t *testing.T) {
 	if err != nil {
 		t.Fatalf("RowsPage: %v", err)
 	}
-	swapped := []dataset.Column{d.Columns[0], d.Columns[1]}
+	swapped := []core.Column{d.Columns[0], d.Columns[1]}
 	swapped[0].Label, swapped[1].Label = "Cost", "Event"
 	swapErr := store.UpdateLabels(t.Context(), shared, swapped)
 	ownerID, _, _ := store.OwnerOf(t.Context(), shared)
 
 	same(t, "dataset", []any{2, "EUR", []string{"T-1"}}, []any{len(d.Columns), *d.Columns[1].Currency, d.SharedWith})
-	same(t, "page", []dataset.Row{{dataset.TextCell("Fair"), {Empty: true}}}, page)
+	same(t, "page", []core.Row{{core.TextCell("Fair"), {Empty: true}}}, page)
 	same(t, "swap and owner", []any{true, owner}, []any{swapErr == nil, ownerID})
 }
 
-var _ dataset.Store = (*dataset.PostgresStore)(nil)
+var _ core.Store = (*core.PostgresStore)(nil)
 
 func TestPostgresStore_SharesLeaveWithADeletedTeam_D379(t *testing.T) {
 	t.Parallel()

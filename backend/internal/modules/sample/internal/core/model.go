@@ -1,9 +1,9 @@
-// Package samples holds the developer sample records: sample folders and the sample notes inside them
+// Package core holds the developer sample records: sample folders and the sample notes inside them
 // (data model §8–§9, decision D-036). They are the "simple demonstration record type provided for testing"
 // of User Story 5: a test bench for the shared create, edit, delete, Undo, restore and activity-log
 // behaviour, used exactly as plans and activities will use it. They exist only in the local and
 // development environments.
-package sample
+package core
 
 import "mapp/internal/platform/record"
 

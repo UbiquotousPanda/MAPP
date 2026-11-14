@@ -1,18 +1,18 @@
-package activity
+package core
 
 import (
 	"context"
 	"fmt"
 
+	"mapp/internal/modules/activity/internal/sqlcdb"
 	"mapp/internal/platform/authz"
-	"mapp/internal/platform/database/sqlcdb"
 )
 
 func (s *PostgresStore) ListInScopeOf(ctx context.Context, scope authz.Scope, ids []string) ([]Activity, error) {
 	if len(ids) == 0 {
 		return []Activity{}, nil
 	}
-	rows, err := s.db.Queries(ctx).ListActivitiesInScopeOf(ctx, sqlcdb.ListActivitiesInScopeOfParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListActivitiesInScopeOf(ctx, sqlcdb.ListActivitiesInScopeOfParams{
 		Ids: ids, SeesEverything: scope.Everything, ViewerID: scope.PersonID, ViewsPlans: scope.Holds,
 		ViewerTeamIds: scope.TeamIDs,
 	})
@@ -28,7 +28,7 @@ func (s *PostgresStore) ListByIDs(ctx context.Context, ids []string) ([]Activity
 }
 
 func (s *PostgresStore) WorkflowIDs(ctx context.Context) (map[string]string, error) {
-	rows, err := s.db.Queries(ctx).ListActivityWorkflows(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListActivityWorkflows(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select activity workflows: %w", err)
 	}

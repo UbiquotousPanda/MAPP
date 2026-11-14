@@ -1,10 +1,10 @@
-package people
+package core
 
 import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // personSnapshot reads the person id as history keeps it.

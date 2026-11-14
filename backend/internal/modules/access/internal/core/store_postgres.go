@@ -1,4 +1,4 @@
-package access
+package core
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"mapp/internal/modules/access/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/record"
 )
@@ -110,7 +110,7 @@ func (s *PostgresStore) DeleteAssignment(ctx context.Context, id string) error {
 
 func (s *PostgresStore) GetRules(ctx context.Context) (Rules, bool, error) {
 	kept, err := memo.Get(ctx, keptArea+":rules", func(ctx context.Context) (*sqlcdb.AccessRule, error) {
-		row, err := s.db.Queries(ctx).GetAccessRules(ctx, rulesID)
+		row, err := sqlcdb.New(s.db.Conn(ctx)).GetAccessRules(ctx, rulesID)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
@@ -149,7 +149,7 @@ func (s *PostgresStore) PutRules(ctx context.Context, r Rules) error {
 
 func (s *PostgresStore) assignments(ctx context.Context, personID *string) ([]Assignment, error) {
 	rows, err := memo.Get(ctx, keptArea+":assignments", func(ctx context.Context) ([]sqlcdb.ListAssignmentsRow, error) {
-		return s.db.Queries(ctx).ListAssignments(ctx, nil)
+		return sqlcdb.New(s.db.Conn(ctx)).ListAssignments(ctx, nil)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("select role assignments: %w", err)
@@ -179,7 +179,7 @@ func (s *PostgresStore) assignments(ctx context.Context, personID *string) ([]As
 // than once, and only this store changes them.
 func (s *PostgresStore) roles(ctx context.Context) (memo.Table[sqlcdb.Role], error) {
 	table, err := memo.GetTable(ctx, keptArea+":roles", func(ctx context.Context) ([]sqlcdb.Role, error) {
-		return s.db.Queries(ctx).ListRoles(ctx)
+		return sqlcdb.New(s.db.Conn(ctx)).ListRoles(ctx)
 	}, func(r sqlcdb.Role) string { return r.ID })
 	if err != nil {
 		return memo.Table[sqlcdb.Role]{}, fmt.Errorf("select roles: %w", err)
@@ -189,7 +189,7 @@ func (s *PostgresStore) roles(ctx context.Context) (memo.Table[sqlcdb.Role], err
 
 func (s *PostgresStore) change(ctx context.Context) *sqlcdb.Queries {
 	memo.Forget(ctx, keptArea)
-	return s.db.Queries(ctx)
+	return sqlcdb.New(s.db.Conn(ctx))
 }
 
 func roleFromRow(row sqlcdb.Role) Role {

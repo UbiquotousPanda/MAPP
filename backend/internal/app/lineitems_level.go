@@ -5,8 +5,8 @@ import (
 	"maps"
 	"slices"
 
-	"mapp/internal/lineitem"
-	"mapp/internal/plan"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/errs"
 	"mapp/internal/stores"
 )

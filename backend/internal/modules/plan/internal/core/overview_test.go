@@ -1,13 +1,13 @@
-package plan
+package core
 
 import (
 	"reflect"
 	"testing"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Feature 009's Home reads every plan with the figures, completeness and contents of the plan page, in US

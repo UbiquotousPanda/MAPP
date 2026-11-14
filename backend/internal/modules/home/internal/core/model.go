@@ -1,6 +1,6 @@
-// Package home is the read-only Home dashboard (feature 009): every figure is calculated on the server, so it
+// Package core is the read-only Home dashboard (feature 009): every figure is calculated on the server, so it
 // equals the one on the record's own page, and each card has its own endpoint.
-package home
+package core
 
 import (
 	"time"

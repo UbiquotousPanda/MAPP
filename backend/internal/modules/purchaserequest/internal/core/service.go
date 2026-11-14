@@ -1,9 +1,9 @@
-package purchaserequest
+package core
 
 import (
 	"context"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/errs"
@@ -21,7 +21,7 @@ type Service struct {
 	tx      Transactor
 	repo    Store
 	ids     *ids.Generator
-	history *history.Service
+	history history.Recorder
 	now     clock.Clock
 	deps    Deps
 	rounds  Rounds

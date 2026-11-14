@@ -1,6 +1,6 @@
-// Package dataset holds the tables people upload from CSV or .xlsx files for their custom dashboards: typed
+// Package core holds the tables people upload from CSV or .xlsx files for their custom dashboards: typed
 // columns, rows typed at upload, visible to the owner and to members of the teams it is shared with.
-package dataset
+package core
 
 import (
 	"bytes"

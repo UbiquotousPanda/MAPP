@@ -1,14 +1,14 @@
-package plan
+package core
 
 import (
 	"strings"
 	"testing"
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // User story 5 — Publish and unpublish.

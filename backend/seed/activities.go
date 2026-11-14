@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/ids"
-	"mapp/internal/settings"
 )
 
 // demoWorkflows are WF-1001 and WF-1002 in feature 008's shape (D-103, D-201); each level lists its approvers by name.

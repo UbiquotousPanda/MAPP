@@ -1,10 +1,10 @@
-package campaign
+package core
 
 import (
 	"testing"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // gbp returns the GBP amount text as money.

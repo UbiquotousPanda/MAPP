@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/fake"
 	"mapp/internal/stores/storestest"

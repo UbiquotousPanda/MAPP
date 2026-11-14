@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/swbs"
 	"mapp/internal/platform/fake"
-	"mapp/internal/swbs"
 )
 
 type Store struct {

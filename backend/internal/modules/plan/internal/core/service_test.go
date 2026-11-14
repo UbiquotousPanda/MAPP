@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"context"
@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // A plan name is saved without its surrounding spaces, has at most 120 characters (not bytes) and is

@@ -1,14 +1,14 @@
-package overspend_test
+package core_test
 
 import (
 	"net/http"
 	"strings"
 	"testing"
 
-	"mapp/internal/budget"
-	"mapp/internal/campaign"
-	"mapp/internal/overspend"
-	"mapp/internal/plan"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/overspend/internal/core"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )
@@ -60,7 +60,7 @@ func TestAllocatedPlan_SettingChangesOnlyThroughItsAllocation_Contract_037_FR004
 		t.Errorf("037 FR-004 on the plan form: %+v, control %+v", e, europe.Overspend)
 	}
 	decoded[budget.GlobalBudgetView](t, allocated, http.StatusOK)
-	if after.Overspend.Mode != overspend.Refuse || after.Overspend.CanChange.Available {
+	if after.Overspend.Mode != core.Refuse || after.Overspend.CanChange.Available {
 		t.Errorf("037 FR-004 after the allocation: %+v", after.Overspend)
 	}
 	for _, r := range []*apitest.Response{over, copied, lowered} {
@@ -80,7 +80,7 @@ func TestGlobalBudgetRefuse_Contract_037_US3(t *testing.T) {
 	cut := alex.Do(t, http.MethodPatch, "/api/v1/global-budgets/GB-1001", map[string]any{
 		"amount": money2("1.00"), "version": set.Version})
 
-	if set.Overspend.Mode != overspend.Refuse || !set.Overspend.CanChange.Available {
+	if set.Overspend.Mode != core.Refuse || !set.Overspend.CanChange.Available {
 		t.Errorf("037 FR-001 global budget = %+v", set.Overspend)
 	}
 	refusedNaming(t, over, "global budget '"+gb.Name+"'")
@@ -103,7 +103,7 @@ func TestPlanCopyOverARefuseBudget_Contract_037_US2(t *testing.T) {
 	empty := priya.Do(t, http.MethodPost, "/api/v1/plans/P-1004/copy",
 		map[string]any{"name": "UK shell", "year": 2027, "includeContents": false})
 
-	if refuseOver.Overspend.Mode != overspend.Refuse {
+	if refuseOver.Overspend.Mode != core.Refuse {
 		t.Errorf("037 FR-011 Refuse may be chosen while over: %+v", refuseOver.Overspend)
 	}
 	refusedNaming(t, copied, "plan 'UK copy'")
@@ -127,7 +127,7 @@ func TestOverAllocationUnderARefusePlan_KeepsWarning_Contract_037_FR013(t *testi
 	r := priya.Do(t, http.MethodPatch, "/api/v1/campaigns/"+helix, helixForm(helixView.Version, aboveThePlan.String(), "warn"))
 
 	saved := decoded[campaign.CampaignView](t, r, http.StatusOK)
-	if refusing.Overspend.Mode != overspend.Refuse || saved.Budget.Amount.Cmp(aboveThePlan) != 0 {
+	if refusing.Overspend.Mode != core.Refuse || saved.Budget.Amount.Cmp(aboveThePlan) != 0 {
 		t.Errorf("037 FR-013 campaign budget %s above the Refuse plan budget %s: saved %+v, plan %+v",
 			aboveThePlan, refusing.Budget.Amount, saved.Budget, refusing.Overspend)
 	}

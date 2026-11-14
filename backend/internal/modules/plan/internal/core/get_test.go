@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"context"
@@ -6,10 +6,10 @@ import (
 	"reflect"
 	"testing"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // The plan page shows a plan by its ID; an ID that does not exist answers not found (FR-011).

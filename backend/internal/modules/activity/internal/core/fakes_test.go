@@ -1,4 +1,4 @@
-package activity_test
+package core_test
 
 import (
 	"context"
@@ -6,23 +6,23 @@ import (
 	"slices"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/history"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
 )
 
 // fakeLineItems are feature 007's line items as the tests set them.
 type fakeLineItems struct {
-	facts        map[string]activity.LineItemFacts
-	datesChanged []string                            // the activities whose dates changed, in order
-	copies       []string                            // the CopyAll calls, "<from> → <to> +<years>", in order
-	items        map[string][]activity.LineItemBrief // 016: the line items of each activity, for Split
-	moves        []string                            // 016: the MoveToActivity calls, "<ids> → <to>"
+	facts        map[string]core.LineItemFacts
+	datesChanged []string                        // the activities whose dates changed, in order
+	copies       []string                        // the CopyAll calls, "<from> → <to> +<years>", in order
+	items        map[string][]core.LineItemBrief // 016: the line items of each activity, for Split
+	moves        []string                        // 016: the MoveToActivity calls, "<ids> → <to>"
 }
 
-func (l *fakeLineItems) Facts(_ context.Context, activityIDs []string) (map[string]activity.LineItemFacts, error) {
-	facts := map[string]activity.LineItemFacts{}
+func (l *fakeLineItems) Facts(_ context.Context, activityIDs []string) (map[string]core.LineItemFacts, error) {
+	facts := map[string]core.LineItemFacts{}
 	for _, id := range activityIDs {
 		if f, found := l.facts[id]; found {
 			facts[id] = f
@@ -31,7 +31,7 @@ func (l *fakeLineItems) Facts(_ context.Context, activityIDs []string) (map[stri
 	return facts, nil
 }
 
-func (l *fakeLineItems) CopyMany(ctx context.Context, by actor.Actor, pairs []activity.CopyPair, years int) (int, error) {
+func (l *fakeLineItems) CopyMany(ctx context.Context, by actor.Actor, pairs []core.CopyPair, years int) (int, error) {
 	copied := 0
 	for _, p := range pairs {
 		n, _ := l.CopyAll(ctx, by, p.FromID, p.ToID, years)
@@ -46,14 +46,14 @@ func (l *fakeLineItems) CopyAll(_ context.Context, _ actor.Actor, from, to strin
 	return l.facts[from].Count, nil
 }
 
-func (l *fakeLineItems) DatesChanged(_ context.Context, _ actor.Actor, _, after activity.Activity) error {
+func (l *fakeLineItems) DatesChanged(_ context.Context, _ actor.Actor, _, after core.Activity) error {
 	l.datesChanged = append(l.datesChanged, after.ID)
 	return nil
 }
 
 // Items answers the line items the test set for the activity (016 Split).
-func (l *fakeLineItems) Items(_ context.Context, activityID string) ([]activity.LineItemBrief, error) {
-	return append([]activity.LineItemBrief{}, l.items[activityID]...), nil
+func (l *fakeLineItems) Items(_ context.Context, activityID string) ([]core.LineItemBrief, error) {
+	return append([]core.LineItemBrief{}, l.items[activityID]...), nil
 }
 
 // MoveToActivity records the move, "<ids> → <activity>", and moves the line items between the activities'
@@ -64,7 +64,7 @@ func (l *fakeLineItems) MoveToActivity(_ context.Context, _ actor.Actor, ids []s
 		return nil
 	}
 	for from, items := range l.items {
-		kept := []activity.LineItemBrief{}
+		kept := []core.LineItemBrief{}
 		for _, li := range items {
 			if slices.Contains(ids, li.ID) && from != to {
 				l.items[to] = append(l.items[to], li)
@@ -81,7 +81,7 @@ func (l *fakeLineItems) MoveToActivity(_ context.Context, _ actor.Actor, ids []s
 // shift moves one line item's count and plan-currency amount from one activity's facts to another's.
 func (l *fakeLineItems) shift(from, to string, amount money.Money) {
 	if l.facts == nil {
-		l.facts = map[string]activity.LineItemFacts{}
+		l.facts = map[string]core.LineItemFacts{}
 	}
 	f := l.facts[from]
 	f.Count--
@@ -102,7 +102,7 @@ type fakeHooks struct {
 	restored  []string
 }
 
-func (h *fakeHooks) ApprovalRestarted(_ context.Context, _ actor.Actor, before, after activity.Activity, changes []history.Change) error { //nolint:revive // argument-limit 5: the signature of activity.ApprovalHooks
+func (h *fakeHooks) ApprovalRestarted(_ context.Context, _ actor.Actor, before, after core.Activity, changes []history.Change) error { //nolint:revive // argument-limit 5: the signature of activity.ApprovalHooks
 	h.restarted = append(h.restarted, after.ID+": "+string(before.Status)+" → "+string(after.Status))
 	for _, c := range changes {
 		h.changes = append(h.changes, c.Label+": "+c.OldText+" → "+c.NewText)
@@ -110,7 +110,7 @@ func (h *fakeHooks) ApprovalRestarted(_ context.Context, _ actor.Actor, before, 
 	return nil
 }
 
-func (h *fakeHooks) ActivityDeleting(_ context.Context, _ actor.Actor, a activity.Activity) error {
+func (h *fakeHooks) ActivityDeleting(_ context.Context, _ actor.Actor, a core.Activity) error {
 	h.deleting = append(h.deleting, a.ID)
 	return nil
 }

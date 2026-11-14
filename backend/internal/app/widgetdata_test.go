@@ -7,10 +7,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/dashboard"
+	"mapp/internal/modules/dashboard"
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
-	"mapp/internal/widgetdata"
 )
 
 const (

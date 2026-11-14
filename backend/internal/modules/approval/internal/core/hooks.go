@@ -1,10 +1,10 @@
-package approval
+package core
 
 import (
 	"context"
 	"fmt"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 )
 

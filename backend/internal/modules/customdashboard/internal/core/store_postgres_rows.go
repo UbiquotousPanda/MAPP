@@ -1,4 +1,4 @@
-package customdashboard
+package core
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"mapp/internal/platform/database/sqlcdb"
+	"mapp/internal/modules/customdashboard/internal/sqlcdb"
 )
 
 func widgetRow(dashboardID string, position int, w Widget) (sqlcdb.InsertCustomDashboardWidgetsParams, error) {

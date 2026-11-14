@@ -1,4 +1,4 @@
-package budget_test
+package core_test
 
 import (
 	"context"
@@ -9,16 +9,16 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"mapp/internal/budget"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/budget/internal/core"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 var (
@@ -28,12 +28,12 @@ var (
 
 // pgStore gives a store whose database holds the plans P-1001 (team T-1001) and P-1002 (team T-1002), the
 // owner U-1001 and the global budgets GB-1001 and GB-1002, with two allocations each to one plan.
-func pgStore(t *testing.T) (*database.DB, *budget.PostgresStore, []budget.Allocation) {
+func pgStore(t *testing.T) (*database.DB, *core.PostgresStore, []core.Allocation) {
 	t.Helper()
 	db := dbtest.NewDB(t)
-	s := budget.NewPostgresStore(db)
+	s := core.NewPostgresStore(db)
 	directory, catalogue, planStore := people.NewPostgresStore(db), settings.NewPostgresStore(db), plan.NewPostgresStore(db)
-	allocations := []budget.Allocation{pgAllocation("BA-1001", "GB-1001", "P-1001"), pgAllocation("BA-1002", "GB-1001", "P-1002")}
+	allocations := []core.Allocation{pgAllocation("BA-1001", "GB-1001", "P-1001"), pgAllocation("BA-1002", "GB-1001", "P-1002")}
 	pgWrite(t, db, func(ctx context.Context) error {
 		err := errors.Join(
 			catalogue.PutCurrency(ctx, settings.Currency{Code: "USD", Name: "US dollar", Active: true, Meta: pgMeta}),
@@ -63,13 +63,13 @@ func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) 
 	}
 }
 
-func pgBudget(id, name string) budget.GlobalBudget {
-	return budget.GlobalBudget{ID: id, Name: name, Year: 2026, Amount: money.FromCents(100000000), OwnerID: "U-1001",
+func pgBudget(id, name string) core.GlobalBudget {
+	return core.GlobalBudget{ID: id, Name: name, Year: 2026, Amount: money.FromCents(100000000), OwnerID: "U-1001",
 		Description: "Global " + name, Meta: pgMeta}
 }
 
-func pgAllocation(id, budgetID, planID string) budget.Allocation {
-	return budget.Allocation{ID: id, GlobalBudgetID: budgetID, PlanID: planID,
+func pgAllocation(id, budgetID, planID string) core.Allocation {
+	return core.Allocation{ID: id, GlobalBudgetID: budgetID, PlanID: planID,
 		Amount: money.USD(money.FromCents(2500000)), Meta: pgMeta}
 }
 
@@ -79,11 +79,11 @@ func TestPostgresStoreAllocationScopeIsolationFR009(t *testing.T) {
 	tests := []struct {
 		name  string
 		scope authz.Scope
-		want  []budget.Allocation
+		want  []core.Allocation
 	}{
 		{name: "View plans in team T-1002", scope: authz.Scope{PersonID: "U-1001", Holds: true, TeamIDs: []string{"T-1002"}},
 			want: allocations[1:]},
-		{name: "no role", scope: authz.Scope{PersonID: "U-1001", TeamIDs: []string{}}, want: []budget.Allocation{}},
+		{name: "no role", scope: authz.Scope{PersonID: "U-1001", TeamIDs: []string{}}, want: []core.Allocation{}},
 		{name: "everything", scope: authz.Scope{Everything: true, TeamIDs: []string{}}, want: allocations},
 	}
 	for _, tt := range tests {

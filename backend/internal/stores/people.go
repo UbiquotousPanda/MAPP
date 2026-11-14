@@ -3,7 +3,7 @@ package stores
 import (
 	"context"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 )
 
 // PeopleStore is the people and teams store as the wiring and the seed use it: the service's Store and what other areas' adapters call.

@@ -1,4 +1,4 @@
-package lineitem
+package core
 
 import (
 	"encoding/json"
@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // formOf is the whole form of a stored line item, as the edit page sends it, with its version.

@@ -1,4 +1,4 @@
-package activity
+package core
 
 import (
 	"cmp"
@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval"
 )
 
 type seededWorkflows struct {

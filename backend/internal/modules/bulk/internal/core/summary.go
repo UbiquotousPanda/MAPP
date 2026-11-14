@@ -1,4 +1,4 @@
-package bulk
+package core
 
 import (
 	"context"

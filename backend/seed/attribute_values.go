@@ -1,6 +1,6 @@
 package seed
 
-import "mapp/internal/settings"
+import "mapp/internal/modules/settings"
 
 // values builds the Shell attribute values of one record from attribute labels at its level, and keeps
 // the first label that does not resolve.

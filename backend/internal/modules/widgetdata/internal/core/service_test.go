@@ -1,4 +1,4 @@
-package widgetdata_test
+package core_test
 
 import (
 	"errors"
@@ -8,30 +8,30 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"mapp/internal/modules/widgetdata/internal/core"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
-	"mapp/internal/widgetdata"
 )
 
 func ptr[T any](v T) *T { return &v }
 
-func activitiesRows(t *testing.T) widgetdata.Rows {
+func activitiesRows(t *testing.T) core.Rows {
 	t.Helper()
-	fields := widgetdata.BuiltInFields("activities")
-	row := func(kind, cost string) widgetdata.Row {
-		return widgetdata.RowOf(fields, map[string]widgetdata.Value{"activityType": text(kind), "plannedCost": usd(t, cost)})
+	fields := core.BuiltInFields("activities")
+	row := func(kind, cost string) core.Row {
+		return core.RowOf(fields, map[string]core.Value{"activityType": text(kind), "plannedCost": usd(t, cost)})
 	}
-	return widgetdata.Rows{Items: []widgetdata.Row{row("Event", "100.00"), row("Event", "20.00"), row("Digital", "30.00")},
-		Notes: []string{widgetdata.FinanceNote(1, 2)}}
+	return core.Rows{Items: []core.Row{row("Event", "100.00"), row("Event", "20.00"), row("Digital", "30.00")},
+		Notes: []string{core.FinanceNote(1, 2)}}
 }
 
-func sumByType(source string) widgetdata.Request {
-	return widgetdata.Request{Type: "bar", Query: widgetdata.Query{
-		Source: source, Dimension: &widgetdata.GroupBy{Field: "activityType"},
-		Measures: []widgetdata.Measure{{Aggregation: "sum", Field: ptr("plannedCost")}},
-		Filters:  []widgetdata.Filter{},
-		Sort:     widgetdata.Sort{By: "measure", Direction: "desc"}, Limit: 50,
+func sumByType(source string) core.Request {
+	return core.Request{Type: "bar", Query: core.Query{
+		Source: source, Dimension: &core.GroupBy{Field: "activityType"},
+		Measures: []core.Measure{{Aggregation: "sum", Field: ptr("plannedCost")}},
+		Filters:  []core.Filter{},
+		Sort:     core.Sort{By: "measure", Direction: "desc"}, Limit: 50,
 	}}
 }
 
@@ -44,22 +44,22 @@ func status(err error) int {
 
 func TestQueryValidation_AllProblems_FR019(t *testing.T) {
 	t.Parallel()
-	r := widgetdata.Request{Type: "pie", Query: widgetdata.Query{
-		Source: "activities", Series: &widgetdata.GroupBy{Field: "team"},
-		Measures: []widgetdata.Measure{{Aggregation: "sum", Field: ptr("activity")}, {Aggregation: "count", Field: ptr("nope")}},
-		Filters: []widgetdata.Filter{
+	r := core.Request{Type: "pie", Query: core.Query{
+		Source: "activities", Series: &core.GroupBy{Field: "team"},
+		Measures: []core.Measure{{Aggregation: "sum", Field: ptr("activity")}, {Aggregation: "count", Field: ptr("nope")}},
+		Filters: []core.Filter{
 			{Field: "startDate", Operator: "gt", Values: []string{"1 July"}},
 			{Field: "activity", Operator: "between", Values: []string{"a", "b"}},
 			{Field: "plannedCost", Operator: "between", Values: []string{"10", "5"}},
 			{Field: "plannedCost", Operator: "eq", Values: []string{"1.234"}},
 			{Field: "status", Operator: "isEmpty", Values: []string{"x"}},
 		},
-		Sort: widgetdata.Sort{By: "measure", MeasureIndex: 5, Direction: "up"}, Limit: 0,
-	}, Filters: &widgetdata.Filters{DateFrom: ptr(date.MustParse("2026-12-31")), DateTo: ptr(date.MustParse("2026-01-01"))},
-		Comparison: &widgetdata.ComparisonRequest{Kind: "target"}}
+		Sort: core.Sort{By: "measure", MeasureIndex: 5, Direction: "up"}, Limit: 0,
+	}, Filters: &core.Filters{DateFrom: ptr(date.MustParse("2026-12-31")), DateTo: ptr(date.MustParse("2026-01-01"))},
+		Comparison: &core.ComparisonRequest{Kind: "target"}}
 	reader := &fakeReader{rows: activitiesRows(t)}
 
-	_, err := service(map[string]widgetdata.SourceReader{"activities": reader}, nil).Query(signedIn(t, authz.DashboardsView, authz.PlansView), viewer, r)
+	_, err := service(map[string]core.SourceReader{"activities": reader}, nil).Query(signedIn(t, authz.DashboardsView, authz.PlansView), viewer, r)
 
 	apiErr, ok := errors.AsType[*errs.Error](err)
 	if !ok || apiErr.Code != errs.CodeValidationFailed {
@@ -96,7 +96,7 @@ func TestQueryValidation_AllProblems_FR019(t *testing.T) {
 
 func TestQuery_Access_FR007(t *testing.T) {
 	t.Parallel()
-	readers := map[string]widgetdata.SourceReader{"activities": &fakeReader{rows: activitiesRows(t)}, "financialTransactions": &fakeReader{}}
+	readers := map[string]core.SourceReader{"activities": &fakeReader{rows: activitiesRows(t)}, "financialTransactions": &fakeReader{}}
 	s := service(readers, leadsDataset())
 	tests := []struct {
 		name   string
@@ -125,12 +125,12 @@ func TestPrefilter_AppliedPerSource_FR022(t *testing.T) {
 	t.Parallel()
 	dates := cmpopts.EquateComparable(date.Date{})
 	from, to := date.MustParse("2026-07-01"), date.MustParse("2026-12-31")
-	filters := &widgetdata.Filters{DateFrom: &from, DateTo: &to, PlanIDs: []string{"P-1001"}, TeamIDs: []string{"T-1002"}}
+	filters := &core.Filters{DateFrom: &from, DateTo: &to, PlanIDs: []string{"P-1001"}, TeamIDs: []string{"T-1002"}}
 	activities, plans := &fakeReader{rows: activitiesRows(t)}, &fakeReader{}
 	budgets := &fakeReader{}
-	s := service(map[string]widgetdata.SourceReader{"activities": activities, "plans": plans, "globalBudgets": budgets}, leadsDataset())
+	s := service(map[string]core.SourceReader{"activities": activities, "plans": plans, "globalBudgets": budgets}, leadsDataset())
 	ctx := signedIn(t, authz.DashboardsView, authz.PlansView, authz.GlobalBudgetsView)
-	ask := func(source, dimension, field string) widgetdata.Data {
+	ask := func(source, dimension, field string) core.Data {
 		r := sumByType(source)
 		r.Query.Dimension.Field, r.Query.Measures[0].Field, r.Filters = dimension, ptr(field), filters
 		data, err := s.Query(ctx, viewer, r)
@@ -145,28 +145,28 @@ func TestPrefilter_AppliedPerSource_FR022(t *testing.T) {
 	budgetsData := ask("globalBudgets", "owner", "amount")
 	leads := ask("DS-1001", "c1", "c2")
 
-	if diff := cmp.Diff(widgetdata.Prefilter{From: &from, To: &to, PlanIDs: []string{"P-1001"}, TeamIDs: []string{"T-1002"}},
+	if diff := cmp.Diff(core.Prefilter{From: &from, To: &to, PlanIDs: []string{"P-1001"}, TeamIDs: []string{"T-1002"}},
 		activities.asked[0], dates); diff != "" {
 		t.Errorf("activities prefilter (-want +got):\n%s", diff)
 	}
-	if diff := cmp.Diff(widgetdata.Prefilter{PlanIDs: []string{"P-1001"}, TeamIDs: []string{"T-1002"}}, plans.asked[0], dates); diff != "" {
+	if diff := cmp.Diff(core.Prefilter{PlanIDs: []string{"P-1001"}, TeamIDs: []string{"T-1002"}}, plans.asked[0], dates); diff != "" {
 		t.Errorf("plans have no date filter (-want +got):\n%s", diff)
 	}
-	if diff := cmp.Diff(widgetdata.Prefilter{}, budgets.asked[0], dates); diff != "" || activities.who[0] != viewer.ID {
+	if diff := cmp.Diff(core.Prefilter{}, budgets.asked[0], dates); diff != "" || activities.who[0] != viewer.ID {
 		t.Errorf("global budgets take no filter (-want +got):\n%s", diff)
 	}
 	wantNotes := []string{"Not filtered by date", "Not filtered by plan", "Not filtered by team"}
 	if diff := cmp.Diff(wantNotes, budgetsData.Notes); diff != "" {
 		t.Errorf("global budgets notes (-want +got):\n%s", diff)
 	}
-	if diff := cmp.Diff(wantNotes, leads.Notes); diff != "" || leads.FiltersApplied != (widgetdata.FiltersApplied{}) {
+	if diff := cmp.Diff(wantNotes, leads.Notes); diff != "" || leads.FiltersApplied != (core.FiltersApplied{}) {
 		t.Errorf("dataset notes (-want +got):\n%s applied %+v", diff, leads.FiltersApplied)
 	}
 }
 
 func TestQuery_AnswersRowsTotalsAndNotes_FR016(t *testing.T) {
 	t.Parallel()
-	s := service(map[string]widgetdata.SourceReader{"activities": &fakeReader{rows: activitiesRows(t)}}, nil)
+	s := service(map[string]core.SourceReader{"activities": &fakeReader{rows: activitiesRows(t)}}, nil)
 
 	data, err := s.Query(signedIn(t, authz.DashboardsView, authz.PlansView), viewer, sumByType("activities"))
 	if err != nil {
@@ -178,19 +178,19 @@ func TestQuery_AnswersRowsTotalsAndNotes_FR016(t *testing.T) {
 	if diff := cmp.Diff([]string{"Event", "120.00 USD", "80.0", "150.00 USD"}, got); diff != "" || len(data.Rows) != 2 {
 		t.Errorf("first row and total (-want +got):\n%s rows %d, want 2", diff, len(data.Rows))
 	}
-	wantColumns := []widgetdata.Column{{Key: "dimension", Label: "Activity type", Kind: widgetdata.KindText},
-		{Key: "m0", Label: "Sum of Planned cost", Kind: widgetdata.KindMoney}}
+	wantColumns := []core.Column{{Key: "dimension", Label: "Activity type", Kind: core.KindText},
+		{Key: "m0", Label: "Sum of Planned cost", Kind: core.KindMoney}}
 	if diff := cmp.Diff(wantColumns, data.Columns); diff != "" {
 		t.Errorf("columns (-want +got):\n%s", diff)
 	}
-	if len(data.Notes) != 0 || data.FiltersApplied != (widgetdata.FiltersApplied{Date: true, Plan: true, Team: true}) {
+	if len(data.Notes) != 0 || data.FiltersApplied != (core.FiltersApplied{Date: true, Plan: true, Team: true}) {
 		t.Errorf("notes %q (the finance note only with a finance field), applied %+v", data.Notes, data.FiltersApplied)
 	}
 }
 
 func TestQuery_FinanceNoteWithFinanceFields_FR007(t *testing.T) {
 	t.Parallel()
-	s := service(map[string]widgetdata.SourceReader{"activities": &fakeReader{rows: activitiesRows(t)}}, nil)
+	s := service(map[string]core.SourceReader{"activities": &fakeReader{rows: activitiesRows(t)}}, nil)
 	r := sumByType("activities")
 	r.Query.Measures[0].Field = ptr("committed")
 	data, _ := s.Query(signedIn(t, authz.DashboardsView, authz.PlansView), viewer, r)
@@ -214,10 +214,10 @@ func TestQuery_DatasetMoneyInUSD_FR018(t *testing.T) {
 			t.Parallel()
 			ds := leadsDataset()
 			table := ds.tables["DS-1001"]
-			table.Info.Columns = []widgetdata.DatasetColumn{table.Info.Columns[0], {Key: "c2", Label: "Spend",
-				Kind: widgetdata.KindMoney, Currency: tt.currency}}
-			table.Rows = []widgetdata.Row{{text("North"), usd(t, "10.00")}, {text("North"), usd(t, "0.01")},
-				{text("South"), widgetdata.Value{Empty: true}}}
+			table.Info.Columns = []core.DatasetColumn{table.Info.Columns[0], {Key: "c2", Label: "Spend",
+				Kind: core.KindMoney, Currency: tt.currency}}
+			table.Rows = []core.Row{{text("North"), usd(t, "10.00")}, {text("North"), usd(t, "0.01")},
+				{text("South"), core.Value{Empty: true}}}
 			ds.tables["DS-1001"] = table
 			r := sumByType("DS-1001")
 			r.Query.Dimension.Field, r.Query.Measures[0].Field = "c1", ptr("c2")

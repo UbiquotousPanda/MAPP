@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"mapp/internal/budget"
+	"mapp/internal/modules/budget"
 	"mapp/internal/platform/money"
 )
 

@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"reflect"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // A new attribute is listed last in its section, with its options in the order given, shows on its level's

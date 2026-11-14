@@ -1,5 +1,16 @@
 <!--
 Sync Impact Report
+- Version change: 4.9.0 → 4.10.0 (MINOR: B2 materially expanded; no principle removed or redefined).
+- Modified sections: B2 Architecture and Packages — layout of a business area as a module (ADR-0022), and a
+  new rule that module boundaries and table ownership are declared and tested. VIII — the module move is
+  exempt from bringing every file it touches within the comment budget, as 025, 027, 028 and 035 were.
+  Amendment History.
+- Impact on existing code: every business package moves to `internal/modules/<area>/`; query files move to
+  their owning module, and sqlc generates one package per module. Behaviour, the API contract and the
+  schema are unchanged, apart from three read-only views the owners publish for reads across modules.
+- Templates: no change needed.
+
+Previous report (4.9.0):
 - Version change: 4.7.0 → 4.9.0 (MINOR: scope materially expanded; no principle removed or redefined). 4.8.0 is
   the Measure-module amendment on the `measure-module` branch (D-366–D-370 there); this amendment is made on
   `develop` and skips that number so the two merge without renumbering. When `measure-module` merges, its
@@ -295,8 +306,8 @@ In addition:
   and sqlc's `-- name:` annotations).
 - **Files over the budget today** are brought within it one at a time: a change that touches a file
   brings the whole file's comments within the budget, not only the lines it changed. Features 025
-  (backend layout), 027 (test hygiene), 028 (query efficiency) and 035 (product name; except the files
-  whose design it changes) are exempt: they change many files
+  (backend layout), 027 (test hygiene), 028 (query efficiency), 035 (product name; except the files
+  whose design it changes) and the module move of 4.10.0 (ADR-0022) are exempt: they change many files
   for another purpose and leave the comments of those files to the next change of each file.
 - **What a comment says.** Names, types and small functions carry the meaning. A comment is
   written only for what the code cannot say: why a choice was made, a constraint, a non-obvious
@@ -560,10 +571,18 @@ These rules apply to everything under `backend/` and refine the Core Principles 
 ### B2. Architecture and Packages
 
 - Layout: `cmd/<binary>/main.go` only wires dependencies and calls `run`; all other code lives
-  under `internal/`. Cross-cutting infrastructure lives in `internal/platform/<concern>/`. Each
-  business area is a package `internal/<area>/` with the same files: `model.go`, `store.go` (the
+  under `internal/`. Cross-cutting infrastructure without business rules — the kernel every module may
+  use — lives in `internal/platform/<concern>/`. Each business area is a module
+  `internal/modules/<area>/` (ADR-0022): its contract in `<area>.go` (the types, ports and constructors
+  other packages may use), its code in `internal/core/` with the same files: `model.go`, `store.go` (the
   store interface the service needs), `store_postgres.go` (its sqlc-backed implementation),
-  `service.go` and `handler.go`, plus tests.
+  `service.go` and `handler.go`, plus tests; its queries in `internal/queries/`, its generated code in
+  `internal/sqlcdb/`, and its test fake in `<area>test/`.
+- Module boundaries MUST be declared and tested: every module and every import between modules is
+  listed in `internal/architecture/`, the graph of modules MUST have no cycles, only the composition
+  root (`internal/app`) and the test harness know every module, and every table has exactly one
+  owning module, whose queries alone read it; another module reads it only through a view or function
+  the owner publishes, or as a declared exception.
 - Dependencies MUST point inward: handler → service → store. Services MUST NOT import Gin or
   `net/http`; stores MUST NOT contain business rules. Import cycles are forbidden.
 - Interfaces MUST be defined by the consumer, kept small, and used only where a second
@@ -1178,5 +1197,6 @@ amended to match.
 | 4.6.0 | 2026-10-28 | Current Phase & Scope: bulk actions and Excel import (012), the SP&A view and BCPIR marker of Shell's spec 006 (013), executive and regional planning dashboards from plan and finance data with PowerPoint and PDF export (036), and overspend control per budget owner (037) come into scope; out of scope narrowed to Measure's performance reporting | D-333; product owner instruction of 2026-10-28 (sandbox readiness) |
 | 4.7.0 | 2026-10-29 | X: a field required to save is marked by a Secondary Red asterisk after its label, bold and at least 19 px (large text), with "required" still given to screen readers; "Needed to publish" and "Needed to submit" stay words | D-364; product owner instruction of 2026-10-29 |
 | 4.9.0 | 2026-11-01 | Current Phase & Scope: the self-service dashboard builder (051) — dashboards people build from the Plan-module data they may see and from CSV or Excel datasets they upload, shown under Dashboards next to 036's built-in dashboards and shared view-only with their teams; out of scope gains dashboards shared outside SP&A One teams, scheduled or e-mailed dashboards and live data connectors. F1: Apache ECharts is the chart library (ADR-0020). 4.8.0 is the Measure-module amendment on `measure-module` | D-371–D-378; ADR-0020; product owner instruction of 2026-11-01 |
+| 4.10.0 | 2026-11-14 | B2: the business area becomes a module, `internal/modules/<area>/` with its contract in `<area>.go` and its code, queries and generated code under `internal/`, which the compiler keeps private; module boundaries, the module graph without cycles and one owning module per table are declared and tested in `internal/architecture/`. `internal/platform/` is the kernel and keeps its name. VIII: the module move joins the features exempt from bringing touched files within the comment budget | D-380; ADR-0022 |
 
-**Version**: 4.9.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-11-01
+**Version**: 4.10.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-11-14

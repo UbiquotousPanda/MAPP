@@ -1,4 +1,4 @@
-package activity_test
+package core_test
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/campaign/campaigntest"
-	"mapp/internal/history"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/campaign/campaigntest"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 )
@@ -28,7 +28,7 @@ func TestUpdate_LogsEveryChange_FR026(t *testing.T) {
 	f := newFixture(t)
 	f.clock.Advance(time.Hour)
 
-	view := f.mustEdit(t, "A-1001", func(u *activity.Update) {
+	view := f.mustEdit(t, "A-1001", func(u *core.Update) {
 		u.Description = "Hero film for the Helix launch."
 		u.OwnerID = text(daniel.ID)
 		u.ActivityTypeID = eventType
@@ -61,7 +61,7 @@ func TestDescribe_ReadableChanges_FR026(t *testing.T) {
 	f := newFixture(t)
 	mql := int64(4_000)
 
-	f.mustEdit(t, "A-1001", func(u *activity.Update) {
+	f.mustEdit(t, "A-1001", func(u *core.Update) {
 		u.StartDate, u.EndDate = text("2026-03-02"), text("2026-06-30")
 		u.PlannedCost = usdInput("150000")
 		u.ApprovalWorkflowID = text(chinaFlow)
@@ -86,7 +86,7 @@ func TestUpdate_NoChangeNoLog_FR026(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 
-	view := f.mustEdit(t, "A-1001", func(u *activity.Update) { u.Name = " Launch film " })
+	view := f.mustEdit(t, "A-1001", func(u *core.Update) { u.Name = " Launch film " })
 
 	if view.Version != 1 || len(f.entries(t)) != 0 {
 		t.Errorf("version %d, %d entries; want no change", view.Version, len(f.entries(t)))
@@ -99,7 +99,7 @@ func TestUpdate_VersionConflict_FR026(t *testing.T) {
 	f := newFixture(t)
 	form := formOf(f.get(t, "A-1001"))
 	f.clock.Advance(90 * time.Minute)
-	f.mustEdit(t, "A-1001", func(u *activity.Update) { u.Description = "Daniel's change" })
+	f.mustEdit(t, "A-1001", func(u *core.Update) { u.Description = "Daniel's change" })
 	form.Description = "Priya's change"
 
 	_, err := f.service.Update(t.Context(), daniel, "A-1001", form)
@@ -126,11 +126,11 @@ func TestUpdate_MissingVersion_FR026(t *testing.T) {
 func TestUpdate_ReapprovalNeedsConfirmation_FR027(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	changes := map[string]func(u *activity.Update){
-		"planned cost": func(u *activity.Update) { u.PlannedCost = usdInput("35000.00") },
-		"start date":   func(u *activity.Update) { u.StartDate = text("2026-04-02") },
-		"end date":     func(u *activity.Update) { u.EndDate = text("2026-09-29") },
-		"ongoing":      func(u *activity.Update) { u.Ongoing = true },
+	changes := map[string]func(u *core.Update){
+		"planned cost": func(u *core.Update) { u.PlannedCost = usdInput("35000.00") },
+		"start date":   func(u *core.Update) { u.StartDate = text("2026-04-02") },
+		"end date":     func(u *core.Update) { u.EndDate = text("2026-09-29") },
+		"ongoing":      func(u *core.Update) { u.Ongoing = true },
 	}
 	for name, change := range changes {
 		t.Run(name, func(t *testing.T) {
@@ -139,7 +139,7 @@ func TestUpdate_ReapprovalNeedsConfirmation_FR027(t *testing.T) {
 			assertError(t, err, problems("restartApproval", "This activity will need approval again — confirm the change to save it."))
 		})
 	}
-	if stored, _ := f.stored(t, "A-1004"); stored.Version != 1 || stored.Status != activity.StatusSubmitted || len(f.entries(t)) != 0 {
+	if stored, _ := f.stored(t, "A-1004"); stored.Version != 1 || stored.Status != core.StatusSubmitted || len(f.entries(t)) != 0 {
 		t.Errorf("stored = version %d, %s; want nothing saved", stored.Version, stored.Status)
 	}
 }
@@ -149,13 +149,13 @@ func TestUpdate_ConfirmedReapprovalReturnsToCreated_FR027(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 
-	view := f.mustEdit(t, "A-1006", func(u *activity.Update) {
+	view := f.mustEdit(t, "A-1006", func(u *core.Update) {
 		u.PlannedCost = usdInput("30000.00")
 		u.EndDate = text("2026-12-20")
 		u.RestartApproval = true
 	})
 
-	if view.Status != activity.StatusCreated || view.DisplayStatus != activity.DisplayCreated || view.Version != 2 {
+	if view.Status != core.StatusCreated || view.DisplayStatus != core.DisplayCreated || view.Version != 2 {
 		t.Errorf("status %s (%s), version %d; want Created at version 2", view.Status, view.DisplayStatus, view.Version)
 	}
 	entries := f.entries(t)
@@ -182,15 +182,15 @@ func TestUpdate_OtherEditsKeepStatus_FR028(t *testing.T) {
 	f := newFixture(t)
 	inq := int64(10_000)
 
-	approved := f.mustEdit(t, "A-1002", func(u *activity.Update) {
+	approved := f.mustEdit(t, "A-1002", func(u *core.Update) {
 		u.Name, u.ExternalName, u.Description = "Social always-on EU", "Social EU", "Paid social."
 		u.OwnerID = text(daniel.ID)
 		u.Attributes["SA-1021"] = json.RawMessage(`["SO-1062"]`)
 		u.Goals.INQ = &inq
 	})
-	declined := f.mustEdit(t, "A-1005", func(u *activity.Update) { u.PlannedCost = usdInput("55000.00") })
+	declined := f.mustEdit(t, "A-1005", func(u *core.Update) { u.PlannedCost = usdInput("55000.00") })
 
-	if approved.Status != activity.StatusApproved || approved.Version != 2 || declined.Status != activity.StatusDeclined {
+	if approved.Status != core.StatusApproved || approved.Version != 2 || declined.Status != core.StatusDeclined {
 		t.Errorf("statuses %s, %s; want Approved and Declined kept", approved.Status, declined.Status)
 	}
 	if len(f.hooks.restarted) != 0 {
@@ -202,7 +202,7 @@ func TestUpdate_OngoingCannotBeUndone_FR010(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 
-	_, err := f.edit(t, priya, "A-1007", func(u *activity.Update) {
+	_, err := f.edit(t, priya, "A-1007", func(u *core.Update) {
 		u.Ongoing, u.EndDate, u.RestartApproval = false, text("2026-09-30"), true
 	})
 
@@ -214,10 +214,10 @@ func TestUpdate_WorkflowLockedWhenSubmittedOrApproved_FR012(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 
-	_, err := f.edit(t, priya, "A-1002", func(u *activity.Update) { u.ApprovalWorkflowID = text(chinaFlow) })
+	_, err := f.edit(t, priya, "A-1002", func(u *core.Update) { u.ApprovalWorkflowID = text(chinaFlow) })
 
 	assertError(t, err, problems("approvalWorkflowId", "The approval workflow can't change while the activity is submitted or approved."))
-	if view := f.mustEdit(t, "A-1005", func(u *activity.Update) { u.ApprovalWorkflowID = nil }); view.ApprovalWorkflow != nil {
+	if view := f.mustEdit(t, "A-1005", func(u *core.Update) { u.ApprovalWorkflowID = nil }); view.ApprovalWorkflow != nil {
 		t.Errorf("declined activity: workflow %+v, want removed", view.ApprovalWorkflow)
 	}
 }
@@ -227,8 +227,8 @@ func TestWorkflowFieldLockReason_FR013(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 
-	_, chosen := f.edit(t, priya, "A-1004", func(u *activity.Update) { u.ApprovalWorkflowID = text(chinaFlow) })
-	_, removed := f.edit(t, priya, "A-1004", func(u *activity.Update) { u.ApprovalWorkflowID = nil })
+	_, chosen := f.edit(t, priya, "A-1004", func(u *core.Update) { u.ApprovalWorkflowID = text(chinaFlow) })
+	_, removed := f.edit(t, priya, "A-1004", func(u *core.Update) { u.ApprovalWorkflowID = nil })
 
 	locked := problems("approvalWorkflowId", "Recall the activity to choose another workflow.")
 	assertError(t, chosen, locked)
@@ -247,12 +247,12 @@ func TestUpdate_InactiveValuesKeptWhenUnchanged_FR013(t *testing.T) {
 	f.deactivateWorkflow(t, lubricantsFlow)
 	f.deactivateOption(t, "SO-1034") // Germany, in A-1001's Country / OU split
 
-	view := f.mustEdit(t, "A-1001", func(u *activity.Update) { u.Description = "Still fine." })
+	view := f.mustEdit(t, "A-1001", func(u *core.Update) { u.Description = "Still fine." })
 
 	if !view.ActivityType.Allowed || view.ActivityType.Active || view.Owner.Active || view.ApprovalWorkflow.Active {
 		t.Errorf("kept values: type %+v, owner %+v, workflow %+v", view.ActivityType, view.Owner, view.ApprovalWorkflow)
 	}
-	_, err := f.edit(t, priya, "A-1008", func(u *activity.Update) {
+	_, err := f.edit(t, priya, "A-1008", func(u *core.Update) {
 		u.ActivityTypeID, u.OwnerID = contentType, text(priya.ID)
 		u.Attributes[countrySplit] = split("SO-1034", "100.00")
 	})
@@ -277,14 +277,14 @@ func TestUpdate_UnchangedDatesNotChecked_EdgeCase(t *testing.T) {
 		return repo.PutInitiative(ctx, initiative)
 	})
 
-	view := f.mustEdit(t, "A-1001", func(u *activity.Update) { u.Description = "Dates moved." })
+	view := f.mustEdit(t, "A-1001", func(u *core.Update) { u.Description = "Dates moved." })
 
-	if !slices.ContainsFunc(view.Readiness.Activity, func(p activity.SubmitProblem) bool {
-		return p.Code == activity.ProblemDatesOutsideInitiative && p.Message == "Dates are outside the initiative's dates (01 Apr 2026 – 30 Jun 2026)"
+	if !slices.ContainsFunc(view.Readiness.Activity, func(p core.SubmitProblem) bool {
+		return p.Code == core.ProblemDatesOutsideInitiative && p.Message == "Dates are outside the initiative's dates (01 Apr 2026 – 30 Jun 2026)"
 	}) {
 		t.Errorf("readiness = %+v, want the dates listed", view.Readiness.Activity)
 	}
-	_, err := f.edit(t, priya, "A-1001", func(u *activity.Update) { u.EndDate = text("2026-05-30") })
+	_, err := f.edit(t, priya, "A-1001", func(u *core.Update) { u.EndDate = text("2026-05-30") })
 	assertError(t, err, problems("startDate", "Dates must be inside the initiative's dates (01 Apr 2026 – 30 Jun 2026)."))
 }
 
@@ -300,15 +300,15 @@ func TestEditForm_IncludesCurrentInactiveValues_FR013(t *testing.T) {
 	if err != nil {
 		t.Fatalf("EditForm: %v", err)
 	}
-	if !slices.ContainsFunc(form.ActivityTypes, func(o activity.TypeOption) bool { return o.ID == contentType && !o.Active && o.Allowed }) ||
-		!slices.ContainsFunc(form.ApprovalWorkflows, func(o activity.WorkflowOption) bool { return o.ID == lubricantsFlow && !o.Active }) {
+	if !slices.ContainsFunc(form.ActivityTypes, func(o core.TypeOption) bool { return o.ID == contentType && !o.Active && o.Allowed }) ||
+		!slices.ContainsFunc(form.ApprovalWorkflows, func(o core.WorkflowOption) bool { return o.ID == lubricantsFlow && !o.Active }) {
 		t.Errorf("types %+v, workflows %+v; want the current inactive ones", form.ActivityTypes, form.ApprovalWorkflows)
 	}
 	if form.Defaults != nil || !slices.Equal(form.ExistingNames, []string{"Social always-on"}) {
 		t.Errorf("defaults %+v, names %q", form.Defaults, form.ExistingNames)
 	}
 	other, err := f.service.EditForm(t.Context(), priya, "A-1002")
-	if err != nil || slices.ContainsFunc(other.ActivityTypes, func(o activity.TypeOption) bool { return o.ID == contentType }) {
+	if err != nil || slices.ContainsFunc(other.ActivityTypes, func(o core.TypeOption) bool { return o.ID == contentType }) {
 		t.Errorf("another activity's form offers the inactive type: %+v, %v", other.ActivityTypes, err)
 	}
 	_, err = f.service.EditForm(t.Context(), priya, "A-9999")

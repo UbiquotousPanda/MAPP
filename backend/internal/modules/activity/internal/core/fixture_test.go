@@ -1,4 +1,4 @@
-package activity_test
+package core_test
 
 import (
 	"context"
@@ -8,23 +8,23 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/activity/activitytest"
-	"mapp/internal/approval/approvaltest"
-	"mapp/internal/campaign"
-	"mapp/internal/campaign/campaigntest"
-	"mapp/internal/history"
-	"mapp/internal/history/historytest"
-	"mapp/internal/people/peopletest"
-	"mapp/internal/plan/plantest"
+	"mapp/internal/modules/activity/activitytest"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/approval/approvaltest"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/campaign/campaigntest"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/history/historytest"
+	"mapp/internal/modules/people/peopletest"
+	"mapp/internal/modules/plan/plantest"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/settings/settingstest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
-	"mapp/internal/settings/settingstest"
 )
 
 // The tests run on the seed's demo data: plan P-1001 (business unit Lubricants, model "Lubricants 1.0") with
@@ -53,7 +53,7 @@ const (
 )
 
 type fixture struct {
-	service   *activity.Service
+	service   *core.Service
 	history   *history.Service
 	db        *fake.DB
 	clock     *testClock
@@ -69,11 +69,11 @@ func newFixture(t *testing.T) *fixture {
 	hist := history.NewService(db, historytest.NewStore(db), generator, clock.Now)
 	tools := history.Tools{Tx: db, IDs: generator, Log: hist, Now: clock.Now}
 	campaigns := campaigntest.NewStore(db)
-	service := activity.NewService(tools, activitytest.NewStore(db), activity.Deps{
+	service := core.NewService(tools, activitytest.NewStore(db), core.Deps{
 		Plans: plantest.NewStore(db), Hierarchy: campaigns,
 		Settings:  settings.NewService(tools, settingstest.NewStore(db)),
 		People:    peopletest.NewStore(db),
-		Workflows: activity.NewSeededWorkflows(approvaltest.NewStore(db)),
+		Workflows: core.NewSeededWorkflows(approvaltest.NewStore(db)),
 	})
 	for _, kind := range append([]history.Kind{initiativeKind(campaigns)}, service.Kinds()...) {
 		if err := hist.Register(kind); err != nil {
@@ -81,7 +81,7 @@ func newFixture(t *testing.T) *fixture {
 		}
 	}
 	f := &fixture{service: service, history: hist, db: db, clock: clock,
-		lineItems: &fakeLineItems{facts: map[string]activity.LineItemFacts{}}, hooks: &fakeHooks{}}
+		lineItems: &fakeLineItems{facts: map[string]core.LineItemFacts{}}, hooks: &fakeHooks{}}
 	service.UseLineItems(f.lineItems)
 	service.UseApprovalHooks(f.hooks)
 	return f
@@ -101,7 +101,7 @@ func initiativeKind(repo campaign.Store) history.Kind {
 	}
 }
 
-func (f *fixture) create(t *testing.T, initiativeID string, in activity.Input) activity.View {
+func (f *fixture) create(t *testing.T, initiativeID string, in core.Input) core.View {
 	t.Helper()
 	view, err := f.service.Create(t.Context(), priya, initiativeID, in)
 	if err != nil {
@@ -110,7 +110,7 @@ func (f *fixture) create(t *testing.T, initiativeID string, in activity.Input) a
 	return view
 }
 
-func (f *fixture) get(t *testing.T, id string) activity.View {
+func (f *fixture) get(t *testing.T, id string) core.View {
 	t.Helper()
 	view, err := f.service.Get(t.Context(), priya, id)
 	if err != nil {
@@ -120,14 +120,14 @@ func (f *fixture) get(t *testing.T, id string) activity.View {
 }
 
 // edit reads the activity id, lets change edit its form, and saves it as a, from the version it read.
-func (f *fixture) edit(t *testing.T, a actor.Actor, id string, change func(u *activity.Update)) (activity.View, error) {
+func (f *fixture) edit(t *testing.T, a actor.Actor, id string, change func(u *core.Update)) (core.View, error) {
 	t.Helper()
 	update := formOf(f.get(t, id))
 	change(&update)
 	return f.service.Update(t.Context(), a, id, update)
 }
 
-func (f *fixture) mustEdit(t *testing.T, id string, change func(u *activity.Update)) activity.View {
+func (f *fixture) mustEdit(t *testing.T, id string, change func(u *core.Update)) core.View {
 	t.Helper()
 	view, err := f.edit(t, priya, id, change)
 	if err != nil {
@@ -137,11 +137,11 @@ func (f *fixture) mustEdit(t *testing.T, id string, change func(u *activity.Upda
 }
 
 // formOf is the whole editable state of an activity, as the edit form sends it.
-func formOf(v activity.View) activity.Update {
-	update := activity.Update{
+func formOf(v core.View) core.Update {
+	update := core.Update{
 		Name: v.Name, ExternalName: v.ExternalName, ActivityTypeID: v.ActivityType.ID, Ongoing: v.Ongoing,
 		Description: v.Description, Attributes: settings.AttributeValues{}, Version: &v.Version,
-		Goals: activity.GoalsInput{INQ: v.Goals.INQ, SetLaterStagesMyself: v.Goals.SetLaterStagesMyself},
+		Goals: core.GoalsInput{INQ: v.Goals.INQ, SetLaterStagesMyself: v.Goals.SetLaterStagesMyself},
 	}
 	for id, value := range v.Attributes {
 		update.Attributes[id] = value
@@ -182,7 +182,7 @@ func (f *fixture) entries(t *testing.T) []history.Entry {
 	return list
 }
 
-func (f *fixture) stored(t *testing.T, id string) (activity.Activity, bool) {
+func (f *fixture) stored(t *testing.T, id string) (core.Activity, bool) {
 	t.Helper()
 	act, found, err := activitytest.NewStore(f.db).Get(t.Context(), id)
 	if err != nil {

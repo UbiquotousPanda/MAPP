@@ -5,7 +5,7 @@ package allworktest
 import (
 	"context"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
 	"mapp/internal/platform/fake"
 )
 

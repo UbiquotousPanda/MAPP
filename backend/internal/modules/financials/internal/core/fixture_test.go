@@ -1,4 +1,4 @@
-package financials
+package core
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
-	"mapp/internal/history/historytest"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/history/historytest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/fake"

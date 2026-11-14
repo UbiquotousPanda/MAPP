@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"slices"
 
-	"mapp/internal/activity"
-	"mapp/internal/lineitem"
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
 

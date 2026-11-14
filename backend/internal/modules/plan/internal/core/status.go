@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 )

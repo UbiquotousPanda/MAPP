@@ -1,14 +1,14 @@
-package activity_test
+package core_test
 
 import (
 	"context"
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
+	"mapp/internal/modules/activity/internal/core"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/settings/settingstest"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
-	"mapp/internal/settings/settingstest"
 )
 
 // The form offers only the active types the plan's model allows, each with its default planned cost, by name.
@@ -66,7 +66,7 @@ func TestNewForm_Defaults_FR008_FR009_FR012(t *testing.T) {
 	}
 }
 
-func assertInitiativeDefaults(t *testing.T, d *activity.Defaults) {
+func assertInitiativeDefaults(t *testing.T, d *core.Defaults) {
 	t.Helper()
 	if d == nil || d.Owner == nil || d.Owner.Name != "Priya Raman" || d.StartDate.String() != "2026-01-01" ||
 		d.EndDate.String() != "2026-06-30" || d.ApprovalWorkflowID != nil {
@@ -74,7 +74,7 @@ func assertInitiativeDefaults(t *testing.T, d *activity.Defaults) {
 	}
 }
 
-func assertDigitalAndSocialContext(t *testing.T, c activity.FormContext) {
+func assertDigitalAndSocialContext(t *testing.T, c core.FormContext) {
 	t.Helper()
 	if c.Initiative.Owner == nil || c.LatestEndDate.String() != "2036-12-31" ||
 		c.Model.Name != "Lubricants 1.0" || len(c.BusinessUnits) != 1 ||

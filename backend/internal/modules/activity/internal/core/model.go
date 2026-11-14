@@ -4,16 +4,16 @@
 // The shared foundation wrote the data layer: the stored activity and the API types (this file), the seams
 // features 007 and 008 implement (hooks.go) and the repository (repository.go, store_json.go). Feature 006
 // adds the service, the dependency interfaces with their adapters, the history kind and the handler.
-package activity
+package core
 
 import (
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // Status is an activity's stored status (domain model §2.3, contract ActivityStatus).

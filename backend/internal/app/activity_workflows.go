@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval"
 	"mapp/internal/stores"
 )
 

@@ -1,4 +1,4 @@
-package activity
+package core
 
 import (
 	"context"
@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // Split activity (feature 016, FR-026 – FR-031, data-model §3.6, D-267): one activity becomes two inside its

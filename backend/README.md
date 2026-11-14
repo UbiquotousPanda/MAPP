@@ -21,9 +21,9 @@ Run them in this folder (`backend/`).
 | `go run ./cmd/api` | Starts the API on <http://127.0.0.1:8080>, logging JSON lines on standard output; Ctrl+C or SIGTERM stops it once the requests in progress finish |
 | `gofmt -l .` | Lists files that are not formatted (prints nothing when all is well; `gofmt -w .` fixes them) |
 | `go vet ./...` | Finds suspicious code |
-| `go test -short ./...` | Runs every unit and contract test; no database needed (one package: `go test -short ./internal/sample/`) |
+| `go test -short ./...` | Runs every unit and contract test; no database needed (one package: `go test -short ./internal/modules/sample/...`) |
 | `go test ./...` | Also runs the scope-isolation tests on the PostgreSQL server of `TEST_DATABASE_URL` |
-| `go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 generate` | Regenerates `internal/platform/database/sqlcdb` after a change to `queries/` or `migrations/` (`… vet` checks the queries) |
+| `go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 generate` | Regenerates every module's `internal/sqlcdb` (and the kernel's) after a change to a `queries/` folder or `migrations/` (`… vet` checks the queries) |
 
 The seed refuses to run while an API answers on its `APP_PORT` (if the API runs on another port, give the
 seed the same `APP_PORT`). The API never migrates: it stops with a message when the database is behind
@@ -75,7 +75,31 @@ cmd/seed/             the demo-data loader (logic in run(), tested in main_test.
 seed/                 the demo dataset; every feature adds its own records here
 internal/
   app/                config.go (the settings above) and app.go (wiring) — the only package that knows all others
-  stores/             the store of every area and their Transactor: Postgres for the API and the seed, JSON for tests
+  modules/            one module per business area (ADR-0022): `<m>/<m>.go` is its contract, the only part other
+                      packages may use; `<m>/internal/` holds its code (`core/`), its SQL (`queries/`) and
+                      sqlc's output (`sqlcdb/`), which the compiler keeps private; `<m>/<m>test/` is its fake
+    auth/               demo sign-in, sessions and the RequireSignIn middleware
+    people/             people, "me" (GET /api/me), display preferences; teams and memberships (003)
+    history/            activity log and recycle bin core: Log, MoveToBin, Undo, Restore and the Kind registry
+    sample/             developer sample folders and notes (local and development only)
+    settings/           models, activity types, Shell attributes and options, currencies, finance budgets (002)
+    plan/               plans and the registry of the levels below them (004)
+    campaign/           campaigns and initiatives (005)
+    activity/           activities (006)
+    lineitem/           line items (007)
+    approval/           approval workflows, rounds, history entries and notifications (008)
+    home/               the Home dashboard, read-only over 003–008 through Sources (009)
+    allwork/            All work (010): the read-only Grid, Calendar and Budget & cost of a year, export, saved
+                        views; it reads 004–007 through allwork.Source (internal/app/allwork_source.go)
+    budget/             global budgets and their allocations to plans (014): an allocation sets the plan budget
+                        through plans.SetBudgetFromAllocation (internal/app/budgets_adapter.go)
+    access/             roles, role assignments with scopes (All markets, My teams, Chosen teams), access rules
+                        and the route table that gives every operation its permission, failing closed (014)
+    financials/         GSAP transactions (POs, invoices, payments, accruals): the simulated GSAP extract
+                        (CSV import with a check step), matching to line items, figures and manual links (015)
+    rollup/             how plans, campaigns and initiatives add up what is below them, and budget phasing (005, 016)
+  stores/             the store of every area and their Transactor: Postgres for the API and the seed, fakes for tests
+  architecture/       the module graph and each table's owner, and the tests that hold the code to them (ADR-0022)
   platform/           small shared helpers
     actor/            who is acting: Actor{ID, Name}; actor.With and actor.From on the context
     clock/            "now" as a function, so tests can fix the time
@@ -83,7 +107,7 @@ internal/
     web/              the Gin engine and its middleware; BindJSON, Respond and RespondError for handlers
     logging/          JSON log lines that carry the request ID, trace ID and actor ID
     telemetry/        OpenTelemetry tracing and metrics, exported to the console at most
-    database/         PostgreSQL: Open, Migrate, Write (one at a time), Read (snapshot); migrations/, queries/, sqlcdb/, dbtest/
+    database/         PostgreSQL: Open, Migrate, Write (one at a time), Read (snapshot), Conn; migrations/ (all modules'), dbtest/
     memo/             values worked out once per read-only transaction, such as Settings' forms
     fake/             test fakes' building blocks: transactions undone on failure, tables, ID counters (029)
     ids/              readable IDs such as SF-1001, from counters that only ever go up
@@ -92,30 +116,10 @@ internal/
     money/            exact money: Amount, Money, Input, Rate, Rates, Percent; half-up rounding (owner: 002)
     date/             calendar dates: date.Date ("2026-03-01" in JSON), AddYears, Today, Format (owner: 005)
     sheet/            spreadsheet files with the standard library: .xlsx workbooks and CSV (owner: 010)
-  auth/               demo sign-in, sessions and the RequireSignIn middleware
-  people/             people, "me" (GET /api/me), display preferences; teams and memberships (003)
-  history/            activity log and recycle bin core: Log, MoveToBin, Undo, Restore and the Kind registry
-  samples/            developer sample folders and notes (local and development only)
-  settings/           models, activity types, Shell attributes and options, currencies, finance budgets (002)
-  plans/              plans and the registry of the levels below them (004)
-  campaigns/          campaigns and initiatives (005)
-  activities/         activities (006)
-  lineitems/          line items (007)
-  approvals/          approval workflows, rounds, history entries and notifications (008)
-  home/               the Home dashboard, read-only over 003–008 through Sources (009)
-  allwork/            All work (010): the read-only Grid, Calendar and Budget & cost of a year, export, saved
-                      views; it reads 004–007 through allwork.Source (internal/app/allwork_source.go)
-  budgets/            global budgets and their allocations to plans (014): an allocation sets the plan budget
-                      through plans.SetBudgetFromAllocation (internal/app/budgets_adapter.go)
-  access/             roles, role assignments with scopes (All markets, My teams, Chosen teams), access rules
-                      and the route table that gives every operation its permission, failing closed (014)
-  financials/         GSAP transactions (POs, invoices, payments, accruals): the simulated GSAP extract
-                      (CSV import with a check step), matching to line items, figures and manual links (015)
-  rollup/             how plans, campaigns and initiatives add up what is below them, and budget phasing (005, 016)
 ```
 
 `platform/authz` holds the fixed permissions, the five built-in roles and `Grants` (what a person may do,
-where); `internal/access` fills them from the stored roles. Settings also holds dated exchange rates, the
+where); the access module (`internal/modules/access`) fills them from the stored roles. Settings also holds dated exchange rates, the
 simulated GSAP rate-file import (`ratefeed.go`) and field help (`fieldhelp.go`) of 016; `approvals` holds
 017's rules, delegations, reminders and escalation, and monitoring. GSAP data and rates come from files and
 demo data behind adapters (ADR-0009), so a real feed replaces them without changing the services.
@@ -132,7 +136,10 @@ history kinds and handlers (docs/sdd/plan-module-build.md).
 
 ## How to add a business package
 
-`internal/sample` is the smallest complete example: copy its shape. For a new package `plan`:
+`internal/modules/sample` is the smallest complete example: copy its shape. A new package is a module
+(ADR-0022): its code goes in `internal/modules/<m>/internal/core/` and its contract, the types and constructors
+others use, in `internal/modules/<m>/<m>.go` (the recipe is in `docs/architecture/modular-monolith-architecture.md`
+§8). For a new package `plan`:
 
 1. **`model.go`** — the stored type, which embeds `record.Meta`, and separately the API types the handler
    returns and receives (for example `PlanView`, `PlanInput`, and `PlanUpdate` with `Version *int`).

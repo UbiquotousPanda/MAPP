@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"encoding/json"
@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/overspend"
+	"mapp/internal/modules/overspend"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 func TestCreateCampaign_OnlyNameRequired_FR005(t *testing.T) {

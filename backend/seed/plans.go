@@ -5,12 +5,12 @@ import (
 	"context"
 	"fmt"
 
-	"mapp/internal/overspend"
-	"mapp/internal/plan"
+	"mapp/internal/modules/overspend"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 type demoPlan struct {

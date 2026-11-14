@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	"mapp/internal/allwork"
-	"mapp/internal/plan"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // spreadWords and goalStageWords return the stored values as the plan and line-item forms show them.

@@ -1,4 +1,4 @@
-package people_test
+package core_test
 
 import (
 	"net/http"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -37,7 +37,7 @@ func TestListPeople_GivesPickerData_FR017_FR018(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET /api/v1/people = %d %s", response.Status, response.Body)
 	}
-	var page people.PersonPage
+	var page core.PersonPage
 	response.Decode(t, &page)
 	var names []string
 	for _, p := range page.Items {
@@ -48,7 +48,7 @@ func TestListPeople_GivesPickerData_FR017_FR018(t *testing.T) {
 		t.Fatalf("people = %q (total %d), want %q", names, page.Total, want)
 	}
 	sara := page.Items[6]
-	wantTeams := []people.TeamRef{
+	wantTeams := []core.TeamRef{
 		{ID: "T-1001", Name: "Lubricants Europe", Colour: "blue", Active: true},
 		{ID: "T-1002", Name: "Mobility China", Colour: "violet", Active: true},
 	}
@@ -66,9 +66,9 @@ func TestGetPerson_DetailsOrNotFound_FR004(t *testing.T) {
 	found := alex.Do(t, http.MethodGet, "/api/v1/people/U-1005", nil)
 	missing := alex.Do(t, http.MethodGet, "/api/v1/people/U-9999", nil)
 
-	var carlos people.PersonDetails
+	var carlos core.PersonDetails
 	found.Decode(t, &carlos)
-	wantTeams := []people.TeamRef{
+	wantTeams := []core.TeamRef{
 		{ID: "T-1003", Name: "Global Marketing Ops", Colour: "teal", Active: true},
 		{ID: "T-1002", Name: "Mobility China", Colour: "violet", Active: true},
 	}
@@ -138,7 +138,7 @@ func TestUpdatePerson_ChangedConflictInvalidOrNotFound_FR002(t *testing.T) {
 		"email": "jane.smith@", "jobTitle": "", "teamIds": []string{}}, apitest.SkipRequestValidation())
 	missing := alex.Do(t, http.MethodPatch, "/api/v1/people/U-9999", update)
 
-	var person people.PersonDetails
+	var person core.PersonDetails
 	changed.Decode(t, &person)
 	if changed.Status != http.StatusOK || person.Name != "Jane Smith" || person.Email != "jane.smith@shell.com" ||
 		person.Version != 2 || len(person.Teams) != 1 || person.UpdatedBy.Name != "Priya Raman" {
@@ -168,7 +168,7 @@ func TestPersonImpact_NoPlansNoWarnings_FR013(t *testing.T) {
 	assertAnswer(t, impact, http.StatusOK, `{"warnings":[]}`)
 	assertAnswer(t, invalid, http.StatusBadRequest, validationBody(`{"field":"email","message":"Enter a valid e-mail address."}`))
 	assertAnswer(t, missing, http.StatusNotFound, personGoneBody)
-	var person people.PersonDetails
+	var person core.PersonDetails
 	alex.Do(t, http.MethodGet, "/api/v1/people/"+jane.ID, nil).Decode(t, &person)
 	if person.Version != 1 || len(person.Teams) != 1 {
 		t.Errorf("after the impact check the person = %+v, want them unchanged", person)
@@ -182,7 +182,7 @@ func TestSetPersonStatus_InactiveAndBack_FR005_FR007(t *testing.T) {
 	jane := createPerson(t, alex, map[string]any{"name": "Jane Doe", "email": janesEmail, "teamIds": []string{"T-1001"}})
 	path := "/api/v1/people/" + jane.ID + "/status"
 
-	var inactive, active people.PersonDetails
+	var inactive, active core.PersonDetails
 	alex.Do(t, http.MethodPost, path, map[string]any{"active": false, "version": 1}).Decode(t, &inactive)
 	alex.Do(t, http.MethodPost, path, map[string]any{"active": true, "version": 2}).Decode(t, &active)
 	incomplete := alex.Do(t, http.MethodPost, path, map[string]any{}, apitest.SkipRequestValidation())
@@ -216,7 +216,7 @@ func TestPeopleManagedWithPeopleManage_FR027(t *testing.T) {
 	read := daniel.Do(t, http.MethodGet, "/api/v1/people/"+jane.ID, nil)
 	assertAnswer(t, refused, http.StatusForbidden, `{"error":{"code":"forbidden","message":"Changing people and teams isn't part of `+
 		`your roles (Approver, Planner). Ask an administrator if you need it.","fields":[]}}`)
-	var unchanged people.PersonDetails
+	var unchanged core.PersonDetails
 	read.Decode(t, &unchanged)
 	if read.Status != http.StatusOK || unchanged.Version != 1 || unchanged.JobTitle != "" {
 		t.Errorf("after the refusal Daniel reads %d %s, want Jane unchanged at version 1", read.Status, read.Body)
@@ -224,10 +224,10 @@ func TestPeopleManagedWithPeopleManage_FR027(t *testing.T) {
 
 	server.GrantRole(t, danielsEmail, "administrator", "all")
 	edited := daniel.Do(t, http.MethodPatch, "/api/v1/people/"+jane.ID, change)
-	inactive := setStatus(t, daniel, jane.ID, false, 2)
-	active := setStatus(t, daniel, jane.ID, true, 3)
+	inactive := setStatus(t, daniel, jane.ID, map[string]any{"active": false, "version": 2})
+	active := setStatus(t, daniel, jane.ID, map[string]any{"active": true, "version": 3})
 
-	var person people.PersonDetails
+	var person core.PersonDetails
 	edited.Decode(t, &person)
 	if edited.Status != http.StatusOK || person.JobTitle != "Brand manager" || person.UpdatedBy.Name != "Daniel Okoro" {
 		t.Errorf("Daniel's PATCH = %d %s", edited.Status, edited.Body)
@@ -237,24 +237,24 @@ func TestPeopleManagedWithPeopleManage_FR027(t *testing.T) {
 	}
 }
 
-func createPerson(t *testing.T, client *apitest.Client, body map[string]any) people.PersonDetails {
+func createPerson(t *testing.T, client *apitest.Client, body map[string]any) core.PersonDetails {
 	t.Helper()
 	response := client.Do(t, http.MethodPost, "/api/v1/people", body)
 	if response.Status != http.StatusCreated {
 		t.Fatalf("POST /api/v1/people %v = %d %s", body, response.Status, response.Body)
 	}
-	var person people.PersonDetails
+	var person core.PersonDetails
 	response.Decode(t, &person)
 	return person
 }
 
-func setStatus(t *testing.T, client *apitest.Client, id string, active bool, version int) people.PersonDetails {
+func setStatus(t *testing.T, client *apitest.Client, id string, body map[string]any) core.PersonDetails {
 	t.Helper()
-	response := client.Do(t, http.MethodPost, "/api/v1/people/"+id+"/status", map[string]any{"active": active, "version": version})
+	response := client.Do(t, http.MethodPost, "/api/v1/people/"+id+"/status", body)
 	if response.Status != http.StatusOK {
-		t.Fatalf("POST /api/v1/people/%s/status active=%t = %d %s", id, active, response.Status, response.Body)
+		t.Fatalf("POST /api/v1/people/%s/status %v = %d %s", id, body, response.Status, response.Body)
 	}
-	var person people.PersonDetails
+	var person core.PersonDetails
 	response.Decode(t, &person)
 	return person
 }

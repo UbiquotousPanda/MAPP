@@ -7,11 +7,11 @@ import (
 	"slices"
 	"time"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/workbook"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/fake"
-	"mapp/internal/workbook"
 )
 
 // Plans finds a plan's access facts; a nil Plans lets every plan be seen.

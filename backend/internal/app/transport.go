@@ -6,11 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"mapp/internal/dataset"
+	"mapp/internal/modules/dataset"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/workbook"
 	"mapp/internal/platform/telemetry"
 	"mapp/internal/platform/web"
-	"mapp/internal/settings"
-	"mapp/internal/workbook"
 )
 
 const apiV1 = "/api/v1"

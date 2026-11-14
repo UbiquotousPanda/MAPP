@@ -1,20 +1,20 @@
-package purchaserequest_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/purchaserequest/internal/core"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/purchaserequest"
 )
 
 func linesOnApproved(t *testing.T, s *apitest.Server, setting string) {
 	t.Helper()
 	alex := s.SignIn(t, alexsEmail)
-	before := decoded[purchaserequest.ConfigurationView](t, alex.Do(t, http.MethodGet, "/api/v1/purchase-request-configuration", nil),
+	before := decoded[core.ConfigurationView](t, alex.Do(t, http.MethodGet, "/api/v1/purchase-request-configuration", nil),
 		http.StatusOK)
-	decoded[purchaserequest.ConfigurationView](t, alex.Do(t, http.MethodPut, "/api/v1/purchase-request-configuration",
+	decoded[core.ConfigurationView](t, alex.Do(t, http.MethodPut, "/api/v1/purchase-request-configuration",
 		map[string]any{"version": before.Version, "purchaseSupport": true, "linesOnApprovedPurchaseRequests": setting}), http.StatusOK)
 }
 
@@ -28,7 +28,7 @@ func secondStandBuild(t *testing.T, s *apitest.Server) string {
 }
 
 // withAddedLine is a save of pr that keeps its line and adds one of 100.00 EUR on lineItemID.
-func withAddedLine(pr purchaserequest.View, lineItemID, then string) map[string]any {
+func withAddedLine(pr core.View, lineItemID, then string) map[string]any {
 	b := saveBody(pr, "9200.00", then)
 	added := map[string]any{"lineItemId": lineItemID, "currency": "EUR", "amount": "100.00", "deliveryDate": "2026-11-30",
 		"overallLimit": "100.00", "description": "", "attributes": map[string]any{}}
@@ -66,9 +66,9 @@ func TestAddLine_FollowsTheSetting_Contract_032_FR039(t *testing.T) {
 				}
 				return
 			}
-			saved := decoded[purchaserequest.View](t, r, http.StatusOK)
-			if saved.Status != purchaserequest.StatusApproved || len(saved.Lines) != 2 ||
-				saved.Routings[0].Type != purchaserequest.RoutingModification {
+			saved := decoded[core.View](t, r, http.StatusOK)
+			if saved.Status != core.StatusApproved || len(saved.Lines) != 2 ||
+				saved.Routings[0].Type != core.RoutingModification {
 				t.Errorf("saved = %+v", saved)
 			}
 		})
@@ -96,7 +96,7 @@ func TestRestore_DeclinedComesBackCreated_Contract_032_FR042(t *testing.T) {
 	receiveSwbsCodes(t, s)
 	priya, daniel := s.SignIn(t, priyasEmail), s.SignIn(t, danielsEmail)
 	pr := create(t, priya, body(standBuild, "EUR", "500.00"))
-	sub := decoded[purchaserequest.ApprovalView](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/approval/submit",
+	sub := decoded[core.ApprovalView](t, priya.Do(t, http.MethodPost, prs+"/"+pr.ID+"/approval/submit",
 		map[string]any{"version": pr.Version}), http.StatusOK)
 	decide(t, daniel, "decline", sub)
 
@@ -106,7 +106,7 @@ func TestRestore_DeclinedComesBackCreated_Contract_032_FR042(t *testing.T) {
 	if restored.Status != http.StatusOK {
 		t.Fatalf("restore = %d %s", restored.Status, restored.Body)
 	}
-	if back := get(t, priya, pr.ID); back.Status != purchaserequest.StatusCreated || len(back.Lines) != 1 {
+	if back := get(t, priya, pr.ID); back.Status != core.StatusCreated || len(back.Lines) != 1 {
 		t.Errorf("restored = %+v", back)
 	}
 }

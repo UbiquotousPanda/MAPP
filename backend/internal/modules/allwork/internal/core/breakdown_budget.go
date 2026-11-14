@@ -1,10 +1,10 @@
-package allwork
+package core
 
 import (
 	"slices"
 
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // budgetOf returns the budgets of the records at the grouping's level whose value is in the group g (several

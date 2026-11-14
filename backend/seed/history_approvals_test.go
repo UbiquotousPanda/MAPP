@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // Every approval action 008's seed dates within the 14 days has one "statusChanged" entry on its activity

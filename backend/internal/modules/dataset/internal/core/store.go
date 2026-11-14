@@ -1,11 +1,11 @@
-package dataset
+package core
 
 import (
 	"context"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
-	"mapp/internal/settings"
 )
 
 type Transactor interface {

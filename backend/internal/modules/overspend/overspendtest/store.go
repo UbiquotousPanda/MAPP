@@ -5,11 +5,11 @@ package overspendtest
 import (
 	"context"
 
-	"mapp/internal/activity"
-	"mapp/internal/budget"
-	"mapp/internal/campaign"
-	"mapp/internal/overspend"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/overspend"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/money"
 )

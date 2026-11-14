@@ -1,16 +1,16 @@
-package activity
+package core
 
 import (
 	"context"
 	"fmt"
 
+	"mapp/internal/modules/activity/internal/sqlcdb"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/memo"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // keptArea is what the transaction memo keeps of activities.
@@ -120,13 +120,13 @@ func (s *PostgresStore) Delete(ctx context.Context, id string) error {
 }
 
 func (s *PostgresStore) list(ctx context.Context, filter sqlcdb.ListActivitiesParams) ([]Activity, error) {
-	rows, err := s.db.Queries(ctx).ListActivities(ctx, filter)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListActivities(ctx, filter)
 	s.records().Keep(ctx, rows)
 	return activitiesFromRows(rows, err)
 }
 
 func (s *PostgresStore) listInScope(ctx context.Context, scope authz.Scope, id *string) ([]Activity, error) {
-	rows, err := s.db.Queries(ctx).ListActivitiesInScope(ctx, sqlcdb.ListActivitiesInScopeParams{
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListActivitiesInScope(ctx, sqlcdb.ListActivitiesInScopeParams{
 		ID: id, SeesEverything: scope.Everything, ViewerID: scope.PersonID, ViewsPlans: scope.Holds,
 		ViewerTeamIds: scope.TeamIDs,
 	})
@@ -144,14 +144,14 @@ func (s *PostgresStore) records() memo.Records[sqlcdb.Activity] {
 		Area: keptArea, ID: func(r sqlcdb.Activity) string { return r.ID },
 		Parent: func(r sqlcdb.Activity) string { return r.InitiativeID },
 		Read: func(ctx context.Context, ids, initiativeIDs []string) ([]sqlcdb.Activity, error) {
-			return s.db.Queries(ctx).ListActivities(ctx, sqlcdb.ListActivitiesParams{Ids: ids, InitiativeIds: initiativeIDs})
+			return sqlcdb.New(s.db.Conn(ctx)).ListActivities(ctx, sqlcdb.ListActivitiesParams{Ids: ids, InitiativeIds: initiativeIDs})
 		},
 	}
 }
 
 func (s *PostgresStore) change(ctx context.Context) *sqlcdb.Queries {
 	memo.Forget(ctx, keptArea)
-	return s.db.Queries(ctx)
+	return sqlcdb.New(s.db.Conn(ctx))
 }
 
 func firstActivity(list []Activity, err error) (Activity, bool, error) {

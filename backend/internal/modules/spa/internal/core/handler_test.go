@@ -1,13 +1,13 @@
-package spa_test
+package core_test
 
 import (
 	"encoding/json"
 	"net/http"
 	"testing"
 
+	"mapp/internal/modules/spa/internal/core"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
-	"mapp/internal/spa"
 )
 
 const (
@@ -17,12 +17,12 @@ const (
 	viewPath    = "/api/v1/plans/P-1001/spa"
 )
 
-func viewOf(t *testing.T, r *apitest.Response) spa.View {
+func viewOf(t *testing.T, r *apitest.Response) core.View {
 	t.Helper()
 	if r.Status != http.StatusOK {
 		t.Fatalf("status %d: %s", r.Status, r.Body)
 	}
-	var v spa.View
+	var v core.View
 	if err := json.Unmarshal(r.Body, &v); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestGetSpaView_FR005_ACampaignsView(t *testing.T) {
 	s := apitest.New(t)
 	priya := s.SignIn(t, priyasEmail)
 	v := viewOf(t, priya.Do(t, http.MethodGet, viewPath+"?campaignId=C-1002&dimension=activityType", nil))
-	if v.Scope.ID != "C-1002" || v.Scope.Type != spa.LevelCampaign || v.Dimension.Key != "activityType" ||
+	if v.Scope.ID != "C-1002" || v.Scope.Type != core.LevelCampaign || v.Dimension.Key != "activityType" ||
 		len(v.Campaigns) != 2 || v.Activities[0].Campaign.ID != "C-1002" {
 		t.Errorf("view scope %+v, dimension %s", v.Scope, v.Dimension.Key)
 	}

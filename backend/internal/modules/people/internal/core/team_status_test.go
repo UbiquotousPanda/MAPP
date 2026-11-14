@@ -1,10 +1,10 @@
-package people
+package core
 
 import (
 	"slices"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 )
 

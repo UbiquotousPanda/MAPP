@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/swbs"
 	"mapp/internal/platform/actor"
 	"mapp/internal/stores"
-	"mapp/internal/swbs"
 )
 
 const companyCodeAttribute = "activity/Company code"

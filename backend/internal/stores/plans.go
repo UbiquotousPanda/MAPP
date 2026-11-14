@@ -3,7 +3,7 @@ package stores
 import (
 	"context"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/authz"
 )
 

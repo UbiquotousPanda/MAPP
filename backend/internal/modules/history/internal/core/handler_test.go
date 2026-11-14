@@ -1,4 +1,4 @@
-package history_test
+package core_test
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -140,11 +140,11 @@ func TestListActivityLog_Filters_Contract(t *testing.T) {
 	}
 
 	page := getLog(t, priya, "?recordId=SF-1002")
-	if want := (history.RecordRef{Type: "sampleFolder", ID: "SF-1002", Name: "Plans 2"}); page.Record == nil || *page.Record != want {
+	if want := (core.RecordRef{Type: "sampleFolder", ID: "SF-1002", Name: "Plans 2"}); page.Record == nil || *page.Record != want {
 		t.Errorf("record = %+v, want %+v", page.Record, want)
 	}
 	note := getLog(t, priya, "?recordId=SN-1001").Items[0].RecordNow
-	if note.State != history.RecordInRecycleBin || note.BinEntryID != "BIN-1001" || note.Name != "First idea" {
+	if note.State != core.RecordInRecycleBin || note.BinEntryID != "BIN-1001" || note.Name != "First idea" {
 		t.Errorf("recordNow of the deleted note = %+v, want in the recycle bin BIN-1001", note)
 	}
 }

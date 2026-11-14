@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
-	"mapp/internal/plan"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/memo"

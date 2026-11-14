@@ -1,14 +1,14 @@
-package lineitem
+package core
 
 import (
 	"cmp"
 	"context"
 	"fmt"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // shownView converts the USD planned cost to a's display currency as well (D-213).

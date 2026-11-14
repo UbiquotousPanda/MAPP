@@ -1,7 +1,7 @@
-package plan
+package core
 
 import (
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"
 )

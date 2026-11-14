@@ -6,15 +6,15 @@ import (
 	"maps"
 	"slices"
 
-	"mapp/internal/activity"
-	"mapp/internal/allwork"
-	"mapp/internal/campaign"
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // container is a campaign or initiative as 005's plan tree shows it.

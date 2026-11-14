@@ -1,11 +1,11 @@
-package workbook
+package core
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"

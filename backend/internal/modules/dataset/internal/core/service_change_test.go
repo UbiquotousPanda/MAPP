@@ -1,11 +1,11 @@
-package dataset
+package core
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 )
 

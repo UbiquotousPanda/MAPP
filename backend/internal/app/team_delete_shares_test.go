@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/customdashboard"
-	"mapp/internal/dataset"
-	"mapp/internal/people"
+	"mapp/internal/modules/customdashboard"
+	"mapp/internal/modules/dataset"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/apitest"
 )
 

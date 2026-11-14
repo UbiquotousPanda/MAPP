@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/campaign"
+	"mapp/internal/modules/campaign"
 	"mapp/internal/platform/apibench"
 	"mapp/internal/platform/money"
 )

@@ -7,16 +7,16 @@ import (
 	"slices"
 	"time"
 
-	"mapp/internal/allwork"
-	"mapp/internal/approval"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/purchaserequest"
+	"mapp/internal/modules/settings"
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/purchaserequest"
-	"mapp/internal/settings"
 	"mapp/internal/stores"
-	"mapp/internal/widgetdata"
 )
 
 const tenThousandthsPerDay = 86400

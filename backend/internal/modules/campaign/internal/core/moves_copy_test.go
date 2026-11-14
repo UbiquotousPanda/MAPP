@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"encoding/json"
@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 )
 
 // User story 6 — Move or copy a campaign or initiative (moves.go).

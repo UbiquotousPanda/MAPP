@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // LineItems returns the activity's line items with their planned cost in their own currency and in USD at

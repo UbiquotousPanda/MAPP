@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/allwork"
-	"mapp/internal/financials"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/financials"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"

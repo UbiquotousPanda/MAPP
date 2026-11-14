@@ -1,4 +1,4 @@
-package allwork_test
+package core_test
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -24,7 +24,7 @@ func TestGetAllWork_FinancialColumns_FR023(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET /api/v1/all-work = %d %s", response.Status, response.Body)
 	}
-	var r allwork.Result
+	var r core.Result
 	response.Decode(t, &r)
 	figures := map[string][]string{}
 	for _, row := range r.Rows {
@@ -57,7 +57,7 @@ func TestGetAllWork_FinancialColumns_FR023(t *testing.T) {
 	}
 
 	defaults := priya.Do(t, http.MethodGet, "/api/v1/all-work", nil)
-	var d allwork.Result
+	var d core.Result
 	defaults.Decode(t, &d)
 	keys := []string{}
 	for _, c := range d.Columns {
@@ -79,11 +79,11 @@ func TestGetAllWork_FinancialsFilterAndExport_FR024(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET /api/v1/all-work = %d %s", response.Status, response.Body)
 	}
-	var r allwork.Result
+	var r core.Result
 	response.Decode(t, &r)
 	var activities []string
 	for _, row := range r.Rows {
-		if row.Level == allwork.LevelActivity && row.Role == allwork.RoleMatch {
+		if row.Level == core.LevelActivity && row.Role == core.RoleMatch {
 			activities = append(activities, row.Name)
 		}
 	}

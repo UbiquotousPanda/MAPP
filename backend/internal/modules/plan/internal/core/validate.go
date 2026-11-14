@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"cmp"
@@ -10,10 +10,10 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 const (

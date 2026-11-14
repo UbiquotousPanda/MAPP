@@ -1,9 +1,9 @@
-package campaign
+package core
 
 import (
 	"context"
 
-	"mapp/internal/platform/database/sqlcdb"
+	"mapp/internal/modules/campaign/internal/sqlcdb"
 	"mapp/internal/platform/memo"
 )
 
@@ -17,7 +17,7 @@ const (
 func (s *PostgresStore) change(ctx context.Context) *sqlcdb.Queries {
 	memo.Forget(ctx, campaignArea)
 	memo.Forget(ctx, initiativeArea)
-	return s.db.Queries(ctx)
+	return sqlcdb.New(s.db.Conn(ctx))
 }
 
 func (s *PostgresStore) campaignRecords() memo.Records[sqlcdb.ListCampaignsRow] {
@@ -26,7 +26,7 @@ func (s *PostgresStore) campaignRecords() memo.Records[sqlcdb.ListCampaignsRow] 
 		ID:     func(r sqlcdb.ListCampaignsRow) string { return r.Campaign.ID },
 		Parent: func(r sqlcdb.ListCampaignsRow) string { return r.Campaign.PlanID },
 		Read: func(ctx context.Context, ids, planIDs []string) ([]sqlcdb.ListCampaignsRow, error) {
-			return s.db.Queries(ctx).ListCampaigns(ctx, sqlcdb.ListCampaignsParams{Ids: ids, PlanIds: planIDs})
+			return sqlcdb.New(s.db.Conn(ctx)).ListCampaigns(ctx, sqlcdb.ListCampaignsParams{Ids: ids, PlanIds: planIDs})
 		},
 	}
 }
@@ -37,7 +37,7 @@ func (s *PostgresStore) initiativeRecords() memo.Records[sqlcdb.ListInitiativesR
 		ID:     func(r sqlcdb.ListInitiativesRow) string { return r.Initiative.ID },
 		Parent: func(r sqlcdb.ListInitiativesRow) string { return r.Initiative.CampaignID },
 		Read: func(ctx context.Context, ids, campaignIDs []string) ([]sqlcdb.ListInitiativesRow, error) {
-			return s.db.Queries(ctx).ListInitiatives(ctx, sqlcdb.ListInitiativesParams{Ids: ids, CampaignIds: campaignIDs})
+			return sqlcdb.New(s.db.Conn(ctx)).ListInitiatives(ctx, sqlcdb.ListInitiativesParams{Ids: ids, CampaignIds: campaignIDs})
 		},
 	}
 }

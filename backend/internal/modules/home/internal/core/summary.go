@@ -1,12 +1,12 @@
-package home
+package core
 
 import (
 	"context"
 	"slices"
 
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 func (s *Service) Summary(ctx context.Context, a actor.Actor, scopeText string) (SummaryView, error) {

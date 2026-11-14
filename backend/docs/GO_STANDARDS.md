@@ -97,16 +97,24 @@ backend/
 │       └── main.go             # creates and migrates the local database, loads the demo data
 ├── internal/
 │   ├── app/                    # wiring: config, dependencies, routes, server lifecycle
-│   ├── budget/                 # one package per business area (plan/, campaign/, ...)
-│   │   ├── model.go            # domain types, statuses, invariants and the area's errors
-│   │   ├── store.go            # the Store interface the service needs
-│   │   ├── store_postgres.go   # PostgresStore: sqlc queries ↔ domain types
-│   │   ├── service.go          # use cases and business rules (no Gin, no SQL)
-│   │   ├── handler.go          # Gin handlers and request/response types
-│   │   ├── service_test.go     # unit tests with an in-memory fake Store
-│   │   ├── handler_test.go     # HTTP and contract tests with httptest
-│   │   └── store_postgres_test.go  # scope-isolation tests against real PostgreSQL
-│   └── platform/               # cross-cutting infrastructure, one package per concern
+│   ├── architecture/           # the module graph and table owners, and the tests that hold them
+│   ├── modules/
+│   │   └── budget/             # one module per business area (plan/, campaign/, ...), ADR-0022
+│   │       ├── budget.go       # THE CONTRACT: types, ports and constructors others may use
+│   │       ├── budgettest/     # the in-memory fake other packages' tests use
+│   │       └── internal/       # private: the compiler refuses every other module
+│   │           ├── core/
+│   │           │   ├── model.go            # domain types, statuses, invariants and the area's errors
+│   │           │   ├── store.go            # the Store interface the service needs
+│   │           │   ├── store_postgres.go   # PostgresStore: sqlc queries ↔ domain types
+│   │           │   ├── service.go          # use cases and business rules (no Gin, no SQL)
+│   │           │   ├── handler.go          # Gin handlers and request/response types
+│   │           │   ├── service_test.go     # unit tests with an in-memory fake Store
+│   │           │   ├── handler_test.go     # HTTP and contract tests with httptest
+│   │           │   └── store_postgres_test.go  # scope-isolation tests against real PostgreSQL
+│   │           ├── queries/    # sqlc input: the SQL of the tables this module owns
+│   │           └── sqlcdb/     # sqlc output: generated, committed, never edited
+│   └── platform/               # the kernel: cross-cutting infrastructure, one package per concern
 │       ├── actor/              # the signed-in person, from the request context
 │       ├── authz/              # permissions and the teams an actor may act in
 │       ├── clock/              # the injectable clock
@@ -115,10 +123,10 @@ backend/
 │       ├── logging/            # slog setup and request-scoped attributes
 │       ├── telemetry/          # OpenTelemetry setup
 │       └── database/
-│           ├── database.go     # Open (the pgx pool), Write, Queries, Migrate
-│           ├── migrations/     # goose SQL files, embedded with //go:embed
-│           ├── queries/        # sqlc input: one .sql file per area
-│           ├── sqlcdb/         # sqlc output: generated, committed, never edited
+│           ├── database.go     # Open (the pgx pool), Write, Read, Conn, Migrate
+│           ├── migrations/     # goose SQL files for every module, embedded with //go:embed
+│           ├── queries/        # the kernel's own queries (the write lock, ID counters)
+│           ├── sqlcdb/         # sqlc output for them
 │           └── dbtest/         # a fresh, migrated PostgreSQL database per test
 ├── api/
 │   └── openapi.yaml            # the API contract (B6)
@@ -140,8 +148,10 @@ they span backend and frontend (Principle III).
 
 **Rules for the layout:**
 
-- **Package by business area.** Everything about budgets is in `internal/budget`. Adding a
-  feature touches one package; deleting it removes one directory. Top-level `models/`,
+- **Package by business area.** Everything about budgets is in `internal/modules/budget`. Adding a
+  feature touches one module; deleting it removes one directory. Other packages use only its contract,
+  `budget.go`; its code, queries and generated code sit under its `internal/`, which Go's compiler
+  keeps from every other module. Top-level `models/`,
   `services/`, `controllers/` or `repositories/` directories split one feature across many
   packages and lead to import cycles. An area has at least the files above; a large one gives a
   use case its own file (`copy.go`).
@@ -149,12 +159,12 @@ they span backend and frontend (Principle III).
   so internal APIs can change freely. Do not create `pkg/`; nothing here is a public library.
 - **No grab-bag packages.** `util`, `common`, `helpers`, `misc`, `base` and `shared` are
   forbidden (B2). Name a package after what it provides (`poll`, `web`, `errs`).
-- **No shared `models` package.** Each area owns its domain types. Code generated by sqlc
-  (`sqlcdb`) is the only cross-area data package, and only stores import it.
+- **No shared `models` package.** Each area owns its domain types, and its own code generated by sqlc
+  (`internal/sqlcdb`), which only its stores import.
 - **Generated code is committed** so that builds need no generator, and CI runs
   `sqlc generate` to prove it is current.
 - **Tests sit next to the code** they test. Use the external test package
-  (`package budget_test`) so tests exercise the public API, as callers do; handler tests always do
+  (`package core_test`) so tests exercise the package's API, as callers do; handler tests always do
   (B9).
 - **`cmd/*/main.go` stays tiny.** It converts `run`'s error into an exit code. Wiring goes in
   `internal/app`, so it can be tested without signals or `os.Exit`.
@@ -606,9 +616,10 @@ func Migrate(ctx context.Context, db *DB) (err error) {
 
 ### Queries (sqlc)
 
-All SQL lives in `internal/platform/database/queries/*.sql`. `sqlc` reads the goose migrations
-as the schema and generates typed Go into `internal/platform/database/sqlcdb`. A typo in a column
-name fails at `sqlc generate`, not in production.
+A module's SQL lives in `internal/modules/<area>/internal/queries/*.sql` and reads only the tables it
+owns, or a view or function another module publishes (`internal/architecture/tables.go`; the tests fail
+otherwise). `sqlc` reads all the goose migrations as the schema and generates typed Go for each module into
+its own `internal/sqlcdb`. A typo in a column name fails at `sqlc generate`, not in production.
 
 ```sql
 -- name: GetBudget :one
@@ -634,19 +645,22 @@ WHERE id = sqlc.arg(id) AND status = 'draft' AND team_id = ANY(sqlc.arg(team_ids
 
 ```yaml
 version: "2"
-sql:
+overrides:            # shared by every entry
+  go:
+    overrides:
+      - db_type: timestamptz
+        go_type: time.Time
+sql:                  # one entry per module, and one for the kernel
   - engine: postgresql
     schema: internal/platform/database/migrations
-    queries: internal/platform/database/queries
+    queries: internal/modules/budget/internal/queries
     gen:
       go:
         package: sqlcdb
-        out: internal/platform/database/sqlcdb
+        out: internal/modules/budget/internal/sqlcdb
         sql_package: pgx/v5
         emit_empty_slices: true
-        overrides:
-          - db_type: timestamptz
-            go_type: time.Time
+        omit_unused_structs: true
 ```
 
 **Scope isolation is in every query.** Each query on plan-owned data filters by the teams of the
@@ -665,7 +679,7 @@ $3`), which stays fast at any depth.
 
 ```go
 func (s *PostgresStore) Get(ctx context.Context, scope authz.Scope, id string) (Budget, error) {
-	row, err := s.db.Queries(ctx).GetBudget(ctx, sqlcdb.GetBudgetParams{ID: id, TeamIds: scope.TeamIDs})
+	row, err := sqlcdb.New(s.db.Conn(ctx)).GetBudget(ctx, sqlcdb.GetBudgetParams{ID: id, TeamIds: scope.TeamIDs})
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Budget{}, ErrNotFound
 	}
@@ -750,7 +764,8 @@ func (d *DB) Read(ctx context.Context, fn func(ctx context.Context) error) error
 ```
 
 `run` begins the transaction, puts it in the context, commits when `fn` returns `nil` and rolls back
-otherwise; `Queries(ctx)` gives the generated queries on the context's transaction, or on the pool.
+otherwise; `Conn(ctx)` gives the context's transaction, or the pool outside one, and a module's store
+runs its generated queries on it with `sqlcdb.New(s.db.Conn(ctx))`.
 
 The service declares the transactor it needs (`Write(ctx, fn) error`) next to its `Store`, as it
 does today with `store.Transactor`. Keep transactions short. Never call external services or wait
@@ -784,7 +799,7 @@ func (h *Handler) create(c *gin.Context) {
 ```
 
 The handler registers in its area's `RegisterRoutes`, on the signed-in `/api/v1` group that
-`internal/app` hands it, and its access rule goes in `access/routes.go`, keyed as the contract
+`internal/app` hands it, and its access rule goes in `modules/access/internal/core/routes.go`, keyed as the contract
 writes the operation:
 
 ```go
@@ -1117,7 +1132,7 @@ behaviour (demo sign-in, seeding) needs an explicit setting (B7). `APP_HOST` acc
   rounded up: one in a 20-line file, five in a 100-line file. Tests count; generated code does
   not, and neither do tool directives (`//go:`, `//nolint`, goose's `-- +goose` and sqlc's
   `-- name:` annotations). A change that touches a file brings the whole file within the budget,
-  not only the lines it changed; features 025, 027 and 028 are exempt.
+  not only the lines it changed; features 025, 027, 028 and 035 and the module move (ADR-0022) are exempt.
 - **A package** opens with a one- or two-line package comment (`revive: package-comments`).
 - **An exported identifier** gets a doc comment only when its name and signature do not already
   state its contract — for example which errors it returns, or what it requires of the caller.

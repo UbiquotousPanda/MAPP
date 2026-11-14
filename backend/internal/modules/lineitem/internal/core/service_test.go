@@ -1,4 +1,4 @@
-package lineitem
+package core
 
 import (
 	"reflect"
@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 )
 
 func TestCreate_AllProblemsAtOnce_FR009_SC005(t *testing.T) { //nolint:tparallel // the subtests share one service, and the count after them needs them finished

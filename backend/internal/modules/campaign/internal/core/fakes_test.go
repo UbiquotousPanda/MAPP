@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"context"
@@ -7,12 +7,12 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/history"
-	"mapp/internal/people"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // fakePlans is the PlanSource of the tests, and the plan kind history needs as the parent of campaigns.

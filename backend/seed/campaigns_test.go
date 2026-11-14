@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/campaign"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // The campaigns and initiatives of 005 data model §9, C-1001 … C-1004 and I-1001 … I-1008, with their

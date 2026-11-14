@@ -1,4 +1,4 @@
-package approval
+package core
 
 import (
 	"cmp"
@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"

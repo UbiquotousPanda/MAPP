@@ -88,7 +88,7 @@ jobs:
         run: |
           go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 generate
           go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 vet
-          stale="$(git status --porcelain -- internal/platform/database/sqlcdb)"
+          stale="$(git status --porcelain -- internal/platform/database/sqlcdb 'internal/modules/*/internal/sqlcdb')"
           if [ -n "$stale" ]; then
             echo "Generated queries are out of date — run: go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 generate"
             echo "$stale"
@@ -99,7 +99,7 @@ jobs:
         run: >-
           go test -count=1
           -run 'TestQueryLog_50000Entries_SC006|TestQuery_StressYear_SC004|TestImport_FiveThousandRows_SC004|TestTransactions_TwentyThousand_SC004|TestHome_LargeScope_SC004'
-          ./internal/history/ ./internal/allwork/ ./internal/financials/ ./internal/home/
+          ./internal/history/ ./internal/allwork/ ./internal/financials/ ./internal/modules/home/internal/core/
       - name: Vulnerabilities
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
 

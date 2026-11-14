@@ -1,6 +1,6 @@
 package stores
 
-import "mapp/internal/swbs"
+import "mapp/internal/modules/swbs"
 
 type SwbsStore interface {
 	swbs.Store

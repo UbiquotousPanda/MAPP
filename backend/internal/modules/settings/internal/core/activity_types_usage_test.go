@@ -1,10 +1,10 @@
-package settings
+package core
 
 import (
 	"reflect"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 )
 

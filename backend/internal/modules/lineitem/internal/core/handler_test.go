@@ -1,10 +1,10 @@
-package lineitem_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/lineitem/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -30,9 +30,9 @@ func newLineItem(name, currency, cost string) map[string]any {
 
 const lineItemGoneBody = `{"error":{"code":"not_found","message":"This line item no longer exists — someone may have deleted it.","fields":[]}}`
 
-func formOf(v lineitem.View) map[string]any {
+func formOf(v core.View) map[string]any {
 	months := []any{}
-	if v.Spread.Method == lineitem.SpreadCustom {
+	if v.Spread.Method == core.SpreadCustom {
 		for _, m := range v.Spread.Months {
 			months = append(months, map[string]any{"month": m.Month, "amount": m.Amount.Amount.String()})
 		}
@@ -55,13 +55,13 @@ func formOf(v lineitem.View) map[string]any {
 	return form
 }
 
-func lineItem(t *testing.T, client *apitest.Client, id string) lineitem.View {
+func lineItem(t *testing.T, client *apitest.Client, id string) core.View {
 	t.Helper()
 	response := client.Do(t, http.MethodGet, "/api/v1/line-items/"+id, nil)
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET %s = %d %s", id, response.Status, response.Body)
 	}
-	var details lineitem.Details
+	var details core.Details
 	response.Decode(t, &details)
 	return details.LineItem
 }
@@ -93,7 +93,7 @@ func TestListActivityLineItems_Contract(t *testing.T) {
 	gone := priya.Do(t, http.MethodGet, "/api/v1/activities/A-9999/line-items", nil)
 
 	assertAnswer(t, response, http.StatusOK, "")
-	var section lineitem.Section
+	var section core.Section
 	response.Decode(t, &section)
 	if len(section.Items) != 2 || section.Items[0].Name != "Agency fee" || section.Items[1].Name != "Film production" {
 		t.Fatalf("items = %+v", section.Items)
@@ -112,7 +112,7 @@ func TestListActivityLineItems_Contract(t *testing.T) {
 	}
 
 	assertAnswer(t, empty, http.StatusOK, "")
-	var none lineitem.Section
+	var none core.Section
 	empty.Decode(t, &none)
 	if len(none.Items) != 0 || none.Balance.Balance == nil || none.Balance.Balance.Format() != "60,000.00 USD" {
 		t.Errorf("Fleet roadshow: %+v", none)
@@ -130,7 +130,7 @@ func TestGetLineItemFormOptions_Contract(t *testing.T) {
 	gone := priya.Do(t, http.MethodGet, "/api/v1/activities/A-9999/line-items/form-options", nil)
 
 	assertAnswer(t, response, http.StatusOK, "")
-	var options lineitem.FormOptions
+	var options core.FormOptions
 	response.Decode(t, &options)
 	d := options.Defaults
 	if d.Name != "Launch film – line item" || d.Owner == nil || d.Owner.Name != "Priya Raman" || d.Currency != "USD" ||
@@ -161,7 +161,7 @@ func TestCreateLineItem_Contract(t *testing.T) {
 	withOldFlag := priya.Do(t, http.MethodPost, "/api/v1/activities/"+socialOnAir+"/line-items", oldClient)
 
 	assertAnswer(t, created, http.StatusCreated, "")
-	var v lineitem.View
+	var v core.View
 	created.Decode(t, &v)
 	// L-1009 to L-1011 belong to the GBP plan and to the deleted initiative in the demo recycle bin.
 	if v.ID != "L-1012" || v.Name != "Music rights" || v.PlannedCost.Format() != "10,000.00 EUR" ||
@@ -187,7 +187,7 @@ func TestGetLineItem_Contract(t *testing.T) {
 	gone := priya.Do(t, http.MethodGet, "/api/v1/line-items/L-9999", nil)
 
 	assertAnswer(t, response, http.StatusOK, "")
-	var details lineitem.Details
+	var details core.Details
 	response.Decode(t, &details)
 	if details.LineItem.Name != "Agency fee" || details.LineItem.PlannedCost.Format() != "50,000.00 USD" ||
 		details.LineItem.FinanceBudgetItem == nil || details.Activity.Name != "Launch film" || len(details.Activity.Path) != 3 ||
@@ -217,7 +217,7 @@ func TestUpdateLineItem_Contract(t *testing.T) {
 	gone := priya.Do(t, http.MethodPatch, "/api/v1/line-items/L-9999", venue)
 
 	assertAnswer(t, saved, http.StatusOK, "")
-	var v lineitem.View
+	var v core.View
 	saved.Decode(t, &v)
 	if v.Version != 2 || v.PlannedCost.Format() != "46,500.00 EUR" || v.PlannedCostUSD.Format() != "50,543.48 USD" {
 		t.Errorf("saved = version %d, %s = %s", v.Version, v.PlannedCost.Format(), v.PlannedCostUSD.Format())
@@ -248,7 +248,7 @@ func TestDuplicateLineItem_Contract(t *testing.T) {
 	gone := priya.Do(t, http.MethodPost, "/api/v1/line-items/L-9999/duplicate", map[string]any{})
 
 	assertAnswer(t, copied, http.StatusCreated, "")
-	var v lineitem.View
+	var v core.View
 	copied.Decode(t, &v)
 	if v.ID != "L-1012" || v.Name != "Agency fee (copy)" || v.PlannedCost.Format() != "50,000.00 USD" || len(v.Missing) != 0 {
 		t.Errorf("copy = %+v", v)

@@ -1,8 +1,8 @@
 package app
 
 import (
-	"mapp/internal/allwork"
-	"mapp/internal/widgetdata"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/widgetdata"
 )
 
 // widgetData wires feature 051's data catalogue and widget query over the built-in sources' scoped reads.

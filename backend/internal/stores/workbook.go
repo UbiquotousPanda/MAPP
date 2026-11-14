@@ -1,6 +1,6 @@
 package stores
 
-import "mapp/internal/workbook"
+import "mapp/internal/modules/workbook"
 
 type WorkbookStore interface {
 	workbook.Store

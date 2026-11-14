@@ -158,6 +158,22 @@ linters:
               desc: "services reach the database only through their Store interface (constitution B2)"
             - pkg: mapp/internal/platform/database
               desc: "services reach the database only through their Store interface (constitution B2)"
+        module-boundaries:
+          files:
+            - "$all"
+            - "!$test"
+            - "!**/internal/app/**"
+            - "!**/internal/stores/**"
+            - "!**/internal/platform/apitest/**"
+            - "!**/internal/platform/apibench/**"
+            - "!**/cmd/**"
+          deny:
+            - pkg: mapp/internal/stores
+              desc: "a module declares the small Store it needs in its own store.go, and internal/app wires it (ADR-0022)"
+            - pkg: mapp/internal/app
+              desc: "only the composition root knows every module (ADR-0022)"
+            - pkg: mapp/internal/platform/database/sqlcdb
+              desc: "a module runs its own queries, generated into its internal/sqlcdb (ADR-0022)"
     revive:
       rules:
         # Quality metrics (Principle V)
@@ -200,6 +216,9 @@ linters:
           - goconst
           - gochecknoglobals
           - funlen # table-driven tests are long by design
+      - path: internal/architecture/(modulemap|tables)\.go
+        linters:
+          - goconst # the module names are the declared map's data, read only by the tests
 
 formatters:
   enable:

@@ -1,4 +1,4 @@
-package people_test
+package core_test
 
 import (
 	"net/http"
@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/history"
-	"mapp/internal/people"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/people/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -25,7 +25,7 @@ func TestListTeams_TeamsWithMembers_FR010(t *testing.T) {
 	if response.Status != http.StatusOK {
 		t.Fatalf("GET /api/v1/teams = %d %s", response.Status, response.Body)
 	}
-	var page people.TeamPage
+	var page core.TeamPage
 	response.Decode(t, &page)
 	var teams []string
 	for _, team := range page.Items {
@@ -49,7 +49,7 @@ func TestGetTeam_DetailsOrNotFound_FR010(t *testing.T) {
 	found := priya.Do(t, http.MethodGet, "/api/v1/teams/T-1001", nil)
 	missing := priya.Do(t, http.MethodGet, "/api/v1/teams/T-9999", nil)
 
-	var europe people.TeamView
+	var europe core.TeamView
 	found.Decode(t, &europe)
 	if found.Status != http.StatusOK || europe.Description != "Marketing for lubricants across Europe." ||
 		memberNames(europe.Members) != "Daniel Okoro, Priya Raman, Sara Novak" || europe.Plans == nil {
@@ -100,7 +100,7 @@ func TestUpdateTeam_ChangedConflictOrNotFound_FR011(t *testing.T) {
 	outOfDate := priya.Do(t, http.MethodPatch, "/api/v1/teams/"+asia.ID, update)
 	missing := priya.Do(t, http.MethodPatch, "/api/v1/teams/T-9999", update)
 
-	var team people.TeamView
+	var team core.TeamView
 	changed.Decode(t, &team)
 	if changed.Status != http.StatusOK || team.Name != "Lubricants Asia Pacific" || team.Version != 2 ||
 		memberNames(team.Members) != "Daniel Okoro, Priya Raman" || team.UpdatedBy.Name != "Daniel Okoro" {
@@ -136,7 +136,7 @@ func TestDeleteTeam_ThenUndo_FR015(t *testing.T) {
 	undone := alex.Do(t, http.MethodPost, "/api/v1/recycle-bin/"+entry.ID+"/undo", nil)
 	back := alex.Do(t, http.MethodGet, "/api/v1/teams/"+asia.ID, nil)
 
-	var team people.TeamView
+	var team core.TeamView
 	back.Decode(t, &team)
 	if undone.Status != http.StatusOK || back.Status != http.StatusOK || memberNames(team.Members) != "Daniel Okoro, Priya Raman" {
 		t.Errorf("after Undo: %d %s; GET %d %s", undone.Status, undone.Body, back.Status, back.Body)
@@ -159,7 +159,7 @@ func TestTeamImpact_NoPlansNoWarnings_FR013(t *testing.T) {
 	assertAnswer(t, impact, http.StatusOK, `{"warnings":[]}`)
 	assertAnswer(t, invalid, http.StatusBadRequest, validationBody(`{"field":"name","message":"Enter a name."}`))
 	assertAnswer(t, missing, http.StatusNotFound, teamGoneBody)
-	var team people.TeamView
+	var team core.TeamView
 	alex.Do(t, http.MethodGet, "/api/v1/teams/"+asia.ID, nil).Decode(t, &team)
 	if team.Version != 1 || len(team.Members) != 2 {
 		t.Errorf("after the impact check the team = %+v, want it unchanged", team)
@@ -173,7 +173,7 @@ func TestSetTeamStatus_InactiveAndBack_FR014(t *testing.T) {
 	asia := createTeam(t, alex, map[string]any{"name": "Lubricants Asia"})
 	path := "/api/v1/teams/" + asia.ID + "/status"
 
-	var inactive, active people.TeamView
+	var inactive, active core.TeamView
 	alex.Do(t, http.MethodPost, path, map[string]any{"active": false, "version": 1}).Decode(t, &inactive)
 	alex.Do(t, http.MethodPost, path, map[string]any{"active": true, "version": 2}).Decode(t, &active)
 	missing := alex.Do(t, http.MethodPost, path, map[string]any{}, apitest.SkipRequestValidation())
@@ -189,13 +189,13 @@ func TestSetTeamStatus_InactiveAndBack_FR014(t *testing.T) {
 	}
 }
 
-func createTeam(t *testing.T, client *apitest.Client, body map[string]any) people.TeamView {
+func createTeam(t *testing.T, client *apitest.Client, body map[string]any) core.TeamView {
 	t.Helper()
 	response := client.Do(t, http.MethodPost, "/api/v1/teams", body)
 	if response.Status != http.StatusCreated {
 		t.Fatalf("POST /api/v1/teams %v = %d %s", body, response.Status, response.Body)
 	}
-	var team people.TeamView
+	var team core.TeamView
 	response.Decode(t, &team)
 	return team
 }
@@ -204,7 +204,7 @@ func validationBody(fields string) string {
 	return `{"error":{"code":"validation_failed","message":"Some fields need your attention.","fields":[` + fields + `]}}`
 }
 
-func memberNames(members []people.PersonRef) string {
+func memberNames(members []core.PersonRef) string {
 	var names string
 	for i, m := range members {
 		if i > 0 {

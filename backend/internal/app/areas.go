@@ -3,19 +3,19 @@ package app
 import (
 	"context"
 
-	"mapp/internal/activity"
-	"mapp/internal/allwork"
-	"mapp/internal/approval"
-	"mapp/internal/budget"
-	"mapp/internal/campaign"
-	"mapp/internal/financials"
-	"mapp/internal/history"
-	"mapp/internal/home"
-	"mapp/internal/lineitem"
-	"mapp/internal/overspend"
-	"mapp/internal/plan"
-	"mapp/internal/sample"
-	"mapp/internal/settings"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/home"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/overspend"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/sample"
+	"mapp/internal/modules/settings"
 )
 
 // areas builds the business areas after people and access, each after those it reads; where people's and

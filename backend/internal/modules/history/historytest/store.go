@@ -5,7 +5,7 @@ package historytest
 import (
 	"context"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/fake"
 )
 

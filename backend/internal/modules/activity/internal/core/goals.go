@@ -1,9 +1,9 @@
-package activity
+package core
 
 import (
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // Messages of the plan's "User-visible messages" table about goals.

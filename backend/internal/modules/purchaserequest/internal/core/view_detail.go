@@ -1,12 +1,12 @@
-package purchaserequest
+package core
 
 import (
 	"context"
 	"slices"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 // viewOf is the details page of pr as a sees it, inside the caller's transaction.

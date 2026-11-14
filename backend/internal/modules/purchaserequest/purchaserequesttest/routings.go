@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"mapp/internal/purchaserequest"
+	"mapp/internal/modules/purchaserequest"
 )
 
 func (s Store) AddRouting(ctx context.Context, r purchaserequest.Routing) error {

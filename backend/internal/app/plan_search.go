@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"mapp/internal/plan"
+	"mapp/internal/modules/plan"
 	"mapp/internal/stores"
 )
 

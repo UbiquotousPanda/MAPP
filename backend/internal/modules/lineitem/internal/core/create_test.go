@@ -1,4 +1,4 @@
-package lineitem
+package core
 
 import (
 	"encoding/json"
@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // What is needed only to submit may stay empty and is listed as missing (D-009).

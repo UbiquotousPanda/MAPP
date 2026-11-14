@@ -1,11 +1,11 @@
-package approval
+package core
 
 import (
 	"fmt"
 	"slices"
 	"strings"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 )

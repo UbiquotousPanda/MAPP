@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/apitest"
 )
 

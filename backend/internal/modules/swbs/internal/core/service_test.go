@@ -1,4 +1,4 @@
-package swbs_test
+package core_test
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/swbs/internal/core"
 	"mapp/internal/platform/authz"
-	"mapp/internal/swbs"
 )
 
 func TestRun_SendsReady_030_FR006(t *testing.T) {
@@ -17,9 +17,9 @@ func TestRun_SendsReady_030_FR006(t *testing.T) {
 	f := newFixture(t)
 	f.threeReady()
 
-	run := f.run(t, swbs.RunInput{})
+	run := f.run(t, core.RunInput{})
 
-	want := swbs.RunView{ID: "SWR-1001", Source: swbs.SourceSimulated, RanAt: start, RanBy: alex, Sent: 3, Codes: []swbs.Code{
+	want := core.RunView{ID: "SWR-1001", Source: core.SourceSimulated, RanAt: start, RanBy: alex, Sent: 3, Codes: []core.Code{
 		{LineItemID: "L-999", LineItemName: "Old stand", CompanyCode: "GB01", SwbsCode: "SIM-GB01-0001"},
 		{LineItemID: "L-1005", LineItemName: "Media booking", CompanyCode: "NL02", SwbsCode: "SIM-NL02-0001"},
 		{LineItemID: "L-1006", LineItemName: "Stand build", CompanyCode: "GB01", SwbsCode: "SIM-GB01-0002"},
@@ -38,7 +38,7 @@ func TestRun_LogsOnce_030_FR010(t *testing.T) {
 	f := newFixture(t)
 	f.threeReady()
 
-	f.run(t, swbs.RunInput{})
+	f.run(t, core.RunInput{})
 
 	entries := f.log(t)
 	if len(entries) != 1 {
@@ -56,10 +56,10 @@ func TestRun_NumberingGoesOnAcrossRuns_030_FR007(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	f.threeReady()
-	f.run(t, swbs.RunInput{})
+	f.run(t, core.RunInput{})
 
 	f.items.add("L-1010", "Venue", "GB01", true)
-	if next := f.run(t, swbs.RunInput{}); len(next.Codes) != 1 || next.Codes[0].SwbsCode != "SIM-GB01-0003" {
+	if next := f.run(t, core.RunInput{}); len(next.Codes) != 1 || next.Codes[0].SwbsCode != "SIM-GB01-0003" {
 		t.Errorf("the next GB01 code = %+v, want SIM-GB01-0003", next.Codes)
 	}
 }
@@ -69,7 +69,7 @@ func TestRun_NothingReady_030_FR009(t *testing.T) {
 	f := newFixture(t)
 	f.items.add("L-1001", "Agency fee", "DE03", false)
 
-	run := f.run(t, swbs.RunInput{})
+	run := f.run(t, core.RunInput{})
 
 	if run.Sent != 0 || len(run.Codes) != 0 || run.ID != "SWR-1001" {
 		t.Errorf("empty run = %+v", run)
@@ -104,7 +104,7 @@ func TestRun_Named_030_FR008(t *testing.T) {
 			f.items.add("L-1005", "Media booking", "NL02", true)
 			f.items.add("L-1001", "Agency fee", "DE03", false)
 
-			run, err := f.service.Run(t.Context(), alex, swbs.RunInput{LineItemIDs: tt.named})
+			run, err := f.service.Run(t.Context(), alex, core.RunInput{LineItemIDs: tt.named})
 
 			if tt.code != "" {
 				if got := assertCode(t, err, tt.status, tt.code); got.Message != tt.message {
@@ -141,7 +141,7 @@ func TestRun_Validation_030_FR008(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			f := newFixture(t)
-			_, err := f.service.Run(t.Context(), alex, swbs.RunInput{LineItemIDs: tt.named})
+			_, err := f.service.Run(t.Context(), alex, core.RunInput{LineItemIDs: tt.named})
 			got := assertCode(t, err, http.StatusBadRequest, "validation_failed")
 			if len(got.Fields) != 1 || got.Fields[0].Field != "lineItemIds" || got.Fields[0].Message != tt.message {
 				t.Errorf("fields = %+v, want lineItemIds %q", got.Fields, tt.message)
@@ -156,7 +156,7 @@ func TestRun_Forbidden_030_FR012(t *testing.T) {
 	f.items.add("L-1006", "Stand build", "GB01", true)
 	planner := authz.With(context.Background(), authz.Grants{PersonID: "U-1002"})
 
-	_, runErr := f.service.Run(planner, alex, swbs.RunInput{})
+	_, runErr := f.service.Run(planner, alex, core.RunInput{})
 	_, listErr := f.service.Runs(planner, alex, 0)
 
 	assertCode(t, runErr, http.StatusForbidden, "forbidden")
@@ -172,7 +172,7 @@ func TestRun_ReceiveFails_030_FR006(t *testing.T) {
 	f.items.add("L-1006", "Stand build", "GB01", true)
 	f.items.failed = true
 
-	if _, err := f.service.Run(t.Context(), alex, swbs.RunInput{}); err == nil {
+	if _, err := f.service.Run(t.Context(), alex, core.RunInput{}); err == nil {
 		t.Fatal("Run succeeded although the codes could not be stored")
 	}
 	page, err := f.service.Runs(t.Context(), alex, 0)
@@ -185,10 +185,10 @@ func TestRuns_030_FR011(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	f.items.add("L-1006", "Stand build", "GB01", true)
-	f.run(t, swbs.RunInput{})
+	f.run(t, core.RunInput{})
 	f.items.add("L-1005", "Media booking", "NL02", true)
 	f.items.add("L-1007", "Signage", "NL02", true)
-	f.run(t, swbs.RunInput{LineItemIDs: []string{"L-1005"}})
+	f.run(t, core.RunInput{LineItemIDs: []string{"L-1005"}})
 
 	page, err := f.service.Runs(t.Context(), alex, 1)
 	if err != nil {

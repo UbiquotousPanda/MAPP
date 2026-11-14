@@ -1,7 +1,7 @@
-package purchaserequest
+package core
 
 import (
-	"mapp/internal/settings"
+	"mapp/internal/modules/settings"
 )
 
 // What a save does next (contract PurchaseRequestInput.then).

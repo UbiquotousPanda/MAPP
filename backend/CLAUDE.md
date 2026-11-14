@@ -22,7 +22,8 @@ Until a package is aligned to constitution 2.x (Governance → Alignment) it kee
 `go vet ./...` and `go test ./...` are its checks; don't migrate it as a side effect of another
 change.
 
-- Never edit generated code in `internal/platform/database/sqlcdb`; change the SQL and regenerate.
+- Never edit generated code in `internal/modules/<area>/internal/sqlcdb` or
+  `internal/platform/database/sqlcdb`; change the SQL and regenerate.
 - Never edit a merged migration; add a new one.
 - Keep every file within the comment budget: at most 5% of its non-blank lines (Principle VIII).
 - Suppress a linter only with `//nolint:<linter> // <reason>`, and only for a value in the

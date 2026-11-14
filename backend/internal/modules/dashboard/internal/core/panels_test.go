@@ -1,4 +1,4 @@
-package dashboard
+package core
 
 import (
 	"errors"
@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"mapp/internal/allwork"
-	"mapp/internal/approval"
-	"mapp/internal/budget"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/purchaserequest"
 )
 
 // Planned cost by month as Budget & cost spreads it; actuals by posting month of the plans whose finance is

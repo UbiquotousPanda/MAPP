@@ -1,12 +1,12 @@
-package purchaserequest
+package core
 
 import (
 	"context"
 	"fmt"
 	"slices"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
-	"mapp/internal/settings"
 )
 
 const (

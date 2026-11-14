@@ -1,10 +1,10 @@
-package lineitem
+package core
 
 import (
 	"context"
 	"encoding/json"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 )
 
 // The history functions of line items for many records at once (history.Kind).

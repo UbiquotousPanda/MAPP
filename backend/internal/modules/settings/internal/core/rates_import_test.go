@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"encoding/base64"
@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/date"
 )
 

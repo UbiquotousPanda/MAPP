@@ -1,10 +1,10 @@
-package activity_test
+package core_test
 
 import (
 	"slices"
 	"testing"
 
-	"mapp/internal/activity"
+	"mapp/internal/modules/activity/internal/core"
 	"mapp/internal/platform/money"
 )
 
@@ -13,20 +13,20 @@ import (
 func TestSplit_NoPlannedCostMovesLineItemsOnly(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
-	view := f.create(t, ukInitiativeID, activity.Input{Name: "Dealer dinner", ActivityTypeID: eventType})
+	view := f.create(t, ukInitiativeID, core.Input{Name: "Dealer dinner", ActivityTypeID: eventType})
 	gbp := func(text string) money.Money { return money.Money{Amount: amount(t, text), Currency: "GBP"} }
-	f.lineItems.items = map[string][]activity.LineItemBrief{view.ID: {
+	f.lineItems.items = map[string][]core.LineItemBrief{view.ID: {
 		{ID: "L-9001", Name: "Catering", PlannedCost: gbp("800.00"), PlannedCostPlan: gbp("800.00")},
 		{ID: "L-9002", Name: "Room", PlannedCost: gbp("200.00"), PlannedCostPlan: gbp("200.00")},
 	}}
-	f.lineItems.facts[view.ID] = activity.LineItemFacts{Count: 2, PlannedCostPlan: amount(t, "1000.00"), Currency: "GBP"}
+	f.lineItems.facts[view.ID] = core.LineItemFacts{Count: 2, PlannedCostPlan: amount(t, "1000.00"), Currency: "GBP"}
 	version := view.Version
 	withAmount := "100.00"
 
-	_, refused := f.service.Split(t.Context(), priya, view.ID, activity.SplitRequest{
+	_, refused := f.service.Split(t.Context(), priya, view.ID, core.SplitRequest{
 		Name: "Dealer dinner (split)", InitiativeID: ukInitiativeID, LineItemIDs: []string{"L-9001"}, PlannedCost: &withAmount, Version: &version,
 	})
-	result, err := f.service.Split(t.Context(), priya, view.ID, activity.SplitRequest{
+	result, err := f.service.Split(t.Context(), priya, view.ID, core.SplitRequest{
 		Name: "Dealer dinner (split)", InitiativeID: ukInitiativeID, LineItemIDs: []string{"L-9001"}, Version: &version,
 	})
 

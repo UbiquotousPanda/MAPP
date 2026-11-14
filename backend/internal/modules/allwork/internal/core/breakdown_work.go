@@ -1,4 +1,4 @@
-package allwork
+package core
 
 import (
 	"cmp"
@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/rollup"
 	"mapp/internal/platform/money"
-	"mapp/internal/rollup"
 )
 
 // breakdownWork is one Breakdown being worked out.

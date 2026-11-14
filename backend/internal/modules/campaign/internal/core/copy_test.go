@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/record"
 )

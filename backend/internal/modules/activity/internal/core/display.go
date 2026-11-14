@@ -1,10 +1,10 @@
-package activity
+package core
 
 import (
 	"context"
 
-	"mapp/internal/people"
-	"mapp/internal/plan"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"

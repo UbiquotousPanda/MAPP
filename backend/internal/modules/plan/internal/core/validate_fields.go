@@ -1,4 +1,4 @@
-package plan
+package core
 
 import (
 	"context"
@@ -7,10 +7,10 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 func text(s *string) string {

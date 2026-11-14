@@ -1,16 +1,16 @@
 // Package plan holds plans (feature 004): one fiscal year of marketing for one business, the top of the
 // planning tree Plan → Campaign → Initiative → Activity → Line item.
-package plan
+package core
 
 import (
-	"mapp/internal/overspend"
-	"mapp/internal/people"
+	"mapp/internal/modules/overspend"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/rollup"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
-	"mapp/internal/rollup"
-	"mapp/internal/settings"
 )
 
 // Status is a plan's status, changed only by Publish and Unpublish.

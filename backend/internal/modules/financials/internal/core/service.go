@@ -1,11 +1,11 @@
-package financials
+package core
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/ids"
@@ -29,7 +29,7 @@ type Service struct {
 	tx       Transactor
 	repo     Store
 	ids      *ids.Generator
-	history  *history.Service
+	history  history.Recorder
 	planning Planning
 	rates    Rates
 	displays Displays

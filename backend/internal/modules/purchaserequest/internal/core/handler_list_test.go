@@ -1,11 +1,11 @@
-package purchaserequest_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 
+	"mapp/internal/modules/purchaserequest/internal/core"
 	"mapp/internal/platform/apitest"
-	"mapp/internal/purchaserequest"
 )
 
 func TestList_GroupsSearchesAndFilters_Contract_032_FR044(t *testing.T) {
@@ -13,8 +13,8 @@ func TestList_GroupsSearchesAndFilters_Contract_032_FR044(t *testing.T) {
 	s := apitest.New(t)
 	priya, lea := s.SignIn(t, priyasEmail), s.SignIn(t, leasEmail)
 	create(t, priya, body(standBuild, "EUR", "100.00"))
-	page := func(query string) purchaserequest.ListPage {
-		return decoded[purchaserequest.ListPage](t, lea.Do(t, http.MethodGet, prs+query, nil), http.StatusOK)
+	page := func(query string) core.ListPage {
+		return decoded[core.ListPage](t, lea.Do(t, http.MethodGet, prs+query, nil), http.StatusOK)
 	}
 
 	all := page("")
@@ -32,7 +32,7 @@ func TestList_GroupsSearchesAndFilters_Contract_032_FR044(t *testing.T) {
 		[]int{len(decoded[apiError](t, bad, http.StatusBadRequest).Error.Fields), planner.Status})
 }
 
-func labels(page purchaserequest.ListPage) []string {
+func labels(page core.ListPage) []string {
 	var got []string
 	for _, v := range page.Vendors {
 		got = append(got, v.Label)
@@ -46,7 +46,7 @@ func TestOptions_PickerReasons_Contract_032_FR010(t *testing.T) {
 	priya := s.SignIn(t, priyasEmail)
 	pr := create(t, priya, body(standBuild, "EUR", "100.00"))
 
-	found := decoded[purchaserequest.OptionPage](t, priya.Do(t, http.MethodGet, prs+"/line-item-options?purchaseRequestId="+pr.ID, nil),
+	found := decoded[core.OptionPage](t, priya.Do(t, http.MethodGet, prs+"/line-item-options?purchaseRequestId="+pr.ID, nil),
 		http.StatusOK)
 
 	reasons := map[string]string{}
@@ -66,17 +66,17 @@ func TestConfiguration_SwitchedOff_Contract_032_FR004(t *testing.T) {
 	t.Parallel()
 	s := apitest.New(t)
 	alex, priya := s.SignIn(t, alexsEmail), s.SignIn(t, priyasEmail)
-	before := decoded[purchaserequest.ConfigurationView](t, priya.Do(t, http.MethodGet, "/api/v1/purchase-request-configuration", nil),
+	before := decoded[core.ConfigurationView](t, priya.Do(t, http.MethodGet, "/api/v1/purchase-request-configuration", nil),
 		http.StatusOK)
 	refused := priya.Do(t, http.MethodPut, "/api/v1/purchase-request-configuration", map[string]any{"version": before.Version,
 		"purchaseSupport": false, "linesOnApprovedPurchaseRequests": "notAllowed"})
 
-	saved := decoded[purchaserequest.ConfigurationView](t, alex.Do(t, http.MethodPut, "/api/v1/purchase-request-configuration",
+	saved := decoded[core.ConfigurationView](t, alex.Do(t, http.MethodPut, "/api/v1/purchase-request-configuration",
 		map[string]any{"version": before.Version, "purchaseSupport": false, "linesOnApprovedPurchaseRequests": "notAllowed"}), http.StatusOK)
 	created := decoded[apiError](t, priya.Do(t, http.MethodPost, prs, body(standBuild, "EUR", "100.00")), http.StatusConflict)
 	seen := get(t, priya, "PR-1001")
 
-	same(t, "before", []any{false, true, purchaserequest.WithModificationApproval},
+	same(t, "before", []any{false, true, core.WithModificationApproval},
 		[]any{before.CanChange.Available, before.PurchaseSupport, before.LinesOnApprovedPurchaseRequests})
 	same(t, "refused and saved", []any{http.StatusForbidden, false, before.Version + 1}, []any{refused.Status, saved.PurchaseSupport, saved.Version})
 	off := "Purchase requests are switched off for your organisation."

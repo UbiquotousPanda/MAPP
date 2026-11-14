@@ -1,9 +1,9 @@
-package lineitem
+package core
 
 import (
 	"fmt"
 
-	"mapp/internal/settings"
+	"mapp/internal/modules/settings"
 )
 
 const (

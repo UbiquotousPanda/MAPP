@@ -4,7 +4,7 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/settings"
+	"mapp/internal/modules/settings"
 )
 
 func (s Store) GetCurrency(_ context.Context, code string) (settings.Currency, bool, error) {

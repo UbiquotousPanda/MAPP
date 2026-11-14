@@ -1,15 +1,15 @@
-package activity
+package core
 
 import (
 	"context"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 const noun = "activity"
@@ -48,7 +48,7 @@ type Service struct {
 	tx        Transactor
 	repo      Store
 	ids       *ids.Generator
-	history   *history.Service
+	history   history.Recorder
 	now       clock.Clock
 	plans     PlanReader
 	hierarchy HierarchyReader

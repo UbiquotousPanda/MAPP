@@ -1,10 +1,10 @@
-package approval
+package core
 
 import (
 	"context"
 	"time"
 
-	"mapp/internal/people"
+	"mapp/internal/modules/people"
 )
 
 type Transactor interface {

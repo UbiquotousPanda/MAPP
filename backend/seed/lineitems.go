@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"time"
 
-	"mapp/internal/activity"
-	"mapp/internal/lineitem"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/ids"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 type demoLineItem struct {

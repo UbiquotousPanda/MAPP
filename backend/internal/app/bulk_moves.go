@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"mapp/internal/activity"
-	"mapp/internal/bulk"
-	"mapp/internal/campaign"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/bulk"
+	"mapp/internal/modules/campaign"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"

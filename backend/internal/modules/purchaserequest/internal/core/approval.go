@@ -1,9 +1,9 @@
-package purchaserequest
+package core
 
 import (
 	"context"
 
-	"mapp/internal/approval"
+	"mapp/internal/modules/approval"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 )

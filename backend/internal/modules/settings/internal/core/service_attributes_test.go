@@ -1,4 +1,4 @@
-package settings
+package core
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/errs"
 )
 

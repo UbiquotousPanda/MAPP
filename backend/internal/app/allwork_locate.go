@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"mapp/internal/allwork"
+	"mapp/internal/modules/allwork"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/ids"
 )

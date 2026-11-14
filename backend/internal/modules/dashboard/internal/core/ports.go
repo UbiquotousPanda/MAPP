@@ -1,16 +1,16 @@
-package dashboard
+package core
 
 import (
 	"context"
 
-	"mapp/internal/allwork"
-	"mapp/internal/approval"
-	"mapp/internal/budget"
-	"mapp/internal/financials"
-	"mapp/internal/people"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/budget"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/date"
-	"mapp/internal/purchaserequest"
 )
 
 type Transactor interface {

@@ -4,10 +4,10 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/activity"
-	"mapp/internal/financials"
-	"mapp/internal/lineitem"
-	"mapp/internal/plan"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/financials"
+	"mapp/internal/modules/lineitem"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/money"
 )
 

@@ -1,4 +1,4 @@
-package dataset
+package core
 
 import (
 	"strings"
@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/modules/widgetdata"
 	"mapp/internal/platform/money"
-	"mapp/internal/widgetdata"
 )
 
 func TestParseCells_EveryKind_FR042(t *testing.T) {

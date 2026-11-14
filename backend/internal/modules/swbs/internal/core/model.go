@@ -1,6 +1,6 @@
-// Package swbs sends SWBS requests (feature 030): the line items that are ready go to GSAP through an adapter —
+// Package core sends SWBS requests (feature 030): the line items that are ready go to GSAP through an adapter —
 // the simulated GSAP until live integration (ADR-0016) — and every run is kept with the codes it returned.
-package swbs
+package core
 
 import (
 	"time"

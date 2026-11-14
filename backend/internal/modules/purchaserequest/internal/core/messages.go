@@ -1,4 +1,4 @@
-package purchaserequest
+package core
 
 // The user-visible texts of plan "User-visible messages" and of 033's plan "Messages".
 const (

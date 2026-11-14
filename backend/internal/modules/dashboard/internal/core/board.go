@@ -1,4 +1,4 @@
-package dashboard
+package core
 
 import (
 	"cmp"
@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"mapp/internal/allwork"
-	"mapp/internal/financials"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/financials"
 	"mapp/internal/platform/money"
 )
 

@@ -1,12 +1,12 @@
-package budget
+package core
 
 import (
 	"encoding/json"
 	"errors"
 	"testing"
 
-	"mapp/internal/history"
-	"mapp/internal/history/historytest"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/history/historytest"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"

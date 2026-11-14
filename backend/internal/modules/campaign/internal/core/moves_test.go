@@ -1,4 +1,4 @@
-package campaign
+package core
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/record"
-	"mapp/internal/settings"
 )
 
 // Services this package provides to other features (provide.go): plan roll-ups for feature 004 and

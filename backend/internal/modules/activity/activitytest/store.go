@@ -6,12 +6,12 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/activity"
-	"mapp/internal/approval/approvaltest"
-	"mapp/internal/campaign/campaigntest"
-	"mapp/internal/plan/plantest"
+	"mapp/internal/modules/activity"
+	"mapp/internal/modules/approval/approvaltest"
+	"mapp/internal/modules/campaign/campaigntest"
+	"mapp/internal/modules/plan/plantest"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/fake"
-	"mapp/internal/settings"
 )
 
 type Store struct {

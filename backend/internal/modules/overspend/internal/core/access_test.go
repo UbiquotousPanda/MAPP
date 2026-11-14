@@ -1,4 +1,4 @@
-package overspend
+package core
 
 import (
 	"errors"

@@ -1,11 +1,11 @@
-package activity_test
+package core_test
 
 import (
 	"net/http"
 	"testing"
 	"time"
 
-	"mapp/internal/activity"
+	"mapp/internal/modules/activity/internal/core"
 	"mapp/internal/platform/apitest"
 )
 
@@ -20,7 +20,7 @@ func TestActivityDestinations_Contract_FR029(t *testing.T) {
 	gone := priya.Do(t, http.MethodGet, "/api/v1/activities/A-9999/destinations", nil)
 
 	assertStatus(t, response, http.StatusOK)
-	var page activity.DestinationPage
+	var page core.DestinationPage
 	response.Decode(t, &page)
 	if page.Total != 4 || len(page.Items) != 4 || !page.Items[0].Current || page.Items[0].Initiative.ID != "I-1001" ||
 		page.Items[3].Initiative.Name != "Retail events" || page.Items[3].MoveProblem == nil || page.Items[3].CopyProblem == nil ||
@@ -47,9 +47,9 @@ func TestMoveActivity_Contract_FR029(t *testing.T) {
 		`"fields":[{"field":"initiativeId","message":"'Launch film' runs 01 Mar – 31 May 2026, but 'Retail events' runs `+
 		`01 Jun – 31 Dec 2026. Change the activity's dates first, or pick another initiative."}]}}`)
 	assertStatus(t, moved, http.StatusOK)
-	var view activity.View
+	var view core.View
 	moved.Decode(t, &view)
-	if view.Initiative.ID != "I-1002" || view.Version != 2 || view.Status != activity.StatusCreated {
+	if view.Initiative.ID != "I-1002" || view.Version != 2 || view.Status != core.StatusCreated {
 		t.Errorf("moved = %s", moved.Body)
 	}
 	assertAnswer(t, outOfDate, http.StatusConflict, `{"error":{"code":"version_conflict","message":"Not saved — Priya Raman changed this activity",`+
@@ -67,17 +67,17 @@ func TestCopyActivity_Contract_FR030(t *testing.T) {
 	refused := priya.Do(t, http.MethodPost, "/api/v1/activities/A-1002/copy", map[string]any{"initiativeId": "I-1005"})
 
 	assertStatus(t, response, http.StatusCreated)
-	var copied activity.View
+	var copied core.View
 	response.Decode(t, &copied)
-	if copied.ID == "A-1002" || copied.Name != "Social always-on (copy)" || copied.Status != activity.StatusCreated ||
+	if copied.ID == "A-1002" || copied.Name != "Social always-on (copy)" || copied.Status != core.StatusCreated ||
 		copied.LineItems.Count != 2 || copied.Initiative.ID != "I-1001" {
 		t.Errorf("copy = %s", response.Body)
 	}
 	assertAnswer(t, refused, http.StatusBadRequest, `{"error":{"code":"validation_failed","message":"Some fields need your attention.",`+
 		`"fields":[{"field":"initiativeId","message":"Choose another initiative of this plan."}]}}`)
-	var original activity.View
+	var original core.View
 	priya.Do(t, http.MethodGet, "/api/v1/activities/A-1002", nil).Decode(t, &original)
-	if original.Status != activity.StatusApproved {
+	if original.Status != core.StatusApproved {
 		t.Errorf("original is %s, want it still Approved", original.Status)
 	}
 }

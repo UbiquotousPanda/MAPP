@@ -1,4 +1,4 @@
-package settings
+package core
 
 // Waterfall works out the goals a model gives for inq inquiries (domain model §4.5, data model §2.1,
 // FR-010): MQL = the INQ→MQL rate of the inquiries and deals = the MQL→deal rate of the MQL, each rounded

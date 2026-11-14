@@ -1,17 +1,17 @@
-package purchaserequest
+package core
 
 import (
 	"context"
 	"fmt"
 	"strings"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/ids"
-	"mapp/internal/settings"
 )
 
 var routingWords = map[RoutingType]string{ //nolint:gochecknoglobals // a fixed lookup of the routing types' words

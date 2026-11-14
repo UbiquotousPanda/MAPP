@@ -1,4 +1,4 @@
-package customdashboard_test
+package core_test
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"mapp/internal/customdashboard"
-	"mapp/internal/people"
+	"mapp/internal/modules/customdashboard/internal/core"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
@@ -25,11 +25,11 @@ var (
 
 // pgStore gives a store with the owner U-1001, Daniel U-1002 in T-1001, Sara U-1003 who left T-1001 and Mei
 // U-1004; DB-1001 is shared with T-1001 and reads DS-1001, DB-1002 is private, DB-1003 is Mei's.
-func pgStore(t *testing.T) (*customdashboard.PostgresStore, []customdashboard.Dashboard, *database.DB) {
+func pgStore(t *testing.T) (*core.PostgresStore, []core.Dashboard, *database.DB) {
 	t.Helper()
 	db := dbtest.NewDB(t)
-	s, directory := customdashboard.NewPostgresStore(db), people.NewPostgresStore(db)
-	dashboards := []customdashboard.Dashboard{
+	s, directory := core.NewPostgresStore(db), people.NewPostgresStore(db)
+	dashboards := []core.Dashboard{
 		pgDashboard("DB-1001", "U-1001", []string{"T-1001"}, "DS-1001"),
 		pgDashboard("DB-1002", "U-1001", []string{}, "activities"),
 		pgDashboard("DB-1003", "U-1004", []string{"T-1002"}, "DS-1001"),
@@ -59,17 +59,17 @@ func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) 
 	}
 }
 
-func pgDashboard(id, ownerID string, teams []string, source string) customdashboard.Dashboard {
+func pgDashboard(id, ownerID string, teams []string, source string) core.Dashboard {
 	from := date.MustParse("2026-07-01")
-	return customdashboard.Dashboard{
+	return core.Dashboard{
 		ID: id, Name: "Dashboard " + id, Description: "About " + id, OwnerID: ownerID, SharedWith: teams,
-		Filters: customdashboard.Filters{DateFrom: &from, PlanIDs: []string{"P-1001"}, TeamIDs: []string{}},
-		Widgets: []customdashboard.Widget{
-			{ID: "w1", Type: "kpi", Layout: customdashboard.Layout{W: 3, H: 2}, Query: &customdashboard.Query{
-				Source: source, Measures: []customdashboard.Measure{{Aggregation: "count"}}, Filters: []customdashboard.Filter{},
-				Sort: customdashboard.Sort{By: "measure", Direction: "desc"}, Limit: 50,
+		Filters: core.Filters{DateFrom: &from, PlanIDs: []string{"P-1001"}, TeamIDs: []string{}},
+		Widgets: []core.Widget{
+			{ID: "w1", Type: "kpi", Layout: core.Layout{W: 3, H: 2}, Query: &core.Query{
+				Source: source, Measures: []core.Measure{{Aggregation: "count"}}, Filters: []core.Filter{},
+				Sort: core.Sort{By: "measure", Direction: "desc"}, Limit: 50,
 			}},
-			{ID: "w2", Type: "text", Layout: customdashboard.Layout{X: 3, W: 4, H: 2}, Note: "Figures in USD."},
+			{ID: "w2", Type: "text", Layout: core.Layout{X: 3, W: 4, H: 2}, Note: "Figures in USD."},
 		},
 		Meta: pgMeta,
 	}
@@ -81,16 +81,16 @@ func TestPostgresStoreVisibleDashboards_ScopeIsolation_FR005(t *testing.T) {
 	tests := []struct {
 		name     string
 		personID string
-		want     []customdashboard.Dashboard
-		using    []customdashboard.Ref
+		want     []core.Dashboard
+		using    []core.Ref
 	}{
 		{name: "the owner sees their own", personID: "U-1001", want: all[:2],
-			using: []customdashboard.Ref{{ID: "DB-1001", Name: "Dashboard DB-1001"}}},
+			using: []core.Ref{{ID: "DB-1001", Name: "Dashboard DB-1001"}}},
 		{name: "a member of the shared team", personID: "U-1002", want: all[:1],
-			using: []customdashboard.Ref{{ID: "DB-1001", Name: "Dashboard DB-1001"}}},
-		{name: "a former member", personID: "U-1003", want: []customdashboard.Dashboard{}, using: []customdashboard.Ref{}},
+			using: []core.Ref{{ID: "DB-1001", Name: "Dashboard DB-1001"}}},
+		{name: "a former member", personID: "U-1003", want: []core.Dashboard{}, using: []core.Ref{}},
 		{name: "another person", personID: "U-1004", want: all[2:],
-			using: []customdashboard.Ref{{ID: "DB-1003", Name: "Dashboard DB-1003"}}},
+			using: []core.Ref{{ID: "DB-1003", Name: "Dashboard DB-1003"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -115,11 +115,11 @@ func TestPostgresStoreVisibleDashboards_ScopeIsolation_FR005(t *testing.T) {
 
 type visibility struct {
 	personID  string
-	dashboard customdashboard.Dashboard
+	dashboard core.Dashboard
 	want      bool
 }
 
-func assertGetVisible(t *testing.T, s *customdashboard.PostgresStore, v visibility) {
+func assertGetVisible(t *testing.T, s *core.PostgresStore, v visibility) {
 	t.Helper()
 	got, found, err := s.GetVisible(t.Context(), v.personID, v.dashboard.ID)
 	if err != nil || found != v.want || (found && !cmp.Equal(v.dashboard, got, pgDates)) {
@@ -127,7 +127,7 @@ func assertGetVisible(t *testing.T, s *customdashboard.PostgresStore, v visibili
 	}
 }
 
-func containsID(list []customdashboard.Dashboard, id string) bool {
+func containsID(list []core.Dashboard, id string) bool {
 	for _, d := range list {
 		if d.ID == id {
 			return true

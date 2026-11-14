@@ -1,11 +1,11 @@
-package approval
+package core
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	"mapp/internal/platform/database/sqlcdb"
+	"mapp/internal/modules/approval/internal/sqlcdb"
 )
 
 func (s *PostgresStore) MarkNotificationsRead(ctx context.Context, ids []string, at time.Time) error {

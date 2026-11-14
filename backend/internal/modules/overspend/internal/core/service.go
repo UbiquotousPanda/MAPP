@@ -1,9 +1,9 @@
-package overspend
+package core
 
 import (
 	"context"
 
-	"mapp/internal/history"
+	"mapp/internal/modules/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/clock"
@@ -24,7 +24,7 @@ const (
 type Service struct {
 	tx      Transactor
 	repo    Store
-	history *history.Service
+	history history.Recorder
 	now     clock.Clock
 	budgets *reader
 }

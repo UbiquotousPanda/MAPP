@@ -6,10 +6,10 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
-	"mapp/internal/purchaserequest"
 )
 
 var statusOrder = []purchaserequest.Status{ //nolint:gochecknoglobals // the status model's order, as the SQL sorts it

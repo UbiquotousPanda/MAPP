@@ -1,4 +1,4 @@
-package history
+package core
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
+	"mapp/internal/modules/history/internal/sqlcdb"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
-	"mapp/internal/platform/database/sqlcdb"
 	"mapp/internal/platform/memo"
 )
 
@@ -48,7 +48,7 @@ func (s *PostgresStore) AppendEntry(ctx context.Context, e Entry) error {
 }
 
 func (s *PostgresStore) Entries(ctx context.Context) ([]Entry, error) {
-	rows, err := s.db.Queries(ctx).ListLogEntries(ctx)
+	rows, err := sqlcdb.New(s.db.Conn(ctx)).ListLogEntries(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("select log entries: %w", err)
 	}
@@ -121,7 +121,7 @@ func (s *PostgresStore) PurgeBinEntries(ctx context.Context, ids []string, r Res
 // of the log each read it, and only this store changes it.
 func (s *PostgresStore) binRows(ctx context.Context) (memo.Table[sqlcdb.RecycleBin], error) {
 	rows, err := memo.GetTable(ctx, keptArea+":bin", func(ctx context.Context) ([]sqlcdb.RecycleBin, error) {
-		return s.db.Queries(ctx).ListBinEntries(ctx)
+		return sqlcdb.New(s.db.Conn(ctx)).ListBinEntries(ctx)
 	}, func(r sqlcdb.RecycleBin) string { return r.ID })
 	if err != nil {
 		return memo.Table[sqlcdb.RecycleBin]{}, fmt.Errorf("select bin entries: %w", err)
@@ -131,7 +131,7 @@ func (s *PostgresStore) binRows(ctx context.Context) (memo.Table[sqlcdb.RecycleB
 
 func (s *PostgresStore) change(ctx context.Context) *sqlcdb.Queries {
 	memo.Forget(ctx, keptArea)
-	return s.db.Queries(ctx)
+	return sqlcdb.New(s.db.Conn(ctx))
 }
 
 func binParams(e BinEntry) (sqlcdb.PutBinEntryParams, error) {

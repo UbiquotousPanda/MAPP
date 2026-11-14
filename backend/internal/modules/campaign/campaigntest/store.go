@@ -6,9 +6,9 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/campaign"
+	"mapp/internal/modules/campaign"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/fake"
-	"mapp/internal/settings"
 )
 
 type Store struct {

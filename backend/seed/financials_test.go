@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"mapp/internal/financials"
+	"mapp/internal/modules/financials"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )

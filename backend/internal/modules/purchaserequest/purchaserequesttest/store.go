@@ -6,14 +6,14 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/approval"
-	"mapp/internal/approval/approvaltest"
-	"mapp/internal/plan"
-	"mapp/internal/plan/plantest"
+	"mapp/internal/modules/approval"
+	"mapp/internal/modules/approval/approvaltest"
+	"mapp/internal/modules/plan"
+	"mapp/internal/modules/plan/plantest"
+	"mapp/internal/modules/purchaserequest"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/fake"
-	"mapp/internal/purchaserequest"
 )
 
 const configurationID = "purchase-requests"

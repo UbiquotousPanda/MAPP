@@ -1,12 +1,12 @@
-package dashboard
+package core
 
 import (
 	"slices"
 	"testing"
 	"time"
 
-	"mapp/internal/allwork"
-	"mapp/internal/people"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/people"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/deck"
 	"mapp/internal/platform/money"

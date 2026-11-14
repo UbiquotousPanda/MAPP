@@ -1,12 +1,12 @@
-package activity
+package core
 
 import (
-	"mapp/internal/overspend"
-	"mapp/internal/people"
+	"mapp/internal/modules/overspend"
+	"mapp/internal/modules/people"
+	"mapp/internal/modules/settings"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/money"
-	"mapp/internal/settings"
 )
 
 type PlanFacts struct {

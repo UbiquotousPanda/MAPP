@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	"mapp/internal/allwork"
-	"mapp/internal/plan"
+	"mapp/internal/modules/allwork"
+	"mapp/internal/modules/plan"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/date"
 )
