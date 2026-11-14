@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { choose, expectNoAxeViolations, signInAs } from './fixtures';
 
 // The Home dashboard (009) for a planner and an approver, against the real API with the demo data
@@ -174,6 +175,14 @@ test('Home: the summary cards and sections for a planner and an approver, with w
   await expect(teamPlans).toBeVisible();
 });
 
+/** Scrolls to the bottom and answers how far the page moved; polled, as the page grows while its data arrives. */
+function scrollToBottom(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    window.scrollTo(0, document.body.scrollHeight);
+    return window.scrollY;
+  });
+}
+
 test('001 FR-010: the logo opens Home at its top, from Home and from another page, and Back keeps that page where it was', async ({
   page,
 }) => {
@@ -182,16 +191,15 @@ test('001 FR-010: the logo opens Home at its top, from Home and from another pag
   await expect(page.getByRole('heading', { name: 'Welcome back, Priya.', level: 1 })).toBeVisible();
   const logo = page.getByRole('link', { name: 'SP&A One home' });
 
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect.poll(() => scrollToBottom(page)).toBeGreaterThan(0);
   await logo.click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 
   await page.goto('/plans');
   await expect(page.getByRole('heading', { name: 'Plans', level: 1 })).toBeVisible();
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect(page.getByRole('link', { name: 'FY2026 Lubricants Europe' }).first()).toBeVisible();
+  await expect.poll(() => scrollToBottom(page)).toBeGreaterThan(0);
   const plansScroll = await page.evaluate(() => window.scrollY);
-  expect(plansScroll).toBeGreaterThan(0);
   await logo.click();
   await expect(page).toHaveURL(/\/$/);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
