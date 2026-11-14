@@ -34,7 +34,7 @@ export function PlanListSummary({ summary }: { summary: PlanList['summary'] | un
         [0, 1, 2].map((card) => (
           <div key={card} className={styles.skeletonCard}>
             <Skeleton width="60%" />
-            <Skeleton height="24px" width="40%" />
+            <Skeleton height="32px" width="40%" />
           </div>
         ))
       )}
