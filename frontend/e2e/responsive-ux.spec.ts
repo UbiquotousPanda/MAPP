@@ -12,7 +12,7 @@ async function controlsUnderTheSaveBar(page: Page, presses: number): Promise<str
     await page.keyboard.press('Tab');
     const label = await page.evaluate(() => {
       const focused = document.activeElement;
-      const bar = [...document.querySelectorAll('main *')].find((element) => {
+      const bar = Array.from(document.querySelectorAll('main *')).find((element) => {
         const style = getComputedStyle(element);
         return style.position === 'sticky' && style.bottom === '0px';
       });
