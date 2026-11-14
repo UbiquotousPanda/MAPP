@@ -17,6 +17,7 @@ function Root(props: ComponentProps<typeof Radix.Root>) {
 function Content({
   align = 'end',
   sideOffset = 4,
+  collisionPadding = 16,
   className,
   children,
   ...props
@@ -31,6 +32,7 @@ function Content({
         className={cx(floating.surface, floating.auto, floating.padSm, className)}
         align={align}
         sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
         onCloseAutoFocus={() => {
           const action = chosenRef.current;
           chosenRef.current = null;

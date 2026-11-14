@@ -23,6 +23,7 @@ function Content({
   padding = 'md',
   align = 'start',
   sideOffset = 6,
+  collisionPadding = 16,
   className,
   ...props
 }: PopoverContentProps) {
@@ -32,6 +33,7 @@ function Content({
         className={cx(floating.surface, floating[width], PADDING[padding], className)}
         align={align}
         sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
         {...props}
       />
     </Radix.Portal>
