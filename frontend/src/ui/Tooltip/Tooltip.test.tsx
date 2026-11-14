@@ -4,6 +4,7 @@ import { Bell } from 'lucide-react';
 import { Tooltip as RadixTooltip } from 'radix-ui';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Popover } from '../Popover/Popover';
 import { Tooltip } from './Tooltip';
 
 // The app puts one Tooltip.Provider around everything (App.tsx); tests need one as well.
@@ -80,6 +81,31 @@ describe('Tooltip', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent('12 Mar 2026, 14:05');
 
     await user.pointer({ keys: '[TouchA]', target: screen.getByText('Elsewhere') });
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('a tap on a control that opens a popover or menu opens it, not the bubble', async () => {
+    const user = userEvent.setup();
+    render(
+      <Popover.Root>
+        <Tooltip content="Notifications">
+          <Popover.Trigger asChild>
+            <button type="button" aria-label="Notifications">
+              <Bell />
+            </button>
+          </Popover.Trigger>
+        </Tooltip>
+        <Popover.Content aria-label="Notification list">No new notifications</Popover.Content>
+      </Popover.Root>,
+      { wrapper: TooltipProvider },
+    );
+
+    await user.pointer({
+      keys: '[TouchA]',
+      target: screen.getByRole('button', { name: 'Notifications' }),
+    });
+
+    expect(await screen.findByText('No new notifications')).toBeInTheDocument();
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 });

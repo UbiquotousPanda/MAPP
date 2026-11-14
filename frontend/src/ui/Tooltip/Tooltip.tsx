@@ -12,17 +12,15 @@ export interface TooltipProps {
 
 export const TooltipProvider = RadixTooltip.Provider;
 
+const ACTS_ON_TAP = 'a, [type="submit"], [aria-haspopup], [aria-expanded], [aria-controls]';
+
 // Never inside a menu, nor on a dialog's or panel's close button: Radix swallows the first Escape (R14).
 export function Tooltip({ content, side = 'top', children }: TooltipProps) {
   const [open, setOpen] = useState(false);
   const showsOnly = !children.props.onClick;
   // A finger cannot hover: a tap on a control that only shows something opens the bubble instead.
   const openOnTap = (event: MouseEvent<HTMLElement>) => {
-    if (
-      lastPointer === 'touch' &&
-      showsOnly &&
-      !event.currentTarget.matches('a, [type="submit"]')
-    ) {
+    if (lastPointer === 'touch' && showsOnly && !event.currentTarget.matches(ACTS_ON_TAP)) {
       event.preventDefault();
       setOpen(true);
     }
