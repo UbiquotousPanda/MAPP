@@ -1,6 +1,7 @@
 import { CircleCheck } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
 import { FormSection } from '../FormSection/FormSection';
+import { scrollBehavior } from '../motion';
 import { filledText } from './form-progress';
 import type { RailSection } from './form-progress';
 import styles from './FormRail.module.css';
@@ -63,7 +64,7 @@ function jumpTo(event: MouseEvent<HTMLAnchorElement>) {
     return;
   }
   event.preventDefault();
-  section.scrollIntoView?.({ block: 'start' });
+  section.scrollIntoView?.({ behavior: scrollBehavior(), block: 'start' });
   const field =
     section.querySelector<HTMLElement>('input, select, textarea') ??
     section.querySelector<HTMLElement>('button');

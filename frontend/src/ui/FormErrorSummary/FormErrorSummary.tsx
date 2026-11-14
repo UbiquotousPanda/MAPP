@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { scrollBehavior } from '../motion';
 import { RequiredLegend } from '../RequiredLegend/RequiredLegend';
 import styles from './FormErrorSummary.module.css';
 
@@ -42,7 +43,9 @@ export function FormErrorSummary<P extends FieldProblem>({
     if (onGo) {
       onGo(problem);
     } else {
-      document.getElementById(fieldId(problem.field))?.focus();
+      const field = document.getElementById(fieldId(problem.field));
+      field?.scrollIntoView?.({ behavior: scrollBehavior(), block: 'center' });
+      field?.focus({ preventScroll: true });
     }
   }
 
