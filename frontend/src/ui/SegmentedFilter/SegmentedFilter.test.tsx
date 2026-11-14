@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/testing/render';
 import { SegmentedFilter } from './SegmentedFilter';
 
@@ -48,5 +48,32 @@ describe('SegmentedFilter', () => {
 
     expect(screen.getByText('Showing all')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('scrolls a chosen pill hidden past the edge of a narrow row into view', async () => {
+    const { user } = renderWithProviders(<Example />);
+    const group = screen.getByRole('group', { name: 'Status' });
+    let scrollLeft = 0;
+    Object.defineProperty(group, 'scrollLeft', {
+      get: () => scrollLeft,
+      set: (next: number) => {
+        scrollLeft = next;
+      },
+    });
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function rect(
+      this: Element,
+    ) {
+      const [left, right] =
+        this === group ? [0, 200] : this.textContent === 'All' ? [240, 280] : [0, 80];
+      return DOMRect.fromRect({ x: left - scrollLeft, width: right - left, height: 32 });
+    });
+
+    await user.click(screen.getByRole('button', { name: 'All' }));
+
+    expect(scrollLeft).toBe(280 - 200 + 32);
   });
 });

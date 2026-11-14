@@ -6,6 +6,24 @@
   scrollbar-width: thin;
 }
 
+.fadeStart {
+  mask-image: linear-gradient(to right, transparent, var(--ink) var(--space-8));
+}
+
+.fadeEnd {
+  mask-image: linear-gradient(to left, transparent, var(--ink) var(--space-8));
+}
+
+.fadeStart.fadeEnd {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    var(--ink) var(--space-8),
+    var(--ink) calc(100% - var(--space-8)),
+    transparent
+  );
+}
+
 .pill {
   display: inline-flex;
   align-items: center;
