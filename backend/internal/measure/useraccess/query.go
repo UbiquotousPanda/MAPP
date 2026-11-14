@@ -41,6 +41,16 @@ func ParseQuery(values url.Values) (Query, error) {
 	if utf8.RuneCountInString(q.Search) > maxSearch {
 		problems.Add(paramSearch, "Search with at most 100 characters.")
 	}
+	checkChoices(q, &problems)
+	q.Page = whole(values, "page", 1, &problems)
+	q.PageSize = whole(values, "pageSize", 1, &problems)
+	if q.PageSize != 0 && !paging.Valid(q.PageSize) {
+		problems.Add("pageSize", paging.Message)
+	}
+	return withDefaults(q), problems.Err()
+}
+
+func checkChoices(q Query, problems *errs.Problems) {
 	pattern := teamID()
 	if len(q.Teams) > maxTeams || slices.ContainsFunc(q.Teams, func(id string) bool { return !pattern.MatchString(id) }) {
 		problems.Add(paramTeam, "Choose teams by their IDs, such as T-1001.")
@@ -51,12 +61,6 @@ func ParseQuery(values url.Values) (Query, error) {
 	if q.Sort != "" && !slices.Contains(sortKeys(), strings.TrimPrefix(q.Sort, descending)) {
 		problems.Add(paramSort, "Sort by one of: "+strings.Join(sortKeys(), ", ")+"; a minus sign first for descending.")
 	}
-	q.Page = whole(values, "page", 1, &problems)
-	q.PageSize = whole(values, "pageSize", 1, &problems)
-	if q.PageSize != 0 && !paging.Valid(q.PageSize) {
-		problems.Add("pageSize", paging.Message)
-	}
-	return withDefaults(q), problems.Err()
 }
 
 func withDefaults(q Query) Query {

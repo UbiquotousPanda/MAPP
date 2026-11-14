@@ -48,22 +48,24 @@ func (x *Index) attributeGroups(id, attributeID string) []share {
 		return []share{{key: keyNone, label: labelNotFilledIn}}
 	}
 	if value.Yes != nil {
-		if *value.Yes {
-			return []share{{key: "yes", label: "Yes"}}
-		}
-		return []share{{key: "no", label: "No"}}
+		return []share{yesNoGroup(*value.Yes)}
 	}
-	attribute := x.attributes[attributeID]
+	return optionGroups(value, x.attributes[attributeID].Options)
+}
+
+func yesNoGroup(yes bool) share {
+	if yes {
+		return share{key: "yes", label: "Yes"}
+	}
+	return share{key: "no", label: "No"}
+}
+
+func optionGroups(value allwork.AttrValue, options []allwork.Option) []share {
 	equal := equalShares(len(value.OptionIDs))
 	out := make([]share, 0, len(value.OptionIDs))
 	var from money.Percent
 	for i, optionID := range value.OptionIDs {
-		g := share{key: optionID, label: optionID}
-		for _, option := range attribute.Options {
-			if option.ID == optionID {
-				g.label = option.Label
-			}
-		}
+		g := share{key: optionID, label: optionLabel(options, optionID)}
 		p, split := value.Shares[optionID]
 		if !split && len(equal) > 1 {
 			p, split = equal[i], true
@@ -75,6 +77,15 @@ func (x *Index) attributeGroups(id, attributeID string) []share {
 		out = append(out, g)
 	}
 	return out
+}
+
+func optionLabel(options []allwork.Option, optionID string) string {
+	for _, option := range options {
+		if option.ID == optionID {
+			return option.Label
+		}
+	}
+	return optionID
 }
 
 // equalShares split a plain multiple choice 100/n each, the first options taking the remainder of 100.00 %.

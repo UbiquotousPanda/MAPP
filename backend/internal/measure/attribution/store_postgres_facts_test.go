@@ -91,15 +91,23 @@ func putJourneyFacts(ctx context.Context, facts *performance.PostgresStore) erro
 	return errors.Join(err, facts.PutFact(ctx, held))
 }
 
-func TestPostgresStore_FactsOutsideTheScopeAreInvisible_050_C4(t *testing.T) {
+func TestPostgresStore_ConversionsOutsideTheScopeAreInvisible_050_C4(t *testing.T) {
 	t.Parallel()
 	store := pgFactStore(t)
-	both := []string{"A-1001", "A-1002"}
 
-	conversions, err := store.Conversions(t.Context(), team1Only, both, 2026)
+	conversions, err := store.Conversions(t.Context(), team1Only, []string{"A-1001", "A-1002"}, 2026)
 	if err != nil || len(conversions) != 1 || conversions[0].ActivityID != "A-1001" {
 		t.Fatalf("conversions = %+v, %v; want only A-1001's: a record outside the scope must look missing", conversions, err)
 	}
+	if got := conversions[0]; got.Source != "Eloqua" || got.Reference != "r1" || got.ID != "PF-11" {
+		t.Errorf("conversion %s from %q ref %q; want PF-11 from Eloqua ref r1", got.ID, got.Source, got.Reference)
+	}
+}
+
+func TestPostgresStore_TouchesOutsideTheScopeAreInvisible_050_C4(t *testing.T) {
+	t.Parallel()
+	store := pgFactStore(t)
+
 	mine, err := store.Touches(t.Context(), team1Only, []string{"J-1"})
 	if err != nil {
 		t.Fatalf("Touches: %v", err)
@@ -109,14 +117,13 @@ func TestPostgresStore_FactsOutsideTheScopeAreInvisible_050_C4(t *testing.T) {
 		t.Fatalf("Touches: %v", err)
 	}
 	if diff := cmp.Diff([]string{"A-1001"}, touchedActivities(mine)); diff != "" {
-		t.Errorf("team 1's touches (-want +got):\n%s", diff)
+		t.Fatalf("team 1's touches (-want +got):\n%s", diff)
 	}
 	if diff := cmp.Diff([]string{"A-1001", "A-1002"}, touchedActivities(all)); diff != "" {
 		t.Errorf("every touch, revenue facts not among them (-want +got):\n%s", diff)
 	}
-	if mine[0].Kind != "inq" || conversions[0].Source != "Eloqua" || conversions[0].Reference != "r1" || conversions[0].ID != "PF-11" {
-		t.Errorf("touch kind %q, conversion %s from %q ref %q; want inq, PF-11 from Eloqua ref r1", mine[0].Kind, conversions[0].ID,
-			conversions[0].Source, conversions[0].Reference)
+	if mine[0].Kind != "inq" {
+		t.Errorf("touch kind %q; want inq", mine[0].Kind)
 	}
 }
 

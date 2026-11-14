@@ -149,6 +149,13 @@ func TestOwnPass_ExportEqualsScreen_FR013_SC005(t *testing.T) {
 	if total := bandRows(screen)[len(screen.Bands)+1][1]; total != strconv.Itoa(screen.Cards.People) {
 		t.Errorf("bands add up to %s, the People card says %d (FR-007)", total, screen.Cards.People)
 	}
+}
+
+func TestOwnPass_WorkbookEqualsFiles_FR013_SC005(t *testing.T) {
+	t.Parallel()
+	alexSees := alexAfterPriya(t)
+
+	files := [][][]string{csvOf(t, alexSees, own+"&widget=people").rows, csvOf(t, alexSees, own+"&widget=signInBands").rows}
 	tables, err := sheet.ReadXLSX(get(t, alexSees, exported+"xlsx"+own, http.StatusOK).Body, 10000)
 	if err != nil || len(tables) < 3 || tables[0].Name != "People" || tables[1].Name != "Last sign-in" ||
 		tables[len(tables)-1].Name != "About this export" {

@@ -23,7 +23,21 @@ func sourceEdit(name, route string, version int) map[string]any {
 	}
 }
 
-func TestPerformanceSources_ListGetAndEdit_Contract_FR001_FR005_FR045(t *testing.T) {
+func TestPerformanceSources_ListAndGet_Contract_FR001(t *testing.T) {
+	t.Parallel()
+	alex := apitest.New(t).SignIn(t, alexsEmail)
+	preparedSource(t, alex)
+
+	listed := alex.Do(t, http.MethodGet, "/api/v1/performance/sources", nil)
+	if listed.Status != http.StatusOK || !strings.Contains(string(listed.Body), `"name":"Eloqua"`) {
+		t.Errorf("list = %d %s, want the source", listed.Status, listed.Body)
+	}
+	if missing := alex.Do(t, http.MethodGet, "/api/v1/performance/sources/PS-9999", nil); missing.Status != http.StatusNotFound {
+		t.Errorf("GET a missing source = %d %s, want 404", missing.Status, missing.Body)
+	}
+}
+
+func TestPerformanceSources_Edit_Contract_FR005_FR045(t *testing.T) {
 	t.Parallel()
 	alex := apitest.New(t).SignIn(t, alexsEmail)
 	sourceID := preparedSource(t, alex)
@@ -31,15 +45,11 @@ func TestPerformanceSources_ListGetAndEdit_Contract_FR001_FR005_FR045(t *testing
 	file := "Ref,Date,Activity,INQs\nr1,2026-02-01,A-1001,5\n"
 	decoded[importAnswer](t, alex.Do(t, http.MethodPost, path+"/uploads", uploadBody(file)), http.StatusCreated)
 
-	listed := alex.Do(t, http.MethodGet, "/api/v1/performance/sources", nil)
 	read := decoded[sourceAnswer](t, alex.Do(t, http.MethodGet, path, nil), http.StatusOK)
 	response := alex.Do(t, http.MethodPatch, path, sourceEdit("Eloqua EU", "upload", read.Version))
 	again := alex.Do(t, http.MethodGet, path, nil)
 	stale := alex.Do(t, http.MethodPatch, path, sourceEdit("Eloqua US", "upload", read.Version))
 
-	if listed.Status != http.StatusOK || !strings.Contains(string(listed.Body), `"name":"Eloqua"`) {
-		t.Errorf("list = %d %s, want the source", listed.Status, listed.Body)
-	}
 	saved := decoded[sourceAnswer](t, response, http.StatusOK)
 	if saved.Name != "Eloqua EU" || saved.Version != read.Version+1 {
 		t.Errorf("saved = %+v, want the new name at version %d", saved, read.Version+1)
@@ -50,9 +60,6 @@ func TestPerformanceSources_ListGetAndEdit_Contract_FR001_FR005_FR045(t *testing
 	}
 	if stale.Status != http.StatusConflict || !strings.Contains(string(stale.Body), "version_conflict") {
 		t.Errorf("stale save = %d %s, want version_conflict", stale.Status, stale.Body)
-	}
-	if missing := alex.Do(t, http.MethodGet, "/api/v1/performance/sources/PS-9999", nil); missing.Status != http.StatusNotFound {
-		t.Errorf("GET a missing source = %d %s, want 404", missing.Status, missing.Body)
 	}
 }
 
